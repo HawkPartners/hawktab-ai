@@ -13,12 +13,12 @@ This roadmap implements a focused cross-reference validation system using OpenAI
 ## Phase 1: Foundation & Dependencies ⚡
 
 ### 1.1 Install Critical Dependencies
-- [ ] **Install exact Zod version**: `npm install zod@3.25.67`
+- [x] **Install exact Zod version**: `npm install zod@3.25.67`
   - ⚠️ **CRITICAL**: SDK does not work with zod@3.25.68+
   - Reference: Architecture doc section "Installation & Setup"
-- [ ] **Install OpenAI Agents SDK**: `npm install @openai/agents`
-- [ ] **Web search OpenAI Agents JS SDK** for latest compatibility updates if needed
-- [ ] **Verify package.json** contains exact versions:
+- [x] **Install OpenAI Agents SDK**: `npm install @openai/agents`
+- [x] **Web search OpenAI Agents JS SDK** for latest compatibility updates if needed
+- [x] **Verify package.json** contains exact versions:
   ```json
   {
     "zod": "3.25.67",
@@ -27,14 +27,16 @@ This roadmap implements a focused cross-reference validation system using OpenAI
   ```
 
 ### 1.2 Environment Configuration
-- [ ] **Create/update `.env.local`** with development variables:
+- [x] **Create/update `.env.local`** with development variables:
   ```env
   # Required
   OPENAI_API_KEY=your_api_key_here
   
   # Model Configuration  
-  REASONING_MODEL=o1-preview
-  BASE_MODEL=gpt-4o
+  REASONING_MODEL=o4-mini-2025-04-16
+  BASE_MODEL=gpt-4.1-2025-04-14
+  REASONING_MODEL_TOKENS=100000
+  BASE_MODEL_TOKENS=32768
   
   # Environment
   NODE_ENV=development
@@ -47,18 +49,20 @@ This roadmap implements a focused cross-reference validation system using OpenAI
   MAX_BANNER_COLUMNS=100
   ```
 
-- [ ] **Create `.env.production`** with production variables:
+- [x] **Create `.env.production`** with production variables:
   ```env
   # Same structure but production values
   NODE_ENV=production
-  REASONING_MODEL=o1-preview
-  BASE_MODEL=gpt-4o-mini
+  REASONING_MODEL=o4-mini-2025-04-16
+  BASE_MODEL=gpt-4.1-2025-04-14
+  REASONING_MODEL_TOKENS=100000
+  BASE_MODEL_TOKENS=32768
   ```
 
 ### 1.3 Basic Validation
-- [ ] **Run type checking**: `npx tsc --noEmit`
-- [ ] **Run linting**: `npm run lint`
-- [ ] **Verify environment loading** in development mode
+- [x] **Run type checking**: `npx tsc --noEmit`
+- [x] **Run linting**: `npm run lint`
+- [x] **Verify environment loading** in development mode
 
 ---
 
@@ -67,20 +71,20 @@ This roadmap implements a focused cross-reference validation system using OpenAI
 ### 2.1 Directory Structure
 Create directory structure per architecture doc "Simplified Directory Structure":
 
-- [ ] **Create `src/agents/` directory**
-- [ ] **Create `src/schemas/` directory** 
-- [ ] **Create `src/lib/` directory**
-- [ ] **Create `src/guardrails/` directory**
-- [ ] **Update `src/api/` for single endpoint approach**
+- [x] **Create `src/agents/` directory**
+- [x] **Create `src/schemas/` directory** 
+- [x] **Create `src/lib/` directory**
+- [x] **Create `src/guardrails/` directory**
+- [x] **Update `src/api/` for single endpoint approach**
 
 ### 2.2 Core Configuration Files
-- [ ] **Create `src/lib/types.ts`** - TypeScript definitions
-- [ ] **Create `src/lib/tracing.ts`** - Tracing configuration
-- [ ] **Create `src/agents/index.ts`** - Agent exports
-- [ ] **Update `tsconfig.json`** with proper path mappings if needed
+- [x] **Create `src/lib/types.ts`** - TypeScript definitions
+- [x] **Create `src/lib/tracing.ts`** - Tracing configuration
+- [x] **Create `src/agents/index.ts`** - Agent exports
+- [x] **Update `tsconfig.json`** with proper path mappings if needed
 
 ### 2.3 Environment Integration
-- [ ] **Create environment helper** in `src/lib/env.ts`:
+- [x] **Create environment helper** in `src/lib/env.ts`:
   ```typescript
   export const getModel = () => 
     process.env.NODE_ENV === 'production' 
@@ -89,9 +93,9 @@ Create directory structure per architecture doc "Simplified Directory Structure"
   ```
 
 ### 2.4 Validation
-- [ ] **Run type checking**: `npx tsc --noEmit`
-- [ ] **Run linting**: `npm run lint`
-- [ ] **Verify directory structure matches architecture doc**
+- [x] **Run type checking**: `npx tsc --noEmit`
+- [x] **Run linting**: `npm run lint`
+- [x] **Verify directory structure matches architecture doc**
 
 ---
 
@@ -185,10 +189,13 @@ Create directory structure per architecture doc "Simplified Directory Structure"
   └── data-map-agent.json         # Only essential fields
   ```
 
-### 4.3 File Validation
+### 4.3 File Validation & Guardrails
 - [ ] **Create `src/guardrails/inputValidation.ts`**
 - [ ] **Implement file type/size validation**
 - [ ] **Add content safety checks as needed**
+- [ ] **GUARDRAILS**: Implement token limit checking per environment config
+- [ ] **GUARDRAILS**: Add data map size validation against MAX_DATA_MAP_VARIABLES
+- [ ] **Reference**: Architecture doc "Guardrails-First Development"
 
 ### 4.4 Validation
 - [ ] **Test file upload still works**
@@ -224,6 +231,8 @@ Create directory structure per architecture doc "Simplified Directory Structure"
 - [ ] **Verify simplified JSON structure matches schemas**
 - [ ] **Run type checking**: `npx tsc --noEmit`
 - [ ] **Run linting**: `npm run lint`
+
+**🧪 TESTING CHECKPOINT**: After Phase 5 completion, begin real testing with `npm run dev`
 
 ---
 
@@ -267,6 +276,7 @@ Create directory structure per architecture doc "Simplified Directory Structure"
   - Matching types explanation (clear/obvious, findable but unclear, statistician tasks)
   - Confidence rating scale (0.9-1.0 direct, 0.7-0.8 conceptual, etc.)
   - Variable patterns and R syntax
+  - **TRACING**: Add scratchpad usage instructions for transparency
   - Reference architecture doc "Working Agent Implementation"
 
 ### 6.4 Group Processing Logic
@@ -286,6 +296,7 @@ Create directory structure per architecture doc "Simplified Directory Structure"
 - [ ] **Test agent creation** (no actual runs yet)
 - [ ] **Verify outputType property** (not outputSchema)
 - [ ] **Test with simplified banner/data map JSON**
+- [ ] **TRACING**: Verify scratchpad tool is properly configured
 - [ ] **Run type checking**: `npx tsc --noEmit`
 - [ ] **Run linting**: `npm run lint`
 - [ ] **Web search OpenAI Agents SDK JS** for any updates if issues arise
@@ -316,6 +327,7 @@ Create directory structure per architecture doc "Simplified Directory Structure"
 - [ ] **Implement complete processing loop**
 - [ ] **Add proper error handling for individual groups**
 - [ ] **Implement result combination logic**
+- [ ] **TRACING**: Add execution logging for each group processing
 
 ### 7.4 Response Formatting
 - [ ] **Ensure response matches ValidationResultSchema**
@@ -325,8 +337,11 @@ Create directory structure per architecture doc "Simplified Directory Structure"
 ### 7.5 Validation
 - [ ] **Test API endpoint creation** (structure only)
 - [ ] **Verify integration points**
+- [ ] **TRACING**: Test trace logging in development mode
 - [ ] **Run type checking**: `npx tsc --noEmit`
 - [ ] **Run linting**: `npm run lint`
+
+**🧪 CONTINUOUS TESTING**: Begin testing individual components with `npm run dev` as they're implemented
 
 ---
 
@@ -342,12 +357,14 @@ Create directory structure per architecture doc "Simplified Directory Structure"
 - [ ] **Test production environment** with base model
 - [ ] **Verify environment variable switching**
 
-### 8.3 Real Data Preparation
+### 8.3 Real Data Testing (Ongoing from Phase 5+)
 - [ ] **Test with provided JSON files**:
   - `banner-part1-result-20250806_141904.json`
   - `raw-datamap.csv`
 - [ ] **Verify dual output generation works**
-- [ ] **Prepare for real file uploads**
+- [ ] **Test complete workflow with `npm run dev`**
+- [ ] **Upload real files and verify end-to-end processing**
+- [ ] **TRACING**: Verify all execution steps are properly logged
 
 ### 8.4 Final Validation
 - [ ] **Run comprehensive type checking**: `npx tsc --noEmit`
@@ -377,8 +394,9 @@ Create directory structure per architecture doc "Simplified Directory Structure"
 2. **Type Safety**: Run `npx tsc --noEmit` after every phase
 3. **Linting**: Run `npm run lint` consistently 
 4. **SDK Compatibility**: Always use `outputType` not `outputSchema`
-5. **Architecture Reference**: Reference `/docs/openai-agents-architecture.md` for all technical decisions
-6. **Web Search**: Search "OpenAI Agents SDK JS" when encountering issues
+5. **Tracing-First**: Always implement tracing/observability before agent execution - this is CRITICAL for debugging
+6. **Architecture Reference**: Reference `/docs/openai-agents-architecture.md` for all technical decisions
+7. **Web Search**: Search "OpenAI Agents SDK JS" when encountering issues
 
 ## Success Criteria ✨
 
