@@ -76,12 +76,12 @@ We process banner groups **individually** to maximize focus and minimize context
 Instead of passing the entire banner plan, we loop through each group and process separately:
 
 ```typescript
-// Process each banner group individually
+// Process each banner group individually - same agent, multiple calls
 async function processAllGroups(dataMapAgent: any[], bannerGroupsVerbose: any[]) {
   const results = [];
   
   for (const group of bannerGroupsVerbose) {
-    // Create focused context for just this group
+    // Same agent, different input each time
     const result = await processGroup(dataMapAgent, group);
     results.push(result);
   }
@@ -89,44 +89,11 @@ async function processAllGroups(dataMapAgent: any[], bannerGroupsVerbose: any[])
   return combineResults(results);
 }
 
-// Single group processing with focused context
+// Single group processing - calls our one CrosstabAgent with focused input
 async function processGroup(dataMapAgent: any[], bannerGroup: any) {
-  const agent = new Agent({
-    name: 'GroupValidator',
-    model: process.env.OPENAI_MODEL || 'gpt-4o',
-    outputType: GroupValidationSchema,
-    instructions: `
-      You are validating ONE banner group against a data map.
-      Focus only on the group provided - do not consider other groups.
-      
-      CURRENT GROUP: "${bannerGroup.groupName}"
-      COLUMNS TO PROCESS: ${bannerGroup.columns.length}
-      
-      VARIABLE PATTERNS:
-      - Variables: S2, S2a, A3r1, B5r2
-      - Filters: S2=1 (S2 is variable, =1 is filter)  
-      - Complex: S2=1 AND S2a=1 (variables are S2, S2a)
-      - Conceptual: "IF HCP" needs interpretation
-      
-      R SYNTAX:
-      - Equality: S2 == 1
-      - Logic: & (AND), | (OR)  
-      - Multiple values: S2 %in% c(1,2,3)
-      
-      For each column in this group:
-      1. Extract variables from "original"
-      2. Validate against data map  
-      3. Generate R syntax in "adjusted"
-      4. Rate confidence 0-1
-      5. Explain reasoning
-      
-      DATA MAP (${dataMapAgent.length} variables):
-      ${JSON.stringify(dataMapAgent, null, 2)}
-      
-      GROUP TO VALIDATE:
-      ${JSON.stringify(bannerGroup, null, 2)}
-    `
-  });
+  // Same createCrosstabAgent function, just pass single group as input
+  const singleGroupBanner = { bannerCuts: [bannerGroup] };
+  const agent = createCrosstabAgent(dataMapAgent, singleGroupBanner);
   
   return await run(agent, `Validate group: ${bannerGroup.groupName}`);
 }
