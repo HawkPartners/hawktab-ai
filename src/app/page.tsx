@@ -18,46 +18,34 @@ export default function Home() {
     setIsProcessing(true);
     
     try {
-      // Validate files are properly uploaded
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const formData = new FormData();
+      formData.append('dataMap', dataMapFile);
+      formData.append('bannerPlan', bannerPlanFile);
+      formData.append('dataFile', dataFile);
       
-      // Download the uploaded files for testing
-      if (dataMapFile) {
-        const url = URL.createObjectURL(dataMapFile);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `datamap_${dataMapFile.name}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+      // Call our single API endpoint for complete processing
+      const response = await fetch('/api/process-crosstab', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Processing failed');
       }
       
-      if (bannerPlanFile) {
-        const url = URL.createObjectURL(bannerPlanFile);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `banner_${bannerPlanFile.name}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }
+      const result = await response.json();
       
-      if (dataFile) {
-        const url = URL.createObjectURL(dataFile);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `data_${dataFile.name}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }
+      // Handle successful processing
+      console.log('Processing completed:', result);
       
-      setIsProcessing(false);
+      // For now, log the result. In future phases we'll show results UI
+      alert('Processing completed successfully! Check console for results.');
+      
     } catch (error) {
       console.error('Processing error:', error);
+      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
       setIsProcessing(false);
     }
   };

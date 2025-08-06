@@ -77,13 +77,11 @@ export interface DualOutputResult {
 
 // Generate both versions during Phase 1 parsing
 export const generateDualOutputs = (rawBanner: unknown, rawDataMap: VerboseDataMap[]): DualOutputResult => {
-  // Verbose versions (keep everything as-is)
-  const verboseBanner = rawBanner;
+  // Type assertion needed for parsing unknown banner data
+  const bannerData = rawBanner as VerboseBannerPlan;
   const verboseDataMap = rawDataMap;
   
   // Simplified versions for agent processing
-  // Type assertion needed for parsing unknown banner data
-  const bannerData = rawBanner as VerboseBannerPlan;
   const agentBanner: AgentBannerGroup[] = bannerData.data?.extractedStructure?.bannerCuts?.map((group) => ({
     groupName: group.groupName,
     columns: group.columns?.map((col) => ({
