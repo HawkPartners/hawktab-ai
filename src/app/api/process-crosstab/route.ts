@@ -6,6 +6,7 @@ import { runAllGuardrails } from '../../../guardrails/inputValidation';
 import { generateSessionId, saveUploadedFile } from '../../../lib/storage';
 import { logAgentExecution } from '../../../lib/tracing';
 import { validateEnvironment } from '../../../lib/env';
+import { generateDualOutputs } from '../../../lib/contextBuilder';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -74,49 +75,130 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Log successful processing start
+    // Log successful file upload
     logAgentExecution(sessionId, 'FileUploadProcessor', 
       { fileCount: 3, sessionId }, 
       { saved: true }, 
       Date.now() - startTime
     );
 
-    // For Phase 4, return success with file info
-    // In later phases, this will trigger the actual agent processing
-    const response = {
+    // Phase 5: Data Processing & Dual Output Strategy
+    console.log(`[API] Starting Phase 5 data processing for session: ${sessionId}`);
+    
+    const dataMapPath = fileResults[0].filePath!;
+    const spssPath = fileResults[2].filePath!; // The actual SPSS file (dataFile)
+    // const bannerPlanPath = fileResults[1].filePath!; // TODO: Use in Phase 6 for banner processing
+    
+    console.log(`[API] Data Map file: ${dataMapPath}`);
+    console.log(`[API] SPSS file: ${spssPath}`);
+    
+    // For now, use basic banner processing (Phase 6 will enhance this)
+    const mockBannerData = {
       success: true,
-      sessionId,
-      message: 'Files uploaded and validated successfully',
-      files: {
-        dataMap: {
-          name: dataMapFile.name,
-          size: dataMapFile.size,
-          type: dataMapFile.type
+      data: {
+        success: true,
+        extractionType: 'mock',
+        timestamp: new Date().toISOString(),
+        extractedStructure: {
+          bannerCuts: [],
+          notes: [],
+          processingMetadata: {}
         },
-        bannerPlan: {
-          name: bannerPlanFile.name,
-          size: bannerPlanFile.size,
-          type: bannerPlanFile.type
-        },
-        dataFile: {
-          name: dataFile.name,
-          size: dataFile.size,
-          type: dataFile.type
-        }
+        errors: null,
+        warnings: null
       },
-      guardrails: {
-        warnings: guardrailResult.warnings,
-        metadata: guardrailResult.metadata
-      },
-      processingTimeMs: Date.now() - startTime,
-      nextSteps: [
-        'Files saved to temporary storage',
-        'Ready for Phase 5: Data Processing & Dual Output Strategy',
-        'Agent processing will be implemented in Phase 6'
-      ]
+      timestamp: new Date().toISOString()
     };
 
-    return NextResponse.json(response);
+    try {
+      // Use enhanced dual output generation with DataMapProcessor and real SPSS path
+      const dualOutputs = await generateDualOutputs(mockBannerData, dataMapPath, spssPath);
+      
+      console.log(`[API] Data processing completed - Success: ${dualOutputs.processing.success}, Confidence: ${dualOutputs.processing.confidence.toFixed(2)}`);
+
+      // Log processing completion
+      logAgentExecution(sessionId, 'DataMapProcessor', 
+        { dataMapPath, confidence: dualOutputs.processing.confidence }, 
+        { success: dualOutputs.processing.success, validationPassed: dualOutputs.processing.validationPassed }, 
+        Date.now() - startTime
+      );
+
+      const response = {
+        success: true,
+        sessionId,
+        message: 'Files processed successfully with enhanced data map processing',
+        files: {
+          dataMap: {
+            name: dataMapFile.name,
+            size: dataMapFile.size,
+            type: dataMapFile.type,
+            processed: true
+          },
+          bannerPlan: {
+            name: bannerPlanFile.name,
+            size: bannerPlanFile.size,
+            type: bannerPlanFile.type,
+            processed: false // Will be enhanced in Phase 6
+          },
+          dataFile: {
+            name: dataFile.name,
+            size: dataFile.size,
+            type: dataFile.type
+          }
+        },
+        processing: {
+          dataMapProcessing: {
+            success: dualOutputs.processing.success,
+            validationPassed: dualOutputs.processing.validationPassed,
+            confidence: dualOutputs.processing.confidence,
+            variablesProcessed: dualOutputs.agentDataMap.length,
+            parentRelationships: dualOutputs.agentDataMap.filter(v => v.ParentQuestion).length,
+            contextEnriched: dualOutputs.agentDataMap.filter(v => v.Context).length,
+            errors: dualOutputs.processing.errors,
+            warnings: dualOutputs.processing.warnings
+          }
+        },
+        guardrails: {
+          warnings: guardrailResult.warnings,
+          metadata: guardrailResult.metadata
+        },
+        processingTimeMs: Date.now() - startTime,
+        nextSteps: [
+          'Data map processed with state machine + parent inference + context enrichment',
+          'Dual outputs generated (verbose + agent formats)',
+          `${process.env.NODE_ENV === 'development' ? 'Development outputs saved to temp-outputs/' : ''}`,
+          'Ready for Phase 6: CrossTab Agent implementation'
+        ]
+      };
+
+      return NextResponse.json(response);
+
+    } catch (processingError) {
+      console.error('[API] Data processing error:', processingError);
+      
+      // Log processing failure
+      logAgentExecution(sessionId, 'DataMapProcessor', 
+        { dataMapPath }, 
+        { error: processingError instanceof Error ? processingError.message : 'Unknown processing error' }, 
+        Date.now() - startTime
+      );
+
+      return NextResponse.json(
+        { 
+          error: 'Data processing failed',
+          sessionId,
+          details: process.env.NODE_ENV === 'development' 
+            ? processingError instanceof Error ? processingError.message : String(processingError)
+            : 'Processing error occurred',
+          files: {
+            dataMap: { name: dataMapFile.name, processed: false },
+            bannerPlan: { name: bannerPlanFile.name, processed: false },
+            dataFile: { name: dataFile.name }
+          }
+        },
+        { status: 500 }
+      );
+    }
 
   } catch (error) {
     console.error('API processing error:', error);

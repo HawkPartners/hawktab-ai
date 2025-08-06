@@ -1,26 +1,14 @@
-// Context builder implementation for dual output strategy
+// Enhanced Context Builder - Uses DataMapProcessor for sophisticated processing
 // Reference: Architecture doc "Context Builder Implementation"
 
 import { DataMapType } from '../schemas/dataMapSchema';
 import { BannerPlanInputType, BannerGroupType } from '../schemas/bannerPlanSchema';
+import { DataMapProcessor } from './processors/DataMapProcessor';
+import { VerboseDataMapType, AgentDataMapType } from '../schemas/processingSchemas';
 
-// Verbose data map structure (from raw CSV processing)
-export interface VerboseDataMap {
-  Level: string;
-  ParentQ: string;
-  Column: string;
-  Description: string;
-  Value_Type: string;
-  Answer_Options: string;
-  Context: string;
-}
-
-// Simplified agent data map (only essential fields)
-export interface AgentDataMap {
-  Column: string;
-  Description: string;
-  Answer_Options: string;
-}
+// Use types from processing schemas for consistency
+export type VerboseDataMap = VerboseDataMapType;
+export type AgentDataMap = AgentDataMapType;
 
 // Verbose banner group structure (from banner-part1-result JSON)
 export interface VerboseBannerGroup {
@@ -67,21 +55,68 @@ export interface VerboseBannerPlan {
   timestamp: string;
 }
 
-// Dual output generation result
+// Enhanced dual output generation result
 export interface DualOutputResult {
   verboseBanner: VerboseBannerPlan;
   verboseDataMap: VerboseDataMap[];
   agentBanner: AgentBannerGroup[];
   agentDataMap: AgentDataMap[];
+  processing: {
+    success: boolean;
+    validationPassed: boolean;
+    confidence: number;
+    errors: string[];
+    warnings: string[];
+  };
 }
 
-// Generate both versions during Phase 1 parsing
-export const generateDualOutputs = (rawBanner: unknown, rawDataMap: VerboseDataMap[]): DualOutputResult => {
-  // Type assertion needed for parsing unknown banner data
+// Enhanced dual output generation using sophisticated DataMapProcessor
+export const generateDualOutputs = async (rawBanner: unknown, dataMapFilePath: string, spssFilePath?: string): Promise<DualOutputResult> => {
+  console.log(`[ContextBuilder] Starting enhanced dual output generation`);
+  
+  // Process banner data (keep existing logic for now)
+  const bannerData = rawBanner as VerboseBannerPlan;
+  const agentBanner: AgentBannerGroup[] = bannerData.data?.extractedStructure?.bannerCuts?.map((group) => ({
+    groupName: group.groupName,
+    columns: group.columns?.map((col) => ({
+      name: col.name,
+      original: col.original
+    })) || []
+  })) || [];
+
+  // Use sophisticated DataMapProcessor for data map processing
+  console.log(`[ContextBuilder] Processing data map with state machine: ${dataMapFilePath}`);
+  if (spssFilePath) {
+    console.log(`[ContextBuilder] SPSS validation will use: ${spssFilePath}`);
+  }
+  
+  const dataMapProcessor = new DataMapProcessor();
+  const processingResult = await dataMapProcessor.processDataMap(dataMapFilePath, spssFilePath);
+  
+  console.log(`[ContextBuilder] Data map processing completed - Success: ${processingResult.success}, Confidence: ${processingResult.confidence.toFixed(2)}`);
+  
+  return {
+    verboseBanner: bannerData,
+    verboseDataMap: processingResult.verbose,
+    agentBanner,
+    agentDataMap: processingResult.agent,
+    processing: {
+      success: processingResult.success,
+      validationPassed: processingResult.validationPassed,
+      confidence: processingResult.confidence,
+      errors: processingResult.errors,
+      warnings: processingResult.warnings
+    }
+  };
+};
+
+// Backward compatibility - simple version for basic field mapping
+export const generateBasicDualOutputs = (rawBanner: unknown, rawDataMap: VerboseDataMap[]): Omit<DualOutputResult, 'processing'> => {
+  console.log(`[ContextBuilder] Using basic dual output generation (backward compatibility)`);
+  
   const bannerData = rawBanner as VerboseBannerPlan;
   const verboseDataMap = rawDataMap;
   
-  // Simplified versions for agent processing
   const agentBanner: AgentBannerGroup[] = bannerData.data?.extractedStructure?.bannerCuts?.map((group) => ({
     groupName: group.groupName,
     columns: group.columns?.map((col) => ({
@@ -93,7 +128,9 @@ export const generateDualOutputs = (rawBanner: unknown, rawDataMap: VerboseDataM
   const agentDataMap: AgentDataMap[] = rawDataMap.map(item => ({
     Column: item.Column,
     Description: item.Description,
-    Answer_Options: item.Answer_Options
+    Answer_Options: item.Answer_Options,
+    ParentQuestion: item.ParentQ !== 'NA' ? item.ParentQ : undefined,
+    Context: item.Context || undefined
   }));
   
   return {
