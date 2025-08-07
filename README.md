@@ -58,12 +58,15 @@ HawkTab AI is an agent-first, AI-powered platform that automates crosstab genera
 
 - [x] **Tracing Export**: ✅ Implemented unified trace aggregation with `withTrace()` wrapper and `forceFlush()`
 - [x] **Banner Processing Agent**: ✅ Converted to Agents SDK with scratchpad tool - achieves excellent group separation (6+ logical groups)
-- [ ] **Validation UI**: Visual interface for reviewing agent decisions
+- [ ] **Validation UI**: Simple after-the-fact validation interface for development testing
+  - Non-blocking validation queue for reviewing completed sessions
+  - Banner and Crosstab validation tabs with human feedback capture
+  - Scratchpad display for transparency into agent reasoning
+- [ ] **⚠️ TESTING PHASE**: Thorough testing with diverse files using validation UI
 - [ ] **Banner Plan Merging**: Combine agent results with original plans
 - [ ] **Total Column**: Add statistical total for significance testing
 - [ ] **R Script Generation Agent**: Convert validated mappings to executable R
 - [ ] **QA System**: Automated quality assurance for outputs
-- [ ] **Human-in-the-Loop**: Trigger manual review for low confidence scores
 - [ ] **Batch Processing**: Test across multiple files systematically
 
 See [Future Enhancements](docs/future-enhancements.md) for detailed roadmap.

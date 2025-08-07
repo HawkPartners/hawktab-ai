@@ -31,17 +31,27 @@
 - **Robust Processing**: Handles both single-page and multi-page banner documents correctly
 
 ## 3. Validation & Grading System
-### Agent Performance Metrics
-- Develop automated grading for agent outputs
-- Compare against known-good mappings
-- Track accuracy metrics across different types of expressions
+### Simple Validation UI (Phase 1 - Immediate Priority)
+- **Non-blocking validation workflow**: Complete pipeline first, then optionally validate
+- **Validation queue interface**: List all pending/validated sessions
+- **Banner validation tab**: Form-based editing with auto-calculated success rates
+- **Crosstab validation tab**: Column-by-column feedback with confidence ratings
+- **Status tracking**: Simple pending/validated states in session folders
+- **Batch-friendly design**: Validate multiple sessions when convenient
 
-### UI Enhancements
-- Display agent decisions visually
-- Show confidence scores with color coding
-- Highlight variables selected and reasoning
-- Enable manual override/correction interface
-- **Leverage Scratchpad for Reasoning Display**: Show real-time scratchpad output in UI to demonstrate how agents analyze and make decisions - provides transparency into the "thinking" process
+### Scratchpad UI Enhancement (Phase 2)
+- **Save scratchpad output**: Store agent reasoning in session folders
+- **Display scratchpad in UI**: Show reasoning for each decision in validation interface  
+- **Transparency view**: See how agents analyzed banner groups and variable mappings
+- **Debug-friendly**: Understand why agents made specific choices
+
+### ⚠️ PAUSE HERE FOR THOROUGH TESTING
+**Before proceeding to next phases:**
+- Test CrossTab agent output with diverse banner plans and data maps
+- Iterate and fix issues using the new validation UI
+- Collect feedback patterns from multiple test scenarios
+- Ensure agent accuracy meets requirements
+- Build confidence in current implementation before adding complexity
 
 ## 4. Output Processing Pipeline
 ### Banner Plan Merging
@@ -190,13 +200,13 @@
 - Export/import configurations
 - Template library for common patterns
 
-## Priority Order (Suggested)
-1. **Immediate**: Tracing export implementation
-2. **Short-term**: Validation UI and grading system
-3. **Short-term**: Banner plan merging and output processing
-4. **Medium-term**: Human-in-the-loop workflow
-5. **Medium-term**: Batch processing and testing infrastructure
-6. **Long-term**: R script generation and execution
+## Priority Order (Updated)
+1. **Immediate**: Simple validation UI implementation
+2. **Immediate**: Scratchpad saving and display
+3. **PAUSE**: Thorough testing with validation UI
+4. **Post-Testing**: Banner plan merging and output processing
+5. **Short-term**: Batch processing and testing infrastructure  
+6. **Medium-term**: R script generation agent
 7. **Long-term**: Production security and deployment
 
 ## Notes
