@@ -17,6 +17,10 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
     openaiApiKey,
     nodeEnv,
     tracingDisabled: process.env.OPENAI_AGENTS_DISABLE_TRACING === 'true',
+    promptVersions: {
+      crosstabPromptVersion: process.env.CROSSTAB_PROMPT_VERSION || 'production',
+      bannerPromptVersion: process.env.BANNER_PROMPT_VERSION || 'production',
+    },
     processingLimits: {
       maxDataMapVariables: parseInt(process.env.MAX_DATA_MAP_VARIABLES || '1000'),
       maxBannerColumns: parseInt(process.env.MAX_BANNER_COLUMNS || '100'),
@@ -53,6 +57,11 @@ export const getModelConfig = () => {
     tokenLimit: isProduction ? config.processingLimits.baseModelTokens : config.processingLimits.reasoningModelTokens,
     environment: config.nodeEnv,
   };
+};
+
+export const getPromptVersions = () => {
+  const config = getEnvironmentConfig();
+  return config.promptVersions;
 };
 
 export const validateEnvironment = (): { valid: boolean; errors: string[] } => {

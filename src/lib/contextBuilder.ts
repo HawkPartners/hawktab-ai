@@ -71,7 +71,7 @@ export interface DualOutputResult {
 }
 
 // Enhanced dual output generation using sophisticated processors
-export const generateDualOutputs = async (rawBanner: unknown, dataMapFilePath: string, spssFilePath?: string): Promise<DualOutputResult> => {
+export const generateDualOutputs = async (rawBanner: unknown, dataMapFilePath: string, spssFilePath?: string, outputFolder?: string): Promise<DualOutputResult> => {
   console.log(`[ContextBuilder] Starting enhanced dual output generation`);
   
   // Process banner data - handle both mock data and real banner processing results
@@ -104,7 +104,7 @@ export const generateDualOutputs = async (rawBanner: unknown, dataMapFilePath: s
   }
   
   const dataMapProcessor = new DataMapProcessor();
-  const processingResult = await dataMapProcessor.processDataMap(dataMapFilePath, spssFilePath);
+  const processingResult = await dataMapProcessor.processDataMap(dataMapFilePath, spssFilePath, outputFolder);
   
   console.log(`[ContextBuilder] Data map processing completed - Success: ${processingResult.success}, Confidence: ${processingResult.confidence.toFixed(2)}`);
   

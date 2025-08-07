@@ -11,7 +11,8 @@ import sharp from 'sharp';
 import OpenAI from 'openai';
 import { z } from 'zod';
 import { VerboseBannerPlan, AgentBannerGroup } from '../contextBuilder';
-import { validateEnvironment } from '../env';
+import { validateEnvironment, getPromptVersions } from '../env';
+import { getBannerPrompt } from '../../prompts';
 
 // Types for internal processing
 export interface ProcessedImage {
@@ -89,46 +90,11 @@ const BANNER_CONFIG = {
   confidenceThreshold: 0.7
 };
 
-// Banner extraction prompt (streamlined from part1-agent.ts)
-const BANNER_EXTRACTION_PROMPT = `
-You are analyzing a banner plan document to extract crosstab column specifications and notes.
-
-EXTRACTION GOALS:
-1. Identify all table structures containing column definitions (these are "banner cuts")
-2. Extract column names and their filter expressions exactly as written
-3. Assign statistical letters (A, B, C...) in sequence
-4. Group related columns into logical banner cuts
-5. Extract all notes sections exactly as written
-
-BANNER CUT DETECTION:
-- Look for tabular layouts with headers and rows
-- Common headers: "Column", "Group", "Filter", "Definition"
-- May contain statistical letter assignments
-- Tables often grouped by specialty, demographics, tiers, etc.
-
-COLUMN EXTRACTION:
-- Name: The descriptive column name (e.g., "Cards", "PCPs", "HCP")
-- Original: The exact filter expression as written (e.g., "S2=1", "IF HCP")
-- Preserve exact syntax including typos or ambiguities
-
-NOTES EXTRACTION:
-- Look for sections with headings like "Calculations/Rows", "Main Tab Notes", etc.
-- Extract text exactly as written - preserve formatting
-- Common note types: calculation_rows, main_tab_notes, other
-
-STATISTICAL LETTERS:
-- Assign letters A, B, C... Z, then AA, AB, AC...
-- Follow left-to-right, top-to-bottom order
-- Reserve 'T' for Total column
-- Each column gets unique letter
-
-OUTPUT REQUIREMENTS:
-- Exact JSON schema compliance
-- No interpretation of business logic - pure extraction only
-- Include metadata about processing context
-
-Extract all banner cut structures, column names, filter expressions, assign statistical letters in sequence, and extract all notes sections exactly as written.
-`;
+// Get modular banner extraction prompt based on environment variable
+const getBannerExtractionPrompt = (): string => {
+  const promptVersions = getPromptVersions();
+  return getBannerPrompt(promptVersions.bannerPromptVersion);
+};
 
 export class BannerProcessor {
   private openai: OpenAI;
@@ -146,7 +112,7 @@ export class BannerProcessor {
   }
 
   // Main entry point - complete banner processing workflow
-  async processDocument(filePath: string): Promise<BannerProcessingResult> {
+  async processDocument(filePath: string, outputFolder?: string): Promise<BannerProcessingResult> {
     console.log(`[BannerProcessor] Starting document processing: ${path.basename(filePath)}`);
     const startTime = Date.now();
     
@@ -171,8 +137,8 @@ export class BannerProcessor {
       const dualOutputs = this.generateDualOutputs(extractionResult);
       
       // Step 5: Save development outputs (same pattern as DataMapProcessor)
-      if (process.env.NODE_ENV === 'development') {
-        await this.saveDevelopmentOutputs(dualOutputs, filePath);
+      if (process.env.NODE_ENV === 'development' && outputFolder) {
+        await this.saveDevelopmentOutputs(dualOutputs, filePath, outputFolder);
       }
       
       const processingTime = Date.now() - startTime;
@@ -385,7 +351,7 @@ export class BannerProcessor {
             content: [
               {
                 type: 'text',
-                text: BANNER_EXTRACTION_PROMPT
+                text: getBannerExtractionPrompt()
               },
               ...imageContent
             ]
@@ -618,9 +584,9 @@ export class BannerProcessor {
 
   // ===== DEVELOPMENT OUTPUT =====
 
-  private async saveDevelopmentOutputs(outputs: { verbose: VerboseBannerPlan; agent: AgentBannerGroup[] }, originalFilePath: string): Promise<void> {
+  private async saveDevelopmentOutputs(outputs: { verbose: VerboseBannerPlan; agent: AgentBannerGroup[] }, originalFilePath: string, outputFolder: string): Promise<void> {
     try {
-      const outputDir = path.join(process.cwd(), 'temp-outputs');
+      const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolder);
       await fs.mkdir(outputDir, { recursive: true });
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -629,15 +595,15 @@ export class BannerProcessor {
       // Save verbose output
       const verboseFile = path.join(outputDir, `banner-${baseName}-verbose-${timestamp}.json`);
       await fs.writeFile(verboseFile, JSON.stringify(outputs.verbose, null, 2));
-      console.log(`[Dev Output] Saved banner verbose: ${verboseFile}`);
+      console.log(`[BannerProcessor] Development output saved: banner-${baseName}-verbose-${timestamp}.json`);
 
       // Save agent output  
       const agentFile = path.join(outputDir, `banner-${baseName}-agent-${timestamp}.json`);
       await fs.writeFile(agentFile, JSON.stringify(outputs.agent, null, 2));
-      console.log(`[Dev Output] Saved banner agent: ${agentFile}`);
+      console.log(`[BannerProcessor] Development output saved: banner-${baseName}-agent-${timestamp}.json`);
 
     } catch (error) {
-      console.warn(`[Dev Output] Failed to save banner outputs:`, error);
+      console.error('[BannerProcessor] Failed to save development outputs:', error);
     }
   }
 

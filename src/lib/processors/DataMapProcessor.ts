@@ -87,7 +87,7 @@ export class DataMapProcessor {
    * Main entry point - complete workflow
    * CSV Upload → Parse → Inference → Enrichment → Validation → Dual Outputs
    */
-  async processDataMap(filePath: string, spssFilePath?: string): Promise<ProcessingResult> {
+  async processDataMap(filePath: string, spssFilePath?: string, outputFolder?: string): Promise<ProcessingResult> {
     const errors: string[] = [];
     const warnings: string[] = [];
 
@@ -118,8 +118,8 @@ export class DataMapProcessor {
       const dualOutputs = this.generateDualOutputs(enriched);
       
       // Development output in development mode
-      if (process.env.NODE_ENV === 'development') {
-        await this.saveDevelopmentOutputs(dualOutputs, path.basename(filePath));
+      if (process.env.NODE_ENV === 'development' && outputFolder) {
+        await this.saveDevelopmentOutputs(dualOutputs, path.basename(filePath), outputFolder);
       }
 
       return {
@@ -636,9 +636,9 @@ export class DataMapProcessor {
 
   // ===== DEVELOPMENT OUTPUT =====
 
-  private async saveDevelopmentOutputs(outputs: { verbose: VerboseDataMap[]; agent: AgentDataMap[] }, filename: string): Promise<void> {
+  private async saveDevelopmentOutputs(outputs: { verbose: VerboseDataMap[]; agent: AgentDataMap[] }, filename: string, outputFolder: string): Promise<void> {
     try {
-      const outputDir = path.join(process.cwd(), 'temp-outputs');
+      const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolder);
       await fs.mkdir(outputDir, { recursive: true });
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -647,15 +647,15 @@ export class DataMapProcessor {
       // Save verbose output
       const verboseFile = path.join(outputDir, `${baseName}-verbose-${timestamp}.json`);
       await fs.writeFile(verboseFile, JSON.stringify(outputs.verbose, null, 2));
-      console.log(`[Dev Output] Saved verbose: ${verboseFile}`);
+      console.log(`[DataMapProcessor] Development output saved: ${baseName}-verbose-${timestamp}.json`);
 
       // Save agent output  
       const agentFile = path.join(outputDir, `${baseName}-agent-${timestamp}.json`);
       await fs.writeFile(agentFile, JSON.stringify(outputs.agent, null, 2));
-      console.log(`[Dev Output] Saved agent: ${agentFile}`);
+      console.log(`[DataMapProcessor] Development output saved: ${baseName}-agent-${timestamp}.json`);
 
     } catch (error) {
-      console.warn(`[Dev Output] Failed to save outputs:`, error);
+      console.error('[DataMapProcessor] Failed to save development outputs:', error);
     }
   }
 }

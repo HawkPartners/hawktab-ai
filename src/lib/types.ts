@@ -7,12 +7,18 @@ export interface ProcessingLimits {
   baseModelTokens: number;
 }
 
+export interface PromptVersions {
+  crosstabPromptVersion: string;
+  bannerPromptVersion: string;
+}
+
 export interface EnvironmentConfig {
   reasoningModel: string;
   baseModel: string;
   openaiApiKey: string;
   nodeEnv: 'development' | 'production';
   tracingDisabled: boolean;
+  promptVersions: PromptVersions;
   processingLimits: ProcessingLimits;
 }
 

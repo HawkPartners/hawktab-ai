@@ -87,6 +87,10 @@ export async function POST(request: NextRequest) {
     // Phase 5: Data Processing & Dual Output Strategy (COMPLETE)
     console.log(`[API] Starting Phase 5 data processing for session: ${sessionId}`);
     
+    // Generate output folder timestamp for this processing session
+    const outputFolderTimestamp = `output-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+    console.log(`[API] Output folder: ${outputFolderTimestamp}`);
+    
     const dataMapPath = fileResults[0].filePath!;
     const bannerPlanPath = fileResults[1].filePath!;
     const spssPath = fileResults[2].filePath!;
@@ -99,7 +103,7 @@ export async function POST(request: NextRequest) {
     let bannerProcessingResult;
     try {
       const bannerProcessor = new BannerProcessor();
-      bannerProcessingResult = await bannerProcessor.processDocument(bannerPlanPath);
+      bannerProcessingResult = await bannerProcessor.processDocument(bannerPlanPath, outputFolderTimestamp);
       console.log(`[API] Banner processing completed - Success: ${bannerProcessingResult.success}, Groups: ${bannerProcessingResult.agent.length}`);
     } catch (bannerError) {
       console.error('[API] Banner processing failed:', bannerError);
@@ -136,7 +140,7 @@ export async function POST(request: NextRequest) {
 
     try {
       // Use enhanced dual output generation with real banner processing result
-      const dualOutputs = await generateDualOutputs(bannerProcessingResult, dataMapPath, spssPath);
+      const dualOutputs = await generateDualOutputs(bannerProcessingResult, dataMapPath, spssPath, outputFolderTimestamp);
       
       console.log(`[API] Data processing completed - Success: ${dualOutputs.processing.success}, Confidence: ${dualOutputs.processing.confidence.toFixed(2)}`);
 
@@ -153,7 +157,7 @@ export async function POST(request: NextRequest) {
         
         // Process all banner groups with CrossTab agent
         const agentStartTime = Date.now();
-        agentResults = await processAllGroups(agentContext.dataMap, agentContext.bannerPlan);
+        agentResults = await processAllGroups(agentContext.dataMap, agentContext.bannerPlan, outputFolderTimestamp);
         const agentProcessingTime = Date.now() - agentStartTime;
         
         agentProcessingSucceeded = true;
