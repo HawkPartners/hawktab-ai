@@ -7,7 +7,7 @@ import { generateSessionId, saveUploadedFile } from '../../../lib/storage';
 import { logAgentExecution } from '../../../lib/tracing';
 import { validateEnvironment } from '../../../lib/env';
 import { generateDualOutputs, prepareAgentContext } from '../../../lib/contextBuilder';
-import { BannerProcessor } from '../../../lib/processors/BannerProcessor';
+import { BannerAgent } from '../../../agents/BannerAgent';
 import { processAllGroups } from '../../../agents/CrosstabAgent';
 
 export async function POST(request: NextRequest) {
@@ -99,12 +99,12 @@ export async function POST(request: NextRequest) {
     console.log(`[API] Banner Plan file: ${bannerPlanPath}`);
     console.log(`[API] SPSS file: ${spssPath}`);
     
-    // Real banner processing using BannerProcessor
+    // Real banner processing using BannerAgent
     let bannerProcessingResult;
     try {
-      const bannerProcessor = new BannerProcessor();
-      bannerProcessingResult = await bannerProcessor.processDocument(bannerPlanPath, outputFolderTimestamp);
-      console.log(`[API] Banner processing completed - Success: ${bannerProcessingResult.success}, Groups: ${bannerProcessingResult.agent.length}`);
+      const bannerAgent = new BannerAgent();
+      bannerProcessingResult = await bannerAgent.processDocument(bannerPlanPath, outputFolderTimestamp);
+      console.log(`[API] Banner agent processing completed - Success: ${bannerProcessingResult.success}, Groups: ${bannerProcessingResult.agent.length}`);
     } catch (bannerError) {
       console.error('[API] Banner processing failed:', bannerError);
       // Create fallback result
