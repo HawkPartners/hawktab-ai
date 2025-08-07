@@ -6,8 +6,9 @@ import { runAllGuardrails } from '../../../guardrails/inputValidation';
 import { generateSessionId, saveUploadedFile } from '../../../lib/storage';
 import { logAgentExecution } from '../../../lib/tracing';
 import { validateEnvironment } from '../../../lib/env';
-import { generateDualOutputs } from '../../../lib/contextBuilder';
+import { generateDualOutputs, prepareAgentContext } from '../../../lib/contextBuilder';
 import { BannerProcessor } from '../../../lib/processors/BannerProcessor';
+import { processAllGroups } from '../../../agents/CrosstabAgent';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -139,7 +140,49 @@ export async function POST(request: NextRequest) {
       
       console.log(`[API] Data processing completed - Success: ${dualOutputs.processing.success}, Confidence: ${dualOutputs.processing.confidence.toFixed(2)}`);
 
-      // Log processing completion
+      // Phase 6: CrossTab Agent Processing
+      let agentResults;
+      let agentProcessingSucceeded = false;
+      
+      try {
+        console.log(`[API] Starting Phase 6: CrossTab Agent validation`);
+        
+        // Prepare agent context from dual outputs
+        const agentContext = prepareAgentContext(dualOutputs);
+        console.log(`[API] Agent context prepared - ${agentContext.metadata.dataMapVariables} variables, ${agentContext.metadata.bannerGroups} groups, ${agentContext.metadata.totalColumns} columns`);
+        
+        // Process all banner groups with CrossTab agent
+        const agentStartTime = Date.now();
+        agentResults = await processAllGroups(agentContext.dataMap, agentContext.bannerPlan);
+        const agentProcessingTime = Date.now() - agentStartTime;
+        
+        agentProcessingSucceeded = true;
+        console.log(`[API] CrossTab Agent processing completed in ${agentProcessingTime}ms - ${agentResults.bannerCuts.length} groups validated`);
+        
+        // Log agent execution
+        logAgentExecution(sessionId, 'CrosstabAgent', 
+          { 
+            groupsProcessed: agentResults.bannerCuts.length,
+            columnsProcessed: agentResults.bannerCuts.reduce((total, group) => total + group.columns.length, 0),
+            processingTime: agentProcessingTime
+          }, 
+          { success: true, agentResults }, 
+          agentProcessingTime
+        );
+        
+      } catch (agentError) {
+        console.error('[API] CrossTab Agent processing failed:', agentError);
+        agentResults = null;
+        
+        // Log agent failure  
+        logAgentExecution(sessionId, 'CrosstabAgent', 
+          { sessionId }, 
+          { error: agentError instanceof Error ? agentError.message : 'Unknown agent error' }, 
+          Date.now() - startTime
+        );
+      }
+
+      // Log data processing completion
       logAgentExecution(sessionId, 'DataMapProcessor', 
         { dataMapPath, confidence: dualOutputs.processing.confidence }, 
         { success: dualOutputs.processing.success, validationPassed: dualOutputs.processing.validationPassed }, 
@@ -149,7 +192,9 @@ export async function POST(request: NextRequest) {
       const response = {
         success: true,
         sessionId,
-        message: 'Phase 5 completed: Files processed with enhanced data map and banner processing',
+        message: agentProcessingSucceeded 
+          ? '🎉 Phase 6 COMPLETED: CrossTab agent validation successful!' 
+          : 'Phase 5 completed with banner processing - CrossTab agent validation failed',
         files: {
           dataMap: {
             name: dataMapFile.name,
@@ -187,6 +232,26 @@ export async function POST(request: NextRequest) {
             columnsExtracted: bannerProcessingResult.agent.reduce((total, group) => total + group.columns.length, 0),
             errors: bannerProcessingResult.errors,
             warnings: bannerProcessingResult.warnings
+          },
+          crosstabAgentProcessing: agentProcessingSucceeded && agentResults ? {
+            success: true,
+            groupsValidated: agentResults.bannerCuts.length,
+            columnsValidated: agentResults.bannerCuts.reduce((total, group) => total + group.columns.length, 0),
+            averageConfidence: agentResults.bannerCuts.length > 0 
+              ? agentResults.bannerCuts
+                  .flatMap(group => group.columns)
+                  .reduce((sum, col) => sum + col.confidence, 0) 
+                / agentResults.bannerCuts.flatMap(group => group.columns).length
+              : 0,
+            highConfidenceColumns: agentResults.bannerCuts
+              .flatMap(group => group.columns)
+              .filter(col => col.confidence >= 0.8).length,
+            lowConfidenceColumns: agentResults.bannerCuts
+              .flatMap(group => group.columns)
+              .filter(col => col.confidence < 0.5).length
+          } : {
+            success: false,
+            error: 'CrossTab agent processing failed'
           }
         },
         guardrails: {
@@ -194,12 +259,20 @@ export async function POST(request: NextRequest) {
           metadata: guardrailResult.metadata
         },
         processingTimeMs: Date.now() - startTime,
-        nextSteps: [
-          'Data map processed with state machine + parent inference + context enrichment',
-          'Banner plan processed with PDF → Images → LLM extraction',
-          'Dual outputs generated for both data map and banner plan (verbose + agent formats)',
+        nextSteps: agentProcessingSucceeded ? [
+          '✅ Data map processed with state machine + parent inference + context enrichment',
+          '✅ Banner plan processed with PDF → Images → LLM extraction', 
+          '✅ Dual outputs generated for both data map and banner plan (verbose + agent formats)',
+          '✅ CrossTab agent validated all banner expressions against data map',
+          '✅ R syntax generated for all columns with confidence scores',
           `${process.env.NODE_ENV === 'development' ? 'Development outputs saved to temp-outputs/' : ''}`,
-          '🎉 Phase 5 COMPLETED: Ready for Phase 6: CrossTab Agent implementation'
+          '🎉 PHASE 6 COMPLETED: Ready for crosstab execution!'
+        ] : [
+          '✅ Data map processed with state machine + parent inference + context enrichment',
+          '✅ Banner plan processed with PDF → Images → LLM extraction',
+          '✅ Dual outputs generated for both data map and banner plan (verbose + agent formats)',
+          `${process.env.NODE_ENV === 'development' ? 'Development outputs saved to temp-outputs/' : ''}`,
+          '⚠️  Phase 5 completed - Phase 6 CrossTab agent validation failed'
         ]
       };
 

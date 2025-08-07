@@ -1,7 +1,17 @@
 // Agent exports for CrosstabAgent system
 
-// TODO: Uncomment when CrosstabAgent is implemented in Phase 6
-// export { createCrosstabAgent, validateBannerPlan } from './CrosstabAgent';
+// CrossTab Agent exports - Phase 6 Implementation
+export { 
+  createCrosstabAgent, 
+  processGroup, 
+  processAllGroups, 
+  processAllGroupsParallel,
+  validateAgentResult,
+  isValidAgentResult 
+} from './CrosstabAgent';
+
+// Tool exports
+export { scratchpadTool } from './tools/scratchpad';
 
 // Core types
 export type { AgentExecutionResult } from '../lib/types';
