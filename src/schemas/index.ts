@@ -38,7 +38,7 @@ export type {
   BannerColumnType
 } from './bannerPlanSchema';
 
-// Validation Schema exports
+// Agent Output Schema exports
 export {
   ValidationResultSchema,
   ValidatedGroupSchema,
@@ -52,19 +52,36 @@ export {
   getLowConfidenceColumns,
   combineValidationResults,
   createValidationResult
-} from './validationSchema';
+} from './agentOutputSchema';
 
 export type {
   ValidationResultType,
   ValidatedGroupType,
   ValidatedColumnType
-} from './validationSchema';
+} from './agentOutputSchema';
+
+// Human Validation Schema exports
+export {
+  ValidationStatusSchema,
+  BannerValidationSchema,
+  ColumnFeedbackSchema,
+  CrosstabValidationSchema,
+  ValidationSessionSchema
+} from './humanValidationSchema';
+
+export type {
+  ValidationStatus,
+  BannerValidation,
+  ColumnFeedback,
+  CrosstabValidation,
+  ValidationSession
+} from './humanValidationSchema';
 
 // Schema compilation test - this will fail to compile if any schemas are invalid
 import { z } from 'zod';
 import { DataMapSchema } from './dataMapSchema';
 import { BannerPlanInputSchema, BannerGroupSchema } from './bannerPlanSchema';
-import { ValidationResultSchema } from './validationSchema';
+import { ValidationResultSchema } from './agentOutputSchema';
 
 // Test that all schemas are valid Zod schemas
 const _schemaTest = {

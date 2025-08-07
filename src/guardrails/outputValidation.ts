@@ -1,7 +1,7 @@
 // Output validation guardrails for CrosstabAgent system
 // Ensures mapping completeness and quality
 
-import { ValidationResultType } from '../schemas/validationSchema';
+import { ValidationResultType } from '../schemas/agentOutputSchema';
 import { BannerPlanInputType } from '../schemas/bannerPlanSchema';
 import { GuardrailResult } from './inputValidation';
 

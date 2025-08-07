@@ -2,7 +2,7 @@
 // Reference: Architecture doc "Working Agent Implementation" and "Group-Focused Processing Strategy"
 
 import { Agent, run, withTrace, getGlobalTraceProvider } from '@openai/agents';
-import { ValidationResultSchema, ValidatedGroupSchema, combineValidationResults, type ValidationResultType, type ValidatedGroupType } from '../schemas/validationSchema';
+import { ValidationResultSchema, ValidatedGroupSchema, combineValidationResults, type ValidationResultType, type ValidatedGroupType } from '../schemas/agentOutputSchema';
 import { DataMapType } from '../schemas/dataMapSchema';
 import { BannerGroupType, BannerPlanInputType } from '../schemas/bannerPlanSchema';
 import { getModel, getModelTokenLimit, getPromptVersions } from '../lib/env';

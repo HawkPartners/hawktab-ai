@@ -9,6 +9,9 @@ import { validateEnvironment } from '../../../lib/env';
 import { generateDualOutputs, prepareAgentContext } from '../../../lib/contextBuilder';
 import { BannerAgent } from '../../../agents/BannerAgent';
 import { processAllGroups } from '../../../agents/CrosstabAgent';
+import { promises as fs } from 'fs';
+import * as path from 'path';
+import type { ValidationStatus } from '../../../schemas/humanValidationSchema';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -206,6 +209,27 @@ export async function POST(request: NextRequest) {
         { success: dualOutputs.processing.success, validationPassed: dualOutputs.processing.validationPassed }, 
         Date.now() - startTime
       );
+
+      // Create validation status file if processing succeeded
+      if (agentProcessingSucceeded && process.env.NODE_ENV === 'development') {
+        try {
+          const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolderTimestamp);
+          const validationStatus: ValidationStatus = {
+            sessionId: outputFolderTimestamp, // Use folder name as session ID for consistency
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+          };
+          
+          await fs.writeFile(
+            path.join(outputDir, 'validation-status.json'),
+            JSON.stringify(validationStatus, null, 2)
+          );
+          console.log(`[API] Created validation-status.json for session: ${outputFolderTimestamp}`);
+        } catch (statusError) {
+          console.error('[API] Failed to create validation status file:', statusError);
+          // Don't fail the request if status file creation fails
+        }
+      }
 
       const response = {
         success: true,

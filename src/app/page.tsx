@@ -1,14 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import FileUpload from '../components/FileUpload';
 import LoadingModal from '../components/LoadingModal';
+import { useValidationQueue } from '../hooks/useValidationQueue';
 
 export default function Home() {
   const [dataMapFile, setDataMapFile] = useState<File | null>(null);
   const [bannerPlanFile, setBannerPlanFile] = useState<File | null>(null);
   const [dataFile, setDataFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const router = useRouter();
+  const { counts, refresh } = useValidationQueue();
 
   const allFilesUploaded = dataMapFile && bannerPlanFile && dataFile;
 
@@ -39,8 +43,19 @@ export default function Home() {
       // Handle successful processing
       console.log('Processing completed:', result);
       
-      // For now, log the result. In future phases we'll show results UI
-      alert('Processing completed successfully! Check console for results.');
+      // Clear uploaded files to reset UI
+      setDataMapFile(null);
+      setBannerPlanFile(null);
+      setDataFile(null);
+      
+      // Refresh validation counts
+      refresh();
+      
+      // Show success with validation link
+      const viewValidation = confirm('Processing completed successfully! Would you like to view the validation queue?');
+      if (viewValidation) {
+        router.push('/validate');
+      }
       
     } catch (error) {
       console.error('Processing error:', error);
@@ -53,13 +68,37 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-            HawkTab AI - Crosstab Generator
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Upload your data files to generate automated crosstabs. Provide a data map, banner plan, and your raw data to get started.
-          </p>
+        {/* Header with validation button */}
+        <div className="flex justify-between items-start mb-12">
+          <div className="text-center flex-1">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+              HawkTab AI - Crosstab Generator
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              Upload your data files to generate automated crosstabs. Provide a data map, banner plan, and your raw data to get started.
+            </p>
+          </div>
+          
+          {/* Validation Queue Button */}
+          <div className="flex-shrink-0 ml-6">
+            <button
+              onClick={() => router.push('/validate')}
+              className={`
+                relative px-4 py-2 rounded-lg font-medium transition-colors
+                ${counts.pending > 0 
+                  ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                  : 'bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300'
+                }
+              `}
+            >
+              Validation Queue
+              {counts.pending > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {counts.pending}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
