@@ -147,35 +147,49 @@ export async function POST(request: NextRequest) {
       // Phase 6: CrossTab Agent Processing
       let agentResults;
       let agentProcessingSucceeded = false;
+      let processingLog: string[] = [];
       
       try {
-        console.log(`[API] Starting Phase 6: CrossTab Agent validation`);
+        console.log(`[API] 🚀 Starting Phase 6: CrossTab Agent validation`);
         
         // Prepare agent context from dual outputs
         const agentContext = prepareAgentContext(dualOutputs);
-        console.log(`[API] Agent context prepared - ${agentContext.metadata.dataMapVariables} variables, ${agentContext.metadata.bannerGroups} groups, ${agentContext.metadata.totalColumns} columns`);
+        console.log(`[API] 📊 Agent context prepared - ${agentContext.metadata.dataMapVariables} variables, ${agentContext.metadata.bannerGroups} groups, ${agentContext.metadata.totalColumns} columns`);
         
-        // Process all banner groups with CrossTab agent
+        // Process all banner groups with CrossTab agent (group-by-group)
         const agentStartTime = Date.now();
-        agentResults = await processAllGroups(agentContext.dataMap, agentContext.bannerPlan, outputFolderTimestamp);
+        const agentResponse = await processAllGroups(agentContext.dataMap, agentContext.bannerPlan, outputFolderTimestamp);
+        agentResults = agentResponse.result;
+        processingLog = agentResponse.processingLog;
         const agentProcessingTime = Date.now() - agentStartTime;
         
         agentProcessingSucceeded = true;
-        console.log(`[API] CrossTab Agent processing completed in ${agentProcessingTime}ms - ${agentResults.bannerCuts.length} groups validated`);
+        console.log(`[API] ✅ CrossTab Agent processing completed in ${agentProcessingTime}ms - ${agentResults.bannerCuts.length} groups validated`);
+        console.log(`[API] 📋 Processing log entries: ${processingLog.length}`);
         
-        // Log agent execution
+        // Enhanced logging with processing details
+        console.log(`[API] 📈 Processing summary:`);
+        console.log(`  - Groups processed: ${agentResults.bannerCuts.length}`);
+        console.log(`  - Total columns: ${agentResults.bannerCuts.reduce((total, group) => total + group.columns.length, 0)}`);
+        console.log(`  - Processing mode: group-by-group`);
+        console.log(`  - Tracing: Enabled (check https://platform.openai.com/traces)`);
+        
+        // Log agent execution with enhanced info
         logAgentExecution(sessionId, 'CrosstabAgent', 
           { 
             groupsProcessed: agentResults.bannerCuts.length,
             columnsProcessed: agentResults.bannerCuts.reduce((total, group) => total + group.columns.length, 0),
-            processingTime: agentProcessingTime
+            processingTime: agentProcessingTime,
+            processingMode: 'group-by-group',
+            logEntries: processingLog.length,
+            tracingEnabled: process.env.OPENAI_AGENTS_DISABLE_TRACING !== 'true'
           }, 
           { success: true, agentResults }, 
           agentProcessingTime
         );
         
       } catch (agentError) {
-        console.error('[API] CrossTab Agent processing failed:', agentError);
+        console.error('[API] ❌ CrossTab Agent processing failed:', agentError);
         agentResults = null;
         
         // Log agent failure  
@@ -239,6 +253,9 @@ export async function POST(request: NextRequest) {
           },
           crosstabAgentProcessing: agentProcessingSucceeded && agentResults ? {
             success: true,
+            processingMode: 'group-by-group',
+            tracingEnabled: process.env.OPENAI_AGENTS_DISABLE_TRACING !== 'true',
+            tracesDashboard: 'https://platform.openai.com/traces',
             groupsValidated: agentResults.bannerCuts.length,
             columnsValidated: agentResults.bannerCuts.reduce((total, group) => total + group.columns.length, 0),
             averageConfidence: agentResults.bannerCuts.length > 0 
@@ -252,7 +269,9 @@ export async function POST(request: NextRequest) {
               .filter(col => col.confidence >= 0.8).length,
             lowConfidenceColumns: agentResults.bannerCuts
               .flatMap(group => group.columns)
-              .filter(col => col.confidence < 0.5).length
+              .filter(col => col.confidence < 0.5).length,
+            processingLog: processingLog,
+            processingLogEntries: processingLog.length
           } : {
             success: false,
             error: 'CrossTab agent processing failed'

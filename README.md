@@ -56,7 +56,8 @@ HawkTab AI is an agent-first, AI-powered platform that automates crosstab genera
 
 ## Next Steps (In Progress)
 
-- [ ] **Tracing Export**: Implement proper trace aggregation for group processing
+- [x] **Tracing Export**: ✅ Implemented unified trace aggregation with `withTrace()` wrapper and `forceFlush()`
+- [ ] **Banner Processing Agent**: Convert BannerProcessor to Agents SDK with scratchpad tool for proper group separation
 - [ ] **Validation UI**: Visual interface for reviewing agent decisions
 - [ ] **Banner Plan Merging**: Combine agent results with original plans
 - [ ] **Total Column**: Add statistical total for significance testing

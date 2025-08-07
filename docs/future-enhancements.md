@@ -1,22 +1,39 @@
 # Future Enhancements & Next Steps
 
-## 1. Context Enrichment
+## 1. Context Enrichment - DEFERRED
 ### Value Type Integration
 - Pass value types/labels into agent context alongside variables
 - Would improve confidence scoring for conceptual matches (e.g., SEGMENT variables)
 - Could flag variables missing value types during data map processing as warnings
 
-## 2. Tracing Optimization
-### Current Challenge
-- Group-by-group processing creates separate traces per group
-- Can't easily export single trace for entire processing session
-- Reference: OpenAI Agents SDK export loop lifecycle with `getGlobalTraceProvider().forceFlush()`
+## 2. Tracing Optimization - COMPLETED ✅
+### Solution Implemented
+- Used `withTrace()` wrapper to create single unified trace for all group processing
+- All group processing now appears under one trace instead of separate traces
+- Each group's agent run becomes a span within the main trace
+- Implemented `getGlobalTraceProvider().forceFlush()` for immediate trace export
+- Trace ID capture and inclusion in API responses for debugging reference
+- ESLint configuration updated to properly handle underscore-prefixed unused variables
 
-### Potential Solutions
-- **Option A**: Aggregate traces from each group processing
-- **Option B**: Use single agent session across groups (but risks context pollution)
-- **Option C**: Implement trace collection wrapper that combines all group traces
-- **Priority**: Export traces properly using SDK's forceFlush pattern
+## 2A. Banner Processing Agent Optimization - PLANNED
+### Problem Identified
+- Current BannerProcessor combines all columns into single mega-group instead of logical groups
+- Missing group-by-group separation (e.g., Specialty, Role, Volume, Tiers should be separate groups)
+- Limited visibility into banner extraction reasoning and decision-making process
+
+### Solution Approach
+- **Convert to Agent-Based Processing**: Replace traditional BannerProcessor with OpenAI Agents SDK
+- **Add Scratchpad Tool**: Enable reasoning transparency ("I see visual separators... Cards/PCPs/Nephs are related...")
+- **Enhanced Grouping Prompts**: Explicit instructions for identifying visual separators, headers, and logical groupings
+- **Unified Tracing**: Apply same tracing patterns as CrossTab Agent for debugging group decisions
+- **Reasoning Model Integration**: Leverage o1-preview for better logical grouping decisions
+- **Schema-Driven Validation**: Ensure proper group structure with 2-8 columns per logical group
+
+### Expected Benefits
+- **Proper Group Separation**: Each logical category gets its own group for focused processing
+- **Debugging Visibility**: Trace and scratchpad show exactly how grouping decisions are made
+- **Architecture Consistency**: All major processing uses standardized Agents SDK patterns
+- **Scalability**: Better handling of complex banner plans with many logical sections
 
 ## 3. Validation & Grading System
 ### Agent Performance Metrics
