@@ -10,10 +10,14 @@
   },
   "dependencies": {
     "@openai/agents": "^0.0.15",
+    "mammoth": "^1.10.0",
     "next": "15.4.6",
+    "pdf-lib": "^1.17.1",
+    "pdf2pic": "^3.2.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "sav-reader": "^2.0.8",
+    "sharp": "^0.34.3",
     "zod": "^3.25.67"
   },
   "devDependencies": {

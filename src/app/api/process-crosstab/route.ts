@@ -7,6 +7,7 @@ import { generateSessionId, saveUploadedFile } from '../../../lib/storage';
 import { logAgentExecution } from '../../../lib/tracing';
 import { validateEnvironment } from '../../../lib/env';
 import { generateDualOutputs } from '../../../lib/contextBuilder';
+import { BannerProcessor } from '../../../lib/processors/BannerProcessor';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -82,37 +83,59 @@ export async function POST(request: NextRequest) {
       Date.now() - startTime
     );
 
-    // Phase 5: Data Processing & Dual Output Strategy
+    // Phase 5: Data Processing & Dual Output Strategy (COMPLETE)
     console.log(`[API] Starting Phase 5 data processing for session: ${sessionId}`);
     
     const dataMapPath = fileResults[0].filePath!;
-    const spssPath = fileResults[2].filePath!; // The actual SPSS file (dataFile)
-    // const bannerPlanPath = fileResults[1].filePath!; // TODO: Use in Phase 6 for banner processing
+    const bannerPlanPath = fileResults[1].filePath!;
+    const spssPath = fileResults[2].filePath!;
     
     console.log(`[API] Data Map file: ${dataMapPath}`);
+    console.log(`[API] Banner Plan file: ${bannerPlanPath}`);
     console.log(`[API] SPSS file: ${spssPath}`);
     
-    // For now, use basic banner processing (Phase 6 will enhance this)
-    const mockBannerData = {
-      success: true,
-      data: {
-        success: true,
-        extractionType: 'mock',
-        timestamp: new Date().toISOString(),
-        extractedStructure: {
-          bannerCuts: [],
-          notes: [],
-          processingMetadata: {}
+    // Real banner processing using BannerProcessor
+    let bannerProcessingResult;
+    try {
+      const bannerProcessor = new BannerProcessor();
+      bannerProcessingResult = await bannerProcessor.processDocument(bannerPlanPath);
+      console.log(`[API] Banner processing completed - Success: ${bannerProcessingResult.success}, Groups: ${bannerProcessingResult.agent.length}`);
+    } catch (bannerError) {
+      console.error('[API] Banner processing failed:', bannerError);
+      // Create fallback result
+      bannerProcessingResult = {
+        verbose: {
+          success: false,
+          data: {
+            success: false,
+            extractionType: 'banner_extraction',
+            timestamp: new Date().toISOString(),
+            extractedStructure: {
+              bannerCuts: [],
+              notes: [],
+              processingMetadata: {
+                totalColumns: 0,
+                groupCount: 0,
+                statisticalLettersUsed: [],
+                processingTimestamp: new Date().toISOString()
+              }
+            },
+            errors: [bannerError instanceof Error ? bannerError.message : 'Banner processing failed'],
+            warnings: null
+          },
+          timestamp: new Date().toISOString()
         },
-        errors: null,
-        warnings: null
-      },
-      timestamp: new Date().toISOString()
-    };
+        agent: [],
+        success: false,
+        confidence: 0,
+        errors: [bannerError instanceof Error ? bannerError.message : 'Banner processing failed'],
+        warnings: []
+      };
+    }
 
     try {
-      // Use enhanced dual output generation with DataMapProcessor and real SPSS path
-      const dualOutputs = await generateDualOutputs(mockBannerData, dataMapPath, spssPath);
+      // Use enhanced dual output generation with real banner processing result
+      const dualOutputs = await generateDualOutputs(bannerProcessingResult, dataMapPath, spssPath);
       
       console.log(`[API] Data processing completed - Success: ${dualOutputs.processing.success}, Confidence: ${dualOutputs.processing.confidence.toFixed(2)}`);
 
@@ -126,7 +149,7 @@ export async function POST(request: NextRequest) {
       const response = {
         success: true,
         sessionId,
-        message: 'Files processed successfully with enhanced data map processing',
+        message: 'Phase 5 completed: Files processed with enhanced data map and banner processing',
         files: {
           dataMap: {
             name: dataMapFile.name,
@@ -138,7 +161,7 @@ export async function POST(request: NextRequest) {
             name: bannerPlanFile.name,
             size: bannerPlanFile.size,
             type: bannerPlanFile.type,
-            processed: false // Will be enhanced in Phase 6
+            processed: bannerProcessingResult.success
           },
           dataFile: {
             name: dataFile.name,
@@ -156,6 +179,14 @@ export async function POST(request: NextRequest) {
             contextEnriched: dualOutputs.agentDataMap.filter(v => v.Context).length,
             errors: dualOutputs.processing.errors,
             warnings: dualOutputs.processing.warnings
+          },
+          bannerProcessing: {
+            success: bannerProcessingResult.success,
+            confidence: bannerProcessingResult.confidence,
+            groupsExtracted: bannerProcessingResult.agent.length,
+            columnsExtracted: bannerProcessingResult.agent.reduce((total, group) => total + group.columns.length, 0),
+            errors: bannerProcessingResult.errors,
+            warnings: bannerProcessingResult.warnings
           }
         },
         guardrails: {
@@ -165,9 +196,10 @@ export async function POST(request: NextRequest) {
         processingTimeMs: Date.now() - startTime,
         nextSteps: [
           'Data map processed with state machine + parent inference + context enrichment',
-          'Dual outputs generated (verbose + agent formats)',
+          'Banner plan processed with PDF → Images → LLM extraction',
+          'Dual outputs generated for both data map and banner plan (verbose + agent formats)',
           `${process.env.NODE_ENV === 'development' ? 'Development outputs saved to temp-outputs/' : ''}`,
-          'Ready for Phase 6: CrossTab Agent implementation'
+          '🎉 Phase 5 COMPLETED: Ready for Phase 6: CrossTab Agent implementation'
         ]
       };
 

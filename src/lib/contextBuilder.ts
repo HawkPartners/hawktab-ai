@@ -70,19 +70,32 @@ export interface DualOutputResult {
   };
 }
 
-// Enhanced dual output generation using sophisticated DataMapProcessor
+// Enhanced dual output generation using sophisticated processors
 export const generateDualOutputs = async (rawBanner: unknown, dataMapFilePath: string, spssFilePath?: string): Promise<DualOutputResult> => {
   console.log(`[ContextBuilder] Starting enhanced dual output generation`);
   
-  // Process banner data (keep existing logic for now)
-  const bannerData = rawBanner as VerboseBannerPlan;
-  const agentBanner: AgentBannerGroup[] = bannerData.data?.extractedStructure?.bannerCuts?.map((group) => ({
-    groupName: group.groupName,
-    columns: group.columns?.map((col) => ({
-      name: col.name,
-      original: col.original
-    })) || []
-  })) || [];
+  // Process banner data - handle both mock data and real banner processing results
+  let bannerData: VerboseBannerPlan;
+  let agentBanner: AgentBannerGroup[];
+
+  if (rawBanner && typeof rawBanner === 'object' && 'verbose' in rawBanner && 'agent' in rawBanner) {
+    // Real banner processing result from BannerProcessor
+    const processingResult = rawBanner as { verbose: VerboseBannerPlan; agent: AgentBannerGroup[] };
+    bannerData = processingResult.verbose;
+    agentBanner = processingResult.agent;
+    console.log(`[ContextBuilder] Using real banner processing result - ${agentBanner.length} groups`);
+  } else {
+    // Legacy mock data or raw VerboseBannerPlan
+    bannerData = rawBanner as VerboseBannerPlan;
+    agentBanner = bannerData.data?.extractedStructure?.bannerCuts?.map((group) => ({
+      groupName: group.groupName,
+      columns: group.columns?.map((col) => ({
+        name: col.name,
+        original: col.original
+      })) || []
+    })) || [];
+    console.log(`[ContextBuilder] Using legacy banner data - ${agentBanner.length} groups`);
+  }
 
   // Use sophisticated DataMapProcessor for data map processing
   console.log(`[ContextBuilder] Processing data map with state machine: ${dataMapFilePath}`);
