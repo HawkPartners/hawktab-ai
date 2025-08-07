@@ -2,6 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { Trash2, Eye, Clock, CheckCircle, Upload } from 'lucide-react';
 
 interface SessionSummary {
   sessionId: string;
@@ -70,12 +75,6 @@ export default function ValidationQueue() {
     return new Date(dateString).toLocaleString();
   };
 
-  const getStatusBadge = (status: string) => {
-    return status === 'pending' 
-      ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
-      : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-  };
-
   const filteredSessions = data?.sessions.filter(session => {
     if (filter === 'all') return true;
     return session.status === filter;
@@ -105,9 +104,11 @@ export default function ValidationQueue() {
 
       // Refresh the list
       await fetchSessions();
-      alert('Session deleted successfully!');
+      toast.success('Session deleted successfully!');
     } catch (err) {
-      alert(`Error deleting session: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      toast.error('Failed to delete session', {
+        description: err instanceof Error ? err.message : 'Unknown error'
+      });
     } finally {
       setDeletingSession(null);
     }
@@ -127,19 +128,18 @@ export default function ValidationQueue() {
             </p>
           </div>
           
-          <button
-            onClick={() => router.push('/')}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-          >
+          <Button onClick={() => router.push('/')}>
+            <Upload className="w-4 h-4 mr-2" />
             Back to Upload
-          </button>
+          </Button>
         </div>
 
         {/* Stats and Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            {/* Stats */}
-            <div className="flex space-x-6 mb-4 sm:mb-0">
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              {/* Stats */}
+              <div className="flex space-x-6 mb-4 sm:mb-0">
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {data?.counts.total || 0}
@@ -163,23 +163,19 @@ export default function ValidationQueue() {
             {/* Filter Buttons */}
             <div className="flex space-x-2">
               {(['all', 'pending', 'validated'] as const).map((filterOption) => (
-                <button
+                <Button
                   key={filterOption}
                   onClick={() => setFilter(filterOption)}
-                  className={`
-                    px-3 py-1 rounded text-sm font-medium transition-colors
-                    ${filter === filterOption
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                    }
-                  `}
+                  variant={filter === filterOption ? "default" : "outline"}
+                  size="sm"
                 >
                   {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
-                </button>
+                </Button>
               ))}
             </div>
-          </div>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Loading */}
         {isLoading && (
@@ -199,37 +195,39 @@ export default function ValidationQueue() {
         {!isLoading && !error && (
           <div className="space-y-4">
             {filteredSessions.length === 0 ? (
-              <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg">
-                <div className="text-gray-600 dark:text-gray-400 mb-4">
-                  {filter === 'all' 
-                    ? 'No sessions found. Process some files to see validation items here.'
-                    : `No ${filter} sessions found.`
-                  }
-                </div>
-                {filter === 'all' && (
-                  <button
-                    onClick={() => router.push('/')}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                  >
-                    Upload Files
-                  </button>
-                )}
-              </div>
+              <Card>
+                <CardContent className="text-center py-12">
+                  <div className="text-muted-foreground mb-4">
+                    {filter === 'all' 
+                      ? 'No sessions found. Process some files to see validation items here.'
+                      : `No ${filter} sessions found.`
+                    }
+                  </div>
+                  {filter === 'all' && (
+                    <Button onClick={() => router.push('/')}>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload Files
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
             ) : (
               filteredSessions.map((session) => (
-                <div
-                  key={session.sessionId}
-                  className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
-                >
+                <Card key={session.sessionId} className="hover:shadow-md transition-shadow">
+                  <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
                         <h3 className="font-medium text-gray-900 dark:text-gray-100">
                           {session.sessionId}
                         </h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(session.status)}`}>
-                          {session.status}
-                        </span>
+                        <Badge variant={session.status === 'pending' ? 'secondary' : 'default'}>
+                          {session.status === 'pending' ? (
+                            <><Clock className="w-3 h-3 mr-1" />{session.status}</>
+                          ) : (
+                            <><CheckCircle className="w-3 h-3 mr-1" />{session.status}</>
+                          )}
+                        </Badge>
                       </div>
                       
                       <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
@@ -259,39 +257,39 @@ export default function ValidationQueue() {
                     
                     <div className="flex space-x-2">
                       {session.status === 'pending' && (
-                        <button
+                        <Button
                           onClick={() => router.push(`/validate/${session.sessionId}`)}
-                          className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors"
+                          className="bg-orange-600 hover:bg-orange-700"
                         >
+                          <Clock className="w-4 h-4 mr-2" />
                           Validate
-                        </button>
+                        </Button>
                       )}
                       
                       {session.status === 'validated' && (
-                        <button
+                        <Button
                           onClick={() => router.push(`/validate/${session.sessionId}`)}
-                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                          variant="outline"
                         >
+                          <Eye className="w-4 h-4 mr-2" />
                           View Results
-                        </button>
+                        </Button>
                       )}
                       
-                      {/* Delete Button */}
-                      <button
+                      <Button
                         disabled={deletingSession === session.sessionId}
                         onClick={() => deleteSession(session.sessionId)}
-                        className={`px-3 py-2 rounded-lg font-medium transition-colors ${
-                          deletingSession === session.sessionId
-                            ? 'bg-gray-400 cursor-not-allowed text-white'
-                            : 'bg-red-600 hover:bg-red-700 text-white'
-                        }`}
+                        variant="destructive"
+                        size="sm"
                         title="Delete entire session folder"
                       >
-                        {deletingSession === session.sessionId ? '...' : '🗑️'}
-                      </button>
+                        <Trash2 className="w-4 h-4" />
+                        {deletingSession === session.sessionId && '...'}
+                      </Button>
                     </div>
                   </div>
-                </div>
+                  </CardContent>
+                </Card>
               ))
             )}
           </div>

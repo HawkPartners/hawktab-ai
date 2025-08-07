@@ -3,14 +3,18 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import FileUpload from '../components/FileUpload';
-import LoadingModal from '../components/LoadingModal';
+import LoadingModal, { ProcessingStep } from '../components/LoadingModal';
 import { useValidationQueue } from '../hooks/useValidationQueue';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 
 export default function Home() {
   const [dataMapFile, setDataMapFile] = useState<File | null>(null);
   const [bannerPlanFile, setBannerPlanFile] = useState<File | null>(null);
   const [dataFile, setDataFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStep, setProcessingStep] = useState<ProcessingStep | undefined>();
   const router = useRouter();
   const { counts, refresh } = useValidationQueue();
 
@@ -20,12 +24,22 @@ export default function Home() {
     if (!allFilesUploaded) return;
     
     setIsProcessing(true);
+    setProcessingStep({ step: 'initial', message: 'Processing your files...' });
     
     try {
       const formData = new FormData();
-      formData.append('dataMap', dataMapFile);
-      formData.append('bannerPlan', bannerPlanFile);
-      formData.append('dataFile', dataFile);
+      formData.append('dataMap', dataMapFile!);
+      formData.append('bannerPlan', bannerPlanFile!);
+      formData.append('dataFile', dataFile!);
+      
+      // Simulate progress through stages (in real app, this would come from server events)
+      setTimeout(() => {
+        setProcessingStep({ step: 'banner', message: 'Creating banner plan...' });
+      }, 2000);
+      
+      setTimeout(() => {
+        setProcessingStep({ step: 'crosstab', message: 'Generating crosstabs...' });
+      }, 4000);
       
       // Call our single API endpoint for complete processing
       const response = await fetch('/api/process-crosstab', {
@@ -52,16 +66,22 @@ export default function Home() {
       refresh();
       
       // Show success with validation link
-      const viewValidation = confirm('Processing completed successfully! Would you like to view the validation queue?');
-      if (viewValidation) {
-        router.push('/validate');
-      }
+      toast.success('Processing completed successfully!', {
+        description: 'Your files have been processed and are ready for validation.',
+        action: {
+          label: 'View Queue',
+          onClick: () => router.push('/validate')
+        }
+      });
       
     } catch (error) {
       console.error('Processing error:', error);
-      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error('Processing failed', {
+        description: error instanceof Error ? error.message : 'Unknown error occurred'
+      });
     } finally {
       setIsProcessing(false);
+      setProcessingStep(undefined);
     }
   };
 
@@ -80,24 +100,19 @@ export default function Home() {
           </div>
           
           {/* Validation Queue Button */}
-          <div className="flex-shrink-0 ml-6">
-            <button
+          <div className="flex-shrink-0 ml-6 relative">
+            <Button
               onClick={() => router.push('/validate')}
-              className={`
-                relative px-4 py-2 rounded-lg font-medium transition-colors
-                ${counts.pending > 0 
-                  ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-                  : 'bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300'
-                }
-              `}
+              variant={counts.pending > 0 ? "default" : "secondary"}
+              className={counts.pending > 0 ? "bg-orange-500 hover:bg-orange-600" : ""}
             >
               Validation Queue
-              {counts.pending > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {counts.pending}
-                </span>
-              )}
-            </button>
+            </Button>
+            {counts.pending > 0 && (
+              <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                {counts.pending}
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -131,19 +146,14 @@ export default function Home() {
         </div>
 
         <div className="text-center">
-          <button
+          <Button
             onClick={handleSubmit}
             disabled={!allFilesUploaded || isProcessing}
-            className={`
-              px-8 py-3 rounded-lg font-medium transition-colors
-              ${allFilesUploaded && !isProcessing
-                ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-              }
-            `}
+            size="lg"
+            className="px-8"
           >
             {isProcessing ? 'Processing...' : 'Generate Crosstabs'}
-          </button>
+          </Button>
           
           {!allFilesUploaded && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
@@ -153,7 +163,7 @@ export default function Home() {
         </div>
       </div>
 
-      <LoadingModal isOpen={isProcessing} />
+      <LoadingModal isOpen={isProcessing} currentStep={processingStep} />
     </div>
   );
 }

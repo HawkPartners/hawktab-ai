@@ -1,45 +1,55 @@
 'use client';
 
-interface LoadingModalProps {
-  isOpen: boolean;
-  progress?: string;
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
+
+export interface ProcessingStep {
+  step: 'initial' | 'banner' | 'crosstab' | 'complete';
+  message: string;
 }
 
-export default function LoadingModal({ isOpen, progress = 'Validating your uploaded files...' }: LoadingModalProps) {
-  if (!isOpen) return null;
+interface LoadingModalProps {
+  isOpen: boolean;
+  currentStep?: ProcessingStep;
+}
+
+const STEP_PROGRESS = {
+  initial: 33,
+  banner: 66,
+  crosstab: 100,
+  complete: 100
+};
+
+const STEP_MESSAGES = {
+  initial: 'Processing your files...',
+  banner: 'Creating banner plan...',
+  crosstab: 'Generating crosstabs...',
+  complete: 'Almost done...'
+};
+
+export default function LoadingModal({ isOpen, currentStep }: LoadingModalProps) {
+  const step = currentStep?.step || 'initial';
+  const message = currentStep?.message || STEP_MESSAGES[step];
+  const progress = STEP_PROGRESS[step];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-900 rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
-        <div className="text-center">
-          <div className="flex justify-center mb-6">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-          
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            Validating Files
-          </h3>
-          
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-            {progress}
+    <Dialog open={isOpen}>
+      <DialogContent className="max-w-md" showCloseButton={false}>
+        <DialogTitle className="text-lg font-medium text-center mb-4">
+          Processing Files
+        </DialogTitle>
+        <div className="text-center py-4">
+          <p className="text-sm text-muted-foreground mb-6">
+            {message}
           </p>
+
+          <Progress value={progress} className="mb-4" />
           
-          <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400 text-left">
-            <div className="flex items-center">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
-              <span>Validating data map</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
-              <span>Validating banner plan</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
-              <span>Validating data file</span>
-            </div>
-          </div>
+          <p className="text-xs text-muted-foreground">
+            {progress}% complete
+          </p>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
