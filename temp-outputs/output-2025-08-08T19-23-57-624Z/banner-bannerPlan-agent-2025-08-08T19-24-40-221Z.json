@@ -1,0 +1,132 @@
+[
+  {
+    "groupName": "Specialty",
+    "columns": [
+      {
+        "name": "Total",
+        "original": "qualified respondents"
+      },
+      {
+        "name": "Cards",
+        "original": "S2=1 AND S2a=1"
+      },
+      {
+        "name": "PCPs",
+        "original": "S2=2"
+      },
+      {
+        "name": "Nephs",
+        "original": "S2=3"
+      },
+      {
+        "name": "Endos",
+        "original": "S2=4"
+      },
+      {
+        "name": "Lipids",
+        "original": "S2=5"
+      }
+    ]
+  },
+  {
+    "groupName": "Role",
+    "columns": [
+      {
+        "name": "Total",
+        "original": "qualified respondents"
+      },
+      {
+        "name": "HCP",
+        "original": "IF HCP"
+      },
+      {
+        "name": "NP/PA",
+        "original": "IF NP/PA"
+      }
+    ]
+  },
+  {
+    "groupName": "Volume of Adult ASCVD Patients",
+    "columns": [
+      {
+        "name": "Total",
+        "original": "qualified respondents"
+      },
+      {
+        "name": "Higher",
+        "original": "Joe to find the right cutoff"
+      },
+      {
+        "name": "Lower",
+        "original": "Joe to find the right cutoff"
+      }
+    ]
+  },
+  {
+    "groupName": "Tiers",
+    "columns": [
+      {
+        "name": "Total",
+        "original": "qualified respondents"
+      },
+      {
+        "name": "Tier 1",
+        "original": "Tier 1 from list"
+      },
+      {
+        "name": "Tier 2",
+        "original": "Tier 2 from list"
+      },
+      {
+        "name": "Tier 3",
+        "original": "Tier 3 from list"
+      },
+      {
+        "name": "Tier 4",
+        "original": "Tier 4 from list"
+      }
+    ]
+  },
+  {
+    "groupName": "Segments",
+    "columns": [
+      {
+        "name": "Total",
+        "original": "qualified respondents"
+      },
+      {
+        "name": "Segment A",
+        "original": "Segment A from list"
+      },
+      {
+        "name": "Segment B",
+        "original": "Segment B from list"
+      },
+      {
+        "name": "Segment C",
+        "original": "Segment C from list"
+      },
+      {
+        "name": "Segment D",
+        "original": "Segment D from list"
+      }
+    ]
+  },
+  {
+    "groupName": "Priority Accounts",
+    "columns": [
+      {
+        "name": "Total",
+        "original": "qualified respondents"
+      },
+      {
+        "name": "Priority Account",
+        "original": "Priority Account from list"
+      },
+      {
+        "name": "Non-Priority Account",
+        "original": "Non-Priority Account from list"
+      }
+    ]
+  }
+]

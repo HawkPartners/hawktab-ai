@@ -1,0 +1,409 @@
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "extractionType": "banner_extraction",
+    "timestamp": "2025-08-08T12:00:00Z",
+    "extractedStructure": {
+      "bannerCuts": [
+        {
+          "groupName": "Specialty",
+          "columns": [
+            {
+              "name": "Total",
+              "original": "qualified respondents",
+              "adjusted": "qualified respondents",
+              "statLetter": "T",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Cards",
+              "original": "S2=1 AND S2a=1",
+              "adjusted": "S2=1 AND S2a=1",
+              "statLetter": "A",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "PCPs",
+              "original": "S2=2",
+              "adjusted": "S2=2",
+              "statLetter": "B",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Nephs",
+              "original": "S2=3",
+              "adjusted": "S2=3",
+              "statLetter": "C",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Endos",
+              "original": "S2=4",
+              "adjusted": "S2=4",
+              "statLetter": "D",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Lipids",
+              "original": "S2=5",
+              "adjusted": "S2=5",
+              "statLetter": "E",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            }
+          ]
+        },
+        {
+          "groupName": "Role",
+          "columns": [
+            {
+              "name": "Total",
+              "original": "qualified respondents",
+              "adjusted": "qualified respondents",
+              "statLetter": "T",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "HCP",
+              "original": "IF HCP",
+              "adjusted": "IF HCP",
+              "statLetter": "A",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "NP/PA",
+              "original": "IF NP/PA",
+              "adjusted": "IF NP/PA",
+              "statLetter": "B",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            }
+          ]
+        },
+        {
+          "groupName": "Volume of Adult ASCVD Patients",
+          "columns": [
+            {
+              "name": "Total",
+              "original": "qualified respondents",
+              "adjusted": "qualified respondents",
+              "statLetter": "T",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Higher",
+              "original": "Joe to find the right cutoff",
+              "adjusted": "Joe to find the right cutoff",
+              "statLetter": "A",
+              "confidence": 1,
+              "requiresInference": true,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "Data-driven cutoff; exact threshold TBD",
+              "humanInLoopRequired": true,
+              "aiRecommended": true,
+              "uncertainties": [
+                "Exact cutoff TBD"
+              ]
+            },
+            {
+              "name": "Lower",
+              "original": "Joe to find the right cutoff",
+              "adjusted": "Joe to find the right cutoff",
+              "statLetter": "B",
+              "confidence": 1,
+              "requiresInference": true,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "Data-driven cutoff; exact threshold TBD",
+              "humanInLoopRequired": true,
+              "aiRecommended": true,
+              "uncertainties": [
+                "Exact cutoff TBD"
+              ]
+            }
+          ]
+        },
+        {
+          "groupName": "Tiers",
+          "columns": [
+            {
+              "name": "Total",
+              "original": "qualified respondents",
+              "adjusted": "qualified respondents",
+              "statLetter": "T",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Tier 1",
+              "original": "Tier 1 from list",
+              "adjusted": "Tier 1 from list",
+              "statLetter": "A",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Tier 2",
+              "original": "Tier 2 from list",
+              "adjusted": "Tier 2 from list",
+              "statLetter": "B",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Tier 3",
+              "original": "Tier 3 from list",
+              "adjusted": "Tier 3 from list",
+              "statLetter": "C",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Tier 4",
+              "original": "Tier 4 from list",
+              "adjusted": "Tier 4 from list",
+              "statLetter": "D",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            }
+          ]
+        },
+        {
+          "groupName": "Segments",
+          "columns": [
+            {
+              "name": "Total",
+              "original": "qualified respondents",
+              "adjusted": "qualified respondents",
+              "statLetter": "T",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Segment A",
+              "original": "Segment A from list",
+              "adjusted": "Segment A from list",
+              "statLetter": "A",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Segment B",
+              "original": "Segment B from list",
+              "adjusted": "Segment B from list",
+              "statLetter": "B",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Segment C",
+              "original": "Segment C from list",
+              "adjusted": "Segment C from list",
+              "statLetter": "C",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Segment D",
+              "original": "Segment D from list",
+              "adjusted": "Segment D from list",
+              "statLetter": "D",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            }
+          ]
+        },
+        {
+          "groupName": "Priority Accounts",
+          "columns": [
+            {
+              "name": "Total",
+              "original": "qualified respondents",
+              "adjusted": "qualified respondents",
+              "statLetter": "T",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Priority Account",
+              "original": "Priority Account from list",
+              "adjusted": "Priority Account from list",
+              "statLetter": "A",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Non-Priority Account",
+              "original": "Non-Priority Account from list",
+              "adjusted": "Non-Priority Account from list",
+              "statLetter": "B",
+              "confidence": 1,
+              "requiresInference": false,
+              "crossRefStatus": "not_cross_referenced",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            }
+          ]
+        }
+      ],
+      "notes": [
+        {
+          "type": "calculation_rows",
+          "original": "0-5 Scales",
+          "adjusted": "0-5 Scales"
+        },
+        {
+          "type": "calculation_rows",
+          "original": "T2B/MB/B2B",
+          "adjusted": "T2B/MB/B2B"
+        },
+        {
+          "type": "main_tab_notes",
+          "original": "Main Tab Notes:",
+          "adjusted": "Main Tab Notes:"
+        },
+        {
+          "type": "other",
+          "original": "Please include tables that show the demand changes pre/post",
+          "adjusted": "Please include tables that show the demand changes pre/post"
+        }
+      ],
+      "processingMetadata": {
+        "totalColumns": 35,
+        "groupCount": 6,
+        "statisticalLettersUsed": [
+          "T",
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "processingTimestamp": "2025-08-08T12:00:00Z"
+      }
+    },
+    "errors": null,
+    "warnings": null
+  },
+  "timestamp": "2025-08-08T19:24:40.220Z"
+}

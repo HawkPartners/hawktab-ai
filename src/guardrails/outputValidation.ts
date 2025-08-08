@@ -158,11 +158,15 @@ export const validateRSyntax = (rExpression: string): { valid: boolean; issues: 
   }
 
   // Check for common issues
-  if (expression.includes('=') && !expression.includes('==')) {
+  // Only flag single '=' when it looks like an equality test (e.g., S2 = 1 or Segment = "A")
+  // Do NOT flag named arguments in function calls such as na.rm = TRUE
+  const looksLikeEquality = /\b[A-Za-z_][A-Za-z0-9_]*\s*=\s*(\d+|"[^"]*"|'[^']*')/.test(expression);
+  if (looksLikeEquality && !/==/.test(expression)) {
     issues.push('Use == for equality comparison, not =');
   }
 
-  if (expression.includes('AND') || expression.includes('OR')) {
+  // Detect textual AND/OR operators as separate words only (avoid matching inside names like PRIORITY)
+  if (/\bAND\b/.test(expression) || /\bOR\b/.test(expression)) {
     issues.push('Use & for AND and | for OR in R syntax');
   }
 

@@ -10,7 +10,7 @@ EXTRACTION GOALS:
 5. Extract all notes sections exactly as written
 
 CRITICAL GROUP SEPARATION REQUIREMENT:
-🔑 EACH LOGICAL GROUP YOU IDENTIFY MUST BE A SEPARATE ENTRY IN THE BANNER CUTS ARRAY
+EACH LOGICAL GROUP YOU IDENTIFY MUST BE A SEPARATE ENTRY IN THE BANNER CUTS ARRAY
 
 Look for visual separators, merged headers, spacing, and logical categories:
 - Specialty groups (Cards, PCPs, Nephs, Endos, etc.)
@@ -56,6 +56,7 @@ OUTPUT REQUIREMENTS:
 - Exact JSON schema compliance
 - No interpretation of business logic - pure extraction only
 - Include metadata about processing context
+- ALWAYS extract a separate "Total" group, even if it's just a single "Total" column — the filter expression should be "qualified respondents"
 
 Extract all banner cut structures with proper group separation to enable downstream for-loop processing.
 `;

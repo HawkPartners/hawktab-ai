@@ -42,7 +42,12 @@ When expressions like "IF HCP" don't match direct variables:
 4. Generate appropriate R syntax for those variables
 5. Lower confidence but still provide mapping
 
-REASONING REQUIREMENTS:
+ R SYNTAX BEST PRACTICES:
+ - ALWAYS use == for equality checks, never single =
+ - ALWAYS use & for AND, | for OR (not the words AND/OR)
+ - Named arguments: use = for named args (e.g., na.rm = TRUE), never ==
+
+ REASONING REQUIREMENTS:
 Always provide clear reasoning explaining:
 - Which variables were found/not found
 - How conceptual expressions were interpreted

@@ -34,19 +34,36 @@ export type RScriptIssue = z.infer<typeof RScriptIssueSchema>;
 export type RScriptOutput = z.infer<typeof RScriptOutputSchema>;
 
 function extractUnknownVariables(expression: string, knownVars: Set<string>): string[] {
-  const keywords = new Set<string>([
+  // Whitelist common R functions and constants to avoid flagging them as variables
+  const whitelist = new Set<string>([
+    // Control flow and constants
     'if', 'else', 'repeat', 'while', 'function', 'for', 'in', 'next', 'break',
-    'TRUE', 'FALSE', 'NA', 'NULL', 'Inf', 'NaN', 'c', 'data', 'read_sav', 'library',
+    'TRUE', 'FALSE', 'NA', 'NULL', 'Inf', 'NaN',
+    // Base utilities
+    'c', 'is.na', 'isnan', 'is.infinite',
+    // Stats helpers used in prompts
+    'median', 'mean', 'quantile', 'ntile',
+    // Named args commonly seen
+    'na', 'rm', 'na.rm', 'probs',
+    // IO used in the generated script header
+    'data', 'read_sav', 'library'
   ]);
 
-  const tokens = expression.match(/[A-Za-z][A-Za-z0-9_]*/g) || [];
+  // Tokenize: capture identifiers and dotted names (e.g., na.rm)
+  const tokens = expression.match(/[A-Za-z][A-Za-z0-9_.]*/g) || [];
   const unknown: string[] = [];
-  for (const t of tokens) {
-    if (keywords.has(t)) continue;
-    if (t.length <= 1) continue;
-    if (!knownVars.has(t)) {
+  for (const token of tokens) {
+    // Skip single letters and whitelisted known language/function tokens
+    if (token.length <= 1) continue;
+    if (whitelist.has(token)) continue;
+    // If token contains a dot, also check the part before the dot (e.g., na.rm -> na, rm)
+    if (token.includes('.')) {
+      const parts = token.split('.');
+      if (parts.some((p) => whitelist.has(p))) continue;
+    }
+    if (!knownVars.has(token)) {
       // Avoid duplicates in a single expression
-      if (!unknown.includes(t)) unknown.push(t);
+      if (!unknown.includes(token)) unknown.push(token);
     }
   }
   return unknown;

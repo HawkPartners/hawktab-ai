@@ -46,4 +46,6 @@ You can check progress via `GET /api/process-crosstab/status` and browse `temp-o
 - Agent weirdness? Flip prompt variant in `src/prompts/**` and re-run.
 - Excel issues? Inspect `results/*.csv` first; if good, look at workbook composition.
 
-
+### Testing
+http://localhost:3000/api/generate-tables/[sessionId]
+http://localhost:3000/api/generate-r/[sessionId]
