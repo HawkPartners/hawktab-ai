@@ -1,3 +1,8 @@
+/**
+ * useValidationQueue
+ * Purpose: Fetch and expose counts for validation queue for dashboard widgets
+ * Source: GET /api/validation-queue
+ */
 import { useState, useEffect, useCallback } from 'react';
 
 interface ValidationCounts {

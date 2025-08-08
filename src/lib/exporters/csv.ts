@@ -1,3 +1,8 @@
+/**
+ * CSV exporter
+ * Purpose: Emit a flattened CSV from a CutTable for quick inspection and Excel import
+ * Notes: Escapes quotes and flattens multi-line fields
+ */
 import type { CutTable } from '@/lib/tables/CutTable';
 
 export function exportCutTableToCSV(table: CutTable): string {

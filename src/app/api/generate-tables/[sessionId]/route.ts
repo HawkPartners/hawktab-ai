@@ -1,3 +1,9 @@
+/**
+ * GET /api/generate-tables/[sessionId]
+ * Purpose: Convert crosstab validation output into cut tables (JSON + CSV)
+ * Reads: temp-outputs/<sessionId>/crosstab-output-*.json
+ * Writes: temp-outputs/<sessionId>/{cut-tables.json, cut-tables.csv}
+ */
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';

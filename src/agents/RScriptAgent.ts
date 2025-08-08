@@ -1,3 +1,10 @@
+/**
+ * RScriptAgent
+ * Purpose: Build a single-file R script from validation or cut-tables and summarize issues
+ * Reads: temp-outputs/<sessionId>/{cut-tables.json|crosstab-output-*.json, dataMap-agent*.json}
+ * Writes: returned to caller; API persists to {r-script.R, r-validation.json}
+ * Invariants: expressions are R-ready; unknown variables detected via data map names
+ */
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { z } from 'zod';

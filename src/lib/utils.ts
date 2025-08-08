@@ -1,3 +1,7 @@
+/**
+ * Utilities
+ * Purpose: UI-safe className merge and SSR-safe UTC datetime formatting
+ */
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 

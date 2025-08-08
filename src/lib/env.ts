@@ -1,4 +1,9 @@
-// Environment configuration helper for CrosstabAgent system
+/**
+ * Environment configuration
+ * Purpose: Resolve model names, token limits, prompt versions, and basic validation
+ * Required: OPENAI_API_KEY
+ * Optional: NODE_ENV, CROSSTAB_PROMPT_VERSION, BANNER_PROMPT_VERSION, token/limit overrides
+ */
 
 import { EnvironmentConfig } from './types';
 

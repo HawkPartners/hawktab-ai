@@ -1,5 +1,9 @@
-// API route to delete entire session folder
-// Removes session directory and all its contents from temp-outputs
+/**
+ * DELETE /api/delete-session/[sessionId]
+ * Purpose: Remove a session directory and all artifacts
+ * Reads: temp-outputs/<sessionId>
+ * Side-effects: Recursively deletes folder
+ */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';

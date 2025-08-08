@@ -1,3 +1,8 @@
+/**
+ * Job Store
+ * Purpose: Track background processing progress for client polling
+ * Scope: In-memory map keyed by jobId; not persisted across server restarts
+ */
 export type JobStage =
   | 'uploading'
   | 'parsing'

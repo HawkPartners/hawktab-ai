@@ -1,4 +1,7 @@
-// Core TypeScript definitions for CrosstabAgent system
+/**
+ * Shared types
+ * Purpose: Common environment, limits, and execution context types for agents and APIs
+ */
 
 export interface ProcessingLimits {
   maxDataMapVariables: number;

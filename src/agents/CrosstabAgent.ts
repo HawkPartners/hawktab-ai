@@ -1,5 +1,10 @@
-// CrosstabAgent.ts - Core agent for banner plan validation against data maps
-// Reference: Architecture doc "Working Agent Implementation" and "Group-Focused Processing Strategy"
+/**
+ * CrosstabAgent
+ * Purpose: Validate banner groups against data map; emit adjusted R expressions + confidence
+ * Reads: agent banner groups + processed data map
+ * Writes (dev): temp-outputs/output-<ts>/crosstab-output-<ts>.json (with processing info)
+ * Invariants: group-by-group validation; uses scratchpad; flushes traces when enabled
+ */
 
 import { Agent, run, withTrace, getGlobalTraceProvider } from '@openai/agents';
 import { ValidationResultSchema, ValidatedGroupSchema, combineValidationResults, type ValidationResultType, type ValidatedGroupType } from '../schemas/agentOutputSchema';

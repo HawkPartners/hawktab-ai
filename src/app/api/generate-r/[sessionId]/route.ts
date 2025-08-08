@@ -1,3 +1,9 @@
+/**
+ * GET /api/generate-r/[sessionId]
+ * Purpose: Generate a single-file R script and validation summary for a session
+ * Reads: temp-outputs/<sessionId>/{dataFile.sav, cut-tables.json|crosstab-output-*.json, dataMap-agent*.json}
+ * Writes: temp-outputs/<sessionId>/{r-script.R, r-validation.json}
+ */
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';

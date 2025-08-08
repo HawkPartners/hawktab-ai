@@ -71,7 +71,7 @@ HawkTab AI is an agent-first, AI-powered platform that automates crosstab genera
 - [ ] **QA System**: Automated quality assurance for outputs
 - [ ] **Batch Processing**: Test across multiple files systematically
 
-See [Future Enhancements](docs/future-enhancements.md) for detailed roadmap.
+See `docs/development-roadmap-2025-08-08.md` for the current roadmap. Older docs are archived under `docs/archive/`.
 
 ---
 
@@ -188,9 +188,14 @@ We use OpenAI's Agents SDK with a "one agent, multiple calls" strategy, processi
 
 ## Documentation
 
-- [Architecture Overview](docs/openai-agents-architecture.md) - Technical specifications and patterns
-- [Implementation Roadmap](docs/roadmap.md) - Completed phases and methodology
-- [Future Enhancements](docs/future-enhancements.md) - Next steps and long-term vision
+- Architecture (human): `docs/architecture/human-overview.md`
+- Architecture (machine): `docs/architecture/ai-architecture.md`
+- Pipelines: `docs/architecture/pipelines.md`
+- Agents: `docs/architecture/agents.md`
+- API: `docs/architecture/api.md`
+- Modules: `docs/architecture/modules.md`
+- Architecture elements: `docs/architecture-elements/`
+- OpenAI Agents architecture reference: `docs/openai-agents-architecture.md`
 
 ---
 

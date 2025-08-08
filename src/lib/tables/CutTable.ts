@@ -1,3 +1,8 @@
+/**
+ * CutTable builder
+ * Purpose: Convert ValidationResultType into concise group/column table with stats
+ * Consumers: generate-tables API, CSV exporter, downstream R manifest builder
+ */
 import type { ValidationResultType } from '@/schemas/agentOutputSchema';
 
 export interface CutColumn {

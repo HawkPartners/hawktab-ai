@@ -1,4 +1,8 @@
-// Tracing configuration for OpenAI Agents SDK
+/**
+ * Tracing helpers
+ * Purpose: Configure lightweight tracing and console logging in development
+ * Usage: wrap major flows with withTrace() in agents; call forceFlush via provider when needed
+ */
 
 export interface TracingConfig {
   enabled: boolean;

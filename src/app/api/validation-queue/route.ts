@@ -1,5 +1,9 @@
-// API route to list all sessions with their validation status
-// Returns pending and validated sessions from temp-outputs directory
+/**
+ * GET /api/validation-queue
+ * Purpose: List sessions with validation status for UI
+ * Reads: temp-outputs/output-* folders
+ * Returns: { sessions: SessionSummary[], counts }
+ */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';

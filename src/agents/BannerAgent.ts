@@ -1,5 +1,10 @@
-// BannerAgent.ts - Agent-based banner plan extraction with group separation focus
-// Converted from BannerProcessor to use OpenAI Agents SDK with scratchpad tool
+/**
+ * BannerAgent
+ * Purpose: Extract banner groups and columns from DOC/PDF via Agents SDK (with scratchpad)
+ * Reads: uploaded banner plan file (doc/docx/pdf → converted to images)
+ * Writes (dev): temp-outputs/output-<ts>/banner-*-{verbose|agent}-<ts>.json
+ * Invariants: focus on logical group separation; preserve column names and originals
+ */
 
 import { Agent, run } from '@openai/agents';
 import fs from 'fs/promises';

@@ -1,5 +1,10 @@
-// File storage utilities for dual output strategy
-// Handles temporary file storage for verbose and agent versions
+/**
+ * Storage utilities
+ * Purpose: Manage session directories and dual-output files during processing
+ * Reads: OS tmp session dir; session files as needed
+ * Writes: OS tmp session dir (uploads, dual outputs)
+ * Invariants: keep session-scoped paths; no writes outside session dir
+ */
 
 import { promises as fs } from 'fs';
 import { join } from 'path';

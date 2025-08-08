@@ -1,6 +1,11 @@
-// API route to load and save validation data for a specific session
-// GET: Load session data for validation
-// POST: Save validation results
+/**
+ * /api/validate/[sessionId]
+ * GET: Load validation payload and artifacts for a session
+ * POST: Save validation results and mark status validated
+ * DELETE: Optional — remove validation-status to exclude from queue
+ * Reads: temp-outputs/<sessionId>/{validation-status.json, *banner*.json, *dataMap*.json, *crosstab-output*.json}
+ * Writes: temp-outputs/<sessionId>/{validation-results.json, validation-status.json}
+ */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';

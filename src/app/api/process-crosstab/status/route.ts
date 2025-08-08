@@ -1,3 +1,9 @@
+/**
+ * GET /api/process-crosstab/status?jobId=...
+ * Purpose: Poll job status for processing pipeline
+ * Reads: in-memory job store
+ * Returns: { jobId, stage, percent, message, sessionId? }
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { getJob } from '../../../../lib/jobStore'
 

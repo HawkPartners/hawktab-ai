@@ -1,6 +1,13 @@
 // Single API endpoint for complete crosstab processing workflow
 // Reference: Architecture doc "Single Endpoint Implementation"
 
+/**
+ * POST /api/process-crosstab
+ * Purpose: Single entrypoint for upload → BannerAgent → DataMap processing → CrosstabAgent
+ * Reads: formData(dataMap, bannerPlan, dataFile)
+ * Writes: temp-outputs/output-<ts>/{inputs.json, dataFile.sav, banner-*.json, dataMap-*.json, crosstab-output-*.json, validation-status.json}
+ * Status: Job tracked via /api/process-crosstab/status?jobId=...
+ */
 import { NextRequest, NextResponse } from 'next/server';
 import { createJob, updateJob } from '../../../lib/jobStore';
 import { runAllGuardrails } from '../../../guardrails/inputValidation';

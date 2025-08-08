@@ -1,5 +1,9 @@
-// Enhanced Context Builder - Uses DataMapProcessor for sophisticated processing
-// Reference: Architecture doc "Context Builder Implementation"
+/**
+ * Context Builder
+ * Purpose: Transform banner + raw data map into dual outputs and Zod-typed agent context
+ * Reads: data map file path (CSV), optional SPSS path; banner extraction structures
+ * Writes (dev): session `*-verbose-<ts>.json`, `*-agent-<ts>.json`
+ */
 
 import { DataMapType } from '../schemas/dataMapSchema';
 import { BannerPlanInputType, BannerGroupType } from '../schemas/bannerPlanSchema';
