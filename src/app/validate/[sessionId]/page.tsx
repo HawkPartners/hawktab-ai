@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import type { ValidationSession, ColumnFeedback } from '../../../schemas/humanValidationSchema';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,12 +27,7 @@ import {
   ThumbsUp,
   ThumbsDown
 } from 'lucide-react';
-
-interface ValidationPageProps {
-  params: Promise<{
-    sessionId: string;
-  }>;
-}
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface SessionData {
   sessionId: string;
@@ -69,14 +64,16 @@ interface SessionData {
   existingValidation?: unknown;
 }
 
-export default function ValidationSession({ params }: ValidationPageProps) {
+export default function ValidationSession() {
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'banner' | 'crosstab'>('crosstab');
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const router = useRouter();
+  const params = useParams<{ sessionId: string }>();
 
   // Validation state
   const [columnFeedback, setColumnFeedback] = useState<ColumnFeedback[]>([]);
@@ -89,7 +86,7 @@ export default function ValidationSession({ params }: ValidationPageProps) {
         setIsLoading(true);
         setError(null);
 
-        const { sessionId } = await params;
+        const sessionId = params.sessionId;
         const response = await fetch(`/api/validate/${sessionId}`);
         if (!response.ok) {
           if (response.status === 404) {
@@ -193,18 +190,6 @@ export default function ValidationSession({ params }: ValidationPageProps) {
   const deleteSession = useCallback(async () => {
     if (!sessionData) return;
 
-    const confirmDelete = confirm(
-      `Are you sure you want to delete this entire session?\n\n` +
-      `Session: ${sessionData.sessionId}\n\n` +
-      `This will permanently delete:\n` +
-      `• All agent outputs (banner, crosstab, data map)\n` +
-      `• Any saved validation results\n` +
-      `• The entire session folder\n\n` +
-      `This action cannot be undone!`
-    );
-
-    if (!confirmDelete) return;
-
     try {
       setIsDeleting(true);
 
@@ -225,15 +210,16 @@ export default function ValidationSession({ params }: ValidationPageProps) {
       });
     } finally {
       setIsDeleting(false);
+      setDeleteDialogOpen(false);
     }
   }, [sessionData, router]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+      <div className="min-h-screen bg-background py-8 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center py-12">
-            <div className="text-gray-600 dark:text-gray-400">Loading validation session...</div>
+            <div className="text-muted-foreground">Loading validation session...</div>
           </div>
         </div>
       </div>
@@ -295,7 +281,7 @@ export default function ValidationSession({ params }: ValidationPageProps) {
               <div className="flex space-x-2">
                 <Button
                   disabled={isDeleting}
-                  onClick={deleteSession}
+                  onClick={() => setDeleteDialogOpen(true)}
                   variant="destructive"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
@@ -354,7 +340,7 @@ export default function ValidationSession({ params }: ValidationPageProps) {
                   <CardContent>
                     <div className="max-h-96 overflow-y-auto">
                       <Table>
-                        <TableHeader>
+                        <TableHeader className="sticky top-0 bg-background z-10">
                           <TableRow>
                             <TableHead>Variable</TableHead>
                             <TableHead>Description</TableHead>
@@ -363,7 +349,7 @@ export default function ValidationSession({ params }: ValidationPageProps) {
                         </TableHeader>
                         <TableBody>
                           {sessionData.data.dataMap?.map((item, index) => (
-                            <TableRow key={index}>
+                            <TableRow key={index} className="odd:bg-muted/30">
                               <TableCell>
                                 <code className="bg-muted px-2 py-1 rounded text-sm font-mono text-primary">
                                   {item.Column}
@@ -661,6 +647,31 @@ export default function ValidationSession({ params }: ValidationPageProps) {
           </Card>
         </Tabs>
       </div>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete session?</DialogTitle>
+          </DialogHeader>
+          <div className="text-sm text-muted-foreground">
+            This will permanently delete all files for session
+            {sessionData ? ` "${sessionData.sessionId}"` : ''}. This action cannot be undone.
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={deleteSession}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
+// Delete Confirmation Dialog Wrapper rendered at root of this file would require a portal; we can embed in main return above,
+// but to keep changes minimal we render it conditionally right after the main container.

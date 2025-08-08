@@ -25,6 +25,7 @@ export default function FileUpload({
 }: FileUploadProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropzoneId = `${title.replace(/\s+/g, '-').toLowerCase()}-dropzone`;
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -97,6 +98,17 @@ export default function FileUpload({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={handleClick}
+          id={dropzoneId}
+          role="button"
+          tabIndex={0}
+          aria-label={`${title} upload dropzone`}
+          aria-describedby={`${dropzoneId}-help`}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleClick();
+            }
+          }}
         >
         <input
           ref={fileInputRef}
@@ -141,6 +153,9 @@ export default function FileUpload({
               <Badge variant="outline" className="mt-2">
                 {fileExtensions.join(', ')}
               </Badge>
+              <p id={`${dropzoneId}-help`} className="sr-only">
+                Accepts types: {acceptedTypes}. Use Enter or Space to open file dialog.
+              </p>
             </div>
           </div>
         )}

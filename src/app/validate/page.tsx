@@ -5,8 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Trash2, Eye, Clock, CheckCircle, Upload } from 'lucide-react';
+import { StatusBadge } from '@/components/StatusBadge';
 
 interface SessionSummary {
   sessionId: string;
@@ -37,6 +40,8 @@ export default function ValidationQueue() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingSession, setDeletingSession] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [targetSessionId, setTargetSessionId] = useState<string | null>(null);
   const router = useRouter();
 
   const fetchSessions = useCallback(async () => {
@@ -82,14 +87,6 @@ export default function ValidationQueue() {
 
   // Delete session function
   const deleteSession = async (sessionId: string) => {
-    const confirmDelete = confirm(
-      `Are you sure you want to delete session "${sessionId}"?\n\n` +
-      `This will permanently delete all files in this session folder.\n` +
-      `This action cannot be undone!`
-    );
-
-    if (!confirmDelete) return;
-
     try {
       setDeletingSession(sessionId);
 
@@ -111,19 +108,21 @@ export default function ValidationQueue() {
       });
     } finally {
       setDeletingSession(null);
+      setDeleteDialogOpen(false);
+      setTargetSessionId(null);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+    <div className="py-8 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            <h1 className="text-3xl font-bold">
               Validation Queue
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
+            <p className="text-muted-foreground mt-2">
               Review and validate agent outputs from processing sessions
             </p>
           </div>
@@ -141,38 +140,39 @@ export default function ValidationQueue() {
               {/* Stats */}
               <div className="flex space-x-6 mb-4 sm:mb-0">
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                <div className="text-2xl font-bold">
                   {data?.counts.total || 0}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Total</div>
+                <div className="text-sm text-muted-foreground">Total</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">
+                <div className="text-2xl font-bold">
                   {data?.counts.pending || 0}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Pending</div>
+                <div className="text-sm text-muted-foreground">Pending</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold">
                   {data?.counts.validated || 0}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Validated</div>
+                <div className="text-sm text-muted-foreground">Validated</div>
               </div>
             </div>
 
-            {/* Filter Buttons */}
-            <div className="flex space-x-2">
-              {(['all', 'pending', 'validated'] as const).map((filterOption) => (
-                <Button
-                  key={filterOption}
-                  onClick={() => setFilter(filterOption)}
-                  variant={filter === filterOption ? "default" : "outline"}
-                  size="sm"
-                >
-                  {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
-                </Button>
-              ))}
-            </div>
+            {/* Filters as segmented control */}
+            <Tabs value={filter} onValueChange={(v) => setFilter(v as 'all' | 'pending' | 'validated')}>
+              <TabsList>
+                <TabsTrigger value="all">
+                  All {typeof data?.counts.total === 'number' ? `(${data.counts.total})` : ''}
+                </TabsTrigger>
+                <TabsTrigger value="pending">
+                  Pending {typeof data?.counts.pending === 'number' ? `(${data.counts.pending})` : ''}
+                </TabsTrigger>
+                <TabsTrigger value="validated">
+                  Validated {typeof data?.counts.validated === 'number' ? `(${data.counts.validated})` : ''}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
             </div>
           </CardContent>
         </Card>
@@ -180,13 +180,13 @@ export default function ValidationQueue() {
         {/* Loading */}
         {isLoading && (
           <div className="text-center py-12">
-            <div className="text-gray-600 dark:text-gray-400">Loading validation queue...</div>
+            <div className="text-muted-foreground">Loading validation queue...</div>
           </div>
         )}
 
         {/* Error */}
         {error && (
-          <div className="bg-red-100 dark:bg-red-900 border border-red-400 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-6">
+          <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded mb-6">
             Error: {error}
           </div>
         )}
@@ -218,37 +218,31 @@ export default function ValidationQueue() {
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                        <h3 className="font-medium">
                           {session.sessionId}
                         </h3>
-                        <Badge variant={session.status === 'pending' ? 'secondary' : 'default'}>
-                          {session.status === 'pending' ? (
-                            <><Clock className="w-3 h-3 mr-1" />{session.status}</>
-                          ) : (
-                            <><CheckCircle className="w-3 h-3 mr-1" />{session.status}</>
-                          )}
-                        </Badge>
+                        <StatusBadge status={session.status} />
                       </div>
                       
-                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      <div className="text-sm text-muted-foreground mb-2">
                         Created: {formatDate(session.createdAt)}
                         {session.validatedAt && (
                           <span className="ml-4">Validated: {formatDate(session.validatedAt)}</span>
                         )}
                       </div>
                       
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                         <span>{session.groupCount || 0} groups</span>
                         <span>{session.columnCount || 0} columns</span>
                         <div className="flex items-center space-x-2">
                           <span>Files:</span>
-                          <span className={session.files.banner ? 'text-green-600' : 'text-red-600'}>
+                          <span>
                             Banner
                           </span>
-                          <span className={session.files.dataMap ? 'text-green-600' : 'text-red-600'}>
+                          <span>
                             DataMap
                           </span>
-                          <span className={session.files.crosstab ? 'text-green-600' : 'text-red-600'}>
+                          <span>
                             Crosstab
                           </span>
                         </div>
@@ -259,7 +253,7 @@ export default function ValidationQueue() {
                       {session.status === 'pending' && (
                         <Button
                           onClick={() => router.push(`/validate/${session.sessionId}`)}
-                          className="bg-orange-600 hover:bg-orange-700"
+                          variant="caution"
                         >
                           <Clock className="w-4 h-4 mr-2" />
                           Validate
@@ -278,7 +272,10 @@ export default function ValidationQueue() {
                       
                       <Button
                         disabled={deletingSession === session.sessionId}
-                        onClick={() => deleteSession(session.sessionId)}
+                        onClick={() => {
+                          setTargetSessionId(session.sessionId);
+                          setDeleteDialogOpen(true);
+                        }}
                         variant="destructive"
                         size="sm"
                         title="Delete entire session folder"
@@ -295,6 +292,28 @@ export default function ValidationQueue() {
           </div>
         )}
       </div>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete session?</DialogTitle>
+          </DialogHeader>
+          <div className="text-sm text-muted-foreground">
+            This will permanently delete all files for session
+            {targetSessionId ? ` "${targetSessionId}"` : ''}. This action cannot be undone.
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={() => targetSessionId && deleteSession(targetSessionId)}
+              disabled={!targetSessionId || deletingSession === targetSessionId}
+            >
+              {deletingSession === targetSessionId ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

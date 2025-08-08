@@ -8,6 +8,7 @@ import { useValidationQueue } from '../hooks/useValidationQueue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function Home() {
   const [dataMapFile, setDataMapFile] = useState<File | null>(null);
@@ -86,35 +87,28 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
+    <div className="py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* Header with validation button */}
-        <div className="flex justify-between items-start mb-12">
-          <div className="text-center flex-1">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              HawkTab AI - Crosstab Generator
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Upload your data files to generate automated crosstabs. Provide a data map, banner plan, and your raw data to get started.
-            </p>
-          </div>
-          
-          {/* Validation Queue Button */}
-          <div className="flex-shrink-0 ml-6 relative">
-            <Button
-              onClick={() => router.push('/validate')}
-              variant={counts.pending > 0 ? "default" : "secondary"}
-              className={counts.pending > 0 ? "bg-orange-500 hover:bg-orange-600" : ""}
-            >
-              Validation Queue
-            </Button>
-            {counts.pending > 0 && (
-              <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                {counts.pending}
-              </Badge>
-            )}
-          </div>
-        </div>
+        <PageHeader
+          title="HawkTab AI - Crosstab Generator"
+          description="Upload your data files to generate automated crosstabs. Provide a data map, banner plan, and your raw data to get started."
+          actions={
+            <div className="relative">
+              <Button
+                onClick={() => router.push('/validate')}
+                variant={counts.pending > 0 ? "default" : "secondary"}
+                className={counts.pending > 0 ? "bg-orange-500 hover:bg-orange-600" : ""}
+              >
+                Validation Queue
+              </Button>
+              {counts.pending > 0 && (
+                <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                  {counts.pending}
+                </Badge>
+              )}
+            </div>
+          }
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <FileUpload
@@ -156,7 +150,7 @@ export default function Home() {
           </Button>
           
           {!allFilesUploaded && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               Please upload all three files to continue
             </p>
           )}
