@@ -1,0 +1,155 @@
+{
+  "sessionId": "output-2025-08-08T13-32-47-322Z",
+  "generatedAt": "2025-08-08T13:42:58.340Z",
+  "groups": [
+    {
+      "groupName": "Specialty",
+      "columns": [
+        {
+          "name": "Cards",
+          "expression": "(S2 == 1 & S2a == 1)",
+          "confidence": 0.92,
+          "reason": "Both S2 and S2a exist in the data map. S2=1 maps to Cardiologist specialty, S2a=1 maps to Cardiologist office. Converted to R syntax with '==' and '&'. Multiple direct variables combined logically, high confidence."
+        },
+        {
+          "name": "PCPs",
+          "expression": "S2 == 2",
+          "confidence": 0.97,
+          "reason": "S2 exists in the data map; value 2 corresponds to Internal Medicine/General Practitioner/Primary Care. Direct one-variable mapping to R syntax with '=='. High confidence."
+        },
+        {
+          "name": "Nephs",
+          "expression": "S2 == 3",
+          "confidence": 0.97,
+          "reason": "S2 exists in the data map; value 3 corresponds to Nephrologist. Direct one-variable mapping to R syntax with '=='. High confidence."
+        },
+        {
+          "name": "Endos",
+          "expression": "S2 == 4",
+          "confidence": 0.97,
+          "reason": "S2 exists in the data map; value 4 corresponds to Endocrinologist. Direct one-variable mapping to R syntax with '=='. High confidence."
+        },
+        {
+          "name": "Lipids",
+          "expression": "S2 == 5",
+          "confidence": 0.97,
+          "reason": "S2 exists in the data map; value 5 corresponds to Lipidologist. Direct one-variable mapping to R syntax with '=='. High confidence."
+        }
+      ]
+    },
+    {
+      "groupName": "Role",
+      "columns": [
+        {
+          "name": "HCP",
+          "expression": "S2b == 1",
+          "confidence": 0.95,
+          "reason": "Original expression 'IF HCP' has no direct variable. Mapped to S2b (What is your primary role?) where 1 = Physician, interpreting HCP as physicians. Chose S2b over S2 for precise role mapping."
+        },
+        {
+          "name": "NP/PA",
+          "expression": "S2b %in% c(2, 3)",
+          "confidence": 0.95,
+          "reason": "Original expression 'IF NP/PA' matches S2b response options 2 = Nurse Practitioner and 3 = Physician’s Assistant. Used S2b %in% c(2, 3) for combined filtering."
+        }
+      ]
+    },
+    {
+      "groupName": "Volume of Adult ASCVD Patients",
+      "columns": [
+        {
+          "name": "Higher",
+          "expression": "(S11 >= cutoff)",
+          "confidence": 0.5,
+          "reason": "Original expression is a placeholder requiring a cutoff. Mapped to S11 (count of adult patients with established CVD from data map). S10 (total adult patients) was considered but S11 specifically aligns with ASCVD. Cutoff value not provided, so a placeholder ‘cutoff’ is used; confidence reduced due to missing cutoff specification."
+        },
+        {
+          "name": "Lower",
+          "expression": "(S11 < cutoff)",
+          "confidence": 0.5,
+          "reason": "Original expression is a placeholder requiring a cutoff. Mapped to S11 (count of adult patients with established CVD from data map). S10 was considered but S11 better matches ASCVD. Cutoff value not provided, so a placeholder ‘cutoff’ is used; confidence reduced due to missing cutoff specification."
+        }
+      ]
+    },
+    {
+      "groupName": "Tiers",
+      "columns": [
+        {
+          "name": "Tier 1",
+          "expression": "qLIST_TIER == 1",
+          "confidence": 0.99,
+          "reason": "Mapped 'Tier 1 from list' directly to the data map variable qLIST_TIER (LIST TIER), where 1 = TIER 1. Direct, unambiguous match."
+        },
+        {
+          "name": "Tier 2",
+          "expression": "qLIST_TIER == 2",
+          "confidence": 0.99,
+          "reason": "Mapped 'Tier 2 from list' directly to qLIST_TIER, where 2 = TIER 2. Direct, unambiguous match."
+        },
+        {
+          "name": "Tier 3",
+          "expression": "qLIST_TIER == 3",
+          "confidence": 0.99,
+          "reason": "Mapped 'Tier 3 from list' directly to qLIST_TIER, where 3 = TIER 3. Direct, unambiguous match."
+        },
+        {
+          "name": "Tier 4",
+          "expression": "qLIST_TIER == 4",
+          "confidence": 0.99,
+          "reason": "Mapped 'Tier 4 from list' directly to qLIST_TIER, where 4 = TIER 4. Direct, unambiguous match."
+        }
+      ]
+    },
+    {
+      "groupName": "Segments",
+      "columns": [
+        {
+          "name": "Segment A",
+          "expression": "Segment == \"Segment A\"",
+          "confidence": 0.6,
+          "reason": "Mapped to data map variable 'Segment'. The original expression 'Segment A from list' suggests a value label. The data map does not list answer options for 'Segment', so assumed the label is 'Segment A'. Confidence reduced due to unknown coding of values."
+        },
+        {
+          "name": "Segment B",
+          "expression": "Segment == \"Segment B\"",
+          "confidence": 0.6,
+          "reason": "Mapped to data map variable 'Segment'. The original expression 'Segment B from list' suggests a value label. The data map does not list answer options for 'Segment', so assumed the label is 'Segment B'. Confidence reduced due to unknown coding of values."
+        },
+        {
+          "name": "Segment C",
+          "expression": "Segment == \"Segment C\"",
+          "confidence": 0.6,
+          "reason": "Mapped to data map variable 'Segment'. The original expression 'Segment C from list' suggests a value label. The data map does not list answer options for 'Segment', so assumed the label is 'Segment C'. Confidence reduced due to unknown coding of values."
+        },
+        {
+          "name": "Segment D",
+          "expression": "Segment == \"Segment D\"",
+          "confidence": 0.6,
+          "reason": "Mapped to data map variable 'Segment'. The original expression 'Segment D from list' suggests a value label. The data map does not list answer options for 'Segment', so assumed the label is 'Segment D'. Confidence reduced due to unknown coding of values."
+        }
+      ]
+    },
+    {
+      "groupName": "Priority Accounts",
+      "columns": [
+        {
+          "name": "Priority Account",
+          "expression": "qLIST_PRIORITY_ACCOUNT == 1",
+          "confidence": 0.97,
+          "reason": "Direct mapping: 'Priority Account from list' aligns exactly with qLIST_PRIORITY_ACCOUNT value 1=PRIORITY in the data map. Clear and unambiguous mapping."
+        },
+        {
+          "name": "Non-Priority Account",
+          "expression": "qLIST_PRIORITY_ACCOUNT == 2",
+          "confidence": 0.97,
+          "reason": "Direct mapping: 'Non-Priority Account from list' aligns exactly with qLIST_PRIORITY_ACCOUNT value 2=NOT PRIORITY in the data map. Clear and unambiguous mapping."
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "groupCount": 6,
+    "columnCount": 19,
+    "averageConfidence": 0.8421052631578947
+  }
+}
