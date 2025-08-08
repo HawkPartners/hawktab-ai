@@ -3,12 +3,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Trash2, Eye, Clock, CheckCircle, Upload } from 'lucide-react';
+import { Trash2, Eye, Clock, Upload } from 'lucide-react';
 import { formatUtcDateTime } from '@/lib/utils';
 import { StatusBadge } from '@/components/StatusBadge';
 

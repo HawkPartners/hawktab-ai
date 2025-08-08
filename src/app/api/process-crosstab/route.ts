@@ -8,7 +8,7 @@ import { generateSessionId, saveUploadedFile } from '../../../lib/storage';
 import { logAgentExecution } from '../../../lib/tracing';
 import { validateEnvironment } from '../../../lib/env';
 import { generateDualOutputs, prepareAgentContext } from '../../../lib/contextBuilder';
-import { BannerAgent } from '../../../agents/BannerAgent';
+import { BannerAgent, type BannerProcessingResult } from '../../../agents/BannerAgent';
 import { processAllGroups } from '../../../agents/CrosstabAgent';
 import { promises as fs } from 'fs';
 import * as path from 'path';
@@ -101,13 +101,41 @@ export async function POST(request: NextRequest) {
         const spssPath = fileResults[2].filePath!;
 
         // Banner extraction
-        let bannerProcessingResult: any;
+        let bannerProcessingResult: BannerProcessingResult;
         try {
           updateJob(job.jobId, { stage: 'banner_agent', percent: 25, message: 'Running banner extraction...' });
           const bannerAgent = new BannerAgent();
           bannerProcessingResult = await bannerAgent.processDocument(bannerPlanPath, outputFolderTimestamp);
-        } catch (bannerError) {
-          bannerProcessingResult = { verbose: { success: false, data: { extractedStructure: { bannerCuts: [] } } }, agent: [], success: false, confidence: 0, errors: [], warnings: [] };
+        } catch (_bannerError) {
+          const nowIso = new Date().toISOString();
+          bannerProcessingResult = {
+            verbose: {
+              success: false,
+              data: {
+                success: false,
+                extractionType: 'banner_extraction',
+                timestamp: nowIso,
+                extractedStructure: {
+                  bannerCuts: [],
+                  notes: [],
+                  processingMetadata: {
+                    totalColumns: 0,
+                    groupCount: 0,
+                    statisticalLettersUsed: [],
+                    processingTimestamp: nowIso
+                  }
+                },
+                errors: ['Banner extraction failed'],
+                warnings: []
+              },
+              timestamp: nowIso
+            },
+            agent: [],
+            success: false,
+            confidence: 0,
+            errors: ['Banner extraction failed'],
+            warnings: []
+          };
         }
 
         // Dual outputs

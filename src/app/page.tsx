@@ -18,7 +18,7 @@ export default function Home() {
   const [processingStep, setProcessingStep] = useState<ProcessingStep | undefined>();
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobProgress, setJobProgress] = useState<JobProgress | undefined>();
-  const [jobStage, setJobStage] = useState<string | null>(null);
+  const [, setJobStage] = useState<string | null>(null);
   const [jobError, setJobError] = useState<string | null>(null);
   const [jobStartTs, setJobStartTs] = useState<number | null>(null);
   const router = useRouter();
