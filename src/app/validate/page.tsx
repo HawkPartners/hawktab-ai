@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Trash2, Eye, Clock, CheckCircle, Upload } from 'lucide-react';
+import { formatUtcDateTime } from '@/lib/utils';
 import { StatusBadge } from '@/components/StatusBadge';
 
 interface SessionSummary {
@@ -76,9 +77,7 @@ export default function ValidationQueue() {
     fetchSessions();
   }, [filter, fetchSessions]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
-  };
+  const formatDate = (dateString: string) => formatUtcDateTime(dateString);
 
   const filteredSessions = data?.sessions.filter(session => {
     if (filter === 'all') return true;
@@ -253,7 +252,7 @@ export default function ValidationQueue() {
                       {session.status === 'pending' && (
                         <Button
                           onClick={() => router.push(`/validate/${session.sessionId}`)}
-                          variant="caution"
+                          variant="secondary"
                         >
                           <Clock className="w-4 h-4 mr-2" />
                           Validate

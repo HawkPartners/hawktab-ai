@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import FileUpload from '../components/FileUpload';
-import LoadingModal, { ProcessingStep } from '../components/LoadingModal';
+import LoadingModal, { ProcessingStep, type JobProgress } from '../components/LoadingModal';
 import { useValidationQueue } from '../hooks/useValidationQueue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,11 @@ export default function Home() {
   const [dataFile, setDataFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState<ProcessingStep | undefined>();
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [jobProgress, setJobProgress] = useState<JobProgress | undefined>();
+  const [jobStage, setJobStage] = useState<string | null>(null);
+  const [jobError, setJobError] = useState<string | null>(null);
+  const [jobStartTs, setJobStartTs] = useState<number | null>(null);
   const router = useRouter();
   const { counts, refresh } = useValidationQueue();
 
@@ -33,16 +38,7 @@ export default function Home() {
       formData.append('bannerPlan', bannerPlanFile!);
       formData.append('dataFile', dataFile!);
       
-      // Simulate progress through stages (in real app, this would come from server events)
-      setTimeout(() => {
-        setProcessingStep({ step: 'banner', message: 'Creating banner plan...' });
-      }, 2000);
-      
-      setTimeout(() => {
-        setProcessingStep({ step: 'crosstab', message: 'Generating crosstabs...' });
-      }, 4000);
-      
-      // Call our single API endpoint for complete processing
+      // Call our single API endpoint for complete processing (returns early with jobId)
       const response = await fetch('/api/process-crosstab', {
         method: 'POST',
         body: formData,
@@ -54,6 +50,11 @@ export default function Home() {
       }
       
       const result = await response.json();
+      if (result.jobId) {
+        setJobId(result.jobId);
+        setIsProcessing(true);
+        setJobStartTs(Date.now());
+      }
       
       // Handle successful processing
       console.log('Processing completed:', result);
@@ -81,10 +82,60 @@ export default function Home() {
         description: error instanceof Error ? error.message : 'Unknown error occurred'
       });
     } finally {
-      setIsProcessing(false);
-      setProcessingStep(undefined);
+      // Do not close the modal here; let job status control it
     }
   };
+
+  // Poll job progress when jobId is set
+  React.useEffect(() => {
+    if (!jobId) return;
+    let cancelled = false;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/process-crosstab/status?jobId=${encodeURIComponent(jobId)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        setJobStage(String(data.stage || ''));
+        setJobProgress({ percent: Math.max(1, Math.min(100, Number(data.percent) || 0)), message: data.message || 'Processing...' });
+        if (data.error) setJobError(String(data.error));
+        if (data.stage === 'complete' || data.stage === 'error') {
+          clearInterval(interval);
+          const close = () => {
+            setIsProcessing(false);
+            setJobId(null);
+            setJobProgress(undefined);
+            setJobStage(null);
+            const doneOk = data.stage === 'complete' && !data.error;
+            if (doneOk) {
+              // Clear uploaded files, refresh counts, toast success with link
+              setDataMapFile(null);
+              setBannerPlanFile(null);
+              setDataFile(null);
+              refresh();
+              toast.success('Processing completed successfully!', {
+                description: 'Your files have been processed and are ready for validation.',
+                action: { label: 'View Queue', onClick: () => router.push('/validate') },
+              });
+            } else {
+              toast.error('Processing failed', { description: data.error || jobError || 'Unknown error' });
+            }
+          };
+          // Ensure minimum visible time to avoid flicker
+          const minMs = 800;
+          const elapsed = jobStartTs ? Date.now() - jobStartTs : minMs;
+          if (elapsed < minMs) setTimeout(close, minMs - elapsed);
+          else close();
+        }
+      } catch {
+        // ignore transient errors
+      }
+    }, 1200);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [jobId, router, refresh, jobError, jobStartTs]);
 
   return (
     <div className="py-12 px-4">
@@ -96,8 +147,7 @@ export default function Home() {
             <div className="relative">
               <Button
                 onClick={() => router.push('/validate')}
-                variant={counts.pending > 0 ? "default" : "secondary"}
-                className={counts.pending > 0 ? "bg-orange-500 hover:bg-orange-600" : ""}
+                variant="secondary"
               >
                 Validation Queue
               </Button>
@@ -157,7 +207,7 @@ export default function Home() {
         </div>
       </div>
 
-      <LoadingModal isOpen={isProcessing} currentStep={processingStep} />
+      <LoadingModal isOpen={isProcessing} currentStep={processingStep} jobProgress={jobProgress} />
     </div>
   );
 }

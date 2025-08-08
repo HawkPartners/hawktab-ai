@@ -14,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { 
   ArrowLeft, 
@@ -28,6 +29,7 @@ import {
   ThumbsDown
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { formatUtcDateTime } from '@/lib/utils';
 
 interface SessionData {
   sessionId: string;
@@ -79,6 +81,8 @@ export default function ValidationSession() {
   const [columnFeedback, setColumnFeedback] = useState<ColumnFeedback[]>([]);
   const [bannerNotes, setBannerNotes] = useState<string>('');
   const [crosstabNotes, setCrosstabNotes] = useState<string>('');
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [bannerChecks, setBannerChecks] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchSessionData = async () => {
@@ -97,6 +101,18 @@ export default function ValidationSession() {
 
         const data = await response.json();
         setSessionData(data);
+        if (data?.data?.crosstab?.bannerCuts?.length) {
+          setSelectedGroup(data.data.crosstab.bannerCuts[0].groupName);
+        }
+        if (data?.data?.banner) {
+          const initial: Record<string, boolean> = {};
+          data.data.banner.forEach((g: { groupName: string; columns: { name: string }[] }) => {
+            g.columns.forEach((c: { name: string }) => {
+              initial[`${g.groupName}::${c.name}`] = false;
+            });
+          });
+          setBannerChecks(initial);
+        }
         
         // Initialize column feedback for all columns
         if (data.data.crosstab) {
@@ -126,9 +142,7 @@ export default function ValidationSession() {
     fetchSessionData();
   }, [params]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
-  };
+  const formatDate = (dateString: string) => formatUtcDateTime(dateString);
 
   // Update column feedback
   const updateColumnFeedback = useCallback((columnName: string, groupName: string, updates: Partial<ColumnFeedback>) => {
@@ -148,13 +162,19 @@ export default function ValidationSession() {
     try {
       setIsSaving(true);
 
+      const bannerTotal = Object.keys(bannerChecks).length;
+      const bannerTrue = Object.values(bannerChecks).filter(Boolean).length;
+      const bannerSuccessRate = bannerTotal > 0 ? bannerTrue / bannerTotal : 0;
+
       const validationData: ValidationSession = {
         sessionId: sessionData.sessionId,
         timestamp: new Date().toISOString(),
         bannerValidation: {
           original: sessionData.data.banner,
+          humanEdits: bannerChecks,
           notes: bannerNotes,
-          successRate: 1.0 // TODO: Calculate based on edits
+          successRate: bannerSuccessRate,
+          modifiedAt: new Date().toISOString()
         },
         crosstabValidation: {
           original: sessionData.data.crosstab,
@@ -184,7 +204,7 @@ export default function ValidationSession() {
     } finally {
       setIsSaving(false);
     }
-  }, [sessionData, columnFeedback, bannerNotes, crosstabNotes, router]);
+  }, [sessionData, columnFeedback, bannerNotes, bannerChecks, crosstabNotes, router]);
 
   // Delete session
   const deleteSession = useCallback(async () => {
@@ -369,105 +389,97 @@ export default function ValidationSession() {
                   </CardContent>
                 </Card>
 
-                {/* Crosstab Validation Panel */}
+                {/* Crosstab Validation Panel (simplified) */}
                 <Card className="lg:col-span-1">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <BarChart3 className="w-5 h-5" />
                       Agent Output Validation
                     </CardTitle>
+                    {sessionData.data.crosstab && (
+                      <div className="mt-2">
+                        <Label className="text-sm mr-2">Group</Label>
+                        <Select value={selectedGroup ?? undefined} onValueChange={(v) => setSelectedGroup(v)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose a group" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {sessionData.data.crosstab.bannerCuts.map((g) => (
+                              <SelectItem key={g.groupName} value={g.groupName}>{g.groupName}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4 max-h-96 overflow-y-auto">
-                      {sessionData.data.crosstab.bannerCuts.map((group, groupIndex) => (
-                        <Card key={groupIndex}>
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-base">
-                              Group: {group.groupName}
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-4">
-                        {group.columns.map((column, colIndex) => {
-                          const feedback = columnFeedback.find(
-                            f => f.columnName === column.name && f.groupName === group.groupName
-                          );
-                          
-                          return (
-                            <Card key={colIndex} className="bg-muted/30">
-                              <CardHeader className="pb-3">
-                                <CardTitle className="text-base">{column.name}</CardTitle>
-                              </CardHeader>
-                              <CardContent className="space-y-4">
-                                {/* Agent Output */}
-                                <div className="bg-muted p-3 rounded-lg space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Adjusted:</span>
-                                    <code className="bg-background px-2 py-1 rounded text-xs font-mono text-primary">
-                                      {column.adjusted}
-                                    </code>
-                                  </div>
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Confidence:</span>
-                                    <Badge variant="outline" className={
-                                      column.confidence >= 0.8 
-                                        ? 'border-green-500 text-green-700'
-                                        : column.confidence >= 0.5 
-                                          ? 'border-amber-500 text-amber-700'
-                                          : 'border-red-500 text-red-700'
-                                    }>
-                                      {(column.confidence * 100).toFixed(0)}%
-                                    </Badge>
-                                  </div>
-                                  <div>
-                                    <span className="text-sm font-medium">Reason:</span>
-                                    <p className="text-xs text-muted-foreground mt-1">{column.reason}</p>
-                                  </div>
-                                </div>
-
-                                {/* Validation Controls */}
-                                {feedback && (
-                                  <div className="space-y-4 pt-3">
-                                    <Separator />
-                                    {/* Correct/Incorrect */}
-                                    <div className="space-y-2">
-                                      <Label className="text-sm font-medium">Mapping Correct?</Label>
+                    {!selectedGroup || !sessionData.data.crosstab?.bannerCuts.find((g) => g.groupName === selectedGroup)?.columns.length ? (
+                      <div className="text-sm text-muted-foreground py-10 text-center">
+                        Select a group to review its columns.
+                      </div>
+                    ) : (
+                      <div className="max-h-96 overflow-y-auto">
+                      <Table>
+                        <TableHeader className="sticky top-0 bg-background z-10">
+                          <TableRow>
+                            <TableHead>Column</TableHead>
+                            <TableHead>Adjusted</TableHead>
+                            <TableHead>Confidence</TableHead>
+                            <TableHead>Correct?</TableHead>
+                            <TableHead>Confidence Rating</TableHead>
+                            <TableHead>Reasoning</TableHead>
+                            <TableHead>Human Edit</TableHead>
+                            <TableHead>Notes</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {sessionData.data.crosstab && selectedGroup && (
+                            sessionData.data.crosstab.bannerCuts
+                              .find((g) => g.groupName === selectedGroup)?.columns
+                              .map((column) => {
+                                const feedback = columnFeedback.find(
+                                  (f) => f.columnName === column.name && f.groupName === selectedGroup
+                                );
+                                if (!feedback) return null;
+                                return (
+                                  <TableRow key={column.name} className="odd:bg-muted/30 align-top">
+                                    <TableCell className="font-medium">{column.name}</TableCell>
+                                    <TableCell>
+                                      <code className="bg-muted px-2 py-1 rounded text-xs font-mono text-primary">
+                                        {column.adjusted}
+                                      </code>
+                                    </TableCell>
+                                    <TableCell className="text-xs text-muted-foreground">{(column.confidence * 100).toFixed(0)}%</TableCell>
+                                    <TableCell>
                                       <RadioGroup
-                                        value={feedback.adjustedFieldCorrect ? "correct" : "incorrect"}
-                                        onValueChange={(value) => 
-                                          updateColumnFeedback(column.name, group.groupName, { 
-                                            adjustedFieldCorrect: value === "correct" 
+                                        value={feedback.adjustedFieldCorrect ? 'correct' : 'incorrect'}
+                                        onValueChange={(value) =>
+                                          updateColumnFeedback(column.name, selectedGroup, {
+                                            adjustedFieldCorrect: value === 'correct',
                                           })
                                         }
                                       >
-                                        <div className="flex items-center space-x-2">
-                                          <RadioGroupItem value="correct" id={`${group.groupName}-${column.name}-correct`} />
-                                          <Label htmlFor={`${group.groupName}-${column.name}-correct`} className="flex items-center gap-1">
-                                            <ThumbsUp className="w-4 h-4 text-muted-foreground" />
-                                            Correct
-                                          </Label>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                          <RadioGroupItem value="incorrect" id={`${group.groupName}-${column.name}-incorrect`} />
-                                          <Label htmlFor={`${group.groupName}-${column.name}-incorrect`} className="flex items-center gap-1">
-                                            <ThumbsDown className="w-4 h-4 text-muted-foreground" />
-                                            Incorrect
-                                          </Label>
+                                        <div className="flex items-center gap-3">
+                                          <div className="flex items-center gap-1.5">
+                                            <RadioGroupItem value="correct" id={`${selectedGroup}-${column.name}-correct`} />
+                                            <Label htmlFor={`${selectedGroup}-${column.name}-correct`} className="text-xs">Yes</Label>
+                                          </div>
+                                          <div className="flex items-center gap-1.5">
+                                            <RadioGroupItem value="incorrect" id={`${selectedGroup}-${column.name}-incorrect`} />
+                                            <Label htmlFor={`${selectedGroup}-${column.name}-incorrect`} className="text-xs">No</Label>
+                                          </div>
                                         </div>
                                       </RadioGroup>
-                                    </div>
-
-                                    {/* Confidence Rating */}
-                                    <div className="space-y-2">
-                                      <Label className="text-sm font-medium">Agent&apos;s Confidence Rating</Label>
+                                    </TableCell>
+                                    <TableCell>
                                       <Select
                                         value={feedback.confidenceRating}
                                         onValueChange={(value: 'too_high' | 'correct' | 'too_low') =>
-                                          updateColumnFeedback(column.name, group.groupName, { confidenceRating: value })
+                                          updateColumnFeedback(column.name, selectedGroup, { confidenceRating: value })
                                         }
                                       >
                                         <SelectTrigger>
-                                          <SelectValue placeholder="Rate confidence" />
+                                          <SelectValue placeholder="Rate" />
                                         </SelectTrigger>
                                         <SelectContent>
                                           <SelectItem value="too_high">Too High</SelectItem>
@@ -475,19 +487,16 @@ export default function ValidationSession() {
                                           <SelectItem value="too_low">Too Low</SelectItem>
                                         </SelectContent>
                                       </Select>
-                                    </div>
-
-                                    {/* Reasoning Quality */}
-                                    <div className="space-y-2">
-                                      <Label className="text-sm font-medium">Reasoning Quality</Label>
+                                    </TableCell>
+                                    <TableCell>
                                       <Select
                                         value={feedback.reasoningQuality}
                                         onValueChange={(value: 'poor' | 'good' | 'excellent') =>
-                                          updateColumnFeedback(column.name, group.groupName, { reasoningQuality: value })
+                                          updateColumnFeedback(column.name, selectedGroup, { reasoningQuality: value })
                                         }
                                       >
                                         <SelectTrigger>
-                                          <SelectValue placeholder="Rate reasoning" />
+                                          <SelectValue placeholder="Rate" />
                                         </SelectTrigger>
                                         <SelectContent>
                                           <SelectItem value="poor">Poor</SelectItem>
@@ -495,40 +504,31 @@ export default function ValidationSession() {
                                           <SelectItem value="excellent">Excellent</SelectItem>
                                         </SelectContent>
                                       </Select>
-                                    </div>
-
-                                    {/* Human Edit */}
-                                    <div className="space-y-2">
-                                      <Label className="text-sm font-medium">Corrected R Syntax (if needed)</Label>
+                                    </TableCell>
+                                    <TableCell>
                                       <Input
                                         value={feedback.humanEdit || ''}
-                                        onChange={(e) => updateColumnFeedback(column.name, group.groupName, { humanEdit: e.target.value })}
-                                        placeholder="Enter corrected R syntax..."
+                                        onChange={(e) => updateColumnFeedback(column.name, selectedGroup, { humanEdit: e.target.value })}
+                                        placeholder="R syntax..."
                                         className="font-mono"
                                       />
-                                    </div>
-
-                                    {/* Notes */}
-                                    <div className="space-y-2">
-                                      <Label className="text-sm font-medium">Notes</Label>
+                                    </TableCell>
+                                    <TableCell>
                                       <Textarea
                                         value={feedback.notes || ''}
-                                        onChange={(e) => updateColumnFeedback(column.name, group.groupName, { notes: e.target.value })}
-                                        placeholder="Add notes about this mapping..."
-                                        rows={3}
+                                        onChange={(e) => updateColumnFeedback(column.name, selectedGroup, { notes: e.target.value })}
+                                        placeholder="Notes..."
+                                        rows={2}
                                       />
-                                    </div>
-                                  </div>
-                                )}
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })
+                          )}
+                        </TableBody>
+                      </Table>
                     </div>
+                    )}
                   </CardContent>
                 </Card>
                 
@@ -579,9 +579,15 @@ export default function ValidationSession() {
                                     <code className="bg-background px-2 py-1 rounded text-xs font-mono text-primary">
                                       {column.original}
                                     </code>
-                                    <div className="mt-2 flex items-center text-xs text-muted-foreground">
-                                      <CheckCircle className="w-3 h-3 mr-1" />
-                                      Banner extraction looks correct
+                                    <div className="mt-3 flex items-center gap-2 text-xs">
+                                      <Switch
+                                        id={`banner-${group.groupName}-${column.name}`}
+                                        checked={bannerChecks[`${group.groupName}::${column.name}`] || false}
+                                        onCheckedChange={(checked) =>
+                                          setBannerChecks((prev) => ({ ...prev, [`${group.groupName}::${column.name}`]: checked }))
+                                        }
+                                      />
+                                      <Label htmlFor={`banner-${group.groupName}-${column.name}`}>Looks correct</Label>
                                     </div>
                                   </CardContent>
                                 </Card>

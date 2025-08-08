@@ -3,6 +3,11 @@
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 
+export interface JobProgress {
+  percent: number;
+  message: string;
+}
+
 export interface ProcessingStep {
   step: 'initial' | 'banner' | 'crosstab' | 'complete';
   message: string;
@@ -10,7 +15,8 @@ export interface ProcessingStep {
 
 interface LoadingModalProps {
   isOpen: boolean;
-  currentStep?: ProcessingStep;
+  currentStep?: ProcessingStep; // backward compat
+  jobProgress?: JobProgress;    // preferred
 }
 
 const STEP_PROGRESS = {
@@ -27,10 +33,12 @@ const STEP_MESSAGES = {
   complete: 'Almost done...'
 };
 
-export default function LoadingModal({ isOpen, currentStep }: LoadingModalProps) {
+export default function LoadingModal({ isOpen, currentStep, jobProgress }: LoadingModalProps) {
   const step = currentStep?.step || 'initial';
-  const message = currentStep?.message || STEP_MESSAGES[step];
-  const progress = STEP_PROGRESS[step];
+  const fallbackMessage = currentStep?.message || STEP_MESSAGES[step];
+  const fallbackProgress = STEP_PROGRESS[step];
+  const message = jobProgress?.message ?? fallbackMessage;
+  const progress = jobProgress?.percent ?? fallbackProgress;
 
   return (
     <Dialog open={isOpen}>
