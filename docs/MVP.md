@@ -126,12 +126,12 @@ Final recommendation: Keep analytics in R on .sav via haven::read_sav; render Ex
 - SurveyAgent deferred to avoid scope creep; can be added without breaking contracts.
 
 ### Phased Plan
-1) Cuts & Tables foundation
+1) Cuts & Tables foundation — COMPLETED ✅
    - Implement `cutsSpec.ts` to transform CrosstabAgent output → stable cut ids and `adjusted` expressions.
    - Implement `tablePlan.ts` heuristics to enumerate tables from agent data map; include nets templates.
    - Write `r/manifest.json` with pointers: dataFile (.sav), cutsSpec, tablePlan.
 
-2) R Script Agent with validation
+2) R Script Agent with validation — COMPLETED ✅
    - Define agent schema: input (table + cuts + data map slice) → output { rCode, metadata }.
    - Add validators: schema check, static lint, dry-run compile on a tiny sampled frame.
    - Generate `r/scripts/<tableId>.R` and `r/master.R` (loads .sav once, sources per-table scripts).

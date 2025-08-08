@@ -147,11 +147,29 @@ export async function POST(request: NextRequest) {
         const agentContext = prepareAgentContext(dualOutputs);
         await processAllGroups(agentContext.dataMap, agentContext.bannerPlan, outputFolderTimestamp);
 
-        // Write validation status
+        // Write validation status and persist SPSS to session outputs
         updateJob(job.jobId, { stage: 'writing_outputs', percent: 85, message: 'Writing outputs and status...' });
         if (process.env.NODE_ENV === 'development') {
           try {
             const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolderTimestamp);
+            await fs.mkdir(outputDir, { recursive: true });
+
+            // Persist SPSS file into session folder with stable name for R
+            try {
+              const stableSavPath = path.join(outputDir, 'dataFile.sav');
+              await fs.copyFile(spssPath, stableSavPath);
+            } catch {}
+
+            // Write minimal inputs manifest for downstream tools
+            try {
+              const inputs = {
+                dataFile: 'dataFile.sav',
+                bannerPlanFile: 'banner-*.json',
+                dataMapFile: 'dataMap-*.json',
+              };
+              await fs.writeFile(path.join(outputDir, 'inputs.json'), JSON.stringify(inputs, null, 2));
+            } catch {}
+
             const validationStatus: ValidationStatus = {
               sessionId: outputFolderTimestamp,
               status: 'pending',

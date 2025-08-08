@@ -1,0 +1,155 @@
+{
+  "sessionId": "output-2025-08-08T14-53-39-903Z",
+  "generatedAt": "2025-08-08T14:58:08.292Z",
+  "groups": [
+    {
+      "groupName": "Specialty",
+      "columns": [
+        {
+          "name": "Cards",
+          "expression": "(S2 == 1 & S2a == 1)",
+          "confidence": 0.9,
+          "reason": "Both S2 and S2a are direct matches in the data map. S2=1 corresponds to Cardiologist, and S2a=1 corresponds to working in a Cardiologist office. Combined with AND logic, the R syntax is straightforward."
+        },
+        {
+          "name": "PCPs",
+          "expression": "S2 == 2",
+          "confidence": 0.97,
+          "reason": "S2 is a direct match; value 2 corresponds to Internal Medicine / General Practitioner / Primary Care / Family Practice, which aligns with PCPs. Simple equality mapping."
+        },
+        {
+          "name": "Nephs",
+          "expression": "S2 == 3",
+          "confidence": 0.97,
+          "reason": "S2 is a direct match; value 3 corresponds to Nephrologist (Nephs). Direct and unambiguous."
+        },
+        {
+          "name": "Endos",
+          "expression": "S2 == 4",
+          "confidence": 0.97,
+          "reason": "S2 is a direct match; value 4 corresponds to Endocrinologist (Endos). Direct and unambiguous."
+        },
+        {
+          "name": "Lipids",
+          "expression": "S2 == 5",
+          "confidence": 0.97,
+          "reason": "S2 is a direct match; value 5 corresponds to Lipidologist (Lipids). Direct and unambiguous."
+        }
+      ]
+    },
+    {
+      "groupName": "Role",
+      "columns": [
+        {
+          "name": "HCP",
+          "expression": "S2b == 1",
+          "confidence": 0.95,
+          "reason": "Mapped to S2b (primary role) where 1 = Physician. 'HCP' is interpreted as physicians given the separate NP/PA category. Direct variable match with clear codes."
+        },
+        {
+          "name": "NP/PA",
+          "expression": "S2b %in% c(2,3)",
+          "confidence": 0.95,
+          "reason": "Mapped to S2b (primary role) where 2 = Nurse Practitioner and 3 = Physician’s Assistant. Direct mapping of NP/PA to these codes."
+        }
+      ]
+    },
+    {
+      "groupName": "Volume of Adult ASCVD Patients",
+      "columns": [
+        {
+          "name": "Higher",
+          "expression": "S11 > median(S11, na.rm=TRUE)",
+          "confidence": 0.35,
+          "reason": "Original expression is a placeholder with no cutoff specified. Variable 'S11' corresponds to the number of adult patients with confirmed hypercholesterolemia and established CVD (i.e., adult ASCVD volume). Using median(S11) as a provisional cutoff for 'Higher'. Manual review needed to define the specific cutoff."
+        },
+        {
+          "name": "Lower",
+          "expression": "S11 <= median(S11, na.rm=TRUE)",
+          "confidence": 0.35,
+          "reason": "Original expression is a placeholder with no cutoff specified. Variable 'S11' corresponds to the number of adult patients with confirmed hypercholesterolemia and established CVD (i.e., adult ASCVD volume). Using median(S11) as a provisional cutoff for 'Lower'. Manual review needed to define the specific cutoff."
+        }
+      ]
+    },
+    {
+      "groupName": "Tiers",
+      "columns": [
+        {
+          "name": "Tier 1",
+          "expression": "qLIST_TIER == 1",
+          "confidence": 0.98,
+          "reason": "Mapped 'Tier 1 from list' to qLIST_TIER based on data map: qLIST_TIER answer option 1 = TIER 1. Direct, unambiguous mapping."
+        },
+        {
+          "name": "Tier 2",
+          "expression": "qLIST_TIER == 2",
+          "confidence": 0.98,
+          "reason": "Mapped 'Tier 2 from list' to qLIST_TIER based on data map: qLIST_TIER answer option 2 = TIER 2. Direct, unambiguous mapping."
+        },
+        {
+          "name": "Tier 3",
+          "expression": "qLIST_TIER == 3",
+          "confidence": 0.98,
+          "reason": "Mapped 'Tier 3 from list' to qLIST_TIER based on data map: qLIST_TIER answer option 3 = TIER 3. Direct, unambiguous mapping."
+        },
+        {
+          "name": "Tier 4",
+          "expression": "qLIST_TIER == 4",
+          "confidence": 0.98,
+          "reason": "Mapped 'Tier 4 from list' to qLIST_TIER based on data map: qLIST_TIER answer option 4 = TIER 4. Direct, unambiguous mapping."
+        }
+      ]
+    },
+    {
+      "groupName": "Segments",
+      "columns": [
+        {
+          "name": "Segment A",
+          "expression": "Segment == \"A\"",
+          "confidence": 0.65,
+          "reason": "Mapped to variable 'Segment' found in data map. No answer options defined, so assumed categories are coded as strings 'A', 'B', 'C', 'D'. Confidence reduced due to this assumption and possibility of numeric coding."
+        },
+        {
+          "name": "Segment B",
+          "expression": "Segment == \"B\"",
+          "confidence": 0.65,
+          "reason": "Mapped to variable 'Segment' found in data map. No answer options defined, so assumed categories are coded as strings 'A', 'B', 'C', 'D'. Confidence reduced due to this assumption and possibility of numeric coding."
+        },
+        {
+          "name": "Segment C",
+          "expression": "Segment == \"C\"",
+          "confidence": 0.65,
+          "reason": "Mapped to variable 'Segment' found in data map. No answer options defined, so assumed categories are coded as strings 'A', 'B', 'C', 'D'. Confidence reduced due to this assumption and possibility of numeric coding."
+        },
+        {
+          "name": "Segment D",
+          "expression": "Segment == \"D\"",
+          "confidence": 0.65,
+          "reason": "Mapped to variable 'Segment' found in data map. No answer options defined, so assumed categories are coded as strings 'A', 'B', 'C', 'D'. Confidence reduced due to this assumption and possibility of numeric coding."
+        }
+      ]
+    },
+    {
+      "groupName": "Priority Accounts",
+      "columns": [
+        {
+          "name": "Priority Account",
+          "expression": "qLIST_PRIORITY_ACCOUNT == 1",
+          "confidence": 0.98,
+          "reason": "Mapped 'Priority Account from list' to variable 'qLIST_PRIORITY_ACCOUNT' (LIST PRIORITY ACCOUNT) with value 1=PRIORITY. Direct match on data map answer options yields clear mapping, high confidence."
+        },
+        {
+          "name": "Non-Priority Account",
+          "expression": "qLIST_PRIORITY_ACCOUNT == 2",
+          "confidence": 0.98,
+          "reason": "Mapped 'Non-Priority Account from list' to variable 'qLIST_PRIORITY_ACCOUNT' (LIST PRIORITY ACCOUNT) with value 2=NOT PRIORITY. Direct match on data map answer options yields clear mapping, high confidence."
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "groupCount": 6,
+    "columnCount": 19,
+    "averageConfidence": 0.8347368421052633
+  }
+}
