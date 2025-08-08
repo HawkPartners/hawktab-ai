@@ -143,11 +143,11 @@ export const generateBasicDualOutputs = (rawBanner: unknown, rawDataMap: Verbose
   })) || [];
   
   const agentDataMap: AgentDataMap[] = rawDataMap.map(item => ({
-    Column: item.Column,
-    Description: item.Description,
-    Answer_Options: item.Answer_Options,
-    ParentQuestion: item.ParentQ !== 'NA' ? item.ParentQ : undefined,
-    Context: item.Context || undefined
+    Column: item.column,
+    Description: item.description,
+    Answer_Options: item.answerOptions,
+    ParentQuestion: item.parentQuestion !== 'NA' ? item.parentQuestion : undefined,
+    Context: item.context || undefined
   }));
   
   return {

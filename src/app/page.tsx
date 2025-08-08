@@ -56,25 +56,7 @@ export default function Home() {
         setJobStartTs(Date.now());
       }
       
-      // Handle successful processing
-      console.log('Processing completed:', result);
-      
-      // Clear uploaded files to reset UI
-      setDataMapFile(null);
-      setBannerPlanFile(null);
-      setDataFile(null);
-      
-      // Refresh validation counts
-      refresh();
-      
-      // Show success with validation link
-      toast.success('Processing completed successfully!', {
-        description: 'Your files have been processed and are ready for validation.',
-        action: {
-          label: 'View Queue',
-          onClick: () => router.push('/validate')
-        }
-      });
+      // Do not toast success or clear files here; completion toast handled by the poller when stage==='complete'
       
     } catch (error) {
       console.error('Processing error:', error);

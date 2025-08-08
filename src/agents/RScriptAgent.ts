@@ -12,6 +12,7 @@ import { withTrace, getGlobalTraceProvider } from '@openai/agents';
 import type { ValidationResultType } from '@/schemas/agentOutputSchema';
 import { DataMapSchema, type DataMapType, getVariableNames } from '@/schemas/dataMapSchema';
 import { validateRSyntax } from '@/guardrails/outputValidation';
+import type { RManifest } from '@/lib/r/Manifest';
 
 const RScriptIssueSchema = z.object({
   groupName: z.string(),
@@ -187,6 +188,96 @@ export class RScriptAgent {
     }
 
     return result;
+  }
+
+  // Generate a single master R script from a deterministic manifest
+  async generateMasterFromManifest(sessionId: string, manifest: RManifest): Promise<string> {
+    const sanitize = (s: string) => s.replace(/[^A-Za-z0-9_]/g, '_');
+
+    const header = [
+      '# HawkTab AI — master R (deterministic)',
+      `# Session: ${sessionId}`,
+      `# Generated: ${new Date().toISOString()}`,
+      '',
+      'library(haven)',
+      'library(jsonlite)',
+      `data <- read_sav('${manifest.dataFilePath}')`,
+      '',
+    ];
+
+    const cutLines: string[] = [];
+    cutLines.push('warnings <- character()');
+    cutLines.push('');
+    // Define cuts with tryCatch, then add only valid ones to cuts list
+    for (const cut of manifest.cutsSpec.cuts) {
+      const varName = `cut_${sanitize(cut.id)}`;
+      const nameEsc = cut.name.replace(/'/g, "\\'");
+      cutLines.push(`# Cut: ${cut.name}`);
+      cutLines.push(`${varName} <- tryCatch({ with(data, ${cut.rExpression}) }, error = function(e) { warnings <<- c(warnings, paste0('cut:', '${nameEsc}', ':', e$message)); NULL })`);
+    }
+    cutLines.push('');
+    cutLines.push('cuts <- list()');
+    for (const cut of manifest.cutsSpec.cuts) {
+      const varName = `cut_${sanitize(cut.id)}`;
+      const nameEsc = cut.name.replace(/'/g, "\\'");
+      cutLines.push(`if (!is.null(${varName}) && is.logical(${varName})) { cuts[['${nameEsc}']] <- ${varName} } else { warnings <- c(warnings, paste0('cut_invalid:', '${nameEsc}')) }`);
+    }
+    cutLines.push('');
+
+    // Preflight arrays for JSON report
+    cutLines.push('preflight_cuts <- lapply(names(cuts), function(nm) list(name = nm, valid = TRUE, error = NA))');
+    cutLines.push('');
+
+    const helper = [
+      `dir.create('temp-outputs/${sessionId}/results', recursive = TRUE, showWarnings = FALSE)`,
+      'write_table <- function(data, var_name, levels_df, table_id) {',
+      "  v <- tryCatch({ data[[var_name]] }, error = function(e) { warnings <<- c(warnings, paste0('var:', var_name, ':', e$message)); return(NULL) })",
+      '  if (is.null(v)) { return(invisible(NULL)) }',
+      '  if (!is.null(levels_df)) {',
+      '    v <- factor(v, levels = levels_df$value, labels = levels_df$label)',
+      '  }',
+      '  count_list <- lapply(cuts, function(idx) {',
+      "    tab <- table(v[idx], useNA = 'no')",
+      '    if (is.factor(v)) {',
+      '      lv <- levels(v)',
+      '      res <- as.integer(tab[lv])',
+      '      res[is.na(res)] <- 0',
+      '      res',
+      '    } else {',
+      '      as.integer(tab)',
+      '    }',
+      '  })',
+      '  counts <- do.call(cbind, count_list)',
+      '  colnames(counts) <- names(cuts)',
+      '  rn <- if (is.factor(v)) levels(v) else rownames(table(v))',
+      '  rownames(counts) <- rn',
+      '  col_totals <- colSums(counts)',
+      '  denom <- ifelse(col_totals == 0, 1, col_totals)',
+      '  perc <- sweep(counts, 2, denom, "/") * 100',
+      '  out <- data.frame(Level = rownames(counts), counts, perc, check.names = FALSE)',
+      `  write.csv(out, sprintf('temp-outputs/${sessionId}/results/%s.csv', table_id), row.names = FALSE)`,
+      '}',
+      '',
+    ];
+
+    const tableCalls: string[] = [];
+    // Build preflight for variables
+    tableCalls.push('preflight_vars <- list()');
+    for (const t of manifest.tablePlan.tables) {
+      const levelsDef = t.levels
+        ? `data.frame(value=c(${t.levels.map((l) => `${l.value}`).join(',')}), label=c(${t.levels
+            .map((l) => `'${String(l.label).replace(/'/g, "\\'")}'`)
+            .join(',')}))`
+        : 'NULL';
+      tableCalls.push(`ok <- tryCatch({ data[['${t.questionVar}']]; TRUE }, error = function(e) { warnings <<- c(warnings, paste0('var:', '${t.questionVar}', ':', e$message)); FALSE })`);
+      tableCalls.push(`preflight_vars <- append(preflight_vars, list(list(var='${t.questionVar}', valid=ok)))`);
+      tableCalls.push(`if (ok) write_table(data, '${t.questionVar}', ${levelsDef}, '${t.id}')`);
+    }
+    // Write preflight summary JSON
+    tableCalls.push(`preflight <- list(cuts = preflight_cuts, vars = preflight_vars, warnings = warnings)`);
+    tableCalls.push(`write_json(preflight, 'temp-outputs/${sessionId}/r/preflight.json', auto_unbox = TRUE, pretty = TRUE)`);
+
+    return [...header, ...cutLines, ...helper, ...tableCalls, ''].join('\n');
   }
 }
 

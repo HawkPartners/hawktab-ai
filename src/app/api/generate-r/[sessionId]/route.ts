@@ -8,6 +8,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { RScriptAgent } from '@/agents/RScriptAgent';
+import { buildTablePlanFromDataMap } from '@/lib/tables/TablePlan';
+import { buildCutsSpec } from '@/lib/tables/CutsSpec';
+import { buildRManifest } from '@/lib/r/Manifest';
+import type { ValidationResultType } from '@/schemas/agentOutputSchema';
+import { DataMapSchema, type DataMapType } from '@/schemas/dataMapSchema';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ sessionId: string }> }) {
   try {
@@ -27,23 +32,50 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ ses
     }
 
     const agent = new RScriptAgent();
-    const result = await agent.generate(sessionId);
 
-    const rPath = path.join(sessionDir, 'r-script.R');
+    // Preferred path: deterministic manifest generation
+    const files = await fs.readdir(sessionDir);
+    const crosstabFile = files.find((f) => f.includes('crosstab-output') && f.endsWith('.json'));
+    // Prefer verbose data map for TablePlan
+    const verboseMapFile = files.find((f) => f.includes('dataMap-verbose') && f.endsWith('.json'));
+    const dataMapFile = verboseMapFile ?? files.find((f) => f.includes('dataMap-agent') && f.endsWith('.json'));
+    if (!crosstabFile || !dataMapFile) {
+      return NextResponse.json({ error: 'Missing crosstab or data map artifacts' }, { status: 400 });
+    }
+    const crosstabContent = await fs.readFile(path.join(sessionDir, crosstabFile), 'utf-8');
+    const validation = JSON.parse(crosstabContent) as ValidationResultType;
+    const dataMapContent = await fs.readFile(path.join(sessionDir, dataMapFile), 'utf-8');
+    const dataMap = DataMapSchema.parse(JSON.parse(dataMapContent)) as DataMapType;
+
+    const tablePlan = buildTablePlanFromDataMap(dataMap);
+    const cutsSpec = buildCutsSpec(validation);
+    const manifest = buildRManifest(sessionId, tablePlan, cutsSpec);
+
+    // Write manifest for introspection
+    const rDir = path.join(sessionDir, 'r');
+    await fs.mkdir(rDir, { recursive: true });
+    const manifestPath = path.join(rDir, 'manifest.json');
+    await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2), 'utf-8');
+
+    // Generate master R script deterministically
+    const master = await agent.generateMasterFromManifest(sessionId, manifest);
+    const masterPath = path.join(rDir, 'master.R');
+    await fs.writeFile(masterPath, master, 'utf-8');
+
+    // Also run the existing summary validation to keep r-validation.json
+    const summary = await agent.generate(sessionId);
     const validationPath = path.join(sessionDir, 'r-validation.json');
-    await Promise.all([
-      fs.writeFile(rPath, result.script, 'utf-8'),
-      fs.writeFile(validationPath, JSON.stringify({ issues: result.issues, stats: result.stats }, null, 2), 'utf-8'),
-    ]);
+    await fs.writeFile(validationPath, JSON.stringify({ issues: summary.issues, stats: summary.stats }, null, 2), 'utf-8');
 
     return NextResponse.json({
       success: true,
       sessionId,
       files: {
-        r: `temp-outputs/${sessionId}/r-script.R`,
+        manifest: `temp-outputs/${sessionId}/r/manifest.json`,
+        master: `temp-outputs/${sessionId}/r/master.R`,
         validation: `temp-outputs/${sessionId}/r-validation.json`,
       },
-      stats: result.stats,
+      stats: summary.stats,
     });
   } catch (error) {
     return NextResponse.json(

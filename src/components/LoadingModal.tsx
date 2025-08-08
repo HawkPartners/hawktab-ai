@@ -20,9 +20,9 @@ interface LoadingModalProps {
 }
 
 const STEP_PROGRESS = {
-  initial: 33,
-  banner: 66,
-  crosstab: 100,
+  initial: 5,
+  banner: 40,
+  crosstab: 80,
   complete: 100
 };
 

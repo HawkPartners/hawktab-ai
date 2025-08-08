@@ -19,6 +19,12 @@ import { BannerAgent, type BannerProcessingResult } from '../../../agents/Banner
 import { processAllGroups } from '../../../agents/CrosstabAgent';
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import { buildTablePlanFromDataMap } from '@/lib/tables/TablePlan';
+import { buildCutsSpec } from '@/lib/tables/CutsSpec';
+import { buildRManifest } from '@/lib/r/Manifest';
+import { RScriptAgent } from '@/agents/RScriptAgent';
+import { DataMapSchema, type DataMapType } from '@/schemas/dataMapSchema';
+import type { ValidationResultType } from '@/schemas/agentOutputSchema';
 import type { ValidationStatus } from '../../../schemas/humanValidationSchema';
 
 export async function POST(request: NextRequest) {
@@ -149,10 +155,21 @@ export async function POST(request: NextRequest) {
         updateJob(job.jobId, { stage: 'parsing', percent: 40, message: 'Generating dual outputs...' });
         const dualOutputs = await generateDualOutputs(bannerProcessingResult, dataMapPath, spssPath, outputFolderTimestamp);
 
-        // Crosstab agent
-        updateJob(job.jobId, { stage: 'crosstab_agent', percent: 65, message: 'Validating banner expressions...' });
+        // Crosstab agent with unified trace and per-group progress callback
         const agentContext = prepareAgentContext(dualOutputs);
-        await processAllGroups(agentContext.dataMap, agentContext.bannerPlan, outputFolderTimestamp);
+        updateJob(job.jobId, { stage: 'crosstab_agent', percent: 65, message: `Validating banner expressions (0/${agentContext.bannerPlan.bannerCuts.length})...` });
+        const _totalGroups = agentContext.bannerPlan.bannerCuts.length || 1;
+        const base = 65;
+        const span = 20; // 65% → 85% reserved for crosstab
+        await processAllGroups(
+          agentContext.dataMap,
+          agentContext.bannerPlan,
+          outputFolderTimestamp,
+          (completed, total) => {
+            const percent = Math.min(95, base + Math.floor((completed / total) * span));
+            updateJob(job.jobId, { stage: 'crosstab_agent', percent, message: `Validating banner expressions (${completed}/${total})...` });
+          }
+        );
 
         // Write validation status and persist SPSS to session outputs
         updateJob(job.jobId, { stage: 'writing_outputs', percent: 85, message: 'Writing outputs and status...' });
@@ -184,6 +201,39 @@ export async function POST(request: NextRequest) {
             };
             await fs.writeFile(path.join(outputDir, 'validation-status.json'), JSON.stringify(validationStatus, null, 2));
           } catch {}
+        }
+
+        // Deterministic R generation (manifest + master.R + r-validation.json)
+        try {
+          updateJob(job.jobId, { stage: 'r_generation', percent: 92, message: 'Generating R manifest and master script...' });
+          const sessionDir = path.join(process.cwd(), 'temp-outputs', outputFolderTimestamp);
+          const files = await fs.readdir(sessionDir);
+          const crosstabFile = files.find((f) => f.includes('crosstab-output') && f.endsWith('.json'));
+          const dataMapFile = files.find((f) => f.includes('dataMap-agent') && f.endsWith('.json'));
+          if (crosstabFile && dataMapFile) {
+            const crosstabContent = await fs.readFile(path.join(sessionDir, crosstabFile), 'utf-8');
+            const validation = JSON.parse(crosstabContent) as ValidationResultType;
+            const dataMapContent = await fs.readFile(path.join(sessionDir, dataMapFile), 'utf-8');
+            const dataMap = DataMapSchema.parse(JSON.parse(dataMapContent)) as DataMapType;
+
+            const tablePlan = buildTablePlanFromDataMap(dataMap);
+            const cutsSpec = buildCutsSpec(validation);
+            const manifest = buildRManifest(outputFolderTimestamp, tablePlan, cutsSpec);
+
+            const rDir = path.join(sessionDir, 'r');
+            await fs.mkdir(rDir, { recursive: true });
+            await fs.writeFile(path.join(rDir, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf-8');
+
+            const agent = new RScriptAgent();
+            const master = await agent.generateMasterFromManifest(outputFolderTimestamp, manifest);
+            await fs.writeFile(path.join(rDir, 'master.R'), master, 'utf-8');
+
+            // Keep validation summary aligned with existing tooling
+            const summary = await agent.generate(outputFolderTimestamp);
+            await fs.writeFile(path.join(sessionDir, 'r-validation.json'), JSON.stringify({ issues: summary.issues, stats: summary.stats }, null, 2), 'utf-8');
+          }
+        } catch (rError) {
+          console.warn('[API] R generation step skipped due to error:', rError);
         }
 
         updateJob(job.jobId, { stage: 'queued_for_validation', percent: 95, message: 'Queued for validation', sessionId: outputFolderTimestamp });

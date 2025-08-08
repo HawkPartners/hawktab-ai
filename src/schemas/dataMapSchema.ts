@@ -2,21 +2,21 @@ import { z } from 'zod';
 
 // Simplified data map schema for agent processing
 // Only includes essential fields needed for variable validation
-export const DataMapSchema = z.array(z.object({
-  Column: z.string(),        // Variable name: "S2", "S2a", "A3r1"
-  Description: z.string(),   // Question text
-  Answer_Options: z.string() // "1=Cardiologist,2=Internal Medicine"
-}));
+export const DataMapItemSchema = z.object({
+  Level: z.string().optional(),       // "parent" | "sub"
+  ParentQ: z.string().optional(),     // Parent question id/name
+  Column: z.string(),                 // Variable name: "S2", "S2a", "A3r1"
+  Description: z.string(),            // Question text
+  Value_Type: z.string().optional(),  // e.g., "Values: 0-1"
+  Answer_Options: z.string().optional(), // "1=Cardiologist,2=..."
+  Context: z.string().optional()
+});
+
+export const DataMapSchema = z.array(DataMapItemSchema);
 
 export type DataMapType = z.infer<typeof DataMapSchema>;
 
 // Individual data map item type for easier handling
-export const DataMapItemSchema = z.object({
-  Column: z.string(),
-  Description: z.string(),
-  Answer_Options: z.string()
-});
-
 export type DataMapItemType = z.infer<typeof DataMapItemSchema>;
 
 // Schema validation utilities
@@ -41,6 +41,6 @@ export const searchByDescription = (dataMap: DataMapType, searchTerm: string): D
   const term = searchTerm.toLowerCase();
   return dataMap.filter(item => 
     item.Description.toLowerCase().includes(term) ||
-    item.Answer_Options.toLowerCase().includes(term)
+    (item.Answer_Options ? item.Answer_Options.toLowerCase().includes(term) : false)
   );
 };

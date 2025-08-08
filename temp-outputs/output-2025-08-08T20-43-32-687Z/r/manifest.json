@@ -1,0 +1,520 @@
+{
+  "dataFilePath": "temp-outputs/output-2025-08-08T20-43-32-687Z/dataFile.sav",
+  "tablePlan": {
+    "tables": [
+      {
+        "id": "status",
+        "title": "Participant status",
+        "questionVar": "status",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Terminated"
+          },
+          {
+            "value": 2,
+            "label": "Overquota"
+          },
+          {
+            "value": 3,
+            "label": "Qualified"
+          },
+          {
+            "value": 4,
+            "label": "Partial"
+          }
+        ]
+      },
+      {
+        "id": "s1",
+        "title": "You are about to enter a market research survey. We are being asked to pass on to our client details of adverse events about individual patients or groups of patients and / or product complaints that are raised during the course of market research surveys. Although this is a market research survey, and what is contributed is treated in confidence, should you raise an adverse event and / or product complaint, we will need to report this even if it has already been reported by you directly to the company or the regulatory authorities. In such a situation you will be contacted to ask whether or not you are willing to waive the confidentiality given to you under the market research codes of conduct specifically in relation to that adverse event and / or product complaint. Everything else you contribute during the course of the survey will continue to remain confidential. Are you happy to proceed on this basis?",
+        "questionVar": "S1",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "I would like to proceed and protect my identity"
+          },
+          {
+            "value": 2,
+            "label": "I would like to proceed and give permission for my contact details to be passed on to the Drug Safety department of the company if an adverse event is mentioned by me during the survey"
+          },
+          {
+            "value": 3,
+            "label": "I don�t want to proceed"
+          }
+        ]
+      },
+      {
+        "id": "s2b",
+        "title": "What is your primary role?",
+        "questionVar": "S2b",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Physician"
+          },
+          {
+            "value": 2,
+            "label": "Nurse Practitioner"
+          },
+          {
+            "value": 3,
+            "label": "Physician�s Assistant"
+          },
+          {
+            "value": 99,
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "What is your primary specialty?",
+        "questionVar": "S2",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Cardiologist"
+          },
+          {
+            "value": 2,
+            "label": "Internal Medicine / General Practitioner / Primary Care / Family Practice"
+          },
+          {
+            "value": 3,
+            "label": "Nephrologist"
+          },
+          {
+            "value": 4,
+            "label": "Endocrinologist"
+          },
+          {
+            "value": 5,
+            "label": "Lipidologist"
+          },
+          {
+            "value": 6,
+            "label": "Nurse Practitioner"
+          },
+          {
+            "value": 7,
+            "label": "Physician�s Assistant"
+          },
+          {
+            "value": 99,
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "s2a",
+        "title": "In what type of doctor�s office do you work?",
+        "questionVar": "S2a",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Cardiologist"
+          },
+          {
+            "value": 2,
+            "label": "Internal Medicine / General Practitioner / Primary Care / Family Practice"
+          },
+          {
+            "value": 3,
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "qcard-specialty",
+        "title": "CARD SPECIALTY",
+        "questionVar": "qCARD_SPECIALTY",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "CARD"
+          },
+          {
+            "value": 2,
+            "label": "NEPH/ENDO/LIP"
+          }
+        ]
+      },
+      {
+        "id": "qspecialty",
+        "title": "SPECIALTY",
+        "questionVar": "qSPECIALTY",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "CARD"
+          },
+          {
+            "value": 2,
+            "label": "PCP"
+          },
+          {
+            "value": 3,
+            "label": "NPPA"
+          }
+        ]
+      },
+      {
+        "id": "s3a",
+        "title": "What type of Cardiologist are you primarily?",
+        "questionVar": "S3a",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Interventional Cardiologist"
+          },
+          {
+            "value": 2,
+            "label": "General Cardiologist"
+          },
+          {
+            "value": 3,
+            "label": "Preventative Cardiologist"
+          }
+        ]
+      },
+      {
+        "id": "qtype-of-card",
+        "title": "TYPE OF CARD",
+        "questionVar": "qTYPE_OF_CARD",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Interventional Card"
+          },
+          {
+            "value": 2,
+            "label": "General Card"
+          },
+          {
+            "value": 3,
+            "label": "Preventative Card"
+          }
+        ]
+      },
+      {
+        "id": "qon-list-off-list",
+        "title": "ON-LIST/OFF-LIST",
+        "questionVar": "qON_LIST_OFF_LIST",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "CARD ON-LIST"
+          },
+          {
+            "value": 2,
+            "label": "CARD OFF-LIST"
+          },
+          {
+            "value": 3,
+            "label": "PCP ON-LIST"
+          },
+          {
+            "value": 4,
+            "label": "PCP OFF-LIST"
+          },
+          {
+            "value": 5,
+            "label": "NPPA ON-LIST"
+          },
+          {
+            "value": 6,
+            "label": "NPPA OFF-LIST"
+          }
+        ]
+      },
+      {
+        "id": "qlist-tier",
+        "title": "LIST TIER",
+        "questionVar": "qLIST_TIER",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "TIER 1"
+          },
+          {
+            "value": 2,
+            "label": "TIER 2"
+          },
+          {
+            "value": 3,
+            "label": "TIER 3"
+          },
+          {
+            "value": 4,
+            "label": "TIER 4"
+          }
+        ]
+      },
+      {
+        "id": "qlist-priority-account",
+        "title": "LIST PRIORITY ACCOUNT",
+        "questionVar": "qLIST_PRIORITY_ACCOUNT",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "PRIORITY"
+          },
+          {
+            "value": 2,
+            "label": "NOT PRIORITY"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Are you currently board certified or eligible in your specialty?",
+        "questionVar": "S4",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Board Eligible"
+          },
+          {
+            "value": 2,
+            "label": "Board Certified"
+          },
+          {
+            "value": 3,
+            "label": "Neither"
+          }
+        ]
+      },
+      {
+        "id": "s7",
+        "title": "And to confirm, are you currently practicing full-time (i.e. 40+ hours weekly across all settings) or part-time?",
+        "questionVar": "S7",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Full-Time"
+          },
+          {
+            "value": 2,
+            "label": "Part-Time"
+          }
+        ]
+      },
+      {
+        "id": "s9",
+        "title": "Which of the following best represents the setting in which you spend most of your professional time?",
+        "questionVar": "S9",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Private Solo Practice"
+          },
+          {
+            "value": 2,
+            "label": "Private Group Practice"
+          },
+          {
+            "value": 3,
+            "label": "Multi-specialty Practice / Comprehensive Care"
+          },
+          {
+            "value": 4,
+            "label": "Staff HMO"
+          },
+          {
+            "value": 5,
+            "label": "Community Hospital"
+          },
+          {
+            "value": 6,
+            "label": "Academic/University Hospital"
+          },
+          {
+            "value": 7,
+            "label": "VA Hospital"
+          },
+          {
+            "value": 8,
+            "label": "None of the above"
+          }
+        ]
+      },
+      {
+        "id": "a2a",
+        "title": "To the best of your knowledge, which of the following best describes the current post-ACS guideline recommendation regarding lipid-lowering?",
+        "questionVar": "A2a",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels ?55 mg/dL"
+          },
+          {
+            "value": 2,
+            "label": "Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels ?70 mg/dL"
+          },
+          {
+            "value": 3,
+            "label": "Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels ?100 mg/dL"
+          }
+        ]
+      },
+      {
+        "id": "a2b",
+        "title": "And to the best of your knowledge, which of the following best describes the current post-ACS guideline recommendation specific to lipid-lowering therapy?",
+        "questionVar": "A2b",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Recommend a statin first"
+          },
+          {
+            "value": 2,
+            "label": "Recommend a statin + ezetimibe first"
+          },
+          {
+            "value": 3,
+            "label": "Recommend a PCSK9i first"
+          }
+        ]
+      },
+      {
+        "id": "a5",
+        "title": "How quickly might you expect to change your prescribing of PCSK9 inhibitors based on this indication change?",
+        "questionVar": "A5",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Within 3 months"
+          },
+          {
+            "value": 2,
+            "label": "4-6 months"
+          },
+          {
+            "value": 3,
+            "label": "7-12 months"
+          },
+          {
+            "value": 4,
+            "label": "Over a year"
+          }
+        ]
+      },
+      {
+        "id": "region",
+        "title": "Region",
+        "questionVar": "Region",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Northeast"
+          },
+          {
+            "value": 2,
+            "label": "South"
+          },
+          {
+            "value": 3,
+            "label": "Midwest"
+          },
+          {
+            "value": 4,
+            "label": "West"
+          },
+          {
+            "value": 5,
+            "label": "Other"
+          },
+          {
+            "value": 6,
+            "label": "Invalid Region"
+          }
+        ]
+      },
+      {
+        "id": "b3",
+        "title": "Which of the following best describes where your primary practice is located?",
+        "questionVar": "B3",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Urban"
+          },
+          {
+            "value": 2,
+            "label": "Suburban"
+          },
+          {
+            "value": 3,
+            "label": "Rural"
+          }
+        ]
+      },
+      {
+        "id": "qconsent",
+        "title": "If you would be willing to participate in future research to further elaborate on the responses from this survey, please indicate below:",
+        "questionVar": "QCONSENT",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Yes"
+          },
+          {
+            "value": 2,
+            "label": "No"
+          }
+        ]
+      }
+    ]
+  },
+  "cutsSpec": {
+    "cuts": [
+      {
+        "id": "specialty.cards",
+        "name": "Cards",
+        "rExpression": "(S2 == 1 & S2a == 1)"
+      },
+      {
+        "id": "specialty.pcps",
+        "name": "PCPs",
+        "rExpression": "S2 == 2"
+      },
+      {
+        "id": "specialty.nephs",
+        "name": "Nephs",
+        "rExpression": "S2 == 3"
+      },
+      {
+        "id": "specialty.endos",
+        "name": "Endos",
+        "rExpression": "S2 == 4"
+      },
+      {
+        "id": "specialty.lipids",
+        "name": "Lipids",
+        "rExpression": "S2 == 5"
+      }
+    ]
+  }
+}

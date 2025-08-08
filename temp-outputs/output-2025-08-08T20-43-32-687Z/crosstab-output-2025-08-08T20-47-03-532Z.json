@@ -1,0 +1,30 @@
+{
+  "bannerCuts": [
+    {
+      "groupName": "Total",
+      "columns": [
+        {
+          "name": "Total",
+          "adjusted": "status == 3",
+          "confidence": 0.98,
+          "reason": "The data map variable 'status' has an answer option 3 labeled 'Qualified'. The phrase 'qualified respondents' directly corresponds to respondents with status == 3. High confidence due to exact match of label and value."
+        }
+      ]
+    }
+  ],
+  "processingInfo": {
+    "timestamp": "2025-08-08T20:47:03.532Z",
+    "processingMode": "group-by-group",
+    "totalGroups": 1,
+    "totalColumns": 1,
+    "averageConfidence": 0.98,
+    "tracingEnabled": true,
+    "tracesDashboard": "https://platform.openai.com/traces",
+    "processingLog": [
+      "2025-08-08T20:46:32.749Z: [CrosstabAgent] Starting group-by-group processing: 1 groups",
+      "2025-08-08T20:46:32.750Z: [CrosstabAgent] 🔗 Created unified trace: \"CrossTab Validation - 1 groups\"",
+      "2025-08-08T20:46:32.750Z: [CrosstabAgent] 📋 Processing group 1/1: \"Total\" (1 columns)",
+      "2025-08-08T20:47:03.531Z: [CrosstabAgent] ✅ Group \"Total\" completed in 30781ms - Avg confidence: 0.98"
+    ]
+  }
+}

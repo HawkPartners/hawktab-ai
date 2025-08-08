@@ -31,15 +31,7 @@ export interface ProcessedDataMapVariable extends RawDataMapVariable {
   confidence?: number;
 }
 
-export interface VerboseDataMap extends ProcessedDataMapVariable {
-  Level: string;
-  ParentQ: string;
-  Column: string;
-  Description: string;
-  Value_Type: string;
-  Answer_Options: string;
-  Context: string;
-}
+export type VerboseDataMap = ProcessedDataMapVariable;
 
 export interface AgentDataMap {
   Column: string;
@@ -610,23 +602,23 @@ export class DataMapProcessor {
     verbose: VerboseDataMap[];
     agent: AgentDataMap[];
   } {
-    // Generate verbose format (compatible with existing schemas)
+    // Generate verbose format (canonical keys duplicated into compatibility keys)
     const verbose: VerboseDataMap[] = variables.map(v => ({
-      ...v,
-      Level: v.level,
-      ParentQ: v.parentQuestion,
-      Column: v.column,
-      Description: v.description,
-      Value_Type: v.valueType,
-      Answer_Options: v.answerOptions,
-      Context: v.context || ''
+      level: v.level,
+      parentQuestion: v.parentQuestion,
+      column: v.column,
+      description: v.description,
+      valueType: v.valueType,
+      answerOptions: v.answerOptions,
+      context: v.context || '',
+      confidence: v.confidence
     }));
 
     // Generate agent format (simplified for agent processing)
     const agent: AgentDataMap[] = variables.map(v => ({
       Column: v.column,
       Description: v.description,
-      Answer_Options: v.answerOptions,
+      Answer_Options: v.answerOptions ?? '',
       ParentQuestion: v.parentQuestion !== 'NA' ? v.parentQuestion : undefined,
       Context: v.context || undefined
     }));

@@ -112,9 +112,10 @@ export async function processGroup(dataMap: DataMapType, group: BannerGroupType)
 
 // Process all banner groups using group-by-group strategy with unified tracing
 export async function processAllGroups(
-  dataMap: DataMapType, 
-  bannerPlan: BannerPlanInputType, 
-  outputFolder?: string
+  dataMap: DataMapType,
+  bannerPlan: BannerPlanInputType,
+  outputFolder?: string,
+  onProgress?: (completedGroups: number, totalGroups: number) => void
 ): Promise<{ result: ValidationResultType; processingLog: string[] }> {
   const processingLog: string[] = [];
   const logEntry = (message: string) => {
@@ -147,6 +148,7 @@ export async function processAllGroups(
       const avgConfidence = groupResult.columns.reduce((sum, col) => sum + col.confidence, 0) / groupResult.columns.length;
       
       logEntry(`[CrosstabAgent] ✅ Group "${group.groupName}" completed in ${groupDuration}ms - Avg confidence: ${avgConfidence.toFixed(2)}`);
+      try { onProgress?.(i + 1, bannerPlan.bannerCuts.length); } catch {}
     }
     
     const combinedResult = combineValidationResults(results);

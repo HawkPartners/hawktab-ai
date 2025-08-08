@@ -1,0 +1,110 @@
+{
+  "dataFilePath": "temp-outputs/output-2025-08-08T21-49-52-983Z/dataFile.sav",
+  "tablePlan": {
+    "tables": []
+  },
+  "cutsSpec": {
+    "cuts": [
+      {
+        "id": "specialty.cards",
+        "name": "Cards",
+        "rExpression": "(S2 == 1 & S2a == 1)"
+      },
+      {
+        "id": "specialty.pcps",
+        "name": "PCPs",
+        "rExpression": "S2 == 2"
+      },
+      {
+        "id": "specialty.nephs",
+        "name": "Nephs",
+        "rExpression": "S2 == 3"
+      },
+      {
+        "id": "specialty.endos",
+        "name": "Endos",
+        "rExpression": "S2 == 4"
+      },
+      {
+        "id": "specialty.lipids",
+        "name": "Lipids",
+        "rExpression": "S2 == 5"
+      },
+      {
+        "id": "role.hcp",
+        "name": "HCP",
+        "rExpression": "S2b %in% c(1,2,3)"
+      },
+      {
+        "id": "role.np-pa",
+        "name": "NP/PA",
+        "rExpression": "S2b %in% c(2,3)"
+      },
+      {
+        "id": "volume-of-adult-ascvd-patients.higher",
+        "name": "Higher",
+        "rExpression": "!is.na(S11) & S11 >= median(S11, na.rm = TRUE)"
+      },
+      {
+        "id": "volume-of-adult-ascvd-patients.lower",
+        "name": "Lower",
+        "rExpression": "!is.na(S11) & S11 < median(S11, na.rm = TRUE)"
+      },
+      {
+        "id": "tiers.tier-1",
+        "name": "Tier 1",
+        "rExpression": "qLIST_TIER == 1"
+      },
+      {
+        "id": "tiers.tier-2",
+        "name": "Tier 2",
+        "rExpression": "qLIST_TIER == 2"
+      },
+      {
+        "id": "tiers.tier-3",
+        "name": "Tier 3",
+        "rExpression": "qLIST_TIER == 3"
+      },
+      {
+        "id": "tiers.tier-4",
+        "name": "Tier 4",
+        "rExpression": "qLIST_TIER == 4"
+      },
+      {
+        "id": "segments.segment-a",
+        "name": "Segment A",
+        "rExpression": "(Segment == \"Segment A\")"
+      },
+      {
+        "id": "segments.segment-b",
+        "name": "Segment B",
+        "rExpression": "(Segment == \"Segment B\")"
+      },
+      {
+        "id": "segments.segment-c",
+        "name": "Segment C",
+        "rExpression": "(Segment == \"Segment C\")"
+      },
+      {
+        "id": "segments.segment-d",
+        "name": "Segment D",
+        "rExpression": "(Segment == \"Segment D\")"
+      },
+      {
+        "id": "priority-accounts.priority-account",
+        "name": "Priority Account",
+        "rExpression": "qLIST_PRIORITY_ACCOUNT == 1"
+      },
+      {
+        "id": "priority-accounts.non-priority-account",
+        "name": "Non-Priority Account",
+        "rExpression": "qLIST_PRIORITY_ACCOUNT == 2"
+      },
+      {
+        "id": "total.total",
+        "name": "Total",
+        "rExpression": "status == 3"
+      }
+    ]
+  }
+}

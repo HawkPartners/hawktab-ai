@@ -27,7 +27,6 @@ export const ProcessedDataMapVariableSchema = RawDataMapVariableSchema.extend({
 // ===== VERBOSE OUTPUT SCHEMA =====
 
 export const VerboseDataMapSchema = z.object({
-  // Original fields from ProcessedDataMapVariable
   level: z.enum(['parent', 'sub']),
   column: z.string(),
   description: z.string(),
@@ -35,16 +34,7 @@ export const VerboseDataMapSchema = z.object({
   answerOptions: z.string(),
   parentQuestion: z.string(),
   context: z.string().optional(),
-  confidence: z.number().min(0).max(1).optional(),
-  
-  // Compatibility fields for existing schemas
-  Level: z.string(),
-  ParentQ: z.string(),
-  Column: z.string(),
-  Description: z.string(),
-  Value_Type: z.string(),
-  Answer_Options: z.string(),
-  Context: z.string()
+  confidence: z.number().min(0).max(1).optional()
 });
 
 // ===== AGENT OUTPUT SCHEMA =====

@@ -1,0 +1,36 @@
+{
+  "bannerCuts": [
+    {
+      "groupName": "Priority Accounts",
+      "columns": [
+        {
+          "name": "Priority Account",
+          "adjusted": "qLIST_PRIORITY_ACCOUNT == 1",
+          "confidence": 0.97,
+          "reason": "Direct match: data map variable qLIST_PRIORITY_ACCOUNT corresponds to \"LIST PRIORITY ACCOUNT\" with 1=PRIORITY. Mapped value 1 for \"Priority Account\". Confidence high due to unambiguous match."
+        },
+        {
+          "name": "Non-Priority Account",
+          "adjusted": "qLIST_PRIORITY_ACCOUNT == 2",
+          "confidence": 0.97,
+          "reason": "Direct match: data map variable qLIST_PRIORITY_ACCOUNT corresponds to \"LIST PRIORITY ACCOUNT\" with 2=NOT PRIORITY. Mapped value 2 for \"Non-Priority Account\". Confidence high due to unambiguous match."
+        }
+      ]
+    }
+  ],
+  "processingInfo": {
+    "timestamp": "2025-08-08T20:46:32.579Z",
+    "processingMode": "group-by-group",
+    "totalGroups": 1,
+    "totalColumns": 2,
+    "averageConfidence": 0.97,
+    "tracingEnabled": true,
+    "tracesDashboard": "https://platform.openai.com/traces",
+    "processingLog": [
+      "2025-08-08T20:46:10.470Z: [CrosstabAgent] Starting group-by-group processing: 1 groups",
+      "2025-08-08T20:46:10.470Z: [CrosstabAgent] 🔗 Created unified trace: \"CrossTab Validation - 1 groups\"",
+      "2025-08-08T20:46:10.470Z: [CrosstabAgent] 📋 Processing group 1/1: \"Priority Accounts\" (2 columns)",
+      "2025-08-08T20:46:32.579Z: [CrosstabAgent] ✅ Group \"Priority Accounts\" completed in 22109ms - Avg confidence: 0.97"
+    ]
+  }
+}
