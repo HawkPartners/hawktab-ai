@@ -1,0 +1,185 @@
+{
+  "bannerCuts": [
+    {
+      "groupName": "Specialty",
+      "columns": [
+        {
+          "name": "Cards",
+          "adjusted": "(S2 == 1 & S2a == 1)",
+          "confidence": 0.94,
+          "reason": "Mapped to (S2 == 1 & S2a == 1) since 'Cards' requires specialty cardiologist (S2 value 1) and doctor’s office type cardiologist (S2a value 1). Both variables exist in the data map with matching value labels. Combined logical mapping yields slightly reduced confidence compared to single-variable mappings."
+        },
+        {
+          "name": "PCPs",
+          "adjusted": "S2 == 2",
+          "confidence": 0.97,
+          "reason": "Mapped to S2 == 2 as a direct specialty mapping to Internal Medicine/General Practitioner/Primary Care (PCP). Variable S2 exists and value 2 clearly corresponds to PCP. Unambiguous, hence high confidence."
+        },
+        {
+          "name": "Nephs",
+          "adjusted": "S2 == 3",
+          "confidence": 0.97,
+          "reason": "Mapped to S2 == 3 for Nephrologist. Variable S2 exists with value label 3 matching 'Nephrologist'. Direct and unambiguous mapping."
+        },
+        {
+          "name": "Endos",
+          "adjusted": "S2 == 4",
+          "confidence": 0.97,
+          "reason": "Mapped to S2 == 4 for Endocrinologist. Variable S2 exists with value label 4 matching Endocrinologist. Direct and unambiguous mapping."
+        },
+        {
+          "name": "Lipids",
+          "adjusted": "S2 == 5",
+          "confidence": 0.97,
+          "reason": "Mapped to S2 == 5 for Lipidologist. Variable S2 exists with value label 5 matching Lipidologist. Direct and unambiguous mapping."
+        }
+      ]
+    },
+    {
+      "groupName": "Role",
+      "columns": [
+        {
+          "name": "HCP",
+          "adjusted": "S2b %in% c(1,2,3)",
+          "confidence": 0.84,
+          "reason": "Mapped conceptual 'HCP' to S2b codes for Physician (1), Nurse Practitioner (2), and Physician's Assistant (3). S2b ('What is your primary role?') best captures the role concept. Confidence lowered to 0.84 due to conceptual inference rather than a direct label match."
+        },
+        {
+          "name": "NP/PA",
+          "adjusted": "S2b %in% c(2,3)",
+          "confidence": 0.97,
+          "reason": "Direct mapping of 'NP/PA' to S2b codes Nurse Practitioner (2) and Physician's Assistant (3) from 'What is your primary role?'. Clear, unambiguous mapping."
+        }
+      ]
+    },
+    {
+      "groupName": "Volume of Adult ASCVD Patients",
+      "columns": [
+        {
+          "name": "Higher",
+          "adjusted": "S11 > cutoff_value",
+          "confidence": 0.6,
+          "reason": "No explicit cutoff provided; best conceptual match is S11 (number of adult patients with confirmed CVD) for ASCVD volume. S10 (total adult patients) was considered but S11 is more specific. Placeholder ‘cutoff_value’ used; manual review required to define cutoff."
+        },
+        {
+          "name": "Lower",
+          "adjusted": "S11 <= cutoff_value",
+          "confidence": 0.6,
+          "reason": "No explicit cutoff provided; best conceptual match is S11 (number of adult patients with confirmed CVD) for ASCVD volume. S10 (total adult patients) was considered but S11 is more specific. Placeholder ‘cutoff_value’ used; manual review required to define cutoff."
+        }
+      ]
+    },
+    {
+      "groupName": "Tiers",
+      "columns": [
+        {
+          "name": "Tier 1",
+          "adjusted": "qLIST_TIER == 1",
+          "confidence": 0.98,
+          "reason": "Mapped directly to variable qLIST_TIER (LIST TIER) with value 1 corresponding to \"Tier 1\" in data map. Unambiguous match, high confidence."
+        },
+        {
+          "name": "Tier 2",
+          "adjusted": "qLIST_TIER == 2",
+          "confidence": 0.98,
+          "reason": "Mapped directly to variable qLIST_TIER (LIST TIER) with value 2 corresponding to \"Tier 2\" in data map. Unambiguous match, high confidence."
+        },
+        {
+          "name": "Tier 3",
+          "adjusted": "qLIST_TIER == 3",
+          "confidence": 0.98,
+          "reason": "Mapped directly to variable qLIST_TIER (LIST TIER) with value 3 corresponding to \"Tier 3\" in data map. Unambiguous match, high confidence."
+        },
+        {
+          "name": "Tier 4",
+          "adjusted": "qLIST_TIER == 4",
+          "confidence": 0.98,
+          "reason": "Mapped directly to variable qLIST_TIER (LIST TIER) with value 4 corresponding to \"Tier 4\" in data map. Unambiguous match, high confidence."
+        }
+      ]
+    },
+    {
+      "groupName": "Segments",
+      "columns": [
+        {
+          "name": "Segment A",
+          "adjusted": "Segment == \"Segment A\"",
+          "confidence": 0.4,
+          "reason": "Mapped to data map variable 'Segment'. Original 'Segment A from list' interpreted as filtering for value 'Segment A'; 'from list' seen as instruction text. Data map provides no answer options, so assumed stored values are text labels. Alternative possibilities (e.g., values 'A' or numeric codes) exist; manual review recommended."
+        },
+        {
+          "name": "Segment B",
+          "adjusted": "Segment == \"Segment B\"",
+          "confidence": 0.4,
+          "reason": "Mapped to data map variable 'Segment'. Original 'Segment B from list' interpreted as filtering for value 'Segment B'; 'from list' seen as instruction text. Data map provides no answer options, so assumed stored values are text labels. Alternative possibilities exist; manual review recommended."
+        },
+        {
+          "name": "Segment C",
+          "adjusted": "Segment == \"Segment C\"",
+          "confidence": 0.4,
+          "reason": "Mapped to data map variable 'Segment'. Original 'Segment C from list' interpreted as filtering for value 'Segment C'; 'from list' seen as instruction text. Data map provides no answer options, so assumed stored values are text labels. Alternative possibilities exist; manual review recommended."
+        },
+        {
+          "name": "Segment D",
+          "adjusted": "Segment == \"Segment D\"",
+          "confidence": 0.4,
+          "reason": "Mapped to data map variable 'Segment'. Original 'Segment D from list' interpreted as filtering for value 'Segment D'; 'from list' seen as instruction text. Data map provides no answer options, so assumed stored values are text labels. Alternative possibilities exist; manual review recommended."
+        }
+      ]
+    },
+    {
+      "groupName": "Priority Accounts",
+      "columns": [
+        {
+          "name": "Priority Account",
+          "adjusted": "qLIST_PRIORITY_ACCOUNT == 1",
+          "confidence": 0.96,
+          "reason": "Direct mapping: original “Priority Account” corresponds exactly to data map variable qLIST_PRIORITY_ACCOUNT with answer option 1=PRIORITY. Clear, unambiguous mapping."
+        },
+        {
+          "name": "Priority Account from list",
+          "adjusted": "qLIST_PRIORITY_ACCOUNT == 1 & qON_LIST_OFF_LIST %in% c(1,3,5)",
+          "confidence": 0.75,
+          "reason": "Mapped “Priority Account” to qLIST_PRIORITY_ACCOUNT == 1 (direct). Interpreted “from list” conceptually as being “on-list” per qON_LIST_OFF_LIST values 1 (CARD ON-LIST), 3 (PCP ON-LIST), 5 (NPPA ON-LIST). Some ambiguity in “from list” interpretation, combined two variables logically."
+        },
+        {
+          "name": "Non-Priority Account",
+          "adjusted": "qLIST_PRIORITY_ACCOUNT == 2",
+          "confidence": 0.96,
+          "reason": "Direct mapping: original “Non-Priority Account” corresponds exactly to qLIST_PRIORITY_ACCOUNT with answer option 2=NOT PRIORITY. Clear, unambiguous mapping."
+        },
+        {
+          "name": "Non-Priority Account from list",
+          "adjusted": "qLIST_PRIORITY_ACCOUNT == 2 & qON_LIST_OFF_LIST %in% c(1,3,5)",
+          "confidence": 0.75,
+          "reason": "Mapped “Non-Priority Account” to qLIST_PRIORITY_ACCOUNT == 2 (direct). Interpreted “from list” as on-list per qON_LIST_OFF_LIST values 1, 3, 5. Conceptual mapping with some ambiguity, combined variables logically."
+        }
+      ]
+    }
+  ],
+  "processingInfo": {
+    "timestamp": "2025-08-08T12:33:28.245Z",
+    "processingMode": "group-by-group",
+    "totalGroups": 6,
+    "totalColumns": 21,
+    "averageConfidence": 0.7985714285714287,
+    "tracingEnabled": true,
+    "tracesDashboard": "https://platform.openai.com/traces",
+    "processingLog": [
+      "2025-08-08T12:30:49.469Z: [CrosstabAgent] Starting group-by-group processing: 6 groups",
+      "2025-08-08T12:30:49.469Z: [CrosstabAgent] 🔗 Created unified trace: \"CrossTab Validation - 6 groups\"",
+      "2025-08-08T12:30:49.469Z: [CrosstabAgent] 📋 Processing group 1/6: \"Specialty\" (5 columns)",
+      "2025-08-08T12:31:15.826Z: [CrosstabAgent] ✅ Group \"Specialty\" completed in 26357ms - Avg confidence: 0.96",
+      "2025-08-08T12:31:15.827Z: [CrosstabAgent] 📋 Processing group 2/6: \"Role\" (2 columns)",
+      "2025-08-08T12:31:47.039Z: [CrosstabAgent] ✅ Group \"Role\" completed in 31212ms - Avg confidence: 0.91",
+      "2025-08-08T12:31:47.039Z: [CrosstabAgent] 📋 Processing group 3/6: \"Volume of Adult ASCVD Patients\" (2 columns)",
+      "2025-08-08T12:32:10.829Z: [CrosstabAgent] ✅ Group \"Volume of Adult ASCVD Patients\" completed in 23790ms - Avg confidence: 0.60",
+      "2025-08-08T12:32:10.829Z: [CrosstabAgent] 📋 Processing group 4/6: \"Tiers\" (4 columns)",
+      "2025-08-08T12:32:35.750Z: [CrosstabAgent] ✅ Group \"Tiers\" completed in 24921ms - Avg confidence: 0.98",
+      "2025-08-08T12:32:35.750Z: [CrosstabAgent] 📋 Processing group 5/6: \"Segments\" (4 columns)",
+      "2025-08-08T12:33:03.363Z: [CrosstabAgent] ✅ Group \"Segments\" completed in 27613ms - Avg confidence: 0.40",
+      "2025-08-08T12:33:03.363Z: [CrosstabAgent] 📋 Processing group 6/6: \"Priority Accounts\" (4 columns)",
+      "2025-08-08T12:33:28.244Z: [CrosstabAgent] ✅ Group \"Priority Accounts\" completed in 24881ms - Avg confidence: 0.85"
+    ]
+  }
+}

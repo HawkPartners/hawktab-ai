@@ -97,10 +97,18 @@
     "columns": [
       {
         "name": "Priority Account",
+        "original": "Priority Account"
+      },
+      {
+        "name": "Priority Account from list",
         "original": "Priority Account from list"
       },
       {
         "name": "Non-Priority Account",
+        "original": "Non-Priority Account"
+      },
+      {
+        "name": "Non-Priority Account from list",
         "original": "Non-Priority Account from list"
       }
     ]
