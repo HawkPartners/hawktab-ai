@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
           const files = await fs.readdir(sessionDir);
           const crosstabFile = files.find((f) => f.includes('crosstab-output') && f.endsWith('.json'));
           const verboseMapFile = files.find((f) => f.includes('dataMap-verbose') && f.endsWith('.json'));
-          if (crosstabFile && dataMapFile) {
+          if (crosstabFile && verboseMapFile) {
             const crosstabContent = await fs.readFile(path.join(sessionDir, crosstabFile), 'utf-8');
             const validation = JSON.parse(crosstabContent) as ValidationResultType;
             const dataMapContent = await fs.readFile(path.join(sessionDir, verboseMapFile!), 'utf-8');

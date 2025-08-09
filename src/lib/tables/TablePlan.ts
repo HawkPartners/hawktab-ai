@@ -2,13 +2,25 @@ import type { VerboseDataMapType } from '@/schemas/processingSchemas';
 
 export type TableLevel = { value: number | string; label: string };
 
-export type TableDefinition = {
+export type SingleTableDefinition = {
   id: string;
   title: string;
   questionVar: string;
   tableType: 'single';
   levels?: TableLevel[];
 };
+
+export type MultiSubItem = { var: string; label: string; positiveValue: number | string };
+
+export type MultiSubTableDefinition = {
+  id: string;
+  title: string;
+  questionVar: string;
+  tableType: 'multi_subs';
+  items: MultiSubItem[];
+};
+
+export type TableDefinition = SingleTableDefinition | MultiSubTableDefinition;
 
 export type TablePlan = {
   tables: TableDefinition[];
@@ -75,21 +87,65 @@ function synthesizeLevelsFromRange(valueType: string | undefined): TableLevel[] 
   return levels;
 }
 
+function isNumericRange(valueType: string | undefined): boolean {
+  if (!valueType) return false;
+  return /values\s*:\s*\d+\s*-\s*\d+/i.test(valueType);
+}
+
 export function buildTablePlanFromDataMap(dataMap: VerboseDataMapType[]): TablePlan {
   const tables: TableDefinition[] = [];
 
-  // Parent-first, then subs not covered
+  // Normalize
   const parents = dataMap.filter((it) => (it.level || '').toLowerCase() === 'parent');
   const subs = dataMap.filter((it) => (it.level || '').toLowerCase() === 'sub');
 
-  const considerParent = (item: VerboseDataMapType) => {
+  // Group sub rows by parentQuestion
+  const subGroups = new Map<string, VerboseDataMapType[]>();
+  for (const sub of subs) {
+    const parent = (sub.parentQuestion || '').trim();
+    if (!parent || parent.toUpperCase() === 'NA') continue;
+    if (!subGroups.has(parent)) subGroups.set(parent, []);
+    subGroups.get(parent)!.push(sub);
+  }
+
+  // Helper: infer positive value for a sub item
+  const inferPositiveValue = (item: VerboseDataMapType): number | string => {
+    // Value type heuristics
+    const vt = item.valueType || '';
+    if (/values\s*:\s*0\s*-\s*1/i.test(vt)) return 1;
+    if (/values\s*:\s*1\s*-\s*2/i.test(vt)) return 1;
+    // Try from explicit options
+    const levels = parseAnswerOptions(item.answerOptions || '');
+    if (levels && levels.length === 2) {
+      const positiveLabels = ['yes', 'selected', 'agree', 'true', 'positive', 'satisfied'];
+      const match = levels.find((lv) =>
+        positiveLabels.some((p) => String(lv.label).toLowerCase().includes(p))
+      );
+      if (match) return match.value;
+      // fallback to value 1 if present
+      const one = levels.find((lv) => lv.value === 1 || String(lv.value) === '1');
+      if (one) return one.value;
+    }
+    return 1; // safe default
+  };
+
+  // Prefer grouped sub tables over parent single when both exist
+  const parentsToSkip = new Set<string>();
+  for (const [parentQ, groupItems] of subGroups) {
+    if (groupItems.length > 0) parentsToSkip.add(parentQ);
+  }
+
+  // Parent tables first
+  for (const item of parents) {
     const varName: string = item.column;
-    if (isAdminField(varName)) return;
+    if (isAdminField(varName)) continue;
+    if (parentsToSkip.has(varName)) continue; // prefer grouped subs
     let levels = parseAnswerOptions(item.answerOptions || '');
     if (!levels) levels = synthesizeLevelsFromRange(item.valueType);
-    if (!levels) return;
-    if (levels.length > 30) return; // MVP cap
-
+    // If levels are very large, drop explicit levels but still include table (let R infer from data)
+    if (levels && levels.length > 30) levels = undefined;
+    // If we still have no levels but valueType indicates a numeric range (possibly large), include the table without levels
+    if (!levels && !isNumericRange(item.valueType)) continue;
     tables.push({
       id: slugify(varName),
       title: item.description || varName,
@@ -97,26 +153,30 @@ export function buildTablePlanFromDataMap(dataMap: VerboseDataMapType[]): TableP
       tableType: 'single',
       levels,
     });
-  };
+  }
 
-  for (const item of parents) considerParent(item);
-
-  // Sub rows: if binary value range, emit standalone tables using parent context for title
-  for (const item of subs) {
-    const varName: string = item.column;
-    if (isAdminField(varName)) continue;
-    let levels = parseAnswerOptions(item.answerOptions || '');
-    if (!levels) levels = synthesizeLevelsFromRange(item.valueType);
-    // Only include subs if we have binary levels or explicit options
-    if (!levels || levels.length === 0) continue;
-    if (levels.length > 2 && !item.parentQuestion) continue;
-    const title = item.context || item.description || varName;
+  // Grouped sub tables (multi_subs)
+  for (const [parentQ, groupItems] of subGroups) {
+    // Filter out admin/meta sub variables
+    const validSubs = groupItems.filter((it) => !isAdminField(it.column));
+    if (validSubs.length === 0) continue;
+    // Title preference: any non-empty context from subs; fallback to parent description; fallback to parentQ
+    const parentMeta = parents.find((p) => (p.column || '').trim() === parentQ);
+    const title =
+      (validSubs.find((s) => (s.context || '').trim())?.context || '').trim() ||
+      (parentMeta?.description || '').trim() ||
+      parentQ;
+    const items = validSubs.map<MultiSubItem>((sub) => ({
+      var: sub.column,
+      label: sub.description || sub.column,
+      positiveValue: inferPositiveValue(sub),
+    }));
     tables.push({
-      id: slugify(varName),
+      id: slugify(parentQ),
       title,
-      questionVar: varName,
-      tableType: 'single',
-      levels,
+      questionVar: parentQ,
+      tableType: 'multi_subs',
+      items,
     });
   }
 

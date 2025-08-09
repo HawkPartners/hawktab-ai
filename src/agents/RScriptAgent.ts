@@ -258,20 +258,50 @@ export class RScriptAgent {
       `  write.csv(out, sprintf('temp-outputs/${sessionId}/results/%s.csv', table_id), row.names = FALSE)`,
       '}',
       '',
+      'write_multi_table <- function(data, items_df, cuts_list, table_id, title) {',
+      "  build_item <- function(row) { var <- row[['var']]; label <- row[['label']]; pos <- row[['positiveValue']];",
+      "    v <- tryCatch({ data[[var]] }, error = function(e) { warnings <<- c(warnings, paste0('var:', var, ':', e$message)); return(NULL) })",
+      '    if (is.null(v)) { return(NULL) }',
+      '    res_list <- lapply(cuts_list, function(idx) { sum(v[idx] == pos, na.rm = TRUE) })',
+      '    counts <- as.integer(unlist(res_list))',
+      '    names(counts) <- names(cuts_list)',
+      '    total <- sapply(cuts_list, function(idx) sum(!is.na(v[idx])))',
+      '    denom <- ifelse(total == 0, 1, total)',
+      '    perc <- (counts / denom) * 100',
+      '    data.frame(Item = label, t(counts), t(perc), check.names = FALSE)',
+      '  }',
+      '  rows <- lapply(seq_len(nrow(items_df)), function(i) build_item(items_df[i, ]))',
+      '  rows <- Filter(Negate(is.null), rows)',
+      "  if (length(rows) == 0) { warnings <<- c(warnings, paste0('multi_empty:', table_id)); return(invisible(NULL)) }",
+      '  out <- do.call(rbind, rows)',
+      `  write.csv(out, sprintf('temp-outputs/${sessionId}/results/%s.csv', table_id), row.names = FALSE)`,
+      '}',
+      '',
     ];
 
     const tableCalls: string[] = [];
     // Build preflight for variables
     tableCalls.push('preflight_vars <- list()');
     for (const t of manifest.tablePlan.tables) {
-      const levelsDef = t.levels
-        ? `data.frame(value=c(${t.levels.map((l) => `${l.value}`).join(',')}), label=c(${t.levels
-            .map((l) => `'${String(l.label).replace(/'/g, "\\'")}'`)
-            .join(',')}))`
-        : 'NULL';
-      tableCalls.push(`ok <- tryCatch({ data[['${t.questionVar}']]; TRUE }, error = function(e) { warnings <<- c(warnings, paste0('var:', '${t.questionVar}', ':', e$message)); FALSE })`);
-      tableCalls.push(`preflight_vars <- append(preflight_vars, list(list(var='${t.questionVar}', valid=ok)))`);
-      tableCalls.push(`if (ok) write_table(data, '${t.questionVar}', ${levelsDef}, '${t.id}')`);
+      if (t.tableType === 'single') {
+        const levelsDef = t.levels
+          ? `data.frame(value=c(${t.levels.map((l) => `${l.value}`).join(',')}), label=c(${t.levels
+              .map((l) => `'${String(l.label).replace(/'/g, "\\'")}'`)
+              .join(',')}))`
+          : 'NULL';
+        tableCalls.push(`ok <- tryCatch({ data[['${t.questionVar}']]; TRUE }, error = function(e) { warnings <<- c(warnings, paste0('var:', '${t.questionVar}', ':', e$message)); FALSE })`);
+        tableCalls.push(`preflight_vars <- append(preflight_vars, list(list(var='${t.questionVar}', valid=ok)))`);
+        tableCalls.push(`if (ok) write_table(data, '${t.questionVar}', ${levelsDef}, '${t.id}')`);
+      } else if (t.tableType === 'multi_subs') {
+        // Build items data.frame for R
+        const items = (t as { tableType: 'multi_subs'; items: Array<{ var: string; label: string; positiveValue: number | string }>} ).items;
+        const itemVars = items.map((it) => `'${String(it.var).replace(/'/g, "\\'")}'`).join(',');
+        const itemLabels = items.map((it) => `'${String(it.label).replace(/'/g, "\\'")}'`).join(',');
+        const itemPos = items.map((it) => `${it.positiveValue}`).join(',');
+        const df = `data.frame(var=c(${itemVars}), label=c(${itemLabels}), positiveValue=c(${itemPos}), stringsAsFactors=FALSE)`;
+        tableCalls.push(`items_df <- ${df}`);
+        tableCalls.push(`write_multi_table(data, items_df, cuts, '${t.id}', '${t.title.replace(/'/g, "\\'")}')`);
+      }
     }
     // Write preflight summary JSON
     tableCalls.push(`preflight <- list(cuts = preflight_cuts, vars = preflight_vars, warnings = warnings)`);
