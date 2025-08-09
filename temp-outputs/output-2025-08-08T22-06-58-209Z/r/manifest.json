@@ -1,0 +1,1711 @@
+{
+  "dataFilePath": "temp-outputs/output-2025-08-08T22-06-58-209Z/dataFile.sav",
+  "tablePlan": {
+    "tables": [
+      {
+        "id": "status",
+        "title": "Participant status",
+        "questionVar": "status",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Terminated"
+          },
+          {
+            "value": 2,
+            "label": "Overquota"
+          },
+          {
+            "value": 3,
+            "label": "Qualified"
+          },
+          {
+            "value": 4,
+            "label": "Partial"
+          }
+        ]
+      },
+      {
+        "id": "s1",
+        "title": "You are about to enter a market research survey. We are being asked to pass on to our client details of adverse events about individual patients or groups of patients and / or product complaints that are raised during the course of market research surveys. Although this is a market research survey, and what is contributed is treated in confidence, should you raise an adverse event and / or product complaint, we will need to report this even if it has already been reported by you directly to the company or the regulatory authorities. In such a situation you will be contacted to ask whether or not you are willing to waive the confidentiality given to you under the market research codes of conduct specifically in relation to that adverse event and / or product complaint. Everything else you contribute during the course of the survey will continue to remain confidential. Are you happy to proceed on this basis?",
+        "questionVar": "S1",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "I would like to proceed and protect my identity"
+          },
+          {
+            "value": 2,
+            "label": "I would like to proceed and give permission for my contact details to be passed on to the Drug Safety department of the company if an adverse event is mentioned by me during the survey"
+          },
+          {
+            "value": 3,
+            "label": "I don�t want to proceed"
+          }
+        ]
+      },
+      {
+        "id": "s2b",
+        "title": "What is your primary role?",
+        "questionVar": "S2b",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Physician"
+          },
+          {
+            "value": 2,
+            "label": "Nurse Practitioner"
+          },
+          {
+            "value": 3,
+            "label": "Physician�s Assistant"
+          },
+          {
+            "value": 99,
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "What is your primary specialty?",
+        "questionVar": "S2",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Cardiologist"
+          },
+          {
+            "value": 2,
+            "label": "Internal Medicine / General Practitioner / Primary Care / Family Practice"
+          },
+          {
+            "value": 3,
+            "label": "Nephrologist"
+          },
+          {
+            "value": 4,
+            "label": "Endocrinologist"
+          },
+          {
+            "value": 5,
+            "label": "Lipidologist"
+          },
+          {
+            "value": 6,
+            "label": "Nurse Practitioner"
+          },
+          {
+            "value": 7,
+            "label": "Physician�s Assistant"
+          },
+          {
+            "value": 99,
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "s2a",
+        "title": "In what type of doctor�s office do you work?",
+        "questionVar": "S2a",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Cardiologist"
+          },
+          {
+            "value": 2,
+            "label": "Internal Medicine / General Practitioner / Primary Care / Family Practice"
+          },
+          {
+            "value": 3,
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "qcard-specialty",
+        "title": "CARD SPECIALTY",
+        "questionVar": "qCARD_SPECIALTY",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "CARD"
+          },
+          {
+            "value": 2,
+            "label": "NEPH/ENDO/LIP"
+          }
+        ]
+      },
+      {
+        "id": "qspecialty",
+        "title": "SPECIALTY",
+        "questionVar": "qSPECIALTY",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "CARD"
+          },
+          {
+            "value": 2,
+            "label": "PCP"
+          },
+          {
+            "value": 3,
+            "label": "NPPA"
+          }
+        ]
+      },
+      {
+        "id": "s3a",
+        "title": "What type of Cardiologist are you primarily?",
+        "questionVar": "S3a",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Interventional Cardiologist"
+          },
+          {
+            "value": 2,
+            "label": "General Cardiologist"
+          },
+          {
+            "value": 3,
+            "label": "Preventative Cardiologist"
+          }
+        ]
+      },
+      {
+        "id": "qtype-of-card",
+        "title": "TYPE OF CARD",
+        "questionVar": "qTYPE_OF_CARD",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Interventional Card"
+          },
+          {
+            "value": 2,
+            "label": "General Card"
+          },
+          {
+            "value": 3,
+            "label": "Preventative Card"
+          }
+        ]
+      },
+      {
+        "id": "qon-list-off-list",
+        "title": "ON-LIST/OFF-LIST",
+        "questionVar": "qON_LIST_OFF_LIST",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "CARD ON-LIST"
+          },
+          {
+            "value": 2,
+            "label": "CARD OFF-LIST"
+          },
+          {
+            "value": 3,
+            "label": "PCP ON-LIST"
+          },
+          {
+            "value": 4,
+            "label": "PCP OFF-LIST"
+          },
+          {
+            "value": 5,
+            "label": "NPPA ON-LIST"
+          },
+          {
+            "value": 6,
+            "label": "NPPA OFF-LIST"
+          }
+        ]
+      },
+      {
+        "id": "qlist-tier",
+        "title": "LIST TIER",
+        "questionVar": "qLIST_TIER",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "TIER 1"
+          },
+          {
+            "value": 2,
+            "label": "TIER 2"
+          },
+          {
+            "value": 3,
+            "label": "TIER 3"
+          },
+          {
+            "value": 4,
+            "label": "TIER 4"
+          }
+        ]
+      },
+      {
+        "id": "qlist-priority-account",
+        "title": "LIST PRIORITY ACCOUNT",
+        "questionVar": "qLIST_PRIORITY_ACCOUNT",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "PRIORITY"
+          },
+          {
+            "value": 2,
+            "label": "NOT PRIORITY"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Are you currently board certified or eligible in your specialty?",
+        "questionVar": "S4",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Board Eligible"
+          },
+          {
+            "value": 2,
+            "label": "Board Certified"
+          },
+          {
+            "value": 3,
+            "label": "Neither"
+          }
+        ]
+      },
+      {
+        "id": "s7",
+        "title": "And to confirm, are you currently practicing full-time (i.e. 40+ hours weekly across all settings) or part-time?",
+        "questionVar": "S7",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Full-Time"
+          },
+          {
+            "value": 2,
+            "label": "Part-Time"
+          }
+        ]
+      },
+      {
+        "id": "s9",
+        "title": "Which of the following best represents the setting in which you spend most of your professional time?",
+        "questionVar": "S9",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Private Solo Practice"
+          },
+          {
+            "value": 2,
+            "label": "Private Group Practice"
+          },
+          {
+            "value": 3,
+            "label": "Multi-specialty Practice / Comprehensive Care"
+          },
+          {
+            "value": 4,
+            "label": "Staff HMO"
+          },
+          {
+            "value": 5,
+            "label": "Community Hospital"
+          },
+          {
+            "value": 6,
+            "label": "Academic/University Hospital"
+          },
+          {
+            "value": 7,
+            "label": "VA Hospital"
+          },
+          {
+            "value": 8,
+            "label": "None of the above"
+          }
+        ]
+      },
+      {
+        "id": "a2a",
+        "title": "To the best of your knowledge, which of the following best describes the current post-ACS guideline recommendation regarding lipid-lowering?",
+        "questionVar": "A2a",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels ?55 mg/dL"
+          },
+          {
+            "value": 2,
+            "label": "Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels ?70 mg/dL"
+          },
+          {
+            "value": 3,
+            "label": "Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels ?100 mg/dL"
+          }
+        ]
+      },
+      {
+        "id": "a2b",
+        "title": "And to the best of your knowledge, which of the following best describes the current post-ACS guideline recommendation specific to lipid-lowering therapy?",
+        "questionVar": "A2b",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Recommend a statin first"
+          },
+          {
+            "value": 2,
+            "label": "Recommend a statin + ezetimibe first"
+          },
+          {
+            "value": 3,
+            "label": "Recommend a PCSK9i first"
+          }
+        ]
+      },
+      {
+        "id": "a5",
+        "title": "How quickly might you expect to change your prescribing of PCSK9 inhibitors based on this indication change?",
+        "questionVar": "A5",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Within 3 months"
+          },
+          {
+            "value": 2,
+            "label": "4-6 months"
+          },
+          {
+            "value": 3,
+            "label": "7-12 months"
+          },
+          {
+            "value": 4,
+            "label": "Over a year"
+          }
+        ]
+      },
+      {
+        "id": "region",
+        "title": "Region",
+        "questionVar": "Region",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Northeast"
+          },
+          {
+            "value": 2,
+            "label": "South"
+          },
+          {
+            "value": 3,
+            "label": "Midwest"
+          },
+          {
+            "value": 4,
+            "label": "West"
+          },
+          {
+            "value": 5,
+            "label": "Other"
+          },
+          {
+            "value": 6,
+            "label": "Invalid Region"
+          }
+        ]
+      },
+      {
+        "id": "b3",
+        "title": "Which of the following best describes where your primary practice is located?",
+        "questionVar": "B3",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Urban"
+          },
+          {
+            "value": 2,
+            "label": "Suburban"
+          },
+          {
+            "value": 3,
+            "label": "Rural"
+          }
+        ]
+      },
+      {
+        "id": "qconsent",
+        "title": "If you would be willing to participate in future research to further elaborate on the responses from this survey, please indicate below:",
+        "questionVar": "QCONSENT",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "Yes"
+          },
+          {
+            "value": 2,
+            "label": "No"
+          }
+        ]
+      },
+      {
+        "id": "s5r1",
+        "title": "S5: Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+        "questionVar": "S5r1",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "s5r2",
+        "title": "S5: Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+        "questionVar": "S5r2",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "s5r3",
+        "title": "S5: Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+        "questionVar": "S5r3",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "s5r4",
+        "title": "S5: Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+        "questionVar": "S5r4",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "s5r5",
+        "title": "S5: Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+        "questionVar": "S5r5",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "s5r6",
+        "title": "S5: Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+        "questionVar": "S5r6",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "s5r7",
+        "title": "S5: Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+        "questionVar": "S5r7",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "a1r1",
+        "title": "A1: To the best of your knowledge, which statement below best describes the current indication for each of the following treatments?",
+        "questionVar": "A1r1",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          }
+        ]
+      },
+      {
+        "id": "a1r2",
+        "title": "A1: To the best of your knowledge, which statement below best describes the current indication for each of the following treatments?",
+        "questionVar": "A1r2",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          }
+        ]
+      },
+      {
+        "id": "a1r3",
+        "title": "A1: To the best of your knowledge, which statement below best describes the current indication for each of the following treatments?",
+        "questionVar": "A1r3",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          }
+        ]
+      },
+      {
+        "id": "a1r4",
+        "title": "A1: To the best of your knowledge, which statement below best describes the current indication for each of the following treatments?",
+        "questionVar": "A1r4",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          }
+        ]
+      },
+      {
+        "id": "a6r1",
+        "title": "A6: Again, please assume that the FDA decides that all PCSK9 inhibitors (Repatha, Praluent, Leqvio) will now be indicated for use as an adjunct to diet and exercise, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia � and that this change is being made after reviewing existing data but without any new clinical data beyond what is already available today. For your NEXT 100 [res PatientHoverover] with uncontrolled LDL-C and not currently taking any lipid-lowering therapy, please rank which treatment paths you might be most likely to follow?",
+        "questionVar": "A6r1",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          }
+        ]
+      },
+      {
+        "id": "a6r2",
+        "title": "A6: Again, please assume that the FDA decides that all PCSK9 inhibitors (Repatha, Praluent, Leqvio) will now be indicated for use as an adjunct to diet and exercise, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia � and that this change is being made after reviewing existing data but without any new clinical data beyond what is already available today. For your NEXT 100 [res PatientHoverover] with uncontrolled LDL-C and not currently taking any lipid-lowering therapy, please rank which treatment paths you might be most likely to follow?",
+        "questionVar": "A6r2",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          }
+        ]
+      },
+      {
+        "id": "a6r3",
+        "title": "A6: Again, please assume that the FDA decides that all PCSK9 inhibitors (Repatha, Praluent, Leqvio) will now be indicated for use as an adjunct to diet and exercise, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia � and that this change is being made after reviewing existing data but without any new clinical data beyond what is already available today. For your NEXT 100 [res PatientHoverover] with uncontrolled LDL-C and not currently taking any lipid-lowering therapy, please rank which treatment paths you might be most likely to follow?",
+        "questionVar": "A6r3",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          }
+        ]
+      },
+      {
+        "id": "a6r4",
+        "title": "A6: Again, please assume that the FDA decides that all PCSK9 inhibitors (Repatha, Praluent, Leqvio) will now be indicated for use as an adjunct to diet and exercise, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia � and that this change is being made after reviewing existing data but without any new clinical data beyond what is already available today. For your NEXT 100 [res PatientHoverover] with uncontrolled LDL-C and not currently taking any lipid-lowering therapy, please rank which treatment paths you might be most likely to follow?",
+        "questionVar": "A6r4",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          }
+        ]
+      },
+      {
+        "id": "a6r5",
+        "title": "A6: Again, please assume that the FDA decides that all PCSK9 inhibitors (Repatha, Praluent, Leqvio) will now be indicated for use as an adjunct to diet and exercise, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia � and that this change is being made after reviewing existing data but without any new clinical data beyond what is already available today. For your NEXT 100 [res PatientHoverover] with uncontrolled LDL-C and not currently taking any lipid-lowering therapy, please rank which treatment paths you might be most likely to follow?",
+        "questionVar": "A6r5",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          }
+        ]
+      },
+      {
+        "id": "a6r6",
+        "title": "A6: Again, please assume that the FDA decides that all PCSK9 inhibitors (Repatha, Praluent, Leqvio) will now be indicated for use as an adjunct to diet and exercise, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia � and that this change is being made after reviewing existing data but without any new clinical data beyond what is already available today. For your NEXT 100 [res PatientHoverover] with uncontrolled LDL-C and not currently taking any lipid-lowering therapy, please rank which treatment paths you might be most likely to follow?",
+        "questionVar": "A6r6",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          }
+        ]
+      },
+      {
+        "id": "a6r7",
+        "title": "A6: Again, please assume that the FDA decides that all PCSK9 inhibitors (Repatha, Praluent, Leqvio) will now be indicated for use as an adjunct to diet and exercise, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia � and that this change is being made after reviewing existing data but without any new clinical data beyond what is already available today. For your NEXT 100 [res PatientHoverover] with uncontrolled LDL-C and not currently taking any lipid-lowering therapy, please rank which treatment paths you might be most likely to follow?",
+        "questionVar": "A6r7",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          }
+        ]
+      },
+      {
+        "id": "a6r8",
+        "title": "A6: Again, please assume that the FDA decides that all PCSK9 inhibitors (Repatha, Praluent, Leqvio) will now be indicated for use as an adjunct to diet and exercise, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia � and that this change is being made after reviewing existing data but without any new clinical data beyond what is already available today. For your NEXT 100 [res PatientHoverover] with uncontrolled LDL-C and not currently taking any lipid-lowering therapy, please rank which treatment paths you might be most likely to follow?",
+        "questionVar": "A6r8",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          }
+        ]
+      },
+      {
+        "id": "a7r1",
+        "title": "A7: How might being able to use PCKS9 inhibitors indicated for use with or without statin therapy impact your perceptions and/or prescribing?",
+        "questionVar": "A7r1",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "a7r2",
+        "title": "A7: How might being able to use PCKS9 inhibitors indicated for use with or without statin therapy impact your perceptions and/or prescribing?",
+        "questionVar": "A7r2",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "a7r3",
+        "title": "A7: How might being able to use PCKS9 inhibitors indicated for use with or without statin therapy impact your perceptions and/or prescribing?",
+        "questionVar": "A7r3",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "a7r4",
+        "title": "A7: How might being able to use PCKS9 inhibitors indicated for use with or without statin therapy impact your perceptions and/or prescribing?",
+        "questionVar": "A7r4",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "a7r5",
+        "title": "A7: How might being able to use PCKS9 inhibitors indicated for use with or without statin therapy impact your perceptions and/or prescribing?",
+        "questionVar": "A7r5",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "a8r1c1",
+        "title": "A8r1: With established CVD - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+        "questionVar": "A8r1c1",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          },
+          {
+            "value": 5,
+            "label": "5"
+          }
+        ]
+      },
+      {
+        "id": "a8r1c2",
+        "title": "A8r1: With established CVD - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+        "questionVar": "A8r1c2",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          },
+          {
+            "value": 5,
+            "label": "5"
+          }
+        ]
+      },
+      {
+        "id": "a8r1c3",
+        "title": "A8r1: With established CVD - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+        "questionVar": "A8r1c3",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          },
+          {
+            "value": 5,
+            "label": "5"
+          }
+        ]
+      },
+      {
+        "id": "a8r2c1",
+        "title": "A8r2: With no history of CV events and at high-risk - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+        "questionVar": "A8r2c1",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          },
+          {
+            "value": 5,
+            "label": "5"
+          }
+        ]
+      },
+      {
+        "id": "a8r2c2",
+        "title": "A8r2: With no history of CV events and at high-risk - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+        "questionVar": "A8r2c2",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          },
+          {
+            "value": 5,
+            "label": "5"
+          }
+        ]
+      },
+      {
+        "id": "a8r2c3",
+        "title": "A8r2: With no history of CV events and at high-risk - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+        "questionVar": "A8r2c3",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          },
+          {
+            "value": 5,
+            "label": "5"
+          }
+        ]
+      },
+      {
+        "id": "a8r3c1",
+        "title": "A8r3: With no history of CV events and at low-to-medium risk - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+        "questionVar": "A8r3c1",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          },
+          {
+            "value": 5,
+            "label": "5"
+          }
+        ]
+      },
+      {
+        "id": "a8r3c2",
+        "title": "A8r3: With no history of CV events and at low-to-medium risk - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+        "questionVar": "A8r3c2",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          },
+          {
+            "value": 5,
+            "label": "5"
+          }
+        ]
+      },
+      {
+        "id": "a8r3c3",
+        "title": "A8r3: With no history of CV events and at low-to-medium risk - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+        "questionVar": "A8r3c3",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          },
+          {
+            "value": 5,
+            "label": "5"
+          }
+        ]
+      },
+      {
+        "id": "a8r4c1",
+        "title": "A8r4: Who are not known to be compliant on statins - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+        "questionVar": "A8r4c1",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          },
+          {
+            "value": 5,
+            "label": "5"
+          }
+        ]
+      },
+      {
+        "id": "a8r4c2",
+        "title": "A8r4: Who are not known to be compliant on statins - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+        "questionVar": "A8r4c2",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          },
+          {
+            "value": 5,
+            "label": "5"
+          }
+        ]
+      },
+      {
+        "id": "a8r4c3",
+        "title": "A8r4: Who are not known to be compliant on statins - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+        "questionVar": "A8r4c3",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          },
+          {
+            "value": 5,
+            "label": "5"
+          }
+        ]
+      },
+      {
+        "id": "a8r5c1",
+        "title": "A8r5: Who are intolerant of statins - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+        "questionVar": "A8r5c1",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          },
+          {
+            "value": 5,
+            "label": "5"
+          }
+        ]
+      },
+      {
+        "id": "a8r5c2",
+        "title": "A8r5: Who are intolerant of statins - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+        "questionVar": "A8r5c2",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          },
+          {
+            "value": 5,
+            "label": "5"
+          }
+        ]
+      },
+      {
+        "id": "a8r5c3",
+        "title": "A8r5: Who are intolerant of statins - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+        "questionVar": "A8r5c3",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          },
+          {
+            "value": 5,
+            "label": "5"
+          }
+        ]
+      },
+      {
+        "id": "a9c1",
+        "title": "A9: To what extent have you encountered any issues with coverage, approvals, cost, etc. for using each of the following without a statin today?",
+        "questionVar": "A9c1",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          }
+        ]
+      },
+      {
+        "id": "a9c2",
+        "title": "A9: To what extent have you encountered any issues with coverage, approvals, cost, etc. for using each of the following without a statin today?",
+        "questionVar": "A9c2",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          }
+        ]
+      },
+      {
+        "id": "a9c3",
+        "title": "A9: To what extent have you encountered any issues with coverage, approvals, cost, etc. for using each of the following without a statin today?",
+        "questionVar": "A9c3",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 1,
+            "label": "1"
+          },
+          {
+            "value": 2,
+            "label": "2"
+          },
+          {
+            "value": 3,
+            "label": "3"
+          },
+          {
+            "value": 4,
+            "label": "4"
+          }
+        ]
+      },
+      {
+        "id": "a10r1",
+        "title": "A10: For what reasons are you using PCSK9 inhibitors without a statin today?",
+        "questionVar": "A10r1",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "a10r2",
+        "title": "A10: For what reasons are you using PCSK9 inhibitors without a statin today?",
+        "questionVar": "A10r2",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "a10r3",
+        "title": "A10: For what reasons are you using PCSK9 inhibitors without a statin today?",
+        "questionVar": "A10r3",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "a10r4",
+        "title": "A10: For what reasons are you using PCSK9 inhibitors without a statin today?",
+        "questionVar": "A10r4",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "a10r5",
+        "title": "A10: For what reasons are you using PCSK9 inhibitors without a statin today?",
+        "questionVar": "A10r5",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "a10r6",
+        "title": "A10: For what reasons are you using PCSK9 inhibitors without a statin today?",
+        "questionVar": "A10r6",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "b5r1",
+        "title": "B5: How would you describe your specialty/training?",
+        "questionVar": "B5r1",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "b5r2",
+        "title": "B5: How would you describe your specialty/training?",
+        "questionVar": "B5r2",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "b5r3",
+        "title": "B5: How would you describe your specialty/training?",
+        "questionVar": "B5r3",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "b5r4",
+        "title": "B5: How would you describe your specialty/training?",
+        "questionVar": "B5r4",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "id": "b5r5",
+        "title": "B5: How would you describe your specialty/training?",
+        "questionVar": "B5r5",
+        "tableType": "single",
+        "levels": [
+          {
+            "value": 0,
+            "label": "0"
+          },
+          {
+            "value": 1,
+            "label": "1"
+          }
+        ]
+      }
+    ]
+  },
+  "cutsSpec": {
+    "cuts": [
+      {
+        "id": "specialty.cards",
+        "name": "Cards",
+        "rExpression": "(S2 == 1 & S2a == 1)"
+      },
+      {
+        "id": "specialty.pcps",
+        "name": "PCPs",
+        "rExpression": "S2 == 2"
+      },
+      {
+        "id": "specialty.nephs",
+        "name": "Nephs",
+        "rExpression": "S2 == 3"
+      },
+      {
+        "id": "specialty.endos",
+        "name": "Endos",
+        "rExpression": "S2 == 4"
+      },
+      {
+        "id": "specialty.lipids",
+        "name": "Lipids",
+        "rExpression": "S2 == 5"
+      },
+      {
+        "id": "role.hcp",
+        "name": "HCP",
+        "rExpression": "S2b %in% c(1,2,3)"
+      },
+      {
+        "id": "role.np-pa",
+        "name": "NP/PA",
+        "rExpression": "S2b %in% c(2,3)"
+      },
+      {
+        "id": "volume-of-adult-ascvd-patients.higher",
+        "name": "Higher",
+        "rExpression": "S11 >= median(S11, na.rm = TRUE)"
+      },
+      {
+        "id": "volume-of-adult-ascvd-patients.lower",
+        "name": "Lower",
+        "rExpression": "S11 < median(S11, na.rm = TRUE)"
+      },
+      {
+        "id": "tiers.tier-1",
+        "name": "Tier 1",
+        "rExpression": "qLIST_TIER == 1"
+      },
+      {
+        "id": "tiers.tier-2",
+        "name": "Tier 2",
+        "rExpression": "qLIST_TIER == 2"
+      },
+      {
+        "id": "tiers.tier-3",
+        "name": "Tier 3",
+        "rExpression": "qLIST_TIER == 3"
+      },
+      {
+        "id": "tiers.tier-4",
+        "name": "Tier 4",
+        "rExpression": "qLIST_TIER == 4"
+      },
+      {
+        "id": "segments.segment-a",
+        "name": "Segment A",
+        "rExpression": "Segment == \"Segment A\""
+      },
+      {
+        "id": "segments.segment-b",
+        "name": "Segment B",
+        "rExpression": "Segment == \"Segment B\""
+      },
+      {
+        "id": "segments.segment-c",
+        "name": "Segment C",
+        "rExpression": "Segment == \"Segment C\""
+      },
+      {
+        "id": "segments.segment-d",
+        "name": "Segment D",
+        "rExpression": "Segment == \"Segment D\""
+      },
+      {
+        "id": "priority-accounts.priority-account",
+        "name": "Priority Account",
+        "rExpression": "qLIST_PRIORITY_ACCOUNT == 1"
+      },
+      {
+        "id": "priority-accounts.non-priority-account",
+        "name": "Non-Priority Account",
+        "rExpression": "qLIST_PRIORITY_ACCOUNT == 2"
+      },
+      {
+        "id": "total.total",
+        "name": "Total",
+        "rExpression": "status == 3"
+      }
+    ]
+  }
+}

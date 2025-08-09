@@ -12,7 +12,7 @@ import { buildTablePlanFromDataMap } from '@/lib/tables/TablePlan';
 import { buildCutsSpec } from '@/lib/tables/CutsSpec';
 import { buildRManifest } from '@/lib/r/Manifest';
 import type { ValidationResultType } from '@/schemas/agentOutputSchema';
-import { DataMapSchema, type DataMapType } from '@/schemas/dataMapSchema';
+import { validateVerboseDataMap, type VerboseDataMapType } from '@/schemas/processingSchemas';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ sessionId: string }> }) {
   try {
@@ -45,7 +45,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ ses
     const crosstabContent = await fs.readFile(path.join(sessionDir, crosstabFile), 'utf-8');
     const validation = JSON.parse(crosstabContent) as ValidationResultType;
     const dataMapContent = await fs.readFile(path.join(sessionDir, dataMapFile), 'utf-8');
-    const dataMap = DataMapSchema.parse(JSON.parse(dataMapContent)) as DataMapType;
+    const dataMap = validateVerboseDataMap(JSON.parse(dataMapContent)) as VerboseDataMapType[];
 
     const tablePlan = buildTablePlanFromDataMap(dataMap);
     const cutsSpec = buildCutsSpec(validation);

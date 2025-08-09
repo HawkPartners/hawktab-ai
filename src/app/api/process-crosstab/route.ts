@@ -23,7 +23,7 @@ import { buildTablePlanFromDataMap } from '@/lib/tables/TablePlan';
 import { buildCutsSpec } from '@/lib/tables/CutsSpec';
 import { buildRManifest } from '@/lib/r/Manifest';
 import { RScriptAgent } from '@/agents/RScriptAgent';
-import { DataMapSchema, type DataMapType } from '@/schemas/dataMapSchema';
+// import { DataMapSchema, type DataMapType } from '@/schemas/dataMapSchema';
 import type { ValidationResultType } from '@/schemas/agentOutputSchema';
 import type { ValidationStatus } from '../../../schemas/humanValidationSchema';
 
@@ -209,12 +209,12 @@ export async function POST(request: NextRequest) {
           const sessionDir = path.join(process.cwd(), 'temp-outputs', outputFolderTimestamp);
           const files = await fs.readdir(sessionDir);
           const crosstabFile = files.find((f) => f.includes('crosstab-output') && f.endsWith('.json'));
-          const dataMapFile = files.find((f) => f.includes('dataMap-agent') && f.endsWith('.json'));
+          const verboseMapFile = files.find((f) => f.includes('dataMap-verbose') && f.endsWith('.json'));
           if (crosstabFile && dataMapFile) {
             const crosstabContent = await fs.readFile(path.join(sessionDir, crosstabFile), 'utf-8');
             const validation = JSON.parse(crosstabContent) as ValidationResultType;
-            const dataMapContent = await fs.readFile(path.join(sessionDir, dataMapFile), 'utf-8');
-            const dataMap = DataMapSchema.parse(JSON.parse(dataMapContent)) as DataMapType;
+            const dataMapContent = await fs.readFile(path.join(sessionDir, verboseMapFile!), 'utf-8');
+            const dataMap = JSON.parse(dataMapContent) as import('@/schemas/processingSchemas').VerboseDataMapType[];
 
             const tablePlan = buildTablePlanFromDataMap(dataMap);
             const cutsSpec = buildCutsSpec(validation);

@@ -1,4 +1,4 @@
-import type { DataMapType, DataMapItemType } from '@/schemas/dataMapSchema';
+import type { VerboseDataMapType } from '@/schemas/processingSchemas';
 
 export type TableLevel = { value: number | string; label: string };
 
@@ -75,46 +75,42 @@ function synthesizeLevelsFromRange(valueType: string | undefined): TableLevel[] 
   return levels;
 }
 
-export function buildTablePlanFromDataMap(dataMap: DataMapType): TablePlan {
+export function buildTablePlanFromDataMap(dataMap: VerboseDataMapType[]): TablePlan {
   const tables: TableDefinition[] = [];
 
   // Parent-first, then subs not covered
-  const parents: DataMapItemType[] = dataMap.filter((it) => (it.Level || '').toLowerCase() === 'parent');
-  const subs: DataMapItemType[] = dataMap.filter((it) => (it.Level || '').toLowerCase() === 'sub');
+  const parents = dataMap.filter((it) => (it.level || '').toLowerCase() === 'parent');
+  const subs = dataMap.filter((it) => (it.level || '').toLowerCase() === 'sub');
 
-  const consider = (item: DataMapItemType) => {
-    const varName: string = item.Column;
+  const considerParent = (item: VerboseDataMapType) => {
+    const varName: string = item.column;
     if (isAdminField(varName)) return;
-    let levels = parseAnswerOptions(item.Answer_Options || '');
-    if (!levels) {
-      levels = synthesizeLevelsFromRange(item.Value_Type);
-    }
+    let levels = parseAnswerOptions(item.answerOptions || '');
+    if (!levels) levels = synthesizeLevelsFromRange(item.valueType);
     if (!levels) return;
     if (levels.length > 30) return; // MVP cap
 
     tables.push({
       id: slugify(varName),
-      title: item.Description || varName,
+      title: item.description || varName,
       questionVar: varName,
       tableType: 'single',
       levels,
     });
   };
 
-  for (const item of parents) consider(item);
+  for (const item of parents) considerParent(item);
 
   // Sub rows: if binary value range, emit standalone tables using parent context for title
   for (const item of subs) {
-    const varName: string = item.Column;
+    const varName: string = item.column;
     if (isAdminField(varName)) continue;
-    let levels = parseAnswerOptions(item.Answer_Options || '');
-    if (!levels) {
-      levels = synthesizeLevelsFromRange(item.Value_Type);
-    }
+    let levels = parseAnswerOptions(item.answerOptions || '');
+    if (!levels) levels = synthesizeLevelsFromRange(item.valueType);
     // Only include subs if we have binary levels or explicit options
     if (!levels || levels.length === 0) continue;
-    if (levels.length > 2 && !item.ParentQ) continue;
-    const title = item.Context || item.Description || varName;
+    if (levels.length > 2 && !item.parentQuestion) continue;
+    const title = item.context || item.description || varName;
     tables.push({
       id: slugify(varName),
       title,
