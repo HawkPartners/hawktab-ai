@@ -201,7 +201,18 @@ export class RScriptAgent {
       '',
       'library(haven)',
       'library(jsonlite)',
+      'library(dplyr)',
       `data <- read_sav('${manifest.dataFilePath}')`,
+      '',
+      '# Load preflight statistics if available',
+      `preflight_path <- 'temp-outputs/${sessionId}/r/preflight.json'`,
+      'preflight_stats <- NULL',
+      'if (file.exists(preflight_path)) {',
+      '  preflight_stats <- fromJSON(preflight_path)',
+      '  cat("Loaded preflight statistics\\n")',
+      '} else {',
+      '  cat("No preflight statistics found, using defaults\\n")',
+      '}',
       '',
     ];
 
@@ -230,12 +241,30 @@ export class RScriptAgent {
 
     const helper = [
       `dir.create('temp-outputs/${sessionId}/results', recursive = TRUE, showWarnings = FALSE)`,
-      'write_table <- function(data, var_name, levels_df, table_id) {',
+      '',
+      '# Enhanced write_table with preflight statistics',
+      'write_table <- function(data, var_name, levels_df, table_id, table_meta = NULL) {',
       "  v <- tryCatch({ data[[var_name]] }, error = function(e) { warnings <<- c(warnings, paste0('var:', var_name, ':', e$message)); return(NULL) })",
       '  if (is.null(v)) { return(invisible(NULL)) }',
-      '  if (!is.null(levels_df)) {',
+      '  ',
+      '  # Check for preflight stats for this variable',
+      '  var_stats <- NULL',
+      '  bucket_edges <- NULL',
+      '  if (!is.null(preflight_stats) && !is.null(preflight_stats$variables[[var_name]])) {',
+      '    var_stats <- preflight_stats$variables[[var_name]]',
+      '    bucket_edges <- var_stats$bucketEdges',
+      '  }',
+      '  ',
+      '  # Use bucketing for numeric variables if available',
+      '  if (!is.null(bucket_edges) && is.numeric(v) && is.null(levels_df)) {',
+      '    # Create buckets using preflight edges',
+      '    v_bucketed <- cut(v, breaks = bucket_edges, include.lowest = TRUE, right = FALSE)',
+      '    levels(v_bucketed) <- paste0("[", head(bucket_edges, -1), "-", tail(bucket_edges, -1), ")")',
+      '    v <- v_bucketed',
+      '  } else if (!is.null(levels_df)) {',
       '    v <- factor(v, levels = levels_df$value, labels = levels_df$label)',
       '  }',
+      '  ',
       '  count_list <- lapply(cuts, function(idx) {',
       "    tab <- table(v[idx], useNA = 'no')",
       '    if (is.factor(v)) {',
@@ -254,7 +283,27 @@ export class RScriptAgent {
       '  col_totals <- colSums(counts)',
       '  denom <- ifelse(col_totals == 0, 1, col_totals)',
       '  perc <- sweep(counts, 2, denom, "/") * 100',
+      '  ',
+      '  # Add numeric statistics if requested',
       '  out <- data.frame(Level = rownames(counts), counts, perc, check.names = FALSE)',
+      '  ',
+      '  # Append statistics row for numeric variables',
+      '  if (!is.null(var_stats) && !is.null(table_meta$numericMetrics)) {',
+      '    if (table_meta$numericMetrics$mean || table_meta$numericMetrics$median || table_meta$numericMetrics$sd) {',
+      '      stats_row <- data.frame(Level = "Statistics", matrix(NA, nrow = 1, ncol = ncol(out) - 1), check.names = FALSE)',
+      '      if (table_meta$numericMetrics$mean) {',
+      '        stats_row$Level <- paste0(stats_row$Level, " Mean=", round(var_stats$mean, 2))',
+      '      }',
+      '      if (table_meta$numericMetrics$median) {',
+      '        stats_row$Level <- paste0(stats_row$Level, " Median=", round(var_stats$median, 2))',
+      '      }',
+      '      if (table_meta$numericMetrics$sd) {',
+      '        stats_row$Level <- paste0(stats_row$Level, " SD=", round(var_stats$sd, 2))',
+      '      }',
+      '      out <- rbind(out, stats_row)',
+      '    }',
+      '  }',
+      '  ',
       `  write.csv(out, sprintf('temp-outputs/${sessionId}/results/%s.csv', table_id), row.names = FALSE)`,
       '}',
       '',
@@ -289,9 +338,14 @@ export class RScriptAgent {
               .map((l) => `'${String(l.label).replace(/'/g, "\\'")}'`)
               .join(',')}))`
           : 'NULL';
+        // Build table metadata for numeric statistics
+        let tableMeta = 'NULL';
+        if (t.numericMetrics) {
+          tableMeta = `list(numericMetrics=list(mean=${t.numericMetrics.mean ? 'TRUE' : 'FALSE'}, median=${t.numericMetrics.median ? 'TRUE' : 'FALSE'}, sd=${t.numericMetrics.sd ? 'TRUE' : 'FALSE'}))`;
+        }
         tableCalls.push(`ok <- tryCatch({ data[['${t.questionVar}']]; TRUE }, error = function(e) { warnings <<- c(warnings, paste0('var:', '${t.questionVar}', ':', e$message)); FALSE })`);
         tableCalls.push(`preflight_vars <- append(preflight_vars, list(list(var='${t.questionVar}', valid=ok)))`);
-        tableCalls.push(`if (ok) write_table(data, '${t.questionVar}', ${levelsDef}, '${t.id}')`);
+        tableCalls.push(`if (ok) write_table(data, '${t.questionVar}', ${levelsDef}, '${t.id}', ${tableMeta})`);
       } else if (t.tableType === 'multi_subs') {
         // Build items data.frame for R
         const items = (t as { tableType: 'multi_subs'; items: Array<{ var: string; label: string; positiveValue: number | string }>} ).items;

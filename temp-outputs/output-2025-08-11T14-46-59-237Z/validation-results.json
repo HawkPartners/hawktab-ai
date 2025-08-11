@@ -1,0 +1,375 @@
+{
+  "sessionId": "output-2025-08-11T14-46-59-237Z",
+  "timestamp": "2025-08-11T14:54:06.783Z",
+  "crosstabValidation": {
+    "original": {
+      "bannerCuts": [
+        {
+          "groupName": "Specialty",
+          "columns": [
+            {
+              "name": "Cards",
+              "adjusted": "(S2 == 1 & S2a == 1)",
+              "confidence": 0.9,
+              "reason": "Both variables S2 and S2a exist in data map; S2=1 maps to Cardiologist specialty and S2a=1 maps to working in a Cardiologist office. Used '==' for equality and '&' for logical AND per R syntax. Multiple direct variables combined precisely."
+            },
+            {
+              "name": "PCPs",
+              "adjusted": "S2 == 2",
+              "confidence": 0.97,
+              "reason": "Variable S2 exists and value 2 corresponds to Internal Medicine/General Practitioner/Primary Care. Single direct variable mapping is unambiguous; used '==' per R syntax."
+            },
+            {
+              "name": "Nephs",
+              "adjusted": "S2 == 3",
+              "confidence": 0.97,
+              "reason": "Variable S2 exists and value 3 corresponds to Nephrologist. Single direct variable mapping is unambiguous; used '==' per R syntax."
+            },
+            {
+              "name": "Endos",
+              "adjusted": "S2 == 4",
+              "confidence": 0.97,
+              "reason": "Variable S2 exists and value 4 corresponds to Endocrinologist. Single direct variable mapping is unambiguous; used '==' per R syntax."
+            },
+            {
+              "name": "Lipids",
+              "adjusted": "S2 == 5",
+              "confidence": 0.97,
+              "reason": "Variable S2 exists and value 5 corresponds to Lipidologist. Single direct variable mapping is unambiguous; used '==' per R syntax."
+            }
+          ]
+        },
+        {
+          "groupName": "Role",
+          "columns": [
+            {
+              "name": "HCP",
+              "adjusted": "(S2b == 1)",
+              "confidence": 0.98,
+              "reason": "Direct mapping: 'HCP' interpreted as physicians based on S2b=1 (Physician) from 'primary role'. No alternative variables found; unambiguous mapping."
+            },
+            {
+              "name": "NP/PA",
+              "adjusted": "(S2b %in% c(2,3))",
+              "confidence": 0.92,
+              "reason": "Direct mapping: 'NP/PA' corresponds to S2b values 2 (Nurse Practitioner) and 3 (Physician’s Assistant). Combined using %in%. Clear, precise mapping."
+            }
+          ]
+        },
+        {
+          "groupName": "Volume of Adult ASCVD Patients",
+          "columns": [
+            {
+              "name": "Higher",
+              "adjusted": "S11 >= median(S11, na.rm = TRUE)",
+              "confidence": 0.6,
+              "reason": "Identified two candidate variables: S10 (total adult patients) and S11 (adult patients with diagnosed CVD). Selected S11 because the group refers specifically to ASCVD patients. Applied a median split per placeholder instruction: Higher = S11 >= median(S11, na.rm = TRUE). Confidence lowered to 0.60 due to interpretation of a placeholder cutoff instruction."
+            },
+            {
+              "name": "Lower",
+              "adjusted": "S11 < median(S11, na.rm = TRUE)",
+              "confidence": 0.6,
+              "reason": "Identified two candidate variables: S10 (total adult patients) and S11 (adult patients with diagnosed CVD). Selected S11 because the group refers specifically to ASCVD patients. Applied a median split per placeholder instruction: Lower = S11 < median(S11, na.rm = TRUE). Confidence lowered to 0.60 due to interpretation of a placeholder cutoff instruction."
+            }
+          ]
+        },
+        {
+          "groupName": "Tiers",
+          "columns": [
+            {
+              "name": "Tier 1",
+              "adjusted": "qLIST_TIER == 1",
+              "confidence": 0.98,
+              "reason": "Direct match: ‘qLIST_TIER’ variable encodes tiers with 1=TIER 1. Clear one-to-one mapping; no ambiguity."
+            },
+            {
+              "name": "Tier 2",
+              "adjusted": "qLIST_TIER == 2",
+              "confidence": 0.98,
+              "reason": "Direct match: ‘qLIST_TIER’ variable encodes tiers with 2=TIER 2. Clear one-to-one mapping; no ambiguity."
+            },
+            {
+              "name": "Tier 3",
+              "adjusted": "qLIST_TIER == 3",
+              "confidence": 0.98,
+              "reason": "Direct match: ‘qLIST_TIER’ variable encodes tiers with 3=TIER 3. Clear one-to-one mapping; no ambiguity."
+            },
+            {
+              "name": "Tier 4",
+              "adjusted": "qLIST_TIER == 4",
+              "confidence": 0.98,
+              "reason": "Direct match: ‘qLIST_TIER’ variable encodes tiers with 4=TIER 4. Clear one-to-one mapping; no ambiguity."
+            }
+          ]
+        },
+        {
+          "groupName": "Segments",
+          "columns": [
+            {
+              "name": "Segment A",
+              "adjusted": "Segment == \"Segment A\"",
+              "confidence": 0.75,
+              "reason": "Found direct data map variable 'Segment'. No answer options provided; value coding unknown. Assumed string value matches full label 'Segment A'. Confidence lowered due to uncertainty in coding (alternatively could be numeric codes)."
+            },
+            {
+              "name": "Segment B",
+              "adjusted": "Segment == \"Segment B\"",
+              "confidence": 0.75,
+              "reason": "Found direct data map variable 'Segment'. No answer options provided; value coding unknown. Assumed string value matches full label 'Segment B'. Confidence lowered due to uncertainty in coding (alternatively could be numeric codes)."
+            },
+            {
+              "name": "Segment C",
+              "adjusted": "Segment == \"Segment C\"",
+              "confidence": 0.75,
+              "reason": "Found direct data map variable 'Segment'. No answer options provided; value coding unknown. Assumed string value matches full label 'Segment C'. Confidence lowered due to uncertainty in coding (alternatively could be numeric codes)."
+            },
+            {
+              "name": "Segment D",
+              "adjusted": "Segment == \"Segment D\"",
+              "confidence": 0.75,
+              "reason": "Found direct data map variable 'Segment'. No answer options provided; value coding unknown. Assumed string value matches full label 'Segment D'. Confidence lowered due to uncertainty in coding (alternatively could be numeric codes)."
+            }
+          ]
+        },
+        {
+          "groupName": "Priority Accounts",
+          "columns": [
+            {
+              "name": "Priority Account",
+              "adjusted": "qLIST_PRIORITY_ACCOUNT == 1",
+              "confidence": 0.98,
+              "reason": "Exact match: qLIST_PRIORITY_ACCOUNT maps to 'LIST PRIORITY ACCOUNT' with 1=PRIORITY; selected value 1 for Priority Account; unambiguous mapping, high confidence."
+            },
+            {
+              "name": "Non-Priority Account",
+              "adjusted": "qLIST_PRIORITY_ACCOUNT == 2",
+              "confidence": 0.98,
+              "reason": "Exact match: qLIST_PRIORITY_ACCOUNT maps to 'LIST PRIORITY ACCOUNT' with 2=NOT PRIORITY; selected value 2 for Non-Priority Account; unambiguous mapping, high confidence."
+            }
+          ]
+        },
+        {
+          "groupName": "Total",
+          "columns": [
+            {
+              "name": "Total",
+              "adjusted": "status == 3",
+              "confidence": 0.98,
+              "reason": "Mapped 'qualified respondents' to status == 3 using the data map variable 'status' (1=Terminated,2=Overquota,3=Qualified,4=Partial). Direct, unambiguous mapping yields high confidence."
+            }
+          ]
+        }
+      ],
+      "processingInfo": {
+        "timestamp": "2025-08-11T14:50:19.806Z",
+        "processingMode": "group-by-group",
+        "totalGroups": 7,
+        "totalColumns": 20,
+        "averageConfidence": 0.8870000000000001,
+        "tracingEnabled": true,
+        "tracesDashboard": "https://platform.openai.com/traces",
+        "processingLog": [
+          "2025-08-11T14:47:41.326Z: [CrosstabAgent] Starting group-by-group processing: 7 groups",
+          "2025-08-11T14:47:41.326Z: [CrosstabAgent] 🔗 Created unified trace: \"CrossTab Validation - 7 groups\"",
+          "2025-08-11T14:47:41.326Z: [CrosstabAgent] 📋 Processing group 1/7: \"Specialty\" (5 columns)",
+          "2025-08-11T14:48:08.589Z: [CrosstabAgent] ✅ Group \"Specialty\" completed in 27263ms - Avg confidence: 0.96",
+          "2025-08-11T14:48:08.589Z: [CrosstabAgent] 📋 Processing group 2/7: \"Role\" (2 columns)",
+          "2025-08-11T14:48:33.165Z: [CrosstabAgent] ✅ Group \"Role\" completed in 24576ms - Avg confidence: 0.95",
+          "2025-08-11T14:48:33.165Z: [CrosstabAgent] 📋 Processing group 3/7: \"Volume of Adult ASCVD Patients\" (2 columns)",
+          "2025-08-11T14:49:03.256Z: [CrosstabAgent] ✅ Group \"Volume of Adult ASCVD Patients\" completed in 30090ms - Avg confidence: 0.60",
+          "2025-08-11T14:49:03.256Z: [CrosstabAgent] 📋 Processing group 4/7: \"Tiers\" (4 columns)",
+          "2025-08-11T14:49:25.273Z: [CrosstabAgent] ✅ Group \"Tiers\" completed in 22017ms - Avg confidence: 0.98",
+          "2025-08-11T14:49:25.273Z: [CrosstabAgent] 📋 Processing group 5/7: \"Segments\" (4 columns)",
+          "2025-08-11T14:49:52.319Z: [CrosstabAgent] ✅ Group \"Segments\" completed in 27046ms - Avg confidence: 0.75",
+          "2025-08-11T14:49:52.319Z: [CrosstabAgent] 📋 Processing group 6/7: \"Priority Accounts\" (2 columns)",
+          "2025-08-11T14:50:08.498Z: [CrosstabAgent] ✅ Group \"Priority Accounts\" completed in 16179ms - Avg confidence: 0.98",
+          "2025-08-11T14:50:08.498Z: [CrosstabAgent] 📋 Processing group 7/7: \"Total\" (1 columns)",
+          "2025-08-11T14:50:19.805Z: [CrosstabAgent] ✅ Group \"Total\" completed in 11307ms - Avg confidence: 0.98"
+        ]
+      }
+    },
+    "columnFeedback": [
+      {
+        "columnName": "Cards",
+        "groupName": "Specialty",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "PCPs",
+        "groupName": "Specialty",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Nephs",
+        "groupName": "Specialty",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Endos",
+        "groupName": "Specialty",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Lipids",
+        "groupName": "Specialty",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "HCP",
+        "groupName": "Role",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "NP/PA",
+        "groupName": "Role",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Higher",
+        "groupName": "Volume of Adult ASCVD Patients",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Lower",
+        "groupName": "Volume of Adult ASCVD Patients",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Tier 1",
+        "groupName": "Tiers",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Tier 2",
+        "groupName": "Tiers",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Tier 3",
+        "groupName": "Tiers",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Tier 4",
+        "groupName": "Tiers",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Segment A",
+        "groupName": "Segments",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Segment B",
+        "groupName": "Segments",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Segment C",
+        "groupName": "Segments",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Segment D",
+        "groupName": "Segments",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Priority Account",
+        "groupName": "Priority Accounts",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Non-Priority Account",
+        "groupName": "Priority Accounts",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      },
+      {
+        "columnName": "Total",
+        "groupName": "Total",
+        "adjustedFieldCorrect": true,
+        "confidenceRating": "correct",
+        "reasoningQuality": "good",
+        "humanEdit": "",
+        "notes": ""
+      }
+    ],
+    "overallNotes": ""
+  }
+}

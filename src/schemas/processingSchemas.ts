@@ -36,22 +36,34 @@ export const VerboseDataMapSchema = z.object({
   context: z.string().optional(),
   confidence: z.number().min(0).max(1).optional(),
   // Optional normalized typing metadata (MVP enhancements)
+  
+  /** Classified variable type based on parsing heuristics */
   normalizedType: z
     .enum([
-      'numeric_range',
-      'percentage_per_option',
-      'ordinal_scale',
-      'matrix_single_choice',
-      'binary_flag',
-      'categorical_select',
-      'text_open',
-      'admin',
+      'numeric_range',        // Numeric input with min/max bounds (e.g., age 0-99)
+      'percentage_per_option', // Each option 0-100%, often with row sum = 100%
+      'ordinal_scale',        // Ordered categories (e.g., 1-5 Likert scale)
+      'matrix_single_choice', // Grid with single selection per row
+      'binary_flag',          // 0/1 checkbox (Unchecked/Checked)
+      'categorical_select',   // Single choice from list
+      'text_open',           // Free text response
+      'admin',               // Administrative/metadata field
     ])
     .optional(),
+  
+  /** Minimum value for numeric ranges (e.g., 0 for "Values: 0-100") */
   rangeMin: z.number().optional(),
+  
+  /** Maximum value for numeric ranges (e.g., 100 for "Values: 0-100") */
   rangeMax: z.number().optional(),
+  
+  /** Step increment for ranges (e.g., 1 for integers, 0.1 for decimals) */
   rangeStep: z.number().optional(),
+  
+  /** Discrete allowed values for categorical/scale variables (e.g., [1,2,3,4,5]) */
   allowedValues: z.array(z.union([z.number(), z.string()])).optional(),
+  
+  /** Labels for scale points (e.g., [{value: 1, label: "Not at all likely"}]) */
   scaleLabels: z
     .array(
       z.object({
@@ -60,8 +72,14 @@ export const VerboseDataMapSchema = z.object({
       })
     )
     .optional(),
+  
+  /** Whether row values should sum to 100 (for percentage distributions) */
   rowSumConstraint: z.boolean().optional(),
+  
+  /** Variable this question depends on (e.g., S12 depends on S11) */
   dependentOn: z.string().optional(),
+  
+  /** Rule for dependency (e.g., "upperBoundEquals(S11)" for S12) */
   dependentRule: z.string().optional(),
 });
 

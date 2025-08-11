@@ -29,6 +29,18 @@ export interface RawDataMapVariable {
 export interface ProcessedDataMapVariable extends RawDataMapVariable {
   context?: string;
   confidence?: number;
+  // Enrichment fields for normalized typing
+  normalizedType?: 'numeric_range' | 'percentage_per_option' | 'ordinal_scale' | 
+                   'matrix_single_choice' | 'binary_flag' | 'categorical_select' | 
+                   'text_open' | 'admin';
+  rangeMin?: number;
+  rangeMax?: number;
+  rangeStep?: number;
+  allowedValues?: (number | string)[];
+  scaleLabels?: { value: number | string; label: string }[];
+  rowSumConstraint?: boolean;
+  dependentOn?: string;
+  dependentRule?: string;
 }
 
 export type VerboseDataMap = ProcessedDataMapVariable;
@@ -68,6 +80,8 @@ interface ParsingContext {
   answerOptions: string[];
   state: ParsingState;
   variables: RawDataMapVariable[];
+  currentRangeMin?: number;
+  currentRangeMax?: number;
 }
 
 // ===== MAIN PROCESSOR CLASS =====
@@ -100,14 +114,20 @@ export class DataMapProcessor {
       const enriched = await this.addContextInformation(withParents, filePath);
       const contextCount = enriched.filter(v => v.context).length;
       console.log(`[DataMapProcessor] Added context for ${contextCount} variables`);
+      
+      // Step 3.5: Type normalization and pattern detection
+      console.log(`[DataMapProcessor] Normalizing types and detecting patterns`);
+      const normalized = this.normalizeVariableTypes(enriched);
+      const normalizedCount = normalized.filter(v => v.normalizedType).length;
+      console.log(`[DataMapProcessor] Normalized ${normalizedCount} variables`);
 
       // Step 4: Internal validation
       console.log(`[DataMapProcessor] Running validation`);
-      const validationResult = await this.validateProcessedData(enriched, spssFilePath);
+      const validationResult = await this.validateProcessedData(normalized, spssFilePath);
       console.log(`[DataMapProcessor] Validation confidence: ${validationResult.confidence.toFixed(2)}`);
 
       // Step 5: Generate dual outputs
-      const dualOutputs = this.generateDualOutputs(enriched);
+      const dualOutputs = this.generateDualOutputs(normalized);
       
       // Development output in development mode
       if (process.env.NODE_ENV === 'development' && outputFolder) {
@@ -225,6 +245,17 @@ export class DataMapProcessor {
   private handleValuesLine(valuesText: string, context: ParsingContext): void {
     context.currentValueType = valuesText.trim();
     context.state = ParsingState.IN_VALUES;
+    
+    // Parse numeric ranges from "Values: X-Y" pattern
+    const rangeMatch = valuesText.match(/values\s*:\s*(-?\d+)\s*-\s*(-?\d+)/i);
+    if (rangeMatch) {
+      const min = parseInt(rangeMatch[1], 10);
+      const max = parseInt(rangeMatch[2], 10);
+      
+      // Store range info in context for later use
+      context.currentRangeMin = min;
+      context.currentRangeMax = max;
+    }
   }
 
   private handleAnswerOptionLine(fields: string[], context: ParsingContext): void {
@@ -241,7 +272,7 @@ export class DataMapProcessor {
     const description = fields[2] || '';
     
     // Create sub-variable using parent's value type
-    const subVariable: RawDataMapVariable = {
+    const subVariable: RawDataMapVariable & { rangeMin?: number; rangeMax?: number } = {
       level: 'sub',
       column: columnName,
       description: description,
@@ -249,6 +280,12 @@ export class DataMapProcessor {
       answerOptions: 'NA',
       parentQuestion: 'NA'  // Will be set correctly in parent inference
     };
+    
+    // Propagate range info from parent context to sub-variables
+    if (context.currentRangeMin !== undefined) {
+      subVariable.rangeMin = context.currentRangeMin;
+      subVariable.rangeMax = context.currentRangeMax;
+    }
     
     context.variables.push(subVariable);
   }
@@ -265,7 +302,7 @@ export class DataMapProcessor {
         ? context.answerOptions.join(',')
         : 'NA';
       
-      const variable: RawDataMapVariable = {
+      const variable: RawDataMapVariable & { rangeMin?: number; rangeMax?: number } = {
         level: 'parent',
         column: context.currentParent,
         description: context.currentDescription,
@@ -273,6 +310,12 @@ export class DataMapProcessor {
         answerOptions: answerOptions,
         parentQuestion: 'NA'  // Will be set correctly in parent inference
       };
+      
+      // Add range info if available
+      if (context.currentRangeMin !== undefined) {
+        variable.rangeMin = context.currentRangeMin;
+        variable.rangeMax = context.currentRangeMax;
+      }
       
       context.variables.push(variable);
     }
@@ -285,6 +328,9 @@ export class DataMapProcessor {
     context.currentValueType = null;
     context.answerOptions = [];
     context.state = ParsingState.SCANNING;
+    // Clear range info
+    context.currentRangeMin = undefined;
+    context.currentRangeMax = undefined;
   }
 
   private parseCSVLine(line: string): string[] {
@@ -365,6 +411,183 @@ export class DataMapProcessor {
     }
     
     return parent;
+  }
+
+  // ===== STEP 3.5: TYPE NORMALIZATION =====
+
+  private normalizeVariableTypes(variables: ProcessedDataMapVariable[]): ProcessedDataMapVariable[] {
+    const normalized = variables.map((variable) => {
+      const enriched = { ...variable };
+      
+      // Skip admin fields
+      if (this.isAdminField(variable.column)) {
+        enriched.normalizedType = 'admin';
+        return enriched;
+      }
+      
+      // Check for open text responses
+      if (variable.valueType?.toLowerCase().includes('open text') ||
+          variable.valueType?.toLowerCase().includes('open numeric')) {
+        enriched.normalizedType = 'text_open';
+        return enriched;
+      }
+      
+      // Detect binary flags (0/1 Unchecked/Checked)
+      if (variable.answerOptions === '0=Unchecked,1=Checked') {
+        enriched.normalizedType = 'binary_flag';
+        enriched.allowedValues = [0, 1];
+        return enriched;
+      }
+      
+      // Check for percentage ranges (0-100)
+      if (enriched.rangeMin === 0 && enriched.rangeMax === 100) {
+        // Check if it's part of a percentage group (has siblings)
+        const parentCode = variable.parentQuestion;
+        if (parentCode !== 'NA') {
+          const siblings = variables.filter(v => v.parentQuestion === parentCode);
+          if (siblings.length > 1) {
+            enriched.normalizedType = 'percentage_per_option';
+            enriched.rowSumConstraint = true;
+          } else {
+            enriched.normalizedType = 'numeric_range';
+          }
+        } else {
+          // Check if this parent has sub-items with 0-100 range
+          const subs = variables.filter(v => v.parentQuestion === variable.column);
+          if (subs.length > 0 && subs.every(s => s.rangeMin === 0 && s.rangeMax === 100)) {
+            enriched.normalizedType = 'percentage_per_option';
+            enriched.rowSumConstraint = true;
+          } else {
+            enriched.normalizedType = 'numeric_range';
+          }
+        }
+        return enriched;
+      }
+      
+      // Detect ordinal scales (1-5, 1-4)
+      if (enriched.rangeMin === 1 && (enriched.rangeMax === 5 || enriched.rangeMax === 4)) {
+        enriched.normalizedType = 'ordinal_scale';
+        enriched.allowedValues = [];
+        for (let i = enriched.rangeMin; i <= enriched.rangeMax; i++) {
+          enriched.allowedValues.push(i);
+        }
+        
+        // Parse scale labels if available
+        if (variable.answerOptions && variable.answerOptions !== 'NA') {
+          const labels = this.parseScaleLabels(variable.answerOptions);
+          if (labels.length > 0) {
+            enriched.scaleLabels = labels;
+          }
+        }
+        return enriched;
+      }
+      
+      // Detect matrix single-choice (exactly 2 options)
+      if (enriched.rangeMin === 1 && enriched.rangeMax === 2) {
+        // Check if parent has exactly 2 labeled options
+        const optionParts = variable.answerOptions?.split(',') || [];
+        if (optionParts.length === 2 && !optionParts.includes('NA')) {
+          enriched.normalizedType = 'matrix_single_choice';
+          enriched.allowedValues = [1, 2];
+          return enriched;
+        }
+      }
+      
+      // Detect numeric ranges
+      if (enriched.rangeMin !== undefined && enriched.rangeMax !== undefined) {
+        enriched.normalizedType = 'numeric_range';
+        enriched.rangeStep = 1; // Default to integer steps
+        return enriched;
+      }
+      
+      // Default to categorical select if has answer options
+      if (variable.answerOptions && variable.answerOptions !== 'NA') {
+        enriched.normalizedType = 'categorical_select';
+        
+        // Extract allowed values from answer options
+        const allowedVals = this.extractAllowedValues(variable.answerOptions);
+        if (allowedVals.length > 0) {
+          enriched.allowedValues = allowedVals;
+        }
+        return enriched;
+      }
+      
+      return enriched;
+    });
+    
+    // Second pass: detect dependencies
+    return this.detectDependencies(normalized);
+  }
+  
+  private isAdminField(column: string): boolean {
+    const col = column.toLowerCase();
+    return col === 'record' || col === 'uuid' || col === 'date' || 
+           col === 'status' || col.includes('time') || col.includes('_id') ||
+           col.startsWith('ims_') || col.startsWith('npi_') || 
+           col.includes('captured') || col === 'qtime';
+  }
+  
+  private parseScaleLabels(answerOptions: string): { value: number | string; label: string }[] {
+    const labels: { value: number | string; label: string }[] = [];
+    const parts = answerOptions.split(',');
+    
+    for (const part of parts) {
+      const match = part.match(/^(\d+)\s*=\s*(.+)$/);
+      if (match) {
+        labels.push({
+          value: parseInt(match[1], 10),
+          label: match[2].trim()
+        });
+      }
+    }
+    
+    return labels;
+  }
+  
+  private extractAllowedValues(answerOptions: string): (number | string)[] {
+    const values: (number | string)[] = [];
+    const parts = answerOptions.split(',');
+    
+    for (const part of parts) {
+      const match = part.match(/^(\d+)\s*=/);
+      if (match) {
+        values.push(parseInt(match[1], 10));
+      }
+    }
+    
+    return values;
+  }
+  
+  private detectDependencies(variables: ProcessedDataMapVariable[]): ProcessedDataMapVariable[] {
+    return variables.map((variable) => {
+      const enriched = { ...variable };
+      
+      // Check for "Of those..." pattern indicating dependency
+      if (variable.description?.toLowerCase().includes('of those') ||
+          variable.description?.toLowerCase().includes('of these')) {
+        // Look for the previous question with similar code pattern
+        const currentCode = variable.column.match(/^([A-Z]+)(\d+)/);
+        if (currentCode) {
+          const prefix = currentCode[1];
+          const num = parseInt(currentCode[2], 10);
+          
+          // Look for previous question (e.g., S11 before S12)
+          const prevCode = `${prefix}${num - 1}`;
+          const prevVar = variables.find(v => v.column === prevCode);
+          
+          if (prevVar) {
+            enriched.dependentOn = prevCode;
+            
+            // For numeric ranges, upper bound often equals previous question
+            if (enriched.normalizedType === 'numeric_range' && prevVar.normalizedType === 'numeric_range') {
+              enriched.dependentRule = `upperBoundEquals(${prevCode})`;
+            }
+          }
+        }
+      }
+      
+      return enriched;
+    });
   }
 
   // ===== STEP 3: CONTEXT ENRICHMENT =====
@@ -602,7 +825,7 @@ export class DataMapProcessor {
     verbose: VerboseDataMap[];
     agent: AgentDataMap[];
   } {
-    // Generate verbose format (canonical keys duplicated into compatibility keys)
+    // Generate verbose format with all enrichment fields
     const verbose: VerboseDataMap[] = variables.map(v => ({
       level: v.level,
       parentQuestion: v.parentQuestion,
@@ -611,7 +834,17 @@ export class DataMapProcessor {
       valueType: v.valueType,
       answerOptions: v.answerOptions,
       context: v.context || '',
-      confidence: v.confidence
+      confidence: v.confidence,
+      // Include enrichment fields
+      normalizedType: v.normalizedType,
+      rangeMin: v.rangeMin,
+      rangeMax: v.rangeMax,
+      rangeStep: v.rangeStep,
+      allowedValues: v.allowedValues,
+      scaleLabels: v.scaleLabels,
+      rowSumConstraint: v.rowSumConstraint,
+      dependentOn: v.dependentOn,
+      dependentRule: v.dependentRule
     }));
 
     // Generate agent format (simplified for agent processing)

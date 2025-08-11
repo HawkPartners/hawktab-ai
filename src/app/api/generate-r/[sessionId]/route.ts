@@ -11,6 +11,8 @@ import { RScriptAgent } from '@/agents/RScriptAgent';
 import { buildTablePlanFromDataMap } from '@/lib/tables/TablePlan';
 import { buildCutsSpec } from '@/lib/tables/CutsSpec';
 import { buildRManifest } from '@/lib/r/Manifest';
+import { PreflightGenerator } from '@/lib/r/PreflightGenerator';
+import { ValidationGenerator } from '@/lib/r/ValidationGenerator';
 import type { ValidationResultType } from '@/schemas/agentOutputSchema';
 import { validateVerboseDataMap, type VerboseDataMapType } from '@/schemas/processingSchemas';
 import type { ValidationStatus } from '@/schemas/humanValidationSchema';
@@ -70,10 +72,26 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ ses
     const manifestPath = path.join(rDir, 'manifest.json');
     await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2), 'utf-8');
 
-    // Generate master R script deterministically
+    // Generate preflight script FIRST
+    const preflightGen = new PreflightGenerator();
+    const preflightScript = preflightGen.generatePreflightScript(
+      `temp-outputs/${sessionId}/dataFile.sav`,
+      tablePlan,
+      `temp-outputs/${sessionId}/r/preflight.json`
+    );
+    const preflightPath = path.join(rDir, 'preflight.R');
+    await fs.writeFile(preflightPath, preflightScript, 'utf-8');
+
+    // Generate master R script deterministically (will use preflight.json if available)
     const master = await agent.generateMasterFromManifest(sessionId, manifest);
     const masterPath = path.join(rDir, 'master.R');
     await fs.writeFile(masterPath, master, 'utf-8');
+
+    // Generate validation script
+    const validationGen = new ValidationGenerator();
+    const validationScript = validationGen.generateValidationScript(sessionId, tablePlan);
+    const validationScriptPath = path.join(rDir, 'validation.R');
+    await fs.writeFile(validationScriptPath, validationScript, 'utf-8');
 
     // Also run the existing summary validation to keep r-validation.json
     const summary = await agent.generate(sessionId);
@@ -85,8 +103,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ ses
       sessionId,
       files: {
         manifest: `temp-outputs/${sessionId}/r/manifest.json`,
+        preflight: `temp-outputs/${sessionId}/r/preflight.R`,
+        validation: `temp-outputs/${sessionId}/r/validation.R`,
         master: `temp-outputs/${sessionId}/r/master.R`,
-        validation: `temp-outputs/${sessionId}/r-validation.json`,
+        validationReport: `temp-outputs/${sessionId}/r-validation.json`,
       },
       stats: summary.stats,
     });

@@ -11,14 +11,14 @@ References
 - Issue list: `docs/manifest-review-temp.md`
 
 ### Phase 0 — Baseline and artifacts
-- [ ] Re-run a full processing flow and capture outputs under a new session for comparison.
-- [ ] Save current `*-verbose-*.json` and `r/manifest.json` as baseline.
-- [ ] Note concrete mismatches listed in `docs/manifest-review-temp.md` (S6, S8, S10–S12, A1, A3/A4, A8, A9, B1, B3/B4).
+- [x] Re-run a full processing flow and capture outputs under a new session for comparison.
+- [x] Save current `*-verbose-*.json` and `r/manifest.json` as baseline.
+- [x] Note concrete mismatches listed in `docs/manifest-review-temp.md` (S6, S8, S10–S12, A1, A3/A4, A8, A9, B1, B3/B4).
 
 ### Phase 1 — Schema: normalized typing (non-breaking)
 - [x] Extend `VerboseDataMapSchema` with optional fields:
   - `normalizedType`, `rangeMin`, `rangeMax`, `rangeStep`, `allowedValues`, `scaleLabels`, `rowSumConstraint`, `dependentOn`, `dependentRule`.
-- [ ] Add inline doc comments describing each new field to guide downstream use.
+- [x] Add inline doc comments describing each new field to guide downstream use.
 
 Code citation (schema)
 ```1:48:src/schemas/processingSchemas.ts
@@ -39,11 +39,11 @@ export const VerboseDataMapSchema = z.object({
 ```
 
 ### Phase 2 — Parse-time enrichment (CSV → richer raw)
-- [ ] In `DataMapProcessor`, parse `Values: A-B` into numeric `rangeMin/rangeMax` on the in-memory structure before dual outputs.
-- [ ] Detect group patterns:
-  - [ ] Matrix single-choice (parent `Values: 1-2` + exactly two option labels + sub-rows) → mark group.
-  - [ ] “Of those …” sequences (e.g., S12 after S11) → set `dependentOn`, `dependentRule='upperBoundEquals(S11)'`.
-- [ ] Preserve parent question full text in `context` for all subs when available.
+- [x] In `DataMapProcessor`, parse `Values: A-B` into numeric `rangeMin/rangeMax` on the in-memory structure before dual outputs.
+- [x] Detect group patterns:
+  - [x] Matrix single-choice (parent `Values: 1-2` + exactly two option labels + sub-rows) → mark group.
+  - [x] "Of those …" sequences (e.g., S12 after S11) → set `dependentOn`, `dependentRule='upperBoundEquals(S11)'`.
+- [x] Preserve parent question full text in `context` for all subs when available.
 
 Code citation (hook to enrich)
 ```145:175:src/lib/processors/DataMapProcessor.ts
@@ -54,21 +54,21 @@ private handleValuesLine(valuesText: string, context: ParsingContext): void {
 ```
 
 ### Phase 3 — Post-parse classification (heuristics)
-- [ ] Implement `classifyVariable(v, groupContext)` and run after parsing/parent inference:
-  - [ ] `numeric_range` when `Values: A-B` with no discrete options.
-  - [ ] `percentage_per_option` when `Values: 0-100` with sibling subs; set `rowSumConstraint=true` on parent.
-  - [ ] `ordinal_scale` when options map to Likert 1–5 or 1–4; populate `allowedValues` + `scaleLabels`.
-  - [ ] `matrix_single_choice` for A1-like grids; set `allowedValues=[1,2]` at sub level and carry labels at parent.
-  - [ ] `binary_flag` only for 0/1 Checked/Unchecked.
-  - [ ] Set dependencies (S12 depends on S11) as detected in Phase 2.
-- [ ] Write back normalized fields to verbose map in `generateDualOutputs`.
+- [x] Implement `classifyVariable(v, groupContext)` and run after parsing/parent inference:
+  - [x] `numeric_range` when `Values: A-B` with no discrete options.
+  - [x] `percentage_per_option` when `Values: 0-100` with sibling subs; set `rowSumConstraint=true` on parent.
+  - [x] `ordinal_scale` when options map to Likert 1–5 or 1–4; populate `allowedValues` + `scaleLabels`.
+  - [x] `matrix_single_choice` for A1-like grids; set `allowedValues=[1,2]` at sub level and carry labels at parent.
+  - [x] `binary_flag` only for 0/1 Checked/Unchecked.
+  - [x] Set dependencies (S12 depends on S11) as detected in Phase 2.
+- [x] Write back normalized fields to verbose map in `generateDualOutputs`.
 
 ### Phase 4 — TablePlan: consume normalized typing
-- [ ] Extend table definitions to handle numeric/scale/matrix metadata:
-  - [ ] Numeric metrics: mean, median, sd.
-  - [ ] Bucket spec: count, edges (optional).
-  - [ ] Scale levels and labels; allowed values for matrices.
-- [ ] Prefer `normalizedType` instead of inferring `positiveValue` for multi-sub items.
+- [x] Extend table definitions to handle numeric/scale/matrix metadata:
+  - [x] Numeric metrics: mean, median, sd.
+  - [x] Bucket spec: count, edges (optional).
+  - [x] Scale levels and labels; allowed values for matrices.
+- [x] Prefer `normalizedType` instead of inferring `positiveValue` for multi-sub items.
 
 Code citation (table plan area)
 ```1:28:src/lib/tables/TablePlan.ts
@@ -82,14 +82,14 @@ export type SingleTableDefinition = {
 ```
 
 ### Phase 5 — R preflight: empirical stats and bucketing
-- [ ] Implement a preflight step in the R generation flow to compute per-variable stats into `r/preflight.json`:
-  - [ ] `empiricalMin`, `empiricalMax`, `mean`, `median`, `sd`, quantiles.
-  - [ ] For percentage groups: `rowSumMean`, `rowSumStd` per parent.
-- [ ] Bucket strategy:
-  - [ ] Default 10 equal-width bins over [empiricalMin, empiricalMax].
-  - [ ] If unique values ≤ 6, use unique-value bins.
-  - [ ] For percentages, clamp to [0,100] but prefer empirical span for readability.
-- [ ] `master.R` consumes bucket edges from preflight where present; fallback to declared bounds.
+- [x] Implement a preflight step in the R generation flow to compute per-variable stats into `r/preflight.json`:
+  - [x] `empiricalMin`, `empiricalMax`, `mean`, `median`, `sd`, quantiles.
+  - [x] For percentage groups: `rowSumMean`, `rowSumStd` per parent.
+- [x] Bucket strategy:
+  - [x] Default 10 equal-width bins over [empiricalMin, empiricalMax].
+  - [x] If unique values ≤ 6, use unique-value bins.
+  - [x] For percentages, clamp to [0,100] but prefer empirical span for readability.
+- [x] `master.R` consumes bucket edges from preflight where present; fallback to declared bounds.
 
 Pseudo outline
 ```r
@@ -107,8 +107,8 @@ write(jsonlite::toJSON(stats, auto_unbox=TRUE, pretty=TRUE), "r/preflight.json")
 ```
 
 ### Phase 6 — Validation hooks
-- [ ] If `rowSumConstraint=true`, compute row-sum stats and flag deviations > 2 points in `r-validation.json`.
-- [ ] Surface warnings in UI later (optional for MVP).
+- [x] If `rowSumConstraint=true`, compute row-sum stats and flag deviations > 2 points in `r-validation.json`.
+- [x] Surface warnings in UI later (optional for MVP).
 
 ### Phase 7 — Acceptance tests
 - [ ] Using `temp-reference/datamap_raw-datamap.csv`, verify normalized typing:
