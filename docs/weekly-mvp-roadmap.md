@@ -91,3 +91,11 @@ open http://localhost:3000/api/export-workbook/<sessionId>
 ```
 
 
+
+### Longer-term (reduce brittleness)
+
+- **SurveyReaderAgent (Docling)**: Input survey PDF/DOCX; output `SurveyGraph` JSON with sections, questions, options, `skipIf`/`termIf`, and simple `flows`.
+- **DataMapContextualizerAgent**: Inputs verbose data map + `SurveyGraph`; output `EnrichedDataMap` JSON with `normalizedOptions`, inferred `positiveValue`, attached `skipIf`/`termIf`, and inconsistency flags.
+- **TablePlanAdvisorAgent**: Inputs `TablePlan` + `SurveyGraph` + `EnrichedDataMap`; output `AdvisorSuggestions` for table adds/edits (rationale, confidence). Human-approve in UI before inclusion.
+- **CutsAdvisorAgent**: Inputs `SurveyGraph` + `EnrichedDataMap`; output candidate cuts `{ name, rExpression, rationale, confidence }`.
+- **Orchestration/tracing (later)**: Keep endpoints decoupled now; later add a thin root trace that links agent runs and persist `runId`s in the session folder for visibility.
