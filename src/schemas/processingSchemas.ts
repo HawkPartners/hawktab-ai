@@ -34,7 +34,35 @@ export const VerboseDataMapSchema = z.object({
   answerOptions: z.string(),
   parentQuestion: z.string(),
   context: z.string().optional(),
-  confidence: z.number().min(0).max(1).optional()
+  confidence: z.number().min(0).max(1).optional(),
+  // Optional normalized typing metadata (MVP enhancements)
+  normalizedType: z
+    .enum([
+      'numeric_range',
+      'percentage_per_option',
+      'ordinal_scale',
+      'matrix_single_choice',
+      'binary_flag',
+      'categorical_select',
+      'text_open',
+      'admin',
+    ])
+    .optional(),
+  rangeMin: z.number().optional(),
+  rangeMax: z.number().optional(),
+  rangeStep: z.number().optional(),
+  allowedValues: z.array(z.union([z.number(), z.string()])).optional(),
+  scaleLabels: z
+    .array(
+      z.object({
+        value: z.union([z.number(), z.string()]),
+        label: z.string(),
+      })
+    )
+    .optional(),
+  rowSumConstraint: z.boolean().optional(),
+  dependentOn: z.string().optional(),
+  dependentRule: z.string().optional(),
 });
 
 // ===== AGENT OUTPUT SCHEMA =====
