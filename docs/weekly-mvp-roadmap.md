@@ -48,23 +48,6 @@ Audience: internal. Goal: show end-to-end MVP by Thursday with a human-blocking 
   - Acceptance:
     - For sample banner, agent chooses correct variables or clearly lowers confidence with alternatives listed.
 
-### Day-by-day plan
-
-- **Mon**
-  - Implement blocking gate: API guards + UI buttons/flows; remove auto-R generation in process route.
-  - Smoke test: upload → Pending in queue → cannot generate R until validated.
-
-- **Tue**
-  - TablePlan improvements in `TablePlan.ts` and edges in parser; add unit tests for `parseAnswerOptions()` and range synthesis.
-  - Wire `GET /api/export-workbook/[sessionId]` skeleton.
-
-- **Wed**
-  - Finish workbook composition with `exceljs`; verify CSV → XLSX fidelity; stack all tables into a single worksheet with gaps and aligned cut columns; basic styling.
-  - Prompt tweaks for segments/tiers/priority accounts; re-run sample and validate in UI.
-
-- **Thu (AM)**
-  - Dry run full flow end-to-end; collect artifacts in `temp-outputs/<session>`; finalize demo script.
-
 ### Near-term (post-demo)
 
 - **Add Survey as 4th upload + old projects consolidation**
