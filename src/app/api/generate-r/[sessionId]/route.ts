@@ -13,6 +13,7 @@ import { buildCutsSpec } from '@/lib/tables/CutsSpec';
 import { buildRManifest } from '@/lib/r/Manifest';
 import type { ValidationResultType } from '@/schemas/agentOutputSchema';
 import { validateVerboseDataMap, type VerboseDataMapType } from '@/schemas/processingSchemas';
+import type { ValidationStatus } from '@/schemas/humanValidationSchema';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ sessionId: string }> }) {
   try {
@@ -23,6 +24,18 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ ses
 
     const sessionDir = path.join(process.cwd(), 'temp-outputs', sessionId);
     await fs.access(sessionDir);
+
+    // Require session to be validated first
+    const statusPath = path.join(sessionDir, 'validation-status.json');
+    try {
+      const statusContent = await fs.readFile(statusPath, 'utf-8');
+      const status = JSON.parse(statusContent) as ValidationStatus;
+      if (status.status !== 'validated') {
+        return NextResponse.json({ error: 'Session not validated. Please complete validation before generating R.' }, { status: 409 });
+      }
+    } catch {
+      return NextResponse.json({ error: 'Missing validation-status.json' }, { status: 404 });
+    }
 
     const savPath = path.join(sessionDir, 'dataFile.sav');
     try {

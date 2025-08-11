@@ -68,7 +68,7 @@ export default function ValidationSession() {
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'banner' | 'crosstab'>('crosstab');
+  const [activeTab, setActiveTab] = useState<'crosstab'>('crosstab');
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -77,10 +77,10 @@ export default function ValidationSession() {
 
   // Validation state
   const [columnFeedback, setColumnFeedback] = useState<ColumnFeedback[]>([]);
-  const [bannerNotes, setBannerNotes] = useState<string>('');
+  // Banner UI removed for now to streamline validation
   const [crosstabNotes, setCrosstabNotes] = useState<string>('');
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
-  const [bannerChecks, setBannerChecks] = useState<Record<string, boolean>>({});
+  // Banner UI removed for now to streamline validation
 
   useEffect(() => {
     const fetchSessionData = async () => {
@@ -102,15 +102,7 @@ export default function ValidationSession() {
         if (data?.data?.crosstab?.bannerCuts?.length) {
           setSelectedGroup(data.data.crosstab.bannerCuts[0].groupName);
         }
-        if (data?.data?.banner) {
-          const initial: Record<string, boolean> = {};
-          data.data.banner.forEach((g: { groupName: string; columns: { name: string }[] }) => {
-            g.columns.forEach((c: { name: string }) => {
-              initial[`${g.groupName}::${c.name}`] = false;
-            });
-          });
-          setBannerChecks(initial);
-        }
+        // Banner UI removed; no initialization needed
         
         // Initialize column feedback for all columns
         if (data.data.crosstab) {
@@ -160,20 +152,10 @@ export default function ValidationSession() {
     try {
       setIsSaving(true);
 
-      const bannerTotal = Object.keys(bannerChecks).length;
-      const bannerTrue = Object.values(bannerChecks).filter(Boolean).length;
-      const bannerSuccessRate = bannerTotal > 0 ? bannerTrue / bannerTotal : 0;
-
       const validationData: ValidationSession = {
         sessionId: sessionData.sessionId,
         timestamp: new Date().toISOString(),
-        bannerValidation: {
-          original: sessionData.data.banner,
-          humanEdits: bannerChecks,
-          notes: bannerNotes,
-          successRate: bannerSuccessRate,
-          modifiedAt: new Date().toISOString()
-        },
+        // Banner validation omitted
         crosstabValidation: {
           original: sessionData.data.crosstab,
           columnFeedback,
@@ -202,7 +184,7 @@ export default function ValidationSession() {
     } finally {
       setIsSaving(false);
     }
-  }, [sessionData, columnFeedback, bannerNotes, bannerChecks, crosstabNotes, router]);
+  }, [sessionData, columnFeedback, crosstabNotes, router]);
 
   // Delete session
   const deleteSession = useCallback(async () => {
@@ -319,23 +301,14 @@ export default function ValidationSession() {
         </Card>
 
         {/* Tab Navigation */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'banner' | 'crosstab')} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'crosstab')} className="w-full">
+          <TabsList className="grid w-full grid-cols-1">
             <TabsTrigger value="crosstab" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               Crosstab Validation
               {sessionData.data.crosstab && (
                 <Badge variant="outline" className="ml-2">
                   {sessionData.data.crosstab.bannerCuts.reduce((total, group) => total + group.columns.length, 0)} columns
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="banner" className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Banner Validation
-              {sessionData.data.banner && (
-                <Badge variant="outline" className="ml-2">
-                  {sessionData.data.banner.length} groups
                 </Badge>
               )}
             </TabsTrigger>
@@ -548,73 +521,7 @@ export default function ValidationSession() {
             )}
           </TabsContent>
 
-          <TabsContent value="banner" className="mt-6">
-            {sessionData.data.banner && (
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="w-5 h-5" />
-                      Banner Agent Output
-                    </CardTitle>
-                    <CardDescription>
-                      Extracted banner groups and columns from the document
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {sessionData.data.banner.map((group, groupIndex) => (
-                        <Card key={groupIndex}>
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-base">Group: {group.groupName}</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              {group.columns.map((column, colIndex) => (
-                                <Card key={colIndex} className="bg-muted/30">
-                                  <CardContent className="p-4">
-                                    <div className="font-medium mb-2">{column.name}</div>
-                                    <code className="bg-background px-2 py-1 rounded text-xs font-mono text-primary">
-                                      {column.original}
-                                    </code>
-                                    <div className="mt-3 flex items-center gap-2 text-xs">
-                                      <Switch
-                                        id={`banner-${group.groupName}-${column.name}`}
-                                        checked={bannerChecks[`${group.groupName}::${column.name}`] || false}
-                                        onCheckedChange={(checked) =>
-                                          setBannerChecks((prev) => ({ ...prev, [`${group.groupName}::${column.name}`]: checked }))
-                                        }
-                                      />
-                                      <Label htmlFor={`banner-${group.groupName}-${column.name}`}>Looks correct</Label>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ))}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Banner Notes */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Banner Validation Notes</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Textarea
-                      value={bannerNotes}
-                      onChange={(e) => setBannerNotes(e.target.value)}
-                      placeholder="Add notes about the banner extraction quality, group organization, or any issues found..."
-                      rows={4}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-          </TabsContent>
+          {/* Banner tab removed */}
 
           {/* Validation Actions */}
           <Card className="mt-6">
@@ -624,8 +531,8 @@ export default function ValidationSession() {
                 Save Validation Session
               </CardTitle>
               <CardDescription>
-                This will save your validation for <strong>both Banner and Crosstab tabs</strong> as one complete validation session. 
-                All feedback, ratings, edits, and notes will be preserved.
+                This will save your validation for the Crosstab output and mark the session as validated.
+                R artifacts will be generated automatically after saving.
               </CardDescription>
             </CardHeader>
             <CardContent>

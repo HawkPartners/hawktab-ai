@@ -11,6 +11,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import type { ValidationStatus, ValidationSession } from '../../../../schemas/humanValidationSchema';
+import { buildTablePlanFromDataMap } from '@/lib/tables/TablePlan';
+import { buildCutsSpec } from '@/lib/tables/CutsSpec';
+import { buildRManifest } from '@/lib/r/Manifest';
+import { RScriptAgent } from '@/agents/RScriptAgent';
+import type { ValidationResultType } from '@/schemas/agentOutputSchema';
+import { validateVerboseDataMap, type VerboseDataMapType } from '@/schemas/processingSchemas';
 
 // Load session data for validation
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ sessionId: string }> }) {
@@ -158,6 +164,47 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     );
 
     console.log(`[Validate] Saved validation results for session: ${sessionId}`);
+
+    // After marking validated, auto-generate R artifacts in the background
+    (async () => {
+      try {
+        const sessionDir = path.join(process.cwd(), 'temp-outputs', sessionId);
+        const files = await fs.readdir(sessionDir);
+        const crosstabFile = files.find((f) => f.includes('crosstab-output') && f.endsWith('.json'));
+        const verboseMapFile = files.find((f) => f.includes('dataMap-verbose') && f.endsWith('.json'));
+        const dataMapFile = verboseMapFile ?? files.find((f) => f.includes('dataMap-agent') && f.endsWith('.json'));
+        if (!crosstabFile || !dataMapFile) {
+          console.warn('[Validate] Skipping R generation - missing artifacts');
+          return;
+        }
+        const savPath = path.join(sessionDir, 'dataFile.sav');
+        try { await fs.access(savPath); } catch { console.warn('[Validate] Skipping R generation - missing dataFile.sav'); return; }
+
+        const crosstabContent = await fs.readFile(path.join(sessionDir, crosstabFile), 'utf-8');
+        const validation = JSON.parse(crosstabContent) as ValidationResultType;
+        const dataMapContent = await fs.readFile(path.join(sessionDir, dataMapFile), 'utf-8');
+        const dataMap = validateVerboseDataMap(JSON.parse(dataMapContent)) as VerboseDataMapType[];
+
+        const tablePlan = buildTablePlanFromDataMap(dataMap);
+        const cutsSpec = buildCutsSpec(validation);
+        const manifest = buildRManifest(sessionId, tablePlan, cutsSpec);
+
+        const rDir = path.join(sessionDir, 'r');
+        await fs.mkdir(rDir, { recursive: true });
+        await fs.writeFile(path.join(rDir, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf-8');
+
+        const agent = new RScriptAgent();
+        const master = await agent.generateMasterFromManifest(sessionId, manifest);
+        await fs.writeFile(path.join(rDir, 'master.R'), master, 'utf-8');
+
+        const summary = await agent.generate(sessionId);
+        await fs.writeFile(path.join(sessionDir, 'r-validation.json'), JSON.stringify({ issues: summary.issues, stats: summary.stats }, null, 2), 'utf-8');
+
+        console.log(`[Validate] R generation complete for session: ${sessionId}`);
+      } catch (err) {
+        console.warn('[Validate] R generation failed after validation:', err);
+      }
+    })();
 
     return NextResponse.json({
       success: true,

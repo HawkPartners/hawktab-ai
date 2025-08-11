@@ -4,7 +4,7 @@ Audience: internal. Goal: show end-to-end MVP by Thursday with a human-blocking 
 
 ### Immediate scope (by Thursday)
 
-- **Blocking validation workflow**
+- **Blocking validation workflow — COMPLETED**
   - Enforce that processing stops at validation; R generation/execution only allowed after manual approval in UI.
   - Edits:
     - `src/app/api/process-crosstab/route.ts`: remove/guard the R manifest/master generation at the end; always write `validation-status.json` = `pending`.
@@ -14,7 +14,7 @@ Audience: internal. Goal: show end-to-end MVP by Thursday with a human-blocking 
   - Acceptance:
     - Processing completes and shows in `/validate` as Pending.
     - R generation blocked until session is marked Validated via UI.
-    - After validation, clicking Generate R succeeds and writes `r/manifest.json`, `r/master.R`, `r/preflight.json`, and `results/*.csv`.
+    - After validation, saving triggers automatic R generation that writes `r/manifest.json`, `r/master.R`, and `r-validation.json`.
 
 - **Finalize TablePlan robustness**
   - Strengthen `buildTablePlanFromDataMap()` heuristics in `src/lib/tables/TablePlan.ts`:

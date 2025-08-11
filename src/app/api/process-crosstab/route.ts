@@ -19,12 +19,7 @@ import { BannerAgent, type BannerProcessingResult } from '../../../agents/Banner
 import { processAllGroups } from '../../../agents/CrosstabAgent';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { buildTablePlanFromDataMap } from '@/lib/tables/TablePlan';
-import { buildCutsSpec } from '@/lib/tables/CutsSpec';
-import { buildRManifest } from '@/lib/r/Manifest';
-import { RScriptAgent } from '@/agents/RScriptAgent';
 // import { DataMapSchema, type DataMapType } from '@/schemas/dataMapSchema';
-import type { ValidationResultType } from '@/schemas/agentOutputSchema';
 import type { ValidationStatus } from '../../../schemas/humanValidationSchema';
 
 export async function POST(request: NextRequest) {
@@ -203,38 +198,9 @@ export async function POST(request: NextRequest) {
           } catch {}
         }
 
-        // Deterministic R generation (manifest + master.R + r-validation.json)
-        try {
-          updateJob(job.jobId, { stage: 'r_generation', percent: 92, message: 'Generating R manifest and master script...' });
-          const sessionDir = path.join(process.cwd(), 'temp-outputs', outputFolderTimestamp);
-          const files = await fs.readdir(sessionDir);
-          const crosstabFile = files.find((f) => f.includes('crosstab-output') && f.endsWith('.json'));
-          const verboseMapFile = files.find((f) => f.includes('dataMap-verbose') && f.endsWith('.json'));
-          if (crosstabFile && verboseMapFile) {
-            const crosstabContent = await fs.readFile(path.join(sessionDir, crosstabFile), 'utf-8');
-            const validation = JSON.parse(crosstabContent) as ValidationResultType;
-            const dataMapContent = await fs.readFile(path.join(sessionDir, verboseMapFile!), 'utf-8');
-            const dataMap = JSON.parse(dataMapContent) as import('@/schemas/processingSchemas').VerboseDataMapType[];
-
-            const tablePlan = buildTablePlanFromDataMap(dataMap);
-            const cutsSpec = buildCutsSpec(validation);
-            const manifest = buildRManifest(outputFolderTimestamp, tablePlan, cutsSpec);
-
-            const rDir = path.join(sessionDir, 'r');
-            await fs.mkdir(rDir, { recursive: true });
-            await fs.writeFile(path.join(rDir, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf-8');
-
-            const agent = new RScriptAgent();
-            const master = await agent.generateMasterFromManifest(outputFolderTimestamp, manifest);
-            await fs.writeFile(path.join(rDir, 'master.R'), master, 'utf-8');
-
-            // Keep validation summary aligned with existing tooling
-            const summary = await agent.generate(outputFolderTimestamp);
-            await fs.writeFile(path.join(sessionDir, 'r-validation.json'), JSON.stringify({ issues: summary.issues, stats: summary.stats }, null, 2), 'utf-8');
-          }
-        } catch (rError) {
-          console.warn('[API] R generation step skipped due to error:', rError);
-        }
+        // R generation is intentionally not run here. It is gated behind human validation
+        // and will be triggered automatically by the validation endpoint when status flips
+        // to "validated".
 
         updateJob(job.jobId, { stage: 'queued_for_validation', percent: 95, message: 'Queued for validation', sessionId: outputFolderTimestamp });
         updateJob(job.jobId, { stage: 'complete', percent: 100, message: 'Complete' });
