@@ -8,7 +8,8 @@ export type JobStage =
   | 'parsing'
   | 'banner_agent'
   | 'crosstab_agent'
-  | 'r_generation'
+  | 'generating_r'
+  | 'executing_r'
   | 'writing_outputs'
   | 'queued_for_validation'
   | 'complete'
@@ -21,6 +22,8 @@ export interface JobStatus {
   message: string
   sessionId?: string
   error?: string
+  warning?: string
+  downloadUrl?: string
 }
 
 const jobs = new Map<string, JobStatus>()

@@ -160,8 +160,8 @@ export class BannerAgent {
       // Step 4: Generate dual outputs
       const dualOutputs = this.generateDualOutputs(extractionResult);
       
-      // Step 5: Save development outputs
-      if (process.env.NODE_ENV === 'development' && outputFolder) {
+      // Step 5: Save outputs (always save for MVP)
+      if (outputFolder) {
         await this.saveDevelopmentOutputs(dualOutputs, filePath, outputFolder);
       }
       

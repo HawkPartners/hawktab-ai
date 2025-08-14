@@ -129,8 +129,8 @@ export class DataMapProcessor {
       // Step 5: Generate dual outputs
       const dualOutputs = this.generateDualOutputs(normalized);
       
-      // Development output in development mode
-      if (process.env.NODE_ENV === 'development' && outputFolder) {
+      // Save outputs (always save for MVP)
+      if (outputFolder) {
         await this.saveDevelopmentOutputs(dualOutputs, path.basename(filePath), outputFolder);
       }
 

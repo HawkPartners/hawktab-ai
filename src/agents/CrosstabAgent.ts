@@ -153,8 +153,8 @@ export async function processAllGroups(
     
     const combinedResult = combineValidationResults(results);
     
-    // Save development outputs with processing log
-    if (process.env.NODE_ENV === 'development' && outputFolder) {
+    // Save outputs with processing log (always save for MVP)
+    if (outputFolder) {
       await saveDevelopmentOutputsWithTrace(combinedResult, outputFolder, undefined, processingLog);
     }
     

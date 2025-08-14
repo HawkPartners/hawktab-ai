@@ -19,8 +19,18 @@ import { BannerAgent, type BannerProcessingResult } from '../../../agents/Banner
 import { processAllGroups } from '../../../agents/CrosstabAgent';
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 // import { DataMapSchema, type DataMapType } from '@/schemas/dataMapSchema';
 import type { ValidationStatus } from '../../../schemas/humanValidationSchema';
+import type { ValidationResultType } from '../../../schemas/agentOutputSchema';
+import type { VerboseDataMapType } from '../../../schemas/processingSchemas';
+import { buildTablePlanFromDataMap } from '../../../lib/tables/TablePlan';
+import { buildCutsSpec } from '../../../lib/tables/CutsSpec';
+import { buildRManifest } from '../../../lib/r/Manifest';
+import { generateMasterRScript } from '../../../lib/r/RScriptGenerator';
+
+const execAsync = promisify(exec);
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -166,44 +176,207 @@ export async function POST(request: NextRequest) {
           }
         );
 
-        // Write validation status and persist SPSS to session outputs
+        // Write outputs and persist SPSS to session outputs
         updateJob(job.jobId, { stage: 'writing_outputs', percent: 85, message: 'Writing outputs and status...' });
-        if (process.env.NODE_ENV === 'development') {
-          try {
-            const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolderTimestamp);
-            await fs.mkdir(outputDir, { recursive: true });
+        
+        const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolderTimestamp);
+        await fs.mkdir(outputDir, { recursive: true });
 
-            // Persist SPSS file into session folder with stable name for R
-            try {
-              const stableSavPath = path.join(outputDir, 'dataFile.sav');
-              await fs.copyFile(spssPath, stableSavPath);
-            } catch {}
-
-            // Write minimal inputs manifest for downstream tools
-            try {
-              const inputs = {
-                dataFile: 'dataFile.sav',
-                bannerPlanFile: 'banner-*.json',
-                dataMapFile: 'dataMap-*.json',
-              };
-              await fs.writeFile(path.join(outputDir, 'inputs.json'), JSON.stringify(inputs, null, 2));
-            } catch {}
-
-            const validationStatus: ValidationStatus = {
-              sessionId: outputFolderTimestamp,
-              status: 'pending',
-              createdAt: new Date().toISOString(),
-            };
-            await fs.writeFile(path.join(outputDir, 'validation-status.json'), JSON.stringify(validationStatus, null, 2));
-          } catch {}
+        // Persist SPSS file into session folder with stable name for R
+        try {
+          const stableSavPath = path.join(outputDir, 'dataFile.sav');
+          await fs.copyFile(spssPath, stableSavPath);
+        } catch (e) {
+          console.error('[API] Failed to copy SPSS file:', e);
         }
 
-        // R generation is intentionally not run here. It is gated behind human validation
-        // and will be triggered automatically by the validation endpoint when status flips
-        // to "validated".
+        // Write minimal inputs manifest for downstream tools
+        try {
+          const inputs = {
+            dataFile: 'dataFile.sav',
+            bannerPlanFile: 'banner-*.json',
+            dataMapFile: 'dataMap-*.json',
+          };
+          await fs.writeFile(path.join(outputDir, 'inputs.json'), JSON.stringify(inputs, null, 2));
+        } catch {}
 
-        updateJob(job.jobId, { stage: 'queued_for_validation', percent: 95, message: 'Queued for validation', sessionId: outputFolderTimestamp });
-        updateJob(job.jobId, { stage: 'complete', percent: 100, message: 'Complete' });
+        // For MVP: Skip validation and proceed directly to R generation
+        const skipValidation = true; // MVP mode - always skip validation for now
+        
+        if (skipValidation) {
+          // Continue with R generation and Excel export for MVP
+          console.log('[API] MVP Mode: Proceeding to R generation without validation');
+          updateJob(job.jobId, { stage: 'generating_r', percent: 88, message: 'Generating R scripts...' });
+          
+          // Wait a bit for files to be written
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          try {
+            // Find the crosstab and datamap files
+            const files = await fs.readdir(outputDir);
+            console.log('[API] Files in output directory:', files);
+            
+            const crosstabFile = files.find(f => f.includes('crosstab-output') && f.endsWith('.json'));
+            const dataMapFile = files.find(f => f.includes('dataMap') && f.includes('verbose') && f.endsWith('.json'));
+            
+            if (crosstabFile && dataMapFile) {
+              console.log(`[API] Found required files - Crosstab: ${crosstabFile}, DataMap: ${dataMapFile}`);
+              
+              // Load validation results and data map
+              const crosstabContent = await fs.readFile(path.join(outputDir, crosstabFile), 'utf-8');
+              const validation = JSON.parse(crosstabContent) as ValidationResultType;
+              console.log(`[API] Loaded validation with ${validation.bannerCuts?.length || 0} banner groups`);
+              
+              const dataMapContent = await fs.readFile(path.join(outputDir, dataMapFile), 'utf-8');
+              const dataMap = JSON.parse(dataMapContent) as VerboseDataMapType[];
+              console.log(`[API] Loaded data map with ${dataMap.length} variables`);
+              
+              // Build TablePlan and CutsSpec
+              console.log(`[API] Building TablePlan from ${dataMap.length} variables`);
+              const tablePlan = buildTablePlanFromDataMap(dataMap);
+              const cutsSpec = buildCutsSpec(validation);
+              
+              console.log(`[API] Generated ${tablePlan.tables.length} tables and ${cutsSpec.cuts.length} cuts`);
+              
+              // Build and save R manifest
+              const manifest = buildRManifest(outputFolderTimestamp, tablePlan, cutsSpec);
+              const rDir = path.join(outputDir, 'r');
+              await fs.mkdir(rDir, { recursive: true });
+              
+              await fs.writeFile(
+                path.join(rDir, 'manifest.json'),
+                JSON.stringify(manifest, null, 2),
+                'utf-8'
+              );
+              
+              // Generate and save master R script
+              const masterScript = generateMasterRScript(manifest, outputFolderTimestamp);
+              const masterPath = path.join(rDir, 'master.R');
+              await fs.writeFile(masterPath, masterScript, 'utf-8');
+              
+              // Create results directory
+              const resultsDir = path.join(outputDir, 'results');
+              await fs.mkdir(resultsDir, { recursive: true });
+              
+              // Try to execute R script
+              updateJob(job.jobId, { stage: 'executing_r', percent: 92, message: 'Executing R script...' });
+              
+              // Find R in common locations
+              let rCommand = 'Rscript';
+              const rPaths = [
+                '/opt/homebrew/bin/Rscript',  // Homebrew on Apple Silicon
+                '/usr/local/bin/Rscript',      // Homebrew on Intel Mac
+                '/usr/bin/Rscript',             // System R
+                'Rscript'                       // In PATH
+              ];
+              
+              for (const rPath of rPaths) {
+                try {
+                  await execAsync(`${rPath} --version`, { timeout: 1000 });
+                  rCommand = rPath;
+                  console.log(`[API] Found R at: ${rPath}`);
+                  break;
+                } catch {
+                  // Try next path
+                }
+              }
+              
+              try {
+                const { stdout, stderr } = await execAsync(
+                  `cd "${outputDir}" && ${rCommand} "${masterPath}"`,
+                  {
+                    maxBuffer: 10 * 1024 * 1024,
+                    timeout: 60000
+                  }
+                );
+                
+                console.log('[API] R execution stdout:', stdout.substring(0, 500));
+                if (stderr && !stderr.includes('Warning')) {
+                  console.error('[API] R execution stderr:', stderr.substring(0, 500));
+                }
+                
+                // Check if CSV files were generated
+                const resultFiles = await fs.readdir(resultsDir);
+                const csvFiles = resultFiles.filter(f => f.endsWith('.csv'));
+                
+                if (csvFiles.length > 0) {
+                  console.log(`[API] Successfully generated ${csvFiles.length} CSV files`);
+                  updateJob(job.jobId, { 
+                    stage: 'complete', 
+                    percent: 100, 
+                    message: `Complete! Generated ${csvFiles.length} crosstab tables. Download Excel at /api/export-workbook/${outputFolderTimestamp}`,
+                    sessionId: outputFolderTimestamp,
+                    downloadUrl: `/api/export-workbook/${outputFolderTimestamp}`
+                  });
+                } else {
+                  console.warn('[API] R executed but no CSV files generated');
+                  updateJob(job.jobId, { 
+                    stage: 'complete', 
+                    percent: 100, 
+                    message: 'R scripts generated but no tables produced. Check R installation.',
+                    sessionId: outputFolderTimestamp 
+                  });
+                }
+                
+              } catch (rError) {
+                const errorMessage = rError instanceof Error ? rError.message : String(rError);
+                console.error('[API] R execution failed:', errorMessage);
+                
+                // R not installed or failed - still mark as complete with scripts generated
+                if (errorMessage.includes('command not found') || errorMessage.includes('Rscript')) {
+                  updateJob(job.jobId, { 
+                    stage: 'complete', 
+                    percent: 100, 
+                    message: 'R scripts generated successfully. R not installed - manual execution required.',
+                    sessionId: outputFolderTimestamp,
+                    warning: 'R is not installed. Scripts saved in r/master.R'
+                  });
+                } else {
+                  updateJob(job.jobId, { 
+                    stage: 'complete', 
+                    percent: 100, 
+                    message: 'R scripts generated. Execution failed - check R installation.',
+                    sessionId: outputFolderTimestamp,
+                    warning: errorMessage.substring(0, 200)
+                  });
+                }
+              }
+              
+            } else {
+              // No crosstab output found, just complete without R generation
+              console.warn('[API] Missing crosstab or datamap files for R generation');
+              updateJob(job.jobId, { 
+                stage: 'complete', 
+                percent: 100, 
+                message: 'Processing complete. Validation outputs saved.',
+                sessionId: outputFolderTimestamp 
+              });
+            }
+            
+          } catch (rGenError) {
+            console.error('[API] R generation error:', rGenError);
+            // Still mark as complete even if R generation fails
+            updateJob(job.jobId, { 
+              stage: 'complete', 
+              percent: 100, 
+              message: 'Validation complete. R generation failed.',
+              sessionId: outputFolderTimestamp,
+              warning: rGenError instanceof Error ? rGenError.message : 'R generation error'
+            });
+          }
+          
+        } else {
+          // Original validation flow (for production)
+          const validationStatus: ValidationStatus = {
+            sessionId: outputFolderTimestamp,
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+          };
+          await fs.writeFile(path.join(outputDir, 'validation-status.json'), JSON.stringify(validationStatus, null, 2));
+          
+          updateJob(job.jobId, { stage: 'queued_for_validation', percent: 95, message: 'Queued for validation', sessionId: outputFolderTimestamp });
+          updateJob(job.jobId, { stage: 'complete', percent: 100, message: 'Complete' });
+        }
       } catch (processingError) {
         updateJob(job.jobId, { stage: 'error', percent: 100, message: 'Processing error', error: processingError instanceof Error ? processingError.message : 'Unknown error' });
       }
