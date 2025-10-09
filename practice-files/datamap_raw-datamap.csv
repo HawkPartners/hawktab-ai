@@ -1,0 +1,601 @@
+[record]: Record number,,
+Open numeric response,,
+,,
+[uuid]: Participant identifier,,
+Open text response,,
+,,
+[date]: Completion time and date,,
+Open text response,,
+,,
+[status]: Participant status,,
+Values: 1-4,,
+,1,Terminated
+,2,Overquota
+,3,Qualified
+,4,Partial
+,,
+"[S1]: You are about to enter a market research survey. We are being asked to pass on to our client details of adverse events about individual patients or groups of patients and / or product complaints that are raised during the course of market research surveys. Although this is a market research survey, and what is contributed is treated in confidence, should you raise an adverse event and / or product complaint, we will need to report this even if it has already been reported by you directly to the company or the regulatory authorities. In such a situation you will be contacted to ask whether or not you are willing to waive the confidentiality given to you under the market research codes of conduct specifically in relation to that adverse event and / or product complaint. Everything else you contribute during the course of the survey will continue to remain confidential. Are you happy to proceed on this basis?",,
+Values: 1-3,,
+,1,I would like to proceed and protect my identity
+,2,I would like to proceed and give permission for my contact details to be passed on to the Drug Safety department of the company if an adverse event is mentioned by me during the survey
+,3,I don’t want to proceed
+,,
+[S2b]: What is your primary role?,,
+Values: 1-99,,
+,1,Physician
+,2,Nurse Practitioner
+,3,Physician’s Assistant
+,99,Other
+,,
+[S2]: What is your primary specialty?,,
+Values: 1-99,,
+,1,Cardiologist
+,2,Internal Medicine / General Practitioner / Primary Care / Family Practice
+,3,Nephrologist
+,4,Endocrinologist
+,5,Lipidologist
+,6,Nurse Practitioner
+,7,Physician’s Assistant
+,99,Other
+,,
+[S2a]: In what type of doctor’s office do you work?,,
+Values: 1-3,,
+,1,Cardiologist
+,2,Internal Medicine / General Practitioner / Primary Care / Family Practice
+,3,Other
+,,
+[qCARD_SPECIALTY]: CARD SPECIALTY,,
+Values: 1-2,,
+,1,CARD
+,2,NEPH/ENDO/LIP
+,,
+[qSPECIALTY]: SPECIALTY,,
+Values: 1-3,,
+,1,CARD
+,2,PCP
+,3,NPPA
+,,
+[S3a]: What type of Cardiologist are you primarily?,,
+Values: 1-3,,
+,1,Interventional Cardiologist
+,2,General Cardiologist
+,3,Preventative Cardiologist
+,,
+[qTYPE_OF_CARD]: TYPE OF CARD,,
+Values: 1-3,,
+,1,Interventional Card
+,2,General Card
+,3,Preventative Card
+,,
+[qON_LIST_OFF_LIST]: ON-LIST/OFF-LIST,,
+Values: 1-6,,
+,1,CARD ON-LIST
+,2,CARD OFF-LIST
+,3,PCP ON-LIST
+,4,PCP OFF-LIST
+,5,NPPA ON-LIST
+,6,NPPA OFF-LIST
+,,
+[qLIST_TIER]: LIST TIER,,
+Values: 1-4,,
+,1,TIER 1
+,2,TIER 2
+,3,TIER 3
+,4,TIER 4
+,,
+[qLIST_PRIORITY_ACCOUNT]: LIST PRIORITY ACCOUNT,,
+Values: 1-2,,
+,1,PRIORITY
+,2,NOT PRIORITY
+,,
+[S4]: Are you currently board certified or eligible in your specialty?,,
+Values: 1-3,,
+,1,Board Eligible
+,2,Board Certified
+,3,Neither
+,,
+"S5: Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",,
+Values: 0-1,,
+,0,Unchecked
+,1,Checked
+,[S5r1],Advertising Agency
+,[S5r2],Marketing/Market Research Firm
+,[S5r3],Public Relations Firm
+,[S5r4],"Any media company (Print, Radio, TV, Internet)"
+,[S5r5],Pharmaceutical Drug / Device Manufacturer (outside of clinical trials)
+,[S5r6],"Governmental Regulatory Agency (e.g., Food & Drug Administration (FDA))"
+,[S5r7],None of these
+,,
+"[S6]: How many years have you been in clinical practice, post residency/training?",,
+Values: 0-99,,
+,,
+"[S7]: And to confirm, are you currently practicing full-time (i.e. 40+ hours weekly across all settings) or part-time?",,
+Values: 1-2,,
+,1,Full-Time
+,2,Part-Time
+,,
+S8: Approximately what percentage of your professional time is spent performing each of the following activities?,,
+Values: 0-100,,
+,[S8r1],Treating/Managing patients
+,[S8r2],"Performing academic functions (e.g., teaching, publishing)"
+,[S8r3],Participating in clinical research
+,[S8r4],Performing other functions
+,,
+[S9]: Which of the following best represents the setting in which you spend most of your professional time?,,
+Values: 1-8,,
+,1,Private Solo Practice
+,2,Private Group Practice
+,3,Multi-specialty Practice / Comprehensive Care
+,4,Staff HMO
+,5,Community Hospital
+,6,Academic/University Hospital
+,7,VA Hospital
+,8,None of the above
+,,
+"[S10]: Using your best estimate, how many adult patients, age 18 or older, do you personally manage in your practice in a month? By ‘personally’, we mean patients for whom you are a primary treatment decision maker.",,
+Values: 0-999,,
+,,
+"[S11]: Of those adult patients for whom you are the primary treatment decision maker, roughly how many have a confirmed diagnosis of hypercholesterolemia with established cardiovascular disease (CVD)?",,
+Values: 0-999,,
+,,
+"S12: Of those, how many patients have had an event (MI, CAD, coronary revascularization, stent placement, etc.) …",,
+Values: 0-999,,
+,[S12r1],Over 5 years ago
+,[S12r2],Within the last 3-5 years
+,[S12r3],Within the last 1-2 years
+,[S12r4],Within the last year
+,,
+"A1: To the best of your knowledge, which statement below best describes the current indication for each of the following treatments?",,
+Values: 1-2,,
+,1,"As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia"
+,2,As an adjunct to diet and statin therapy for the treatment of adults with primary hyperlipidemia
+,[A1r1],Leqvio (inclisiran)
+,[A1r2],Praluent (alirocumab)
+,[A1r3],Repatha (evolocumab)
+,[A1r4],Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)
+,,
+"[A2a]: To the best of your knowledge, which of the following best describes the current post-ACS guideline recommendation regarding lipid-lowering?",,
+Values: 1-3,,
+,1,Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels ?55 mg/dL
+,2,Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels ?70 mg/dL
+,3,Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels ?100 mg/dL
+,,
+"[A2b]: And to the best of your knowledge, which of the following best describes the current post-ACS guideline recommendation specific to lipid-lowering therapy?",,
+Values: 1-3,,
+,1,"Recommend a statin first, add or switch to ezetimibe if needed, then add or switch to a PCSK9i if needed"
+,2,"Recommend a statin + ezetimibe first, add or switch to a PCSK9i if needed"
+,3,Recommend a PCSK9i first
+,,
+"A3: For your LAST 100 [res PatientHoverover] with uncontrolled LDL-C, please indicate for how many you prescribed each of the following therapies?",,
+Values: 0-100,,
+,[A3r1],"Statin only (i.e., no additional therapy)"
+,[A3r2],Leqvio (inclisiran)
+,[A3r3],Praluent (alirocumab)
+,[A3r4],Repatha (evolocumab)
+,[A3r5],Zetia (ezetimibe) or generic ezetimibe
+,[A3r6],Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)
+,[A3r7],Other
+,,
+"A3ar1: Leqvio (inclisiran) - For each treatment, approximately what % of those LAST 100 [res PatientHoverover] received that therapy in addition to a statin vs. without a statin?",,
+Values: 0-100,,
+,[A3ar1c1],In addition to statin
+,[A3ar1c2],Without a statin
+,,
+"A3ar2: Praluent (alirocumab) - For each treatment, approximately what % of those LAST 100 [res PatientHoverover] received that therapy in addition to a statin vs. without a statin?",,
+Values: 0-100,,
+,[A3ar2c1],In addition to statin
+,[A3ar2c2],Without a statin
+,,
+"A3ar3: Repatha (evolocumab) - For each treatment, approximately what % of those LAST 100 [res PatientHoverover] received that therapy in addition to a statin vs. without a statin?",,
+Values: 0-100,,
+,[A3ar3c1],In addition to statin
+,[A3ar3c2],Without a statin
+,,
+"A3ar4: Zetia (ezetimibe) or generic ezetimibe - For each treatment, approximately what % of those LAST 100 [res PatientHoverover] received that therapy in addition to a statin vs. without a statin?",,
+Values: 0-100,,
+,[A3ar4c1],In addition to statin
+,[A3ar4c2],Without a statin
+,,
+"A3ar5: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - For each treatment, approximately what % of those LAST 100 [res PatientHoverover] received that therapy in addition to a statin vs. without a statin?",,
+Values: 0-100,,
+,[A3ar5c1],In addition to statin
+,[A3ar5c2],Without a statin
+,,
+"A3br1: Leqvio (inclisiran) - For each treatment you just indicated that you prescribe without a statin, approximately what % of those [res PatientHoverover] who received that therapy without a statin did so…",,
+Values: 0-100,,
+,[A3br1c1],"BEFORE any other lipid-lowering therapy (i.e., first line)"
+,[A3br1c2],AFTER trying another lipid-lowering therapy
+,,
+"A3br2: Praluent (alirocumab) - For each treatment you just indicated that you prescribe without a statin, approximately what % of those [res PatientHoverover] who received that therapy without a statin did so…",,
+Values: 0-100,,
+,[A3br2c1],"BEFORE any other lipid-lowering therapy (i.e., first line)"
+,[A3br2c2],AFTER trying another lipid-lowering therapy
+,,
+"A3br3: Repatha (evolocumab) - For each treatment you just indicated that you prescribe without a statin, approximately what % of those [res PatientHoverover] who received that therapy without a statin did so…",,
+Values: 0-100,,
+,[A3br3c1],"BEFORE any other lipid-lowering therapy (i.e., first line)"
+,[A3br3c2],AFTER trying another lipid-lowering therapy
+,,
+"A3br4: Zetia (ezetimibe) or generic ezetimibe - For each treatment you just indicated that you prescribe without a statin, approximately what % of those [res PatientHoverover] who received that therapy without a statin did so…",,
+Values: 0-100,,
+,[A3br4c1],"BEFORE any other lipid-lowering therapy (i.e., first line)"
+,[A3br4c2],AFTER trying another lipid-lowering therapy
+,,
+"A3br5: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - For each treatment you just indicated that you prescribe without a statin, approximately what % of those [res PatientHoverover] who received that therapy without a statin did so…",,
+Values: 0-100,,
+,[A3br5c1],"BEFORE any other lipid-lowering therapy (i.e., first line)"
+,[A3br5c2],AFTER trying another lipid-lowering therapy
+,,
+"A4c1: LAST 100 [res PatientHoverover2] with Uncontrolled LDL-C - Now please assume that the FDA decides that all PCSK9is (Repatha, Praluent, Leqvio) will now be indicated for use as an adjunct to diet and exercise, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia – and that this change is being made after reviewing existing data, but without any new clinical data beyond what is already available today. In that future state, for your NEXT 100 [res PatientHoverover] with uncontrolled LDL-C, for how many would you prescribe each of the following treatments? Your responses from the previous question are included for reference. If you do not believe this would impact your prescribing, it is fine to input the same responses.",,
+Values: 0-100,,
+,[A4r1c1],"Statin only (i.e., no additional therapy)"
+,[A4r2c1],Leqvio (inclisiran)
+,[A4r3c1],Praluent (alirocumab)
+,[A4r4c1],Repatha (evolocumab)
+,[A4r5c1],Zetia (ezetimibe) or generic ezetimibe
+,[A4r6c1],Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)
+,[A4r7c1],Other
+,,
+"A4c2: NEXT 100 [res PatientHoverover2] with Uncontrolled LDL-C - Now please assume that the FDA decides that all PCSK9is (Repatha, Praluent, Leqvio) will now be indicated for use as an adjunct to diet and exercise, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia – and that this change is being made after reviewing existing data, but without any new clinical data beyond what is already available today. In that future state, for your NEXT 100 [res PatientHoverover] with uncontrolled LDL-C, for how many would you prescribe each of the following treatments? Your responses from the previous question are included for reference. If you do not believe this would impact your prescribing, it is fine to input the same responses.",,
+Values: 0-100,,
+,[A4r1c2],"Statin only (i.e., no additional therapy)"
+,[A4r2c2],Leqvio (inclisiran)
+,[A4r3c2],Praluent (alirocumab)
+,[A4r4c2],Repatha (evolocumab)
+,[A4r5c2],Zetia (ezetimibe) or generic ezetimibe
+,[A4r6c2],Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)
+,[A4r7c2],Other
+,,
+"A4ar1: Leqvio (inclisiran) - For each treatment, for approximately what % of those NEXT 100 [res PatientHoverover] would you expect to prescribe that therapy in addition to a statin vs. without a statin? Your responses from the previous question are included for reference. If you do not believe this would impact your prescribing, it is fine to input the same responses.",,
+Values: 0-100,,
+,[A4ar1c1],NEXT 100 [res PatientHoverover2] with Uncontrolled LDL-C
+,[A4ar1c2],NEXT 100 [res PatientHoverover2] with Uncontrolled LDL-C
+,,
+"A4ar2: Praluent (alirocumab) - For each treatment, for approximately what % of those NEXT 100 [res PatientHoverover] would you expect to prescribe that therapy in addition to a statin vs. without a statin? Your responses from the previous question are included for reference. If you do not believe this would impact your prescribing, it is fine to input the same responses.",,
+Values: 0-100,,
+,[A4ar2c1],NEXT 100 [res PatientHoverover2] with Uncontrolled LDL-C
+,[A4ar2c2],NEXT 100 [res PatientHoverover2] with Uncontrolled LDL-C
+,,
+"A4ar3: Repatha (evolocumab) - For each treatment, for approximately what % of those NEXT 100 [res PatientHoverover] would you expect to prescribe that therapy in addition to a statin vs. without a statin? Your responses from the previous question are included for reference. If you do not believe this would impact your prescribing, it is fine to input the same responses.",,
+Values: 0-100,,
+,[A4ar3c1],NEXT 100 [res PatientHoverover2] with Uncontrolled LDL-C
+,[A4ar3c2],NEXT 100 [res PatientHoverover2] with Uncontrolled LDL-C
+,,
+"A4ar4: Zetia (ezetimibe) or generic ezetimibe - For each treatment, for approximately what % of those NEXT 100 [res PatientHoverover] would you expect to prescribe that therapy in addition to a statin vs. without a statin? Your responses from the previous question are included for reference. If you do not believe this would impact your prescribing, it is fine to input the same responses.",,
+Values: 0-100,,
+,[A4ar4c1],NEXT 100 [res PatientHoverover2] with Uncontrolled LDL-C
+,[A4ar4c2],NEXT 100 [res PatientHoverover2] with Uncontrolled LDL-C
+,,
+"A4ar5: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - For each treatment, for approximately what % of those NEXT 100 [res PatientHoverover] would you expect to prescribe that therapy in addition to a statin vs. without a statin? Your responses from the previous question are included for reference. If you do not believe this would impact your prescribing, it is fine to input the same responses.",,
+Values: 0-100,,
+,[A4ar5c1],NEXT 100 [res PatientHoverover2] with Uncontrolled LDL-C
+,[A4ar5c2],NEXT 100 [res PatientHoverover2] with Uncontrolled LDL-C
+,,
+"A4br1: Leqvio (inclisiran) - For each treatment you just indicated that you would expect to prescribe without a statin, approximately what % of those [res PatientHoverover] who would receive that therapy without a statin would do so…",,
+Values: 0-100,,
+,[A4br1c1],Next treatment allocation
+,[A4br1c2],Next treatment allocation
+,,
+"A4br2: Praluent (alirocumab) - For each treatment you just indicated that you would expect to prescribe without a statin, approximately what % of those [res PatientHoverover] who would receive that therapy without a statin would do so…",,
+Values: 0-100,,
+,[A4br2c1],Next treatment allocation
+,[A4br2c2],Next treatment allocation
+,,
+"A4br3: Repatha (evolocumab) - For each treatment you just indicated that you would expect to prescribe without a statin, approximately what % of those [res PatientHoverover] who would receive that therapy without a statin would do so…",,
+Values: 0-100,,
+,[A4br3c1],Next treatment allocation
+,[A4br3c2],Next treatment allocation
+,,
+"A4br4: Zetia (ezetimibe) or generic ezetimibe - For each treatment you just indicated that you would expect to prescribe without a statin, approximately what % of those [res PatientHoverover] who would receive that therapy without a statin would do so…",,
+Values: 0-100,,
+,[A4br4c1],Next treatment allocation
+,[A4br4c2],Next treatment allocation
+,,
+"A4br5: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - For each treatment you just indicated that you would expect to prescribe without a statin, approximately what % of those [res PatientHoverover] who would receive that therapy without a statin would do so…",,
+Values: 0-100,,
+,[A4br5c1],Next treatment allocation
+,[A4br5c2],Next treatment allocation
+,,
+[A5]: How quickly might you expect to change your prescribing of PCSK9 inhibitors based on this indication change?,,
+Values: 1-4,,
+,1,Within 3 months
+,2,4-6 months
+,3,7-12 months
+,4,Over a year
+,,
+"A6: Again, please assume that the FDA decides that all PCSK9 inhibitors (Repatha, Praluent, Leqvio) will now be indicated for use as an adjunct to diet and exercise, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia – and that this change is being made after reviewing existing data but without any new clinical data beyond what is already available today. For your NEXT 100 [res PatientHoverover] with uncontrolled LDL-C and not currently taking any lipid-lowering therapy, please rank which treatment paths you might be most likely to follow?",,
+Values: 1-4,,
+,[A6r1],"Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed"
+,[A6r2],Start statin and ezetimibe or Nexletol/Nexlizet at the same time
+,[A6r3],"Start ezetimibe or Nexletol/Nexlizet, no statin"
+,[A6r4],"Start statin first, add/switch to PCSK9i if needed"
+,[A6r5],Start statin and PCSK9i at the same time
+,[A6r6],"Start PCSK9i, no statin"
+,[A6r7],"Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that"
+,[A6r8],Other
+,,
+A7: How might being able to use PCKS9 inhibitors indicated for use with or without statin therapy impact your perceptions and/or prescribing?,,
+Values: 0-1,,
+,0,Unchecked
+,1,Checked
+,[A7r1],Makes PCSK9s easier to get covered by insurance / get patients on the medication
+,[A7r2],Offers an option to patients who can’t or won’t take a statin
+,[A7r3],Enables me to use PCSK9s sooner for patients
+,[A7r4],Allows me to better customize treatment plans for patients
+,[A7r5],Other (Specify)
+,,
+[A7r5oe]: How might being able to use PCKS9 inhibitors indicated for use with or without statin therapy impact your perceptions and/or prescribing? - Other (Specify),,
+Open text response,,
+,,
+"A8r1: With established CVD - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",,
+Values: 1-5,,
+,1,Not at all likely
+,2,Slightly likely
+,3,Somewhat likely
+,4,Very likely
+,5,Extremely likely
+,[A8r1c1],Repatha
+,[A8r1c2],Praluent
+,[A8r1c3],Leqvio
+,,
+"A8r2: With no history of CV events and at high-risk - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",,
+Values: 1-5,,
+,1,Not at all likely
+,2,Slightly likely
+,3,Somewhat likely
+,4,Very likely
+,5,Extremely likely
+,[A8r2c1],Repatha
+,[A8r2c2],Praluent
+,[A8r2c3],Leqvio
+,,
+"A8r3: With no history of CV events and at low-to-medium risk - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",,
+Values: 1-5,,
+,1,Not at all likely
+,2,Slightly likely
+,3,Somewhat likely
+,4,Very likely
+,5,Extremely likely
+,[A8r3c1],Repatha
+,[A8r3c2],Praluent
+,[A8r3c3],Leqvio
+,,
+"A8r4: Who are not known to be compliant on statins - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",,
+Values: 1-5,,
+,1,Not at all likely
+,2,Slightly likely
+,3,Somewhat likely
+,4,Very likely
+,5,Extremely likely
+,[A8r4c1],Repatha
+,[A8r4c2],Praluent
+,[A8r4c3],Leqvio
+,,
+"A8r5: Who are intolerant of statins - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",,
+Values: 1-5,,
+,1,Not at all likely
+,2,Slightly likely
+,3,Somewhat likely
+,4,Very likely
+,5,Extremely likely
+,[A8r5c1],Repatha
+,[A8r5c2],Praluent
+,[A8r5c3],Leqvio
+,,
+"A9: To what extent have you encountered any issues with coverage, approvals, cost, etc. for using each of the following without a statin today?",,
+Values: 1-4,,
+,1,No issues
+,2,Some issues
+,3,Significant issues
+,4,Haven’t prescribed without a statin
+,[A9c1],Repatha
+,[A9c2],Praluent
+,[A9c3],Leqvio
+,,
+A10: For what reasons are you using PCSK9 inhibitors without a statin today?,,
+Values: 0-1,,
+,0,Unchecked
+,1,Checked
+,[A10r1],Patient failed statins prior to starting PCSK9i
+,[A10r2],Patient is statin intolerant
+,[A10r3],Patient refused statins
+,[A10r4],Statins are contraindicated for patient
+,[A10r5],Patient not or unlikely to be compliant on statins
+,[A10r6],Haven’t prescribed PCSK9s without a statin
+,,
+B1: What percentage of your current [res PatientHoverover] are covered by each type of insurance?,,
+Values: 0-100,,
+,[B1r1],Not insured
+,[B1r2],Private insurance provided by employer / purchased in exchange
+,[B1r3],Traditional Medicare (Medicare Part B Fee for Service)
+,[B1r4],Traditional Medicare with supplemental insurance
+,[B1r5],Private Medicare (Medicare Advantage / Part C managed through Private payer)
+,[B1r6],Medicaid
+,[B1r7],Veterans Administration (VA)
+,[B1r8],Other
+,,
+[B2]: What is the zip code of your main practice location?,,
+Open text response,,
+,,
+[US_State]: US_State,,
+Values: 1-53,,
+,1,Alaska
+,2,Alabama
+,3,Arkansas
+,4,Arizona
+,5,California
+,6,Colorado
+,7,Connecticut
+,8,District of Columbia
+,9,Delaware
+,10,Florida
+,11,Georgia
+,12,Hawaii
+,13,Iowa
+,14,Idaho
+,15,Illinois
+,16,Indiana
+,17,Kansas
+,18,Kentucky
+,19,Louisiana
+,20,Massachusetts
+,21,Maryland
+,22,Maine
+,23,Michigan
+,24,Minnesota
+,25,Missouri
+,26,Mississippi
+,27,Montana
+,28,North Carolina
+,29,North Dakota
+,30,Nebraska
+,31,New Hampshire
+,32,New Jersey
+,33,New Mexico
+,34,Nevada
+,35,New York
+,36,Ohio
+,37,Oklahoma
+,38,Oregon
+,39,Pennsylvania
+,40,Rhode Island
+,41,South Carolina
+,42,South Dakota
+,43,Tennessee
+,44,Texas
+,45,Utah
+,46,Virginia
+,47,Vermont
+,48,Washington
+,49,Wisconsin
+,50,West Virginia
+,51,Wyoming
+,52,Other
+,53,Invalid State
+,,
+[Region]: Region,,
+Values: 1-6,,
+,1,Northeast
+,2,South
+,3,Midwest
+,4,West
+,5,Other
+,6,Invalid Region
+,,
+[B3]: Which of the following best describes where your primary practice is located?,,
+Values: 1-3,,
+,1,Urban
+,2,Suburban
+,3,Rural
+,,
+[B4]: How many physicians are in your practice?,,
+Values: 0-9999,,
+,,
+B5: How would you describe your specialty/training?,,
+Values: 0-1,,
+,0,Unchecked
+,1,Checked
+,[B5r1],Internal Medicine
+,[B5r2],General Practitioner
+,[B5r3],Primary Care
+,[B5r4],Family Practice
+,[B5r5],Doctor of Osteopathic Medicine (DO)
+,,
+"[QCONSENT]: If you would be willing to participate in future research to further elaborate on the responses from this survey, please indicate below:",,
+Values: 1-2,,
+,1,"Yes, I would be willing to participate in a follow-up interview for additional compensation"
+,2,"No, I am not interested in participating in a follow-up interview for additional compensation"
+,,
+[qtime]: Total Interview Time,,
+Values: -99999-999999,,
+,,
+[IMS_NUM]: Captured variable,,
+Open text response,,
+,,
+[NPI_NUM]: Captured variable,,
+Open text response,,
+,,
+[FULL_NM]: Captured variable,,
+Open text response,,
+,,
+[DEG_TITLE]: Captured variable,,
+Open text response,,
+,,
+[STATE]: Captured variable,,
+Open text response,,
+,,
+[ZIP_CD]: Captured variable,,
+Open text response,,
+,,
+[SPEC_CD]: Captured variable,,
+Open text response,,
+,,
+[SPEC_DESC]: Captured variable,,
+Open text response,,
+,,
+[SPEC_GRP_CD]: Captured variable,,
+Open text response,,
+,,
+[SPEC_GRP_DESC]: Captured variable,,
+Open text response,,
+,,
+[LEQ_TIER]: Captured variable,,
+Open text response,,
+,,
+[PSCK9_DECILE]: Captured variable,,
+Open text response,,
+,,
+[SITE_ORG_ID]: Captured variable,,
+Open text response,,
+,,
+[SITE_ORG_NAME]: Captured variable,,
+Open text response,,
+,,
+[FINAL_FACILITY_TIER]: Captured variable,,
+Open text response,,
+,,
+[SOC_ID]: Captured variable,,
+Open text response,,
+,,
+[SOC_Name]: Captured variable,,
+Open text response,,
+,,
+[FINAL_SOC_TIER]: Captured variable,,
+Open text response,,
+,,
+[834_Flag]: Captured variable,,
+Open text response,,
+,,
+[REGION]: Captured variable,,
+Open text response,,
+,,
+[DIVISION]: Captured variable,,
+Open text response,,
+,,
+[LEQ_C3M]: Captured variable,,
+Open text response,,
+,,
+[LEQ_C6M]: Captured variable,,
+Open text response,,
+,,
+[LEQ_C9M]: Captured variable,,
+Open text response,,
+,,
+[LEQ_C12M]: Captured variable,,
+Open text response,,
+,,
+[BUY_BILL_FLAG]: Captured variable,,
+Open text response,,
+,,
+[ASOC_FLAG]: Captured variable,,
+Open text response,,
+,,
+[Procedure_Deciles]: Captured variable,,
+Open text response,,
+,,
+[Segment]: Captured variable,,
+Open text response,,
+,,
+[AAID]: Captured variable,,
+Open text response,,
+,,
