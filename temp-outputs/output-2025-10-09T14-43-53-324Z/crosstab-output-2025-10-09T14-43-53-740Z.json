@@ -1,0 +1,16 @@
+{
+  "bannerCuts": [],
+  "processingInfo": {
+    "timestamp": "2025-10-09T14:43:53.740Z",
+    "processingMode": "group-by-group",
+    "totalGroups": 0,
+    "totalColumns": 0,
+    "averageConfidence": 0,
+    "tracingEnabled": true,
+    "tracesDashboard": "https://platform.openai.com/traces",
+    "processingLog": [
+      "2025-10-09T14:43:53.735Z: [CrosstabAgent] Starting group-by-group processing: 0 groups",
+      "2025-10-09T14:43:53.738Z: [CrosstabAgent] 🔗 Created unified trace: \"CrossTab Validation - 0 groups\""
+    ]
+  }
+}

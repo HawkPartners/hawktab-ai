@@ -134,10 +134,47 @@ This section contains important requirements for file formats and data preparati
 ## Getting Started
 
 ### Prerequisites
+
+**Node.js 18+**
 ```bash
-# Required Node.js 18+
 npm install
 ```
+
+**System Dependencies (Windows)**
+
+HawkTab AI requires native tools for PDF processing and R execution:
+
+1. **GraphicsMagick** (converts PDF pages to images)
+   - Download: https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick-binaries/
+   - Get the latest `GraphicsMagick-*-Q16-win64-dll.exe` installer
+   - Run installer and check "Add application directory to PATH"
+   - Verify: Open **new** PowerShell and run `gm -version`
+
+2. **Ghostscript** (PDF rasterization engine)
+   - Download: https://ghostscript.com/releases/gsdnld.html
+   - Get the latest 64-bit Windows installer (`gs*-gp-*-win64.exe`)
+   - Run installer (default settings)
+   - Manually add `C:\Program Files\gs\gs10.*\bin\` to your PATH:
+     - Search Windows for "Environment Variables" → Edit system environment variables
+     - System Properties → Environment Variables → Edit PATH
+     - Add new entry: `C:\Program Files\gs\gs10.04.0\bin\` (adjust version)
+   - Verify: Open **new** PowerShell and run `gswin64c -version`
+
+3. **R** (statistical computing for crosstab generation)
+   - Download: https://cran.r-project.org/bin/windows/base/
+   - Get the latest R installer for Windows
+   - Run installer and check "Add R to PATH"
+   - After install, open **new** PowerShell and install required packages:
+     ```powershell
+     Rscript -e "install.packages(c('haven','dplyr'), repos='https://cloud.r-project.org')"
+     ```
+   - Verify: `Rscript --version`
+
+**Important**: After installing these tools, **restart your terminal** (or VS Code/IDE) so PATH changes take effect.
+
+**System Dependencies (macOS/Linux)**
+- Use Homebrew (Mac) or apt/yum (Linux) to install `graphicsmagick`, `ghostscript`, and `r-base`
+- Install R packages: `Rscript -e "install.packages(c('haven','dplyr'))"`
 
 ### Environment Setup
 Create `.env.local`:
