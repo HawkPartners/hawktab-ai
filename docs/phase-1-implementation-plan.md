@@ -657,6 +657,11 @@ export const isValidAgentResult = (result: unknown): result is ValidationResultT
 };
 
 // Save development outputs
+// NOTE: This replaces both saveDevelopmentOutputsWithTrace() and _saveDevelopmentOutputs()
+// Key changes from old version:
+//   - Removed: tracingEnabled, tracesDashboard (OpenAI-specific)
+//   - Added: aiProvider, model (Azure-specific)
+//   - Removed: _traceId parameter (was unused)
 async function saveDevelopmentOutputs(
   result: ValidationResultType,
   outputFolder: string,
@@ -671,13 +676,14 @@ async function saveDevelopmentOutputs(
     const filePath = path.join(outputDir, filename);
 
     // Enhanced output with processing information
+    // UPDATED: Removed OpenAI-specific fields, added Azure-specific fields
     const enhancedOutput = {
       ...result,
       processingInfo: {
         timestamp: new Date().toISOString(),
         processingMode: 'group-by-group',
-        aiProvider: 'azure-openai',
-        model: getReasoningModelName(),
+        aiProvider: 'azure-openai',  // NEW: identifies AI provider
+        model: getReasoningModelName(),  // NEW: shows which model was used (e.g., 'azure/o4-mini')
         totalGroups: result.bannerCuts.length,
         totalColumns: result.bannerCuts.reduce((total, group) => total + group.columns.length, 0),
         averageConfidence: result.bannerCuts.length > 0
@@ -687,6 +693,8 @@ async function saveDevelopmentOutputs(
             / result.bannerCuts.flatMap(group => group.columns).length
           : 0,
         processingLog: processingLog || []
+        // REMOVED: tracingEnabled (was OpenAI-specific: process.env.OPENAI_AGENTS_DISABLE_TRACING)
+        // REMOVED: tracesDashboard (was OpenAI-specific: 'https://platform.openai.com/traces')
       }
     };
 
@@ -707,6 +715,12 @@ async function saveDevelopmentOutputs(
 5. **No tracing**: Removed `withTrace()` and `getGlobalTraceProvider()` - replaced with structured console logging (Sentry in Phase 2)
 6. **Task-based model**: `getReasoningModel()` returns Azure reasoning model instance (o4-mini) for complex validation
 7. **Removed OpenAI references**: Processing info no longer includes OpenAI traces dashboard links
+
+**Functions to remove entirely**:
+
+- `createCrosstabAgent()` - No longer needed; `generateText()` is called directly
+- `_saveDevelopmentOutputs()` - Legacy compatibility wrapper (line 291 in current file)
+- `saveDevelopmentOutputsWithTrace()` - Renamed to `saveDevelopmentOutputs()` with updated `processingInfo`
 
 ---
 
@@ -944,16 +958,21 @@ export const getTracingConfig = (): TracingConfig => {
 ```bash
 cat src/agents/index.ts                           # See current exports
 grep -r "from.*BannerAgent" src/                  # Find BannerAgent import patterns
+grep -r "createCrosstabAgent" src/                # Verify createCrosstabAgent is only used internally
 ```
 
-**Current Issue**: BannerAgent class is imported directly in API route, not through index.
+**Findings from discovery**:
+- `createCrosstabAgent` is exported but **not imported anywhere outside CrosstabAgent.ts**
+- It's only used internally within `processGroup()` - which no longer exists after migration
+- Safe to remove from exports
 
-**Updated exports** (keep BannerAgent as class export for compatibility):
+**Updated exports**:
 
 ```typescript
 // CrossTab Agent exports
+// NOTE: createCrosstabAgent REMOVED - no longer exists after migration to generateText()
 export {
-  createCrosstabAgent,  // Keep if still used
+  // createCrosstabAgent,  // REMOVED: Function no longer exists
   processGroup,
   processAllGroups,
   processAllGroupsParallel,
@@ -971,10 +990,9 @@ export type { RScriptOutput, RScriptIssue } from './RScriptAgent';
 
 // Tool exports
 export { scratchpadTool } from './tools/scratchpad';
-
-// Remove deprecated exports
-// - createCrosstabAgent if not used externally (check with grep first)
 ```
+
+**Breaking Change Note**: `createCrosstabAgent` is removed from exports. Discovery confirmed no external code imports this function, so this is a safe removal.
 
 ---
 
@@ -1119,15 +1137,20 @@ Keep `.env.local` backup with original `OPENAI_API_KEY` configuration.
 | `src/lib/env.ts` | Complete rewrite for Azure provider | Medium | 2 |
 | `src/lib/tracing.ts` | Update env var name (TRACING_ENABLED) | Low | 7 |
 | `src/agents/tools/scratchpad.ts` | Change import, rename `parameters` to `inputSchema` | Low | 3 |
-| `src/agents/CrosstabAgent.ts` | Replace Agent+run with generateText, remove withTrace | High | 4 |
+| `src/agents/CrosstabAgent.ts` | Replace Agent+run with generateText, remove withTrace, remove createCrosstabAgent, rename saveDevelopmentOutputs | High | 4 |
 | `src/agents/BannerAgent.ts` | Replace Agent+run with generateText, update image format | High | 5 |
 | `src/agents/RScriptAgent.ts` | Remove withTrace wrapper, add structured logging | Medium | 6 |
-| `src/agents/index.ts` | Add BannerAgent and RScriptAgent exports | Low | 8 |
+| `src/agents/index.ts` | Remove createCrosstabAgent export, add BannerAgent and RScriptAgent exports | Low | 8 |
 | `.env.local` | Replace OPENAI_API_KEY with Azure vars | Low | 2 |
 | `.env.example` | Create/update with Azure vars for team reference | Low | 2 |
 
 **Total files modified**: 11
 **Risk level**: Medium (well-defined migration path, feature branch allows thorough testing)
+
+**Functions removed in Step 4**:
+- `createCrosstabAgent()` - replaced by direct `generateText()` calls
+- `saveDevelopmentOutputsWithTrace()` - renamed to `saveDevelopmentOutputs()`
+- `_saveDevelopmentOutputs()` - legacy wrapper removed
 
 ### Verification After Each Step
 
@@ -1173,6 +1196,7 @@ npm run build                  # Must succeed
 | 2025-12-31 | Added `AZURE_API_VERSION` configuration (default: `2025-01-01-preview`) and `useDeploymentBasedUrls: true` for Azure AI Foundry compatibility. This ensures the SDK constructs URLs matching the standard Azure OpenAI deployment format. |
 | 2026-01-01 | **Correction**: Fixed tool definition pattern in Step 3. AI SDK v6 requires `inputSchema` (not `parameters`). Updated Key Changes table, Step 3 code example, and Migration Summary. Verified against [AI SDK Tools Documentation](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling). |
 | 2026-01-01 | **Correction**: Fixed multi-step control in Steps 4 and 5. AI SDK 5+ uses `stopWhen: stepCountIs(N)` instead of `maxSteps`. Added `stepCountIs` to imports, updated error handling terminology. Verified against [AI SDK Multi-Step Cookbook](https://ai-sdk.dev/cookbook/node/call-tools-multiple-steps). |
+| 2026-01-01 | **Step 4 clarifications**: Added explicit guidance for functions to remove (`createCrosstabAgent`, `_saveDevelopmentOutputs`, `saveDevelopmentOutputsWithTrace`). Updated `saveDevelopmentOutputs` with detailed comments showing OpenAI→Azure field changes. Updated Step 8 to explicitly remove `createCrosstabAgent` from exports (verified no external imports). Updated Migration Summary table. |
 
 ---
 
