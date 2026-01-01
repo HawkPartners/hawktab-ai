@@ -1009,7 +1009,7 @@ interface SurveyJSON {
 
 **Deliverable**: System uses Decipher skip logic for validation. Major accuracy improvement.
 
-### Phase 4: Reliability & Validation
+### Phase 4: Reliability & Validation (Reference `docs/architecture/agent-flow-overview.md` for details)
 
 **Goal**: Surface issues before users see them.
 
@@ -1134,25 +1134,6 @@ interface SurveyJSON {
 | **Product Analytics** | PostHog, Mixpanel, Amplitude, None | **PostHog (basic)** | Low effort to add, free tier, defer advanced features |
 | **Survey source** | CSV parsing, Decipher API, Qualtrics API | Decipher API primary, CSV fallback | Decipher has skip logic we need |
 | **Job queue** | Inngest, Trigger.dev, Convex built-in | **Convex built-in** | Simpler architecture, real-time updates |
-
----
-
-## Open Questions
-
-1. ~~**Convex vs Supabase**: Need to prototype both.~~ **RESOLVED: Convex** - WorkOS integration + TypeScript-native.
-
-2. **Decipher API access**: Need to verify Hawk Partners has API access. What's the authentication flow?
-
-3. ~~**Multi-survey platform support**: Support Qualtrics, SurveyMonkey?~~ **DEFERRED**: Focus on Decipher for Hawk Partners. Revisit if Bob pilot shows demand.
-
-4. ~~**Self-hosting requirements**: Enterprise on-premise needs?~~ **NOT A REQUIREMENT**: Hawk Partners doesn't need this.
-
-5. ~~**Pricing model**: How to price per crosstab?~~ **DEFERRED**: Internal tool first. Pricing if we productize.
-
-6. **R Execution Environment**: Where does R run?
-   - Current: Local R installation
-   - For deployment: Likely Docker container on Vercel/Railway
-   - Decision needed before Phase 2 deployment
 
 ---
 
