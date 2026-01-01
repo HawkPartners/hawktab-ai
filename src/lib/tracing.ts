@@ -1,7 +1,7 @@
 /**
  * Tracing helpers
- * Purpose: Configure lightweight tracing and console logging in development
- * Usage: wrap major flows with withTrace() in agents; call forceFlush via provider when needed
+ * Purpose: Structured logging for observability (Sentry integration in Phase 2)
+ * Usage: Call logAgentExecution() to record agent operations with timing
  */
 
 export interface TracingConfig {
@@ -12,7 +12,9 @@ export interface TracingConfig {
 
 export const getTracingConfig = (): TracingConfig => {
   return {
-    enabled: process.env.OPENAI_AGENTS_DISABLE_TRACING !== 'true',
+    // Changed from OPENAI_AGENTS_DISABLE_TRACING to generic TRACING_ENABLED
+    // Default: enabled (must explicitly set to 'false' to disable)
+    enabled: process.env.TRACING_ENABLED !== 'false',
     externalProvider: process.env.TRACE_EXTERNAL_PROVIDER,
     includeSensitiveData: false, // Never include sensitive data in traces
   };
