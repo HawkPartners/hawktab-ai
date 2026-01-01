@@ -1,133 +1,118 @@
-# HawkTab AI - Intelligent Crosstab Generation Platform
+# HawkTab AI
 
-## Overview
-
-HawkTab AI is an agent-first, AI-powered platform that automates crosstab generation for Hawk Partners' market research workflows. By leveraging OpenAI's Agents SDK and sophisticated data processing pipelines, we're replacing expensive outsourced crosstab generation with an intelligent system that understands complex banner plans and automatically maps them to survey data.
-
-**The Problem**: Hawk Partners currently outsources crosstab generation to external vendors, which is costly, time-consuming, and creates dependencies on third parties.
-
-**Our Solution**: An intelligent agent system that can read banner plans, understand data mappings, and generate validated R syntax for crosstab execution—all while maintaining enterprise-grade type safety, security, and observability.
+**Market Research Crosstab Automation Platform**
 
 ---
 
-## Vision
+## Executive Summary
 
-**A collaborative, web-based workspace where HawkPartners staff and research partners can:**
-- Upload raw quant survey data (SPSS `.sav` files)
-- Upload project banner plans (Excel, CSV, or similar)
-- Upload the final questionnaire (PDF, DOCX, or text)
-- Automatically generate high-quality crosstab outputs matching or exceeding the accuracy and clarity of existing providers (Joe/Antares)
-- Receive QC analysis on soft launch/full data for speeders, straight-liners, logic issues, and routing errors
-- Collaborate on projects with secure user access, notification, and threaded follow-ups for new tab requests or QC reviews
+HawkTab AI is a production-ready crosstab automation system that transforms how market research firms generate statistical tables. By integrating directly with survey platforms (Decipher/Forsta), leveraging multi-provider AI (via Vercel AI SDK), and building on enterprise-grade infrastructure (Convex, WorkOS, Sentry), the system delivers accurate, statistically-tested crosstabs with minimal manual intervention.
+
+**Core Thesis**: Crosstab generation is complex but automatable. The key is eliminating parsing ambiguity by going to the source (survey platform APIs), validating against actual data before output, and providing transparency at every step.
+
+**Target Outcome**: Market researchers upload their survey materials and receive accurate crosstabs—with confidence scores, validation warnings, and statistical testing—ready for client delivery.
 
 ---
 
-## Current Implementation Status ✅
+## The Problem
 
-### What's Working Now
-- **Complete Processing Pipeline**: Upload CSV data maps, banner plans (PDF/DOC), and SPSS files through a single API endpoint
-- **Intelligent CrossTab Agent**: Uses OpenAI's Agents SDK to validate banner expressions against data maps with confidence scoring
-- **Sophisticated Data Processing**: 
-  - State machine-based CSV parsing with parent inference
-  - PDF-to-image banner extraction using Vision API
-  - Dual output strategy (verbose for debugging, simplified for agents)
-- **Production-Grade Architecture**:
-  - Full TypeScript with Zod schemas for type safety
-  - Environment-based model switching (reasoning vs base models)
-  - Modular prompt system for A/B testing
-  - Comprehensive tracing and observability
-  - Session-based output organization
+Market research firms face significant friction in crosstab generation:
+
+| Pain Point | Impact |
+|------------|--------|
+| **Manual processing** | Hours spent mapping banner plans to survey variables |
+| **Outsourcing costs** | $500-2000+ per project to external vendors |
+| **Turnaround time** | Days waiting for external deliverables |
+| **Quality variance** | Inconsistent output quality across vendors |
+| **No transparency** | Black box processing with limited visibility |
+
+## The Solution
+
+An intelligent agent system that:
+- **Integrates with Decipher/Forsta** to access survey structure, skip logic, and data directly
+- **Validates banner expressions** against actual respondent data before generating output
+- **Provides confidence scoring** so researchers know exactly where to focus review
+- **Generates R syntax** for crosstab execution with statistical testing
+- **Supports enterprise auth** (SSO, SCIM) for seamless organizational deployment
+
+---
+
+## Technology Stack
+
+### Core Platform
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **Framework** | Next.js 15 + TypeScript | Type-safe web application |
+| **Database** | Convex | Real-time reactive backend, TypeScript-native |
+| **Auth** | WorkOS AuthKit | Enterprise SSO, SCIM, free to 1M MAU |
+| **AI** | Vercel AI SDK | Multi-provider (OpenAI, Anthropic, Azure) |
+| **File Storage** | Cloudflare R2 | S3-compatible, no egress fees |
+
+### Observability
+| Tool | Purpose |
+|------|---------|
+| **Sentry** | Error monitoring, session replay, performance |
+| **PostHog** | Product analytics, feature flags, A/B testing |
+
+### Data Processing
+| Component | Purpose |
+|-----------|---------|
+| **Decipher API** | Direct survey platform integration |
+| **R Runtime** | Statistical crosstab generation |
+| **Zod Schemas** | Runtime type validation |
+
+---
+
+## Current Implementation Status
+
+### What's Working (MVP Foundation)
+
+| Component | Status | Details |
+|-----------|--------|---------|
+| **Banner Processing** | Production | PDF/DOC extraction via Vision API, group separation |
+| **Data Map Processing** | Production | CSV parsing with parent inference, 192+ variables |
+| **CrossTab Agent** | Production | Expression validation with confidence scoring |
+| **R Script Generation** | Production | Complete syntax generation with statistical summaries |
+| **SPSS Integration** | Production | 99% variable match rate via `haven` package |
+| **API Pipeline** | Production | Single endpoint, session-based processing |
 
 ### Key Achievements
-- Successfully processes 192 variables with 130 parent relationships
-- 99% accuracy in SPSS variable matching
-- Handles complex expressions like "IF HCP" with intelligent inference
-- Distinguishes between overlapping categories (HCP vs NP/PA) using context
-- Provides graduated confidence scores for human review prioritization
-- Processes 19 columns across 6 banner groups in real-world tests
-
-### Technology Stack
-- **Framework**: Next.js 15 with TypeScript
-- **AI/ML**: OpenAI Agents SDK, GPT-4o, O1 reasoning models
-- **Data Processing**: Zod schemas, state machines, PDF processing
-- **Development**: ESLint, Turbopack, hot reload
+- Successfully processes complex banner plans (19 columns, 6 groups)
+- Handles sophisticated expressions like "IF HCP" with contextual inference
+- Generates graduated confidence scores for human review prioritization
+- Distinguishes overlapping categories (HCP vs NP/PA) using semantic understanding
 
 ---
 
-## Next Steps (In Progress)
+## Architecture Refactor (Next Phase)
 
-- [x] **Tracing Export**: ✅ Implemented unified trace aggregation with `withTrace()` wrapper and `forceFlush()`
-- [x] **Banner Processing Agent**: ✅ Converted to Agents SDK with scratchpad tool - achieves excellent group separation (6+ logical groups)
-- [x] **Validation UI**: ✅ Complete interactive validation system for development testing
-  - ✅ Non-blocking validation queue for reviewing completed sessions
-  - ✅ Banner and Crosstab validation tabs with human feedback capture
-  - ✅ Interactive forms for rating agent performance and correcting outputs
-  - ✅ Session management with delete functionality
-  - ✅ Complete data map reference display
-- [ ] **⚠️ CURRENT PHASE**: Thorough testing with diverse files using validation UI
-- [ ] **Banner Plan Merging**: Combine agent results with original plans
-- [ ] **Total Column**: Add statistical total for significance testing
-- [ ] **R Script Generation Agent**: Convert validated mappings to executable R
-- [ ] **QA System**: Automated quality assurance for outputs
-- [ ] **Batch Processing**: Test across multiple files systematically
+The current MVP demonstrates the concept. The next phase transforms it into enterprise-ready infrastructure:
 
-See `docs/development-roadmap-2025-08-08.md` for the current roadmap. Older docs are archived under `docs/archive/`.
+### Phase 1: Foundation
+- [ ] Initialize Convex + WorkOS AuthKit
+- [ ] Set up Sentry error monitoring
+- [ ] Set up PostHog analytics
+- [ ] Create Convex schema (projects, jobs, files)
+- [ ] Configure Cloudflare R2 for file storage
 
----
+### Phase 2: AI Layer Migration
+- [ ] Migrate agents from OpenAI SDK to Vercel AI SDK
+- [ ] Add multi-provider support (OpenAI, Anthropic, Azure)
+- [ ] Implement provider selection per task type
 
-## End-State Features (Long-term Vision)
+### Phase 3: Reliability Improvements
+- [ ] Implement pre-execution count validation
+- [ ] Add validation warnings to output schema
+- [ ] Update prompts for calibrated confidence scoring
+- [ ] Create validation summary UI component
 
-- **Multi-file intake:** SPSS file, banner plan, questionnaire—all uploadable to one project workspace.
-- **Automated Parsing:**
-  - **Questionnaire parsing:** Extracts all questions (IDs, text, routing, skips, terminates, programming notes).
-  - **Banner plan parsing:** Reads tab spec (splits, cuts, filters, stat tests, etc.).
-  - **Variable mapping:** Intelligently matches banner plan/questions to SPSS variable names, prompting user for ambiguous cases.
-- **Human-in-the-Loop Orchestration:**
-  - After auto-mapping, system displays all mapped questions, splits, and logic; user reviews and confirms before tabs are generated.
-  - All follow-up tab requests or new cuts handled in threaded chat interface—LLM parses requests, confirms with user, and executes.
-- **Cross-tab Generation:**
-  - Clean, intuitive Excel output (matching Antares/Joe in data quality, basic formatting at MVP, with further polish later).
-  - Support for significance testing, custom nets, weighting, and complex filters as needed.
-- **QC and Data Validation:**
-  - Checks for speeders, straight-liners, routing/logic errors, and skipped/terminated cases.
-  - Compares actual data routing/terminations to programmed logic from parsed questionnaire.
-  - Generates flagged respondent list and summary QC report.
-- **Collaboration & Workflow:**
-  - Project-based access for both internal and external partners.
-  - Notifications for key events (file upload, mapping needed, output ready, follow-up request).
-  - All actions and revisions threaded and logged per project.
-- **Security and Data Privacy:** All data processing is internal or on a secure cloud, with strict access controls.
+### Phase 4: Decipher Integration
+- [ ] Build survey structure fetcher
+- [ ] Parse skip logic from survey XML
+- [ ] Integrate skip logic into validation
+- [ ] Add Decipher as primary data source
 
----
-
-## File Format Requirements & Notes
-
-This section contains important requirements for file formats and data preparation to ensure smooth processing:
-
-### Data Map Requirements
-- **Required Format**: CSV file (.csv) only - recruiters must export the data map as a standalone CSV file
-- **Format**: The data map CSV should contain columns for:
-  - Question ID/Number (e.g., "Q1", "Q2a") - column can be named: question, question_id, q, qid, etc.
-  - Variable/Column name in the raw data - column can be named: variable, var, column, spss_variable, etc.
-  - Description/Label (optional but helpful) - column can be named: description, label, question_text, etc.
-
-### File Upload Requirements
-- **Interim Data**: One or more SPSS (.sav) files containing preliminary data (soft launch, partial data, etc.)
-- **Final Data**: Single SPSS (.sav) file containing the complete dataset
-- **Banner Plan**: Word document (.doc or .docx) that will be converted to PDF
-- **Questionnaire**: Word document (.doc or .docx) that will be converted to PDF
-- **Data Map**: CSV file (.csv) mapping questions to data columns
-
-### UI/UX Notes
-- During the upload flow, provide clear instructions about file format requirements
-- Consider adding tooltips or help text explaining what each file type should contain
-- Add validation messages that guide users to correct file formats
-
-### Future Considerations
-- Standardize data map format with recruiters for consistent processing
-- Create template files that recruiters can use to ensure compatibility
-- Document any specific naming conventions or required columns
-- **IMPORTANT**: The current iteration will be optimized for Antares—we'll need to add support for other research partners such as TestSet, etc.
+See `architecture-refactor-prd.md` for the complete implementation roadmap.
 
 ---
 
@@ -140,108 +125,109 @@ This section contains important requirements for file formats and data preparati
 npm install
 ```
 
-**System Dependencies (Windows)**
+**R Runtime** (for crosstab generation)
+- macOS: `brew install r`
+- Windows: Download from https://cran.r-project.org/bin/windows/base/
+- Install packages: `Rscript -e "install.packages(c('haven','dplyr','tidyr'))"`
 
-HawkTab AI requires native tools for PDF processing and R execution:
-
-1. **GraphicsMagick** (converts PDF pages to images)
-   - Download: https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick-binaries/
-   - Get the latest `GraphicsMagick-*-Q16-win64-dll.exe` installer
-   - Run installer and check "Add application directory to PATH"
-   - Verify: Open **new** PowerShell and run `gm -version`
-
-2. **Ghostscript** (PDF rasterization engine)
-   - Download: https://ghostscript.com/releases/gsdnld.html
-   - Get the latest 64-bit Windows installer (`gs*-gp-*-win64.exe`)
-   - Run installer (default settings)
-   - Manually add `C:\Program Files\gs\gs10.*\bin\` to your PATH:
-     - Search Windows for "Environment Variables" → Edit system environment variables
-     - System Properties → Environment Variables → Edit PATH
-     - Add new entry: `C:\Program Files\gs\gs10.04.0\bin\` (adjust version)
-   - Verify: Open **new** PowerShell and run `gswin64c -version`
-
-3. **R** (statistical computing for crosstab generation)
-   - Download: https://cran.r-project.org/bin/windows/base/
-   - Get the latest R installer for Windows
-   - Run installer and check "Add R to PATH"
-   - After install, open **new** PowerShell and install required packages:
-     ```powershell
-     Rscript -e "install.packages(c('haven','dplyr'), repos='https://cloud.r-project.org')"
-     ```
-   - Verify: `Rscript --version`
-
-**Important**: After installing these tools, **restart your terminal** (or VS Code/IDE) so PATH changes take effect.
-
-**System Dependencies (macOS/Linux)**
-- Use Homebrew (Mac) or apt/yum (Linux) to install `graphicsmagick`, `ghostscript`, and `r-base`
-- Install R packages: `Rscript -e "install.packages(c('haven','dplyr'))"`
+**PDF Processing** (for banner extraction)
+- macOS: `brew install graphicsmagick ghostscript`
+- Windows: See installation notes in `docs/setup/windows-dependencies.md`
 
 ### Environment Setup
+
 Create `.env.local`:
 ```env
+# Required
 OPENAI_API_KEY=your_api_key_here
-NODE_ENV=development
 
-# Optional: Test alternative prompts
-CROSSTAB_PROMPT_VERSION=production  # or 'alternative'
-BANNER_PROMPT_VERSION=production    # or 'alternative'
+# Optional (future)
+ANTHROPIC_API_KEY=your_anthropic_key
+AZURE_OPENAI_KEY=your_azure_key
+
+# Environment
+NODE_ENV=development
 ```
 
 ### Development
+
 ```bash
-npm run dev     # Start development server with Turbopack
-npm run lint    # Run ESLint
-npx tsc --noEmit  # Type checking
+npm run dev      # Start development server (Turbopack)
+npm run lint     # ESLint checks
+npx tsc --noEmit # TypeScript type checking
+npm run build    # Production build
 ```
 
-### Testing the System
-1. Navigate to http://localhost:3000
-2. Upload required files:
-   - Data Map (CSV)
-   - Banner Plan (PDF/DOC)
-   - SPSS Data File (.sav)
-3. Review outputs in `temp-outputs/output-{timestamp}/`
+### Testing
+
+Upload files via the web interface at http://localhost:3000:
+1. Data Map (CSV) - Variable definitions
+2. Banner Plan (PDF/DOC) - Crosstab specification
+3. SPSS File (.sav) - Survey response data
+
+Review outputs in `temp-outputs/output-{timestamp}/`
 
 ---
 
-## Architecture Highlights
+## Project Structure
 
-### Agent-First Approach
-We use OpenAI's Agents SDK with a "one agent, multiple calls" strategy, processing banner groups individually for better focus and transparency. The agent uses context injection rather than heavy tool usage, providing full data structures directly in instructions.
-
-### Type Safety & Best Practices
-- **Zod-First Development**: All schemas defined before implementation
-- **TypeScript Throughout**: Full type safety with strict mode
-- **Error Boundaries**: Graceful degradation with intelligent fallbacks
-- **Observability**: Comprehensive tracing at every stage
-
-### Key Design Decisions
-- **Group-by-Group Processing**: Maintains context within logical groupings
-- **Dual Output Strategy**: Verbose for debugging, simplified for agents
-- **Confidence Scoring**: Graduated scores (0.0-1.0) for prioritizing review
-- **Session Organization**: Timestamp-based folders for clean output management
+```
+hawktab-ai/
+├── src/
+│   ├── agents/           # AI agent implementations
+│   ├── app/              # Next.js app router
+│   │   └── api/          # API endpoints
+│   ├── components/       # React components
+│   ├── guardrails/       # Input/output validation
+│   ├── lib/              # Core utilities
+│   │   ├── processors/   # Data processing pipeline
+│   │   ├── r/            # R script generation
+│   │   └── tables/       # Table definitions
+│   ├── prompts/          # AI prompt templates
+│   └── schemas/          # Zod type definitions
+├── convex/               # Convex backend (future)
+├── docs/                 # Documentation
+├── data/                 # Test data files
+└── temp-outputs/         # Development outputs
+```
 
 ---
 
 ## Documentation
 
-- Architecture (human): `docs/architecture/human-overview.md`
-- Architecture (machine): `docs/architecture/ai-architecture.md`
-- Pipelines: `docs/architecture/pipelines.md`
-- Agents: `docs/architecture/agents.md`
-- API: `docs/architecture/api.md`
-- Modules: `docs/architecture/modules.md`
-- Architecture elements: `docs/architecture-elements/`
-- OpenAI Agents architecture reference: `docs/openai-agents-architecture.md`
+| Document | Purpose |
+|----------|---------|
+| `architecture-refactor-prd.md` | Complete architecture plan and roadmap |
+| `CLAUDE.md` | AI assistant context and coding guidelines |
+| `docs/security-audit-prompt.md` | Security review checklist |
+| `docs/architecture/` | Technical architecture details |
+
+---
+
+## Security
+
+HawkTab AI is designed for enterprise deployment with security as a first-class concern:
+
+- **Authentication**: WorkOS AuthKit with enterprise SSO/SCIM support
+- **Authorization**: Row-level security via Convex policies
+- **Error Monitoring**: Sentry with PII scrubbing
+- **Audit Logging**: Full action history per project
+- **Data Encryption**: TLS in transit, encrypted at rest
+
+Security audits are conducted regularly. See `docs/security-audit-prompt.md`.
 
 ---
 
 ## Contributing
 
-This is currently an internal Hawk Partners project. For questions or contributions, please contact the development team.
+This project follows enterprise development practices:
+- TypeScript strict mode required
+- All changes require type checking (`npx tsc --noEmit`)
+- ESLint must pass (`npm run lint`)
+- Security considerations documented for each PR
 
 ---
 
 ## License
 
-Proprietary - Hawk Partners Internal Use Only
+Proprietary - All Rights Reserved

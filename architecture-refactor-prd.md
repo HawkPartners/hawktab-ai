@@ -17,8 +17,10 @@ HawkTab AI is a market research crosstab automation system that processes survey
 3. [Architecture Recommendations](#architecture-recommendations)
    - [Decipher API Integration](#1-decipherforsta-api-integration)
    - [Vercel AI SDK Migration](#2-vercel-ai-sdk-migration)
-   - [Database Layer](#3-database-layer)
-   - [Async Job Processing](#4-async-job-processing)
+   - [Enterprise Authentication (WorkOS)](#3-enterprise-authentication-workos)
+   - [Database Layer (Convex)](#4-database-layer)
+   - [Async Job Processing](#5-async-job-processing)
+   - [Observability (PostHog + Sentry)](#6-observability-posthog--sentry)
 4. [Validation & Reliability System](#validation--reliability-system)
 5. [Agent Architecture](#agent-architecture)
 6. [Implementation Roadmap](#implementation-roadmap)
@@ -270,7 +272,90 @@ function getModelForTask(task: 'vision' | 'reasoning' | 'validation') {
 
 ---
 
-### 3. Database Layer
+### 3. Enterprise Authentication (WorkOS)
+
+**Priority**: High | **Effort**: 1-2 days | **Impact**: Very High
+
+#### Why WorkOS Over Alternatives
+
+For enterprise-grade B2B SaaS, authentication needs go beyond simple login:
+
+| Requirement | Consumer Auth (Clerk) | Enterprise Auth (WorkOS) |
+|-------------|----------------------|--------------------------|
+| Social login | ✅ | ✅ |
+| Email/password | ✅ | ✅ |
+| MFA | ✅ | ✅ |
+| SAML SSO | Limited | ✅ First-class |
+| SCIM/Directory Sync | ❌ | ✅ Full support |
+| Enterprise admin portal | ❌ | ✅ Self-service |
+| SOC 2 / HIPAA ready | Varies | ✅ Out of box |
+
+**Why This Matters for HawkTab**: When selling to market research firms (including Hawk Partners), IT departments require:
+- Single Sign-On with their corporate IdP (Okta, Azure AD, etc.)
+- Automatic user provisioning/deprovisioning via SCIM
+- Audit logs for compliance
+- Self-service admin portal for IT admins
+
+#### WorkOS Pricing (Startup-Friendly)
+
+| Feature | Cost | Notes |
+|---------|------|-------|
+| **AuthKit (User Management)** | Free up to 1M MAU | Includes social, email, MFA, passkeys |
+| **Enterprise SSO** | $125/connection/month | Per enterprise customer connection |
+| **Directory Sync** | $125/connection/month | SCIM provisioning |
+| **Audit Logs** | $99/month per 1M events | For compliance requirements |
+
+**Key Insight**: Launch with free AuthKit, only pay for SSO when enterprise customers actually need it.
+
+#### WorkOS + Convex Integration
+
+WorkOS is an **officially supported auth provider** in Convex with first-class integration:
+
+```typescript
+// Setup with single command
+// npm create convex@latest -- -t react-vite-authkit
+
+// Automatic provider setup
+import { ConvexProviderWithAuthKit } from "@convex-dev/workos-authkit/react";
+
+export function App() {
+  return (
+    <ConvexProviderWithAuthKit client={convex}>
+      <YourApp />
+    </ConvexProviderWithAuthKit>
+  );
+}
+
+// Access auth in any Convex function
+export const getProjects = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const orgId = identity.orgId; // From WorkOS
+    return ctx.db.query("projects")
+      .withIndex("by_org", q => q.eq("orgId", orgId))
+      .collect();
+  },
+});
+```
+
+**Developer Experience Benefits**:
+- Auto-provisioned WorkOS dev environment per Convex deployment
+- Each team member gets isolated auth environment
+- No manual JWT configuration required
+- Organizations/roles sync automatically
+
+#### Implementation Steps
+
+1. **Create Convex + AuthKit project**: `npm create convex@latest -- -t react-vite-authkit`
+2. **Configure WorkOS dashboard**: Social providers, branding, organization settings
+3. **Add enterprise SSO**: When first enterprise customer needs it, enable per-connection
+4. **Enable SCIM**: For customers requiring directory sync
+
+---
+
+### 4. Database Layer
 
 **Priority**: High | **Effort**: 1-2 days | **Impact**: High
 
@@ -286,53 +371,57 @@ Current file-based approach (`temp-outputs/`) has critical limitations:
 | No async jobs | Long R execution blocks everything |
 | No audit trail | Can't debug issues after the fact |
 
-#### Decision: Supabase vs Convex
+#### Decision: Convex (Recommended)
 
-This is an open decision requiring evaluation. Both are excellent options with different philosophies.
+After evaluating both options, **Convex is the recommended choice** for HawkTab based on:
 
-##### Supabase
+| Factor | Convex | Supabase | Winner |
+|--------|--------|----------|--------|
+| **WorkOS Integration** | First-class, auto-provisioned | Manual JWT config | Convex |
+| **TypeScript Experience** | Schema in codebase | SQL migrations external | Convex |
+| **Real-time** | Default, zero config | Requires setup | Convex |
+| **AI Code Generation** | Designed for LLMs | Good, schema external | Convex |
+| **Dev Velocity** | Higher (unified TS) | Moderate (SQL + TS) | Convex |
+| **Self-Hosting** | No | Yes (open source) | Supabase |
+| **Community Size** | 8K stars | 92K stars | Supabase |
+| **File Storage** | External (S3, R2) | Built-in | Supabase |
 
-[Supabase](https://supabase.com/) is an open-source Firebase alternative built on PostgreSQL.
+**Deciding Factors for HawkTab**:
+1. **WorkOS + Convex first-class integration** - Zero config, auto-provisioned dev environments
+2. **AI-native development** - Schema lives in codebase, Claude/GPT can see and modify it directly
+3. **Real-time by default** - Job status, validation results update UI automatically
+4. **TypeScript everywhere** - No context-switching between SQL and TS
 
-**Strengths for HawkTab**:
-- **PostgreSQL**: Market research data is inherently tabular; SQL is natural fit
-- **Open source**: Enterprise customers can self-host for compliance
-- **File storage**: Built-in for PDFs, SPSS files, outputs
-- **Row-level security**: Multi-tenant out of the box
-- **92K GitHub stars**: Massive community, lots of resources
-- **Edge functions**: Serverless compute for R execution
+**Trade-offs Accepted**:
+- File storage requires external provider (Cloudflare R2 or AWS S3)
+- No self-hosting option (unlikely requirement for HawkTab's target market)
+- Smaller community (but well-documented, active Discord)
 
-**Potential Schema**:
-```sql
--- Organizations and users
-organizations (id, name, settings_json)
-users (id, org_id, email, role)
+##### Why Not Supabase?
 
--- Projects
-projects (id, org_id, name, status, created_at)
-project_files (id, project_id, type, storage_path, metadata_json)
+[Supabase](https://supabase.com/) remains excellent and would work well, but:
 
--- Processing
-jobs (id, project_id, type, status, started_at, completed_at, error)
-validation_results (id, job_id, cuts_json, warnings_json, confidence_scores)
+- WorkOS integration requires manual JWT template configuration
+- Schema lives in database, not codebase (AI tools can't see/modify directly)
+- Real-time requires additional setup
+- Context-switching between SQL and TypeScript adds cognitive load
 
--- Outputs
-crosstab_results (id, project_id, table_name, storage_path)
+**When Supabase Would Be Better**:
+- If enterprise customers require self-hosting (evaluate if this becomes a requirement)
+- If complex SQL analytics queries are needed (Convex document model less suited)
+- If team strongly prefers SQL over document-oriented data
 
--- Integrations
-decipher_connections (id, org_id, api_key_encrypted, base_url)
-```
-
-##### Convex
+##### Convex Implementation
 
 [Convex](https://www.convex.dev/) is a reactive backend where queries are TypeScript running in the database.
 
-**Strengths for HawkTab**:
+**Key Strengths**:
 - **TypeScript everywhere**: Schema, queries, mutations all in TS - same codebase as frontend
 - **AI-friendly**: [Designed for LLM code generation](https://docs.convex.dev/home) - "your favorite AI tools are pre-equipped to generate high quality code"
 - **Real-time by default**: UI updates automatically when data changes
 - **Simpler mental model**: No ORM, no SQL, just functions
 - **Built-in AI features**: RAG components, vector search
+- **WorkOS AuthKit**: Official integration with auto-provisioning
 
 **TypeScript Schema Example**:
 ```typescript
@@ -381,18 +470,38 @@ export default defineSchema({
 | **Learning curve** | Low (familiar SQL) | Medium (new paradigm) |
 | **Community size** | 92K stars | 8K stars |
 
-##### Evaluation Approach
+##### File Storage Strategy
 
-**Prototype both** before deciding:
-1. Build simple project CRUD with Convex - evaluate AI code generation quality
-2. Build same with Supabase - compare developer experience
-3. Consider enterprise requirements (self-hosting needs)
+Since Convex doesn't have built-in file storage, use **Cloudflare R2** (S3-compatible, generous free tier):
 
-**Current leaning**: Convex for faster development velocity with AI assistance, but keep Supabase as option if enterprise customers require self-hosting.
+```typescript
+// convex/files.ts
+import { v } from "convex/values";
+
+export const getUploadUrl = mutation({
+  args: { projectId: v.id("projects"), filename: v.string(), contentType: v.string() },
+  handler: async (ctx, { projectId, filename, contentType }) => {
+    // Generate presigned URL for R2 upload
+    const key = `${projectId}/${Date.now()}-${filename}`;
+    const uploadUrl = await generateR2PresignedUrl(key, contentType);
+
+    // Store file reference in Convex
+    await ctx.db.insert("files", {
+      projectId,
+      filename,
+      storageKey: key,
+      contentType,
+      uploadedAt: Date.now(),
+    });
+
+    return { uploadUrl, key };
+  },
+});
+```
 
 ---
 
-### 4. Async Job Processing
+### 5. Async Job Processing
 
 **Priority**: Medium | **Effort**: 1-2 days | **Impact**: Medium
 
@@ -449,7 +558,167 @@ export const processCrosstab = inngest.createFunction(
 );
 ```
 
-**Recommendation**: Start with database-native solution (Convex or Supabase), evaluate external queue if needed for more complex workflows.
+**Recommendation**: Use Convex's built-in job processing. Real-time subscriptions mean the UI automatically reflects job status changes without polling.
+
+---
+
+### 6. Observability (PostHog + Sentry)
+
+**Priority**: High | **Effort**: 0.5 days | **Impact**: High
+
+Building observability in from day one prevents painful retrofitting later. Two tools cover all needs:
+
+#### PostHog: Product Analytics & Feature Flags
+
+[PostHog](https://posthog.com/) is an open-source product analytics platform.
+
+**Why PostHog**:
+- **Free tier**: 1M events/month, unlimited feature flags
+- **Open source**: Self-host option if needed
+- **All-in-one**: Analytics, session replay, feature flags, A/B testing
+- **Privacy-focused**: EU hosting option, cookieless tracking
+
+**Integration** (Next.js App Router):
+
+```typescript
+// app/providers.tsx
+'use client';
+
+import posthog from 'posthog-js';
+import { PostHogProvider } from 'posthog-js/react';
+import { useEffect } from 'react';
+
+export function PHProvider({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+      api_host: '/ingest', // Proxy to avoid ad blockers
+      defaults: '2025-11-30', // Latest tracking defaults
+      capture_pageview: 'history_change', // Auto-capture SPA navigation
+    });
+  }, []);
+
+  return <PostHogProvider client={posthog}>{children}</PostHogProvider>;
+}
+```
+
+**Key Events to Track**:
+```typescript
+// Track crosstab generation funnel
+posthog.capture('project_created', { orgId, projectName });
+posthog.capture('files_uploaded', { projectId, fileTypes });
+posthog.capture('validation_completed', { projectId, warningCount, confidence });
+posthog.capture('crosstab_generated', { projectId, tableCount, duration });
+posthog.capture('export_downloaded', { projectId, format: 'xlsx' | 'csv' });
+```
+
+**Feature Flags for Safe Rollouts**:
+```typescript
+// Gradually roll out new AI models
+if (posthog.isFeatureEnabled('use-claude-sonnet')) {
+  // Use Claude for validation
+} else {
+  // Default to GPT-4o
+}
+```
+
+#### Sentry: Error Monitoring & Performance
+
+[Sentry](https://sentry.io/) provides error tracking, performance monitoring, and session replay.
+
+**Why Sentry**:
+- **Industry standard**: Battle-tested error tracking
+- **Next.js integration**: First-class SDK with source maps
+- **Session replay**: See exactly what happened before errors
+- **Performance monitoring**: Track slow API routes
+
+**Setup**:
+
+```bash
+npx @sentry/wizard@latest -i nextjs
+```
+
+This creates:
+- `sentry.client.config.ts` - Browser error tracking
+- `sentry.server.config.ts` - Server error tracking
+- `sentry.edge.config.ts` - Edge runtime tracking
+- `instrumentation.ts` - Next.js instrumentation hook
+
+**Configuration**:
+
+```typescript
+// sentry.client.config.ts
+import * as Sentry from '@sentry/nextjs';
+
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  environment: process.env.NODE_ENV,
+
+  // Performance monitoring
+  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+
+  // Session replay for debugging
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0, // Always capture on error
+
+  // Ignore known non-issues
+  ignoreErrors: [
+    'ResizeObserver loop limit exceeded',
+    'Non-Error promise rejection',
+  ],
+});
+```
+
+**Custom Error Context**:
+
+```typescript
+// Add context to errors for better debugging
+Sentry.setContext('project', {
+  projectId,
+  orgId,
+  phase: 'validation',
+});
+
+Sentry.setUser({
+  id: userId,
+  email: userEmail,
+  orgId,
+});
+```
+
+#### Observability Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        HawkTab Application                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐       │
+│  │   PostHog    │    │    Sentry    │    │   Console    │       │
+│  │  (Analytics) │    │   (Errors)   │    │   (Dev)      │       │
+│  └──────┬───────┘    └──────┬───────┘    └──────┬───────┘       │
+│         │                   │                   │                │
+│         ▼                   ▼                   ▼                │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │                 Unified Logging Layer                     │   │
+│  │   logger.info('Processing started', { projectId })       │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+         │                   │
+         ▼                   ▼
+   ┌───────────┐       ┌───────────┐
+   │  PostHog  │       │  Sentry   │
+   │ Dashboard │       │ Dashboard │
+   └───────────┘       └───────────┘
+```
+
+#### Implementation Priority
+
+| Tool | When to Add | Effort |
+|------|-------------|--------|
+| **Sentry** | Phase 1 (Foundation) | 30 min |
+| **PostHog** | Phase 1 (Foundation) | 30 min |
+| **Custom Events** | Phase 3+ (as features ship) | Ongoing |
 
 ---
 
@@ -822,17 +1091,35 @@ interface SurveyJSON {
 
 ### Phase 1: Foundation (Week 1-2)
 
-**Goal**: Establish core infrastructure without breaking existing functionality.
+**Goal**: Establish core infrastructure with Convex + WorkOS + Observability.
 
 | Task | Effort | Dependencies |
 |------|--------|--------------|
-| Set up database (Convex or Supabase) | 1 day | Decision on which |
-| Create basic schema (projects, jobs, files) | 0.5 day | Database setup |
-| Migrate file storage to database/object store | 1 day | Schema |
-| Add basic auth (Clerk or Supabase Auth) | 0.5 day | Database |
-| Implement async job processing | 1 day | Database |
+| Initialize Convex + WorkOS AuthKit | 0.5 day | `npm create convex@latest -- -t react-vite-authkit` |
+| Configure WorkOS dashboard | 0.5 day | Convex setup |
+| Set up Sentry error monitoring | 0.5 day | `npx @sentry/wizard@latest -i nextjs` |
+| Set up PostHog analytics | 0.5 day | None |
+| Create Convex schema (projects, jobs, files) | 0.5 day | Convex setup |
+| Set up Cloudflare R2 for file storage | 0.5 day | Schema |
+| Implement async job processing with Convex | 0.5 day | Schema |
+| Add PostHog events for core actions | 0.5 day | PostHog setup |
 
-**Deliverable**: Users can create projects, upload files, and track processing status.
+**Deliverable**: Users can authenticate, create projects, upload files, and track processing status with full observability.
+
+**Key Setup Commands**:
+```bash
+# Initialize Convex + WorkOS AuthKit
+npm create convex@latest -- -t react-vite-authkit
+
+# Add Sentry
+npx @sentry/wizard@latest -i nextjs
+
+# Add PostHog
+npm install posthog-js
+
+# Add Cloudflare R2 (via AWS SDK)
+npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
+```
 
 ### Phase 2: AI Layer Migration (Week 2-3)
 
@@ -971,23 +1258,33 @@ interface SurveyJSON {
 | Decision | Options Considered | Choice | Rationale |
 |----------|-------------------|--------|-----------|
 | **AI SDK** | OpenAI Agents SDK, Vercel AI SDK, LangChain | Vercel AI SDK | Multi-provider, TypeScript-native, production-proven |
-| **Database** | Supabase, Convex, PlanetScale | TBD (evaluate both) | Need to prototype for AI code generation experience |
+| **Database** | Supabase, Convex, PlanetScale | **Convex** | First-class WorkOS integration, TypeScript everywhere, real-time by default, AI-native development |
+| **Authentication** | Clerk, Auth0, Supabase Auth, WorkOS | **WorkOS AuthKit** | Enterprise SSO/SCIM, free to 1M MAU, first-class Convex integration |
+| **File Storage** | Supabase Storage, AWS S3, Cloudflare R2 | **Cloudflare R2** | S3-compatible, generous free tier, no egress fees |
+| **Error Monitoring** | Sentry, Bugsnag, Datadog | **Sentry** | Industry standard, first-class Next.js SDK, session replay |
+| **Product Analytics** | PostHog, Mixpanel, Amplitude | **PostHog** | Open source, generous free tier, feature flags included |
 | **Survey source** | CSV parsing, Decipher API, Qualtrics API | Decipher API primary, CSV fallback | Decipher has skip logic we need |
-| **Job queue** | Built-in (Convex/Supabase), Inngest, Trigger.dev | Start with built-in | Simpler, evaluate external if needed |
+| **Job queue** | Inngest, Trigger.dev, Convex built-in | **Convex built-in** | Real-time UI updates automatic, simpler architecture |
 
 ---
 
 ## Open Questions
 
-1. **Convex vs Supabase**: Need to prototype both to evaluate AI code generation quality and developer experience.
+1. ~~**Convex vs Supabase**: Need to prototype both to evaluate AI code generation quality and developer experience.~~ **RESOLVED: Convex** - WorkOS integration is the deciding factor.
 
 2. **Decipher API access**: Do all Antares projects have Decipher access? What's the authentication flow?
 
 3. **Multi-survey platform support**: Should we also support Qualtrics, SurveyMonkey APIs eventually?
 
-4. **Self-hosting requirements**: Do any enterprise customers require on-premise deployment?
+4. **Self-hosting requirements**: Do any enterprise customers require on-premise deployment? (If yes, may need to reconsider Supabase)
 
 5. **Pricing model**: How does AI provider choice affect cost per crosstab?
+
+6. **R Execution Environment**: Where does R script execution happen? Options:
+   - Local R installation (current)
+   - Docker container with R
+   - Cloud function (AWS Lambda with R layer)
+   - Dedicated R server
 
 ---
 
@@ -1004,13 +1301,39 @@ interface SurveyJSON {
 - [Python Library](https://pypi.org/project/decipher/)
 - [Skip Logic Documentation](https://decipher.zendesk.com/hc/en-us/articles/360010277353-Adding-Condition-Skip-Logic)
 
-### Database Options
+### Convex (Database)
 - [Convex Documentation](https://docs.convex.dev/home)
 - [Convex Schemas](https://docs.convex.dev/database/schemas)
-- [Supabase Documentation](https://supabase.com/docs)
-- [Supabase vs Convex Comparison](https://makersden.io/blog/convex-vs-supabase-2025)
+- [Convex Authentication](https://docs.convex.dev/auth)
+- [Convex & WorkOS AuthKit](https://docs.convex.dev/auth/authkit/)
+- [Convex vs Supabase Comparison](https://makersden.io/blog/convex-vs-supabase-2025)
+
+### WorkOS (Authentication)
+- [WorkOS Documentation](https://workos.com/docs)
+- [WorkOS AuthKit](https://workos.com/docs/user-management)
+- [WorkOS + Convex Integration](https://workos.com/blog/convex-typescript-workos-auth)
+- [Convex AuthKit Component](https://github.com/get-convex/workos-authkit)
+- [Next.js + Convex + AuthKit Template](https://github.com/workos/template-convex-nextjs-authkit)
+- [WorkOS Pricing](https://workos.com/pricing)
+
+### PostHog (Analytics)
+- [PostHog Documentation](https://posthog.com/docs)
+- [PostHog Next.js Integration](https://posthog.com/docs/libraries/next-js)
+- [PostHog Feature Flags](https://posthog.com/docs/feature-flags)
+- [PostHog + Vercel Guide](https://vercel.com/kb/guide/posthog-nextjs-vercel-feature-flags-analytics)
+
+### Sentry (Error Monitoring)
+- [Sentry Next.js SDK](https://docs.sentry.io/platforms/javascript/guides/nextjs/)
+- [Sentry Manual Setup](https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/)
+- [Sentry Session Replay](https://docs.sentry.io/product/session-replay/)
+
+### Cloudflare R2 (File Storage)
+- [R2 Documentation](https://developers.cloudflare.com/r2/)
+- [R2 Presigned URLs](https://developers.cloudflare.com/r2/api/s3/presigned-urls/)
+- [Using R2 with AWS SDK](https://developers.cloudflare.com/r2/api/s3/api/)
 
 ---
 
 *Created: December 31, 2025*
+*Updated: December 31, 2025*
 *Status: Single Source of Truth for HawkTab AI Development*
