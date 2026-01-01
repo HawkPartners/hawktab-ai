@@ -1,19 +1,20 @@
-// Scratchpad tool for reasoning model transparency
-// Provides enhanced thinking space for complex variable validation tasks
+/**
+ * Scratchpad tool for reasoning transparency
+ * Provides enhanced thinking space for complex variable validation tasks
+ */
 
-import { tool } from '@openai/agents';
+import { tool } from 'ai';
 import { z } from 'zod';
 
-// Scratchpad tool using proper OpenAI Agents SDK pattern
+// Scratchpad tool using Vercel AI SDK pattern
 export const scratchpadTool = tool({
-  name: 'scratchpad',
-  description: 'Enhanced thinking space for reasoning models to show validation steps and reasoning',
-  parameters: z.object({
+  description: 'Enhanced thinking space for reasoning models to show validation steps and reasoning. Use this to document your analysis process.',
+  inputSchema: z.object({
     action: z.enum(['add', 'review']).describe('Action to perform: add new thoughts or review current analysis'),
     content: z.string().describe('Content to add or review in the thinking space')
   }),
-  async execute({ action, content }) {
-    // Log for debugging/tracing
+  execute: async ({ action, content }) => {
+    // Log for debugging
     console.log(`[CrossTab Agent Scratchpad] ${action}: ${content}`);
 
     switch (action) {
@@ -27,6 +28,5 @@ export const scratchpadTool = tool({
   }
 });
 
-// Usage examples for the agent:
-// Call scratchpad with {action: 'add', content: 'Working on group: Specialty. Found S2=1 AND S2a=1, parsing variables...'}
-// Call scratchpad with {action: 'review', content: 'Summary: 5/5 columns mapped successfully, all direct matches, high confidence'}
+// Type export for use in agent definitions
+export type ScratchpadTool = typeof scratchpadTool;
