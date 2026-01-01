@@ -30,19 +30,19 @@ Phase 1 established Azure OpenAI connectivity. Phase 2 adds the infrastructure f
 
 ### Accounts & Credentials
 
-- [ ] **Convex**: Create account at [convex.dev](https://convex.dev) (free tier sufficient)
-- [ ] **WorkOS**: Account auto-provisioned by Convex CLI (no separate signup needed)
-- [ ] **Cloudflare**: Create account, create R2 bucket, generate API token with R2 permissions
-- [ ] **Railway**: Create account at [railway.app](https://railway.app) (Hobby plan ~$5/month)
-- [ ] **Sentry**: Create account and project at [sentry.io](https://sentry.io) (free tier: 5K errors/month)
-- [ ] **PostHog**: Create account at [posthog.com](https://posthog.com) (free tier: 1M events/month)
+- [x] **Convex**: Create account at [convex.dev](https://convex.dev) (free tier sufficient) (hawktab-ai)
+- [x] **WorkOS**: Account auto-provisioned by Convex CLI (no separate signup needed)
+- [x] **Cloudflare**: Create account, create R2 bucket, generate API token with R2 permissions (hawktab-ai; no token yet)
+- [x] **Railway**: Create account at [railway.app](https://railway.app) (Hobby plan ~$5/month) (30-day free trial, will pay when needed)
+- [x] **Sentry**: Create account and project at [sentry.io](https://sentry.io) (free tier: 5K errors/month) (javascript-nextjs)
+- [x] **PostHog**: Create account at [posthog.com](https://posthog.com) (free tier: 1M events/month) (hawktab-ai)
 
 ### Local Environment
 
-- [ ] Node.js 18+ installed
-- [ ] Convex CLI: `npm install -g convex`
-- [ ] Docker installed (for local R service testing)
-- [ ] R installed and in PATH (for local development without Docker)
+- [x] Node.js 18+ installed (v20.18.0)
+- [x] Convex CLI: `npm install -g convex`
+- [x] Docker installed (for local R service testing)
+- [x] R installed and in PATH (for local development without Docker)
 
 ---
 
