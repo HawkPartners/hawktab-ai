@@ -41,8 +41,13 @@ flowchart TD
         CTA --> |"Validated Cuts"| VCUTS[Validated Cuts<br/>with R Expressions]
     end
 
+    subgraph phase3b["Phase 3b: Human Review"]
+        VCUTS --> REVIEW[Human Reviews<br/>Cuts + Confidence]
+        REVIEW --> |"Approved"| APPROVED[Approved Cuts]
+    end
+
     subgraph phase4["Phase 4: R Generation & Execution"]
-        VCUTS --> RSA[R Script Generator]
+        APPROVED --> RSA[R Script Generator]
         DF --> RSA
         RSA --> RSCRIPT[Generated R Script]
         RSCRIPT --> EXEC[R Execution]
@@ -52,6 +57,7 @@ flowchart TD
     style BPA fill:#e1f5fe
     style CTA fill:#e1f5fe
     style RSA fill:#e1f5fe
+    style REVIEW fill:#ffe0b2
 ```
 
 ### Agent Descriptions
@@ -149,8 +155,20 @@ flowchart TD
         CTA --> |"R Expressions"| VCUTS[Validated Cuts]
     end
 
+    subgraph phase3b["Phase 3b: Data Validation ⭐ NEW"]
+        VCUTS --> DVA[DataValidator]
+        DJSON --> DVA
+        SPSS -.-> DVA
+        DVA --> |"Count Check"| DVAL[Validated Cuts<br/>+ Sample Counts]
+    end
+
+    subgraph phase3c["Phase 3c: Human Review"]
+        DVAL --> REVIEW[Human Reviews<br/>Cuts + Confidence + Counts]
+        REVIEW --> |"Approved"| APPROVED[Approved Cuts]
+    end
+
     subgraph phase4["Phase 4: R Generation & Execution"]
-        VCUTS --> RSG[R Script Generator]
+        APPROVED --> RSG[R Script Generator]
         DJSON --> RSG
         SPSS -.-> RSG
         RSG --> RSCRIPT[R Script]
@@ -162,6 +180,8 @@ flowchart TD
     style BVA fill:#fff9c4
     style BXA fill:#f5f5f5,stroke-dasharray: 5 5
     style CTA fill:#e1f5fe
+    style DVA fill:#fff9c4
+    style REVIEW fill:#ffe0b2
     style RSG fill:#e1f5fe
     style LINK fill:#c8e6c9
     style DAPI fill:#c8e6c9
@@ -208,8 +228,29 @@ flowchart TD
 - **Model**: o4-mini (reasoning)
 - **Change from current**: Receives pre-validated input, less validation burden
 
+#### DataValidator ⭐ NEW
+- **Input**: Validated Cuts (R expressions) + Actual Data (from Decipher API or SPSS)
+- **Task**: Run sample queries against actual data to validate cuts produce results
+- **Output**: Validated cuts with sample counts, zero-count warnings
+- **Model**: Not AI-based (code execution)
+- **Key validation**:
+  - Does this cut have any matching respondents?
+  - What's the sample size for this cut?
+  - Flag cuts with n=0 or very low counts
+  - Provide counts for human review decision-making
+
+#### Human Review
+- **Input**: Validated cuts + Confidence scores + Sample counts
+- **Task**: Human reviews AI-generated cuts before R execution
+- **Output**: Approved cuts ready for R script generation
+- **Key features**:
+  - See confidence scores per cut
+  - See sample counts per cut (from DataValidator)
+  - Approve, reject, or modify cuts
+  - Override low-confidence or zero-count warnings
+
 #### R Script Generator (Unchanged)
-- **Input**: Validated cuts + Data (SPSS or JSON)
+- **Input**: Approved cuts + Data (SPSS or JSON)
 - **Task**: Generate complete R script
 - **Output**: Executable R script
 
@@ -222,13 +263,17 @@ flowchart TD
 | **Data source** | Manual file uploads | Decipher API (preferred) + manual fallback |
 | **Skip logic** | Inferred by AI | Explicit from survey.xml or survey document |
 | **Banner validation** | Syntax only (does variable exist?) | Semantic (is this logically possible?) |
-| **Validation timing** | During variable matching | Before variable matching |
-| **Error detection** | After R execution (zero-count cuts) | Before R execution |
-| **Agent count** | 2 (Banner + Crosstab) | 3-4 (Extract + Validate + [Expand] + Crosstab) |
+| **Data validation** | None (errors found at R execution) | DataValidator checks counts before execution |
+| **Validation timing** | During variable matching | Before variable matching + data validation step |
+| **Error detection** | After R execution (zero-count cuts) | Before R execution (semantic + count validation) |
+| **Human review** | Confidence scores only | Confidence scores + sample counts |
+| **Agent count** | 2 (Banner + Crosstab) | 3-4 (Extract + Validate + [Expand] + Crosstab) + DataValidator |
 
 ---
 
 ## Validation Flow Detail
+
+### Semantic Validation (Before Variable Matching)
 
 ```mermaid
 flowchart LR
@@ -252,6 +297,31 @@ flowchart LR
     style V2 fill:#fff9c4
 ```
 
+### Data Validation (After Variable Matching)
+
+```mermaid
+flowchart LR
+    subgraph current2["Current: No Data Validation"]
+        R3[R Expression] --> EXEC3[R Execution]
+        EXEC3 --> |"n=0"| FAIL3[Zero-count Error<br/>*Discovered too late*]
+    end
+
+    subgraph proposed2["Proposed: Data Validation Before Execution"]
+        R4[R Expression] --> DV[DataValidator]
+        DATA4[(Actual Data)] --> DV
+        DV --> |"n=47"| PASS4[Pass: n > 0]
+        DV --> |"n=0"| WARN4[Warning: Zero Count]
+        PASS4 --> HR[Human Review]
+        WARN4 --> HR
+        HR --> EXEC4[R Execution]
+    end
+
+    style DV fill:#fff9c4
+    style HR fill:#ffe0b2
+    style FAIL3 fill:#ffcdd2
+    style WARN4 fill:#fff9c4
+```
+
 ---
 
 ## Implementation Priority
@@ -259,10 +329,12 @@ flowchart LR
 1. **Phase 2**: Infrastructure (auth, database, deployment) - enables iteration
 2. **Phase 3**: Decipher API integration - provides reliable data source
 3. **Phase 3b**: BannerValidateAgent - catches semantic errors early
-4. **Phase 4**: Reliability improvements (confidence calibration, diagnostics)
-5. **Future**: BannerExpandAgent - consultant-style suggestions
+4. **Phase 3c**: DataValidator - catches zero-count cuts before R execution
+5. **Phase 4**: Reliability improvements (confidence calibration, diagnostics)
+6. **Future**: BannerExpandAgent - consultant-style suggestions
 
 ---
 
 *Document created: January 1, 2026*
+*Last updated: January 1, 2026*
 *Status: Architectural proposal for discussion*
