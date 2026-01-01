@@ -97,38 +97,6 @@ flowchart TD
 | **Data Map** | CSV | *Deprecated* | Replaced by Decipher API datamap |
 | **Data File** | SPSS (.sav) | *Deprecated* | Replaced by Decipher API data export |
 
-### Two Input Paths
-
-```mermaid
-flowchart TD
-    subgraph pathA["Path A: Decipher API (Preferred)"]
-        LINK[Survey Link] --> API[Decipher API]
-        API --> DATAMAP[Datamap JSON<br/>Variables, Types, Labels]
-        API --> SKIPL[survey.xml<br/>Skip Logic]
-        API --> DATA[Survey Data<br/>JSON format]
-    end
-
-    subgraph pathB["Path B: Manual Upload (Fallback)"]
-        DM[Data Map CSV] --> PARSE[State Machine Parser]
-        PARSE --> DATAMAP2[Variables JSON]
-        SURVEY[Survey Document] --> SPDF[Convert to PDF]
-        SPDF --> SCONTEXT[Survey Context<br/>for validation]
-        DF[Data File SPSS] --> DATA2[SPSS Data]
-    end
-
-    DATAMAP --> MERGE[Merged Context]
-    SKIPL --> MERGE
-    DATA --> MERGE
-    DATAMAP2 --> MERGE
-    SCONTEXT --> MERGE
-    DATA2 --> MERGE
-
-    style LINK fill:#c8e6c9
-    style API fill:#c8e6c9
-    style DM fill:#ffecb3
-    style DF fill:#ffecb3
-```
-
 ### Processing Pipeline (Proposed)
 
 ```mermaid
@@ -136,7 +104,7 @@ flowchart TD
     subgraph inputs["User Inputs"]
         LINK[Decipher Link<br/>*Preferred*]
         BP[Banner Plan<br/>PDF/DOC]
-        SURVEY[Survey Document<br/>*Fallback for skip logic*]
+        SURVEY[Survey Document<br/>*Fallback*]
         DM[Data Map CSV<br/>*Deprecated*]
         DF[Data File SPSS<br/>*Deprecated*]
     end
@@ -149,9 +117,9 @@ flowchart TD
     end
 
     subgraph fallback["Manual Fallback Path"]
-        DM --> CSVPARSE[CSV Parser]
-        SURVEY --> SURVEYPDF[Convert to PDF]
-        DF --> SPSS[SPSS File]
+        DM -.-> CSVPARSE[CSV Parser]
+        SURVEY -.-> SURVEYPDF[Convert to PDF]
+        DF -.-> SPSS[SPSS File]
     end
 
     subgraph phase1["Phase 1: Banner Extraction"]
@@ -164,7 +132,7 @@ flowchart TD
     subgraph phase2["Phase 2: Banner Validation ⭐ NEW"]
         RAWBANNER --> BVA[BannerValidateAgent]
         SXML --> BVA
-        SURVEYPDF --> BVA
+        SURVEYPDF -.-> BVA
         BVA --> |"Semantic Check"| VALIDATED[Validated Banner JSON<br/>+ Flags + Fixes]
     end
 
@@ -177,14 +145,14 @@ flowchart TD
         VALIDATED --> CTA[CrosstabAgent]
         EXPANDED -.-> CTA
         DMJSON --> CTA
-        CSVPARSE --> CTA
+        CSVPARSE -.-> CTA
         CTA --> |"R Expressions"| VCUTS[Validated Cuts]
     end
 
     subgraph phase4["Phase 4: R Generation & Execution"]
         VCUTS --> RSG[R Script Generator]
         DJSON --> RSG
-        SPSS --> RSG
+        SPSS -.-> RSG
         RSG --> RSCRIPT[R Script]
         RSCRIPT --> EXEC[R Execution]
         EXEC --> OUTPUT[CSV/Excel Output]
@@ -197,6 +165,12 @@ flowchart TD
     style RSG fill:#e1f5fe
     style LINK fill:#c8e6c9
     style DAPI fill:#c8e6c9
+    style DM fill:#f5f5f5,stroke-dasharray: 5 5
+    style DF fill:#f5f5f5,stroke-dasharray: 5 5
+    style SURVEY fill:#fff3e0,stroke-dasharray: 5 5
+    style CSVPARSE fill:#f5f5f5,stroke-dasharray: 5 5
+    style SPSS fill:#f5f5f5,stroke-dasharray: 5 5
+    style SURVEYPDF fill:#fff3e0,stroke-dasharray: 5 5
 ```
 
 ### Agent Descriptions (Proposed)
