@@ -466,7 +466,7 @@ export type ScratchpadTool = typeof scratchpadTool;
  * Invariants: group-by-group validation; uses scratchpad
  */
 
-import { generateText, Output } from 'ai';
+import { generateText, Output, stepCountIs } from 'ai';
 import { ValidationResultSchema, ValidatedGroupSchema, combineValidationResults, type ValidationResultType, type ValidatedGroupType } from '../schemas/agentOutputSchema';
 import { DataMapType } from '../schemas/dataMapSchema';
 import { BannerGroupType, BannerPlanInputType } from '../schemas/bannerPlanSchema';
@@ -509,7 +509,7 @@ PROCESSING REQUIREMENTS:
 Begin validation now.
 `;
 
-    // Use generateText with structured output
+    // Use generateText with structured output and multi-step tool calling
     const { output } = await generateText({
       model: getReasoningModel(),  // Task-based: reasoning model for complex validation
       system: systemPrompt,
@@ -517,7 +517,7 @@ Begin validation now.
       tools: {
         scratchpad: scratchpadTool,
       },
-      maxSteps: 25,  // Equivalent to maxTurns
+      stopWhen: stepCountIs(25),  // AI SDK 5+: replaces maxTurns/maxSteps
       maxTokens: Math.min(getReasoningModelTokenLimit(), 10000),
       output: Output.object({
         schema: ValidatedGroupSchema,
@@ -535,11 +535,11 @@ Begin validation now.
   } catch (error) {
     console.error(`[CrosstabAgent] Error processing group ${group.groupName}:`, error);
 
-    // Check if it's a max steps error
-    const isMaxStepsError = error instanceof Error &&
-      (error.message.includes('Max steps') || error.message.includes('maximum'));
-    const errorType = isMaxStepsError
-      ? 'Max steps exceeded - consider simplifying expressions'
+    // Check if it's a step limit error (stopWhen condition reached)
+    const isStepLimitError = error instanceof Error &&
+      (error.message.includes('step') || error.message.includes('limit') || error.message.includes('maximum'));
+    const errorType = isStepLimitError
+      ? 'Step limit reached - consider simplifying expressions'
       : 'Processing error';
 
     // Return fallback result with low confidence
@@ -703,9 +703,10 @@ async function saveDevelopmentOutputs(
 1. **No Agent class**: Vercel AI SDK uses `generateText()` directly with tools
 2. **Structured output**: Uses `output: Output.object({ schema })` instead of `outputType`
 3. **Tools as object**: Tools passed as `{ scratchpad: scratchpadTool }` not array
-4. **maxSteps**: Replaces `maxTurns` for multi-step tool calling
-5. **No tracing**: Removed `withTrace()` and `getGlobalTraceProvider()` (Sentry in Phase 2)
+4. **`stopWhen` replaces `maxTurns`**: AI SDK 5+ uses `stopWhen: stepCountIs(N)` for multi-step tool calling control (import `stepCountIs` from `ai`)
+5. **No tracing**: Removed `withTrace()` and `getGlobalTraceProvider()` - replaced with structured console logging (Sentry in Phase 2)
 6. **Task-based model**: `getReasoningModel()` returns Azure reasoning model instance (o4-mini) for complex validation
+7. **Removed OpenAI references**: Processing info no longer includes OpenAI traces dashboard links
 
 ---
 
@@ -735,7 +736,7 @@ grep -n "maxTurns" src/agents/BannerAgent.ts                   # Find turn limit
 
 ```diff
 - import { Agent, run } from '@openai/agents';
-+ import { generateText, Output } from 'ai';
++ import { generateText, Output, stepCountIs } from 'ai';
 ```
 
 **Key Method Migration** - `extractBannerStructureWithAgent()`:
@@ -784,7 +785,7 @@ Begin analysis now.
       tools: {
         scratchpad: scratchpadTool,
       },
-      maxSteps: 15,  // Replaces maxTurns
+      stopWhen: stepCountIs(15),  // AI SDK 5+: replaces maxTurns/maxSteps
       maxTokens: Math.min(getBaseModelTokenLimit(), 32000),  // Top-level, not in modelSettings
       output: Output.object({
         schema: BannerExtractionResultSchema,
@@ -1152,7 +1153,9 @@ npm run build                  # Must succeed
 - [Vercel AI SDK Documentation](https://ai-sdk.dev/docs/introduction)
 - [Azure OpenAI Provider](https://ai-sdk.dev/providers/ai-sdk-providers/azure)
 - [Tools and Tool Calling](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling) - **Primary reference for tool `inputSchema` pattern**
+- [Multi-Step Tool Calling Cookbook](https://ai-sdk.dev/cookbook/node/call-tools-multiple-steps) - **Primary reference for `stopWhen: stepCountIs()` pattern**
 - [Generating Structured Data](https://ai-sdk.dev/docs/ai-sdk-core/generating-structured-data)
+- [generateText API Reference](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-text)
 - [Tool Definition Reference](https://ai-sdk.dev/docs/reference/ai-sdk-core/tool)
 - [Building Agents Guide](https://vercel.com/kb/guide/how-to-build-ai-agents-with-vercel-and-the-ai-sdk)
 - [OpenAI Agents SDK Zod Issue #187](https://github.com/openai/openai-agents-js/issues/187)
@@ -1169,6 +1172,7 @@ npm run build                  # Must succeed
 | 2025-12-31 | **Breaking change**: Switched from environment-based to task-based model selection. `getModel()` replaced with `getReasoningModel()` (CrosstabAgent) and `getBaseModel()` (BannerAgent). Models are now chosen based on task requirements, not NODE_ENV. Updated Steps 2, 4, 5, and Testing Plan. |
 | 2025-12-31 | Added `AZURE_API_VERSION` configuration (default: `2025-01-01-preview`) and `useDeploymentBasedUrls: true` for Azure AI Foundry compatibility. This ensures the SDK constructs URLs matching the standard Azure OpenAI deployment format. |
 | 2026-01-01 | **Correction**: Fixed tool definition pattern in Step 3. AI SDK v6 requires `inputSchema` (not `parameters`). Updated Key Changes table, Step 3 code example, and Migration Summary. Verified against [AI SDK Tools Documentation](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling). |
+| 2026-01-01 | **Correction**: Fixed multi-step control in Steps 4 and 5. AI SDK 5+ uses `stopWhen: stepCountIs(N)` instead of `maxSteps`. Added `stepCountIs` to imports, updated error handling terminology. Verified against [AI SDK Multi-Step Cookbook](https://ai-sdk.dev/cookbook/node/call-tools-multiple-steps). |
 
 ---
 
