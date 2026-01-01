@@ -91,7 +91,7 @@ npx tsc --noEmit          # TypeScript type checking
 
 ---
 
-## Current Architecture (Migrating to Azure)
+## Current Architecture (Azure OpenAI - Phase 1 Complete)
 
 ### Three-Phase Processing Pipeline
 The system operates in a structured workflow:
@@ -100,12 +100,11 @@ The system operates in a structured workflow:
 - **Phase 7**: API integration with single endpoint handling complete workflow
 
 ### Agent-First Implementation
-Currently uses OpenAI Agents JS SDK, **migrating to Vercel AI SDK + Azure OpenAI**:
+Uses **Vercel AI SDK + Azure OpenAI** (Phase 1 migration complete):
 - **One agent, multiple calls**: Process banner groups individually for better focus
 - **Context-first strategy**: Full JSON data structures injected into agent instructions
-- **Structured outputs**: Uses Zod schemas with `outputType` property (NOT `outputSchema`)
-
-> **Migration note**: The OpenAI Agents SDK doesn't support Azure OpenAI. Vercel AI SDK does. This is the primary reason for migrating—compliance requires Azure.
+- **Structured outputs**: Uses Zod schemas with `Output.object({ schema })` pattern
+- **Task-based model selection**: `getReasoningModel()` for complex validation, `getBaseModel()` for vision tasks
 
 ### Dual Output Strategy
 Every processor generates two formats:
@@ -116,48 +115,39 @@ Every processor generates two formats:
 
 ## Critical Technical Requirements
 
-### Zod Version Lock
+### Zod Version
 ```json
 {
-  "zod": "3.25.67"  // EXACTLY this version - SDK breaks with 3.25.68+
+  "zod": "^3.25.76"  // Upgraded after Phase 1 migration (was locked to 3.25.67 for OpenAI Agents SDK)
 }
 ```
 
-### Environment-Based Model Selection
-- **Development**: Currently uses OpenAI directly (`OPENAI_API_KEY`)
-- **Production**: Will use Azure OpenAI (`AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`)
-- Environment switching handled in `src/lib/env.ts`
+### Task-Based Model Selection
+Models are chosen based on task requirements, not environment:
+- **Reasoning model** (`getReasoningModel()`): o4-mini for complex validation (CrosstabAgent)
+- **Base model** (`getBaseModel()`): gpt-5-nano for vision/extraction (BannerAgent)
+- Configuration in `src/lib/env.ts`
 
-### OpenAI Agents SDK Patterns (Current - Being Migrated)
+### Vercel AI SDK Patterns (Current)
 ```typescript
-// CURRENT pattern (OpenAI Agents SDK) - will be replaced
-import { tool } from '@openai/agents';
-export const myTool = tool({
-  name: 'tool_name',
-  parameters: z.object({ /* zod schema */ }),
-  async execute() { /* implementation */ }
+// Current pattern (Vercel AI SDK + Azure OpenAI)
+import { generateText, Output, tool } from 'ai';
+import { getReasoningModel } from '@/lib/env';
+
+// Tool definition
+const scratchpadTool = tool({
+  description: 'Reasoning transparency tool',
+  inputSchema: z.object({ action: z.string(), content: z.string() }),
+  execute: async ({ action, content }) => { /* implementation */ }
 });
 
-const agent = new Agent({
-  name: 'AgentName',
-  instructions: enhancedInstructions,
-  model: getModel(),
-  outputType: MySchema,  // NOT outputSchema
-  tools: [myTool]
-});
-```
-
-### Vercel AI SDK Patterns (Target)
-```typescript
-// TARGET pattern (Vercel AI SDK + Azure)
-import { Agent } from 'ai';
-import { azure } from '@ai-sdk/azure';
-
-const agent = new Agent({
-  model: azure('gpt-4o'),
+// Agent call with structured output
+const { output } = await generateText({
+  model: getReasoningModel(),  // Task-based selection
   system: instructions,
-  tools: { /* tool definitions */ },
-  structuredOutput: MySchema
+  prompt: userPrompt,
+  tools: { scratchpad: scratchpadTool },
+  output: Output.object({ schema: MySchema }),
 });
 ```
 
@@ -270,7 +260,12 @@ npx tsc --noEmit          # Must pass
 
 ## Current Implementation Status
 
-**MVP Complete (Core processing works)**:
+**Phase 1 Complete (Azure OpenAI Migration)**:
+- Migrated from OpenAI Agents SDK to Vercel AI SDK
+- Using Azure OpenAI (compliance requirement satisfied)
+- Task-based model selection: o4-mini (reasoning), gpt-5-nano (vision)
+
+**MVP Foundation (Core processing works)**:
 - Successfully processes 192+ variables with 130 parent relationships
 - 99% accuracy in SPSS variable matching
 - Handles complex expressions with intelligent inference
@@ -278,11 +273,10 @@ npx tsc --noEmit          # Must pass
 - Processes 19 columns across 6 banner groups
 
 **Next Steps** (see `docs/architecture-refactor-prd.md`):
-1. Migrate to Azure OpenAI (compliance)
-2. Deploy with auth + shared storage (team access)
-3. Decipher API integration (skip logic from source—the hard part)
-4. Reliability improvements (validation warnings)
-5. **Checkpoint**: Hawk Partners internal launch
+1. ~~Azure OpenAI migration~~ *(Phase 1 - Complete)*
+2. Decipher API + reliability improvements *(Phase 2 - the hard part)*
+3. Team access: auth, database, deployment *(Phase 3)*
+4. **Checkpoint**: Hawk Partners internal launch
 
 ---
 
