@@ -22,7 +22,7 @@ The current system uses `@openai/agents` which **does not support Azure OpenAI**
 | Zod Version | `^3.25.67` (locked) | `^3.25.76` or `^4.x` (unlocked) |
 | API Key | `OPENAI_API_KEY` | `AZURE_API_KEY` + `AZURE_RESOURCE_NAME` |
 | Model Selection | `getModel()` → model name string (env-based) | `getReasoningModel()` / `getBaseModel()` → task-based Azure model instances |
-| Tool Pattern | `tool({ name, parameters, execute })` | `tool({ parameters, execute })` (name inferred) |
+| Tool Pattern | `tool({ name, parameters, execute })` | `tool({ inputSchema, execute })` (name inferred from object key) |
 | Structured Output | `outputType` property on Agent | `output: Output.object({ schema })` in generateText |
 | Agent Pattern | `new Agent({...})` + `run(agent, prompt)` | Direct `generateText({...})` call |
 | Token Config | `modelSettings: { maxTokens }` nested | `maxTokens` at top level of generateText |
@@ -422,7 +422,7 @@ import { z } from 'zod';
 // Scratchpad tool using Vercel AI SDK pattern
 export const scratchpadTool = tool({
   description: 'Enhanced thinking space for reasoning models to show validation steps and reasoning. Use this to document your analysis process.',
-  parameters: z.object({
+  inputSchema: z.object({
     action: z.enum(['add', 'review']).describe('Action to perform: add new thoughts or review current analysis'),
     content: z.string().describe('Content to add or review in the thinking space')
   }),
@@ -447,9 +447,9 @@ export type ScratchpadTool = typeof scratchpadTool;
 
 **Key differences from OpenAI Agents SDK**:
 - Import from `'ai'` instead of `'@openai/agents'`
-- No `name` property (inferred from object key when used)
-- Uses `parameters` (same as before, AI SDK 5+ renamed to `inputSchema` but both work)
-- `execute` function signature remains the same
+- No `name` property (tool name is inferred from the object key when passed to `generateText`)
+- **`parameters` renamed to `inputSchema`** - this is required by AI SDK v6 (see [AI SDK Tools Documentation](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling))
+- `execute` function receives validated input and returns the tool result
 
 ---
 
@@ -1117,7 +1117,7 @@ Keep `.env.local` backup with original `OPENAI_API_KEY` configuration.
 | `src/lib/types.ts` | Add Azure config fields to EnvironmentConfig | Low | 2 |
 | `src/lib/env.ts` | Complete rewrite for Azure provider | Medium | 2 |
 | `src/lib/tracing.ts` | Update env var name (TRACING_ENABLED) | Low | 7 |
-| `src/agents/tools/scratchpad.ts` | Change import from @openai/agents to ai | Low | 3 |
+| `src/agents/tools/scratchpad.ts` | Change import, rename `parameters` to `inputSchema` | Low | 3 |
 | `src/agents/CrosstabAgent.ts` | Replace Agent+run with generateText, remove withTrace | High | 4 |
 | `src/agents/BannerAgent.ts` | Replace Agent+run with generateText, update image format | High | 5 |
 | `src/agents/RScriptAgent.ts` | Remove withTrace wrapper, add structured logging | Medium | 6 |
@@ -1151,6 +1151,7 @@ npm run build                  # Must succeed
 
 - [Vercel AI SDK Documentation](https://ai-sdk.dev/docs/introduction)
 - [Azure OpenAI Provider](https://ai-sdk.dev/providers/ai-sdk-providers/azure)
+- [Tools and Tool Calling](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling) - **Primary reference for tool `inputSchema` pattern**
 - [Generating Structured Data](https://ai-sdk.dev/docs/ai-sdk-core/generating-structured-data)
 - [Tool Definition Reference](https://ai-sdk.dev/docs/reference/ai-sdk-core/tool)
 - [Building Agents Guide](https://vercel.com/kb/guide/how-to-build-ai-agents-with-vercel-and-the-ai-sdk)
@@ -1167,9 +1168,10 @@ npm run build                  # Must succeed
 | 2025-12-31 | Updated model configuration to use actual Azure deployments: o4-mini (reasoning) and gpt-5-nano (base/vision). Pre-implementation checklist completed. |
 | 2025-12-31 | **Breaking change**: Switched from environment-based to task-based model selection. `getModel()` replaced with `getReasoningModel()` (CrosstabAgent) and `getBaseModel()` (BannerAgent). Models are now chosen based on task requirements, not NODE_ENV. Updated Steps 2, 4, 5, and Testing Plan. |
 | 2025-12-31 | Added `AZURE_API_VERSION` configuration (default: `2025-01-01-preview`) and `useDeploymentBasedUrls: true` for Azure AI Foundry compatibility. This ensures the SDK constructs URLs matching the standard Azure OpenAI deployment format. |
+| 2026-01-01 | **Correction**: Fixed tool definition pattern in Step 3. AI SDK v6 requires `inputSchema` (not `parameters`). Updated Key Changes table, Step 3 code example, and Migration Summary. Verified against [AI SDK Tools Documentation](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling). |
 
 ---
 
 *Created: December 31, 2025*
-*Last Updated: December 31, 2025*
+*Last Updated: January 1, 2026*
 *Status: Ready for Implementation*

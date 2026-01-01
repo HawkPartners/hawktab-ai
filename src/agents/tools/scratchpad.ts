@@ -15,7 +15,7 @@ export const scratchpadTool = tool({
   async execute({ action, content }) {
     // Log for debugging/tracing
     console.log(`[CrossTab Agent Scratchpad] ${action}: ${content}`);
-    
+
     switch (action) {
       case 'add':
         return `[Thinking] Added: ${content}`;
