@@ -85,7 +85,7 @@ The MVP demonstrates the concept works. Next phases to make it usable by the tea
 | **Checkpoint** | Hawk Partners internal launch | — |
 | **5. Bob Pilot** | External validation | — |
 
-See `architecture-refactor-prd.md` for full details.
+See `docs/architecture-refactor-prd.md` for full details.
 
 ---
 
@@ -105,7 +105,6 @@ npm install
 
 **PDF Processing** (for banner extraction)
 - macOS: `brew install graphicsmagick ghostscript`
-- Windows: See installation notes in `docs/setup/windows-dependencies.md`
 
 ### Environment Setup
 
@@ -171,10 +170,9 @@ hawktab-ai/
 
 | Document | Purpose |
 |----------|---------|
-| `architecture-refactor-prd.md` | Complete architecture plan and roadmap |
+| `docs/architecture-refactor-prd.md` | Complete architecture plan and roadmap |
 | `CLAUDE.md` | AI assistant context and coding guidelines |
-| `docs/security-audit-prompt.md` | Security review checklist |
-| `docs/architecture/` | Technical architecture details |
+| `docs/audits/security-audit-prompt.md` | Security review checklist |
 
 ---
 
@@ -187,7 +185,7 @@ Key security decisions for handling Hawk Partners data:
 - **Error Monitoring**: Sentry with PII scrubbing
 - **Data Encryption**: TLS in transit, encrypted at rest
 
-See `docs/security-audit-prompt.md` for security review checklist.
+See `docs/audits/security-audit-prompt.md` for security review checklist.
 
 ---
 

@@ -28,6 +28,8 @@ The current system uses `@openai/agents` which **does not support Azure OpenAI**
 | Token Config | `modelSettings: { maxTokens }` nested | `maxOutputTokens` at top level of generateText |
 | Tracing | `withTrace()` + `getGlobalTraceProvider()` | Console logging with structured format (Sentry Phase 2) |
 | Image Format | `{ type: 'input_image', image: 'data:...' }` | `{ type: 'image', image: Buffer.from(base64, 'base64') }` |
+| **API Endpoint** | N/A (OpenAI direct) | `provider.chat()` for Chat Completions API (not Responses API) |
+| **Schema Properties** | Optional allowed (`.default()`) | All properties required (Azure structured output limitation) |
 
 ---
 
@@ -257,19 +259,27 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
 /**
  * Get reasoning model for complex validation tasks
  * Used by: CrosstabAgent (requires deep reasoning for R syntax generation)
+ *
+ * NOTE: Using .chat() for Chat Completions API instead of Responses API
+ * The Responses API (default in AI SDK v6) may not be available on all Azure deployments
  */
 export const getReasoningModel = () => {
   const config = getEnvironmentConfig();
-  return azure(config.reasoningModel);
+  const provider = getAzureProvider();  // Must use custom provider, not bare azure()
+  return provider.chat(config.reasoningModel);  // .chat() forces Chat Completions API
 };
 
 /**
  * Get base model for vision/extraction tasks
  * Used by: BannerAgent (requires vision capability, simpler reasoning)
+ *
+ * NOTE: Using .chat() for Chat Completions API instead of Responses API
+ * Vision works with Chat Completions API on multimodal models
  */
 export const getBaseModel = () => {
   const config = getEnvironmentConfig();
-  return azure(config.baseModel);
+  const provider = getAzureProvider();  // Must use custom provider, not bare azure()
+  return provider.chat(config.baseModel);  // .chat() forces Chat Completions API
 };
 
 /**
@@ -1198,9 +1208,13 @@ npm run build                  # Must succeed
 | 2026-01-01 | **Correction**: Fixed multi-step control in Steps 4 and 5. AI SDK 5+ uses `stopWhen: stepCountIs(N)` instead of `maxSteps`. Added `stepCountIs` to imports, updated error handling terminology. Verified against [AI SDK Multi-Step Cookbook](https://ai-sdk.dev/cookbook/node/call-tools-multiple-steps). |
 | 2026-01-01 | **Step 4 clarifications**: Added explicit guidance for functions to remove (`createCrosstabAgent`, `_saveDevelopmentOutputs`, `saveDevelopmentOutputsWithTrace`). Updated `saveDevelopmentOutputs` with detailed comments showing OpenAI→Azure field changes. Updated Step 8 to explicitly remove `createCrosstabAgent` from exports (verified no external imports). Updated Migration Summary table. |
 | 2026-01-01 | **Correction**: Fixed token limit property name. AI SDK v6 uses `maxOutputTokens` (not `maxTokens`). Updated Key Changes table and code examples in Steps 4 and 5. Verified against [AI SDK generateText Reference](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-text). |
+| 2026-01-01 | **Testing Fix #1**: Model functions must use `getAzureProvider()`. The `getReasoningModel()` and `getBaseModel()` functions were incorrectly using the bare `azure()` import instead of the custom provider, causing `useDeploymentBasedUrls` config to be ignored. Fixed to use `provider.chat()` pattern. |
+| 2026-01-01 | **Testing Fix #2**: AI SDK v6 defaults to Responses API. Azure deployments may not support the `/responses` endpoint (404 error). Use `provider.chat('model-name')` instead of `provider('model-name')` to force Chat Completions API (`/chat/completions` endpoint). |
+| 2026-01-01 | **Testing Fix #3**: Azure OpenAI structured output requires ALL properties to be required. Removed `.default()` from Zod schemas in BannerAgent (`BannerColumnSchema`, `BannerNotesSchema`, `ExtractedBannerStructureSchema`). Changed `.nullable()` to required arrays for `errors` and `warnings`. |
+| 2026-01-01 | **Phase 1 Complete**: All steps implemented and tested. System successfully connects to Azure OpenAI using Chat Completions API with deployment-based URLs. Compliance requirement satisfied. |
 
 ---
 
 *Created: December 31, 2025*
 *Last Updated: January 1, 2026*
-*Status: Ready for Implementation*
+*Status: ✅ COMPLETE - Phase 1 Implemented and Tested*
