@@ -856,6 +856,117 @@ const useLocalR = process.env.NODE_ENV === "development" && !process.env.R_SERVI
 
 ---
 
+### Step 11: Document Processing Dependencies (Serverless-Compatible)
+
+The BannerAgent converts DOC/DOCX files to images for AI vision processing. The current implementation uses `pdf2pic`, which requires GraphicsMagick and Ghostscript—native binaries unavailable in Vercel serverless.
+
+**Dependency Analysis**:
+
+| Package | Purpose | Serverless Compatible? |
+|---------|---------|------------------------|
+| mammoth | DOC/DOCX → text extraction | ✅ Pure JS |
+| pdf-lib | Create PDF from text | ✅ Pure JS |
+| **pdf2pic** | PDF → images | ❌ Requires GraphicsMagick |
+| sharp | Image optimization | ✅ Ships pre-built binaries |
+
+**Solution**: Replace `pdf2pic` with `pdf-to-img` (wrapper around Mozilla's PDF.js with `@napi-rs/canvas`). This is pure JS with pre-built Rust binaries—same deployment model as `sharp`.
+
+**Pre-Implementation Test** (run before full migration):
+```bash
+# Install test dependency
+npm install pdf-to-img
+
+# Create test script: test-pdf-conversion.ts
+```
+
+```typescript
+// test-pdf-conversion.ts
+import { pdf } from 'pdf-to-img';
+import fs from 'fs/promises';
+import path from 'path';
+
+async function testConversion() {
+  // Use an existing banner plan PDF from your test data
+  const pdfPath = 'data/banner-plan.pdf'; // adjust to your test file
+
+  const document = await pdf(pdfPath, { scale: 2.0 });
+  let pageNum = 1;
+
+  for await (const image of document) {
+    const outPath = `temp-outputs/test-page-${pageNum}.png`;
+    await fs.writeFile(outPath, image);
+    console.log(`✅ Page ${pageNum} saved: ${outPath}`);
+    pageNum++;
+  }
+
+  console.log(`\n🎯 Conversion complete. Check temp-outputs/ and verify image quality.`);
+  console.log(`   Compare with current pdf2pic output for the same file.`);
+}
+
+testConversion().catch(console.error);
+```
+
+```bash
+# Run the test
+npx tsx test-pdf-conversion.ts
+
+# Visual check: Do the images look good enough for AI vision extraction?
+# If yes, proceed with migration. If no, fall back to Railway Docker approach.
+```
+
+**Migration** (after successful test):
+```bash
+# Remove old dependency
+npm uninstall pdf2pic
+
+# Install replacement
+npm install pdf-to-img
+```
+
+**Update `src/agents/BannerAgent.ts`**:
+```typescript
+// Before
+import pdf2pic from 'pdf2pic';
+
+// After
+import { pdf } from 'pdf-to-img';
+
+// Update convertPDFToImages method:
+private async convertPDFToImages(pdfPath: string): Promise<ProcessedImage[]> {
+  const document = await pdf(pdfPath, { scale: 2.0 }); // scale 2.0 ≈ 144 DPI
+  const processedImages: ProcessedImage[] = [];
+  let pageNum = 1;
+
+  for await (const image of document) {
+    // image is already a Buffer (PNG format)
+    const optimized = await sharp(image)
+      .resize(BANNER_CONFIG.maxImageResolution, BANNER_CONFIG.maxImageResolution, {
+        fit: 'inside',
+        withoutEnlargement: true
+      })
+      .png({ quality: 90 })
+      .toBuffer();
+
+    const metadata = await sharp(optimized).metadata();
+
+    processedImages.push({
+      pageNumber: pageNum,
+      base64: optimized.toString('base64'),
+      width: metadata.width || 0,
+      height: metadata.height || 0,
+      format: 'png'
+    });
+    pageNum++;
+  }
+
+  return processedImages;
+}
+```
+
+**Fallback**: If `pdf-to-img` quality is insufficient for complex banner plans, add GraphicsMagick/Ghostscript to the Railway R service Docker container and expose a `/convert-pdf` endpoint.
+
+---
+
 ## Future Off-Ramps
 
 If compliance requirements change, the architecture supports migration:
@@ -877,6 +988,7 @@ These are documented here for future reference but not currently planned.
 - [ ] Auth middleware blocks unauthenticated requests
 - [ ] R2 upload/download works
 - [ ] R service health check responds
+- [ ] `pdf-to-img` produces readable images from banner plan PDFs
 
 ### Integration Tests
 - [ ] Full upload → process → validate flow with auth
@@ -900,6 +1012,7 @@ These are documented here for future reference but not currently planned.
 - [ ] File uploads go to R2, not local filesystem
 - [ ] Job progress updates without polling
 - [ ] R service executes scripts and returns results
+- [ ] Document processing works without GraphicsMagick (pdf-to-img)
 - [ ] Errors appear in Sentry dashboard
 - [ ] Usage events appear in PostHog dashboard
 
@@ -919,6 +1032,7 @@ These are documented here for future reference but not currently planned.
 | 8. API Migration | Update existing API routes | - | High |
 | 9. Deploy (Vercel) | Environment variables | - | Low |
 | 10. R Service (Railway) | `r-service/Dockerfile`, `r-service/api.R`, `src/lib/r/executor.ts` | - | Medium |
+| 11. Document Processing | `src/agents/BannerAgent.ts` | `pdf-to-img` (replaces `pdf2pic`) | Low |
 
 ---
 
@@ -952,6 +1066,10 @@ These are documented here for future reference but not currently planned.
 - [Plumber R Package](https://www.rplumber.io/)
 - [R Docker Images](https://hub.docker.com/_/r-base)
 
+### Document Processing
+- [pdf-to-img npm](https://www.npmjs.com/package/pdf-to-img) - Serverless-compatible PDF to image conversion
+- [pdfjs-dist](https://www.npmjs.com/package/pdfjs-dist) - Mozilla PDF.js (underlying library)
+
 ---
 
 ## Changelog
@@ -960,9 +1078,10 @@ These are documented here for future reference but not currently planned.
 |------|--------|
 | 2026-01-01 | Initial plan created based on Phase 1 template and technology research |
 | 2026-01-01 | **Decisions finalized**: R2 confirmed for storage, Railway for R execution, PostHog reframed as "minimal" (not optional). Added Step 10 for Railway R service. Added Future Off-Ramps section documenting Azure migration path if needed. |
+| 2026-01-01 | **Step 11 added**: Document processing dependencies. Replace `pdf2pic` (requires GraphicsMagick) with `pdf-to-img` (serverless-compatible). Includes pre-implementation test script and fallback to Railway Docker if needed. |
 
 ---
 
 *Created: January 1, 2026*
 *Last Updated: January 1, 2026*
-*Status: Ready for Implementation*
+*Status: Ready for Implementation (includes document processing solution)*
