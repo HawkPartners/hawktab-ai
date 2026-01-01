@@ -1,27 +1,68 @@
 /**
  * Environment configuration
- * Purpose: Resolve model names, token limits, prompt versions, and basic validation
- * Required: OPENAI_API_KEY
- * Optional: NODE_ENV, CROSSTAB_PROMPT_VERSION, BANNER_PROMPT_VERSION, token/limit overrides
+ * Purpose: Resolve Azure OpenAI model, token limits, prompt versions, and validation
+ * Required: AZURE_API_KEY, AZURE_RESOURCE_NAME, REASONING_MODEL, BASE_MODEL
+ * Optional: NODE_ENV, prompt versions, token/limit overrides
  */
 
+import { azure, createAzure } from '@ai-sdk/azure';
 import { EnvironmentConfig } from './types';
 
+// Create Azure provider instance (cached)
+let azureProvider: ReturnType<typeof createAzure> | null = null;
+
+export const getAzureProvider = () => {
+  if (!azureProvider) {
+    const config = getEnvironmentConfig();
+    azureProvider = createAzure({
+      resourceName: config.azureResourceName,
+      apiKey: config.azureApiKey,
+      // Use explicit API version for Azure AI Foundry compatibility
+      apiVersion: config.azureApiVersion,
+      // Use deployment-based URLs (standard Azure OpenAI format)
+      // URL format: https://{resourceName}.openai.azure.com/openai/deployments/{deploymentId}/...?api-version={apiVersion}
+      useDeploymentBasedUrls: true,
+    });
+  }
+  return azureProvider;
+};
+
 export const getEnvironmentConfig = (): EnvironmentConfig => {
-  // Validate required environment variables
-  const openaiApiKey = process.env.OPENAI_API_KEY;
-  if (!openaiApiKey) {
-    throw new Error('OPENAI_API_KEY environment variable is required');
+  // Validate required Azure environment variables
+  const azureApiKey = process.env.AZURE_API_KEY;
+  const azureResourceName = process.env.AZURE_RESOURCE_NAME;
+
+  if (!azureApiKey) {
+    throw new Error('AZURE_API_KEY environment variable is required');
+  }
+  if (!azureResourceName) {
+    throw new Error('AZURE_RESOURCE_NAME environment variable is required');
   }
 
-  const nodeEnv = process.env.NODE_ENV as 'development' | 'production' || 'development';
+  // Azure API version (for Azure AI Foundry compatibility)
+  // See: https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-lifecycle
+  const azureApiVersion = process.env.AZURE_API_VERSION || '2025-01-01-preview';
+
+  // Model configuration (Azure deployment names)
+  const reasoningModel = process.env.REASONING_MODEL || 'o4-mini';
+  const baseModel = process.env.BASE_MODEL || 'gpt-5-nano';
+
+  const nodeEnv = (process.env.NODE_ENV as 'development' | 'production') || 'development';
 
   return {
-    reasoningModel: process.env.REASONING_MODEL || 'o1-preview',
-    baseModel: process.env.BASE_MODEL || 'gpt-4o',
-    openaiApiKey,
+    azureApiKey,
+    azureResourceName,
+    azureApiVersion,
+
+    // Model configuration
+    reasoningModel,
+    baseModel,
+
+    // Deprecated
+    openaiApiKey: process.env.OPENAI_API_KEY,  // Optional, deprecated
+
     nodeEnv,
-    tracingDisabled: process.env.OPENAI_AGENTS_DISABLE_TRACING === 'true',
+    tracingEnabled: process.env.TRACING_ENABLED !== 'false',  // Default: enabled
     promptVersions: {
       crosstabPromptVersion: process.env.CROSSTAB_PROMPT_VERSION || 'production',
       bannerPromptVersion: process.env.BANNER_PROMPT_VERSION || 'production',
@@ -30,38 +71,57 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
       maxDataMapVariables: parseInt(process.env.MAX_DATA_MAP_VARIABLES || '1000'),
       maxBannerColumns: parseInt(process.env.MAX_BANNER_COLUMNS || '100'),
       reasoningModelTokens: parseInt(process.env.REASONING_MODEL_TOKENS || '100000'),
-      baseModelTokens: parseInt(process.env.BASE_MODEL_TOKENS || '32768'),
+      baseModelTokens: parseInt(process.env.BASE_MODEL_TOKENS || '128000'),
     },
   };
 };
 
-export const getModel = (): string => {
+/**
+ * Task-based model selection
+ * Models are chosen based on task requirements, not environment:
+ * - Reasoning model (o4-mini): Complex validation tasks (CrosstabAgent)
+ * - Base model (gpt-5-nano): Vision/extraction tasks (BannerAgent)
+ */
+
+/**
+ * Get reasoning model for complex validation tasks
+ * Used by: CrosstabAgent (requires deep reasoning for R syntax generation)
+ */
+export const getReasoningModel = () => {
   const config = getEnvironmentConfig();
-  
-  // Use reasoning model for development, base model for production
-  return config.nodeEnv === 'production' 
-    ? config.baseModel
-    : config.reasoningModel;
+  return azure(config.reasoningModel);
 };
 
-export const getModelTokenLimit = (): number => {
+/**
+ * Get base model for vision/extraction tasks
+ * Used by: BannerAgent (requires vision capability, simpler reasoning)
+ */
+export const getBaseModel = () => {
   const config = getEnvironmentConfig();
-  
-  // Return token limit based on current model
-  return config.nodeEnv === 'production' 
-    ? config.processingLimits.baseModelTokens
-    : config.processingLimits.reasoningModelTokens;
+  return azure(config.baseModel);
 };
 
-export const getModelConfig = () => {
+/**
+ * Get model name string (for logging)
+ */
+export const getReasoningModelName = (): string => {
   const config = getEnvironmentConfig();
-  const isProduction = config.nodeEnv === 'production';
-  
-  return {
-    model: isProduction ? config.baseModel : config.reasoningModel,
-    tokenLimit: isProduction ? config.processingLimits.baseModelTokens : config.processingLimits.reasoningModelTokens,
-    environment: config.nodeEnv,
-  };
+  return `azure/${config.reasoningModel}`;
+};
+
+export const getBaseModelName = (): string => {
+  const config = getEnvironmentConfig();
+  return `azure/${config.baseModel}`;
+};
+
+export const getReasoningModelTokenLimit = (): number => {
+  const config = getEnvironmentConfig();
+  return config.processingLimits.reasoningModelTokens;
+};
+
+export const getBaseModelTokenLimit = (): number => {
+  const config = getEnvironmentConfig();
+  return config.processingLimits.baseModelTokens;
 };
 
 export const getPromptVersions = () => {
@@ -74,10 +134,15 @@ export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
 
   try {
     const config = getEnvironmentConfig();
-    
-    // Validate API key format
-    if (!config.openaiApiKey.startsWith('sk-')) {
-      errors.push('OPENAI_API_KEY must start with "sk-"');
+
+    // Azure API key format is flexible (not sk-* like OpenAI)
+    if (config.azureApiKey.length < 10) {
+      errors.push('AZURE_API_KEY appears too short');
+    }
+
+    // Validate resource name format
+    if (!/^[a-zA-Z0-9-]+$/.test(config.azureResourceName)) {
+      errors.push('AZURE_RESOURCE_NAME should only contain alphanumeric characters and hyphens');
     }
 
     // Validate processing limits
@@ -104,5 +169,42 @@ export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
   return {
     valid: errors.length === 0,
     errors,
+  };
+};
+
+// Legacy compatibility exports (deprecated - will be removed in future)
+// These redirect to the appropriate task-based functions for any code that hasn't been migrated yet
+
+/**
+ * @deprecated Use getReasoningModel() or getBaseModel() instead based on task requirements
+ */
+export const getModel = (): string => {
+  console.warn('[env.ts] getModel() is deprecated. Use getReasoningModel() or getBaseModel() based on task requirements.');
+  const config = getEnvironmentConfig();
+  // Default to reasoning model for backward compatibility
+  return config.reasoningModel;
+};
+
+/**
+ * @deprecated Use getReasoningModelTokenLimit() or getBaseModelTokenLimit() instead
+ */
+export const getModelTokenLimit = (): number => {
+  console.warn('[env.ts] getModelTokenLimit() is deprecated. Use getReasoningModelTokenLimit() or getBaseModelTokenLimit().');
+  const config = getEnvironmentConfig();
+  // Default to reasoning model tokens for backward compatibility
+  return config.processingLimits.reasoningModelTokens;
+};
+
+/**
+ * @deprecated Model selection is now task-based, not environment-based
+ */
+export const getModelConfig = () => {
+  console.warn('[env.ts] getModelConfig() is deprecated. Model selection is now task-based.');
+  const config = getEnvironmentConfig();
+
+  return {
+    model: config.reasoningModel,
+    tokenLimit: config.processingLimits.reasoningModelTokens,
+    environment: config.nodeEnv,
   };
 };
