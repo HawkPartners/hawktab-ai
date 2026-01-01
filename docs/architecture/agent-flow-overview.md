@@ -326,15 +326,17 @@ flowchart LR
 
 ## Implementation Priority
 
-1. **Phase 2**: Infrastructure (auth, database, deployment) - enables iteration
-2. **Phase 3**: Decipher API integration - provides reliable data source
-3. **Phase 3b**: BannerValidateAgent - catches semantic errors early
-4. **Phase 3c**: DataValidator - catches zero-count cuts before R execution
-5. **Phase 4**: Reliability improvements (confidence calibration, diagnostics)
-6. **Future**: BannerExpandAgent - consultant-style suggestions
+1. **Phase 1**: Azure OpenAI Migration *(Complete)* - Compliance requirement satisfied
+2. **Phase 2**: Decipher API + Agent Flow Improvements
+   - 2a: Decipher API integration - provides reliable data source with skip logic
+   - 2b: BannerValidateAgent - catches semantic errors early
+   - 2c: DataValidator - catches zero-count cuts before R execution
+   - 2d: Confidence calibration and diagnostics
+3. **Phase 3**: Team Access (auth, database, deployment) - enables 80-person team use
+4. **Future**: BannerExpandAgent - consultant-style suggestions for additional cuts
 
 ---
 
 *Document created: January 1, 2026*
 *Last updated: January 1, 2026*
-*Status: Architectural proposal for discussion*
+*Status: This document describes Phase 2 improvements (Decipher + Agent Flow)*

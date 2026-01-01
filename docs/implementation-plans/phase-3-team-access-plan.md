@@ -1,4 +1,4 @@
-# Phase 2: Team Access (Auth + Database + Storage + Monitoring)
+# Phase 3: Team Access (Auth + Database + Storage + Monitoring)
 
 ## Implementation Plan
 
@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-Phase 1 established Azure OpenAI connectivity. Phase 2 adds the infrastructure for team access:
+Phase 1 established Azure OpenAI connectivity, and Phase 2 added Decipher integration and agent flow improvements. Phase 3 adds the infrastructure for team access:
 
 | Component | Technology | What It Replaces |
 |-----------|------------|------------------|
@@ -723,7 +723,7 @@ SENTRY_AUTH_TOKEN=sntrys_xxx
 NEXT_PUBLIC_POSTHOG_KEY=phc_xxx
 NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 
-# Azure OpenAI (from Phase 1)
+# Azure OpenAI (from Phase 2)
 AZURE_API_KEY=xxx
 AZURE_RESOURCE_NAME=crosstab-ai
 AZURE_API_VERSION=2025-01-01-preview
@@ -1076,12 +1076,13 @@ These are documented here for future reference but not currently planned.
 
 | Date | Change |
 |------|--------|
-| 2026-01-01 | Initial plan created based on Phase 1 template and technology research |
+| 2026-01-01 | Initial plan created based on architecture PRD and technology research |
 | 2026-01-01 | **Decisions finalized**: R2 confirmed for storage, Railway for R execution, PostHog reframed as "minimal" (not optional). Added Step 10 for Railway R service. Added Future Off-Ramps section documenting Azure migration path if needed. |
 | 2026-01-01 | **Step 11 added**: Document processing dependencies. Replace `pdf2pic` (requires GraphicsMagick) with `pdf-to-img` (serverless-compatible). Includes pre-implementation test script and fallback to Railway Docker if needed. |
+| 2026-01-01 | **Renumbered to Phase 3**: Reordered phases so Decipher/reliability (Phase 2) comes before team access (Phase 3). Team access is well-understood infrastructure; Decipher is the core technical risk. |
 
 ---
 
 *Created: January 1, 2026*
 *Last Updated: January 1, 2026*
-*Status: Ready for Implementation (includes document processing solution)*
+*Status: Ready for Implementation (Phase 3 - after Phase 2 Decipher integration)*

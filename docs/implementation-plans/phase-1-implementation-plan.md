@@ -26,7 +26,7 @@ The current system uses `@openai/agents` which **does not support Azure OpenAI**
 | Structured Output | `outputType` property on Agent | `output: Output.object({ schema })` in generateText |
 | Agent Pattern | `new Agent({...})` + `run(agent, prompt)` | Direct `generateText({...})` call |
 | Token Config | `modelSettings: { maxTokens }` nested | `maxOutputTokens` at top level of generateText |
-| Tracing | `withTrace()` + `getGlobalTraceProvider()` | Console logging with structured format (Sentry Phase 2) |
+| Tracing | `withTrace()` + `getGlobalTraceProvider()` | Console logging with structured format (Sentry Phase 3) |
 | Image Format | `{ type: 'input_image', image: 'data:...' }` | `{ type: 'image', image: Buffer.from(base64, 'base64') }` |
 | **API Endpoint** | N/A (OpenAI direct) | `provider.chat()` for Chat Completions API (not Responses API) |
 | **Schema Properties** | Optional allowed (`.default()`) | All properties required (Azure structured output limitation) |
@@ -75,7 +75,7 @@ grep -r "@openai/agents" src/           # Should return NO results after Step 1
 The OpenAI Agents SDK provides built-in tracing via `withTrace()` and `getGlobalTraceProvider()`. We are **not just removing tracing**—we are replacing it with structured console logging that:
 
 1. **Maintains observability**: All agent operations are logged with timestamps, durations, and context
-2. **Prepares for Sentry**: Log format matches what Sentry will capture in Phase 2
+2. **Prepares for Sentry**: Log format matches what Sentry will capture in Phase 3
 3. **Includes processing logs**: Every agent call records to a `processingLog` array that's saved with outputs
 
 The replacement pattern:
@@ -722,7 +722,7 @@ async function saveDevelopmentOutputs(
 2. **Structured output**: Uses `output: Output.object({ schema })` instead of `outputType`
 3. **Tools as object**: Tools passed as `{ scratchpad: scratchpadTool }` not array
 4. **`stopWhen` replaces `maxTurns`**: AI SDK 5+ uses `stopWhen: stepCountIs(N)` for multi-step tool calling control (import `stepCountIs` from `ai`)
-5. **No tracing**: Removed `withTrace()` and `getGlobalTraceProvider()` - replaced with structured console logging (Sentry in Phase 2)
+5. **No tracing**: Removed `withTrace()` and `getGlobalTraceProvider()` - replaced with structured console logging (Sentry in Phase 3)
 6. **Task-based model**: `getReasoningModel()` returns Azure reasoning model instance (o4-mini) for complex validation
 7. **Removed OpenAI references**: Processing info no longer includes OpenAI traces dashboard links
 
@@ -932,7 +932,7 @@ return RScriptOutputSchema.parse(output);
 ```typescript
 /**
  * Tracing helpers
- * Purpose: Structured logging for observability (Sentry integration in Phase 2)
+ * Purpose: Structured logging for observability (Sentry integration in Phase 3)
  */
 
 export interface TracingConfig {
