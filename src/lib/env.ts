@@ -5,7 +5,7 @@
  * Optional: NODE_ENV, prompt versions, token/limit overrides
  */
 
-import { azure, createAzure } from '@ai-sdk/azure';
+import { createAzure } from '@ai-sdk/azure';
 import { EnvironmentConfig } from './types';
 
 // Create Azure provider instance (cached)
@@ -86,19 +86,27 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
 /**
  * Get reasoning model for complex validation tasks
  * Used by: CrosstabAgent (requires deep reasoning for R syntax generation)
+ *
+ * NOTE: Using .chat() for Chat Completions API instead of Responses API
+ * The Responses API (default in AI SDK v6) may not be available on all Azure deployments
  */
 export const getReasoningModel = () => {
   const config = getEnvironmentConfig();
-  return azure(config.reasoningModel);
+  const provider = getAzureProvider();
+  return provider.chat(config.reasoningModel);  // Use Chat Completions API
 };
 
 /**
  * Get base model for vision/extraction tasks
  * Used by: BannerAgent (requires vision capability, simpler reasoning)
+ *
+ * NOTE: Using .chat() for Chat Completions API instead of Responses API
+ * Vision should work with Chat Completions API on multimodal models
  */
 export const getBaseModel = () => {
   const config = getEnvironmentConfig();
-  return azure(config.baseModel);
+  const provider = getAzureProvider();
+  return provider.chat(config.baseModel);  // Use Chat Completions API
 };
 
 /**

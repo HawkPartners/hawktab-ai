@@ -38,18 +38,20 @@ export interface BannerProcessingResult {
 }
 
 // Banner extraction schemas (same as BannerProcessor)
+// NOTE: All properties must be required for Azure OpenAI structured output compatibility
+// Azure OpenAI does not support optional properties in JSON Schema
 const BannerColumnSchema = z.object({
   name: z.string(),
   original: z.string(),
-  adjusted: z.string().default(''),
+  adjusted: z.string(),  // Required - AI must provide this
   statLetter: z.string(),
-  confidence: z.number().min(0).max(1).default(1),
-  requiresInference: z.boolean().default(false),
-  crossRefStatus: z.string().default(''),
-  inferenceReason: z.string().default(''),
-  humanInLoopRequired: z.boolean().default(false),
-  aiRecommended: z.boolean().default(false),
-  uncertainties: z.array(z.string()).default([])
+  confidence: z.number().min(0).max(1),
+  requiresInference: z.boolean(),
+  crossRefStatus: z.string(),
+  inferenceReason: z.string(),
+  humanInLoopRequired: z.boolean(),
+  aiRecommended: z.boolean(),
+  uncertainties: z.array(z.string())
 });
 
 const BannerCutSchema = z.object({
@@ -60,12 +62,12 @@ const BannerCutSchema = z.object({
 const BannerNotesSchema = z.object({
   type: z.enum(['calculation_rows', 'main_tab_notes', 'other']),
   original: z.string(),
-  adjusted: z.string().default('')
+  adjusted: z.string()  // Required - AI must provide this
 });
 
 const ExtractedBannerStructureSchema = z.object({
   bannerCuts: z.array(BannerCutSchema),
-  notes: z.array(BannerNotesSchema).default([]),
+  notes: z.array(BannerNotesSchema),  // Required - AI must provide this (can be empty array)
   processingMetadata: z.object({
     totalColumns: z.number(),
     groupCount: z.number(),
@@ -79,8 +81,8 @@ const BannerExtractionResultSchema = z.object({
   extractionType: z.literal('banner_extraction'),
   timestamp: z.string(),
   extractedStructure: ExtractedBannerStructureSchema,
-  errors: z.array(z.string()).nullable(),
-  warnings: z.array(z.string()).nullable()
+  errors: z.array(z.string()),    // Required - AI returns empty array if no errors
+  warnings: z.array(z.string())   // Required - AI returns empty array if no warnings
 });
 
 type BannerExtractionResult = z.infer<typeof BannerExtractionResultSchema>;
@@ -232,7 +234,7 @@ Begin analysis now.
           }
         },
         errors: [error instanceof Error ? error.message : 'Agent extraction failed'],
-        warnings: null
+        warnings: []
       };
     }
   }
@@ -452,7 +454,7 @@ Begin analysis now.
             }
           },
           errors: [error],
-          warnings: null
+          warnings: []
         },
         timestamp: new Date().toISOString()
       },

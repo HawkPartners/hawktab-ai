@@ -27,9 +27,9 @@ HawkTab AI replaces Hawk Partners' current crosstab outsourcing workflow. Instea
 **Primary Goal**: 80-person team can log in, upload survey materials, get accurate crosstabs.
 
 **Key Documents**:
-- `architecture-refactor-prd.md` - Complete architecture plan and roadmap
+- `docs/architecture-refactor-prd.md` - Complete architecture plan and roadmap
 - `README.md` - Project overview and getting started
-- `docs/security-audit-prompt.md` - Security review checklist
+- `docs/audits/security-audit-prompt.md` - Security review checklist
 
 ---
 
@@ -55,13 +55,13 @@ Security is a first-class concern at every stage of development. Follow these pr
 - Document any security-relevant decisions in commit messages
 
 ### Weekly Security Audits
-Security audits are conducted weekly using the prompt in `docs/security-audit-prompt.md`. Every new feature should be auditable.
+Security audits are conducted weekly using the prompt in `docs/audits/security-audit-prompt.md`. Every new feature should be auditable.
 
 ---
 
 ## Target Architecture Stack
 
-Migrating to this stack (see `architecture-refactor-prd.md`):
+Migrating to this stack (see `docs/architecture-refactor-prd.md`):
 
 | Layer | Technology | Why |
 |-------|------------|-----|
@@ -277,7 +277,7 @@ npx tsc --noEmit          # Must pass
 - Provides graduated confidence scores for human review
 - Processes 19 columns across 6 banner groups
 
-**Next Steps** (see `architecture-refactor-prd.md`):
+**Next Steps** (see `docs/architecture-refactor-prd.md`):
 1. Migrate to Azure OpenAI (compliance)
 2. Deploy with auth + shared storage (team access)
 3. Decipher API integration (skip logic from source—the hard part)
@@ -308,8 +308,8 @@ git diff                       # Review changes before commit
 
 ## References
 
-- `architecture-refactor-prd.md` - Complete architecture plan
-- `docs/security-audit-prompt.md` - Security review checklist
+- `docs/architecture-refactor-prd.md` - Complete architecture plan
+- `docs/audits/security-audit-prompt.md` - Security review checklist
 - [Convex Docs](https://docs.convex.dev/)
 - [WorkOS AuthKit](https://workos.com/docs/user-management)
 - [Vercel AI SDK](https://ai-sdk.dev/docs/introduction)
