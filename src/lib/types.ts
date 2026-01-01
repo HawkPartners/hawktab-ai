@@ -16,11 +16,20 @@ export interface PromptVersions {
 }
 
 export interface EnvironmentConfig {
-  reasoningModel: string;
-  baseModel: string;
-  openaiApiKey: string;
+  // Azure OpenAI (required)
+  azureApiKey: string;
+  azureResourceName: string;
+  azureApiVersion: string;  // e.g., '2024-10-21' for Azure AI Foundry
+
+  // Model configuration (Azure deployment names)
+  reasoningModel: string;  // e.g., 'o4-mini' - used by CrosstabAgent
+  baseModel: string;       // e.g., 'gpt-5-nano' - used by BannerAgent (must support vision)
+
+  // Deprecated (optional, for rollback purposes)
+  openaiApiKey?: string;
+
   nodeEnv: 'development' | 'production';
-  tracingDisabled: boolean;
+  tracingEnabled: boolean;  // Renamed from tracingDisabled (positive naming)
   promptVersions: PromptVersions;
   processingLimits: ProcessingLimits;
 }

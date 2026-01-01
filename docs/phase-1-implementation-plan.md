@@ -140,6 +140,7 @@ export interface EnvironmentConfig {
   // Azure OpenAI (new)
   azureApiKey: string;
   azureResourceName: string;
+  azureApiVersion: string;  // e.g., '2024-10-21' for Azure AI Foundry
 
   // Model configuration (Azure deployment names)
   reasoningModel: string;  // e.g., 'o4-mini'
@@ -187,6 +188,11 @@ export const getAzureProvider = () => {
     azureProvider = createAzure({
       resourceName: config.azureResourceName,
       apiKey: config.azureApiKey,
+      // Use explicit API version for Azure AI Foundry compatibility
+      apiVersion: config.azureApiVersion,
+      // Use deployment-based URLs (standard Azure OpenAI format)
+      // URL format: https://{resourceName}.openai.azure.com/openai/deployments/{deploymentId}/...?api-version={apiVersion}
+      useDeploymentBasedUrls: true,
     });
   }
   return azureProvider;
@@ -204,6 +210,10 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
     throw new Error('AZURE_RESOURCE_NAME environment variable is required');
   }
 
+  // Azure API version (for Azure AI Foundry compatibility)
+  // See: https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-lifecycle
+  const azureApiVersion = process.env.AZURE_API_VERSION || '2025-01-01-preview';
+
   // Model configuration (Azure deployment names)
   const reasoningModel = process.env.REASONING_MODEL || 'o4-mini';
   const baseModel = process.env.BASE_MODEL || 'gpt-5-nano';
@@ -213,6 +223,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   return {
     azureApiKey,
     azureResourceName,
+    azureApiVersion,
 
     // Model configuration
     reasoningModel,
@@ -334,12 +345,14 @@ export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
 ```bash
 # Azure OpenAI Configuration (Required)
 AZURE_API_KEY=your-azure-api-key
-AZURE_RESOURCE_NAME=your-resource-name
+AZURE_RESOURCE_NAME=crosstab-ai
+# API version for Azure AI Foundry (must match your deployment's target URI)
+# See: https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-lifecycle
+AZURE_API_VERSION=2025-01-01-preview
 
 # Model Configuration (Task-based, not environment-based)
-# Reasoning model: used by CrosstabAgent for complex validation
+# These are Azure deployment names (from your Azure AI Foundry deployments)
 REASONING_MODEL=o4-mini
-# Base model: used by BannerAgent for vision/extraction (must support vision)
 BASE_MODEL=gpt-5-nano
 REASONING_MODEL_TOKENS=100000
 BASE_MODEL_TOKENS=128000
@@ -366,12 +379,13 @@ NODE_ENV=development
 # Get these from Azure Portal > Your OpenAI Resource
 AZURE_API_KEY=
 AZURE_RESOURCE_NAME=
+# API version for Azure AI Foundry (must match your deployment's target URI)
+# See: https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-lifecycle
+AZURE_API_VERSION=2025-01-01-preview
 
 # Model Configuration (Required, Task-based)
-# These are Azure deployment names, not OpenAI model names
-# Reasoning model: used by CrosstabAgent for complex validation
+# These are Azure deployment names (from your Azure AI Foundry deployments)
 REASONING_MODEL=o4-mini
-# Base model: used by BannerAgent for vision/extraction
 BASE_MODEL=gpt-5-nano
 REASONING_MODEL_TOKENS=100000
 BASE_MODEL_TOKENS=128000
@@ -1152,6 +1166,7 @@ npm run build                  # Must succeed
 | 2025-12-31 | Updated with comprehensive gap analysis: BannerAgent full migration details, tracing replacement strategy, discovery-first pattern, verification steps, .env.example |
 | 2025-12-31 | Updated model configuration to use actual Azure deployments: o4-mini (reasoning) and gpt-5-nano (base/vision). Pre-implementation checklist completed. |
 | 2025-12-31 | **Breaking change**: Switched from environment-based to task-based model selection. `getModel()` replaced with `getReasoningModel()` (CrosstabAgent) and `getBaseModel()` (BannerAgent). Models are now chosen based on task requirements, not NODE_ENV. Updated Steps 2, 4, 5, and Testing Plan. |
+| 2025-12-31 | Added `AZURE_API_VERSION` configuration (default: `2025-01-01-preview`) and `useDeploymentBasedUrls: true` for Azure AI Foundry compatibility. This ensures the SDK constructs URLs matching the standard Azure OpenAI deployment format. |
 
 ---
 
