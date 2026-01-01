@@ -4,9 +4,9 @@
 
 **Goal**: Migrate from OpenAI Agents SDK to Vercel AI SDK with Azure OpenAI provider for Hawk Partners compliance.
 
-**Estimated Effort**: 2-3 days
-
 **Branch**: `feature-azure-openai-migration` (current feature branch)
+
+**Testing Strategy**: Complete migration on feature branch → thorough testing → merge to development → additional testing → merge to production
 
 ---
 
@@ -21,20 +21,77 @@ The current system uses `@openai/agents` which **does not support Azure OpenAI**
 | AI Framework | `@openai/agents ^0.0.15` | `ai ^6.0.5` + `@ai-sdk/azure ^3.0.2` |
 | Zod Version | `^3.25.67` (locked) | `^3.25.76` or `^4.x` (unlocked) |
 | API Key | `OPENAI_API_KEY` | `AZURE_API_KEY` + `AZURE_RESOURCE_NAME` |
-| Model Selection | `getModel()` → `'gpt-4o'` | `azure('gpt-4o')` deployment reference |
-| Tool Pattern | `parameters` property | `inputSchema` property |
-| Structured Output | `outputType` property | `output: Output.object({ schema })` |
-| Tracing | OpenAI Agents SDK built-in | Removed (Sentry planned for Phase 2) |
+| Model Selection | `getModel()` → model name string | `getModel()` → `azure(deploymentName)` model instance |
+| Tool Pattern | `tool({ name, parameters, execute })` | `tool({ parameters, execute })` (name inferred) |
+| Structured Output | `outputType` property on Agent | `output: Output.object({ schema })` in generateText |
+| Agent Pattern | `new Agent({...})` + `run(agent, prompt)` | Direct `generateText({...})` call |
+| Token Config | `modelSettings: { maxTokens }` nested | `maxTokens` at top level of generateText |
+| Tracing | `withTrace()` + `getGlobalTraceProvider()` | Console logging with structured format (Sentry Phase 2) |
+| Image Format | `{ type: 'input_image', image: 'data:...' }` | `{ type: 'image', image: Buffer.from(base64, 'base64') }` |
 
 ---
 
 ## Pre-Implementation Checklist
 
-- [ ] Confirm Azure OpenAI resource exists at Hawk Partners
-- [ ] Get Azure resource name (e.g., `hawkpartners-openai`)
-- [ ] Get Azure API key
-- [ ] Confirm deployment name (e.g., `gpt-4o`, `gpt-4-turbo`)
-- [ ] Verify deployment supports vision (for BannerAgent)
+- [x] Confirm Azure OpenAI resource exists at Hawk Partners ✓
+- [x] Get Azure resource name ✓
+- [x] Get Azure API key ✓
+- [x] Confirm deployment names:
+  - Reasoning model: `o4-mini`
+  - Base model: `gpt-5-nano`
+- [x] Verify base model supports vision (for BannerAgent) - gpt-5-nano is multimodal ✓
+
+---
+
+## Implementation Approach
+
+### Discovery-First Pattern
+
+Before modifying each file, **always run discovery** to understand the current state:
+
+```bash
+# Before each step, discover all usages of what you're changing:
+grep -r "@openai/agents" src/          # Find all OpenAI Agents SDK imports
+grep -r "withTrace" src/                # Find all tracing usages
+grep -r "getGlobalTraceProvider" src/   # Find trace flush calls
+grep -r "OPENAI_API_KEY" src/           # Find OpenAI API key references
+grep -r "input_image" src/              # Find image format usages
+```
+
+### Cleanup Verification
+
+After each step, verify the cleanup is complete:
+
+```bash
+npm run lint                            # Must pass
+npx tsc --noEmit                        # Must pass - no type errors
+grep -r "@openai/agents" src/           # Should return NO results after Step 1
+```
+
+### Tracing Replacement Strategy
+
+The OpenAI Agents SDK provides built-in tracing via `withTrace()` and `getGlobalTraceProvider()`. We are **not just removing tracing**—we are replacing it with structured console logging that:
+
+1. **Maintains observability**: All agent operations are logged with timestamps, durations, and context
+2. **Prepares for Sentry**: Log format matches what Sentry will capture in Phase 2
+3. **Includes processing logs**: Every agent call records to a `processingLog` array that's saved with outputs
+
+The replacement pattern:
+
+```typescript
+// BEFORE: OpenAI Agents SDK tracing
+const result = await withTrace('Operation Name', async () => {
+  // ... processing
+});
+await getGlobalTraceProvider().forceFlush();
+
+// AFTER: Structured logging (Sentry-ready)
+const startTime = Date.now();
+console.log(`[AgentName] Starting: Operation Name`);
+// ... processing
+const duration = Date.now() - startTime;
+console.log(`[AgentName] Completed: Operation Name (${duration}ms)`);
+```
 
 ---
 
@@ -83,15 +140,16 @@ export interface EnvironmentConfig {
   // Azure OpenAI (new)
   azureApiKey: string;
   azureResourceName: string;
-  azureDeploymentName: string;
 
-  // Keep existing fields for backward compatibility during transition
-  reasoningModel: string;
-  baseModel: string;
-  openaiApiKey?: string;  // Make optional (deprecated)
+  // Model configuration (Azure deployment names)
+  reasoningModel: string;  // e.g., 'o4-mini'
+  baseModel: string;       // e.g., 'gpt-5-nano' (must support vision)
+
+  // Deprecated
+  openaiApiKey?: string;  // Optional, deprecated
 
   nodeEnv: 'development' | 'production';
-  tracingDisabled: boolean;  // Keep but will be ignored
+  tracingEnabled: boolean;  // Renamed from tracingDisabled
   promptVersions: {
     crosstabPromptVersion: string;
     bannerPromptVersion: string;
@@ -113,7 +171,7 @@ Complete rewrite:
 /**
  * Environment configuration
  * Purpose: Resolve Azure OpenAI model, token limits, prompt versions, and validation
- * Required: AZURE_API_KEY, AZURE_RESOURCE_NAME, AZURE_DEPLOYMENT_NAME
+ * Required: AZURE_API_KEY, AZURE_RESOURCE_NAME, REASONING_MODEL, BASE_MODEL
  * Optional: NODE_ENV, prompt versions, token/limit overrides
  */
 
@@ -138,7 +196,6 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   // Validate required Azure environment variables
   const azureApiKey = process.env.AZURE_API_KEY;
   const azureResourceName = process.env.AZURE_RESOURCE_NAME;
-  const azureDeploymentName = process.env.AZURE_DEPLOYMENT_NAME || 'gpt-4o';
 
   if (!azureApiKey) {
     throw new Error('AZURE_API_KEY environment variable is required');
@@ -147,20 +204,25 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
     throw new Error('AZURE_RESOURCE_NAME environment variable is required');
   }
 
+  // Model configuration (Azure deployment names)
+  const reasoningModel = process.env.REASONING_MODEL || 'o4-mini';
+  const baseModel = process.env.BASE_MODEL || 'gpt-5-nano';
+
   const nodeEnv = (process.env.NODE_ENV as 'development' | 'production') || 'development';
 
   return {
     azureApiKey,
     azureResourceName,
-    azureDeploymentName,
 
-    // Legacy fields (keep for compatibility during transition)
-    reasoningModel: process.env.REASONING_MODEL || 'gpt-4o',
-    baseModel: process.env.BASE_MODEL || 'gpt-4o',
+    // Model configuration
+    reasoningModel,
+    baseModel,
+
+    // Deprecated
     openaiApiKey: process.env.OPENAI_API_KEY,  // Optional, deprecated
 
     nodeEnv,
-    tracingDisabled: true,  // No longer used (Sentry in Phase 2)
+    tracingEnabled: process.env.TRACING_ENABLED !== 'false',  // Default: enabled
     promptVersions: {
       crosstabPromptVersion: process.env.CROSSTAB_PROMPT_VERSION || 'production',
       bannerPromptVersion: process.env.BANNER_PROMPT_VERSION || 'production',
@@ -176,11 +238,16 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
 
 /**
  * Get Azure model for AI SDK usage
- * Returns the configured Azure deployment
+ * Returns the appropriate model based on environment:
+ * - Development: reasoning model (o4-mini) for complex validation
+ * - Production: base model (gpt-5-nano) for speed and cost
  */
 export const getModel = () => {
   const config = getEnvironmentConfig();
-  return azure(config.azureDeploymentName);
+  const deploymentName = config.nodeEnv === 'production'
+    ? config.baseModel
+    : config.reasoningModel;
+  return azure(deploymentName);
 };
 
 /**
@@ -188,7 +255,10 @@ export const getModel = () => {
  */
 export const getModelName = (): string => {
   const config = getEnvironmentConfig();
-  return `azure/${config.azureDeploymentName}`;
+  const deploymentName = config.nodeEnv === 'production'
+    ? config.baseModel
+    : config.reasoningModel;
+  return `azure/${deploymentName}`;
 };
 
 export const getModelTokenLimit = (): number => {
@@ -251,15 +321,19 @@ export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
 };
 ```
 
-**File**: `.env.local` (update template)
+**File**: `.env.local` (update your local config)
 
 ```bash
 # Azure OpenAI Configuration (Required)
 AZURE_API_KEY=your-azure-api-key
 AZURE_RESOURCE_NAME=your-resource-name
-AZURE_DEPLOYMENT_NAME=gpt-4o
 
-# Optional: Model settings
+# Model Configuration
+# Reasoning model: used for development/complex tasks
+REASONING_MODEL=o4-mini
+# Base model: used for production, must support vision for BannerAgent
+BASE_MODEL=gpt-5-nano
+REASONING_MODEL_TOKENS=100000
 BASE_MODEL_TOKENS=128000
 
 # Optional: Prompt versions
@@ -270,9 +344,41 @@ BANNER_PROMPT_VERSION=production
 MAX_DATA_MAP_VARIABLES=1000
 MAX_BANNER_COLUMNS=100
 
+# Optional: Tracing (default: enabled)
+TRACING_ENABLED=true
+
 # Node environment
 NODE_ENV=development
 ```
+
+**File**: `.env.example` (create or update for team reference)
+
+```bash
+# Azure OpenAI Configuration (Required)
+# Get these from Azure Portal > Your OpenAI Resource
+AZURE_API_KEY=
+AZURE_RESOURCE_NAME=
+
+# Model Configuration (Required)
+# These are Azure deployment names, not OpenAI model names
+REASONING_MODEL=o4-mini
+BASE_MODEL=gpt-5-nano
+REASONING_MODEL_TOKENS=100000
+BASE_MODEL_TOKENS=128000
+
+# Optional settings with defaults shown
+CROSSTAB_PROMPT_VERSION=production
+BANNER_PROMPT_VERSION=production
+MAX_DATA_MAP_VARIABLES=1000
+MAX_BANNER_COLUMNS=100
+TRACING_ENABLED=true
+NODE_ENV=development
+```
+
+**Remove from .env files** (no longer used):
+- `OPENAI_API_KEY`
+- `OPENAI_AGENTS_DISABLE_TRACING`
+- `AZURE_DEPLOYMENT_NAME` (replaced by REASONING_MODEL and BASE_MODEL)
 
 ---
 
@@ -583,107 +689,304 @@ async function saveDevelopmentOutputs(
 
 **File**: `src/agents/BannerAgent.ts`
 
-The BannerAgent migration follows the same pattern as CrosstabAgent. Key differences:
+**Discovery**: BannerAgent is a **500+ line class** with multiple methods. Run discovery first:
+
+```bash
+grep -n "import.*@openai/agents" src/agents/BannerAgent.ts    # Find SDK imports
+grep -n "new Agent" src/agents/BannerAgent.ts                  # Find Agent instantiation
+grep -n "run(" src/agents/BannerAgent.ts                       # Find run() calls
+grep -n "input_image" src/agents/BannerAgent.ts                # Find image format
+grep -n "maxTurns" src/agents/BannerAgent.ts                   # Find turn limits
+```
+
+**What Changes**:
+
+1. **Imports**: Replace `@openai/agents` with `ai` imports
+2. **`createBannerAgent()` function**: Remove entirely (no Agent class in Vercel AI SDK)
+3. **`extractBannerStructureWithAgent()` method**: Rewrite to use `generateText()` directly
+4. **Image format**: Change from data URL to Buffer format
+5. **Class structure**: Keep the class, only modify the agent-related methods
+
+**Import Changes**:
+
+```diff
+- import { Agent, run } from '@openai/agents';
++ import { generateText, Output } from 'ai';
+```
+
+**Key Method Migration** - `extractBannerStructureWithAgent()`:
 
 ```typescript
-import { generateText, Output } from 'ai';
-import { getModel, getModelName, getModelTokenLimit } from '../lib/env';
+// The method signature stays the same
+private async extractBannerStructureWithAgent(images: ProcessedImage[]): Promise<BannerExtractionResult> {
+  console.log(`[BannerAgent] Starting agent-based extraction with ${images.length} images`);
 
-// For image handling with Azure OpenAI
-export async function processBanner(images: ProcessedImage[]): Promise<BannerExtractionResult> {
-  const systemPrompt = `${getBannerExtractionInstructions()}...`;
+  try {
+    const systemPrompt = `
+${getBannerExtractionPrompt()}
 
-  // Build image content for multimodal input
-  const imageMessages = images.map(img => ({
-    type: 'image' as const,
-    image: img.base64Data,  // Base64 encoded image
-  }));
+IMAGES TO ANALYZE:
+You have ${images.length} image(s) of the banner plan document to analyze.
 
-  const { output } = await generateText({
-    model: getModel(),
-    system: systemPrompt,
-    messages: [
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: 'Analyze the banner plan images...' },
-          ...imageMessages,
-        ],
+PROCESSING REQUIREMENTS:
+- Use your scratchpad to think through the group identification process
+- Identify visual separators, merged headers, and logical groupings
+- Create separate bannerCuts entries for each logical group
+- Show your reasoning for group boundaries in the scratchpad
+- Extract all columns with exact filter expressions
+
+Begin analysis now.
+`;
+
+    // CRITICAL: Image format is different in Vercel AI SDK
+    // OpenAI Agents SDK: { type: 'input_image', image: 'data:image/png;base64,...' }
+    // Vercel AI SDK: { type: 'image', image: Buffer.from(base64, 'base64') }
+    const { output } = await generateText({
+      model: getModel(),
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Analyze the banner plan images and extract column specifications with proper group separation.' },
+            ...images.map(img => ({
+              type: 'image' as const,
+              image: Buffer.from(img.base64, 'base64'),
+              mimeType: `image/${img.format}` as const,
+            })),
+          ],
+        },
+      ],
+      tools: {
+        scratchpad: scratchpadTool,
       },
-    ],
-    tools: {
-      scratchpad: scratchpadTool,
-    },
-    maxSteps: 15,
-    maxTokens: Math.min(getModelTokenLimit(), 32000),
-    output: Output.object({
-      schema: BannerExtractionResultSchema,
-    }),
-  });
+      maxSteps: 15,  // Replaces maxTurns
+      maxTokens: Math.min(getModelTokenLimit(), 32000),  // Top-level, not in modelSettings
+      output: Output.object({
+        schema: BannerExtractionResultSchema,
+      }),
+    });
 
-  return output;
+    if (!output || !output.extractedStructure) {
+      throw new Error('Invalid agent response structure');
+    }
+
+    console.log(`[BannerAgent] Agent extracted ${output.extractedStructure.bannerCuts.length} groups`);
+
+    return output;
+
+  } catch (error) {
+    console.error('[BannerAgent] Agent extraction failed:', error);
+    // ... existing error handling stays the same
+  }
 }
 ```
 
-**Image handling note**: Azure OpenAI supports vision through the same deployment. Ensure the Azure deployment supports vision capabilities (GPT-4o, GPT-4 Turbo with Vision).
+**Methods That Stay Unchanged** (no OpenAI SDK dependencies):
+- `processDocument()` - main entry point, orchestrates other methods
+- `ensurePDF()` - DOC/DOCX to PDF conversion
+- `convertDocToPDF()` - uses mammoth + pdf-lib
+- `convertPDFToImages()` - uses pdf2pic + sharp
+- `generateDualOutputs()` - pure data transformation
+- `calculateConfidence()` - pure calculation
+- `createFailureResult()` - pure data construction
+- `saveDevelopmentOutputs()` - file I/O only
+
+**Remove Entirely**:
+- `createBannerAgent()` function - no longer needed
+
+**Image handling note**: Azure OpenAI vision requires a multimodal deployment. The configured `BASE_MODEL` (gpt-5-nano) supports vision and will be used for BannerAgent in production. In development, ensure your `REASONING_MODEL` also supports vision if you want to test BannerAgent locally.
 
 ---
 
-### Step 6: Update RScriptAgent (Minimal Changes)
+### Step 6: Update RScriptAgent (Tracing Replacement)
 
 **File**: `src/agents/RScriptAgent.ts`
 
-The RScriptAgent primarily uses deterministic processing, not AI inference. Only the tracing imports need removal:
+**Discovery**: The RScriptAgent wraps its **entire `generate()` method** in `withTrace()`. Run discovery:
 
-```diff
-- import { withTrace, getGlobalTraceProvider } from '@openai/agents';
+```bash
+grep -n "withTrace" src/agents/RScriptAgent.ts      # Find trace wrapper location
+grep -n "getGlobalTraceProvider" src/agents/RScriptAgent.ts  # Find flush call
+grep -n "import.*@openai/agents" src/agents/RScriptAgent.ts  # Find import
+```
 
-// Remove withTrace wrapper, keep processing logic
-export async function generateRScript(sessionId: string, sessionDir: string): Promise<RScriptOutput> {
-  console.log(`[RScriptAgent] Starting R script generation for session: ${sessionId}`);
+**Current Structure** (important to understand):
+```typescript
+async generate(sessionId: string): Promise<RScriptOutput> {
+  const sessionDir = path.join(process.cwd(), 'temp-outputs', sessionId);
 
--  const result = await withTrace(`R Script Generation - ${sessionId}`, async () => {
+  // THE ENTIRE METHOD BODY is wrapped in withTrace:
+  const result = await withTrace(`R Script Generation - ${sessionId}`, async () => {
     const validation = await loadValidationOrCutTable(sessionDir);
     const dataMap = await loadAgentDataMap(sessionDir);
-    // ... processing logic unchanged
--  });
-+  const validation = await loadValidationOrCutTable(sessionDir);
-+  const dataMap = await loadAgentDataMap(sessionDir);
-+  // ... processing logic unchanged
+    const known = new Set(getVariableNames(dataMap));
+    const { script, columns, groups } = buildRScript(sessionId, validation);
+    // ... 30+ lines of processing logic
+    return RScriptOutputSchema.parse(output);
+  });
 
--  await getGlobalTraceProvider().forceFlush();
+  try {
+    await getGlobalTraceProvider().forceFlush();
+  } catch {
+    // ignore trace flush errors
+  }
 
   return result;
 }
 ```
 
+**What Changes**:
+
+1. **Remove import**: Delete `import { withTrace, getGlobalTraceProvider } from '@openai/agents';`
+2. **Unwrap `withTrace()`**: Move all the processing logic out of the callback
+3. **Replace with structured logging**: Add timing logs to maintain observability
+4. **Remove `forceFlush()`**: No longer needed
+
+**Migration Pattern**:
+
+```typescript
+// BEFORE
+const result = await withTrace(`R Script Generation - ${sessionId}`, async () => {
+  // ... processing
+});
+await getGlobalTraceProvider().forceFlush();
+return result;
+
+// AFTER
+const startTime = Date.now();
+console.log(`[RScriptAgent] Starting R Script Generation for session: ${sessionId}`);
+
+// ... same processing logic, now at top level of method
+const validation = await loadValidationOrCutTable(sessionDir);
+const dataMap = await loadAgentDataMap(sessionDir);
+// etc.
+
+const duration = Date.now() - startTime;
+console.log(`[RScriptAgent] R Script Generation completed (${duration}ms) - ${groups} groups, ${columns} columns`);
+
+return RScriptOutputSchema.parse(output);
+```
+
+**Note**: The `generateMasterFromManifest()` method does NOT use tracing—it's pure deterministic logic and requires no changes.
+
 ---
 
-### Step 7: Update Agent Index Export
+### Step 7: Update Tracing Module
+
+**File**: `src/lib/tracing.ts`
+
+**Current Issue**: References `OPENAI_AGENTS_DISABLE_TRACING` environment variable which becomes meaningless.
+
+**Update to generic naming**:
+
+```typescript
+/**
+ * Tracing helpers
+ * Purpose: Structured logging for observability (Sentry integration in Phase 2)
+ */
+
+export interface TracingConfig {
+  enabled: boolean;
+  externalProvider?: string;
+  includeSensitiveData: boolean;
+}
+
+export const getTracingConfig = (): TracingConfig => {
+  return {
+    // Changed from OPENAI_AGENTS_DISABLE_TRACING to generic TRACING_ENABLED
+    enabled: process.env.TRACING_ENABLED !== 'false',
+    externalProvider: process.env.TRACE_EXTERNAL_PROVIDER,
+    includeSensitiveData: false,
+  };
+};
+
+// ... rest of file stays the same
+```
+
+**Environment Variable Change**:
+- Old: `OPENAI_AGENTS_DISABLE_TRACING=true` (disable)
+- New: `TRACING_ENABLED=false` (disable) or `TRACING_ENABLED=true` (enable, default)
+
+---
+
+### Step 8: Update Agent Index Export
 
 **File**: `src/agents/index.ts`
 
+**Discovery**: Check current exports and what's missing:
+
+```bash
+cat src/agents/index.ts                           # See current exports
+grep -r "from.*BannerAgent" src/                  # Find BannerAgent import patterns
+```
+
+**Current Issue**: BannerAgent class is imported directly in API route, not through index.
+
+**Updated exports** (keep BannerAgent as class export for compatibility):
+
 ```typescript
-// Agent exports
-export { processGroup, processAllGroups, processAllGroupsParallel, validateAgentResult, isValidAgentResult } from './CrosstabAgent';
-export { processBanner, type BannerExtractionResult } from './BannerAgent';
-export { generateRScript, type RScriptOutput } from './RScriptAgent';
+// CrossTab Agent exports
+export {
+  createCrosstabAgent,  // Keep if still used
+  processGroup,
+  processAllGroups,
+  processAllGroupsParallel,
+  validateAgentResult,
+  isValidAgentResult
+} from './CrosstabAgent';
+
+// Banner Agent exports (class-based)
+export { BannerAgent } from './BannerAgent';
+export type { BannerProcessingResult, ProcessedImage } from './BannerAgent';
+
+// R Script Agent exports
+export { RScriptAgent } from './RScriptAgent';
+export type { RScriptOutput, RScriptIssue } from './RScriptAgent';
 
 // Tool exports
 export { scratchpadTool } from './tools/scratchpad';
+
+// Remove deprecated exports
+// - createCrosstabAgent if not used externally (check with grep first)
 ```
 
 ---
 
-### Step 8: Verify API Route Compatibility
+### Step 9: Verify API Route Compatibility
 
 **File**: `src/app/api/process-crosstab/route.ts`
 
-The API route should work without changes since we're keeping the same function signatures. Verify:
+**Discovery**: Check what the API route imports and uses:
 
-1. `validateEnvironment()` is called and returns `{ valid: true }`
-2. `processAllGroups()` is called with same parameters
-3. Response structure unchanged
+```bash
+grep -n "validateEnvironment" src/app/api/process-crosstab/route.ts
+grep -n "OPENAI" src/app/api/process-crosstab/route.ts
+grep -n "processAllGroups" src/app/api/process-crosstab/route.ts
+```
+
+**What to Verify**:
+
+1. **`validateEnvironment()` changes**: The function now validates Azure credentials, not OpenAI. The error messages will change (no more "must start with sk-" check).
+
+2. **Import paths unchanged**: If using index exports, no changes needed. If importing directly, paths stay same.
+
+3. **Function signatures unchanged**: `processAllGroups()` keeps same signature.
+
+**Potential Issue** (already addressed in Step 2):
+```typescript
+// OLD validation in env.ts:
+if (!config.openaiApiKey.startsWith('sk-')) {
+  errors.push('OPENAI_API_KEY must start with "sk-"');
+}
+
+// NEW validation in env.ts:
+if (config.azureApiKey.length < 10) {
+  errors.push('AZURE_API_KEY appears too short');
+}
+```
+
+This is handled in the `env.ts` rewrite, but verify the API route doesn't have any additional OpenAI-specific checks.
 
 ---
 
@@ -696,11 +999,14 @@ The API route should work without changes since we're keeping the same function 
    // Test Azure config loading
    process.env.AZURE_API_KEY = 'test-key';
    process.env.AZURE_RESOURCE_NAME = 'test-resource';
-   process.env.AZURE_DEPLOYMENT_NAME = 'gpt-4o';
+   process.env.REASONING_MODEL = 'o4-mini';
+   process.env.BASE_MODEL = 'gpt-5-nano';
+   process.env.NODE_ENV = 'development';
 
    const config = getEnvironmentConfig();
    expect(config.azureApiKey).toBe('test-key');
-   expect(getModelName()).toBe('azure/gpt-4o');
+   expect(config.reasoningModel).toBe('o4-mini');
+   expect(getModelName()).toBe('azure/o4-mini');  // Uses reasoning model in dev
    ```
 
 2. **Tool Definition**
@@ -778,21 +1084,39 @@ Keep `.env.local` backup with original `OPENAI_API_KEY` configuration.
 
 ## Migration Summary
 
-| File | Action | Complexity |
-|------|--------|------------|
-| `package.json` | Update dependencies | Low |
-| `src/lib/types.ts` | Add Azure config fields | Low |
-| `src/lib/env.ts` | Complete rewrite | Medium |
-| `src/agents/tools/scratchpad.ts` | Minor pattern change | Low |
-| `src/agents/CrosstabAgent.ts` | Major rewrite | High |
-| `src/agents/BannerAgent.ts` | Major rewrite | High |
-| `src/agents/RScriptAgent.ts` | Remove tracing only | Low |
-| `src/agents/index.ts` | Update exports | Low |
-| `.env.local` | Add Azure credentials | Low |
+| File | Action | Complexity | Step |
+|------|--------|------------|------|
+| `package.json` | Remove @openai/agents, add ai + @ai-sdk/azure | Low | 1 |
+| `src/lib/types.ts` | Add Azure config fields to EnvironmentConfig | Low | 2 |
+| `src/lib/env.ts` | Complete rewrite for Azure provider | Medium | 2 |
+| `src/lib/tracing.ts` | Update env var name (TRACING_ENABLED) | Low | 7 |
+| `src/agents/tools/scratchpad.ts` | Change import from @openai/agents to ai | Low | 3 |
+| `src/agents/CrosstabAgent.ts` | Replace Agent+run with generateText, remove withTrace | High | 4 |
+| `src/agents/BannerAgent.ts` | Replace Agent+run with generateText, update image format | High | 5 |
+| `src/agents/RScriptAgent.ts` | Remove withTrace wrapper, add structured logging | Medium | 6 |
+| `src/agents/index.ts` | Add BannerAgent and RScriptAgent exports | Low | 8 |
+| `.env.local` | Replace OPENAI_API_KEY with Azure vars | Low | 2 |
+| `.env.example` | Create/update with Azure vars for team reference | Low | 2 |
 
-**Total files modified**: 9
-**Estimated time**: 2-3 days
-**Risk level**: Medium (well-defined migration path)
+**Total files modified**: 11
+**Risk level**: Medium (well-defined migration path, feature branch allows thorough testing)
+
+### Verification After Each Step
+
+```bash
+# After EVERY step, run these checks:
+npm run lint                   # Must pass
+npx tsc --noEmit              # Must pass - no type errors
+
+# After Step 1 (dependencies):
+grep -r "@openai/agents" src/  # Should still find imports (not yet migrated)
+
+# After ALL steps complete:
+grep -r "@openai/agents" src/  # Should return ZERO results
+grep -r "withTrace" src/       # Should return ZERO results
+grep -r "getGlobalTraceProvider" src/  # Should return ZERO results
+npm run build                  # Must succeed
+```
 
 ---
 
@@ -807,5 +1131,16 @@ Keep `.env.local` backup with original `OPENAI_API_KEY` configuration.
 
 ---
 
+## Changelog
+
+| Date | Change |
+|------|--------|
+| 2025-12-31 | Initial plan created |
+| 2025-12-31 | Updated with comprehensive gap analysis: BannerAgent full migration details, tracing replacement strategy, discovery-first pattern, verification steps, .env.example |
+| 2025-12-31 | Updated model configuration to use actual Azure deployments: o4-mini (reasoning) and gpt-5-nano (base/vision). Pre-implementation checklist completed. |
+
+---
+
 *Created: December 31, 2025*
-*Status: Ready for Review*
+*Last Updated: December 31, 2025*
+*Status: Ready for Implementation*
