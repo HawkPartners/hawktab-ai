@@ -1,13 +1,13 @@
 // Agent exports for CrosstabAgent system
 
 // CrossTab Agent exports - Phase 6 Implementation
-export { 
-  createCrosstabAgent, 
-  processGroup, 
-  processAllGroups, 
+// NOTE: createCrosstabAgent REMOVED - no longer exists after migration to generateText()
+export {
+  processGroup,
+  processAllGroups,
   processAllGroupsParallel,
   validateAgentResult,
-  isValidAgentResult 
+  isValidAgentResult
 } from './CrosstabAgent';
 
 // Tool exports

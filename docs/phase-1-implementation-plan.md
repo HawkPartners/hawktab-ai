@@ -25,7 +25,7 @@ The current system uses `@openai/agents` which **does not support Azure OpenAI**
 | Tool Pattern | `tool({ name, parameters, execute })` | `tool({ inputSchema, execute })` (name inferred from object key) |
 | Structured Output | `outputType` property on Agent | `output: Output.object({ schema })` in generateText |
 | Agent Pattern | `new Agent({...})` + `run(agent, prompt)` | Direct `generateText({...})` call |
-| Token Config | `modelSettings: { maxTokens }` nested | `maxTokens` at top level of generateText |
+| Token Config | `modelSettings: { maxTokens }` nested | `maxOutputTokens` at top level of generateText |
 | Tracing | `withTrace()` + `getGlobalTraceProvider()` | Console logging with structured format (Sentry Phase 2) |
 | Image Format | `{ type: 'input_image', image: 'data:...' }` | `{ type: 'image', image: Buffer.from(base64, 'base64') }` |
 
@@ -518,7 +518,7 @@ Begin validation now.
         scratchpad: scratchpadTool,
       },
       stopWhen: stepCountIs(25),  // AI SDK 5+: replaces maxTurns/maxSteps
-      maxTokens: Math.min(getReasoningModelTokenLimit(), 10000),
+      maxOutputTokens: Math.min(getReasoningModelTokenLimit(), 10000),
       output: Output.object({
         schema: ValidatedGroupSchema,
       }),
@@ -800,7 +800,7 @@ Begin analysis now.
         scratchpad: scratchpadTool,
       },
       stopWhen: stepCountIs(15),  // AI SDK 5+: replaces maxTurns/maxSteps
-      maxTokens: Math.min(getBaseModelTokenLimit(), 32000),  // Top-level, not in modelSettings
+      maxOutputTokens: Math.min(getBaseModelTokenLimit(), 32000),  // Top-level, not in modelSettings
       output: Output.object({
         schema: BannerExtractionResultSchema,
       }),
@@ -1197,6 +1197,7 @@ npm run build                  # Must succeed
 | 2026-01-01 | **Correction**: Fixed tool definition pattern in Step 3. AI SDK v6 requires `inputSchema` (not `parameters`). Updated Key Changes table, Step 3 code example, and Migration Summary. Verified against [AI SDK Tools Documentation](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling). |
 | 2026-01-01 | **Correction**: Fixed multi-step control in Steps 4 and 5. AI SDK 5+ uses `stopWhen: stepCountIs(N)` instead of `maxSteps`. Added `stepCountIs` to imports, updated error handling terminology. Verified against [AI SDK Multi-Step Cookbook](https://ai-sdk.dev/cookbook/node/call-tools-multiple-steps). |
 | 2026-01-01 | **Step 4 clarifications**: Added explicit guidance for functions to remove (`createCrosstabAgent`, `_saveDevelopmentOutputs`, `saveDevelopmentOutputsWithTrace`). Updated `saveDevelopmentOutputs` with detailed comments showing OpenAI→Azure field changes. Updated Step 8 to explicitly remove `createCrosstabAgent` from exports (verified no external imports). Updated Migration Summary table. |
+| 2026-01-01 | **Correction**: Fixed token limit property name. AI SDK v6 uses `maxOutputTokens` (not `maxTokens`). Updated Key Changes table and code examples in Steps 4 and 5. Verified against [AI SDK generateText Reference](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-text). |
 
 ---
 
