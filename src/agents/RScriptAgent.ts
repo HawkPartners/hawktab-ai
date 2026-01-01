@@ -8,7 +8,7 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { z } from 'zod';
-import { withTrace, getGlobalTraceProvider } from '@openai/agents';
+// NOTE: withTrace and getGlobalTraceProvider removed - using structured console logging instead
 import type { ValidationResultType } from '@/schemas/agentOutputSchema';
 import { DataMapSchema, type DataMapType, getVariableNames } from '@/schemas/dataMapSchema';
 import { validateRSyntax } from '@/guardrails/outputValidation';
@@ -101,7 +101,7 @@ async function loadValidationOrCutTable(sessionDir: string): Promise<ValidationR
   try {
     const cutContent = await fs.readFile(cutTablePath, 'utf-8');
     const parsed = JSON.parse(cutContent) as {
-      groups: Array<{ groupName: string; columns: Array<{ name: string; expression: string; confidence: number; reason: string }> }>; 
+      groups: Array<{ groupName: string; columns: Array<{ name: string; expression: string; confidence: number; reason: string }> }>;
     };
     return {
       bannerCuts: parsed.groups.map((g) => ({
@@ -137,55 +137,54 @@ export class RScriptAgent {
   async generate(sessionId: string): Promise<RScriptOutput> {
     const sessionDir = path.join(process.cwd(), 'temp-outputs', sessionId);
 
-    const result = await withTrace(`R Script Generation - ${sessionId}`, async () => {
-      const validation = await loadValidationOrCutTable(sessionDir);
-      const dataMap = await loadAgentDataMap(sessionDir);
-      const known = new Set(getVariableNames(dataMap));
+    // Structured logging replaces withTrace()
+    const startTime = Date.now();
+    console.log(`[RScriptAgent] Starting R Script Generation for session: ${sessionId}`);
 
-      const { script, columns, groups } = buildRScript(sessionId, validation);
+    const validation = await loadValidationOrCutTable(sessionDir);
+    const dataMap = await loadAgentDataMap(sessionDir);
+    const known = new Set(getVariableNames(dataMap));
 
-      const issues: RScriptIssue[] = [];
-      let syntaxIssues = 0;
-      let unknownVars = 0;
+    const { script, columns, groups } = buildRScript(sessionId, validation);
 
-      for (const group of validation.bannerCuts) {
-        for (const col of group.columns) {
-          const problems: string[] = [];
-          const syntax = validateRSyntax(col.adjusted);
-          if (!syntax.valid) {
-            syntaxIssues += 1;
-            problems.push(...syntax.issues);
-          }
-          const unknown = extractUnknownVariables(col.adjusted, known);
-          if (unknown.length > 0) {
-            unknownVars += unknown.length;
-            problems.push(`Unknown variables: ${unknown.join(', ')}`);
-          }
-          if (problems.length > 0) {
-            issues.push({ groupName: group.groupName, name: col.name, problems });
-          }
+    const issues: RScriptIssue[] = [];
+    let syntaxIssues = 0;
+    let unknownVars = 0;
+
+    for (const group of validation.bannerCuts) {
+      for (const col of group.columns) {
+        const problems: string[] = [];
+        const syntax = validateRSyntax(col.adjusted);
+        if (!syntax.valid) {
+          syntaxIssues += 1;
+          problems.push(...syntax.issues);
+        }
+        const unknown = extractUnknownVariables(col.adjusted, known);
+        if (unknown.length > 0) {
+          unknownVars += unknown.length;
+          problems.push(`Unknown variables: ${unknown.join(', ')}`);
+        }
+        if (problems.length > 0) {
+          issues.push({ groupName: group.groupName, name: col.name, problems });
         }
       }
-
-      const output: RScriptOutput = {
-        script,
-        issues,
-        stats: {
-          groups,
-          columns,
-          syntaxIssues,
-          unknownVars,
-        },
-      };
-
-      return RScriptOutputSchema.parse(output);
-    });
-
-    try {
-      await getGlobalTraceProvider().forceFlush();
-    } catch {
-      // ignore trace flush errors
     }
+
+    const output: RScriptOutput = {
+      script,
+      issues,
+      stats: {
+        groups,
+        columns,
+        syntaxIssues,
+        unknownVars,
+      },
+    };
+
+    const result = RScriptOutputSchema.parse(output);
+
+    const duration = Date.now() - startTime;
+    console.log(`[RScriptAgent] R Script Generation completed (${duration}ms) - ${groups} groups, ${columns} columns`);
 
     return result;
   }
@@ -364,5 +363,3 @@ export class RScriptAgent {
     return [...header, ...cutLines, ...helper, ...tableCalls, ''].join('\n');
   }
 }
-
-
