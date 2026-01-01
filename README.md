@@ -1,65 +1,53 @@
 # HawkTab AI
 
-**Market Research Crosstab Automation Platform**
+**Crosstab Automation for Hawk Partners**
 
 ---
 
-## Executive Summary
+## What This Is
 
-HawkTab AI is a production-ready crosstab automation system that transforms how market research firms generate statistical tables. By integrating directly with survey platforms (Decipher/Forsta), leveraging multi-provider AI (via Vercel AI SDK), and building on enterprise-grade infrastructure (Convex, WorkOS, Sentry), the system delivers accurate, statistically-tested crosstabs with minimal manual intervention.
+An internal tool to replace our current crosstab outsourcing workflow. Instead of sending data files to Joe or our fielding partners and waiting for tabs back, the team can generate them directly.
 
-**Core Thesis**: Crosstab generation is complex but automatable. The key is eliminating parsing ambiguity by going to the source (survey platform APIs), validating against actual data before output, and providing transparency at every step.
+**Primary Goal**: Hawk Partners' 80-person team can log in, upload survey materials, and get accurate crosstabs—faster than outsourcing, with consistent quality.
 
-**Target Outcome**: Market researchers upload their survey materials and receive accurate crosstabs—with confidence scores, validation warnings, and statistical testing—ready for client delivery.
+**Secondary Goal**: If this works well internally, pilot with Bob's fielding company to validate external interest.
 
 ---
 
-## The Problem
+## The Problem We're Solving
 
-Market research firms face significant friction in crosstab generation:
-
-| Pain Point | Impact |
-|------------|--------|
-| **Manual processing** | Hours spent mapping banner plans to survey variables |
-| **Outsourcing costs** | $500-2000+ per project to external vendors |
-| **Turnaround time** | Days waiting for external deliverables |
-| **Quality variance** | Inconsistent output quality across vendors |
-| **No transparency** | Black box processing with limited visibility |
+| Current Workflow | Pain |
+|------------------|------|
+| Send data to Joe/fielding partner | Days of turnaround |
+| Wait for tabs back | Blocking project timelines |
+| Quality varies by vendor | Some beautiful, some not |
+| Per-project cost | Adds up across many projects |
+| No visibility | Black box until delivery |
 
 ## The Solution
 
-An intelligent agent system that:
-- **Integrates with Decipher/Forsta** to access survey structure, skip logic, and data directly
-- **Validates banner expressions** against actual respondent data before generating output
-- **Provides confidence scoring** so researchers know exactly where to focus review
+An AI-powered system that:
+- **Integrates with Decipher/Forsta** to access survey structure and skip logic directly
+- **Validates banner expressions** against actual data before generating output
+- **Uses Azure OpenAI** (compliance requirement—firm data stays in Azure)
 - **Generates R syntax** for crosstab execution with statistical testing
-- **Supports enterprise auth** (SSO, SCIM) for seamless organizational deployment
+- **Provides confidence scoring** so researchers know where to focus review
 
 ---
 
 ## Technology Stack
 
-### Core Platform
-| Layer | Technology | Purpose |
-|-------|------------|---------|
+| Layer | Technology | Why |
+|-------|------------|-----|
 | **Framework** | Next.js 15 + TypeScript | Type-safe web application |
-| **Database** | Convex | Real-time reactive backend, TypeScript-native |
-| **Auth** | WorkOS AuthKit | Enterprise SSO, SCIM, free to 1M MAU |
-| **AI** | Vercel AI SDK | Multi-provider (OpenAI, Anthropic, Azure) |
-| **File Storage** | Cloudflare R2 | S3-compatible, no egress fees |
-
-### Observability
-| Tool | Purpose |
-|------|---------|
-| **Sentry** | Error monitoring, session replay, performance |
-| **PostHog** | Product analytics, feature flags, A/B testing |
-
-### Data Processing
-| Component | Purpose |
-|-----------|---------|
-| **Decipher API** | Direct survey platform integration |
-| **R Runtime** | Statistical crosstab generation |
-| **Zod Schemas** | Runtime type validation |
+| **AI** | Vercel AI SDK + Azure OpenAI | Azure required for compliance |
+| **Database** | Convex | 80 people need shared access, TypeScript-native |
+| **Auth** | WorkOS AuthKit | Free for internal team, SSO available if we productize |
+| **File Storage** | Cloudflare R2 | S3-compatible, generous free tier |
+| **Error Monitoring** | Sentry | Know when things break |
+| **Analytics** | PostHog (basic) | Usage tracking, low effort |
+| **Survey Data** | Decipher API | Skip logic from source |
+| **Stats Engine** | R Runtime | Crosstab generation |
 
 ---
 
@@ -84,35 +72,20 @@ An intelligent agent system that:
 
 ---
 
-## Architecture Refactor (Next Phase)
+## Next Steps
 
-The current MVP demonstrates the concept. The next phase transforms it into enterprise-ready infrastructure:
+The MVP demonstrates the concept works. Next phases to make it usable by the team:
 
-### Phase 1: Foundation
-- [ ] Initialize Convex + WorkOS AuthKit
-- [ ] Set up Sentry error monitoring
-- [ ] Set up PostHog analytics
-- [ ] Create Convex schema (projects, jobs, files)
-- [ ] Configure Cloudflare R2 for file storage
+| Phase | Goal | Status |
+|-------|------|--------|
+| **1. Azure OpenAI** | Switch to Azure (compliance) | Not started |
+| **2. Team Access** | Deploy, auth, shared storage | Not started |
+| **3. Decipher API** | Skip logic from source (hard part) | Not started |
+| **4. Reliability** | Validation warnings, confidence calibration | Not started |
+| **Checkpoint** | Hawk Partners internal launch | — |
+| **5. Bob Pilot** | External validation | — |
 
-### Phase 2: AI Layer Migration
-- [ ] Migrate agents from OpenAI SDK to Vercel AI SDK
-- [ ] Add multi-provider support (OpenAI, Anthropic, Azure)
-- [ ] Implement provider selection per task type
-
-### Phase 3: Reliability Improvements
-- [ ] Implement pre-execution count validation
-- [ ] Add validation warnings to output schema
-- [ ] Update prompts for calibrated confidence scoring
-- [ ] Create validation summary UI component
-
-### Phase 4: Decipher Integration
-- [ ] Build survey structure fetcher
-- [ ] Parse skip logic from survey XML
-- [ ] Integrate skip logic into validation
-- [ ] Add Decipher as primary data source
-
-See `architecture-refactor-prd.md` for the complete implementation roadmap.
+See `architecture-refactor-prd.md` for full details.
 
 ---
 
@@ -138,12 +111,13 @@ npm install
 
 Create `.env.local`:
 ```env
-# Required
+# Current (development only - will migrate to Azure)
 OPENAI_API_KEY=your_api_key_here
 
-# Optional (future)
-ANTHROPIC_API_KEY=your_anthropic_key
-AZURE_OPENAI_KEY=your_azure_key
+# Production (Azure OpenAI - required for Hawk Partners)
+AZURE_OPENAI_API_KEY=your_azure_key
+AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4o
 
 # Environment
 NODE_ENV=development
@@ -206,28 +180,25 @@ hawktab-ai/
 
 ## Security
 
-HawkTab AI is designed for enterprise deployment with security as a first-class concern:
+Key security decisions for handling Hawk Partners data:
 
-- **Authentication**: WorkOS AuthKit with enterprise SSO/SCIM support
-- **Authorization**: Row-level security via Convex policies
+- **Azure OpenAI**: Firm data stays in Azure tenant (compliance requirement)
+- **Authentication**: WorkOS AuthKit (team login)
 - **Error Monitoring**: Sentry with PII scrubbing
-- **Audit Logging**: Full action history per project
 - **Data Encryption**: TLS in transit, encrypted at rest
 
-Security audits are conducted regularly. See `docs/security-audit-prompt.md`.
+See `docs/security-audit-prompt.md` for security review checklist.
 
 ---
 
-## Contributing
+## Development Standards
 
-This project follows enterprise development practices:
 - TypeScript strict mode required
-- All changes require type checking (`npx tsc --noEmit`)
-- ESLint must pass (`npm run lint`)
-- Security considerations documented for each PR
+- Run `npm run lint` and `npx tsc --noEmit` before commits
+- Security considerations documented for changes
 
 ---
 
 ## License
 
-Proprietary - All Rights Reserved
+Proprietary - Hawk Partners Internal Tool

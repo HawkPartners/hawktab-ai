@@ -4,30 +4,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
-## Core Philosophy: Enterprise-Grade MVP
+## Core Philosophy: Internal Tool, Production Quality
 
-**MVP does not mean "demo that only works on my machine."**
+**This is an internal tool for Hawk Partners, but "internal" doesn't mean sloppy.**
 
-Every line of code should be written as if it will be deployed to an enterprise customer tomorrow. This means:
+80 people will use this. It handles real client data. Code quality matters:
 
 1. **Production-ready from day one**: Code should work reliably, not just in happy-path scenarios
-2. **Security is not optional**: Every feature considers security implications before implementation
-3. **Observable and debuggable**: Errors are logged, traced, and actionable
+2. **Security is not optional**: Firm data requires Azure OpenAI, proper auth, no PII leaks
+3. **Observable and debuggable**: Errors are logged, traced, and actionable (Sentry)
 4. **Type-safe and validated**: Runtime validation at system boundaries, TypeScript throughout
 5. **Deployable immediately**: No "we'll fix that later" shortcuts that block deployment
 
-**The goal**: When showing this to a market research firm (or any enterprise), they can start using it that day—not "after we clean things up."
+**The goal**: Hawk Partners team can use this to replace outsourcing crosstab generation. If it works well, we may pilot with Bob's fielding company.
 
 ---
 
 ## Project Overview
 
-HawkTab AI is a market research crosstab automation platform that processes survey data through an AI-powered pipeline. It integrates with survey platforms (Decipher/Forsta), validates banner expressions against actual data, and generates statistically-tested crosstabs.
+HawkTab AI replaces Hawk Partners' current crosstab outsourcing workflow. Instead of sending files to Joe or fielding partners and waiting days, the team generates tabs directly.
+
+**Primary Goal**: 80-person team can log in, upload survey materials, get accurate crosstabs.
 
 **Key Documents**:
-- `architecture-refactor-prd.md` - Complete architecture plan, decisions, and roadmap (single source of truth)
+- `architecture-refactor-prd.md` - Complete architecture plan and roadmap
 - `README.md` - Project overview and getting started
-- `docs/security-audit-prompt.md` - Weekly security review checklist
+- `docs/security-audit-prompt.md` - Security review checklist
 
 ---
 
@@ -59,16 +61,16 @@ Security audits are conducted weekly using the prompt in `docs/security-audit-pr
 
 ## Target Architecture Stack
 
-The project is migrating to this enterprise-grade stack (see `architecture-refactor-prd.md`):
+Migrating to this stack (see `architecture-refactor-prd.md`):
 
 | Layer | Technology | Why |
 |-------|------------|-----|
-| **Database** | Convex | TypeScript-native, real-time, WorkOS integration |
-| **Auth** | WorkOS AuthKit | Enterprise SSO/SCIM, free to 1M MAU |
-| **AI** | Vercel AI SDK | Multi-provider (OpenAI, Anthropic, Azure) |
-| **File Storage** | Cloudflare R2 | S3-compatible, no egress fees |
-| **Error Monitoring** | Sentry | Industry standard, session replay |
-| **Analytics** | PostHog | Product analytics, feature flags |
+| **AI** | Vercel AI SDK + Azure OpenAI | Azure required for compliance (firm data) |
+| **Database** | Convex | 80 people need shared access, TypeScript-native |
+| **Auth** | WorkOS AuthKit | Free for team, SSO available if we productize |
+| **File Storage** | Cloudflare R2 | S3-compatible, generous free tier |
+| **Error Monitoring** | Sentry | Know when things break |
+| **Analytics** | PostHog (basic) | Usage tracking, low effort to add |
 
 ---
 
@@ -89,7 +91,7 @@ npx tsc --noEmit          # TypeScript type checking
 
 ---
 
-## Current Architecture (Pre-Refactor)
+## Current Architecture (Migrating to Azure)
 
 ### Three-Phase Processing Pipeline
 The system operates in a structured workflow:
@@ -98,10 +100,12 @@ The system operates in a structured workflow:
 - **Phase 7**: API integration with single endpoint handling complete workflow
 
 ### Agent-First Implementation
-Currently uses OpenAI Agents JS SDK with **context injection** rather than tool-heavy approaches:
+Currently uses OpenAI Agents JS SDK, **migrating to Vercel AI SDK + Azure OpenAI**:
 - **One agent, multiple calls**: Process banner groups individually for better focus
 - **Context-first strategy**: Full JSON data structures injected into agent instructions
 - **Structured outputs**: Uses Zod schemas with `outputType` property (NOT `outputSchema`)
+
+> **Migration note**: The OpenAI Agents SDK doesn't support Azure OpenAI. Vercel AI SDK does. This is the primary reason for migrating—compliance requires Azure.
 
 ### Dual Output Strategy
 Every processor generates two formats:
@@ -120,13 +124,13 @@ Every processor generates two formats:
 ```
 
 ### Environment-Based Model Selection
-- **Development**: Uses reasoning models (`REASONING_MODEL=o1-preview`)
-- **Production**: Uses base models (`BASE_MODEL=gpt-4o`)
-- Environment switching handled automatically in `src/lib/env.ts`
+- **Development**: Currently uses OpenAI directly (`OPENAI_API_KEY`)
+- **Production**: Will use Azure OpenAI (`AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`)
+- Environment switching handled in `src/lib/env.ts`
 
-### OpenAI Agents SDK Patterns (Current)
+### OpenAI Agents SDK Patterns (Current - Being Migrated)
 ```typescript
-// Correct pattern for tools
+// CURRENT pattern (OpenAI Agents SDK) - will be replaced
 import { tool } from '@openai/agents';
 export const myTool = tool({
   name: 'tool_name',
@@ -134,13 +138,26 @@ export const myTool = tool({
   async execute() { /* implementation */ }
 });
 
-// Correct pattern for agents
 const agent = new Agent({
   name: 'AgentName',
   instructions: enhancedInstructions,
   model: getModel(),
   outputType: MySchema,  // NOT outputSchema
   tools: [myTool]
+});
+```
+
+### Vercel AI SDK Patterns (Target)
+```typescript
+// TARGET pattern (Vercel AI SDK + Azure)
+import { Agent } from 'ai';
+import { azure } from '@ai-sdk/azure';
+
+const agent = new Agent({
+  model: azure('gpt-4o'),
+  system: instructions,
+  tools: { /* tool definitions */ },
+  structuredOutput: MySchema
 });
 ```
 
@@ -253,14 +270,19 @@ npx tsc --noEmit          # Must pass
 
 ## Current Implementation Status
 
-**Phases 5-7 Complete (Ready for Architecture Refactor)**:
+**MVP Complete (Core processing works)**:
 - Successfully processes 192+ variables with 130 parent relationships
 - 99% accuracy in SPSS variable matching
 - Handles complex expressions with intelligent inference
 - Provides graduated confidence scores for human review
 - Processes 19 columns across 6 banner groups
 
-**Next**: Execute architecture refactor per `architecture-refactor-prd.md`
+**Next Steps** (see `architecture-refactor-prd.md`):
+1. Migrate to Azure OpenAI (compliance)
+2. Deploy with auth + shared storage (team access)
+3. Decipher API integration (skip logic from source—the hard part)
+4. Reliability improvements (validation warnings)
+5. **Checkpoint**: Hawk Partners internal launch
 
 ---
 

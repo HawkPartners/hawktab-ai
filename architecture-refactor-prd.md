@@ -2,11 +2,35 @@
 
 ## Executive Summary
 
-HawkTab AI is a market research crosstab automation system that processes survey data through an AI-powered pipeline. While the current MVP demonstrates the concept successfully, strategic architectural changes are needed to transform it into a reliable, scalable product suitable for enterprise deployment.
+HawkTab AI is a market research crosstab automation system that processes survey data through an AI-powered pipeline. The primary goal is to replace Hawk Partners' current outsourcing workflow (sending files to Joe or fielding partners) with an internal tool that the entire 80-person team can use.
 
-**Core Thesis**: The system works, but reliability issues stem from architectural limitations rather than fundamental flaws. By addressing data source integration (Decipher API), AI provider flexibility (Vercel AI SDK), persistence (database layer), and validation rigor, we can achieve the reliability required for production use.
+**Core Thesis**: The system works, but reliability issues stem from architectural limitations rather than fundamental flaws. By addressing data source integration (Decipher API), AI provider compliance (Azure OpenAI via Vercel AI SDK), persistence (shared access for the team), and validation rigor, we can achieve the reliability required for internal production use.
 
-**Target Outcome**: A system where market researchers can upload their survey materials and receive accurate, statistically-tested crosstabs with minimal manual intervention.
+**Target Outcome**: Hawk Partners team members can upload their survey materials and receive accurate, statistically-tested crosstabs—replacing the current outsourcing workflow with faster turnaround and consistent quality.
+
+---
+
+## Scope & Expectations
+
+### Primary Goal
+Build a working crosstab automation tool for Hawk Partners' 80-person team, replacing current outsourcing to external vendors (Joe, fielding partners).
+
+### Secondary Goal
+Pilot with Bob's fielding company to validate external interest.
+
+### What This Is NOT (Yet)
+- A SaaS product competing with Displayr ($3,219/user/year makes them expensive, but they're established)
+- A multi-tenant enterprise platform for arbitrary customers
+- Something we're selling externally
+
+The architecture is designed so we *could* productize later if the Hawk Partners pilot succeeds and Bob's pilot shows external demand. But that's Phase 3+ thinking.
+
+### Success Criteria (Internal Launch)
+- Hawk Partners team can log in and generate crosstabs
+- Output quality matches or exceeds current outsourced tabs
+- Uses Azure OpenAI (compliance requirement)
+- Errors are visible and debuggable (Sentry)
+- Projects are separated per-user/per-team (lesson learned from Fathom AI issues)
 
 ---
 
@@ -92,6 +116,8 @@ A **production-ready crosstab automation platform** that:
 
 **Priority**: High | **Effort**: 3-5 days | **Impact**: Very High
 
+> **This is the core technical risk.** Everything else in this document (Vercel AI SDK, Convex, WorkOS, etc.) is relatively straightforward service integration. The Decipher API integration is where the real development work happens—parsing survey structure, extracting skip logic, and making it work reliably with our validation system. Budget the most time here.
+
 #### Why This Is a Game Changer
 
 Currently, the system parses CSV data maps using a state machine that tries to infer:
@@ -176,27 +202,29 @@ The system should support both paths:
 
 **Priority**: High | **Effort**: 2-3 days | **Impact**: High
 
-#### Why Switch from OpenAI Agents SDK
+#### Why This Is Required (Not Optional)
 
-The [OpenAI Agents SDK](https://openai.github.io/openai-agents-js/) is excellent but locks you into OpenAI:
+**Hawk Partners requires Azure OpenAI.** Sending firm data to OpenAI directly would raise compliance questions. Azure OpenAI is already approved.
 
-| Limitation | Business Impact |
-|------------|-----------------|
-| Only OpenAI models | Enterprise customers may require Azure OpenAI for compliance |
-| Vendor lock-in | No negotiating leverage, no cost optimization across providers |
-| Limited model selection | Can't use Claude for reasoning tasks, Gemini for cost savings |
+The [OpenAI Agents SDK](https://openai.github.io/openai-agents-js/) locks you into OpenAI's direct API—it doesn't support Azure OpenAI. The Vercel AI SDK solves this:
 
-#### Vercel AI SDK Advantages
+| Requirement | Solution |
+|-------------|----------|
+| **Azure OpenAI compliance** | `@ai-sdk/azure` provider works out of the box |
+| **Same code, different provider** | Switch providers via environment variable |
+| **TypeScript-native** | Built for Next.js with Zod schema support |
 
-Based on [AI SDK documentation](https://ai-sdk.dev/docs/introduction) and [AI SDK 6 release](https://vercel.com/blog/ai-sdk-6):
+#### Vercel AI SDK Benefits
 
-| Feature | Benefit |
-|---------|---------|
-| **Multi-provider** | OpenAI, Anthropic, Google, Azure, Bedrock from one API |
+Based on [AI SDK documentation](https://ai-sdk.dev/docs/introduction):
+
+| Feature | Why It Matters |
+|---------|----------------|
+| **Azure OpenAI support** | Primary reason—compliance requirement |
 | **Agent abstraction** | Define reusable agents with tools, structured outputs |
 | **Type-safe streaming** | Built for React/Next.js with TypeScript throughout |
-| **20M+ monthly downloads** | Battle-tested, Fortune 500 adoption |
-| **Unified structured outputs** | Zod schemas work across all providers |
+| **20M+ monthly downloads** | Battle-tested, low risk |
+| **Future flexibility** | *If* we ever need Anthropic or others, it's one line change |
 
 #### Migration Path
 
@@ -218,11 +246,10 @@ const result = await run(agent, prompt);
 **New Pattern (Vercel AI SDK 6)**:
 ```typescript
 import { Agent } from 'ai';
-import { openai } from '@ai-sdk/openai';
-import { anthropic } from '@ai-sdk/anthropic';
+import { azure } from '@ai-sdk/azure';
 
 const crosstabAgent = new Agent({
-  model: openai('gpt-4o'), // or anthropic('claude-sonnet-4-20250514')
+  model: azure('gpt-4o'),  // Uses Azure OpenAI
   system: '...',
   tools: {
     scratchpad: { /* tool definition */ },
@@ -234,78 +261,57 @@ const crosstabAgent = new Agent({
 const result = await crosstabAgent.run(prompt);
 ```
 
-#### Provider Selection Strategy
+#### Configuration
 
 ```typescript
-// Environment-based or user-selected provider
-function getModelForTask(task: 'vision' | 'reasoning' | 'validation') {
-  const provider = process.env.AI_PROVIDER || 'openai';
+// Simple Azure OpenAI configuration
+import { azure } from '@ai-sdk/azure';
 
-  const models = {
-    openai: {
-      vision: openai('gpt-4o'),
-      reasoning: openai('o1-preview'),
-      validation: openai('gpt-4o')
-    },
-    anthropic: {
-      vision: anthropic('claude-sonnet-4-20250514'),
-      reasoning: anthropic('claude-sonnet-4-20250514'),
-      validation: anthropic('claude-haiku-4-20250514')
-    },
-    azure: {
-      vision: azure('gpt-4o'),
-      reasoning: azure('gpt-4o'),
-      validation: azure('gpt-4o')
-    }
-  };
+// Environment variables (already approved at Hawk Partners):
+// AZURE_OPENAI_API_KEY
+// AZURE_OPENAI_ENDPOINT
+// AZURE_OPENAI_DEPLOYMENT_NAME
 
-  return models[provider][task];
+export function getModel() {
+  return azure('gpt-4o');
 }
+
+// Future: If we ever need to switch providers for external customers,
+// it's a one-line change to use openai() or anthropic() instead.
 ```
-
-#### Enterprise Benefits
-
-- **Azure OpenAI**: For customers requiring data residency or compliance
-- **Amazon Bedrock**: For AWS-native enterprises
-- **Anthropic Claude**: Often better at reasoning tasks
-- **Cost optimization**: Use cheaper models for simple tasks, expensive for complex
 
 ---
 
-### 3. Enterprise Authentication (WorkOS)
+### 3. Team Authentication (WorkOS)
 
-**Priority**: High | **Effort**: 1-2 days | **Impact**: Very High
+**Priority**: High | **Effort**: 1-2 days | **Impact**: High
 
-#### Why WorkOS Over Alternatives
+#### Why We Need Auth
 
-For enterprise-grade B2B SaaS, authentication needs go beyond simple login:
+80 people at Hawk Partners need to log in and access their projects. We need:
+- User accounts (who is this?)
+- Project separation (my projects vs your projects)
+- Basic access control (not everyone sees everything)
 
-| Requirement | Consumer Auth (Clerk) | Enterprise Auth (WorkOS) |
-|-------------|----------------------|--------------------------|
-| Social login | ✅ | ✅ |
-| Email/password | ✅ | ✅ |
-| MFA | ✅ | ✅ |
-| SAML SSO | Limited | ✅ First-class |
-| SCIM/Directory Sync | ❌ | ✅ Full support |
-| Enterprise admin portal | ❌ | ✅ Self-service |
-| SOC 2 / HIPAA ready | Varies | ✅ Out of box |
+#### Why WorkOS AuthKit
 
-**Why This Matters for HawkTab**: When selling to market research firms (including Hawk Partners), IT departments require:
-- Single Sign-On with their corporate IdP (Okta, Azure AD, etc.)
-- Automatic user provisioning/deprovisioning via SCIM
-- Audit logs for compliance
-- Self-service admin portal for IT admins
+| Need | WorkOS AuthKit |
+|------|----------------|
+| **80 users login** | Free up to 1M MAU |
+| **Email/password** | Built-in |
+| **Works with Convex** | First-class integration, zero JWT config |
+| **Future SSO** | Available if we ever need it for external customers |
 
-#### WorkOS Pricing (Startup-Friendly)
+**Alternative Considered**: NextAuth with Azure AD. Would also work since Hawk Partners uses Azure. WorkOS is slightly more setup but more flexible if we productize later.
 
-| Feature | Cost | Notes |
-|---------|------|-------|
-| **AuthKit (User Management)** | Free up to 1M MAU | Includes social, email, MFA, passkeys |
-| **Enterprise SSO** | $125/connection/month | Per enterprise customer connection |
-| **Directory Sync** | $125/connection/month | SCIM provisioning |
-| **Audit Logs** | $99/month per 1M events | For compliance requirements |
+#### Cost
 
-**Key Insight**: Launch with free AuthKit, only pay for SSO when enterprise customers actually need it.
+| Feature | Cost |
+|---------|------|
+| **AuthKit (User Management)** | Free up to 1M MAU |
+| **Enterprise SSO** | $125/connection/month (only if external customers need it) |
+
+For Hawk Partners internal use: **$0/month**.
 
 #### WorkOS + Convex Integration
 
@@ -342,88 +348,48 @@ export const getProjects = query({
 
 **Developer Experience Benefits**:
 - Auto-provisioned WorkOS dev environment per Convex deployment
-- Each team member gets isolated auth environment
 - No manual JWT configuration required
 - Organizations/roles sync automatically
 
 #### Implementation Steps
 
 1. **Create Convex + AuthKit project**: `npm create convex@latest -- -t react-vite-authkit`
-2. **Configure WorkOS dashboard**: Social providers, branding, organization settings
-3. **Add enterprise SSO**: When first enterprise customer needs it, enable per-connection
-4. **Enable SCIM**: For customers requiring directory sync
+2. **Configure WorkOS dashboard**: Email/password, basic branding
+3. **Done** - Enterprise SSO/SCIM available later if needed for external customers
 
 ---
 
-### 4. Database Layer
+### 4. Database Layer (Convex)
 
 **Priority**: High | **Effort**: 1-2 days | **Impact**: High
 
 #### Why We Need Persistence
 
-Current file-based approach (`temp-outputs/`) has critical limitations:
+Current file-based approach (`temp-outputs/`) doesn't work for a team:
 
-| Limitation | Impact |
-|------------|--------|
-| No user accounts | Can't track who created what |
-| No project history | Previous runs are lost |
-| No collaboration | Can't share projects across team |
-| No async jobs | Long R execution blocks everything |
-| No audit trail | Can't debug issues after the fact |
+| Current Limitation | What 80 People Need |
+|--------------------|---------------------|
+| Files on one laptop | Everyone accesses their projects |
+| No user accounts | Know who created what |
+| No project history | Previous runs saved, not lost |
+| No async jobs | Long R execution doesn't block UI |
 
-#### Decision: Convex (Recommended)
+This is the lesson from Fathom AI: projects need to be properly separated per-user.
 
-After evaluating both options, **Convex is the recommended choice** for HawkTab based on:
+#### Decision: Convex
 
-| Factor | Convex | Supabase | Winner |
-|--------|--------|----------|--------|
-| **WorkOS Integration** | First-class, auto-provisioned | Manual JWT config | Convex |
-| **TypeScript Experience** | Schema in codebase | SQL migrations external | Convex |
-| **Real-time** | Default, zero config | Requires setup | Convex |
-| **AI Code Generation** | Designed for LLMs | Good, schema external | Convex |
-| **Dev Velocity** | Higher (unified TS) | Moderate (SQL + TS) | Convex |
-| **Self-Hosting** | No | Yes (open source) | Supabase |
-| **Community Size** | 8K stars | 92K stars | Supabase |
-| **File Storage** | External (S3, R2) | Built-in | Supabase |
-
-**Deciding Factors for HawkTab**:
-1. **WorkOS + Convex first-class integration** - Zero config, auto-provisioned dev environments
-2. **AI-native development** - Schema lives in codebase, Claude/GPT can see and modify it directly
-3. **Real-time by default** - Job status, validation results update UI automatically
-4. **TypeScript everywhere** - No context-switching between SQL and TS
+[Convex](https://www.convex.dev/) is chosen because:
+- **WorkOS integration** is first-class (one command setup)
+- **TypeScript everywhere** - schema lives in codebase, Claude can see/modify it
+- **Real-time by default** - job status updates UI automatically
 
 **Trade-offs Accepted**:
-- File storage requires external provider (Cloudflare R2 or AWS S3)
-- No self-hosting option (unlikely requirement for HawkTab's target market)
-- Smaller community (but well-documented, active Discord)
+- File storage requires Cloudflare R2 (addressed below)
+- No self-hosting (not a Hawk Partners requirement)
 
-##### Why Not Supabase?
+*Supabase was considered and would also work, but Convex's WorkOS integration and TypeScript-native approach won out.*
 
-[Supabase](https://supabase.com/) remains excellent and would work well, but:
-
-- WorkOS integration requires manual JWT template configuration
-- Schema lives in database, not codebase (AI tools can't see/modify directly)
-- Real-time requires additional setup
-- Context-switching between SQL and TypeScript adds cognitive load
-
-**When Supabase Would Be Better**:
-- If enterprise customers require self-hosting (evaluate if this becomes a requirement)
-- If complex SQL analytics queries are needed (Convex document model less suited)
-- If team strongly prefers SQL over document-oriented data
-
-##### Convex Implementation
-
-[Convex](https://www.convex.dev/) is a reactive backend where queries are TypeScript running in the database.
-
-**Key Strengths**:
-- **TypeScript everywhere**: Schema, queries, mutations all in TS - same codebase as frontend
-- **AI-friendly**: [Designed for LLM code generation](https://docs.convex.dev/home) - "your favorite AI tools are pre-equipped to generate high quality code"
-- **Real-time by default**: UI updates automatically when data changes
-- **Simpler mental model**: No ORM, no SQL, just functions
-- **Built-in AI features**: RAG components, vector search
-- **WorkOS AuthKit**: Official integration with auto-provisioning
-
-**TypeScript Schema Example**:
+#### Schema
 ```typescript
 // convex/schema.ts - lives in your codebase, AI sees it
 import { defineSchema, defineTable } from "convex/server";
@@ -457,20 +423,7 @@ export default defineSchema({
 });
 ```
 
-##### Comparison Matrix
-
-| Factor | Supabase | Convex |
-|--------|----------|--------|
-| **Data model** | SQL (relational) | Document (NoSQL) |
-| **Schema location** | Database (separate from code) | Codebase (TypeScript) |
-| **AI code generation** | Good (standard SQL) | Excellent (TypeScript, designed for it) |
-| **Real-time** | Requires setup | Automatic |
-| **Self-hosting** | Yes (open source) | No |
-| **File storage** | Built-in | External (S3, etc.) |
-| **Learning curve** | Low (familiar SQL) | Medium (new paradigm) |
-| **Community size** | 92K stars | 8K stars |
-
-##### File Storage Strategy
+#### File Storage (Cloudflare R2)
 
 Since Convex doesn't have built-in file storage, use **Cloudflare R2** (S3-compatible, generous free tier):
 
@@ -562,66 +515,13 @@ export const processCrosstab = inngest.createFunction(
 
 ---
 
-### 6. Observability (PostHog + Sentry)
+### 6. Observability (Sentry + PostHog)
 
 **Priority**: High | **Effort**: 0.5 days | **Impact**: High
 
-Building observability in from day one prevents painful retrofitting later. Two tools cover all needs:
+Two tools, minimal setup, essential visibility.
 
-#### PostHog: Product Analytics & Feature Flags
-
-[PostHog](https://posthog.com/) is an open-source product analytics platform.
-
-**Why PostHog**:
-- **Free tier**: 1M events/month, unlimited feature flags
-- **Open source**: Self-host option if needed
-- **All-in-one**: Analytics, session replay, feature flags, A/B testing
-- **Privacy-focused**: EU hosting option, cookieless tracking
-
-**Integration** (Next.js App Router):
-
-```typescript
-// app/providers.tsx
-'use client';
-
-import posthog from 'posthog-js';
-import { PostHogProvider } from 'posthog-js/react';
-import { useEffect } from 'react';
-
-export function PHProvider({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
-      api_host: '/ingest', // Proxy to avoid ad blockers
-      defaults: '2025-11-30', // Latest tracking defaults
-      capture_pageview: 'history_change', // Auto-capture SPA navigation
-    });
-  }, []);
-
-  return <PostHogProvider client={posthog}>{children}</PostHogProvider>;
-}
-```
-
-**Key Events to Track**:
-```typescript
-// Track crosstab generation funnel
-posthog.capture('project_created', { orgId, projectName });
-posthog.capture('files_uploaded', { projectId, fileTypes });
-posthog.capture('validation_completed', { projectId, warningCount, confidence });
-posthog.capture('crosstab_generated', { projectId, tableCount, duration });
-posthog.capture('export_downloaded', { projectId, format: 'xlsx' | 'csv' });
-```
-
-**Feature Flags for Safe Rollouts**:
-```typescript
-// Gradually roll out new AI models
-if (posthog.isFeatureEnabled('use-claude-sonnet')) {
-  // Use Claude for validation
-} else {
-  // Default to GPT-4o
-}
-```
-
-#### Sentry: Error Monitoring & Performance
+#### Sentry: Error Monitoring (Required)
 
 [Sentry](https://sentry.io/) provides error tracking, performance monitoring, and session replay.
 
@@ -681,44 +581,27 @@ Sentry.setContext('project', {
 Sentry.setUser({
   id: userId,
   email: userEmail,
-  orgId,
 });
 ```
 
-#### Observability Architecture
+#### PostHog: Basic Usage Tracking (Optional but Low Effort)
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        HawkTab Application                       │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐       │
-│  │   PostHog    │    │    Sentry    │    │   Console    │       │
-│  │  (Analytics) │    │   (Errors)   │    │   (Dev)      │       │
-│  └──────┬───────┘    └──────┬───────┘    └──────┬───────┘       │
-│         │                   │                   │                │
-│         ▼                   ▼                   ▼                │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                 Unified Logging Layer                     │   │
-│  │   logger.info('Processing started', { projectId })       │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-         │                   │
-         ▼                   ▼
-   ┌───────────┐       ┌───────────┐
-   │  PostHog  │       │  Sentry   │
-   │ Dashboard │       │ Dashboard │
-   └───────────┘       └───────────┘
+[PostHog](https://posthog.com/) is free for 1M events/month. Add basic tracking to understand usage:
+
+```typescript
+// Just the essentials for an internal tool
+posthog.capture('crosstab_generated', { projectId, success: true });
+posthog.capture('crosstab_failed', { projectId, error: errorMessage });
 ```
 
-#### Implementation Priority
+**What to defer**: Feature flags, A/B testing, full funnel analytics. These are for when we have external customers to optimize for.
 
-| Tool | When to Add | Effort |
-|------|-------------|--------|
-| **Sentry** | Phase 1 (Foundation) | 30 min |
-| **PostHog** | Phase 1 (Foundation) | 30 min |
-| **Custom Events** | Phase 3+ (as features ship) | Ongoing |
+#### Setup Summary
+
+| Tool | Effort | Command |
+|------|--------|---------|
+| **Sentry** | 30 min | `npx @sentry/wizard@latest -i nextjs` |
+| **PostHog** | 30 min | `npm install posthog-js` + basic init |
 
 ---
 
@@ -1078,136 +961,122 @@ interface SurveyJSON {
 
 ## Implementation Roadmap
 
-### Phase 0: Data Preparation (Pre-Development)
+> **Note**: No time estimates. This is an internal project worked on when time permits. Focus is on completing each phase well, not speed.
 
-**Goal**: Organize test data for validation.
+### Phase 1: Azure OpenAI Migration (Compliance Unblock)
 
-| Task | Details |
-|------|---------|
-| Organize Antares test data | Create folder structure for 10 test projects |
-| Each project folder contains | Data map (CSV), SPSS file (.sav), Banner plan (PDF/DOC), Questionnaire |
-| Analyze data map format | Determine if current parsing handles Antares format |
-| Verify Decipher access | Confirm API access for test projects |
+**Goal**: Switch to Azure OpenAI so we can use firm data.
 
-### Phase 1: Foundation (Week 1-2)
+| Task | Command/Notes |
+|------|---------------|
+| Install Vercel AI SDK + Azure provider | `npm install ai @ai-sdk/azure` |
+| Migrate BannerAgent to AI SDK | Use `azure('gpt-4o')` |
+| Migrate CrosstabAgent to AI SDK | Use `azure('gpt-4o')` |
+| Update environment configuration | `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT` |
+| Test with real Hawk Partners project | Verify output matches current system |
 
-**Goal**: Establish core infrastructure with Convex + WorkOS + Observability.
+**Deliverable**: System works with Azure OpenAI. Compliance satisfied.
 
-| Task | Effort | Dependencies |
-|------|--------|--------------|
-| Initialize Convex + WorkOS AuthKit | 0.5 day | `npm create convex@latest -- -t react-vite-authkit` |
-| Configure WorkOS dashboard | 0.5 day | Convex setup |
-| Set up Sentry error monitoring | 0.5 day | `npx @sentry/wizard@latest -i nextjs` |
-| Set up PostHog analytics | 0.5 day | None |
-| Create Convex schema (projects, jobs, files) | 0.5 day | Convex setup |
-| Set up Cloudflare R2 for file storage | 0.5 day | Schema |
-| Implement async job processing with Convex | 0.5 day | Schema |
-| Add PostHog events for core actions | 0.5 day | PostHog setup |
+### Phase 2: Team Access (Deploy + Auth + Storage)
 
-**Deliverable**: Users can authenticate, create projects, upload files, and track processing status with full observability.
+**Goal**: Multiple people at Hawk Partners can use the tool.
 
-**Key Setup Commands**:
-```bash
-# Initialize Convex + WorkOS AuthKit
-npm create convex@latest -- -t react-vite-authkit
+| Task | Command/Notes |
+|------|---------------|
+| Initialize Convex + WorkOS AuthKit | `npm create convex@latest -- -t react-vite-authkit` |
+| Set up Sentry error monitoring | `npx @sentry/wizard@latest -i nextjs` |
+| Create Convex schema (projects, jobs, files) | See schema in Database section |
+| Set up Cloudflare R2 for file storage | `npm install @aws-sdk/client-s3` |
+| Deploy to Vercel | Connect repo, configure env vars |
+| Add basic PostHog tracking | `npm install posthog-js` (optional, low effort) |
 
-# Add Sentry
-npx @sentry/wizard@latest -i nextjs
+**Deliverable**: Hawk Partners team can log in, create projects, upload files, and track status.
 
-# Add PostHog
-npm install posthog-js
+### Phase 3: Decipher API Integration (Core Technical Work)
 
-# Add Cloudflare R2 (via AWS SDK)
-npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
-```
+**Goal**: Get skip logic from the source instead of inferring from CSV.
 
-### Phase 2: AI Layer Migration (Week 2-3)
+> **This is the hardest part.** Everything else is service integration. This is real development.
 
-**Goal**: Switch from OpenAI Agents SDK to Vercel AI SDK.
+| Task | Notes |
+|------|-------|
+| Verify Decipher API access | Get API key, test connection |
+| Research survey structure endpoint | What data is available? |
+| Build survey structure fetcher | Parse XML response |
+| Extract skip logic / conditions | `cond` attributes → validation rules |
+| Integrate into validation pipeline | Replace CSV inference with API data |
+| Keep CSV as fallback | Not all surveys may be in Decipher |
 
-| Task | Effort | Dependencies |
-|------|--------|--------------|
-| Install Vercel AI SDK and providers | 0.5 day | None |
-| Migrate BannerAgent to AI SDK | 1 day | AI SDK setup |
-| Migrate CrosstabAgent to AI SDK | 1 day | AI SDK setup |
-| Add provider selection (OpenAI/Anthropic/Azure) | 0.5 day | Migration |
-| Update environment configuration | 0.5 day | Provider selection |
-| Test with multiple providers | 1 day | All above |
+**Deliverable**: System uses Decipher skip logic for validation. Major accuracy improvement.
 
-**Deliverable**: System works with any supported AI provider.
+### Phase 4: Reliability & Validation
 
-### Phase 3: Reliability Improvements (Week 3-4)
+**Goal**: Surface issues before users see them.
 
-**Goal**: Implement validation layers for accurate results.
+| Task | Notes |
+|------|-------|
+| Update prompts for calibrated confidence | Lower scores for AND logic, conditional variables |
+| Add CUT_DIAGNOSTICS.csv generation | R script outputs counts per cut |
+| Implement pre-execution count validation | Catch zero-count cuts before final output |
+| Add validationWarnings to output schema | Surface issues in API response |
+| Create validation summary UI | Users see warnings prominently |
 
-| Task | Effort | Dependencies |
-|------|--------|--------------|
-| Update prompts for lower confidence on AND logic | 0.5 day | None |
-| Add CUT_DIAGNOSTICS.csv generation to R | 0.5 day | None |
-| Implement pre-execution count validation | 1 day | None |
-| Add validationWarnings to output schema | 0.5 day | Count validation |
-| Create validation summary UI component | 1 day | Warnings schema |
-| Implement Survey Agent | 2 days | AI SDK |
+**Deliverable**: System flags potential issues before users trust bad results.
 
-**Deliverable**: System surfaces potential issues before users see final results.
+---
 
-### Phase 4: Decipher Integration (Week 4-5)
+## Checkpoint: Hawk Partners Internal Launch
 
-**Goal**: Enable direct survey platform integration.
+**Before proceeding to Phase 5+, validate:**
 
-| Task | Effort | Dependencies |
-|------|--------|--------------|
-| Research Decipher API authentication | 0.5 day | API access |
-| Implement connection settings UI | 0.5 day | Auth research |
-| Build survey structure fetcher | 1 day | Connection |
-| Parse skip logic from survey XML | 1 day | Fetcher |
-| Integrate skip logic into validation | 1 day | Parser |
-| Add Decipher as data source option | 0.5 day | All above |
+- [ ] Hawk Partners team can log in and generate crosstabs
+- [ ] Output quality matches or exceeds Joe's/fielding partner's tabs
+- [ ] System uses Azure OpenAI (compliance)
+- [ ] Projects are separated per-user (Fathom AI lesson)
+- [ ] Errors are visible in Sentry
 
-**Deliverable**: Users can connect Decipher account and import surveys directly.
+**Decision point**: Is this working well enough for Hawk Partners? If yes, consider Bob pilot.
 
-### Phase 5: R Script Agent & Tools (Week 5-6)
+---
 
-**Goal**: Implement orchestration agent with self-healing.
+### Phase 5: Bob Pilot (External Validation)
 
-| Task | Effort | Dependencies |
-|------|--------|--------------|
-| Implement Verify Cuts tool | 1 day | Phase 3 validation |
-| Implement Create Tables tool | 1 day | Survey Agent |
-| Implement Validate Tables tool | 0.5 day | Survey Agent |
-| Implement Create Crosstabs tool | 1 day | All tools |
-| Build R Script Agent orchestration | 1 day | All tools |
-| Test self-healing capabilities | 1 day | Orchestration |
+**Goal**: Validate external interest with fielding partner.
 
-**Deliverable**: Agent-orchestrated R generation with automatic error correction.
+| Task | Notes |
+|------|-------|
+| Demo to Bob | Show working system |
+| Get feedback on workflow | What's missing for their use case? |
+| Address critical gaps | If any |
+| Pilot with 1-2 of their projects | Real-world validation |
 
-### Phase 6: Statistical Enhancement & Polish (Week 6-7)
+**Decision point**: Is there external demand? What would Bob pay for this?
 
-**Goal**: Production-ready output quality.
+### Phase 6: Output Quality (Beautiful Tabs)
 
-| Task | Effort | Dependencies |
-|------|--------|--------------|
-| Template generation system (ExcelJS) | 1 day | Phase 5 |
-| CSV to template mapping | 1 day | Template |
-| Statistical testing (90% confidence) | 2 days | Mapping |
-| Excel formatting and styling | 1 day | Stats |
+**Goal**: Match or exceed Joe's output quality.
 
-**Deliverable**: Professional Excel output with statistical testing.
+| Task | Notes |
+|------|-------|
+| Template generation system (ExcelJS) | Define output format |
+| CSV to template mapping | Populate template from R output |
+| Statistical testing (90% confidence) | Add stat letters |
+| Excel formatting and styling | Make it beautiful |
 
-### Phase 7: Testing & Validation (Week 7-8)
+**Deliverable**: Professional Excel output that looks as good as Joe's.
 
-**Goal**: 100% accuracy on all test projects.
+### Phase 7: Testing & Validation
 
-| Task | Effort | Dependencies |
-|------|--------|--------------|
-| Test Project 1 end-to-end | 1 day | All above |
-| Compare to Joe's reference crosstabs | 0.5 day | Project 1 |
-| Fix edge cases | Variable | Testing |
-| Test Projects 2-10 | 3 days | Project 1 works |
-| Regression testing | 1 day | All projects |
-| Performance optimization | 1 day | Testing complete |
+**Goal**: 100% accuracy on test projects.
 
-**Deliverable**: System handles all test projects with 100% accuracy.
+| Task | Notes |
+|------|-------|
+| Test Project 1 end-to-end | Compare to Joe's reference |
+| Fix edge cases | Iterate until 100% |
+| Test Projects 2-10 | Expand coverage |
+| Regression testing | Don't break previous projects |
+
+**Deliverable**: Reliable system that handles Hawk Partners' project diversity.
 
 ---
 
@@ -1257,34 +1126,33 @@ npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
 
 | Decision | Options Considered | Choice | Rationale |
 |----------|-------------------|--------|-----------|
-| **AI SDK** | OpenAI Agents SDK, Vercel AI SDK, LangChain | Vercel AI SDK | Multi-provider, TypeScript-native, production-proven |
-| **Database** | Supabase, Convex, PlanetScale | **Convex** | First-class WorkOS integration, TypeScript everywhere, real-time by default, AI-native development |
-| **Authentication** | Clerk, Auth0, Supabase Auth, WorkOS | **WorkOS AuthKit** | Enterprise SSO/SCIM, free to 1M MAU, first-class Convex integration |
+| **AI SDK** | OpenAI Agents SDK, Vercel AI SDK, LangChain | Vercel AI SDK | **Azure OpenAI required** for Hawk Partners compliance. Vercel AI SDK supports Azure, OpenAI SDK doesn't. |
+| **Database** | Supabase, Convex, PlanetScale | **Convex** | First-class WorkOS integration, TypeScript everywhere, 80 people need shared access |
+| **Authentication** | Clerk, Auth0, NextAuth + Azure AD, WorkOS | **WorkOS AuthKit** | Free for 80 users, Convex integration, SSO available if we productize later |
 | **File Storage** | Supabase Storage, AWS S3, Cloudflare R2 | **Cloudflare R2** | S3-compatible, generous free tier, no egress fees |
-| **Error Monitoring** | Sentry, Bugsnag, Datadog | **Sentry** | Industry standard, first-class Next.js SDK, session replay |
-| **Product Analytics** | PostHog, Mixpanel, Amplitude | **PostHog** | Open source, generous free tier, feature flags included |
+| **Error Monitoring** | Sentry, Bugsnag, Datadog | **Sentry** | Essential for debugging, industry standard |
+| **Product Analytics** | PostHog, Mixpanel, Amplitude, None | **PostHog (basic)** | Low effort to add, free tier, defer advanced features |
 | **Survey source** | CSV parsing, Decipher API, Qualtrics API | Decipher API primary, CSV fallback | Decipher has skip logic we need |
-| **Job queue** | Inngest, Trigger.dev, Convex built-in | **Convex built-in** | Real-time UI updates automatic, simpler architecture |
+| **Job queue** | Inngest, Trigger.dev, Convex built-in | **Convex built-in** | Simpler architecture, real-time updates |
 
 ---
 
 ## Open Questions
 
-1. ~~**Convex vs Supabase**: Need to prototype both to evaluate AI code generation quality and developer experience.~~ **RESOLVED: Convex** - WorkOS integration is the deciding factor.
+1. ~~**Convex vs Supabase**: Need to prototype both.~~ **RESOLVED: Convex** - WorkOS integration + TypeScript-native.
 
-2. **Decipher API access**: Do all Antares projects have Decipher access? What's the authentication flow?
+2. **Decipher API access**: Need to verify Hawk Partners has API access. What's the authentication flow?
 
-3. **Multi-survey platform support**: Should we also support Qualtrics, SurveyMonkey APIs eventually?
+3. ~~**Multi-survey platform support**: Support Qualtrics, SurveyMonkey?~~ **DEFERRED**: Focus on Decipher for Hawk Partners. Revisit if Bob pilot shows demand.
 
-4. **Self-hosting requirements**: Do any enterprise customers require on-premise deployment? (If yes, may need to reconsider Supabase)
+4. ~~**Self-hosting requirements**: Enterprise on-premise needs?~~ **NOT A REQUIREMENT**: Hawk Partners doesn't need this.
 
-5. **Pricing model**: How does AI provider choice affect cost per crosstab?
+5. ~~**Pricing model**: How to price per crosstab?~~ **DEFERRED**: Internal tool first. Pricing if we productize.
 
-6. **R Execution Environment**: Where does R script execution happen? Options:
-   - Local R installation (current)
-   - Docker container with R
-   - Cloud function (AWS Lambda with R layer)
-   - Dedicated R server
+6. **R Execution Environment**: Where does R run?
+   - Current: Local R installation
+   - For deployment: Likely Docker container on Vercel/Railway
+   - Decision needed before Phase 2 deployment
 
 ---
 
@@ -1336,4 +1204,4 @@ npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
 
 *Created: December 31, 2025*
 *Updated: December 31, 2025*
-*Status: Single Source of Truth for HawkTab AI Development*
+*Status: Hawk Partners Internal Tool (potential productization after validation)*
