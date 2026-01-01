@@ -1,5 +1,17 @@
 # Phase 3: Team Access (Auth + Database + Storage + Monitoring)
 
+> **Note: Review Before Implementation**
+>
+> This plan was written before Phase 2 (Decipher API + Agent Flow Improvements). By the time you implement Phase 3, the codebase will have changed:
+> - New agents (BannerValidateAgent, DataValidator) will exist
+> - Data flow may be different (Decipher API vs file uploads)
+> - Schema shapes may have evolved
+>
+> **The steps are likely still correct** (Convex setup, WorkOS auth, R2 storage, Sentry, etc.), but **verify the implementation details** against the actual codebase before implementing. Specifically:
+> - Step 2 (Convex Schema): Verify schema matches current data structures
+> - Step 3 (Convex Functions): Verify against current API patterns
+> - Step 8 (API Migration): Will need significant updates based on Phase 2 changes
+
 ## Implementation Plan
 
 **Goal**: Enable 80-person Hawk Partners team to log in, create projects, upload files, and track processing status with persistent storage and error visibility.
@@ -1080,9 +1092,10 @@ These are documented here for future reference but not currently planned.
 | 2026-01-01 | **Decisions finalized**: R2 confirmed for storage, Railway for R execution, PostHog reframed as "minimal" (not optional). Added Step 10 for Railway R service. Added Future Off-Ramps section documenting Azure migration path if needed. |
 | 2026-01-01 | **Step 11 added**: Document processing dependencies. Replace `pdf2pic` (requires GraphicsMagick) with `pdf-to-img` (serverless-compatible). Includes pre-implementation test script and fallback to Railway Docker if needed. |
 | 2026-01-01 | **Renumbered to Phase 3**: Reordered phases so Decipher/reliability (Phase 2) comes before team access (Phase 3). Team access is well-understood infrastructure; Decipher is the core technical risk. |
+| 2026-01-01 | **Added review note**: Implementation details will need verification after Phase 2 changes codebase. Steps are correct; specific code examples may be outdated. |
 
 ---
 
 *Created: January 1, 2026*
 *Last Updated: January 1, 2026*
-*Status: Ready for Implementation (Phase 3 - after Phase 2 Decipher integration)*
+*Status: Pending Phase 2 completion - review implementation details before starting*

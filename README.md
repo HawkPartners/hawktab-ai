@@ -78,12 +78,11 @@ The MVP demonstrates the concept works. Next phases to make it usable by the tea
 
 | Phase | Goal | Status |
 |-------|------|--------|
-| **1. Azure OpenAI** | Switch to Azure (compliance) | Not started |
-| **2. Team Access** | Deploy, auth, shared storage | Not started |
-| **3. Decipher API** | Skip logic from source (hard part) | Not started |
-| **4. Reliability** | Validation warnings, confidence calibration | Not started |
+| **1. Azure OpenAI** | Switch to Azure (compliance) | **Complete** |
+| **2. Decipher + Reliability** | Skip logic from source, agent flow improvements | Not started |
+| **3. Team Access** | Deploy, auth, shared storage | Not started |
 | **Checkpoint** | Hawk Partners internal launch | — |
-| **5. Bob Pilot** | External validation | — |
+| **4. Bob Pilot** | External validation | — |
 
 See `docs/architecture-refactor-prd.md` for full details.
 
@@ -110,13 +109,14 @@ npm install
 
 Create `.env.local`:
 ```env
-# Current (development only - will migrate to Azure)
-OPENAI_API_KEY=your_api_key_here
+# Azure OpenAI (required - Phase 1 complete)
+AZURE_API_KEY=your_azure_api_key
+AZURE_RESOURCE_NAME=your_resource_name
+AZURE_API_VERSION=2025-01-01-preview
 
-# Production (Azure OpenAI - required for Hawk Partners)
-AZURE_OPENAI_API_KEY=your_azure_key
-AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
-AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4o
+# Model Configuration (Azure deployment names)
+REASONING_MODEL=o4-mini
+BASE_MODEL=gpt-5-nano
 
 # Environment
 NODE_ENV=development
