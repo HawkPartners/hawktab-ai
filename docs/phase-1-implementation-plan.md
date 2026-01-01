@@ -21,7 +21,7 @@ The current system uses `@openai/agents` which **does not support Azure OpenAI**
 | AI Framework | `@openai/agents ^0.0.15` | `ai ^6.0.5` + `@ai-sdk/azure ^3.0.2` |
 | Zod Version | `^3.25.67` (locked) | `^3.25.76` or `^4.x` (unlocked) |
 | API Key | `OPENAI_API_KEY` | `AZURE_API_KEY` + `AZURE_RESOURCE_NAME` |
-| Model Selection | `getModel()` → model name string | `getModel()` → `azure(deploymentName)` model instance |
+| Model Selection | `getModel()` → model name string (env-based) | `getReasoningModel()` / `getBaseModel()` → task-based Azure model instances |
 | Tool Pattern | `tool({ name, parameters, execute })` | `tool({ parameters, execute })` (name inferred) |
 | Structured Output | `outputType` property on Agent | `output: Output.object({ schema })` in generateText |
 | Agent Pattern | `new Agent({...})` + `run(agent, prompt)` | Direct `generateText({...})` call |
@@ -237,43 +237,51 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
 };
 
 /**
- * Get Azure model for AI SDK usage
- * Returns the appropriate model based on environment:
- * - Development: reasoning model (o4-mini) for complex validation
- * - Production: base model (gpt-5-nano) for speed and cost
+ * Task-based model selection
+ * Models are chosen based on task requirements, not environment:
+ * - Reasoning model (o4-mini): Complex validation tasks (CrosstabAgent)
+ * - Base model (gpt-5-nano): Vision/extraction tasks (BannerAgent)
  */
-export const getModel = () => {
+
+/**
+ * Get reasoning model for complex validation tasks
+ * Used by: CrosstabAgent (requires deep reasoning for R syntax generation)
+ */
+export const getReasoningModel = () => {
   const config = getEnvironmentConfig();
-  const deploymentName = config.nodeEnv === 'production'
-    ? config.baseModel
-    : config.reasoningModel;
-  return azure(deploymentName);
+  return azure(config.reasoningModel);
+};
+
+/**
+ * Get base model for vision/extraction tasks
+ * Used by: BannerAgent (requires vision capability, simpler reasoning)
+ */
+export const getBaseModel = () => {
+  const config = getEnvironmentConfig();
+  return azure(config.baseModel);
 };
 
 /**
  * Get model name string (for logging)
  */
-export const getModelName = (): string => {
+export const getReasoningModelName = (): string => {
   const config = getEnvironmentConfig();
-  const deploymentName = config.nodeEnv === 'production'
-    ? config.baseModel
-    : config.reasoningModel;
-  return `azure/${deploymentName}`;
+  return `azure/${config.reasoningModel}`;
 };
 
-export const getModelTokenLimit = (): number => {
+export const getBaseModelName = (): string => {
+  const config = getEnvironmentConfig();
+  return `azure/${config.baseModel}`;
+};
+
+export const getReasoningModelTokenLimit = (): number => {
+  const config = getEnvironmentConfig();
+  return config.processingLimits.reasoningModelTokens;
+};
+
+export const getBaseModelTokenLimit = (): number => {
   const config = getEnvironmentConfig();
   return config.processingLimits.baseModelTokens;
-};
-
-export const getModelConfig = () => {
-  const config = getEnvironmentConfig();
-  return {
-    model: getModel(),
-    modelName: getModelName(),
-    tokenLimit: config.processingLimits.baseModelTokens,
-    environment: config.nodeEnv,
-  };
 };
 
 export const getPromptVersions = () => {
@@ -328,10 +336,10 @@ export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
 AZURE_API_KEY=your-azure-api-key
 AZURE_RESOURCE_NAME=your-resource-name
 
-# Model Configuration
-# Reasoning model: used for development/complex tasks
+# Model Configuration (Task-based, not environment-based)
+# Reasoning model: used by CrosstabAgent for complex validation
 REASONING_MODEL=o4-mini
-# Base model: used for production, must support vision for BannerAgent
+# Base model: used by BannerAgent for vision/extraction (must support vision)
 BASE_MODEL=gpt-5-nano
 REASONING_MODEL_TOKENS=100000
 BASE_MODEL_TOKENS=128000
@@ -359,9 +367,11 @@ NODE_ENV=development
 AZURE_API_KEY=
 AZURE_RESOURCE_NAME=
 
-# Model Configuration (Required)
+# Model Configuration (Required, Task-based)
 # These are Azure deployment names, not OpenAI model names
+# Reasoning model: used by CrosstabAgent for complex validation
 REASONING_MODEL=o4-mini
+# Base model: used by BannerAgent for vision/extraction
 BASE_MODEL=gpt-5-nano
 REASONING_MODEL_TOKENS=100000
 BASE_MODEL_TOKENS=128000
@@ -446,7 +456,7 @@ import { generateText, Output } from 'ai';
 import { ValidationResultSchema, ValidatedGroupSchema, combineValidationResults, type ValidationResultType, type ValidatedGroupType } from '../schemas/agentOutputSchema';
 import { DataMapType } from '../schemas/dataMapSchema';
 import { BannerGroupType, BannerPlanInputType } from '../schemas/bannerPlanSchema';
-import { getModel, getModelName, getModelTokenLimit, getPromptVersions } from '../lib/env';
+import { getReasoningModel, getReasoningModelName, getReasoningModelTokenLimit, getPromptVersions } from '../lib/env';
 import { scratchpadTool } from './tools/scratchpad';
 import { getCrosstabPrompt } from '../prompts';
 import fs from 'fs/promises';
@@ -487,14 +497,14 @@ Begin validation now.
 
     // Use generateText with structured output
     const { output } = await generateText({
-      model: getModel(),
+      model: getReasoningModel(),  // Task-based: reasoning model for complex validation
       system: systemPrompt,
       prompt: `Validate banner group "${group.groupName}" with ${group.columns.length} columns against the data map.`,
       tools: {
         scratchpad: scratchpadTool,
       },
       maxSteps: 25,  // Equivalent to maxTurns
-      maxTokens: Math.min(getModelTokenLimit(), 10000),
+      maxTokens: Math.min(getReasoningModelTokenLimit(), 10000),
       output: Output.object({
         schema: ValidatedGroupSchema,
       }),
@@ -545,7 +555,7 @@ export async function processAllGroups(
   };
 
   logEntry(`[CrosstabAgent] Starting group-by-group processing: ${bannerPlan.bannerCuts.length} groups`);
-  logEntry(`[CrosstabAgent] Using model: ${getModelName()}`);
+  logEntry(`[CrosstabAgent] Using model: ${getReasoningModelName()}`);
 
   const results: ValidatedGroupType[] = [];
 
@@ -590,7 +600,7 @@ export async function processAllGroupsParallel(
   };
 
   logEntry(`[CrosstabAgent] Starting parallel processing: ${bannerPlan.bannerCuts.length} groups`);
-  logEntry(`[CrosstabAgent] Using model: ${getModelName()}`);
+  logEntry(`[CrosstabAgent] Using model: ${getReasoningModelName()}`);
 
   try {
     logEntry(`[CrosstabAgent] Starting parallel group processing`);
@@ -653,7 +663,7 @@ async function saveDevelopmentOutputs(
         timestamp: new Date().toISOString(),
         processingMode: 'group-by-group',
         aiProvider: 'azure-openai',
-        model: getModelName(),
+        model: getReasoningModelName(),
         totalGroups: result.bannerCuts.length,
         totalColumns: result.bannerCuts.reduce((total, group) => total + group.columns.length, 0),
         averageConfidence: result.bannerCuts.length > 0
@@ -681,7 +691,7 @@ async function saveDevelopmentOutputs(
 3. **Tools as object**: Tools passed as `{ scratchpad: scratchpadTool }` not array
 4. **maxSteps**: Replaces `maxTurns` for multi-step tool calling
 5. **No tracing**: Removed `withTrace()` and `getGlobalTraceProvider()` (Sentry in Phase 2)
-6. **Model from function**: `getModel()` now returns Azure model instance, not string
+6. **Task-based model**: `getReasoningModel()` returns Azure reasoning model instance (o4-mini) for complex validation
 
 ---
 
@@ -742,7 +752,7 @@ Begin analysis now.
     // OpenAI Agents SDK: { type: 'input_image', image: 'data:image/png;base64,...' }
     // Vercel AI SDK: { type: 'image', image: Buffer.from(base64, 'base64') }
     const { output } = await generateText({
-      model: getModel(),
+      model: getBaseModel(),  // Task-based: base model for vision/extraction tasks
       system: systemPrompt,
       messages: [
         {
@@ -761,7 +771,7 @@ Begin analysis now.
         scratchpad: scratchpadTool,
       },
       maxSteps: 15,  // Replaces maxTurns
-      maxTokens: Math.min(getModelTokenLimit(), 32000),  // Top-level, not in modelSettings
+      maxTokens: Math.min(getBaseModelTokenLimit(), 32000),  // Top-level, not in modelSettings
       output: Output.object({
         schema: BannerExtractionResultSchema,
       }),
@@ -795,7 +805,7 @@ Begin analysis now.
 **Remove Entirely**:
 - `createBannerAgent()` function - no longer needed
 
-**Image handling note**: Azure OpenAI vision requires a multimodal deployment. The configured `BASE_MODEL` (gpt-5-nano) supports vision and will be used for BannerAgent in production. In development, ensure your `REASONING_MODEL` also supports vision if you want to test BannerAgent locally.
+**Image handling note**: Azure OpenAI vision requires a multimodal deployment. BannerAgent always uses the base model (gpt-5-nano) regardless of environment because it's a vision/extraction task. The reasoning model (o4-mini) is reserved for CrosstabAgent's complex validation tasks.
 
 ---
 
@@ -1001,12 +1011,15 @@ This is handled in the `env.ts` rewrite, but verify the API route doesn't have a
    process.env.AZURE_RESOURCE_NAME = 'test-resource';
    process.env.REASONING_MODEL = 'o4-mini';
    process.env.BASE_MODEL = 'gpt-5-nano';
-   process.env.NODE_ENV = 'development';
 
    const config = getEnvironmentConfig();
    expect(config.azureApiKey).toBe('test-key');
    expect(config.reasoningModel).toBe('o4-mini');
-   expect(getModelName()).toBe('azure/o4-mini');  // Uses reasoning model in dev
+   expect(config.baseModel).toBe('gpt-5-nano');
+
+   // Task-based model selection (not environment-based)
+   expect(getReasoningModelName()).toBe('azure/o4-mini');  // For CrosstabAgent
+   expect(getBaseModelName()).toBe('azure/gpt-5-nano');    // For BannerAgent
    ```
 
 2. **Tool Definition**
@@ -1138,6 +1151,7 @@ npm run build                  # Must succeed
 | 2025-12-31 | Initial plan created |
 | 2025-12-31 | Updated with comprehensive gap analysis: BannerAgent full migration details, tracing replacement strategy, discovery-first pattern, verification steps, .env.example |
 | 2025-12-31 | Updated model configuration to use actual Azure deployments: o4-mini (reasoning) and gpt-5-nano (base/vision). Pre-implementation checklist completed. |
+| 2025-12-31 | **Breaking change**: Switched from environment-based to task-based model selection. `getModel()` replaced with `getReasoningModel()` (CrosstabAgent) and `getBaseModel()` (BannerAgent). Models are now chosen based on task requirements, not NODE_ENV. Updated Steps 2, 4, 5, and Testing Plan. |
 
 ---
 
