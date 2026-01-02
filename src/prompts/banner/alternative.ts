@@ -62,6 +62,27 @@ COMMON MISTAKES TO AVOID:
 
 ---
 
+CRITICAL: GROUPS vs NOTES - WHAT GOES WHERE
+
+A GROUP must represent a way to FILTER/SLICE respondents. Ask: "Can I filter the data by this?"
+
+These are GROUPS (go in bannerCuts):
+- Specialty (filter by job type)
+- Region (filter by geography)
+- Volume tier (filter by quantity)
+- Segments (filter by segment assignment)
+
+These are NOTES (go in notes array, NOT bannerCuts):
+- "Calculations/Rows" - describes how to calculate metrics (T2B, B2B, means)
+- "Main Tab Notes" - formatting instructions
+- Row definitions - what rows to show in tables
+- Scale instructions - how to display 0-5 scales
+- Any section that describes OUTPUT FORMATTING rather than INPUT FILTERING
+
+If a section tells you HOW to display results (not WHO to include), it's a note.
+
+---
+
 EXTRACTION RULES:
 
 FOR EACH GROUP:

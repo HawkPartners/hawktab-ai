@@ -1,10 +1,18 @@
 /**
  * Scratchpad tool for reasoning transparency
  * Provides enhanced thinking space for complex variable validation tasks
+ * Accumulates entries for inclusion in processing logs
  */
 
 import { tool } from 'ai';
 import { z } from 'zod';
+
+// Accumulated scratchpad entries for the current session
+let scratchpadEntries: Array<{
+  timestamp: string;
+  action: string;
+  content: string;
+}> = [];
 
 // Scratchpad tool using Vercel AI SDK pattern
 export const scratchpadTool = tool({
@@ -14,7 +22,12 @@ export const scratchpadTool = tool({
     content: z.string().describe('Content to add or review in the thinking space')
   }),
   execute: async ({ action, content }) => {
-    // Log for debugging
+    const timestamp = new Date().toISOString();
+
+    // Accumulate entry
+    scratchpadEntries.push({ timestamp, action, content });
+
+    // Log for real-time debugging
     console.log(`[CrossTab Agent Scratchpad] ${action}: ${content}`);
 
     switch (action) {
@@ -27,6 +40,38 @@ export const scratchpadTool = tool({
     }
   }
 });
+
+/**
+ * Get all accumulated scratchpad entries and clear the buffer
+ * Call this after processing to include in output logs
+ */
+export function getAndClearScratchpadEntries(): Array<{
+  timestamp: string;
+  action: string;
+  content: string;
+}> {
+  const entries = [...scratchpadEntries];
+  scratchpadEntries = [];
+  return entries;
+}
+
+/**
+ * Get accumulated entries without clearing (for inspection)
+ */
+export function getScratchpadEntries(): Array<{
+  timestamp: string;
+  action: string;
+  content: string;
+}> {
+  return [...scratchpadEntries];
+}
+
+/**
+ * Clear scratchpad entries (call at start of new processing session)
+ */
+export function clearScratchpadEntries(): void {
+  scratchpadEntries = [];
+}
 
 // Type export for use in agent definitions
 export type ScratchpadTool = typeof scratchpadTool;
