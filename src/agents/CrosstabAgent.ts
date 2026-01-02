@@ -11,7 +11,7 @@ import { ValidationResultSchema, ValidatedGroupSchema, combineValidationResults,
 import { DataMapType } from '../schemas/dataMapSchema';
 import { BannerGroupType, BannerPlanInputType } from '../schemas/bannerPlanSchema';
 import { getReasoningModel, getReasoningModelName, getReasoningModelTokenLimit, getPromptVersions } from '../lib/env';
-import { scratchpadTool } from './tools/scratchpad';
+import { scratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries } from './tools/scratchpad';
 import { getCrosstabPrompt } from '../prompts';
 import fs from 'fs/promises';
 import path from 'path';
@@ -108,6 +108,9 @@ export async function processAllGroups(
     processingLog.push(`${new Date().toISOString()}: ${message}`);
   };
 
+  // Clear scratchpad from any previous runs
+  clearScratchpadEntries();
+
   logEntry(`[CrosstabAgent] Starting group-by-group processing: ${bannerPlan.bannerCuts.length} groups`);
   logEntry(`[CrosstabAgent] Using model: ${getReasoningModelName()}`);
 
@@ -132,9 +135,13 @@ export async function processAllGroups(
 
   const combinedResult = combineValidationResults(results);
 
-  // Save outputs with processing log
+  // Collect scratchpad entries for the processing log
+  const scratchpadEntries = getAndClearScratchpadEntries();
+  logEntry(`[CrosstabAgent] Collected ${scratchpadEntries.length} scratchpad entries`);
+
+  // Save outputs with processing log and scratchpad
   if (outputFolder) {
-    await saveDevelopmentOutputs(combinedResult, outputFolder, processingLog);
+    await saveDevelopmentOutputs(combinedResult, outputFolder, processingLog, scratchpadEntries);
   }
 
   logEntry(`[CrosstabAgent] All ${results.length} groups processed successfully - Total columns: ${combinedResult.bannerCuts.reduce((total, group) => total + group.columns.length, 0)}`);
@@ -202,10 +209,12 @@ export const isValidAgentResult = (result: unknown): result is ValidationResultT
 //   - Removed: tracingEnabled, tracesDashboard (OpenAI-specific)
 //   - Added: aiProvider, model (Azure-specific)
 //   - Removed: _traceId parameter (was unused)
+//   - Added: scratchpadEntries for reasoning transparency
 async function saveDevelopmentOutputs(
   result: ValidationResultType,
   outputFolder: string,
-  processingLog?: string[]
+  processingLog?: string[],
+  scratchpadEntries?: Array<{ timestamp: string; action: string; content: string }>
 ): Promise<void> {
   try {
     const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolder);
@@ -231,7 +240,8 @@ async function saveDevelopmentOutputs(
               .reduce((sum, col) => sum + col.confidence, 0)
             / result.bannerCuts.flatMap(group => group.columns).length
           : 0,
-        processingLog: processingLog || []
+        processingLog: processingLog || [],
+        scratchpadTrace: scratchpadEntries || []
       }
     };
 
