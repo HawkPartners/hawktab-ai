@@ -1,5 +1,61 @@
 # Phase 2: Reliability Improvements
 
+> **STATUS: DEFERRED**
+>
+> This plan is deferred until we test the core pipeline with a cleaner banner plan. The issues that motivated Phase 2 (impossible logic like `S2=1 AND S2a=1`) arose from a poorly-formatted banner plan. Before implementing validation agents and human review infrastructure, we need to confirm what issues persist even with clean, well-structured inputs.
+>
+> **Next Step**: Re-run the existing pipeline with a manually cleaned banner plan to identify which problems are input quality issues vs. actual pipeline limitations.
+
+---
+
+## Updated Approach: Two Human Review Points
+
+When we return to this plan, the human-in-the-loop design should be restructured around **two review points** rather than one at the end:
+
+### Review Point 1: After BannerValidateAgent (Before CrosstabAgent)
+
+**Purpose**: Validate the extracted banner plan in language the user understands.
+
+- Show the banner plan structure as extracted
+- If BannerValidateAgent flags issues, present them in plain language:
+  - *"We see S2=1 AND S2a=1 in your banner, but according to the survey, S2a only shows when S2≠1. These can't both be true. Did you mean S2=1 OR S2a=1 to capture Cardiologists and Cardiologists in PPAs?"*
+- User confirms the suggested fix OR provides correction in their own words
+- Corrections route back to adjust that group before proceeding
+
+**Why here**: Users can validate "S2=1 OR S2a=1 for Cardiologists" - this is their language. They cannot validate `S2 == 1 | S2a == 1` - that's R code.
+
+### Review Point 2: After DataValidator (Before R Execution)
+
+**Purpose**: Confirm sample sizes look reasonable.
+
+- Show base sizes per cut (n=77 for Cardiologists, n=0 for Midwest)
+- Flag anomalies (zero-count, unexpectedly low)
+- Likely a quick confirmation since logic was already validated at Review Point 1
+- User can mark cuts to skip if base size is unacceptable
+
+**Why here**: Users know what base sizes to expect. This catches data issues vs. logic issues.
+
+### Why This Is Better Than Single End-of-Pipeline Review
+
+| Review Point | User Sees | Can They Validate? |
+|--------------|-----------|-------------------|
+| After BannerValidateAgent | Plain language expressions | ✅ Yes |
+| After DataValidator | Sample counts | ✅ Yes |
+| After R execution (current plan) | R syntax + results | ❌ No - can only skip |
+
+Putting substantive review at the end, after everything is in R code, means users can only toggle "skip" - they can't actually fix anything.
+
+---
+
+**When we implement this**, the structure below (Parts 2a, 2b, 2c) will need to be reorganized:
+- Part 2a (BannerValidateAgent) stays mostly the same
+- Part 2b (DataValidator) stays mostly the same
+- Part 2c (Human Review) becomes two components: Review Point 1 UI and Review Point 2 UI
+
+For now, the detailed implementation below represents the original single-review-point design.
+
+---
+
 ## Overview
 
 Phase 2 focuses on end-to-end reliability for the crosstab generation workflow. It consists of three parts:
@@ -1246,9 +1302,11 @@ Upload: Banner PDF + Data Map CSV + SPSS + Survey Doc (4 files)
 | 2026-01-02 | Added Part 2b (DataValidator) and Part 2c (Human Review) |
 | 2026-01-02 | Restructured as Phase 2a/2b/2c |
 | 2026-01-02 | Removed human edit feature - v1 is toggle valid/invalid only |
+| 2026-01-02 | **DEFERRED** - Plan paused until core pipeline tested with cleaner banner plan |
+| 2026-01-02 | Added two-review-point framework (Review Point 1 after BannerValidateAgent, Review Point 2 after DataValidator) |
 
 ---
 
 *Created: January 2, 2026*
 *Last Updated: January 2, 2026*
-*Status: Ready for Implementation*
+*Status: Deferred - Testing core pipeline with clean inputs first*
