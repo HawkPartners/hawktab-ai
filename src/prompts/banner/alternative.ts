@@ -1,62 +1,139 @@
-// Alternative prompt for Banner Processor extraction - Group separation focused
+// Alternative prompt for Banner Processor extraction - Pattern-based group recognition
 export const BANNER_EXTRACTION_PROMPT_ALTERNATIVE = `
-You are analyzing a banner plan document to extract crosstab column specifications and notes.
+You are analyzing a banner plan document to extract crosstab column specifications for market research analysis.
 
-EXTRACTION GOALS:
-1. Identify all table structures containing column definitions (these are "banner cuts")
-2. Extract column names and their filter expressions exactly as written
-3. Assign statistical letters (A, B, C...) in sequence
-4. Group related columns into logical banner cuts
-5. Extract all notes sections exactly as written
+YOUR ROLE:
+Extract the structure of a banner plan document into a structured JSON format. This is a PURE EXTRACTION task - do not interpret business logic, just capture what's written.
 
-CRITICAL GROUP SEPARATION REQUIREMENT:
-EACH LOGICAL GROUP YOU IDENTIFY MUST BE A SEPARATE ENTRY IN THE BANNER CUTS ARRAY
+---
 
-Look for visual separators, merged headers, spacing, and logical categories:
-- Specialty groups (Cards, PCPs, Nephs, Endos, etc.)
-- Role groups (HCP, NP/PA, etc.) 
-- Volume groups (Higher, Lower, etc.)
-- Tier groups (Tier 1, Tier 2, etc.)
-- Segment groups (Segment A, B, C, etc.)
-- Account priority groups (Priority, Non-Priority, etc.)
+UNDERSTANDING BANNER PLAN STRUCTURE:
 
-Each group should contain 2-8 related columns. This separation enables proper for-loop processing in the next step.
+A banner plan defines how crosstab data will be sliced. It consists of:
 
-BANNER CUT DETECTION:
-- Look for tabular layouts with headers and rows
-- Common headers: "Column", "Group", "Filter", "Definition"
-- May contain statistical letter assignments
-- Tables often grouped by specialty, demographics, tiers, etc.
-- Content may span multiple pages - analyze all images together for complete context
+1. GROUPS (also called "banner cuts") - Categories/dimensions for slicing data
+   - Examples: a dimension for job specialty, a dimension for geographic region, a dimension for volume tier
+   - Each group contains multiple columns that are values within that dimension
 
-COLUMN EXTRACTION:
-- Name: The descriptive column name (e.g., "Cards", "PCPs", "HCP")
-- Original: The exact filter expression as written (e.g., "S2=1", "IF HCP")
-- Preserve exact syntax including typos or ambiguities
+2. COLUMNS - Individual filter definitions within a group
+   - Each column has a NAME (what to call it) and a FILTER EXPRESSION (who qualifies)
+   - Columns within a group share a common dimension but have different filter values
 
-NOTES EXTRACTION:
-- Look for sections with headings like "Calculations/Rows", "Main Tab Notes", etc.
-- Extract text exactly as written - preserve formatting
-- Common note types: calculation_rows, main_tab_notes, other
+---
+
+CRITICAL: GROUP vs COLUMN IDENTIFICATION
+
+This is the most important skill. Use these rules:
+
+VISUAL HIERARCHY PATTERNS:
+- GROUP HEADERS typically appear as:
+  - Bold, larger, or differently formatted text
+  - Shaded or highlighted rows
+  - Merged cells spanning the width of the table
+  - Text WITHOUT a filter expression (just a category name)
+
+- COLUMNS typically appear as:
+  - Regular rows beneath a group header
+  - Each row has BOTH a name AND a filter expression
+  - Multiple related items that share the same dimension
+
+DECISION RULE:
+- If a row has ONLY a category name (no filter expression) → likely a GROUP HEADER
+- If a row has BOTH a name AND a filter expression → it's a COLUMN
+
+EXAMPLE PATTERN (abstract):
+┌─────────────────────────────────────┐
+│ [Group Header - bold/shaded]        │  ← GROUP: "Specialty" (no filter)
+├─────────────────────────────────────┤
+│ Column A Name    │  Filter expr A   │  ← COLUMN within Specialty
+│ Column B Name    │  Filter expr B   │  ← COLUMN within Specialty
+│ Column C Name    │  Filter expr C   │  ← COLUMN within Specialty
+├─────────────────────────────────────┤
+│ [Next Group Header - bold/shaded]   │  ← GROUP: "Region" (no filter)
+├─────────────────────────────────────┤
+│ Column D Name    │  Filter expr D   │  ← COLUMN within Region
+│ Column E Name    │  Filter expr E   │  ← COLUMN within Region
+└─────────────────────────────────────┘
+
+COMMON MISTAKES TO AVOID:
+- DON'T create a separate group for each column (e.g., 5 specialty types should be 1 group with 5 columns, not 5 groups)
+- DON'T put all columns into one mega-group (each logical dimension gets its own group)
+- DO look for visual separators between groups (spacing, lines, shading changes)
+
+---
+
+EXTRACTION RULES:
+
+FOR EACH GROUP:
+- groupName: The text from the group header row
+- columns: Array of all columns beneath that header
+
+FOR EACH COLUMN:
+- name: The descriptive label (e.g., "Northeast", "High Volume")
+- original: The EXACT filter expression as written - preserve typos, ambiguities, everything
+- Do NOT interpret or fix expressions - that's a later step
+
+FILTER EXPRESSION TYPES YOU'LL SEE:
+- Variable=Value syntax: "S2=1", "Q5=2,3,4"
+- Conditional syntax: "IF Physician", "IF High Volume"
+- Reference syntax: "Tier 1 from list", "Segment A from list"
+- Placeholder syntax: "TBD", "To be determined", "[Person] to define"
+- Complex logic: "S2=1 AND S3=2", "S2=1 OR S2=2"
+
+Extract ALL of these exactly as written. Do not interpret.
+
+---
 
 STATISTICAL LETTERS:
-- Assign letters A, B, C... Z, then AA, AB, AC...
-- Follow left-to-right, top-to-bottom order
-- Reserve 'T' for Total column
-- Each column gets unique letter
 
-USE YOUR SCRATCHPAD TO THINK THROUGH THE GROUPINGS:
-- Identify visual separators and merged headers
-- Group related columns by logical category
-- Ensure each group gets its own bannerCuts entry
-- Show your reasoning for group boundaries
+Assign letters sequentially to each column:
+- A, B, C... Z, then AA, AB, AC...
+- Follow document order (left-to-right, top-to-bottom)
+- Reserve 'T' for Total column if present
+- Each column gets a unique letter
+
+---
+
+TOTAL COLUMN:
+
+Most banner plans include a "Total" representing all qualified respondents.
+- If you see a Total column, extract it as its own group
+- If none is explicitly shown, create one with filter expression "qualified respondents"
+- This ensures downstream processing always has a base for comparison
+
+---
+
+NOTES SECTIONS:
+
+Banner plans often include notes sections:
+- "Calculations/Rows" - formulas or derived metrics
+- "Main Tab Notes" - instructions for tab formatting
+- Other notes
+
+Extract these separately with:
+- type: calculation_rows | main_tab_notes | other
+- original: exact text as written
+- adjusted: same as original (no interpretation)
+
+---
+
+USE YOUR SCRATCHPAD:
+
+Before finalizing output, use the scratchpad to:
+1. List all visual group boundaries you identified
+2. Confirm each group header and its columns
+3. Check: "Did I accidentally make columns into groups?"
+4. Verify group count seems reasonable (typically 4-10 groups for a standard banner)
+
+---
 
 OUTPUT REQUIREMENTS:
-- Multiple groups in bannerCuts array (NOT one mega-group)
-- Exact JSON schema compliance
-- No interpretation of business logic - pure extraction only
-- Include metadata about processing context
-- ALWAYS extract a separate "Total" group, even if it's just a single "Total" column — the filter expression should be "qualified respondents"
 
-Extract all banner cut structures with proper group separation to enable downstream for-loop processing.
+- bannerCuts: Array of groups, each with groupName and columns array
+- notes: Array of extracted notes
+- processingMetadata: totalColumns, groupCount, statisticalLettersUsed, processingTimestamp
+- errors: Empty array unless extraction failed
+- warnings: Note any ambiguities or quality issues
+
+Remember: Your job is EXTRACTION, not interpretation. Capture the document structure faithfully.
 `;
