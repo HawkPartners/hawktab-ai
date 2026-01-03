@@ -113,7 +113,7 @@ Enables the 80-person team to use the tool with proper authentication, persisten
 
 ### Internal Launch Checkpoint (After Phase 3)
 - [ ] Hawk Partners team can log in and generate crosstabs
-- [ ] Output quality matches or exceeds Joe's/fielding partner's tabs
+- [ ] Output quality matches Antares-style tabs (functional crosstabs with correct data)
 - [ ] Uses Azure OpenAI (compliance)
 - [ ] Projects are separated per-user
 - [ ] Errors visible in Sentry
