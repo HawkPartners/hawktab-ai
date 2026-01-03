@@ -13,7 +13,7 @@ Before implementing Phase II reliability features, we need to prove the core pip
 | Milestone | Status | Description |
 |-----------|--------|-------------|
 | 1. Single Clean Banner → Correct Base Sizes | ✅ **COMPLETE** | Leqvio Demand practice files |
-| 2. Table Formatting & Stitching | Not Started | Output looks like Joe's tabs |
+| 2. Table Formatting & Stitching | 🔄 **IN PROGRESS** | DataMapProcessor fixed; ready for table formatting |
 | 3. Validate Against Actual Reports | Not Started | Can we write the same report? |
 | 4. Clean Banner Plans Across All Test Data | Not Started | 23 datasets to test |
 | 5. Non-Clean Banner Testing | Not Started | Document failure modes |
@@ -40,7 +40,7 @@ Before implementing Phase II reliability features, we need to prove the core pip
 
 ---
 
-## Milestone 2: Table Formatting & Stitching (NEXT)
+## Milestone 2: Table Formatting & Stitching (IN PROGRESS)
 
 **Goal**: Make output look like what Joe or a fielding partner produces.
 
@@ -52,6 +52,25 @@ Before implementing Phase II reliability features, we need to prove the core pip
 - [ ] Proper formatting (percentages, decimal places, etc.)
 
 **Success Criteria**: Output Excel file is indistinguishable from Joe's tabs in structure and formatting.
+
+### Progress Notes
+
+**January 3, 2026 - DataMapProcessor Optimization (Prerequisite)**
+
+Started work on table formatting but discovered DataMapProcessor wasn't classifying variable types correctly. TablePlan relies on `normalizedType` to determine table structure, so this was a blocker.
+
+**Issues found and fixed** (see `temp-outputs/output-2026-01-03T10-14-25-915Z/bugs-*.md`):
+- Bug 0: BannerAgent sometimes only produced 1 group → prompting fix
+- Bug 1: Binary 0-1 items misclassified as `numeric_range` → now `binary_flag`
+- Bug 2: Scale items (1-5) misclassified → now `categorical_select` via threshold
+- Bug 3: Open text/numeric response lines were being dropped by parser → fixed
+- Bug 4: Small ranges (1-2, 1-53) misclassified → now `categorical_select`
+
+**Additional improvements**:
+- Added scratchpad trace output (`scratchpad-banner-*.md`, `scratchpad-crosstab-*.md`) for debugging agent reasoning
+- Added bug tracker template auto-generation for each run
+
+**Status**: DataMapProcessor now correctly classifies variable types. Ready to resume table formatting work.
 
 ---
 
@@ -161,4 +180,4 @@ Phase II (BannerValidateAgent, DataValidator, Human Review) addresses:
 ---
 
 *Created: January 2, 2026*
-*Last Updated: January 2, 2026*
+*Last Updated: January 3, 2026*
