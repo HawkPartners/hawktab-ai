@@ -323,37 +323,55 @@ function generateSingleTable(lines: string[], table: TableDefinition, _sessionId
 
 function generateMultiSubTable(lines: string[], table: MultiSubTableDefinition, _sessionId: string): void {
   const tableId = table.id;
-  
+
   lines.push(`# Multi-sub Table: ${table.title}`);
   lines.push(`# Items: ${table.items.length}`);
-  
+  lines.push(`# Normalized Type: ${table.normalizedType || 'default'}`);
+
   // Wrap in tryCatch for error handling
   lines.push('tryCatch({');
-  
+
   lines.push(`  item_labels <- c(${table.items.map(item => `"${item.label}"`).join(', ')})`);
-  
+
   // Initialize data frame with proper structure
   lines.push(`  table_${tableId} <- data.frame(Item = item_labels, stringsAsFactors = FALSE)`);
-  
+
   lines.push('  for (cut_name in names(cuts)) {');
   lines.push('    cut_data <- apply_cut(data, cuts[[cut_name]])');
-  lines.push('    # Base = respondents who were asked this question (use first item to check, all share same skip logic)');
-  lines.push(`    base_n <- sum(!is.na(cut_data$\`${table.items[0].var}\`))`);
-  lines.push('    col_values <- character(0)');
-  
-  for (const item of table.items) {
-    lines.push(`    if ("${item.var}" %in% names(cut_data)) {`);
-    lines.push(`      count <- sum(cut_data$\`${item.var}\` == ${item.positiveValue}, na.rm = TRUE)`);
-    lines.push('      pct <- calc_pct(count, base_n)');
-    lines.push('      col_values <- c(col_values, paste0(pct, "% (", count, ")"))');
-    lines.push('    } else {');
-    lines.push('      col_values <- c(col_values, "N/A")');
-    lines.push('    }');
+
+  // Bug 2 Fix: Sub-level numeric_range variables should show mean, not frequency
+  if (table.normalizedType === 'numeric_range') {
+    // Numeric range sub-variables: calculate mean for each item
+    lines.push('    col_values <- character(0)');
+
+    for (const item of table.items) {
+      lines.push(`    if ("${item.var}" %in% names(cut_data)) {`);
+      lines.push(`      mean_val <- round_half_up(mean(cut_data$\`${item.var}\`, na.rm = TRUE), 1)`);
+      lines.push('      col_values <- c(col_values, as.character(mean_val))');
+      lines.push('    } else {');
+      lines.push('      col_values <- c(col_values, "N/A")');
+      lines.push('    }');
+    }
+  } else {
+    // Default behavior: frequency counting for binary/categorical sub-variables
+    lines.push('    # Base = respondents who were asked this question (use first item to check, all share same skip logic)');
+    lines.push(`    base_n <- sum(!is.na(cut_data$\`${table.items[0].var}\`))`);
+    lines.push('    col_values <- character(0)');
+
+    for (const item of table.items) {
+      lines.push(`    if ("${item.var}" %in% names(cut_data)) {`);
+      lines.push(`      count <- sum(cut_data$\`${item.var}\` == ${item.positiveValue}, na.rm = TRUE)`);
+      lines.push('      pct <- calc_pct(count, base_n)');
+      lines.push('      col_values <- c(col_values, paste0(pct, "% (", count, ")"))');
+      lines.push('    } else {');
+      lines.push('      col_values <- c(col_values, "N/A")');
+      lines.push('    }');
+    }
   }
-  
+
   lines.push(`    table_${tableId}[[cut_name]] <- col_values`);
   lines.push('  }');
-  
+
   lines.push(`  results[["${tableId}"]] <- table_${tableId}`);
   lines.push(`  print(paste("✓ Generated multi-sub table: ${table.title}"))`);
   lines.push('}, error = function(e) {');

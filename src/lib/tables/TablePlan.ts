@@ -46,6 +46,8 @@ export type MultiSubTableDefinition = {
   // Enhanced metadata from normalized typing
   normalizedType?: string;
   rowSumConstraint?: boolean;
+  // Bug 3 Fix: For categorical sub-questions with multiple values, track which value this table represents
+  targetValue?: number | string;
 };
 
 export type TableDefinition = SingleTableDefinition | MultiSubTableDefinition;
@@ -242,52 +244,168 @@ export function buildTablePlanFromDataMap(dataMap: VerboseDataMapType[]): TableP
   }
 
   // Grouped sub tables (multi_subs)
+  // Bug 4 Fix: Detect column-structured variables (r#c# pattern) and group by row instead of parent
+  const columnVarPattern = /^(.+r\d+)(c\d+)$/i;
+
   for (const [parentQ, groupItems] of subGroups) {
     // Filter out admin/meta sub variables (using both old and new methods)
-    const validSubs = groupItems.filter((it) => 
+    const validSubs = groupItems.filter((it) =>
       !isAdminField(it.column) && it.normalizedType !== 'admin'
     );
     if (validSubs.length === 0) continue;
-    
-    // Title preference: any non-empty context from subs; fallback to parent description; fallback to parentQ
-    const parentMeta = parents.find((p) => (p.column || '').trim() === parentQ);
-    const title =
-      (validSubs.find((s) => (s.context || '').trim())?.context || '').trim() ||
-      (parentMeta?.description || '').trim() ||
-      parentQ;
-    
-    // Determine group normalized type from subs
-    let groupNormalizedType: string | undefined;
-    let rowSumConstraint: boolean | undefined;
-    
-    // Check if all subs have the same normalized type
-    const subTypes = new Set(validSubs.map(s => s.normalizedType));
-    if (subTypes.size === 1) {
-      groupNormalizedType = validSubs[0].normalizedType;
+
+    // Check if ANY item matches column pattern (r#c# structure)
+    const hasColumnStructure = validSubs.some(item =>
+      columnVarPattern.test(item.column)
+    );
+
+    if (hasColumnStructure) {
+      // Bug 4: Regroup by ROW (e.g., A3ar1, A3ar2, A3ar3) instead of by parent (A3a)
+      const rowGroups = new Map<string, VerboseDataMapType[]>();
+
+      for (const item of validSubs) {
+        const match = item.column.match(columnVarPattern);
+        if (match) {
+          const rowKey = match[1]; // "A3ar1", "A3ar2", etc.
+          if (!rowGroups.has(rowKey)) rowGroups.set(rowKey, []);
+          rowGroups.get(rowKey)!.push(item);
+        } else {
+          // Non-matching items go to a default group (shouldn't happen if data is consistent)
+          const defaultKey = `${parentQ}_other`;
+          if (!rowGroups.has(defaultKey)) rowGroups.set(defaultKey, []);
+          rowGroups.get(defaultKey)!.push(item);
+        }
+      }
+
+      // Create separate table for each row group
+      for (const [rowKey, rowItems] of rowGroups) {
+        // Use first item's context for title (all items in row share context)
+        // Context contains treatment name like "A3ar1: Leqvio (inclisiran) - For each treatment..."
+        const title = rowItems[0].context || rowKey;
+
+        // Determine group normalized type from row items
+        let groupNormalizedType: string | undefined;
+        let rowSumConstraint: boolean | undefined;
+
+        const subTypes = new Set(rowItems.map(s => s.normalizedType));
+        if (subTypes.size === 1) {
+          groupNormalizedType = rowItems[0].normalizedType;
+        }
+
+        if (rowItems.some(s => s.rowSumConstraint)) {
+          rowSumConstraint = true;
+        }
+
+        const items = rowItems.map<MultiSubItem>((sub) => ({
+          var: sub.column,
+          label: sub.description || sub.column,
+          positiveValue: inferPositiveValue(sub),
+          normalizedType: sub.normalizedType,
+          allowedValues: sub.allowedValues,
+        }));
+
+        tables.push({
+          id: slugify(rowKey),
+          title,
+          questionVar: rowKey,
+          tableType: 'multi_subs',
+          items,
+          normalizedType: groupNormalizedType,
+          rowSumConstraint,
+        });
+      }
+    } else {
+      // Default behavior: group by parentQuestion (no column structure)
+      const parentMeta = parents.find((p) => (p.column || '').trim() === parentQ);
+      const baseTitle =
+        (validSubs.find((s) => (s.context || '').trim())?.context || '').trim() ||
+        (parentMeta?.description || '').trim() ||
+        parentQ;
+
+      // Determine group normalized type from subs
+      let groupNormalizedType: string | undefined;
+      let rowSumConstraint: boolean | undefined;
+
+      // Check if all subs have the same normalized type
+      const subTypes = new Set(validSubs.map(s => s.normalizedType));
+      if (subTypes.size === 1) {
+        groupNormalizedType = validSubs[0].normalizedType;
+      }
+
+      // Check for row sum constraint (percentage distributions)
+      if (validSubs.some(s => s.rowSumConstraint)) {
+        rowSumConstraint = true;
+      }
+
+      // Bug 3 Fix: Check if we need separate tables per allowedValue
+      // Conditions: categorical_select with multiple values (not binary_flag)
+      const needsValueSplit =
+        groupNormalizedType === 'categorical_select' &&
+        validSubs[0].allowedValues &&
+        validSubs[0].allowedValues.length > 1 &&
+        // Exclude binary 0/1 cases (already handled by positiveValue logic)
+        !(validSubs[0].allowedValues.length === 2 &&
+          validSubs[0].allowedValues.includes(0) &&
+          validSubs[0].allowedValues.includes(1));
+
+      if (needsValueSplit && validSubs[0].allowedValues) {
+        // Create separate table for each allowedValue
+        const allowedValues = validSubs[0].allowedValues;
+
+        // Try to get labels for values from scaleLabels
+        const scaleLabels = validSubs[0].scaleLabels || parseAnswerOptions(validSubs[0].answerOptions || '');
+        const getValueLabel = (val: number | string): string => {
+          if (scaleLabels) {
+            const match = scaleLabels.find(sl => sl.value === val || String(sl.value) === String(val));
+            if (match) return match.label;
+          }
+          return String(val);
+        };
+
+        for (const targetVal of allowedValues) {
+          const valueLabel = getValueLabel(targetVal);
+          const title = `${baseTitle} - ${valueLabel}`;
+
+          const items = validSubs.map<MultiSubItem>((sub) => ({
+            var: sub.column,
+            label: sub.description || sub.column,
+            positiveValue: targetVal, // Use the target value for this table
+            normalizedType: sub.normalizedType,
+            allowedValues: sub.allowedValues,
+          }));
+
+          tables.push({
+            id: slugify(`${parentQ}-value-${targetVal}`),
+            title,
+            questionVar: parentQ,
+            tableType: 'multi_subs',
+            items,
+            normalizedType: groupNormalizedType,
+            rowSumConstraint,
+            targetValue: targetVal,
+          });
+        }
+      } else {
+        // Standard single table for this group
+        const items = validSubs.map<MultiSubItem>((sub) => ({
+          var: sub.column,
+          label: sub.description || sub.column,
+          positiveValue: inferPositiveValue(sub),
+          normalizedType: sub.normalizedType,
+          allowedValues: sub.allowedValues,
+        }));
+
+        tables.push({
+          id: slugify(parentQ),
+          title: baseTitle,
+          questionVar: parentQ,
+          tableType: 'multi_subs',
+          items,
+          normalizedType: groupNormalizedType,
+          rowSumConstraint,
+        });
+      }
     }
-    
-    // Check for row sum constraint (percentage distributions)
-    if (validSubs.some(s => s.rowSumConstraint)) {
-      rowSumConstraint = true;
-    }
-    
-    const items = validSubs.map<MultiSubItem>((sub) => ({
-      var: sub.column,
-      label: sub.description || sub.column,
-      positiveValue: inferPositiveValue(sub),
-      normalizedType: sub.normalizedType,
-      allowedValues: sub.allowedValues,
-    }));
-    
-    tables.push({
-      id: slugify(parentQ),
-      title,
-      questionVar: parentQ,
-      tableType: 'multi_subs',
-      items,
-      normalizedType: groupNormalizedType,
-      rowSumConstraint,
-    });
   }
 
   return { tables };

@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
 
     // Kick off background processing and return immediately so client can poll
     ;(async () => {
+      const processingStartTime = Date.now();
       try {
         console.log(`[API] Starting Phase 5 data processing for session: ${sessionId}`);
         const outputFolderTimestamp = `output-${new Date().toISOString().replace(/[:.]/g, '-')}`;
@@ -310,10 +311,37 @@ export async function POST(request: NextRequest) {
                 
                 if (csvFiles.length > 0) {
                   console.log(`[API] Successfully generated ${csvFiles.length} CSV files`);
-                  updateJob(job.jobId, { 
-                    stage: 'complete', 
-                    percent: 100, 
-                    message: `Complete! Generated ${csvFiles.length} crosstab tables. Download Excel at /api/export-workbook/${outputFolderTimestamp}`,
+
+                  // Write run summary with timing info
+                  const processingEndTime = Date.now();
+                  const durationMs = processingEndTime - processingStartTime;
+                  const durationSec = (durationMs / 1000).toFixed(1);
+                  const runSummary = {
+                    sessionId: outputFolderTimestamp,
+                    timing: {
+                      startTime: new Date(processingStartTime).toISOString(),
+                      endTime: new Date(processingEndTime).toISOString(),
+                      durationMs,
+                      durationFormatted: `${durationSec}s`
+                    },
+                    outputs: {
+                      tablesGenerated: tablePlan.tables.length,
+                      cutsGenerated: cutsSpec.cuts.length,
+                      csvFilesCreated: csvFiles.length,
+                      files: csvFiles
+                    },
+                    status: 'success'
+                  };
+                  await fs.writeFile(
+                    path.join(outputDir, 'run-summary.json'),
+                    JSON.stringify(runSummary, null, 2)
+                  );
+                  console.log(`[API] Run completed in ${durationSec}s - summary saved to run-summary.json`);
+
+                  updateJob(job.jobId, {
+                    stage: 'complete',
+                    percent: 100,
+                    message: `Complete! Generated ${csvFiles.length} crosstab tables in ${durationSec}s. Download Excel at /api/export-workbook/${outputFolderTimestamp}`,
                     sessionId: outputFolderTimestamp,
                     downloadUrl: `/api/export-workbook/${outputFolderTimestamp}`
                   });
