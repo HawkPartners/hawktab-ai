@@ -277,27 +277,358 @@ src/
 │   └── table/              ← NEW
 │       ├── index.ts        (prompt selector)
 │       └── production.ts   (main prompt)
+├── schemas/
+│   └── tableAgentSchema.ts ← NEW (Zod schemas for input/output)
 ```
-
-**TableAgent.ts structure:**
-- Import pattern from BannerAgent (similar structure)
-- Uses `getTableModel()` from env
-- Takes: processed datamap (grouped), survey markdown
-- Returns: JSON table definitions per parent group
-- Processes one parent group at a time (loop externally)
 
 ---
 
-### Step 2: Survey Upload & Markdown Conversion
+#### 1.1 Key Concept: Table Type ≠ Normalized Type
 
-**UI changes:**
+**Critical distinction the agent must understand:**
+
+| Concept | What It Is | Example |
+|---------|-----------|---------|
+| `normalizedType` | Data structure from DataMapProcessor | `numeric_range`, `categorical_select`, `binary_flag` |
+| `tableType` | Display format for crosstab output | `frequency`, `mean_rows`, `grid_by_value`, `grid_by_item` |
+
+The agent's job is to **map data structures to display formats** based on survey context.
+
+---
+
+#### 1.2 Input Structure
+
+**Verbose DataMap field mapping:**
+
+| Field | Parent Question | Sub Question |
+|-------|-----------------|--------------|
+| `column` | Question ID (e.g., "S6") | Sub-variable ID (e.g., "S8r1") |
+| `description` | Question text | Answer option label |
+| `context` | Empty | Parent question text |
+| `parentQuestion` | "NA" | Parent ID (e.g., "S8") |
+
+**Grouped input format** (what agent receives per call):
+
+```typescript
+interface TableAgentInput {
+  // The parent question (synthesized for sub groups)
+  questionId: string;        // "S8" or "A1"
+  questionText: string;      // From description (parent) or context (sub)
+
+  // All variables for this question
+  items: {
+    column: string;          // Variable name: "S8r1", "A1r1"
+    label: string;           // From description: "Treating/Managing patients"
+    normalizedType: string;  // "numeric_range", "categorical_select"
+    valueType: string;       // "Values: 0-100", "Values: 1-2"
+    rangeMin?: number;
+    rangeMax?: number;
+    allowedValues?: (number | string)[];
+    scaleLabels?: { value: number | string; label: string }[];
+  }[];
+
+  // Survey markdown context (optional, helps with reasoning)
+  surveyContext?: string;
+}
+```
+
+**Example: S8 (numeric range subs)**
+```json
+{
+  "questionId": "S8",
+  "questionText": "Approximately what percentage of your professional time is spent performing each of the following activities?",
+  "items": [
+    { "column": "S8r1", "label": "Treating/Managing patients", "normalizedType": "numeric_range", "rangeMin": 0, "rangeMax": 100 },
+    { "column": "S8r2", "label": "Performing academic functions", "normalizedType": "numeric_range", "rangeMin": 0, "rangeMax": 100 },
+    { "column": "S8r3", "label": "Participating in clinical research", "normalizedType": "numeric_range", "rangeMin": 0, "rangeMax": 100 },
+    { "column": "S8r4", "label": "Performing other functions", "normalizedType": "numeric_range", "rangeMin": 0, "rangeMax": 100 }
+  ]
+}
+```
+
+**Example: A1 (categorical grid)**
+```json
+{
+  "questionId": "A1",
+  "questionText": "To the best of your knowledge, which statement below best describes the current indication for each of the following treatments?",
+  "items": [
+    { "column": "A1r1", "label": "Leqvio (inclisiran)", "normalizedType": "categorical_select", "allowedValues": [1, 2] },
+    { "column": "A1r2", "label": "Praluent (alirocumab)", "normalizedType": "categorical_select", "allowedValues": [1, 2] },
+    { "column": "A1r3", "label": "Repatha (evolocumab)", "normalizedType": "categorical_select", "allowedValues": [1, 2] },
+    { "column": "A1r4", "label": "Nexletol/Nexlizet", "normalizedType": "categorical_select", "allowedValues": [1, 2] }
+  ]
+}
+```
+
+---
+
+#### 1.3 What the Agent Reasons About
+
+The agent decides **how to display** data based on:
+1. Data structure (normalizedType, allowedValues, rangeMin/rangeMax)
+2. Question semantics (what do the values represent?)
+3. Crosstab conventions (what makes sense as rows? what stats to show?)
+
+**The agent does NOT handle:**
+- Base filters (R handles: `!is.na(variable)`)
+- Banner filters (CrosstabAgent already validated these)
+- Data validation (separate concern)
+
+**Example reasoning for S8:**
+> "S8 has 4 items, each with numeric_range 0-100. These are percentages per activity category.
+> Best display: One table with activities as ROWS, showing mean/median stats.
+> Table type: `mean_rows`"
+
+**Example reasoning for A1:**
+> "A1 has 4 treatments, each with values 1-2 representing two different indication statements.
+> In the survey, this is a grid: treatments (rows) × indications (columns A/B).
+> For crosstabs, I can't show a 2-column grid directly.
+> Options:
+>   1. Group by value: Table for value=1 (all treatments), Table for value=2 (all treatments)
+>   2. Group by item: Table per treatment showing both values as rows
+> Best display: Both views are useful. Create:
+>   - Table 'A1_indication_A': All treatments, filtered to value=1
+>   - Table 'A1_indication_B': All treatments, filtered to value=2
+>   - Optionally: Per-treatment tables
+> Table type: `grid_by_value`"
+
+---
+
+#### 1.4 Table Type Catalog
+
+The prompt includes a catalog of available table types:
+
+| Table Type | When to Use | Row Structure | Stats Shown |
+|------------|-------------|---------------|-------------|
+| `frequency` | Single categorical question | Each answer option is a row | Count, % |
+| `mean_rows` | Multiple numeric items | Each item is a row | Mean, Median, SD |
+| `grid_by_value` | Grid question with N values | Each item is a row (filtered to one value) | Count, % |
+| `grid_by_item` | Grid question with N values | Each value is a row | Count, % |
+| `multi_select` | Multi-select (binary subs) | Each option is a row (value=1) | Count, % |
+| `ranking` | Ranking questions | Each option is a row | Mean rank |
+
+**Agent selects table type + may output multiple tables per question group.**
+
+---
+
+#### 1.5 Output Schema
+
+```typescript
+interface TableAgentOutput {
+  questionId: string;           // Parent question ID
+  questionText: string;         // For reference
+
+  tables: {
+    tableId: string;            // Unique ID: "a1_indication_a", "s8"
+    title: string;              // Display title
+    tableType: string;          // From catalog: "mean_rows", "grid_by_value", etc.
+
+    rows: {
+      variable: string;         // SPSS variable name
+      label: string;            // Display label
+      filterValue?: number | string;  // For grid_by_value: which value this row represents
+    }[];
+
+    stats: string[];            // ["count", "percent"] or ["mean", "median", "sd"]
+  }[];
+
+  confidence: number;           // 0.0-1.0 - how confident in this interpretation
+  reasoning: string;            // Brief explanation of decisions made
+}
+```
+
+**Note on Base Filters:**
+
+Base filters (who answered this question) are NOT part of TableAgent output. R handles this automatically:
+
+```r
+# Standard crosstab logic - every cell applies:
+# 1. Base filter: !is.na(question_variable)  -- who answered
+# 2. Banner filter: S2 == 1                  -- the banner cut (e.g., Males)
+
+data %>% filter(!is.na(A3r1) & banner_condition)
+```
+
+This is standard crosstab behavior, not special logic. The TableAgent only decides **display format** - R handles **who to include**.
+
+**Example output for S8:**
+```json
+{
+  "questionId": "S8",
+  "questionText": "Approximately what percentage...",
+  "tables": [{
+    "tableId": "s8",
+    "title": "Professional Time Allocation",
+    "tableType": "mean_rows",
+    "rows": [
+      { "variable": "S8r1", "label": "Treating/Managing patients" },
+      { "variable": "S8r2", "label": "Performing academic functions" },
+      { "variable": "S8r3", "label": "Participating in clinical research" },
+      { "variable": "S8r4", "label": "Performing other functions" }
+    ],
+    "stats": ["mean", "median", "sd"]
+  }],
+  "confidence": 0.95,
+  "reasoning": "Numeric range items representing percentages. Display as rows with mean stats."
+}
+```
+
+**Example output for A1:**
+```json
+{
+  "questionId": "A1",
+  "questionText": "To the best of your knowledge...",
+  "tables": [
+    {
+      "tableId": "a1_indication_a",
+      "title": "Current Indication - As adjunct to diet (Value A)",
+      "tableType": "grid_by_value",
+      "rows": [
+        { "variable": "A1r1", "label": "Leqvio (inclisiran)", "filterValue": 1 },
+        { "variable": "A1r2", "label": "Praluent (alirocumab)", "filterValue": 1 },
+        { "variable": "A1r3", "label": "Repatha (evolocumab)", "filterValue": 1 },
+        { "variable": "A1r4", "label": "Nexletol/Nexlizet", "filterValue": 1 }
+      ],
+      "stats": ["count", "percent"]
+    },
+    {
+      "tableId": "a1_indication_b",
+      "title": "Current Indication - As adjunct to diet + statin (Value B)",
+      "tableType": "grid_by_value",
+      "rows": [
+        { "variable": "A1r1", "label": "Leqvio (inclisiran)", "filterValue": 2 },
+        { "variable": "A1r2", "label": "Praluent (alirocumab)", "filterValue": 2 },
+        { "variable": "A1r3", "label": "Repatha (evolocumab)", "filterValue": 2 },
+        { "variable": "A1r4", "label": "Nexletol/Nexlizet", "filterValue": 2 }
+      ],
+      "stats": ["count", "percent"]
+    }
+  ],
+  "confidence": 0.85,
+  "reasoning": "Grid question with 4 treatments × 2 indication options. Created separate tables for each indication value since crosstabs can't show 2-column grids."
+}
+```
+
+---
+
+#### 1.6 Implementation Files
+
+**`src/agents/TableAgent.ts`**
+- Functional approach (like CrosstabAgent)
+- `processQuestionGroup(input: TableAgentInput): Promise<TableAgentOutput>`
+- `processAllGroups(groups: TableAgentInput[]): Promise<TableAgentOutput[]>`
+- Uses `getTableModel()` from env
+- Uses scratchpad tool for reasoning transparency
+- Saves development outputs to temp-outputs/
+
+**`src/schemas/tableAgentSchema.ts`**
+- Zod schemas for `TableAgentInput` and `TableAgentOutput`
+- Export types for use in agent and downstream
+
+**`src/prompts/table/index.ts`**
+- Prompt selector with env override (`TABLE_PROMPT_VERSION`)
+
+**`src/prompts/table/production.ts`**
+- System prompt with:
+  - Role definition (market researcher creating crosstabs)
+  - Table type catalog with descriptions
+  - Input format explanation
+  - Output schema specification
+  - Example reasoning patterns
+
+---
+
+#### 1.7 Grouping Logic (Pre-Agent)
+
+Before calling the agent, we need to group the verbose datamap by parent:
+
+```typescript
+function groupDataMapByParent(dataMap: VerboseDataMapType[]): TableAgentInput[] {
+  const groups: TableAgentInput[] = [];
+
+  // Separate parents and subs
+  const parents = dataMap.filter(v => v.level === 'parent' && v.normalizedType !== 'admin');
+  const subs = dataMap.filter(v => v.level === 'sub');
+
+  // Group subs by parentQuestion
+  const subGroups = new Map<string, VerboseDataMapType[]>();
+  for (const sub of subs) {
+    const parent = sub.parentQuestion;
+    if (!parent || parent === 'NA') continue;
+    if (!subGroups.has(parent)) subGroups.set(parent, []);
+    subGroups.get(parent)!.push(sub);
+  }
+
+  // Create input for each sub group
+  for (const [parentId, items] of subGroups) {
+    // Get question text from context (all subs share same context)
+    const questionText = items[0]?.context || parentId;
+
+    groups.push({
+      questionId: parentId,
+      questionText,
+      items: items.map(item => ({
+        column: item.column,
+        label: item.description,
+        normalizedType: item.normalizedType || 'unknown',
+        valueType: item.valueType,
+        rangeMin: item.rangeMin,
+        rangeMax: item.rangeMax,
+        allowedValues: item.allowedValues,
+        scaleLabels: item.scaleLabels,
+      }))
+    });
+  }
+
+  // Also include standalone parents (no subs)
+  const parentsWithSubs = new Set(subGroups.keys());
+  for (const parent of parents) {
+    if (parentsWithSubs.has(parent.column)) continue;
+
+    groups.push({
+      questionId: parent.column,
+      questionText: parent.description,
+      items: [{
+        column: parent.column,
+        label: parent.description,
+        normalizedType: parent.normalizedType || 'unknown',
+        valueType: parent.valueType,
+        rangeMin: parent.rangeMin,
+        rangeMax: parent.rangeMax,
+        allowedValues: parent.allowedValues,
+        scaleLabels: parent.scaleLabels,
+      }]
+    });
+  }
+
+  return groups;
+}
+```
+
+---
+
+### Step 2: Survey Upload & Markdown Conversion (DEFERRED - Optional Enhancement)
+
+**Status: Deferred**
+
+The datamap already contains sufficient information for table type decisions:
+- Question text (description for parents, context for subs)
+- Answer options (scaleLabels, allowedValues)
+- Variable structure (parent-child relationships)
+- Normalized types
+
+**When to revisit:**
+- If TableAgent consistently struggles with ambiguous cases
+- If we need richer context for complex skip logic interpretation
+- If users specifically request survey-aware processing
+
+**Original plan (if needed later):**
 - Add survey file upload field (DOCX)
-- Store survey alongside banner/datamap
-
-**Conversion:**
 - Add `src/lib/processors/SurveyProcessor.ts`
-- Use existing DOCX → Markdown library (e.g., `mammoth`)
-- Preserve question structure, answer options, skip logic notes
+- Use DOCX → Markdown library (e.g., `mammoth`)
+- Pass as optional `surveyContext` field in TableAgentInput
+
+**For now:** TableAgent works from datamap alone. The prompt guides the agent to reason about display formats without needing the original survey document.
 
 ---
 
@@ -372,14 +703,22 @@ src/
 | Order | Step | Dependency | Effort | Status |
 |-------|------|------------|--------|--------|
 | 0 | Env variable separation | None | Small | ✅ Complete |
-| 1 | Agent structure (files) | Step 0 | Small | |
-| 2 | Survey processor | None | Medium | |
-| 3 | Table agent prompt | Step 1 | Medium | |
-| 4 | Integration (API) | Steps 1-3 | Medium | |
+| 1 | Agent structure (files) | Step 0 | Medium | |
+| 1.1 | - Schema definitions (`tableAgentSchema.ts`) | Step 0 | Small | |
+| 1.2 | - Prompt files (`prompts/table/`) | Step 1.1 | Small | |
+| 1.3 | - Agent implementation (`TableAgent.ts`) | Steps 1.1, 1.2 | Medium | |
+| 1.4 | - Grouping logic (pre-agent) | Step 1.1 | Small | |
+| 2 | Survey processor | None | Medium | ⏸️ Deferred |
+| 3 | Table agent prompt (iterate) | Step 1 | Medium | |
+| 4 | Integration (API) | Step 1, 3 | Medium | |
 | 5 | R script updates | Step 4 | Medium | |
 | 6 | ExcelJS formatter | Step 5 | Medium | |
 
-**Iteration approach**: After Step 4, run on test data and iterate on prompt + table types based on what's missing.
+**Key simplifications:**
+- **Step 2 deferred**: Datamap has sufficient context for table type decisions. Survey markdown only needed if agent struggles with ambiguous cases.
+- **Base filters removed from TableAgent**: R handles this automatically (`!is.na(variable) & banner_filter`). TableAgent only decides display format.
+
+**Iteration approach**: After Step 1, test with sample datamap data. Iterate on prompt (Step 3) until table type selection is reliable. Then integrate and build R/ExcelJS layers.
 
 ---
 
