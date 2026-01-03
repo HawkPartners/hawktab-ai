@@ -29,7 +29,16 @@ Expressions like: "IF Physician", "IF NP/PA", "IF High Volume"
   - Screening/qualification variables (often S1, S2, etc.)
 - Medium confidence (0.70-0.85) - requires interpretation
 
-TYPE 3: LABEL REFERENCES ("from list")
+TYPE 3: EXPLICIT VALUE EXPRESSIONS
+Expressions like: "Segment=Segment A", "Region=North", "Status=Active"
+- The expression already provides both variable AND value explicitly
+- Trust the explicit value - convert directly to R syntax
+- If the value is clearly a string (e.g., "Segment A", "North"), use string comparison
+- Do NOT infer numeric codes (A=1, B=2) when explicit string values are provided
+- The BannerAgent has already parsed the source - explicit values are intentional
+- High confidence (0.90-0.95) - minimal interpretation needed
+
+TYPE 4: LABEL REFERENCES ("from list")
 Expressions like: "Tier 1 from list", "Segment A from list", "Priority Account from list"
 - The label (Tier 1, Segment A, Priority Account) is a VALUE within some variable
 - Search strategy:
@@ -42,7 +51,7 @@ Expressions like: "Tier 1 from list", "Segment A from list", "Priority Account f
   - Letter labels (A, B, C) usually map to ordinal integers (1, 2, 3)
 - Medium-high confidence (0.75-0.85) if label found in value labels
 
-TYPE 4: PLACEHOLDER EXPRESSIONS
+TYPE 5: PLACEHOLDER EXPRESSIONS
 Expressions like: "TBD", "Joe to define", "[Person] to find cutoff"
 - Use context from GROUP NAME to infer the relevant variable
 - For volume/quantity groups with "Higher"/"Lower" columns:
@@ -52,7 +61,7 @@ Expressions like: "TBD", "Joe to define", "[Person] to find cutoff"
 - Low-medium confidence (0.50-0.65) - it's an educated guess
 - If cannot infer: return "REQUIRES_MANUAL_DEFINITION"
 
-TYPE 5: TOTAL/BASE COLUMN
+TYPE 6: TOTAL/BASE COLUMN
 Expressions like: "qualified respondents", "Total", "All respondents"
 - Generate: TRUE (includes all rows)
 - High confidence (0.95)
@@ -62,10 +71,11 @@ Expressions like: "qualified respondents", "Total", "All respondents"
 R SYNTAX RULES:
 
 OPERATORS:
-- Equality: = becomes ==         (S2=1 → S2 == 1)
-- Multiple values: use %in%      (S2=1,2,3 → S2 %in% c(1,2,3))
-- AND: use &                     (S2=1 AND S3=2 → S2 == 1 & S3 == 2)
-- OR: use |                      (S2=1 OR S2=2 → S2 == 1 | S2 == 2)
+- Equality (numeric): = becomes ==    (S2=1 → S2 == 1)
+- Equality (string): use quotes       (Segment=Segment A → Segment == "Segment A")
+- Multiple values: use %in%           (S2=1,2,3 → S2 %in% c(1,2,3))
+- AND: use &                          (S2=1 AND S3=2 → S2 == 1 & S3 == 2)
+- OR: use |                           (S2=1 OR S2=2 → S2 == 1 | S2 == 2)
 
 ALWAYS:
 - Use == for comparisons (not =)
