@@ -54,6 +54,15 @@ export function generateMasterRScript(manifest: RManifest, sessionId: string): s
   lines.push('  round(100 * x / base, 1)');
   lines.push('}');
   lines.push('');
+
+  // Helper function to safely apply cuts (handles NA values)
+  lines.push('# Helper function to safely apply cuts (NA in cut expression = exclude)');
+  lines.push('apply_cut <- function(data, cut_mask) {');
+  lines.push('  safe_mask <- cut_mask');
+  lines.push('  safe_mask[is.na(safe_mask)] <- FALSE');
+  lines.push('  data[safe_mask, ]');
+  lines.push('}');
+  lines.push('');
   
   // Generate table functions
   lines.push('# Generate crosstab tables');
@@ -179,8 +188,9 @@ function generateSingleTable(lines: string[], table: TableDefinition, _sessionId
     lines.push(`    table_${tableId} <- data.frame(Level = levels, stringsAsFactors = FALSE)`);
     
     lines.push('    for (cut_name in names(cuts)) {');
-    lines.push('      cut_data <- data[cuts[[cut_name]], ]');
-    lines.push('      base_n <- nrow(cut_data)');
+    lines.push('      cut_data <- apply_cut(data, cuts[[cut_name]])');
+    lines.push('      # Base = number of valid responses (non-NA) for this question in this cut');
+    lines.push(`      base_n <- sum(!is.na(cut_data$\`${table.questionVar}\`))`);
     lines.push('      counts <- numeric(length(values))');
     lines.push('      for (i in seq_along(values)) {');
     lines.push(`        counts[i] <- sum(cut_data$\`${table.questionVar}\` == values[i], na.rm = TRUE)`);
@@ -194,11 +204,11 @@ function generateSingleTable(lines: string[], table: TableDefinition, _sessionId
     // Numeric variable or levels to be inferred
     // Initialize data frame with proper structure
     lines.push(`    table_${tableId} <- data.frame(Metric = c("N", "Mean", "Median", "SD"), stringsAsFactors = FALSE)`);
-    
+
     lines.push('    for (cut_name in names(cuts)) {');
-    lines.push('      cut_data <- data[cuts[[cut_name]], ]');
-    lines.push('      base_n <- nrow(cut_data)');
-    lines.push(`      valid_n <- sum(!is.na(cut_data$\`${table.questionVar}\`), na.rm = TRUE)`);
+    lines.push('      cut_data <- apply_cut(data, cuts[[cut_name]])');
+    lines.push('      # Valid N = non-NA responses for this question in this cut');
+    lines.push(`      valid_n <- sum(!is.na(cut_data$\`${table.questionVar}\`))`);
     lines.push(`      mean_val <- round(mean(cut_data$\`${table.questionVar}\`, na.rm = TRUE), 2)`);
     lines.push(`      median_val <- round(median(cut_data$\`${table.questionVar}\`, na.rm = TRUE), 2)`);
     lines.push(`      sd_val <- round(sd(cut_data$\`${table.questionVar}\`, na.rm = TRUE), 2)`);
@@ -237,7 +247,8 @@ function generateMultiSubTable(lines: string[], table: MultiSubTableDefinition, 
   lines.push(`  table_${tableId} <- data.frame(Item = item_labels, stringsAsFactors = FALSE)`);
   
   lines.push('  for (cut_name in names(cuts)) {');
-  lines.push('    cut_data <- data[cuts[[cut_name]], ]');
+  lines.push('    cut_data <- apply_cut(data, cuts[[cut_name]])');
+  lines.push('    # Base = number of respondents in this cut (for multi-sub, all items share same base)');
   lines.push('    base_n <- nrow(cut_data)');
   lines.push('    col_values <- character(0)');
   
