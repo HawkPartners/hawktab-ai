@@ -9,15 +9,26 @@ Extract the structure of a banner plan document into a structured JSON format. T
 
 UNDERSTANDING BANNER PLAN STRUCTURE:
 
-A banner plan defines how crosstab data will be sliced. It consists of:
+A banner plan defines how crosstab data will be sliced. It has a simple hierarchy:
 
-1. GROUPS (also called "banner cuts") - Categories/dimensions for slicing data
-   - Examples: a dimension for job specialty, a dimension for geographic region, a dimension for volume tier
-   - Each group contains multiple columns that are values within that dimension
+1. GROUPS - Logical categories that organize related columns
+   - A group is just a CONTAINER with a name (e.g., "Gender", "Practice Type", "Region")
+   - Groups do NOT have filter expressions - they are labels only
+   - Groups manifest differently across banners: merged cells, shaded rows, bold headers, visual separators
+   - Treat each banner as having its own visual language - look for patterns
 
-2. COLUMNS - Individual filter definitions within a group
+2. COLUMNS - Individual cuts WITHIN a group
    - Each column has a NAME (what to call it) and a FILTER EXPRESSION (who qualifies)
+   - The filter expression lives on the COLUMN, not the group
    - Columns within a group share a common dimension but have different filter values
+
+HIERARCHY EXAMPLE:
+  Group: "Gender" (no filter - just a label)
+    └── Column: "Male" with filter "Q1=1"
+    └── Column: "Female" with filter "Q1=2"
+  Group: "Region" (no filter - just a label)
+    └── Column: "Northeast" with filter "Q2=1"
+    └── Column: "West" with filter "Q2=4"
 
 ---
 
@@ -43,21 +54,21 @@ DECISION RULE:
 
 EXAMPLE PATTERN (abstract):
 ┌─────────────────────────────────────┐
-│ [Group Header - bold/shaded]        │  ← GROUP: "Specialty" (no filter)
+│ [Group Header 1]                    │  ← GROUP (no filter, just a label)
 ├─────────────────────────────────────┤
-│ Column A Name    │  Filter expr A   │  ← COLUMN within Specialty
-│ Column B Name    │  Filter expr B   │  ← COLUMN within Specialty
-│ Column C Name    │  Filter expr C   │  ← COLUMN within Specialty
+│ Column A Name    │  Filter expr A   │  ← COLUMN within Group 1
+│ Column B Name    │  Filter expr B   │  ← COLUMN within Group 1
+│ Column C Name    │  Filter expr C   │  ← COLUMN within Group 1
 ├─────────────────────────────────────┤
-│ [Next Group Header - bold/shaded]   │  ← GROUP: "Region" (no filter)
+│ [Group Header 2]                    │  ← GROUP (no filter, just a label)
 ├─────────────────────────────────────┤
-│ Column D Name    │  Filter expr D   │  ← COLUMN within Region
-│ Column E Name    │  Filter expr E   │  ← COLUMN within Region
+│ Column D Name    │  Filter expr D   │  ← COLUMN within Group 2
+│ Column E Name    │  Filter expr E   │  ← COLUMN within Group 2
 └─────────────────────────────────────┘
 
 COMMON MISTAKES TO AVOID:
-- DON'T create a separate group for each column (e.g., 5 specialty types should be 1 group with 5 columns, not 5 groups)
-- DON'T combine separate groups into one group (if two sections have the same header styling, they are separate groups)
+- DON'T create a separate group for each column (e.g., 5 values under one header = 1 group with 5 columns, not 5 groups)
+- DON'T combine separate groups into one group (if two sections have separate headers, they are separate groups)
 - DON'T put all columns into one mega-group (each logical dimension gets its own group)
 - DO look for visual separators between groups (spacing, lines, shading changes)
 
@@ -70,13 +81,20 @@ VALIDATION CHECK - GROUP COUNT:
 
 CRITICAL: GROUPS vs NOTES - WHAT GOES WHERE
 
-A GROUP must represent a way to FILTER/SLICE respondents. Ask: "Can I filter the data by this?"
+A GROUP is a container for columns that filter respondents. The group itself is just a label.
+Ask: "Does this section contain columns with filter expressions?"
 
 These are GROUPS (go in bannerCuts):
-- Specialty (filter by job type)
-- Region (filter by geography)
-- Volume tier (filter by quantity)
-- Segments (filter by segment assignment)
+- Any dimension the user wants to slice data by
+- Look for visual patterns that indicate group boundaries (see VISUAL HIERARCHY PATTERNS above)
+
+IMPORTANT - SIMILAR GROUPS ARE INTENTIONAL:
+Users often want to cut data by similar but distinct dimensions. For example:
+- "Job Title" and "Seniority" may sound related, but they are different dimensions
+- "Purchase Frequency" and "Purchase Volume" are conceptually related but distinct
+- If they have SEPARATE headers, the user wants them as SEPARATE groups
+- Your job is EXTRACTION, not simplification. Do NOT merge groups that "seem similar"
+- If two headers exist, the user intentionally created two groups - respect that
 
 These are NOTES (go in notes array, NOT bannerCuts):
 - "Calculations/Rows" - describes how to calculate metrics (T2B, B2B, means)
@@ -144,16 +162,28 @@ Extract these separately with:
 
 ---
 
-USE YOUR SCRATCHPAD:
+USE YOUR SCRATCHPAD - REQUIRED ENTRIES:
 
-Before finalizing output, use the scratchpad to:
-1. List all visual group boundaries you identified
-2. Confirm each group header and its columns
-3. Check: "Did I accidentally make columns into groups?"
-4. Check: "Did I accidentally combine two groups into one?"
-5. Verify group count seems reasonable (typically 4-10 groups for a standard banner)
+You MUST make at least these 3 scratchpad entries before finalizing output:
 
-Take a second pass through the document to verify your group boundaries before finalizing.
+ENTRY 1 - DOCUMENT UNDERSTANDING:
+Confirm you understand the banner structure and how it indicates group boundaries.
+Format: "This banner uses [visual pattern] to indicate groups (e.g., merged cells, shaded rows, bold text, visual separators)."
+
+ENTRY 2 - GROUP MAPPING:
+List every group you identified, then for each group, list the columns within it.
+Remember: Groups are containers (no filter expression). Columns have names AND filter expressions.
+Format:
+  "Group: [Name] → columns: [Col1 (filter1), Col2 (filter2), Col3 (filter3)]"
+  "Group: [Name] → columns: [Col4 (filter4), Col5 (filter5)]"
+
+ENTRY 3 - VALIDATION:
+Before finalizing, verify:
+- Count of groups in output matches count of groups you mapped above
+- You did NOT merge similar-sounding groups (e.g., "Job Title" and "Seniority" stay separate)
+- You did NOT split one group into many (e.g., 5 values under one group name = 1 group with 5 columns)
+
+Only output your final structure AFTER completing at least these 3 entries.
 
 ---
 

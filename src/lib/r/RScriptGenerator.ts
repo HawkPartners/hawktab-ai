@@ -344,11 +344,26 @@ function generateMultiSubTable(lines: string[], table: MultiSubTableDefinition, 
   // Bug 2 Fix: Sub-level numeric_range variables should show mean, not frequency
   if (table.normalizedType === 'numeric_range') {
     // Numeric range sub-variables: calculate mean for each item
+    // NOTE: For follow-up questions (like A3a), the base should be filtered to those
+    // who qualify (e.g., A3r2 > 0 for Leqvio users). This requires baseFilterVar on the table.
+    // If no baseFilterVar is specified, calculate mean for all respondents with valid data.
     lines.push('    col_values <- character(0)');
 
     for (const item of table.items) {
+      const baseFilterVar = (item as { baseFilterVar?: string }).baseFilterVar;
+
       lines.push(`    if ("${item.var}" %in% names(cut_data)) {`);
-      lines.push(`      mean_val <- round_half_up(mean(cut_data$\`${item.var}\`, na.rm = TRUE), 1)`);
+
+      if (baseFilterVar) {
+        // Apply base filter: only include respondents where baseFilterVar > 0
+        lines.push(`      # Base filter: only include respondents where ${baseFilterVar} > 0`);
+        lines.push(`      base_filtered <- cut_data[cut_data$\`${baseFilterVar}\` > 0 & !is.na(cut_data$\`${baseFilterVar}\`), ]`);
+        lines.push(`      mean_val <- if (nrow(base_filtered) > 0) round_half_up(mean(base_filtered$\`${item.var}\`, na.rm = TRUE), 1) else NA`);
+      } else {
+        // No base filter - calculate mean for all valid responses
+        lines.push(`      mean_val <- round_half_up(mean(cut_data$\`${item.var}\`, na.rm = TRUE), 1)`);
+      }
+
       lines.push('      col_values <- c(col_values, as.character(mean_val))');
       lines.push('    } else {');
       lines.push('      col_values <- c(col_values, "N/A")');
