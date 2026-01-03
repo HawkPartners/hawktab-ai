@@ -90,6 +90,62 @@ This format is already used by Hawk Partners team members and is sufficient to w
 
 **Success Criteria**: Output Excel file matches Antares structure - readable, functional crosstabs with proper headers, base sizes, and significance testing.
 
+### Implementation Strategy
+
+**Architecture: R does the math, ExcelJS does the formatting**
+
+We keep R for statistical calculations (it's battle-tested for this) and add Node/ExcelJS for Excel formatting (which R handles poorly). This avoids rewriting calculation logic while giving us full control over output formatting.
+
+**Proposed Flow**:
+```
+BannerAgent → CrosstabAgent → RScriptGenerator → R execution → JSON → ExcelFormatter → .xlsx
+                                                      ↓
+                                              (enhanced output)
+```
+
+**R Output Format** (JSON instead of CSV):
+```json
+{
+  "tables": [{
+    "id": "s6a",
+    "question": "S6a. Are you board-certified or board-eligible?",
+    "base": "Physician",
+    "columns": [
+      {"name": "Total", "statLetter": "A", "n": 175},
+      {"name": "X3", "statLetter": "B", "n": 19},
+      {"name": "Y2", "statLetter": "C", "n": 71}
+    ],
+    "groupHeaders": [
+      {"name": "Segment Solutions", "startCol": 1, "span": 4}
+    ],
+    "rows": [
+      {"label": "Board-certified", "counts": [174, 19, 71], "pcts": [99, 100, 100]},
+      {"label": "Board-eligible", "counts": [1, 0, 0], "pcts": [1, 0, 0]}
+    ],
+    "sigma": [175, 19, 71]
+  }]
+}
+```
+
+**ExcelJS Responsibilities**:
+- Multi-row headers with merged cells for group names
+- Stat letter row (A), (B), (C)...
+- Base row with n values
+- Data rows (count row + percentage row per level)
+- Sigma row
+- 4 empty rows between tables (stitching)
+- Footer notes about significance level
+
+**Implementation Order**:
+1. **R outputs JSON** - Modify RScriptGenerator to output structured JSON instead of CSV
+2. **Create ExcelFormatter** - New module that reads JSON, builds basic Excel structure
+3. **Add header formatting** - Multi-row headers, stat letters, base row
+4. **Add stitching** - Tables separated by 4 empty rows in single workbook
+5. **Add significance testing** - R calculates z-test/t-test, includes in JSON output
+6. **Polish** - Light background colors, column widths, footer notes
+
+**Note on Significance Testing**: This is the most complex piece. R has built-in functions for z-tests (proportions) and t-tests (means). We'll implement this in R and include the results in the JSON output. Will need careful thought when we get there.
+
 ### Progress Notes
 
 **January 3, 2026 - DataMapProcessor Optimization (Prerequisite)**
