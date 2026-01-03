@@ -75,3 +75,42 @@ export function clearScratchpadEntries(): void {
 
 // Type export for use in agent definitions
 export type ScratchpadTool = typeof scratchpadTool;
+
+/**
+ * Format scratchpad entries as markdown for human-readable output
+ */
+export function formatScratchpadAsMarkdown(
+  agentName: string,
+  entries: Array<{ timestamp: string; action: string; content: string }>
+): string {
+  const header = `# ${agentName} Scratchpad Trace
+
+Generated: ${new Date().toISOString()}
+Total entries: ${entries.length}
+
+---
+`;
+
+  if (entries.length === 0) {
+    return header + '\n*No scratchpad entries recorded.*\n';
+  }
+
+  const formattedEntries = entries.map((entry, index) => {
+    const time = new Date(entry.timestamp).toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      fractionalSecondDigits: 3
+    });
+
+    return `## Entry ${index + 1} - ${time}
+
+**Action**: \`${entry.action}\`
+
+${entry.content}
+`;
+  }).join('\n---\n\n');
+
+  return header + formattedEntries;
+}
