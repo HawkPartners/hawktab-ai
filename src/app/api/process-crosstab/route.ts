@@ -29,6 +29,7 @@ import { buildTablePlanFromDataMap } from '../../../lib/tables/TablePlan';
 import { buildCutsSpec } from '../../../lib/tables/CutsSpec';
 import { buildRManifest } from '../../../lib/r/Manifest';
 import { generateMasterRScript } from '../../../lib/r/RScriptGenerator';
+import { createBugTrackerTemplate } from '../../../lib/utils/bugTrackerTemplate';
 
 const execAsync = promisify(exec);
 
@@ -181,6 +182,14 @@ export async function POST(request: NextRequest) {
         
         const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolderTimestamp);
         await fs.mkdir(outputDir, { recursive: true });
+
+        // Create bug tracker template for this run
+        const runTimestamp = outputFolderTimestamp.replace('output-', '');
+        await createBugTrackerTemplate({
+          runTimestamp,
+          outputFolder: outputFolderTimestamp,
+          datasetName: dataFile.name.replace(/\.(sav|csv|xlsx?)$/i, '')
+        });
 
         // Persist SPSS file into session folder with stable name for R
         try {
