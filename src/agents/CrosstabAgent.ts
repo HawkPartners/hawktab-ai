@@ -11,7 +11,7 @@ import { ValidationResultSchema, ValidatedGroupSchema, combineValidationResults,
 import { DataMapType } from '../schemas/dataMapSchema';
 import { BannerGroupType, BannerPlanInputType } from '../schemas/bannerPlanSchema';
 import { getReasoningModel, getReasoningModelName, getReasoningModelTokenLimit, getPromptVersions } from '../lib/env';
-import { scratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries } from './tools/scratchpad';
+import { scratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
 import { getCrosstabPrompt } from '../prompts';
 import fs from 'fs/promises';
 import path from 'path';
@@ -246,7 +246,17 @@ async function saveDevelopmentOutputs(
     };
 
     await fs.writeFile(filePath, JSON.stringify(enhancedOutput, null, 2), 'utf-8');
-    console.log(`[CrosstabAgent] Development output saved: ${filename}`);
+
+    // Save scratchpad trace as separate markdown file for easy reading
+    if (scratchpadEntries && scratchpadEntries.length > 0) {
+      const scratchpadFilename = `scratchpad-crosstab-${timestamp}.md`;
+      const scratchpadPath = path.join(outputDir, scratchpadFilename);
+      const markdown = formatScratchpadAsMarkdown('CrosstabAgent', scratchpadEntries);
+      await fs.writeFile(scratchpadPath, markdown, 'utf-8');
+      console.log(`[CrosstabAgent] Development output saved: ${filename}, ${scratchpadFilename}`);
+    } else {
+      console.log(`[CrosstabAgent] Development output saved: ${filename}`);
+    }
   } catch (error) {
     console.error('[CrosstabAgent] Failed to save development outputs:', error);
   }

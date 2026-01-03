@@ -432,82 +432,54 @@ export class DataMapProcessor {
         return enriched;
       }
       
-      // Detect binary flags (0/1 Unchecked/Checked)
-      if (variable.answerOptions === '0=Unchecked,1=Checked') {
+      // Detect binary flags (0/1 Unchecked/Checked) - special case for multi-select checkboxes
+      // Check by exact string match OR by 0-1 range pattern
+      if (variable.answerOptions === '0=Unchecked,1=Checked' ||
+          (enriched.rangeMin === 0 && enriched.rangeMax === 1)) {
         enriched.normalizedType = 'binary_flag';
         enriched.allowedValues = [0, 1];
         return enriched;
       }
-      
-      // Check for percentage ranges (0-100)
-      if (enriched.rangeMin === 0 && enriched.rangeMax === 100) {
-        // Check if it's part of a percentage group (has siblings)
-        const parentCode = variable.parentQuestion;
-        if (parentCode !== 'NA') {
-          const siblings = variables.filter(v => v.parentQuestion === parentCode);
-          if (siblings.length > 1) {
-            enriched.normalizedType = 'percentage_per_option';
-            enriched.rowSumConstraint = true;
-          } else {
-            enriched.normalizedType = 'numeric_range';
-          }
-        } else {
-          // Check if this parent has sub-items with 0-100 range
-          const subs = variables.filter(v => v.parentQuestion === variable.column);
-          if (subs.length > 0 && subs.every(s => s.rangeMin === 0 && s.rangeMax === 100)) {
-            enriched.normalizedType = 'percentage_per_option';
-            enriched.rowSumConstraint = true;
-          } else {
-            enriched.normalizedType = 'numeric_range';
-          }
-        }
-        return enriched;
-      }
-      
-      // Detect ordinal scales (1-5, 1-4)
-      if (enriched.rangeMin === 1 && (enriched.rangeMax === 5 || enriched.rangeMax === 4)) {
-        enriched.normalizedType = 'ordinal_scale';
-        enriched.allowedValues = [];
-        for (let i = enriched.rangeMin; i <= enriched.rangeMax; i++) {
-          enriched.allowedValues.push(i);
-        }
-        
-        // Parse scale labels if available
-        if (variable.answerOptions && variable.answerOptions !== 'NA') {
-          const labels = this.parseScaleLabels(variable.answerOptions);
-          if (labels.length > 0) {
-            enriched.scaleLabels = labels;
-          }
-        }
-        return enriched;
-      }
-      
-      // Detect matrix single-choice (exactly 2 options)
-      if (enriched.rangeMin === 1 && enriched.rangeMax === 2) {
-        // Check if parent has exactly 2 labeled options
-        const optionParts = variable.answerOptions?.split(',') || [];
-        if (optionParts.length === 2 && !optionParts.includes('NA')) {
-          enriched.normalizedType = 'matrix_single_choice';
-          enriched.allowedValues = [1, 2];
-          return enriched;
-        }
-      }
-      
-      // Detect numeric ranges
-      if (enriched.rangeMin !== undefined && enriched.rangeMax !== undefined) {
-        enriched.normalizedType = 'numeric_range';
-        enriched.rangeStep = 1; // Default to integer steps
-        return enriched;
-      }
-      
-      // Default to categorical select if has answer options
+
+      // PRIORITY: Has labeled answer options → categorical_select
+      // This catches most survey questions (single-select, scales, etc.)
+      // Even scales (1-5) are categorical - you're selecting a category
       if (variable.answerOptions && variable.answerOptions !== 'NA') {
         enriched.normalizedType = 'categorical_select';
-        
-        // Extract allowed values from answer options
+
+        // Extract allowed values and labels from answer options
         const allowedVals = this.extractAllowedValues(variable.answerOptions);
         if (allowedVals.length > 0) {
           enriched.allowedValues = allowedVals;
+        }
+
+        // Parse labels for display
+        const labels = this.parseScaleLabels(variable.answerOptions);
+        if (labels.length > 0) {
+          enriched.scaleLabels = labels;
+        }
+
+        return enriched;
+      }
+
+      // No labels but has range - use threshold to determine type
+      // Fielding partners use small ranges (1-5, 1-53) for categorical/scales
+      // and large ranges (0-99, 0-100) for true numeric open-ends
+      if (enriched.rangeMin !== undefined && enriched.rangeMax !== undefined) {
+        const CATEGORICAL_THRESHOLD = 60; // Captures US states (1-53), scales, etc.
+
+        if (enriched.rangeMax <= CATEGORICAL_THRESHOLD) {
+          // Small range = categorical (scales, state codes, small option sets)
+          enriched.normalizedType = 'categorical_select';
+          // Generate allowedValues from the range
+          enriched.allowedValues = [];
+          for (let i = enriched.rangeMin; i <= enriched.rangeMax; i++) {
+            enriched.allowedValues.push(i);
+          }
+        } else {
+          // Large range = true numeric (years, patient counts, percentages)
+          enriched.normalizedType = 'numeric_range';
+          enriched.rangeStep = 1;
         }
         return enriched;
       }

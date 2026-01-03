@@ -17,7 +17,7 @@ import { z } from 'zod';
 import { VerboseBannerPlan, AgentBannerGroup } from '../lib/contextBuilder';
 import { getPromptVersions, getBaseModel, getBaseModelName, getBaseModelTokenLimit } from '../lib/env';
 import { getBannerPrompt } from '../prompts';
-import { scratchpadTool } from './tools/scratchpad';
+import { scratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
 
 // Types for internal processing
 export interface ProcessedImage {
@@ -111,6 +111,9 @@ export class BannerAgent {
     console.log(`[BannerAgent] Starting document processing: ${path.basename(filePath)}`);
     const startTime = Date.now();
 
+    // Clear scratchpad from any previous runs
+    clearScratchpadEntries();
+
     try {
       // Step 1: Ensure we have a PDF
       const pdfPath = await this.ensurePDF(filePath);
@@ -128,12 +131,16 @@ export class BannerAgent {
       const extractionResult = await this.extractBannerStructureWithAgent(images);
       console.log(`[BannerAgent] Agent extraction completed - Success: ${extractionResult.success}`);
 
-      // Step 4: Generate dual outputs
+      // Step 4: Collect scratchpad entries for debugging
+      const scratchpadEntries = getAndClearScratchpadEntries();
+      console.log(`[BannerAgent] Collected ${scratchpadEntries.length} scratchpad entries`);
+
+      // Step 5: Generate dual outputs
       const dualOutputs = this.generateDualOutputs(extractionResult);
 
-      // Step 5: Save outputs (always save for MVP)
+      // Step 6: Save outputs (always save for MVP)
       if (outputFolder) {
-        await this.saveDevelopmentOutputs(dualOutputs, filePath, outputFolder);
+        await this.saveDevelopmentOutputs(dualOutputs, filePath, outputFolder, scratchpadEntries);
       }
 
       const processingTime = Date.now() - startTime;
@@ -470,7 +477,8 @@ Begin analysis now.
   private async saveDevelopmentOutputs(
     dualOutputs: { verbose: VerboseBannerPlan; agent: AgentBannerGroup[] },
     originalFilePath: string,
-    outputFolder: string
+    outputFolder: string,
+    scratchpadEntries?: Array<{ timestamp: string; action: string; content: string }>
   ): Promise<void> {
     try {
       const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolder);
@@ -489,7 +497,16 @@ Begin analysis now.
       const agentPath = path.join(outputDir, agentFilename);
       await fs.writeFile(agentPath, JSON.stringify(dualOutputs.agent, null, 2), 'utf-8');
 
-      console.log(`[BannerAgent] Development outputs saved: ${verboseFilename}, ${agentFilename}`);
+      // Save scratchpad trace as markdown
+      if (scratchpadEntries) {
+        const scratchpadFilename = `scratchpad-banner-${timestamp}.md`;
+        const scratchpadPath = path.join(outputDir, scratchpadFilename);
+        const markdown = formatScratchpadAsMarkdown('BannerAgent', scratchpadEntries);
+        await fs.writeFile(scratchpadPath, markdown, 'utf-8');
+        console.log(`[BannerAgent] Development outputs saved: ${verboseFilename}, ${agentFilename}, ${scratchpadFilename}`);
+      } else {
+        console.log(`[BannerAgent] Development outputs saved: ${verboseFilename}, ${agentFilename}`);
+      }
     } catch (error) {
       console.error('[BannerAgent] Failed to save development outputs:', error);
     }
