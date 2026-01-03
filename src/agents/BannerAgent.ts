@@ -24,7 +24,7 @@ import { z } from 'zod';
 import { VerboseBannerPlan, AgentBannerGroup } from '../lib/contextBuilder';
 import { getPromptVersions, getBaseModel, getBaseModelName, getBaseModelTokenLimit } from '../lib/env';
 import { getBannerPrompt } from '../prompts';
-import { scratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
+import { bannerScratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
 
 // Types for internal processing
 export interface ProcessedImage {
@@ -212,7 +212,7 @@ Begin analysis now.
           },
         ],
         tools: {
-          scratchpad: scratchpadTool,
+          scratchpad: bannerScratchpadTool,
         },
         stopWhen: stepCountIs(15),  // AI SDK 5+: replaces maxTurns/maxSteps
         maxOutputTokens: Math.min(getBaseModelTokenLimit(), 32000),

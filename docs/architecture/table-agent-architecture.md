@@ -655,17 +655,17 @@ The datamap already contains sufficient information for table type decisions:
 **Update processing flow:**
 1. Process banner (existing)
 2. Process datamap (existing)
-3. Process survey → Markdown (new)
-4. Group datamap by parent question
-5. Loop: For each parent group, call TableAgent
-6. Collect all table definitions
-7. Generate R code from definitions
-8. Run R → JSON output
-9. ExcelJS formatter → Excel
+3. Group datamap by parent question (new - uses `groupDataMapByParent()`)
+4. Loop: For each parent group, call TableAgent
+5. Collect all table definitions
+6. Generate R code from definitions
+7. Run R → JSON output
+8. ExcelJS formatter → Excel
 
-**New endpoint or update existing:**
-- Accept survey file in addition to banner/datamap
-- Return table definitions + formatted output
+**API changes:**
+- No new file inputs required (survey upload deferred)
+- Add TableAgent processing step between datamap and R generation
+- Return table definitions in response for debugging
 
 ---
 
@@ -703,14 +703,15 @@ The datamap already contains sufficient information for table type decisions:
 | Order | Step | Dependency | Effort | Status |
 |-------|------|------------|--------|--------|
 | 0 | Env variable separation | None | Small | ✅ Complete |
-| 1 | Agent structure (files) | Step 0 | Medium | |
-| 1.1 | - Schema definitions (`tableAgentSchema.ts`) | Step 0 | Small | |
-| 1.2 | - Prompt files (`prompts/table/`) | Step 1.1 | Small | |
-| 1.3 | - Agent implementation (`TableAgent.ts`) | Steps 1.1, 1.2 | Medium | |
-| 1.4 | - Grouping logic (pre-agent) | Step 1.1 | Small | |
+| 1 | Agent structure (files) | Step 0 | Medium | ✅ Complete |
+| 1.1 | - Schema definitions (`tableAgentSchema.ts`) | Step 0 | Small | ✅ Complete |
+| 1.2 | - Prompt files (`prompts/table/`) | Step 1.1 | Small | ✅ Complete |
+| 1.3 | - Agent implementation (`TableAgent.ts`) | Steps 1.1, 1.2 | Medium | ✅ Complete |
+| 1.4 | - Grouping logic (pre-agent) | Step 1.1 | Small | ✅ Complete |
 | 2 | Survey processor | None | Medium | ⏸️ Deferred |
-| 3 | Table agent prompt (iterate) | Step 1 | Medium | |
-| 4 | Integration (API) | Step 1, 3 | Medium | |
+| 3 | Table agent prompt (iterate) | Step 1 | Medium | 🔄 Ongoing |
+| 3.5 | Standalone testing mode | Step 1 | Small | ✅ Complete |
+| 4 | Integration (API) | Steps 3, 3.5 | Medium | |
 | 5 | R script updates | Step 4 | Medium | |
 | 6 | ExcelJS formatter | Step 5 | Medium | |
 
@@ -718,8 +719,43 @@ The datamap already contains sufficient information for table type decisions:
 - **Step 2 deferred**: Datamap has sufficient context for table type decisions. Survey markdown only needed if agent struggles with ambiguous cases.
 - **Base filters removed from TableAgent**: R handles this automatically (`!is.na(variable) & banner_filter`). TableAgent only decides display format.
 
-**Iteration approach**: After Step 1, test with sample datamap data. Iterate on prompt (Step 3) until table type selection is reliable. Then integrate and build R/ExcelJS layers.
+**Iteration approach**: After Step 1, test with sample datamap data. Use Step 3.5 (standalone mode) to iterate on prompt without waiting for full pipeline. Once table type selection is reliable, integrate into full API flow.
+
+---
+
+### Step 3.5: Standalone Testing Mode
+
+**Goal**: Run TableAgent in isolation to validate output before wiring into full R pipeline.
+
+**Implementation options:**
+
+1. **Environment flag** (`TABLE_AGENT_ONLY=true`):
+   - When set, API stops after TableAgent processing
+   - Returns JSON table definitions instead of triggering R script
+   - Easy toggle between testing and full pipeline
+
+2. **Dedicated test endpoint** (`/api/test-table-agent`):
+   - Accepts processed datamap JSON directly
+   - Returns TableAgent output for review
+   - No file uploads needed - good for rapid iteration
+
+3. **CLI script** (`scripts/test-table-agent.ts`):
+   - Reads datamap from temp-outputs or specified path
+   - Runs TableAgent and saves output
+   - Can run outside Next.js for faster iteration
+
+**Recommended approach**: Start with option 1 (env flag) for minimal code changes. Add option 3 (CLI) if faster iteration needed.
+
+**Output location**: `temp-outputs/output-<ts>/table-output-<ts>.json`
+
+**What to validate:**
+- Are question groups identified correctly?
+- Is tableType selection appropriate for each normalizedType?
+- Are row labels accurate?
+- Are stats choices sensible?
+- Does confidence scoring reflect actual certainty?
 
 ---
 
 *Created: January 3, 2026*
+*Updated: January 3, 2026 - Step 1 complete, Step 3.5 complete (CLI test script)*

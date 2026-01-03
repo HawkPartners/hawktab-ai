@@ -11,7 +11,7 @@ import { ValidationResultSchema, ValidatedGroupSchema, combineValidationResults,
 import { DataMapType } from '../schemas/dataMapSchema';
 import { BannerGroupType, BannerPlanInputType } from '../schemas/bannerPlanSchema';
 import { getReasoningModel, getReasoningModelName, getReasoningModelTokenLimit, getPromptVersions } from '../lib/env';
-import { scratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
+import { crosstabScratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
 import { getCrosstabPrompt } from '../prompts';
 import fs from 'fs/promises';
 import path from 'path';
@@ -55,7 +55,7 @@ Begin validation now.
       system: systemPrompt,
       prompt: `Validate banner group "${group.groupName}" with ${group.columns.length} columns against the data map.`,
       tools: {
-        scratchpad: scratchpadTool,
+        scratchpad: crosstabScratchpadTool,
       },
       stopWhen: stepCountIs(25),  // AI SDK 5+: replaces maxTurns/maxSteps
       maxOutputTokens: Math.min(getReasoningModelTokenLimit(), 10000),
