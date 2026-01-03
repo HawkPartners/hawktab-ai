@@ -9,10 +9,17 @@
 import { generateText, Output, stepCountIs } from 'ai';
 import fs from 'fs/promises';
 import path from 'path';
-import mammoth from 'mammoth';
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { PDFDocument } from 'pdf-lib';
 import pdf2pic from 'pdf2pic';
 import sharp from 'sharp';
+
+// For LibreOffice headless conversion
+const execAsync = promisify(exec);
+
+// Note: mammoth kept for potential future HTML extraction fallback
+// import mammoth from 'mammoth';
 import { z } from 'zod';
 import { VerboseBannerPlan, AgentBannerGroup } from '../lib/contextBuilder';
 import { getPromptVersions, getBaseModel, getBaseModelName, getBaseModelTokenLimit } from '../lib/env';
@@ -140,7 +147,7 @@ export class BannerAgent {
 
       // Step 6: Save outputs (always save for MVP)
       if (outputFolder) {
-        await this.saveDevelopmentOutputs(dualOutputs, filePath, outputFolder, scratchpadEntries);
+        await this.saveDevelopmentOutputs(dualOutputs, filePath, outputFolder, scratchpadEntries, pdfPath, images);
       }
 
       const processingTime = Date.now() - startTime;
@@ -261,57 +268,79 @@ Begin analysis now.
     throw new Error(`Unsupported file format: ${ext}. Only PDF, DOC, and DOCX files are supported.`);
   }
 
+  /**
+   * Convert DOC/DOCX to PDF using LibreOffice headless mode.
+   *
+   * This preserves all formatting (tables, colors, shading) so the model
+   * sees the document exactly as the user sees it in Word.
+   *
+   * FUTURE CONSIDERATION: For cloud deployment, LibreOffice adds container complexity.
+   * Alternative approach using mammoth.convertToHtml():
+   *
+   *   const result = await mammoth.convertToHtml({ path: docPath });
+   *   // HTML preserves table structure with colspan for headers, <strong> for bold
+   *   // Could either:
+   *   //   1. Parse HTML programmatically (no AI needed for structure)
+   *   //   2. Pass HTML directly to model as text input
+   *   //
+   * This would eliminate LibreOffice dependency but requires building parsing logic.
+   * See conversation from Jan 3, 2026 for full discussion.
+   */
   private async convertDocToPDF(docPath: string): Promise<string> {
-    console.log(`[BannerAgent] Converting ${path.basename(docPath)} to PDF`);
+    console.log(`[BannerAgent] Converting ${path.basename(docPath)} to PDF via LibreOffice`);
 
     try {
-      // Extract text content from DOC/DOCX
-      const result = await mammoth.extractRawText({ path: docPath });
-      const textContent = result.value;
-
-      if (!textContent.trim()) {
-        throw new Error('No text content found in document');
-      }
-
-      // Create PDF from text content with proper multi-page handling
-      const pdfDoc = await PDFDocument.create();
-      const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      const fontSize = 12;
-      const lineHeight = fontSize * 1.2;
-      const margin = 50;
-
-      // Split text into lines and pages (matching old implementation)
-      const lines = textContent.split('\n');
-      let currentPage = pdfDoc.addPage();
-      const { width, height } = currentPage.getSize();
-      let y = height - margin;
-
-      for (const line of lines) {
-        // Check if we need a new page
-        if (y < margin + lineHeight) {
-          currentPage = pdfDoc.addPage();
-          y = height - margin;
-        }
-
-        // Draw the text line by line
-        currentPage.drawText(line, {
-          x: margin,
-          y,
-          size: fontSize,
-          font: helveticaFont,
-          color: rgb(0, 0, 0),
-          maxWidth: width - 2 * margin,
-        });
-
-        y -= lineHeight;
-      }
-
-      // Save PDF
-      const pdfBytes = await pdfDoc.save();
+      const outputDir = path.dirname(docPath);
       const pdfPath = docPath.replace(/\.(doc|docx)$/i, '.pdf');
-      await fs.writeFile(pdfPath, pdfBytes);
 
-      console.log(`[BannerAgent] PDF created: ${path.basename(pdfPath)}`);
+      // Find LibreOffice in common locations
+      const libreofficePaths = [
+        '/Applications/LibreOffice.app/Contents/MacOS/soffice',  // macOS
+        '/usr/bin/libreoffice',                                   // Linux
+        '/usr/bin/soffice',                                       // Linux alternative
+        'libreoffice',                                            // In PATH
+        'soffice',                                                // In PATH
+      ];
+
+      let libreofficeCommand: string | null = null;
+      for (const loPath of libreofficePaths) {
+        try {
+          await execAsync(`"${loPath}" --version`, { timeout: 5000 });
+          libreofficeCommand = loPath;
+          console.log(`[BannerAgent] Found LibreOffice at: ${loPath}`);
+          break;
+        } catch {
+          // Try next path
+        }
+      }
+
+      if (!libreofficeCommand) {
+        throw new Error(
+          'LibreOffice not found. Please install LibreOffice:\n' +
+          '  macOS: brew install --cask libreoffice\n' +
+          '  Ubuntu: sudo apt install libreoffice\n' +
+          'Or use the HTML extraction fallback (see code comments).'
+        );
+      }
+
+      // Convert DOCX to PDF preserving formatting
+      const { stderr } = await execAsync(
+        `"${libreofficeCommand}" --headless --convert-to pdf --outdir "${outputDir}" "${docPath}"`,
+        { timeout: 30000 }
+      );
+
+      if (stderr && !stderr.includes('warn')) {
+        console.warn(`[BannerAgent] LibreOffice stderr: ${stderr}`);
+      }
+
+      // Verify PDF was created
+      try {
+        await fs.access(pdfPath);
+      } catch {
+        throw new Error('LibreOffice conversion completed but PDF file not found');
+      }
+
+      console.log(`[BannerAgent] PDF created with formatting preserved: ${path.basename(pdfPath)}`);
       return pdfPath;
 
     } catch (error) {
@@ -478,7 +507,9 @@ Begin analysis now.
     dualOutputs: { verbose: VerboseBannerPlan; agent: AgentBannerGroup[] },
     originalFilePath: string,
     outputFolder: string,
-    scratchpadEntries?: Array<{ timestamp: string; action: string; content: string }>
+    scratchpadEntries?: Array<{ timestamp: string; action: string; content: string }>,
+    pdfPath?: string,
+    images?: ProcessedImage[]
   ): Promise<void> {
     try {
       const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolder);
@@ -503,10 +534,35 @@ Begin analysis now.
         const scratchpadPath = path.join(outputDir, scratchpadFilename);
         const markdown = formatScratchpadAsMarkdown('BannerAgent', scratchpadEntries);
         await fs.writeFile(scratchpadPath, markdown, 'utf-8');
-        console.log(`[BannerAgent] Development outputs saved: ${verboseFilename}, ${agentFilename}, ${scratchpadFilename}`);
-      } else {
-        console.log(`[BannerAgent] Development outputs saved: ${verboseFilename}, ${agentFilename}`);
       }
+
+      // Save PDF so we can see what the model was shown (before image conversion)
+      if (pdfPath) {
+        try {
+          const pdfFilename = `banner-${baseName}-converted.pdf`;
+          const pdfOutputPath = path.join(outputDir, pdfFilename);
+          await fs.copyFile(pdfPath, pdfOutputPath);
+          console.log(`[BannerAgent] Saved converted PDF: ${pdfFilename}`);
+        } catch (pdfError) {
+          console.warn(`[BannerAgent] Failed to save PDF: ${pdfError}`);
+        }
+      }
+
+      // Save images so we can see exactly what the model saw
+      if (images && images.length > 0) {
+        const imagesDir = path.join(outputDir, 'banner-images');
+        await fs.mkdir(imagesDir, { recursive: true });
+
+        for (const img of images) {
+          const imgFilename = `page-${img.pageNumber}.${img.format}`;
+          const imgPath = path.join(imagesDir, imgFilename);
+          const imgBuffer = Buffer.from(img.base64, 'base64');
+          await fs.writeFile(imgPath, imgBuffer);
+        }
+        console.log(`[BannerAgent] Saved ${images.length} images to banner-images/`);
+      }
+
+      console.log(`[BannerAgent] Development outputs saved: ${verboseFilename}, ${agentFilename}`);
     } catch (error) {
       console.error('[BannerAgent] Failed to save development outputs:', error);
     }

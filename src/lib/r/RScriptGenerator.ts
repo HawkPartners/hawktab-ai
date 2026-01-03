@@ -277,8 +277,10 @@ function generateSingleTable(lines: string[], table: TableDefinition, _sessionId
     lines.push('        bucket3_pct <- calc_pct(bucket3_count, valid_n)');
     lines.push('        bucket4_pct <- calc_pct(bucket4_count, valid_n)');
     lines.push('        ');
-    lines.push('        mean_val <- round_half_up(mean(cut_var, na.rm = TRUE), 0)');
-    lines.push('        median_val <- round_half_up(median(cut_var, na.rm = TRUE), 0)');
+    // Means and medians: round to nearest tenth (1 decimal place)
+    // Percentages: round to nearest whole number (handled by calc_pct)
+    lines.push('        mean_val <- round_half_up(mean(cut_var, na.rm = TRUE), 1)');
+    lines.push('        median_val <- round_half_up(median(cut_var, na.rm = TRUE), 1)');
     lines.push('        ');
     lines.push('        # Calculate mean minus outliers using IQR method');
     lines.push('        q1 <- quantile(cut_var, 0.25, na.rm = TRUE)');
@@ -287,7 +289,7 @@ function generateSingleTable(lines: string[], table: TableDefinition, _sessionId
     lines.push('        lower_bound <- q1 - 1.5 * iqr');
     lines.push('        upper_bound <- q3 + 1.5 * iqr');
     lines.push('        non_outlier_vals <- cut_var[!is.na(cut_var) & cut_var >= lower_bound & cut_var <= upper_bound]');
-    lines.push('        mean_minus_outliers <- if (length(non_outlier_vals) > 0) round_half_up(mean(non_outlier_vals), 0) else mean_val');
+    lines.push('        mean_minus_outliers <- if (length(non_outlier_vals) > 0) round_half_up(mean(non_outlier_vals), 1) else mean_val');
     lines.push('        ');
     lines.push(`        table_${tableId}[[cut_name]] <- c(`);
     lines.push('          paste0(lower_total_pct, "% (", lower_total, ")"),');
