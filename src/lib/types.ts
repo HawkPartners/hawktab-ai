@@ -41,6 +41,7 @@ export interface EnvironmentConfig {
 
   nodeEnv: 'development' | 'production';
   tracingEnabled: boolean;  // Renamed from tracingDisabled (positive naming)
+  tableAgentOnly: boolean;  // Stop after TableAgent, skip R generation (for testing)
   promptVersions: PromptVersions;
   processingLimits: ProcessingLimits;
 }

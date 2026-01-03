@@ -77,11 +77,45 @@ export type {
   ValidationSession
 } from './humanValidationSchema';
 
+// Table Agent Schema exports
+export {
+  TableTypeSchema,
+  StatTypeSchema,
+  ScaleLabelSchema,
+  TableAgentInputItemSchema,
+  TableAgentInputSchema,
+  TableRowSchema,
+  TableDefinitionSchema,
+  TableAgentOutputSchema,
+  validateTableAgentInput,
+  isValidTableAgentInput,
+  validateTableAgentOutput,
+  isValidTableAgentOutput,
+  getTableVariables,
+  getTableIds,
+  hasTableType,
+  getTablesByType,
+  calculateAverageConfidence as calculateTableAverageConfidence,
+  combineTableDefinitions,
+} from './tableAgentSchema';
+
+export type {
+  TableType,
+  StatType,
+  ScaleLabel,
+  TableAgentInputItem,
+  TableAgentInput,
+  TableRow,
+  TableDefinition,
+  TableAgentOutput,
+} from './tableAgentSchema';
+
 // Schema compilation test - this will fail to compile if any schemas are invalid
 import { z } from 'zod';
 import { DataMapSchema } from './dataMapSchema';
 import { BannerPlanInputSchema, BannerGroupSchema } from './bannerPlanSchema';
 import { ValidationResultSchema } from './agentOutputSchema';
+import { TableAgentInputSchema, TableAgentOutputSchema } from './tableAgentSchema';
 
 // Test that all schemas are valid Zod schemas
 const _schemaTest = {
@@ -89,6 +123,8 @@ const _schemaTest = {
   bannerPlanIsSchema: BannerPlanInputSchema instanceof z.ZodType,
   bannerGroupIsSchema: BannerGroupSchema instanceof z.ZodType,
   validationResultIsSchema: ValidationResultSchema instanceof z.ZodType,
+  tableAgentInputIsSchema: TableAgentInputSchema instanceof z.ZodType,
+  tableAgentOutputIsSchema: TableAgentOutputSchema instanceof z.ZodType,
 };
 
 // Export test result for verification

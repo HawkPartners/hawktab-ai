@@ -10,36 +10,51 @@ import { z } from 'zod';
 // Accumulated scratchpad entries for the current session
 let scratchpadEntries: Array<{
   timestamp: string;
+  agentName: string;
   action: string;
   content: string;
 }> = [];
 
-// Scratchpad tool using Vercel AI SDK pattern
-export const scratchpadTool = tool({
-  description: 'Enhanced thinking space for reasoning models to show validation steps and reasoning. Use this to document your analysis process.',
-  inputSchema: z.object({
-    action: z.enum(['add', 'review']).describe('Action to perform: add new thoughts or review current analysis'),
-    content: z.string().describe('Content to add or review in the thinking space')
-  }),
-  execute: async ({ action, content }) => {
-    const timestamp = new Date().toISOString();
+/**
+ * Create a scratchpad tool for a specific agent
+ * This factory function allows each agent to have its own attributed scratchpad
+ */
+export function createScratchpadTool(agentName: string) {
+  return tool({
+    description: 'Enhanced thinking space for reasoning models to show validation steps and reasoning. Use this to document your analysis process.',
+    inputSchema: z.object({
+      action: z.enum(['add', 'review']).describe('Action to perform: add new thoughts or review current analysis'),
+      content: z.string().describe('Content to add or review in the thinking space')
+    }),
+    execute: async ({ action, content }) => {
+      const timestamp = new Date().toISOString();
 
-    // Accumulate entry
-    scratchpadEntries.push({ timestamp, action, content });
+      // Accumulate entry with agent attribution
+      scratchpadEntries.push({ timestamp, agentName, action, content });
 
-    // Log for real-time debugging
-    console.log(`[CrossTab Agent Scratchpad] ${action}: ${content}`);
+      // Log for real-time debugging with correct agent attribution
+      console.log(`[${agentName} Scratchpad] ${action}: ${content}`);
 
-    switch (action) {
-      case 'add':
-        return `[Thinking] Added: ${content}`;
-      case 'review':
-        return `[Review] ${content}`;
-      default:
-        return `[Scratchpad] Unknown action: ${action}`;
+      switch (action) {
+        case 'add':
+          return `[Thinking] Added: ${content}`;
+        case 'review':
+          return `[Review] ${content}`;
+        default:
+          return `[Scratchpad] Unknown action: ${action}`;
+      }
     }
-  }
-});
+  });
+}
+
+// Pre-created tools for each agent (for convenience)
+export const crosstabScratchpadTool = createScratchpadTool('CrosstabAgent');
+export const tableScratchpadTool = createScratchpadTool('TableAgent');
+export const bannerScratchpadTool = createScratchpadTool('BannerAgent');
+
+// Legacy export for backward compatibility
+// TODO: Migrate existing agents to use agent-specific tools
+export const scratchpadTool = crosstabScratchpadTool;
 
 /**
  * Get all accumulated scratchpad entries and clear the buffer
@@ -47,6 +62,7 @@ export const scratchpadTool = tool({
  */
 export function getAndClearScratchpadEntries(): Array<{
   timestamp: string;
+  agentName: string;
   action: string;
   content: string;
 }> {
@@ -60,6 +76,7 @@ export function getAndClearScratchpadEntries(): Array<{
  */
 export function getScratchpadEntries(): Array<{
   timestamp: string;
+  agentName: string;
   action: string;
   content: string;
 }> {
@@ -74,14 +91,14 @@ export function clearScratchpadEntries(): void {
 }
 
 // Type export for use in agent definitions
-export type ScratchpadTool = typeof scratchpadTool;
+export type ScratchpadTool = ReturnType<typeof createScratchpadTool>;
 
 /**
  * Format scratchpad entries as markdown for human-readable output
  */
 export function formatScratchpadAsMarkdown(
   agentName: string,
-  entries: Array<{ timestamp: string; action: string; content: string }>
+  entries: Array<{ timestamp: string; agentName?: string; action: string; content: string }>
 ): string {
   const header = `# ${agentName} Scratchpad Trace
 
@@ -104,9 +121,14 @@ Total entries: ${entries.length}
       fractionalSecondDigits: 3
     });
 
+    // Include agent name if available and different from header
+    const agentPrefix = entry.agentName && entry.agentName !== agentName
+      ? `**Agent**: ${entry.agentName}\n`
+      : '';
+
     return `## Entry ${index + 1} - ${time}
 
-**Action**: \`${entry.action}\`
+${agentPrefix}**Action**: \`${entry.action}\`
 
 ${entry.content}
 `;

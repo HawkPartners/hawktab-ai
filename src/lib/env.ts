@@ -74,6 +74,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
 
     nodeEnv,
     tracingEnabled: process.env.TRACING_ENABLED !== 'false',  // Default: enabled
+    tableAgentOnly: process.env.TABLE_AGENT_ONLY === 'true',  // Stop after TableAgent, skip R generation
     promptVersions: {
       crosstabPromptVersion: process.env.CROSSTAB_PROMPT_VERSION || 'production',
       bannerPromptVersion: process.env.BANNER_PROMPT_VERSION || 'production',
@@ -230,6 +231,16 @@ export const getBaseModelTokenLimit = (): number => {
 export const getPromptVersions = () => {
   const config = getEnvironmentConfig();
   return config.promptVersions;
+};
+
+/**
+ * Check if TABLE_AGENT_ONLY mode is enabled
+ * When true, API stops after TableAgent processing and returns JSON definitions
+ * instead of triggering R script generation
+ */
+export const isTableAgentOnlyMode = (): boolean => {
+  const config = getEnvironmentConfig();
+  return config.tableAgentOnly;
 };
 
 export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
