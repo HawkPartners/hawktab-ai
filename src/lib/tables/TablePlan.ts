@@ -29,12 +29,15 @@ export type SingleTableDefinition = {
   allowedValues?: (number | string)[];
 };
 
-export type MultiSubItem = { 
-  var: string; 
-  label: string; 
+export type MultiSubItem = {
+  var: string;
+  label: string;
   positiveValue: number | string;
   normalizedType?: string;
   allowedValues?: (number | string)[];
+  // Base filter variable for follow-up questions
+  // e.g., A3ar1 (Leqvio statin split) should filter on A3r2 > 0 (Leqvio prescribers)
+  baseFilterVar?: string;
 };
 
 export type MultiSubTableDefinition = {
@@ -298,12 +301,25 @@ export function buildTablePlanFromDataMap(dataMap: VerboseDataMapType[]): TableP
           rowSumConstraint = true;
         }
 
+        // Detect follow-up pattern: A3ar1 → base filter A3r2, A3ar2 → base filter A3r3, etc.
+        // Pattern: {prefix}a{r#} follows {prefix}{r#+1}
+        // This is because r1 is typically "none/other" which doesn't have a follow-up
+        let baseFilterVar: string | undefined;
+        const followUpPattern = rowKey.match(/^(.+)ar(\d+)$/i);
+        if (followUpPattern) {
+          const prefix = followUpPattern[1]; // "A3"
+          const rowNum = parseInt(followUpPattern[2], 10); // 1
+          // Follow-up row N corresponds to parent row N+1 (because r1 is "statin only"/no follow-up)
+          baseFilterVar = `${prefix}r${rowNum + 1}`; // "A3r2"
+        }
+
         const items = rowItems.map<MultiSubItem>((sub) => ({
           var: sub.column,
           label: sub.description || sub.column,
           positiveValue: inferPositiveValue(sub),
           normalizedType: sub.normalizedType,
           allowedValues: sub.allowedValues,
+          baseFilterVar, // All items in this row share the same base filter
         }));
 
         tables.push({
