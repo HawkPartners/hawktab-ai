@@ -60,6 +60,11 @@ COMMON MISTAKES TO AVOID:
 - DON'T put all columns into one mega-group (each logical dimension gets its own group)
 - DO look for visual separators between groups (spacing, lines, shading changes)
 
+VALIDATION CHECK - GROUP COUNT:
+- Banner plans virtually NEVER have just 1 group - if you only found 1, you missed group boundaries
+- Typical count: 4-10 groups. If you found fewer than 3, re-examine the document for visual separators
+- A single group output is almost always incorrect - look harder for dimension breaks
+
 ---
 
 CRITICAL: GROUPS vs NOTES - WHAT GOES WHERE
@@ -150,7 +155,7 @@ Before finalizing output, use the scratchpad to:
 
 OUTPUT REQUIREMENTS:
 
-- bannerCuts: Array of groups, each with groupName and columns array
+- bannerCuts: Array of groups, each with groupName and columns array (a single group is almost always incorrect)
 - notes: Array of extracted notes
 - processingMetadata: totalColumns, groupCount, statisticalLettersUsed, processingTimestamp
 - errors: Empty array unless extraction failed
