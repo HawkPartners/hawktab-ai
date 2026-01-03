@@ -313,6 +313,17 @@ export function buildTablePlanFromDataMap(dataMap: VerboseDataMapType[]): TableP
           baseFilterVar = `${prefix}r${rowNum + 1}`; // "A3r2"
         }
 
+        // Detect second-level follow-up pattern: A3br1 → base filter A3ar1c2, A3br2 → base filter A3ar2c2, etc.
+        // Pattern: {prefix}br{rowNum} asks about patients from {prefix}ar{rowNum}c2 (those WITHOUT statin)
+        // A3b asks "for those who received therapy WITHOUT a statin..." so base is A3a's "without statin" column
+        const secondFollowUpPattern = rowKey.match(/^(.+)br(\d+)$/i);
+        if (secondFollowUpPattern) {
+          const prefix = secondFollowUpPattern[1]; // "A3"
+          const rowNum = parseInt(secondFollowUpPattern[2], 10); // 1
+          // A3br1 asks about Leqvio patients WITHOUT statin → filter on A3ar1c2 > 0
+          baseFilterVar = `${prefix}ar${rowNum}c2`; // "A3ar1c2"
+        }
+
         const items = rowItems.map<MultiSubItem>((sub) => ({
           var: sub.column,
           label: sub.description || sub.column,
