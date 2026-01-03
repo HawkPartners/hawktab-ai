@@ -8,6 +8,24 @@ Before implementing Phase II reliability features, we need to prove the core pip
 
 ---
 
+## Important Distinction: Replacing Joe's Usefulness, Not His Output
+
+**What we're replacing**: Joe's role in the workflow - the manual work of generating crosstabs from survey data. Currently, Hawk Partners sends files to Joe (or fielding partners like Antares) and waits days for tabs. HawkTab AI eliminates that wait.
+
+**What we're NOT replicating**: Joe's exact output format. Joe produces beautifully formatted, continuously flowing tables with inline significance letters. That's nice-to-have polish, not core functionality.
+
+**Our MVP target**: Antares-style output. Antares is a fielding partner that produces functional, readable crosstabs. Their format is:
+- Clear table boundaries per question
+- Multi-row headers with stat letters
+- Count + percentage rows
+- Standard significance testing
+
+This format is already used by Hawk Partners team members and is sufficient to write reports from. If the data is correct and readable, the mission is accomplished.
+
+**Reference images**: See `docs/reference-crosstab-images/` for visual examples of both formats.
+
+---
+
 ## Current Status
 
 | Milestone | Status | Description |
@@ -42,16 +60,35 @@ Before implementing Phase II reliability features, we need to prove the core pip
 
 ## Milestone 2: Table Formatting & Stitching (IN PROGRESS)
 
-**Goal**: Make output look like what Joe or a fielding partner produces.
+**Goal**: Make output match Antares (fielding partner) format.
 
-**Requirements**:
-- [ ] Tables stitched together into a single workbook
-- [ ] Proper column headers and row labels
-- [ ] Significance testing (stat letters)
-- [ ] Standard calculations: Top 2 Box (T2B), Bottom 2 Box (B2B), Means
-- [ ] Proper formatting (percentages, decimal places, etc.)
+> **MVP Target: Antares Format**
+>
+> We're targeting Antares-style output as our MVP, not Joe's beautified format. Antares produces
+> functional, readable crosstabs that our team uses regularly. Joe's format is more polished
+> (continuous flowing tables, inline stat letters) but requires significantly more formatting work.
+>
+> **Reference images**: `docs/reference-crosstab-images/`
+> - `referenence-antares-output.png` - **MVP target**
+> - `referenence-joe-output.png` - Future enhancement (nice-to-have)
 
-**Success Criteria**: Output Excel file is indistinguishable from Joe's tabs in structure and formatting.
+**Requirements (Antares-style)**:
+- [ ] Tables stitched together into a single Excel workbook
+- [ ] Multi-row headers: Group names → Column names → Stat letters (A), (B), (C)...
+- [ ] Base row with n values per column
+- [ ] Data rows: Count on one row, Percentage on next row (Antares style)
+- [ ] Sigma row at table bottom
+- [ ] Significance testing with stat letters in headers
+- [ ] Footer notes about comparison groups and significance level
+- [ ] Standard calculations: Top 2 Box (T2B), Bottom 2 Box (B2B), Means (where applicable)
+
+**Out of Scope for MVP** (Joe's format features):
+- Continuous flowing tables without boundaries
+- Inline stat letters in data cells (red letters showing significance)
+- Percentages-only format (we'll show count + %)
+- Advanced styling/color formatting
+
+**Success Criteria**: Output Excel file matches Antares structure - readable, functional crosstabs with proper headers, base sizes, and significance testing.
 
 ### Progress Notes
 
@@ -76,7 +113,7 @@ Started work on table formatting but discovered DataMapProcessor wasn't classify
 
 ## Milestone 3: Validate Against Actual Reports
 
-**Goal**: Confirm AI tabs support the same analysis as Joe's tabs.
+**Goal**: Confirm AI tabs support the same analysis as professional crosstabs (Joe's or Antares).
 
 **Process**:
 1. Take a report we wrote using Joe's Leqvio Demand tabs
@@ -151,7 +188,7 @@ Started work on table formatting but discovered DataMapProcessor wasn't classify
 After completing all milestones:
 
 1. **Clean Input → Correct Output**: Definitively proven across 23+ datasets
-2. **Output Quality**: Matches Joe's tabs in format and content
+2. **Output Quality**: Matches Antares format with correct data (see reference images)
 3. **Report Validity**: Can write real reports from AI tabs
 4. **Failure Mode Catalog**: Know exactly where messy inputs break
 

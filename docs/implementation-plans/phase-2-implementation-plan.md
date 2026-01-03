@@ -8,7 +8,7 @@
 >
 > We tested the pipeline with a clean banner plan (`leqvio-demand-bannerplan-clean.docx`):
 > - All base sizes match expected values
-> - Zero discrepancies with Joe's output
+> - Zero discrepancies with expected base sizes
 > - Prompts updated (pattern-based, no cheating language)
 > - BannerAgent correctly distinguishes groups vs notes
 >
@@ -16,7 +16,7 @@
 >
 > ### Next Steps (Pre-Phase II)
 >
-> 1. **Table formatting & stitching** - Make output look like Joe's tabs (stat testing, T2B/B2B, etc.)
+> 1. **Table formatting & stitching** - Make output match Antares-style tabs (stat testing, T2B/B2B, etc.)
 > 2. **Validate against actual reports** - Can we write the same report from AI tabs?
 > 3. **Test clean banners across all 23 datasets** in `data/test-data/`
 > 4. **Test non-clean banners** - Document failure modes to inform Phase II
@@ -1321,7 +1321,7 @@ Upload: Banner PDF + Data Map CSV + SPSS + Survey Doc (4 files)
 | 2026-01-02 | Removed human edit feature - v1 is toggle valid/invalid only |
 | 2026-01-02 | **DEFERRED** - Plan paused until core pipeline tested with cleaner banner plan |
 | 2026-01-02 | Added two-review-point framework (Review Point 1 after BannerValidateAgent, Review Point 2 after DataValidator) |
-| 2026-01-02 | ✅ Clean banner test COMPLETE - all base sizes match Joe's output |
+| 2026-01-02 | ✅ Clean banner test COMPLETE - all base sizes match expected values |
 | 2026-01-02 | Created Pre-Phase II Testing Plan (`pre-phase-2-testing-plan.md`) |
 | 2026-01-02 | Updated prompts: pattern-based extraction, no cheating language |
 | 2026-01-02 | Created `reliability-gaps.md` to track real-world input issues |
