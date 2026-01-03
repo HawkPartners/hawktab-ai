@@ -208,6 +208,12 @@ export class DataMapProcessor {
       this.handleValuesLine(fields[0], context);
       return;
     }
+
+    // Check for Open text/numeric response line (appears after variable definition)
+    if (fields[0].toLowerCase().startsWith('open ')) {
+      this.handleValuesLine(fields[0], context);
+      return;
+    }
     
     // Check for answer options (lines starting with comma + number)
     if (fields[0] === '' && fields[1] && /^\d+$/.test(fields[1])) {
