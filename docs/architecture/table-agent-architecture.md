@@ -369,15 +369,15 @@ src/
 
 ### Implementation Order
 
-| Order | Step | Dependency | Effort |
-|-------|------|------------|--------|
-| 0 | Env variable separation | None | Small |
-| 1 | Agent structure (files) | Step 0 | Small |
-| 2 | Survey processor | None | Medium |
-| 3 | Table agent prompt | Step 1 | Medium |
-| 4 | Integration (API) | Steps 1-3 | Medium |
-| 5 | R script updates | Step 4 | Medium |
-| 6 | ExcelJS formatter | Step 5 | Medium |
+| Order | Step | Dependency | Effort | Status |
+|-------|------|------------|--------|--------|
+| 0 | Env variable separation | None | Small | ✅ Complete |
+| 1 | Agent structure (files) | Step 0 | Small | |
+| 2 | Survey processor | None | Medium | |
+| 3 | Table agent prompt | Step 1 | Medium | |
+| 4 | Integration (API) | Steps 1-3 | Medium | |
+| 5 | R script updates | Step 4 | Medium | |
+| 6 | ExcelJS formatter | Step 5 | Medium | |
 
 **Iteration approach**: After Step 4, run on test data and iterate on prompt + table types based on what's missing.
 
