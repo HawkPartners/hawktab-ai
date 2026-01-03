@@ -57,6 +57,7 @@ EXAMPLE PATTERN (abstract):
 
 COMMON MISTAKES TO AVOID:
 - DON'T create a separate group for each column (e.g., 5 specialty types should be 1 group with 5 columns, not 5 groups)
+- DON'T combine separate groups into one group (if two sections have the same header styling, they are separate groups)
 - DON'T put all columns into one mega-group (each logical dimension gets its own group)
 - DO look for visual separators between groups (spacing, lines, shading changes)
 
@@ -149,7 +150,10 @@ Before finalizing output, use the scratchpad to:
 1. List all visual group boundaries you identified
 2. Confirm each group header and its columns
 3. Check: "Did I accidentally make columns into groups?"
-4. Verify group count seems reasonable (typically 4-10 groups for a standard banner)
+4. Check: "Did I accidentally combine two groups into one?"
+5. Verify group count seems reasonable (typically 4-10 groups for a standard banner)
+
+Take a second pass through the document to verify your group boundaries before finalizing.
 
 ---
 

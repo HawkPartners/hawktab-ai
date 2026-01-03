@@ -57,10 +57,12 @@ export type TablePlan = {
 };
 
 function slugify(input: string): string {
+  // Use underscores instead of hyphens - hyphens break R variable names
+  // (R interprets table_a1-value-1 as table_a1 minus value minus 1)
   return input
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
 }
 
 function isAdminField(name: string): boolean {
