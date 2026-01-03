@@ -48,10 +48,17 @@ export function generateMasterRScript(manifest: RManifest, sessionId: string): s
   lines.push('');
   
   // Helper functions
-  lines.push('# Helper function for percentage calculation');
+  lines.push('# Helper function for percentage calculation (rounded to whole number, half up)');
   lines.push('calc_pct <- function(x, base) {');
   lines.push('  if (base == 0) return(0)');
-  lines.push('  round(100 * x / base, 1)');
+  lines.push('  floor(100 * x / base + 0.5)  # Round half up (12.5 -> 13)');
+  lines.push('}');
+  lines.push('');
+
+  // Helper function for rounding numbers (half up, not banker's rounding)
+  lines.push('# Helper function for rounding (half up: 12.5 -> 13, not banker\'s rounding)');
+  lines.push('round_half_up <- function(x, digits = 0) {');
+  lines.push('  floor(x * 10^digits + 0.5) / 10^digits');
   lines.push('}');
   lines.push('');
 
@@ -196,28 +203,110 @@ function generateSingleTable(lines: string[], table: TableDefinition, _sessionId
     lines.push(`        counts[i] <- sum(cut_data$\`${table.questionVar}\` == values[i], na.rm = TRUE)`);
     lines.push('      }');
     lines.push('      pcts <- sapply(counts, calc_pct, base = base_n)');
-    lines.push('      col_data <- paste0(counts, " (", pcts, "%)")');
+    lines.push('      col_data <- paste0(pcts, "% (", counts, ")")');
     lines.push(`      table_${tableId}[[cut_name]] <- col_data`);
     lines.push('    }');
     
   } else {
-    // Numeric variable or levels to be inferred
-    // Initialize data frame with proper structure
-    lines.push(`    table_${tableId} <- data.frame(Metric = c("N", "Mean", "Median", "SD"), stringsAsFactors = FALSE)`);
+    // Numeric variable - use smart bucketing with high-level split
+    const varName = table.questionVar;
 
-    lines.push('    for (cut_name in names(cuts)) {');
-    lines.push('      cut_data <- apply_cut(data, cuts[[cut_name]])');
-    lines.push('      # Valid N = non-NA responses for this question in this cut');
-    lines.push(`      valid_n <- sum(!is.na(cut_data$\`${table.questionVar}\`))`);
-    lines.push(`      mean_val <- round(mean(cut_data$\`${table.questionVar}\`, na.rm = TRUE), 2)`);
-    lines.push(`      median_val <- round(median(cut_data$\`${table.questionVar}\`, na.rm = TRUE), 2)`);
-    lines.push(`      sd_val <- round(sd(cut_data$\`${table.questionVar}\`, na.rm = TRUE), 2)`);
-    lines.push(`      table_${tableId}[[cut_name]] <- c(`);
-    lines.push('        paste0("N = ", valid_n),');
-    lines.push('        paste0("Mean = ", mean_val),');
-    lines.push('        paste0("Median = ", median_val),');
-    lines.push('        paste0("SD = ", sd_val)');
+    // Helper function to round to nice numbers based on range
+    lines.push(`    # Smart bucketing for numeric variable ${varName}`);
+    lines.push(`    var_data <- data$\`${varName}\`[!is.na(data$\`${varName}\`)]`);
+    lines.push('    if (length(var_data) > 0) {');
+    lines.push('      var_min <- min(var_data)');
+    lines.push('      var_max <- max(var_data)');
+    lines.push('      var_median <- median(var_data)');
+    lines.push('      var_range <- var_max - var_min');
+    lines.push('      ');
+    lines.push('      # Determine nice rounding unit based on range');
+    lines.push('      round_unit <- if (var_range <= 20) 5 else if (var_range <= 100) 10 else if (var_range <= 500) 25 else 100');
+    lines.push('      ');
+    lines.push('      # Round midpoint to nice number');
+    lines.push('      midpoint <- round_half_up(var_median / round_unit, 0) * round_unit');
+    lines.push('      ');
+    lines.push('      # Create 4 bucket boundaries (2 below midpoint, 2 above)');
+    lines.push('      lower_half_size <- midpoint - var_min');
+    lines.push('      upper_half_size <- var_max - midpoint');
+    lines.push('      ');
+    lines.push('      # Calculate sub-bucket boundaries');
+    lines.push('      lower_mid <- round_half_up((var_min + midpoint) / 2 / round_unit, 0) * round_unit');
+    lines.push('      upper_mid <- round_half_up((midpoint + var_max) / 2 / round_unit, 0) * round_unit');
+    lines.push('      ');
+    lines.push('      # Ensure boundaries are distinct');
+    lines.push('      if (lower_mid <= var_min) lower_mid <- var_min + round_unit');
+    lines.push('      if (lower_mid >= midpoint) lower_mid <- midpoint - round_unit');
+    lines.push('      if (upper_mid <= midpoint) upper_mid <- midpoint + round_unit');
+    lines.push('      if (upper_mid >= var_max) upper_mid <- var_max - round_unit');
+    lines.push('      ');
+    lines.push('      # Create bucket labels');
+    lines.push('      bucket_labels <- c(');
+    lines.push('        paste0(midpoint, " or Less (Total)"),');
+    lines.push('        paste0("  ", var_min, " - ", lower_mid - 1),');
+    lines.push('        paste0("  ", lower_mid, " - ", midpoint),');
+    lines.push('        paste0("More Than ", midpoint, " (Total)"),');
+    lines.push('        paste0("  ", midpoint + 1, " - ", upper_mid),');
+    lines.push('        paste0("  ", upper_mid + 1, "+"),');
+    lines.push('        "Mean (overall)",');
+    lines.push('        "Mean (minus outliers)",');
+    lines.push('        "Median (overall)"');
     lines.push('      )');
+    lines.push('      ');
+    lines.push(`      table_${tableId} <- data.frame(Metric = bucket_labels, stringsAsFactors = FALSE)`);
+    lines.push('      ');
+    lines.push('      for (cut_name in names(cuts)) {');
+    lines.push('        cut_data <- apply_cut(data, cuts[[cut_name]])');
+    lines.push(`        cut_var <- cut_data$\`${varName}\``);
+    lines.push('        valid_n <- sum(!is.na(cut_var))');
+    lines.push('        ');
+    lines.push('        # Calculate bucket counts');
+    lines.push('        bucket1_count <- sum(cut_var >= var_min & cut_var < lower_mid, na.rm = TRUE)');
+    lines.push('        bucket2_count <- sum(cut_var >= lower_mid & cut_var <= midpoint, na.rm = TRUE)');
+    lines.push('        lower_total <- bucket1_count + bucket2_count');
+    lines.push('        ');
+    lines.push('        bucket3_count <- sum(cut_var > midpoint & cut_var <= upper_mid, na.rm = TRUE)');
+    lines.push('        bucket4_count <- sum(cut_var > upper_mid, na.rm = TRUE)');
+    lines.push('        upper_total <- bucket3_count + bucket4_count');
+    lines.push('        ');
+    lines.push('        # Calculate percentages');
+    lines.push('        lower_total_pct <- calc_pct(lower_total, valid_n)');
+    lines.push('        bucket1_pct <- calc_pct(bucket1_count, valid_n)');
+    lines.push('        bucket2_pct <- calc_pct(bucket2_count, valid_n)');
+    lines.push('        upper_total_pct <- calc_pct(upper_total, valid_n)');
+    lines.push('        bucket3_pct <- calc_pct(bucket3_count, valid_n)');
+    lines.push('        bucket4_pct <- calc_pct(bucket4_count, valid_n)');
+    lines.push('        ');
+    lines.push('        mean_val <- round_half_up(mean(cut_var, na.rm = TRUE), 0)');
+    lines.push('        median_val <- round_half_up(median(cut_var, na.rm = TRUE), 0)');
+    lines.push('        ');
+    lines.push('        # Calculate mean minus outliers using IQR method');
+    lines.push('        q1 <- quantile(cut_var, 0.25, na.rm = TRUE)');
+    lines.push('        q3 <- quantile(cut_var, 0.75, na.rm = TRUE)');
+    lines.push('        iqr <- q3 - q1');
+    lines.push('        lower_bound <- q1 - 1.5 * iqr');
+    lines.push('        upper_bound <- q3 + 1.5 * iqr');
+    lines.push('        non_outlier_vals <- cut_var[!is.na(cut_var) & cut_var >= lower_bound & cut_var <= upper_bound]');
+    lines.push('        mean_minus_outliers <- if (length(non_outlier_vals) > 0) round_half_up(mean(non_outlier_vals), 0) else mean_val');
+    lines.push('        ');
+    lines.push(`        table_${tableId}[[cut_name]] <- c(`);
+    lines.push('          paste0(lower_total_pct, "% (", lower_total, ")"),');
+    lines.push('          paste0(bucket1_pct, "% (", bucket1_count, ")"),');
+    lines.push('          paste0(bucket2_pct, "% (", bucket2_count, ")"),');
+    lines.push('          paste0(upper_total_pct, "% (", upper_total, ")"),');
+    lines.push('          paste0(bucket3_pct, "% (", bucket3_count, ")"),');
+    lines.push('          paste0(bucket4_pct, "% (", bucket4_count, ")"),');
+    lines.push('          mean_val,');
+    lines.push('          mean_minus_outliers,');
+    lines.push('          median_val');
+    lines.push('        )');
+    lines.push('      }');
+    lines.push('    } else {');
+    lines.push('      # Fallback if no valid data');
+    lines.push(`      table_${tableId} <- data.frame(Metric = c("N", "Mean", "Median"), stringsAsFactors = FALSE)`);
+    lines.push('      for (cut_name in names(cuts)) {');
+    lines.push(`        table_${tableId}[[cut_name]] <- c("0", "N/A", "N/A")`);
+    lines.push('      }');
     lines.push('    }');
   }
   
@@ -248,15 +337,15 @@ function generateMultiSubTable(lines: string[], table: MultiSubTableDefinition, 
   
   lines.push('  for (cut_name in names(cuts)) {');
   lines.push('    cut_data <- apply_cut(data, cuts[[cut_name]])');
-  lines.push('    # Base = number of respondents in this cut (for multi-sub, all items share same base)');
-  lines.push('    base_n <- nrow(cut_data)');
+  lines.push('    # Base = respondents who were asked this question (use first item to check, all share same skip logic)');
+  lines.push(`    base_n <- sum(!is.na(cut_data$\`${table.items[0].var}\`))`);
   lines.push('    col_values <- character(0)');
   
   for (const item of table.items) {
     lines.push(`    if ("${item.var}" %in% names(cut_data)) {`);
     lines.push(`      count <- sum(cut_data$\`${item.var}\` == ${item.positiveValue}, na.rm = TRUE)`);
     lines.push('      pct <- calc_pct(count, base_n)');
-    lines.push('      col_values <- c(col_values, paste0(count, " (", pct, "%)"))');
+    lines.push('      col_values <- c(col_values, paste0(pct, "% (", count, ")"))');
     lines.push('    } else {');
     lines.push('      col_values <- c(col_values, "N/A")');
     lines.push('    }');
