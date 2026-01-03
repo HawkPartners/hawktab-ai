@@ -43,9 +43,15 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   // See: https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-lifecycle
   const azureApiVersion = process.env.AZURE_API_VERSION || '2025-01-01-preview';
 
-  // Model configuration (Azure deployment names)
-  const reasoningModel = process.env.REASONING_MODEL || 'o4-mini';
-  const baseModel = process.env.BASE_MODEL || 'gpt-5-nano';
+  // Per-agent model configuration (Azure deployment names)
+  // New: Each agent has its own model configuration
+  const crosstabModel = process.env.CROSSTAB_MODEL || process.env.REASONING_MODEL || 'o4-mini';
+  const bannerModel = process.env.BANNER_MODEL || process.env.BASE_MODEL || 'gpt-5-nano';
+  const tableModel = process.env.TABLE_MODEL || 'gpt-5-nano';
+
+  // Legacy model aliases (for backward compatibility)
+  const reasoningModel = process.env.REASONING_MODEL || crosstabModel;
+  const baseModel = process.env.BASE_MODEL || bannerModel;
 
   const nodeEnv = (process.env.NODE_ENV as 'development' | 'production') || 'development';
 
@@ -54,9 +60,14 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
     azureResourceName,
     azureApiVersion,
 
-    // Model configuration
+    // Legacy model configuration (for backward compatibility)
     reasoningModel,
     baseModel,
+
+    // Per-agent model configuration
+    crosstabModel,
+    bannerModel,
+    tableModel,
 
     // Deprecated
     openaiApiKey: process.env.OPENAI_API_KEY,  // Optional, deprecated
@@ -66,67 +77,151 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
     promptVersions: {
       crosstabPromptVersion: process.env.CROSSTAB_PROMPT_VERSION || 'production',
       bannerPromptVersion: process.env.BANNER_PROMPT_VERSION || 'production',
+      tablePromptVersion: process.env.TABLE_PROMPT_VERSION || 'production',
     },
     processingLimits: {
       maxDataMapVariables: parseInt(process.env.MAX_DATA_MAP_VARIABLES || '1000'),
       maxBannerColumns: parseInt(process.env.MAX_BANNER_COLUMNS || '100'),
+      // Legacy token limits (for backward compatibility)
       reasoningModelTokens: parseInt(process.env.REASONING_MODEL_TOKENS || '100000'),
       baseModelTokens: parseInt(process.env.BASE_MODEL_TOKENS || '128000'),
+      // Per-agent token limits
+      crosstabModelTokens: parseInt(process.env.CROSSTAB_MODEL_TOKENS || process.env.REASONING_MODEL_TOKENS || '100000'),
+      bannerModelTokens: parseInt(process.env.BANNER_MODEL_TOKENS || process.env.BASE_MODEL_TOKENS || '128000'),
+      tableModelTokens: parseInt(process.env.TABLE_MODEL_TOKENS || '128000'),
     },
   };
 };
 
 /**
- * Task-based model selection
- * Models are chosen based on task requirements, not environment:
- * - Reasoning model (o4-mini): Complex validation tasks (CrosstabAgent)
- * - Base model (gpt-5-nano): Vision/extraction tasks (BannerAgent)
- */
-
-/**
- * Get reasoning model for complex validation tasks
- * Used by: CrosstabAgent (requires deep reasoning for R syntax generation)
+ * Per-Agent Model Selection
+ * Each agent has its own model configuration for flexibility:
+ * - CrosstabAgent: Complex validation, R syntax generation (requires reasoning)
+ * - BannerAgent: Vision/extraction tasks (requires multimodal support)
+ * - TableAgent: Table definition generation (new agent)
  *
  * NOTE: Using .chat() for Chat Completions API instead of Responses API
  * The Responses API (default in AI SDK v6) may not be available on all Azure deployments
  */
-export const getReasoningModel = () => {
+
+/**
+ * Get CrosstabAgent model for complex validation tasks
+ * Used by: CrosstabAgent (requires deep reasoning for R syntax generation)
+ */
+export const getCrosstabModel = () => {
   const config = getEnvironmentConfig();
   const provider = getAzureProvider();
-  return provider.chat(config.reasoningModel);  // Use Chat Completions API
+  return provider.chat(config.crosstabModel);
 };
 
 /**
- * Get base model for vision/extraction tasks
+ * Get BannerAgent model for vision/extraction tasks
  * Used by: BannerAgent (requires vision capability, simpler reasoning)
- *
- * NOTE: Using .chat() for Chat Completions API instead of Responses API
- * Vision should work with Chat Completions API on multimodal models
+ */
+export const getBannerModel = () => {
+  const config = getEnvironmentConfig();
+  const provider = getAzureProvider();
+  return provider.chat(config.bannerModel);
+};
+
+/**
+ * Get TableAgent model for table definition generation
+ * Used by: TableAgent (generates table definitions from datamap + survey)
+ */
+export const getTableModel = () => {
+  const config = getEnvironmentConfig();
+  const provider = getAzureProvider();
+  return provider.chat(config.tableModel);
+};
+
+/**
+ * Get per-agent model name strings (for logging)
+ */
+export const getCrosstabModelName = (): string => {
+  const config = getEnvironmentConfig();
+  return `azure/${config.crosstabModel}`;
+};
+
+export const getBannerModelName = (): string => {
+  const config = getEnvironmentConfig();
+  return `azure/${config.bannerModel}`;
+};
+
+export const getTableModelName = (): string => {
+  const config = getEnvironmentConfig();
+  return `azure/${config.tableModel}`;
+};
+
+/**
+ * Get per-agent token limits
+ */
+export const getCrosstabModelTokenLimit = (): number => {
+  const config = getEnvironmentConfig();
+  return config.processingLimits.crosstabModelTokens;
+};
+
+export const getBannerModelTokenLimit = (): number => {
+  const config = getEnvironmentConfig();
+  return config.processingLimits.bannerModelTokens;
+};
+
+export const getTableModelTokenLimit = (): number => {
+  const config = getEnvironmentConfig();
+  return config.processingLimits.tableModelTokens;
+};
+
+// =============================================================================
+// Legacy Model Selection (Backward Compatibility)
+// These functions are deprecated but maintained for existing code
+// =============================================================================
+
+/**
+ * @deprecated Use getCrosstabModel() instead
+ * Get reasoning model for complex validation tasks
+ */
+export const getReasoningModel = () => {
+  const config = getEnvironmentConfig();
+  const provider = getAzureProvider();
+  return provider.chat(config.reasoningModel);
+};
+
+/**
+ * @deprecated Use getBannerModel() instead
+ * Get base model for vision/extraction tasks
  */
 export const getBaseModel = () => {
   const config = getEnvironmentConfig();
   const provider = getAzureProvider();
-  return provider.chat(config.baseModel);  // Use Chat Completions API
+  return provider.chat(config.baseModel);
 };
 
 /**
- * Get model name string (for logging)
+ * @deprecated Use getCrosstabModelName() instead
  */
 export const getReasoningModelName = (): string => {
   const config = getEnvironmentConfig();
   return `azure/${config.reasoningModel}`;
 };
 
+/**
+ * @deprecated Use getBannerModelName() instead
+ */
 export const getBaseModelName = (): string => {
   const config = getEnvironmentConfig();
   return `azure/${config.baseModel}`;
 };
 
+/**
+ * @deprecated Use getCrosstabModelTokenLimit() instead
+ */
 export const getReasoningModelTokenLimit = (): number => {
   const config = getEnvironmentConfig();
   return config.processingLimits.reasoningModelTokens;
 };
 
+/**
+ * @deprecated Use getBannerModelTokenLimit() instead
+ */
 export const getBaseModelTokenLimit = (): number => {
   const config = getEnvironmentConfig();
   return config.processingLimits.baseModelTokens;
@@ -162,12 +257,26 @@ export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
       errors.push('MAX_BANNER_COLUMNS must be greater than 0');
     }
 
+    // Legacy token limit validation (for backward compatibility)
     if (config.processingLimits.reasoningModelTokens < 1000) {
       errors.push('REASONING_MODEL_TOKENS must be at least 1000');
     }
 
     if (config.processingLimits.baseModelTokens < 1000) {
       errors.push('BASE_MODEL_TOKENS must be at least 1000');
+    }
+
+    // Per-agent token limit validation
+    if (config.processingLimits.crosstabModelTokens < 1000) {
+      errors.push('CROSSTAB_MODEL_TOKENS must be at least 1000');
+    }
+
+    if (config.processingLimits.bannerModelTokens < 1000) {
+      errors.push('BANNER_MODEL_TOKENS must be at least 1000');
+    }
+
+    if (config.processingLimits.tableModelTokens < 1000) {
+      errors.push('TABLE_MODEL_TOKENS must be at least 1000');
     }
 
   } catch (error) {
