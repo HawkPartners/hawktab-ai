@@ -116,6 +116,18 @@ export const TableRowSchema = z.object({
 export type TableRow = z.infer<typeof TableRowSchema>;
 
 /**
+ * Hints for downstream processing
+ * These help deterministic code generate additional derived tables (T2B, combined ranks, etc.)
+ */
+export const TableHintSchema = z.enum([
+  'ranking',   // This is a ranking question - downstream may add combined rank tables
+  'scale-5',   // 5-point Likert scale - downstream may add T2B, B2B, Middle
+  'scale-7',   // 7-point Likert scale - downstream may add T3B, B3B, etc.
+]);
+
+export type TableHint = z.infer<typeof TableHintSchema>;
+
+/**
  * Single table definition (one question may produce multiple tables)
  * Note: stats are NOT included - they are inferred deterministically from tableType downstream
  */
@@ -126,6 +138,10 @@ export const TableDefinitionSchema = z.object({
 
   // Rows in the table
   rows: z.array(TableRowSchema),
+
+  // Hints for downstream processing (empty array if none apply)
+  // Helps deterministic code generate derived tables (T2B for scales, combined ranks, etc.)
+  hints: z.array(TableHintSchema),
 });
 
 export type TableDefinition = z.infer<typeof TableDefinitionSchema>;

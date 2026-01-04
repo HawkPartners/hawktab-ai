@@ -199,6 +199,7 @@ Begin analysis now.
           label: item.label,
           filterValue: '',  // Required field for Azure compatibility
         })),
+        hints: [],  // No hints for fallback
       }],
       confidence: 0.0,
       reasoning: `Error processing question: ${error instanceof Error ? error.message : 'Unknown error'}. Manual review required.`,
