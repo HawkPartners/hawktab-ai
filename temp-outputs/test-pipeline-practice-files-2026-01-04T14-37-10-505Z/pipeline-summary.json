@@ -1,0 +1,19 @@
+{
+  "dataset": "practice-files",
+  "timestamp": "2026-01-04T14:45:56.130Z",
+  "duration": {
+    "ms": 525626,
+    "formatted": "525.6s"
+  },
+  "inputs": {
+    "datamap": "leqvio-demand-datamap.csv",
+    "banner": "leqvio-demand-bannerplan-clean.docx",
+    "spss": "leqvio-demand-data.sav"
+  },
+  "outputs": {
+    "variables": 192,
+    "tables": 49,
+    "cuts": 21,
+    "bannerGroups": 7
+  }
+}
