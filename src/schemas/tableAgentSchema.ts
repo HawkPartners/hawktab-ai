@@ -120,7 +120,7 @@ export type TableRow = z.infer<typeof TableRowSchema>;
  * These help deterministic code generate additional derived tables (T2B, combined ranks, etc.)
  */
 export const TableHintSchema = z.enum([
-  'ranking',   // This is a ranking question - downstream may add combined rank tables
+  'ranking',   // Ranking question - downstream may add combined rank tables
   'scale-5',   // 5-point Likert scale - downstream may add T2B, B2B, Middle
   'scale-7',   // 7-point Likert scale - downstream may add T3B, B3B, etc.
 ]);
