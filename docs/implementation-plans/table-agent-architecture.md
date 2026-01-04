@@ -71,38 +71,333 @@ Deleted old files:
 
 ## Step 6: ExcelJS Formatter
 
-**Goal**: Format JSON output into Antares-style Excel workbook.
+**Goal**: Format JSON output into Antares-style Excel workbook with professional crosstab formatting.
 
-### 6.1 Responsibilities
+**Reference**: `docs/reference-crosstab-images/referenence-antares-output.png`
 
-| Component | Job |
-|-----------|-----|
-| R | Calculate values (n, count, %, mean, median, sd) |
-| ExcelJS | Place values in cells, apply formatting, process hints |
+---
 
-### 6.2 Key Features
+### 6.1 Table Layout (Antares Style)
 
-- Multi-row headers (Group → Column → Stat letter)
-- Base row with n values
-- Data rows (values from JSON)
-- Tables stitched into single workbook
+Each table is wrapped in a box with:
 
-### 6.3 Hints Processing
-
-Process hints in ExcelJS by combining R-calculated values:
-
-```typescript
-// hint === 'scale-5': Add T2B (values 4+5), B2B (1+2), Middle (3)
-const t2b_count = row_4.count + row_5.count;
-const t2b_pct = round((t2b_count / base_n) * 100);
-
-// hint === 'ranking': Add combined rank rows
-// hint === 'scale-7': Add T3B, B3B, etc.
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ S5 - Employment/Commercial affiliation (Select all that apply)               │
+│ Base: Total                                                                  │
+├────────────┬───────┬║════════════════════════════════║┬═══════════════┬──────┤
+│            │ Total │║         Specialty              ║│     Role      │ ...  │
+│            │       │║ Cards │ PCPs │ Nephs │ Endos   ║│ Phys  │ NP/PA │      │
+│            │  (T)  │║  (A)  │  (B) │  (C)  │  (D)    ║│  (F)  │  (G)  │      │
+├────────────┼───────┼║───────┼──────┼───────┼─────────║┼───────┼───────┼──────┤
+│ Base n     │  180  │║  120  │   53 │     0 │      7  ║│  166  │   14  │      │
+├────────────┼───────┼║───────┼──────┼───────┼─────────║┼───────┼───────┼──────┤
+│ Option 1   │    45 │║    30 │   10 │     0 │      5  ║│   38  │    7  │ count│
+│            │   25% │║   25% │  19% │     - │    71%  ║│   23% │   50% │ pct  │
+│            │     - │║  B,C  │    - │     - │ A,B,C   ║│    G  │     - │ sig  │
+├────────────┼───────┼║───────┼──────┼───────┼─────────║┼───────┼───────┼──────┤
+│ Option 2   │   ... │                                                         │
+├────────────┴───────┴─────────────────────────────────────────────────────────┤
+│ Significance at 90% level. T-test for means, Z-test for proportions.         │
+│ Comparison groups: A/B/C/D/E, F/G, H/I, J/K/L/M, N/O/P/Q, R/S                │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 6.4 Input
+Key elements:
+- **║** = Heavy border between banner groups
+- **│** = Light border within groups
+- Box wraps entire table
+- 3-row header (Group name → Column name → Stat letter)
 
-Reads `results/tables.json` from R output.
+---
+
+### 6.2 Header Structure
+
+| Row | Content | Example |
+|-----|---------|---------|
+| Title | Question text | `S5 - Employment/Commercial affiliation` |
+| Base | Base description | `Base: Total` or `Base: Shown this question` |
+| Header 1 | Group names (merged cells) | `Specialty`, `Role`, `Tiers` |
+| Header 2 | Column names | `Cards`, `PCPs`, `Physician`, `NP/PA` |
+| Header 3 | Stat letters in parentheses | `(T)`, `(A)`, `(B)`, `(C)` |
+| Base Row | n values for each cut | `180`, `120`, `53`, `0` |
+
+**Base description logic:**
+- If `n === totalRespondents` → `"Base: Total"`
+- Else → `"Base: Shown this question"`
+
+---
+
+### 6.3 Data Row Formats
+
+#### 6.3.1 Frequency Tables
+
+Each answer option = **3 rows**:
+
+| Row | Content | Example |
+|-----|---------|---------|
+| 1 | Count (n) | `45` |
+| 2 | Percent | `25%` |
+| 3 | Significance | `B,C` or `-` |
+
+Always show all 3 rows, even if no significance (use `-`).
+
+#### 6.3.2 Mean Rows Tables (Multiple Items)
+
+When table has **>1 row**, each item = **2 rows**:
+
+| Row | Content | Example |
+|-----|---------|---------|
+| 1 | Mean | `95.2` |
+| 2 | Significance | `D` or `-` |
+
+This keeps the table compact. SD/median omitted for multi-row mean tables.
+
+#### 6.3.3 Mean Rows Tables (Single Item)
+
+When table has **exactly 1 row**, show **4 rows**:
+
+| Row | Content | Example |
+|-----|---------|---------|
+| 1 | Mean | `95.2` |
+| 2 | Median | `100` |
+| 3 | SD | `6.5` |
+| 4 | Significance | `-` |
+
+---
+
+### 6.4 Border Styling
+
+| Border Type | Style | Where |
+|-------------|-------|-------|
+| Heavy | `medium` (2px) | Between banner groups |
+| Light | `thin` (1px) | Within groups, between rows |
+| Box | `medium` | Around entire table |
+
+ExcelJS border styles:
+```typescript
+// Heavy border between groups
+{ style: 'medium', color: { argb: 'FF000000' } }
+
+// Light border within groups
+{ style: 'thin', color: { argb: 'FF000000' } }
+```
+
+---
+
+### 6.5 Color Coding
+
+| Element | Color | Purpose |
+|---------|-------|---------|
+| Title row | Light gray `#E0E0E0` | Table header |
+| Base description | Light gray `#E0E0E0` | Part of header |
+| Group header row | Light blue `#D9E1F2` | Banner groups |
+| Column header row | Light blue `#D9E1F2` | Column names |
+| Stat letter row | Light blue `#D9E1F2` | (T), (A), (B) |
+| Base n row | Light yellow `#FFF2CC` | Highlight base sizes |
+| Label column | Light teal `#E2EFDA` | Row labels |
+| Data cells | White | Values |
+
+Optional: Different background tints per banner group (as in Antares reference).
+
+---
+
+### 6.6 Footer
+
+Below each table, add 2 lines:
+
+```
+Significance at 90% level. T-test for means, Z-test for proportions.
+Comparison groups: A/B/C/D/E, F/G, H/I, J/K/L/M, N/O/P/Q, R/S
+```
+
+Footer derives comparison groups from banner structure:
+- Each banner group's stat letters joined with `/`
+- Groups separated by `, `
+
+---
+
+### 6.7 Hints Processing → New Tables (in RScriptGeneratorV2)
+
+Hints do NOT modify existing tables. Instead, **RScriptGeneratorV2 generates additional R code** to create derived tables. This keeps calculations at the data source (R) and ExcelJS simple (just renders whatever tables exist).
+
+**Flow:**
+```
+TableAgent output (has hints: "ranking" or "scale-5")
+         ↓
+RScriptGeneratorV2 sees hints
+         ↓
+Generates BOTH:
+  - Original tables (e.g., A6_rank1, A6_rank2, ...)
+  - Derived tables (e.g., A6_top3_combined)
+         ↓
+R executes, outputs all tables to JSON
+         ↓
+ExcelJS renders whatever tables exist (dumb and simple)
+```
+
+#### 6.7.1 Scale-5 Hint
+
+When `hints: "scale-5"` (5-point Likert scale):
+
+RScriptGeneratorV2 generates R code for an additional table with 3 derived rows:
+- **T2B (Top 2 Box)**: Count/% where value = 4 OR 5
+- **B2B (Bottom 2 Box)**: Count/% where value = 1 OR 2
+- **Middle**: Count/% where value = 3
+
+```r
+# Generated R code for T2B/B2B table
+t2b_count <- sum(cut_data[[var]] %in% c(4, 5), na.rm = TRUE)
+t2b_pct <- round((t2b_count / base_n) * 100)
+
+b2b_count <- sum(cut_data[[var]] %in% c(1, 2), na.rm = TRUE)
+b2b_pct <- round((b2b_count / base_n) * 100)
+
+middle_count <- sum(cut_data[[var]] == 3, na.rm = TRUE)
+middle_pct <- round((middle_count / base_n) * 100)
+```
+
+New table ID: `"a8r1_t2b_b2b"`
+New table title: `"A8r1 - Likelihood (T2B/B2B)"`
+
+#### 6.7.2 Scale-7 Hint
+
+When `hints: "scale-7"` (7-point Likert scale):
+
+RScriptGeneratorV2 generates R code for an additional table with 3 derived rows:
+- **T2B**: Count/% where value = 6 OR 7
+- **B2B**: Count/% where value = 1 OR 2
+- **Middle**: Count/% where value = 3, 4, OR 5
+
+#### 6.7.3 Ranking Hint
+
+When `hints: "ranking"`:
+
+RScriptGeneratorV2 generates R code for an additional table showing **Top 3 Combined**.
+
+**Why R must do this**: Can't just sum rank1 + rank2 + rank3 percentages. Need to count unique respondents who ranked the item in top 3 from raw data:
+
+```r
+# Generated R code for Top 3 Combined
+# For each item, count respondents who gave rank 1, 2, or 3
+top3_count <- sum(cut_data[[var]] <= 3, na.rm = TRUE)
+top3_pct <- round((top3_count / base_n) * 100)
+```
+
+New table ID: `"a6_top3_combined"`
+New table title: `"A6 - Top 3 Ranked"`
+
+This applies regardless of ranking depth (4, 7, or 10 options).
+
+---
+
+### 6.8 Required R Script Changes
+
+Add to `tables.json` metadata:
+
+```json
+{
+  "metadata": {
+    "generatedAt": "...",
+    "tableCount": 49,
+    "cutCount": 21,
+    "significanceLevel": 0.1,
+    "totalRespondents": 180,  // NEW: for base description logic
+    "bannerGroups": [         // NEW: for headers & border placement
+      {
+        "groupName": "Total",
+        "columns": [{ "name": "Total", "statLetter": "T" }]
+      },
+      {
+        "groupName": "Specialty",
+        "columns": [
+          { "name": "Cards", "statLetter": "A" },
+          { "name": "PCPs", "statLetter": "B" },
+          { "name": "Nephs", "statLetter": "C" },
+          { "name": "Endos", "statLetter": "D" },
+          { "name": "Lipids", "statLetter": "E" }
+        ]
+      }
+      // ... remaining groups
+    ],
+    "comparisonGroups": ["A/B/C/D/E", "F/G", "H/I", "J/K/L/M", "N/O/P/Q", "R/S"]
+  }
+}
+```
+
+**Changes to `RScriptGeneratorV2.ts`:**
+1. Accept `totalRespondents` parameter (from SPSS row count)
+2. Accept `bannerGroups` structure (from verbose banner output)
+3. Derive `comparisonGroups` from banner group structure
+4. Include all in JSON metadata output
+
+---
+
+### 6.9 Input/Output
+
+**Input:**
+- `results/tables.json` - R calculation output
+- Banner groups structure (embedded in metadata or passed separately)
+
+**Output:**
+- `crosstabs-{sessionId}.xlsx` - Formatted Excel workbook
+- All tables on single worksheet, stacked with 2-row gaps
+
+---
+
+### 6.10 File Structure
+
+```
+src/lib/excel/
+├── ExcelFormatter.ts      # Main formatter class
+├── tableRenderers/
+│   ├── frequencyTable.ts  # Frequency table renderer
+│   └── meanRowsTable.ts   # Mean rows table renderer
+└── styles.ts              # Color/border constants
+
+# Hints processing happens in RScriptGeneratorV2, not ExcelJS
+# ExcelJS just renders whatever tables exist in tables.json
+```
+
+---
+
+### 6.11 Implementation Checklist
+
+| Task | File(s) | Status |
+|------|---------|--------|
+| **R Script Updates** | | |
+| Add totalRespondents to metadata | `src/lib/r/RScriptGeneratorV2.ts` | ⏳ |
+| Add bannerGroups to metadata | `src/lib/r/RScriptGeneratorV2.ts` | ⏳ |
+| Add comparisonGroups to metadata | `src/lib/r/RScriptGeneratorV2.ts` | ⏳ |
+| Generate derived tables for scale-5 hints | `src/lib/r/RScriptGeneratorV2.ts` | ⏳ |
+| Generate derived tables for scale-7 hints | `src/lib/r/RScriptGeneratorV2.ts` | ⏳ |
+| Generate derived tables for ranking hints | `src/lib/r/RScriptGeneratorV2.ts` | ⏳ |
+| **ExcelJS Formatter** | | |
+| Create ExcelFormatter main class | `src/lib/excel/ExcelFormatter.ts` | ⏳ |
+| Create frequency table renderer | `src/lib/excel/tableRenderers/frequencyTable.ts` | ⏳ |
+| Create mean rows table renderer | `src/lib/excel/tableRenderers/meanRowsTable.ts` | ⏳ |
+| Create styles constants | `src/lib/excel/styles.ts` | ⏳ |
+| **Integration** | | |
+| Update export-workbook route | `src/app/api/export-workbook/[sessionId]/route.ts` | ⏳ |
+| Create test script | `scripts/test-excel-formatter.ts` | ⏳ |
+| Integrate into main pipeline | `src/app/api/process-crosstab/route.ts` | ⏳ |
+
+---
+
+### 6.12 ExcelJS Capabilities Used
+
+| Feature | ExcelJS API | Notes |
+|---------|-------------|-------|
+| Merged cells | `worksheet.mergeCells(startRow, startCol, endRow, endCol)` | For group headers |
+| Border styles | `cell.border = { top: { style: 'medium' } }` | Heavy between groups |
+| Fill colors | `cell.fill = { type: 'pattern', fgColor: { argb: 'FFD9E1F2' } }` | Header backgrounds |
+| Column widths | `worksheet.getColumn(n).width = 12` | Fixed or auto-fit |
+| Row heights | `worksheet.getRow(n).height = 20` | Consistent spacing |
+| Number formats | `cell.numFmt = '0%'` | Percent display |
+| Font styles | `cell.font = { bold: true }` | Headers |
+| Alignment | `cell.alignment = { horizontal: 'center' }` | Center values |
+
+**Note:** ExcelJS doesn't support true superscript. Significance letters go on separate row.
 
 ---
 
@@ -782,3 +1077,4 @@ Once Steps 6-7 complete and validated against `data/test-data/practice-files/`:
 
 *Created: January 3, 2026*
 *Updated: January 4, 2026 - Completed Step 5.5 (R calculations enhancement), streamlined documentation to focus on Steps 6-7*
+*Updated: January 4, 2026 - Step 6 fully planned: Antares-style layout, hints processing in RScriptGeneratorV2, ExcelJS renders tables*
