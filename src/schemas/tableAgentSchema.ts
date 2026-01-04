@@ -95,6 +95,9 @@ export type TableAgentInput = z.infer<typeof TableAgentInputSchema>;
 
 // =============================================================================
 // Output Schemas
+// NOTE: All properties must be REQUIRED for Azure OpenAI structured output compatibility
+// Azure OpenAI does not support optional properties in JSON Schema
+// Use empty strings/arrays or sentinel values instead of optional
 // =============================================================================
 
 /**
@@ -105,7 +108,8 @@ export const TableRowSchema = z.object({
   label: z.string(),            // Display label: "Treating/Managing patients"
 
   // For grid_by_value: which value this row represents
-  filterValue: z.union([z.number(), z.string()]).optional(),
+  // Use empty string "" when not applicable (Azure requires all fields)
+  filterValue: z.string(),
 });
 
 export type TableRow = z.infer<typeof TableRowSchema>;
@@ -119,7 +123,7 @@ export const TableDefinitionSchema = z.object({
   tableType: TableTypeSchema,   // From catalog: "mean_rows", "grid_by_value", etc.
 
   // Rows in the table
-  rows: z.array(TableRowSchema).min(1),
+  rows: z.array(TableRowSchema),
 
   // Statistics to calculate for this table
   stats: z.array(StatTypeSchema).min(1),
