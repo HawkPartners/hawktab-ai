@@ -366,19 +366,19 @@ src/lib/excel/
 | Task | File(s) | Status |
 |------|---------|--------|
 | **R Script Updates** | | |
-| Add totalRespondents to metadata | `src/lib/r/RScriptGeneratorV2.ts` | ⏳ |
-| Add bannerGroups to metadata | `src/lib/r/RScriptGeneratorV2.ts` | ⏳ |
-| Add comparisonGroups to metadata | `src/lib/r/RScriptGeneratorV2.ts` | ⏳ |
-| Generate derived tables for scale-5 hints | `src/lib/r/RScriptGeneratorV2.ts` | ⏳ |
-| Generate derived tables for scale-7 hints | `src/lib/r/RScriptGeneratorV2.ts` | ⏳ |
-| Generate derived tables for ranking hints | `src/lib/r/RScriptGeneratorV2.ts` | ⏳ |
+| Add totalRespondents to metadata | `src/lib/r/RScriptGeneratorV2.ts` | ✅ |
+| Add bannerGroups to metadata | `src/lib/r/RScriptGeneratorV2.ts` | ✅ |
+| Add comparisonGroups to metadata | `src/lib/r/RScriptGeneratorV2.ts` | ✅ |
+| Generate derived tables for scale-5 hints | `src/lib/r/RScriptGeneratorV2.ts` | ✅ |
+| Generate derived tables for scale-7 hints | `src/lib/r/RScriptGeneratorV2.ts` | ✅ |
+| Generate derived tables for ranking hints | `src/lib/r/RScriptGeneratorV2.ts` | ✅ |
 | **ExcelJS Formatter** | | |
-| Create ExcelFormatter main class | `src/lib/excel/ExcelFormatter.ts` | ⏳ |
-| Create frequency table renderer | `src/lib/excel/tableRenderers/frequencyTable.ts` | ⏳ |
-| Create mean rows table renderer | `src/lib/excel/tableRenderers/meanRowsTable.ts` | ⏳ |
-| Create styles constants | `src/lib/excel/styles.ts` | ⏳ |
+| Create ExcelFormatter main class | `src/lib/excel/ExcelFormatter.ts` | ✅ |
+| Create frequency table renderer | `src/lib/excel/tableRenderers/frequencyTable.ts` | ✅ |
+| Create mean rows table renderer | `src/lib/excel/tableRenderers/meanRowsTable.ts` | ✅ |
+| Create styles constants | `src/lib/excel/styles.ts` | ✅ |
 | **Integration** | | |
-| Update export-workbook route | `src/app/api/export-workbook/[sessionId]/route.ts` | ⏳ |
+| Update export-workbook route | `src/app/api/export-workbook/[sessionId]/route.ts` | ✅ |
 | Create test script | `scripts/test-excel-formatter.ts` | ⏳ |
 | Integrate into main pipeline | `src/app/api/process-crosstab/route.ts` | ⏳ |
 
