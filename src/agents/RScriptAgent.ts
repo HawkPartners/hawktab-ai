@@ -1,7 +1,7 @@
 /**
  * RScriptAgent
  * Purpose: Build a single-file R script from validation or cut-tables and summarize issues
- * Reads: temp-outputs/<sessionId>/{cut-tables.json|crosstab-output-*.json, dataMap-agent*.json}
+ * Reads: temp-outputs/<sessionId>/{cut-tables.json|crosstab-output-*.json, dataMap-crosstab-agent*.json}
  * Writes: returned to caller; API persists to {r-script.R, r-validation.json}
  * Invariants: expressions are R-ready; unknown variables detected via data map names
  */
@@ -126,7 +126,7 @@ async function loadValidationOrCutTable(sessionDir: string): Promise<ValidationR
 
 async function loadAgentDataMap(sessionDir: string): Promise<DataMapType> {
   const files = await fs.readdir(sessionDir);
-  const dataMapFile = files.find((f) => f.includes('dataMap-agent') && f.endsWith('.json'));
+  const dataMapFile = files.find((f) => f.includes('dataMap-crosstab-agent') && f.endsWith('.json'));
   if (!dataMapFile) throw new Error('Agent data map not found');
   const content = await fs.readFile(path.join(sessionDir, dataMapFile), 'utf-8');
   const parsed = JSON.parse(content);

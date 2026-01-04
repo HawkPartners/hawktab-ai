@@ -852,10 +852,10 @@ export class DataMapProcessor {
       await fs.writeFile(verboseFile, JSON.stringify(outputs.verbose, null, 2));
       console.log(`[DataMapProcessor] Development output saved: ${baseName}-verbose-${timestamp}.json`);
 
-      // Save agent output  
-      const agentFile = path.join(outputDir, `${baseName}-agent-${timestamp}.json`);
-      await fs.writeFile(agentFile, JSON.stringify(outputs.agent, null, 2));
-      console.log(`[DataMapProcessor] Development output saved: ${baseName}-agent-${timestamp}.json`);
+      // Save crosstab-agent output (simplified for CrosstabAgent)
+      const crosstabAgentFile = path.join(outputDir, `${baseName}-crosstab-agent-${timestamp}.json`);
+      await fs.writeFile(crosstabAgentFile, JSON.stringify(outputs.agent, null, 2));
+      console.log(`[DataMapProcessor] Development output saved: ${baseName}-crosstab-agent-${timestamp}.json`);
 
     } catch (error) {
       console.error('[DataMapProcessor] Failed to save development outputs:', error);

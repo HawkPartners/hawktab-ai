@@ -1,7 +1,7 @@
 /**
  * GET /api/generate-r/[sessionId]
  * Purpose: Generate a single-file R script and validation summary for a session
- * Reads: temp-outputs/<sessionId>/{dataFile.sav, cut-tables.json|crosstab-output-*.json, dataMap-agent*.json}
+ * Reads: temp-outputs/<sessionId>/{dataFile.sav, cut-tables.json|crosstab-output-*.json, dataMap-crosstab-agent*.json}
  * Writes: temp-outputs/<sessionId>/{r-script.R, r-validation.json}
  */
 import { NextRequest, NextResponse } from 'next/server';
@@ -53,7 +53,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ ses
     const crosstabFile = files.find((f) => f.includes('crosstab-output') && f.endsWith('.json'));
     // Prefer verbose data map for TablePlan
     const verboseMapFile = files.find((f) => f.includes('dataMap-verbose') && f.endsWith('.json'));
-    const dataMapFile = verboseMapFile ?? files.find((f) => f.includes('dataMap-agent') && f.endsWith('.json'));
+    const dataMapFile = verboseMapFile ?? files.find((f) => f.includes('dataMap-crosstab-agent') && f.endsWith('.json'));
     if (!crosstabFile || !dataMapFile) {
       return NextResponse.json({ error: 'Missing crosstab or data map artifacts' }, { status: 400 });
     }

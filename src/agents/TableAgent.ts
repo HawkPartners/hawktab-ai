@@ -81,8 +81,14 @@ export function groupDataMapByParent(dataMap: VerboseDataMapType[]): TableAgentI
 
   // Create input for each sub group
   for (const [parentId, items] of subGroups) {
-    // Get question text from context (all subs share same context)
-    const questionText = items[0]?.context || parentId;
+    // Check if all items share the same context
+    const firstContext = items[0]?.context;
+    const allSameContext = items.every(item => item.context === firstContext);
+
+    // Only use context as questionText if all items share it
+    // If context varies (e.g., different treatments), use parentId to avoid confusion
+    // Each item still has its own context field for the agent to see
+    const questionText = (allSameContext && firstContext) ? firstContext : parentId;
 
     groups.push({
       questionId: parentId,
@@ -90,6 +96,7 @@ export function groupDataMapByParent(dataMap: VerboseDataMapType[]): TableAgentI
       items: items.map(item => ({
         column: item.column,
         label: item.description,
+        context: item.context,  // Pass context for treatment/item identifiers
         normalizedType: item.normalizedType || 'unknown',
         valueType: item.valueType,
         rangeMin: item.rangeMin,
@@ -111,6 +118,7 @@ export function groupDataMapByParent(dataMap: VerboseDataMapType[]): TableAgentI
       items: [{
         column: parent.column,
         label: parent.description,
+        context: parent.context,  // Pass context for consistency
         normalizedType: parent.normalizedType || 'unknown',
         valueType: parent.valueType,
         rangeMin: parent.rangeMin,
@@ -191,7 +199,6 @@ Begin analysis now.
           label: item.label,
           filterValue: '',  // Required field for Azure compatibility
         })),
-        stats: ['count', 'percent'],
       }],
       confidence: 0.0,
       reasoning: `Error processing question: ${error instanceof Error ? error.message : 'Unknown error'}. Manual review required.`,
@@ -251,7 +258,7 @@ export async function processAllGroups(
 
   // Save outputs
   if (outputFolder) {
-    await saveDevelopmentOutputs(results, outputFolder, processingLog, scratchpadEntries);
+    await saveDevelopmentOutputs(groups, results, outputFolder, processingLog, scratchpadEntries);
   }
 
   return { results, processingLog };
@@ -323,6 +330,7 @@ export const isValidTableAgentOutput = (output: unknown): output is TableAgentOu
 // =============================================================================
 
 async function saveDevelopmentOutputs(
+  groups: TableAgentInput[],
   results: TableAgentOutput[],
   outputFolder: string,
   processingLog?: string[],
@@ -333,6 +341,12 @@ async function saveDevelopmentOutputs(
     await fs.mkdir(outputDir, { recursive: true });
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+
+    // Save table-agent input (grouped datamap) for debugging
+    const tableAgentInputFile = path.join(outputDir, `dataMap-table-agent-${timestamp}.json`);
+    await fs.writeFile(tableAgentInputFile, JSON.stringify(groups, null, 2), 'utf-8');
+    console.log(`[TableAgent] Development output saved: dataMap-table-agent-${timestamp}.json`);
+
     const filename = `table-output-${timestamp}.json`;
     const filePath = path.join(outputDir, filename);
 

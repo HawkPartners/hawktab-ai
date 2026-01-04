@@ -64,6 +64,7 @@ export type ScaleLabel = z.infer<typeof ScaleLabelSchema>;
 export const TableAgentInputItemSchema = z.object({
   column: z.string(),           // Variable name: "S8r1", "A1r1"
   label: z.string(),            // From description: "Treating/Managing patients"
+  context: z.string().optional(), // Parent context with identifiers: "A3ar1: Leqvio (inclisiran) - ..."
   normalizedType: z.string(),   // "numeric_range", "categorical_select", "binary_flag", etc.
   valueType: z.string(),        // Raw value type: "Values: 0-100", "Values: 1-2"
 
@@ -116,6 +117,7 @@ export type TableRow = z.infer<typeof TableRowSchema>;
 
 /**
  * Single table definition (one question may produce multiple tables)
+ * Note: stats are NOT included - they are inferred deterministically from tableType downstream
  */
 export const TableDefinitionSchema = z.object({
   tableId: z.string(),          // Unique ID: "s8", "a1_indication_a"
@@ -124,9 +126,6 @@ export const TableDefinitionSchema = z.object({
 
   // Rows in the table
   rows: z.array(TableRowSchema),
-
-  // Statistics to calculate for this table
-  stats: z.array(StatTypeSchema).min(1),
 });
 
 export type TableDefinition = z.infer<typeof TableDefinitionSchema>;
