@@ -136,17 +136,34 @@ npx tsc --noEmit # TypeScript type checking
 Test scripts that run against `data/test-data/practice-files/`:
 
 ```bash
-# Full pipeline (DataMap → Banner → Crosstab → Table → R)
+# Full pipeline: DataMap → Banner → Crosstab → Table → R → Excel
 npx tsx scripts/test-pipeline.ts
 
-# TableAgent only
+# TableAgent only (table structure analysis)
 npx tsx scripts/test-table-agent.ts
 
 # R script generation from existing TableAgent output
 npx tsx scripts/test-r-script-v2.ts
+
+# Export Excel from existing tables.json (if pipeline was interrupted)
+npx tsx scripts/export-excel.ts                    # Uses most recent session
+npx tsx scripts/export-excel.ts [sessionId]        # Uses specific session
 ```
 
-Output: `temp-outputs/test-pipeline-<dataset>-<timestamp>/`
+**Full Pipeline Output** (`temp-outputs/test-pipeline-<dataset>-<timestamp>/`):
+- `r/master.R` - Generated R script
+- `results/tables.json` - Calculated tables with significance testing
+- `results/crosstabs.xlsx` - Formatted Excel workbook (Antares-style)
+- `pipeline-summary.json` - Run metadata and timing
+
+The pipeline runs 7 steps:
+1. **DataMapProcessor** - Parse datamap CSV with SPSS metadata
+2. **BannerAgent** - Extract banner structure from PDF/DOCX
+3. **CrosstabAgent** - Validate and generate R expressions for cuts
+4. **TableAgent** - Analyze variables and generate table definitions
+5. **RScriptGeneratorV2** - Generate R script with derived tables (T2B/B2B, Top 3)
+6. **R Execution** - Run R script to calculate tables with significance testing
+7. **ExcelFormatter** - Format tables.json into Antares-style Excel workbook
 
 ### Testing (UI)
 
@@ -165,6 +182,7 @@ hawktab-ai/
 │   ├── agents/           # AI agents (Banner, Crosstab, Table)
 │   ├── app/api/          # API endpoints
 │   ├── lib/
+│   │   ├── excel/        # ExcelFormatter and table renderers
 │   │   ├── processors/   # DataMapProcessor, BannerProcessor
 │   │   ├── r/            # RScriptGeneratorV2
 │   │   └── tables/       # CutsSpec
