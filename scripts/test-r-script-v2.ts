@@ -133,16 +133,16 @@ async function loadTableOutput(filePath: string): Promise<TableDefinition[]> {
 }
 
 function createMockCuts(): CutDefinition[] {
-  // Create realistic mock cuts for testing
+  // Create realistic mock cuts for testing with stat testing fields
   return [
-    { id: 'gender.male', name: 'Male', rExpression: 'S2 == 1' },
-    { id: 'gender.female', name: 'Female', rExpression: 'S2 == 2' },
-    { id: 'specialty.cardiology', name: 'Cardiology', rExpression: 'S6 == 1' },
-    { id: 'specialty.endocrinology', name: 'Endocrinology', rExpression: 'S6 == 2' },
-    { id: 'specialty.primary-care', name: 'Primary Care', rExpression: 'S6 == 3' },
-    { id: 'years.early', name: 'Years in Practice: <10', rExpression: 'S3 < 10' },
-    { id: 'years.mid', name: 'Years in Practice: 10-20', rExpression: 'S3 >= 10 & S3 <= 20' },
-    { id: 'years.senior', name: 'Years in Practice: >20', rExpression: 'S3 > 20' },
+    { id: 'gender.male', name: 'Male', rExpression: 'S2 == 1', statLetter: 'A', groupName: 'Gender', groupIndex: 0 },
+    { id: 'gender.female', name: 'Female', rExpression: 'S2 == 2', statLetter: 'B', groupName: 'Gender', groupIndex: 1 },
+    { id: 'specialty.cardiology', name: 'Cardiology', rExpression: 'S6 == 1', statLetter: 'C', groupName: 'Specialty', groupIndex: 0 },
+    { id: 'specialty.endocrinology', name: 'Endocrinology', rExpression: 'S6 == 2', statLetter: 'D', groupName: 'Specialty', groupIndex: 1 },
+    { id: 'specialty.primary-care', name: 'Primary Care', rExpression: 'S6 == 3', statLetter: 'E', groupName: 'Specialty', groupIndex: 2 },
+    { id: 'years.early', name: 'Years in Practice: <10', rExpression: 'S3 < 10', statLetter: 'F', groupName: 'Years', groupIndex: 0 },
+    { id: 'years.mid', name: 'Years in Practice: 10-20', rExpression: 'S3 >= 10 & S3 <= 20', statLetter: 'G', groupName: 'Years', groupIndex: 1 },
+    { id: 'years.senior', name: 'Years in Practice: >20', rExpression: 'S3 > 20', statLetter: 'H', groupName: 'Years', groupIndex: 2 },
   ];
 }
 

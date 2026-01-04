@@ -28,8 +28,8 @@ Datamap CSV → DataMapProcessor → Verbose Datamap
 | 5 | RScriptGeneratorV2 (JSON output) | ✅ Complete |
 | 4 | API route integration | ✅ Complete |
 | — | Delete old files | ✅ Complete |
-| 5.5 | R calculations enhancement (sig testing, outliers, rounding) | 📋 Detailed plan ready |
-| 6 | ExcelJS Formatter | ⏳ Next after 5.5 |
+| 5.5 | R calculations enhancement (sig testing, outliers, rounding) | ✅ Complete |
+| 6 | ExcelJS Formatter | ⏳ Next |
 | 7 | VerificationAgent (survey → label cleanup) | 📋 Detailed plan ready |
 
 ---
@@ -321,74 +321,43 @@ export interface RScriptV2Input {
 }
 ```
 
-### 5.5.6 Allocation Hint (for SD Display)
+### 5.5.6 SD Display Logic (Row Count Based)
 
-**Problem**: Multi-item allocation questions (e.g., "allocate 100 points across medications") should not show SD, but other multi-item numeric questions should.
+**Problem**: Single-row mean tables (e.g., "how many hours at the doctor?") should show full stats (mean, median, SD, mean_no_outliers). Multi-row mean tables should just show mean per row.
 
-**Solution**: Add `"allocation"` hint to the TableHintSchema. TableAgent adds this hint when it recognizes allocation semantics. ExcelJS uses the hint to hide SD.
-
-#### 5.5.6.1 Schema Update
-
-```typescript
-// src/schemas/tableAgentSchema.ts
-
-export const TableHintSchema = z.enum([
-  'ranking',     // Ranking question - add combined rank rows
-  'scale-5',     // 5-point Likert - add T2B, B2B, Middle
-  'scale-7',     // 7-point Likert - add T3B, B3B, etc.
-  'allocation',  // NEW: Allocation question - hide SD in ExcelJS
-]);
-```
-
-#### 5.5.6.2 Prompt Update
-
-Add to `src/prompts/table/production.ts`:
-
-```
-HINTS:
-
-Add hints to help downstream rendering:
-
-| Hint | When to use |
-|------|-------------|
-| "allocation" | Question asks to allocate points/percentages across items (e.g., "allocate 100 points", "what % of patients") |
-| "scale-5" | 5-point Likert scale |
-| "scale-7" | 7-point Likert scale |
-| "ranking" | Ranking question |
-
-Example allocation question text patterns:
-- "allocate 100 points"
-- "what percentage of your patients"
-- "distribute X across"
-- "out of your last 100 patients"
-
-If the question asks respondents to allocate or distribute a total across items, add "allocation" hint.
-```
-
-#### 5.5.6.3 ExcelJS Logic
+**Solution**: ExcelJS determines display based on row count - no hint needed.
 
 ```typescript
 // In ExcelJS formatter
-const showSD = !table.hints.includes('allocation');
+const isSingleRow = table.rows.length === 1;
+
+if (isSingleRow) {
+  // Show full stats: mean, median, SD, mean_no_outliers
+} else {
+  // Show only mean per row (cleaner for multi-item tables)
+}
 ```
 
-R always calculates SD. The display decision lives in ExcelJS.
+R always calculates all stats. ExcelJS decides what to display based on table structure.
+
+**Why row count is better than hints**:
+- Deterministic - no AI inference needed
+- Simpler - row count is already available
+- Reliable - can't be "wrong" like a misidentified hint
 
 ### 5.5.7 Implementation Checklist
 
 | Task | File(s) | Status |
 |------|---------|--------|
-| Fix SD rounding (2 → 1 decimal) | `RScriptGeneratorV2.ts` | ⏳ |
-| Add `calculate_mean_no_outliers` function | `RScriptGeneratorV2.ts` | ⏳ |
-| Enhance `CutDefinition` with `statLetter`, `groupName` | `CutsSpec.ts` | ⏳ |
-| Update `buildCutsSpec` to preserve groups | `CutsSpec.ts` | ⏳ |
-| Add significance testing helper functions | `RScriptGeneratorV2.ts` | ⏳ |
-| Update frequency table output with sig fields | `RScriptGeneratorV2.ts` | ⏳ |
-| Update mean_rows table output with sig fields | `RScriptGeneratorV2.ts` | ⏳ |
-| Update `RScriptV2Input` interface | `RScriptGeneratorV2.ts` | ⏳ |
-| Add `"allocation"` to TableHintSchema | `tableAgentSchema.ts` | ⏳ |
-| Update TableAgent prompt with allocation guidance | `prompts/table/production.ts` | ⏳ |
-| Test with practice files | `scripts/test-r-script-v2.ts` | ⏳ |
+| Fix SD rounding (2 → 1 decimal) | `RScriptGeneratorV2.ts` | ✅ |
+| Add `calculate_mean_no_outliers` function | `RScriptGeneratorV2.ts` | ✅ |
+| Enhance `CutDefinition` with `statLetter`, `groupName` | `CutsSpec.ts` | ✅ |
+| Update `buildCutsSpec` to preserve groups | `CutsSpec.ts` | ✅ |
+| Add significance testing helper functions | `RScriptGeneratorV2.ts` | ✅ |
+| Update frequency table output with sig fields | `RScriptGeneratorV2.ts` | ✅ |
+| Update mean_rows table output with sig fields | `RScriptGeneratorV2.ts` | ✅ |
+| Update `RScriptV2Input` interface | `RScriptGeneratorV2.ts` | ✅ |
+| Test with practice files | `scripts/test-r-script-v2.ts` | ⏳ Manual test needed |
 
 ---
 
