@@ -61,11 +61,11 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       console.error('[Validate] Error loading banner data:', error);
     }
 
-    // Load data map (agent version)
+    // Load data map (crosstab-agent version)
     let dataMapData = null;
     try {
       const files = await fs.readdir(sessionPath);
-      const dataMapFile = files.find(f => f.includes('dataMap') && f.includes('agent') && f.endsWith('.json'));
+      const dataMapFile = files.find(f => f.includes('dataMap') && f.includes('crosstab-agent') && f.endsWith('.json'));
       if (dataMapFile) {
         const dataMapPath = path.join(sessionPath, dataMapFile);
         const dataMapContent = await fs.readFile(dataMapPath, 'utf-8');
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         const files = await fs.readdir(sessionDir);
         const crosstabFile = files.find((f) => f.includes('crosstab-output') && f.endsWith('.json'));
         const verboseMapFile = files.find((f) => f.includes('dataMap-verbose') && f.endsWith('.json'));
-        const dataMapFile = verboseMapFile ?? files.find((f) => f.includes('dataMap-agent') && f.endsWith('.json'));
+        const dataMapFile = verboseMapFile ?? files.find((f) => f.includes('dataMap-crosstab-agent') && f.endsWith('.json'));
         if (!crosstabFile || !dataMapFile) {
           console.warn('[Validate] Skipping R generation - missing artifacts');
           return;
