@@ -189,6 +189,7 @@ Begin analysis now.
         rows: input.items.map(item => ({
           variable: item.column,
           label: item.label,
+          filterValue: '',  // Required field for Azure compatibility
         })),
         stats: ['count', 'percent'],
       }],

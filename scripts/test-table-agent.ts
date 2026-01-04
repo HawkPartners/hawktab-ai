@@ -18,6 +18,10 @@
  *   Saves to temp-outputs/table-test-<timestamp>/table-output-<timestamp>.json
  */
 
+// Load environment variables from .env file
+import { loadEnvConfig } from '@next/env';
+loadEnvConfig(process.cwd());
+
 import fs from 'fs/promises';
 import path from 'path';
 import { processDataMap, groupDataMapByParent, EXCLUDED_NORMALIZED_TYPES } from '../src/agents/TableAgent';

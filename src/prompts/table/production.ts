@@ -147,9 +147,9 @@ For each question, output:
       title: "Product Satisfaction Ratings",
       tableType: "mean_rows",
       rows: [
-        { variable: "Q7r1", label: "Ease of use" },
-        { variable: "Q7r2", label: "Performance" },
-        { variable: "Q7r3", label: "Value for money" }
+        { variable: "Q7r1", label: "Ease of use", filterValue: "" },
+        { variable: "Q7r2", label: "Performance", filterValue: "" },
+        { variable: "Q7r3", label: "Value for money", filterValue: "" }
       ],
       stats: ["mean", "median", "sd"]
     }
@@ -162,9 +162,9 @@ IMPORTANT:
 - tableId: Lowercase, unique identifier for this table (e.g., "q7", "q12_tier_1")
 - title: Human-readable title for the table
 - tableType: One of the catalog types
-- rows: Array of row definitions with variable and label
-- filterValue: ONLY for grid_by_value - which value this row represents
-- stats: What statistics to calculate
+- rows: Array of row definitions with variable, label, and filterValue
+- filterValue: For grid_by_value, use the value (e.g., "1", "2"). For all other table types, use empty string ""
+- stats: What statistics to calculate - must be an array of valid stats
 
 ---
 
