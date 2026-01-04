@@ -1,0 +1,2755 @@
+{
+  "results": [
+    {
+      "questionId": "S5",
+      "questionText": "S5: Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+      "tables": [
+        {
+          "tableId": "s5",
+          "title": "S5 - Employment / commercial affiliation (selected = 1)",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S5r1",
+              "label": "Advertising Agency",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S5r2",
+              "label": "Marketing/Market Research Firm",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S5r3",
+              "label": "Public Relations Firm",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S5r4",
+              "label": "Any media company (Print, Radio, TV, Internet)",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S5r5",
+              "label": "Pharmaceutical Drug / Device Manufacturer (outside of clinical trials)",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S5r6",
+              "label": "Governmental Regulatory Agency (e.g., Food & Drug Administration (FDA))",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S5r7",
+              "label": "None of these",
+              "filterValue": "1"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All 7 items are normalizedType = binary_flag (0/1) representing a multi-select question. Per rules, present as a frequency table showing the percentage/count selecting value '1' for each item. There are 7 rows (<=20), so no splitting required. No ranking or Likert scale hints apply."
+    },
+    {
+      "questionId": "S8",
+      "questionText": "S8: Approximately what percentage of your professional time is spent performing each of the following activities?",
+      "tables": [
+        {
+          "tableId": "S8_mean_rows",
+          "title": "S8 - Percentage of professional time by activity (mean / median / std dev)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "S8r1",
+              "label": "Treating/Managing patients",
+              "filterValue": ""
+            },
+            {
+              "variable": "S8r2",
+              "label": "Performing academic functions (e.g., teaching, publishing)",
+              "filterValue": ""
+            },
+            {
+              "variable": "S8r3",
+              "label": "Participating in clinical research",
+              "filterValue": ""
+            },
+            {
+              "variable": "S8r4",
+              "label": "Performing other functions",
+              "filterValue": ""
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.96,
+      "reasoning": "All four items are normalizedType = numeric_range (percent 0-100). Per the decision rules, numeric_range items use tableType 'mean_rows' showing summary stats (mean, median, std dev). There are only 4 rows (<=20), so no splitting required. No scale/ranking hints apply."
+    },
+    {
+      "questionId": "S12",
+      "questionText": "S12: Of those, how many patients have had an event (MI, CAD, coronary revascularization, stent placement, etc.) �",
+      "tables": [
+        {
+          "tableId": "s12_mean_rows",
+          "title": "S12 - Number of patients with an event (mean/median/stddev)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "S12r1",
+              "label": "Over 5 years ago",
+              "filterValue": ""
+            },
+            {
+              "variable": "S12r2",
+              "label": "Within the last 3-5 years",
+              "filterValue": ""
+            },
+            {
+              "variable": "S12r3",
+              "label": "Within the last 1-2 years",
+              "filterValue": ""
+            },
+            {
+              "variable": "S12r4",
+              "label": "Within the last year",
+              "filterValue": ""
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All 4 items are normalizedType 'numeric_range' (counts 0-999). Per rules, use a mean_rows table with one row per numeric item and empty filterValue. There are 4 rows (<=20), so a single table is appropriate. No scale or ranking hints apply."
+    },
+    {
+      "questionId": "A1",
+      "questionText": "A1: To the best of your knowledge, which statement below best describes the current indication for each of the following treatments?",
+      "tables": [
+        {
+          "tableId": "a1_overview",
+          "title": "A1 - Current indication by treatment",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A1r1",
+              "label": "Leqvio (inclisiran) - Value 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A1r1",
+              "label": "Leqvio (inclisiran) - Value 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A1r2",
+              "label": "Praluent (alirocumab) - Value 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A1r2",
+              "label": "Praluent (alirocumab) - Value 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A1r3",
+              "label": "Repatha (evolocumab) - Value 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A1r3",
+              "label": "Repatha (evolocumab) - Value 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A1r4",
+              "label": "Nexletol/Nexlizet (bempedoic acid / bempedoic + ezetimibe) - Value 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A1r4",
+              "label": "Nexletol/Nexlizet (bempedoic acid / bempedoic + ezetimibe) - Value 2",
+              "filterValue": "2"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All 4 items are categorical_select (each has allowedValues 1-2). Per the decision rule, use a frequency table. Expected rows = 4 items * 2 values = 8, which is under the 20-row limit, so a single frequency table is appropriate. No ranking or 5/7-point scale hints apply."
+    },
+    {
+      "questionId": "A3",
+      "questionText": "A3: For your LAST 100 [res PatientHoverover] with uncontrolled LDL-C, please indicate for how many you prescribed each of the following therapies?",
+      "tables": [
+        {
+          "tableId": "A3_mean_rows",
+          "title": "A3 - Number prescribed per 100 patients by therapy (mean/median/stddev)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "A3r1",
+              "label": "Statin only (i.e., no additional therapy)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3r2",
+              "label": "Leqvio (inclisiran)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3r3",
+              "label": "Praluent (alirocumab)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3r4",
+              "label": "Repatha (evolocumab)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3r5",
+              "label": "Zetia (ezetimibe) or generic ezetimibe",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3r6",
+              "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3r7",
+              "label": "Other",
+              "filterValue": ""
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All 7 items are normalizedType 'numeric_range' (counts 0-100). Per rules, use a mean_rows table showing mean/median/stddev for each therapy. Seven rows is under the 20-row limit so a single table is appropriate. No ranking or Likert scale hints apply."
+    },
+    {
+      "questionId": "A3a",
+      "questionText": "A3a",
+      "tables": [
+        {
+          "tableId": "A3a_mean",
+          "title": "A3a - % of last 100 who received therapy with vs without a statin (mean/median)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "A3ar1c1",
+              "label": "Leqvio (inclisiran) - In addition to statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar1c2",
+              "label": "Leqvio (inclisiran) - Without a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar2c1",
+              "label": "Praluent (alirocumab) - In addition to statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar2c2",
+              "label": "Praluent (alirocumab) - Without a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar3c1",
+              "label": "Repatha (evolocumab) - In addition to statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar3c2",
+              "label": "Repatha (evolocumab) - Without a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar4c1",
+              "label": "Zetia (ezetimibe) - In addition to statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar4c2",
+              "label": "Zetia (ezetimibe) - Without a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar5c1",
+              "label": "Nexletol / Nexlizet (bempedoic acid) - In addition to statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar5c2",
+              "label": "Nexletol / Nexlizet (bempedoic acid) - Without a statin",
+              "filterValue": ""
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All 10 items are numeric_range (percent 0-100). Per rules, numeric_range items use tableType 'mean_rows' with one row per item and empty filterValue. There are 10 rows which is under the 20-row limit, so no splitting required. No ranking or Likert scale hints apply."
+    },
+    {
+      "questionId": "A3b",
+      "questionText": "A3b",
+      "tables": [
+        {
+          "tableId": "A3b_mean_rows",
+          "title": "A3b - % of patients receiving therapy without a statin (by timing and drug)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "A3br1c1",
+              "label": "BEFORE any other lipid-lowering therapy (i.e., first line)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br1c2",
+              "label": "AFTER trying another lipid-lowering therapy",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br2c1",
+              "label": "BEFORE any other lipid-lowering therapy (i.e., first line)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br2c2",
+              "label": "AFTER trying another lipid-lowering therapy",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br3c1",
+              "label": "BEFORE any other lipid-lowering therapy (i.e., first line)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br3c2",
+              "label": "AFTER trying another lipid-lowering therapy",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br4c1",
+              "label": "BEFORE any other lipid-lowering therapy (i.e., first line)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br4c2",
+              "label": "AFTER trying another lipid-lowering therapy",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br5c1",
+              "label": "BEFORE any other lipid-lowering therapy (i.e., first line)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br5c2",
+              "label": "AFTER trying another lipid-lowering therapy",
+              "filterValue": ""
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All 10 items are numeric_range (percentage 0-100). Per rules, use a mean_rows table showing mean/median/std dev per item. There are 10 rows (<=20) so no splitting is needed. No ranking or 5/7 point scale hints apply."
+    },
+    {
+      "questionId": "A4",
+      "questionText": "A4",
+      "tables": [
+        {
+          "tableId": "a4_mean_rows",
+          "title": "A4 - Number (out of 100) prescribed for each treatment (mean/median/stddev)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "A4r1c1",
+              "label": "Statin only (i.e., no additional therapy)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r2c1",
+              "label": "Leqvio (inclisiran)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r3c1",
+              "label": "Praluent (alirocumab)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r4c1",
+              "label": "Repatha (evolocumab)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r5c1",
+              "label": "Zetia (ezetimibe) or generic ezetimibe",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r6c1",
+              "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r7c1",
+              "label": "Other",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r1c2",
+              "label": "Statin only (i.e., no additional therapy)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r2c2",
+              "label": "Leqvio (inclisiran)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r3c2",
+              "label": "Praluent (alirocumab)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r4c2",
+              "label": "Repatha (evolocumab)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r5c2",
+              "label": "Zetia (ezetimibe) or generic ezetimibe",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r6c2",
+              "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r7c2",
+              "label": "Other",
+              "filterValue": ""
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All 14 items are numeric_range (values 0-100). Per the decision rules, use a mean_rows table to report mean/median/stddev for each item. There are 14 rows (one per variable), which is under the 20-row limit, so a single mean_rows table is appropriate. No ranking or Likert scale hints apply."
+    },
+    {
+      "questionId": "A4a",
+      "questionText": "A4a",
+      "tables": [
+        {
+          "tableId": "A4a_mean",
+          "title": "A4a - % of NEXT 100 patients expected to be prescribed each therapy (mean/median)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "A4ar1c1",
+              "label": "A4ar1: Leqvio (inclisiran) - in addition to a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar1c2",
+              "label": "A4ar1: Leqvio (inclisiran) - without a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar2c1",
+              "label": "A4ar2: Praluent (alirocumab) - in addition to a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar2c2",
+              "label": "A4ar2: Praluent (alirocumab) - without a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar3c1",
+              "label": "A4ar3: Repatha (evolocumab) - in addition to a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar3c2",
+              "label": "A4ar3: Repatha (evolocumab) - without a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar4c1",
+              "label": "A4ar4: Zetia (ezetimibe) - in addition to a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar4c2",
+              "label": "A4ar4: Zetia (ezetimibe) - without a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar5c1",
+              "label": "A4ar5: Nexletol/Nexlizet (bempedoic acid) - in addition to a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar5c2",
+              "label": "A4ar5: Nexletol/Nexlizet (bempedoic acid) - without a statin",
+              "filterValue": ""
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All 10 items are numeric_range (percent 0-100). According to rules, use mean_rows with one row per numeric item. Expected rows = 10, which is under the 20-row limit, so no splitting required. No ranking or Likert scale hints apply."
+    },
+    {
+      "questionId": "A4b",
+      "questionText": "A4b",
+      "tables": [
+        {
+          "tableId": "A4b_mean",
+          "title": "A4b - Next treatment allocation (percent, 0-100)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "A4br1c1",
+              "label": "Leqvio (inclisiran) - column c1",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br1c2",
+              "label": "Leqvio (inclisiran) - column c2",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br2c1",
+              "label": "Praluent (alirocumab) - column c1",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br2c2",
+              "label": "Praluent (alirocumab) - column c2",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br3c1",
+              "label": "Repatha (evolocumab) - column c1",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br3c2",
+              "label": "Repatha (evolocumab) - column c2",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br4c1",
+              "label": "Zetia (ezetimibe) or generic ezetimibe - column c1",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br4c2",
+              "label": "Zetia (ezetimibe) or generic ezetimibe - column c2",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br5c1",
+              "label": "Nexletol / Nexlizet (bempedoic acid ± ezetimibe) - column c1",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br5c2",
+              "label": "Nexletol / Nexlizet (bempedoic acid ± ezetimibe) - column c2",
+              "filterValue": ""
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All 10 items have normalizedType 'numeric_range', so a mean_rows table is appropriate (showing mean/median/std dev of percent allocation). There are 10 rows (one per item), which is under the 20-row limit, so a single mean_rows table is used. No ranking or scale hints apply."
+    },
+    {
+      "questionId": "A6",
+      "questionText": "A6: Again, please assume that the FDA decides that all PCSK9 inhibitors (Repatha, Praluent, Leqvio) will now be indicated for use as an adjunct to diet and exercise, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia � and that this change is being made after reviewing existing data but without any new clinical data beyond what is already available today. For your NEXT 100 [res PatientHoverover] with uncontrolled LDL-C and not currently taking any lipid-lowering therapy, please rank which treatment paths you might be most likely to follow?",
+      "tables": [
+        {
+          "tableId": "A6_rank1",
+          "title": "A6 - Items ranked #1",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A6r1",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A6r2",
+              "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A6r3",
+              "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A6r4",
+              "label": "Start statin first, add/switch to PCSK9i if needed",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A6r5",
+              "label": "Start statin and PCSK9i at the same time",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A6r6",
+              "label": "Start PCSK9i, no statin",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A6r7",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A6r8",
+              "label": "Other",
+              "filterValue": "1"
+            }
+          ],
+          "hints": [
+            "ranking"
+          ]
+        },
+        {
+          "tableId": "A6_rank2",
+          "title": "A6 - Items ranked #2",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A6r1",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A6r2",
+              "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A6r3",
+              "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A6r4",
+              "label": "Start statin first, add/switch to PCSK9i if needed",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A6r5",
+              "label": "Start statin and PCSK9i at the same time",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A6r6",
+              "label": "Start PCSK9i, no statin",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A6r7",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A6r8",
+              "label": "Other",
+              "filterValue": "2"
+            }
+          ],
+          "hints": [
+            "ranking"
+          ]
+        },
+        {
+          "tableId": "A6_rank3",
+          "title": "A6 - Items ranked #3",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A6r1",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A6r2",
+              "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A6r3",
+              "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A6r4",
+              "label": "Start statin first, add/switch to PCSK9i if needed",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A6r5",
+              "label": "Start statin and PCSK9i at the same time",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A6r6",
+              "label": "Start PCSK9i, no statin",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A6r7",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A6r8",
+              "label": "Other",
+              "filterValue": "3"
+            }
+          ],
+          "hints": [
+            "ranking"
+          ]
+        },
+        {
+          "tableId": "A6_rank4",
+          "title": "A6 - Items ranked #4",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A6r1",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A6r2",
+              "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A6r3",
+              "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A6r4",
+              "label": "Start statin first, add/switch to PCSK9i if needed",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A6r5",
+              "label": "Start statin and PCSK9i at the same time",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A6r6",
+              "label": "Start PCSK9i, no statin",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A6r7",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A6r8",
+              "label": "Other",
+              "filterValue": "4"
+            }
+          ],
+          "hints": [
+            "ranking"
+          ]
+        }
+      ],
+      "confidence": 0.94,
+      "reasoning": "8 items, normalizedType categorical_select with allowed values 1-4 -> this is a ranking question. Frequency tables are appropriate. Expected rows if one table per item = 8 items x 4 values = 32 (>20), so split by rank (Option B) into one frequency table per rank value. Each table has 8 rows (one per item) which satisfies the row limit. Added 'ranking' hint for downstream processing."
+    },
+    {
+      "questionId": "A7",
+      "questionText": "A7: How might being able to use PCKS9 inhibitors indicated for use with or without statin therapy impact your perceptions and/or prescribing?",
+      "tables": [
+        {
+          "tableId": "a7_multi_select",
+          "title": "A7 - Impacts on perceptions/prescribing (select all that apply)",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A7r1",
+              "label": "Makes PCSK9s easier to get covered by insurance / get patients on the medication",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A7r2",
+              "label": "Offers an option to patients who can’t or won’t take a statin",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A7r3",
+              "label": "Enables me to use PCSK9s sooner for patients",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A7r4",
+              "label": "Allows me to better customize treatment plans for patients",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A7r5",
+              "label": "Other (Specify)",
+              "filterValue": "1"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All 5 items are binary_flag (multi-select). Per rules, use a single frequency table showing percent/count who selected each item (filterValue = \"1\"). There are 5 rows (<20), so no splitting needed. No ranking or scale hints apply."
+    },
+    {
+      "questionId": "A8",
+      "questionText": "A8",
+      "tables": [
+        {
+          "tableId": "A8_r1",
+          "title": "A8r1 - With established CVD: likelihood to prescribe each therapy alone",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A8r1c1",
+              "label": "Repatha - Response 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r1c1",
+              "label": "Repatha - Response 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r1c1",
+              "label": "Repatha - Response 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r1c1",
+              "label": "Repatha - Response 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r1c1",
+              "label": "Repatha - Response 5",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r1c2",
+              "label": "Praluent - Response 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r1c2",
+              "label": "Praluent - Response 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r1c2",
+              "label": "Praluent - Response 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r1c2",
+              "label": "Praluent - Response 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r1c2",
+              "label": "Praluent - Response 5",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r1c3",
+              "label": "Leqvio - Response 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r1c3",
+              "label": "Leqvio - Response 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r1c3",
+              "label": "Leqvio - Response 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r1c3",
+              "label": "Leqvio - Response 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r1c3",
+              "label": "Leqvio - Response 5",
+              "filterValue": "5"
+            }
+          ],
+          "hints": [
+            "scale-5"
+          ]
+        },
+        {
+          "tableId": "A8_r2",
+          "title": "A8r2 - With no history of CV events and at high-risk: likelihood to prescribe each therapy alone",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A8r2c1",
+              "label": "Repatha - Response 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r2c1",
+              "label": "Repatha - Response 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r2c1",
+              "label": "Repatha - Response 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r2c1",
+              "label": "Repatha - Response 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r2c1",
+              "label": "Repatha - Response 5",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r2c2",
+              "label": "Praluent - Response 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r2c2",
+              "label": "Praluent - Response 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r2c2",
+              "label": "Praluent - Response 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r2c2",
+              "label": "Praluent - Response 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r2c2",
+              "label": "Praluent - Response 5",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r2c3",
+              "label": "Leqvio - Response 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r2c3",
+              "label": "Leqvio - Response 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r2c3",
+              "label": "Leqvio - Response 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r2c3",
+              "label": "Leqvio - Response 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r2c3",
+              "label": "Leqvio - Response 5",
+              "filterValue": "5"
+            }
+          ],
+          "hints": [
+            "scale-5"
+          ]
+        },
+        {
+          "tableId": "A8_r3",
+          "title": "A8r3 - With no history of CV events and at low-to-medium risk: likelihood to prescribe each therapy alone",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A8r3c1",
+              "label": "Repatha - Response 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r3c1",
+              "label": "Repatha - Response 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r3c1",
+              "label": "Repatha - Response 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r3c1",
+              "label": "Repatha - Response 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r3c1",
+              "label": "Repatha - Response 5",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r3c2",
+              "label": "Praluent - Response 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r3c2",
+              "label": "Praluent - Response 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r3c2",
+              "label": "Praluent - Response 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r3c2",
+              "label": "Praluent - Response 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r3c2",
+              "label": "Praluent - Response 5",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r3c3",
+              "label": "Leqvio - Response 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r3c3",
+              "label": "Leqvio - Response 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r3c3",
+              "label": "Leqvio - Response 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r3c3",
+              "label": "Leqvio - Response 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r3c3",
+              "label": "Leqvio - Response 5",
+              "filterValue": "5"
+            }
+          ],
+          "hints": [
+            "scale-5"
+          ]
+        },
+        {
+          "tableId": "A8_r4",
+          "title": "A8r4 - Who are not known to be compliant on statins: likelihood to prescribe each therapy alone",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A8r4c1",
+              "label": "Repatha - Response 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r4c1",
+              "label": "Repatha - Response 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r4c1",
+              "label": "Repatha - Response 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r4c1",
+              "label": "Repatha - Response 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r4c1",
+              "label": "Repatha - Response 5",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r4c2",
+              "label": "Praluent - Response 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r4c2",
+              "label": "Praluent - Response 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r4c2",
+              "label": "Praluent - Response 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r4c2",
+              "label": "Praluent - Response 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r4c2",
+              "label": "Praluent - Response 5",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r4c3",
+              "label": "Leqvio - Response 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r4c3",
+              "label": "Leqvio - Response 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r4c3",
+              "label": "Leqvio - Response 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r4c3",
+              "label": "Leqvio - Response 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r4c3",
+              "label": "Leqvio - Response 5",
+              "filterValue": "5"
+            }
+          ],
+          "hints": [
+            "scale-5"
+          ]
+        },
+        {
+          "tableId": "A8_r5",
+          "title": "A8r5 - Who are intolerant of statins: likelihood to prescribe each therapy alone",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A8r5c1",
+              "label": "Repatha - Response 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r5c1",
+              "label": "Repatha - Response 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r5c1",
+              "label": "Repatha - Response 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r5c1",
+              "label": "Repatha - Response 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r5c1",
+              "label": "Repatha - Response 5",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r5c2",
+              "label": "Praluent - Response 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r5c2",
+              "label": "Praluent - Response 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r5c2",
+              "label": "Praluent - Response 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r5c2",
+              "label": "Praluent - Response 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r5c2",
+              "label": "Praluent - Response 5",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r5c3",
+              "label": "Leqvio - Response 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r5c3",
+              "label": "Leqvio - Response 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r5c3",
+              "label": "Leqvio - Response 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r5c3",
+              "label": "Leqvio - Response 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r5c3",
+              "label": "Leqvio - Response 5",
+              "filterValue": "5"
+            }
+          ],
+          "hints": [
+            "scale-5"
+          ]
+        }
+      ],
+      "confidence": 0.92,
+      "reasoning": "There are 15 items arranged as a 5 (patient situations) x 3 (therapies) grid. All items are categorical_select with values 1-5 (a 5-point likelihood scale), so frequency tables are appropriate. A full combined table would be 15 items x 5 values = 75 rows (>20), so I split by the first dimension (patient situation), producing one frequency table per situation. Each table lists each therapy's distribution across the five response values (3 therapies x 5 values = 15 rows per table), and I added the 'scale-5' hint for downstream scale calculations."
+    },
+    {
+      "questionId": "A9",
+      "questionText": "A9: To what extent have you encountered any issues with coverage, approvals, cost, etc. for using each of the following without a statin today?",
+      "tables": [
+        {
+          "tableId": "a9",
+          "title": "A9 - Issues encountered (distribution by response value) for each product",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A9c1",
+              "label": "Repatha - Value 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A9c1",
+              "label": "Repatha - Value 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A9c1",
+              "label": "Repatha - Value 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A9c1",
+              "label": "Repatha - Value 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A9c2",
+              "label": "Praluent - Value 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A9c2",
+              "label": "Praluent - Value 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A9c2",
+              "label": "Praluent - Value 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A9c2",
+              "label": "Praluent - Value 4",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A9c3",
+              "label": "Leqvio - Value 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A9c3",
+              "label": "Leqvio - Value 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A9c3",
+              "label": "Leqvio - Value 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A9c3",
+              "label": "Leqvio - Value 4",
+              "filterValue": "4"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.96,
+      "reasoning": "There are 3 items, each categorical_select with 4 allowed values (1-4). Per the decision rules, use a frequency table. Expected rows = 3 items * 4 values = 12, which is <= 20, so a single frequency table listing each item-value combination is appropriate. No 'scale-5/7' or 'ranking' hints apply."
+    },
+    {
+      "questionId": "A10",
+      "questionText": "A10: For what reasons are you using PCSK9 inhibitors without a statin today?",
+      "tables": [
+        {
+          "tableId": "a10",
+          "title": "A10 - Reasons for using PCSK9 inhibitors without a statin (multi-select)",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A10r1",
+              "label": "Patient failed statins prior to starting PCSK9i",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A10r2",
+              "label": "Patient is statin intolerant",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A10r3",
+              "label": "Patient refused statins",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A10r4",
+              "label": "Statins are contraindicated for patient",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A10r5",
+              "label": "Patient not or unlikely to be compliant on statins",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A10r6",
+              "label": "Haven’t prescribed PCSK9s without a statin",
+              "filterValue": "1"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All 6 items are binary_flag (multi-select). Use a single frequency table showing percent/count selecting value '1' for each item. Expected rows = 6 (<=20), so no splitting required. No ranking or scale hints apply."
+    },
+    {
+      "questionId": "B1",
+      "questionText": "B1: What percentage of your current [res PatientHoverover] are covered by each type of insurance?",
+      "tables": [
+        {
+          "tableId": "b1_mean_rows",
+          "title": "B1 - Percentage covered by each insurance type",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "B1r1",
+              "label": "Not insured",
+              "filterValue": ""
+            },
+            {
+              "variable": "B1r2",
+              "label": "Private insurance provided by employer / purchased in exchange",
+              "filterValue": ""
+            },
+            {
+              "variable": "B1r3",
+              "label": "Traditional Medicare (Medicare Part B Fee for Service)",
+              "filterValue": ""
+            },
+            {
+              "variable": "B1r4",
+              "label": "Traditional Medicare with supplemental insurance",
+              "filterValue": ""
+            },
+            {
+              "variable": "B1r5",
+              "label": "Private Medicare (Medicare Advantage / Part C managed through Private payer)",
+              "filterValue": ""
+            },
+            {
+              "variable": "B1r6",
+              "label": "Medicaid",
+              "filterValue": ""
+            },
+            {
+              "variable": "B1r7",
+              "label": "Veterans Administration (VA)",
+              "filterValue": ""
+            },
+            {
+              "variable": "B1r8",
+              "label": "Other",
+              "filterValue": ""
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.96,
+      "reasoning": "All 8 items are numeric_range percent values (0-100). Per rules, numeric_range variables use tableType 'mean_rows' to report mean/median/std dev. There are 8 rows (<=20), so no splitting required. No scale or ranking hints apply."
+    },
+    {
+      "questionId": "B5",
+      "questionText": "B5: How would you describe your specialty/training?",
+      "tables": [
+        {
+          "tableId": "B5_multi",
+          "title": "B5 - Specialty/Training (selected = 1)",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "B5r1",
+              "label": "Internal Medicine",
+              "filterValue": "1"
+            },
+            {
+              "variable": "B5r2",
+              "label": "General Practitioner",
+              "filterValue": "1"
+            },
+            {
+              "variable": "B5r3",
+              "label": "Primary Care",
+              "filterValue": "1"
+            },
+            {
+              "variable": "B5r4",
+              "label": "Family Practice",
+              "filterValue": "1"
+            },
+            {
+              "variable": "B5r5",
+              "label": "Doctor of Osteopathic Medicine (DO)",
+              "filterValue": "1"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All 5 items are binary_flag (0/1) representing a multi-select question. Per rules, use a frequency table showing the percentage/count who selected each option (filterValue = \"1\"). There are 5 rows which is under the 20-row limit, so no splitting is required."
+    },
+    {
+      "questionId": "S1",
+      "questionText": "You are about to enter a market research survey. We are being asked to pass on to our client details of adverse events about individual patients or groups of patients and / or product complaints that are raised during the course of market research surveys. Although this is a market research survey, and what is contributed is treated in confidence, should you raise an adverse event and / or product complaint, we will need to report this even if it has already been reported by you directly to the company or the regulatory authorities. In such a situation you will be contacted to ask whether or not you are willing to waive the confidentiality given to you under the market research codes of conduct specifically in relation to that adverse event and / or product complaint. Everything else you contribute during the course of the survey will continue to remain confidential. Are you happy to proceed on this basis?",
+      "tables": [
+        {
+          "tableId": "s1",
+          "title": "S1 - Consent to proceed / report adverse events",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S1",
+              "label": "I would like to proceed and protect my identity",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S1",
+              "label": "I would like to proceed and give permission for my contact details to be passed on to the Drug Safety department of the company if an adverse event is mentioned by me during the survey",
+              "filterValue": "2"
+            },
+            {
+              "variable": "S1",
+              "label": "I don�t want to proceed",
+              "filterValue": "3"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select variable with 3 response options -> use a frequency table with one row per response value. Total rows = 3 (<=20), so no splitting required. No scale or ranking hints apply."
+    },
+    {
+      "questionId": "S2b",
+      "questionText": "What is your primary role?",
+      "tables": [
+        {
+          "tableId": "s2b",
+          "title": "S2b - What is your primary role?",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S2b",
+              "label": "Physician",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S2b",
+              "label": "Nurse Practitioner",
+              "filterValue": "2"
+            },
+            {
+              "variable": "S2b",
+              "label": "Physician’s Assistant",
+              "filterValue": "3"
+            },
+            {
+              "variable": "S2b",
+              "label": "Other",
+              "filterValue": "99"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select item with four allowed values (1,2,3,99). Per rules use a frequency table with one row per value. Total rows = 4, which is under the 20-row limit, so no splitting required. No scale or ranking hints apply."
+    },
+    {
+      "questionId": "S2",
+      "questionText": "What is your primary specialty?",
+      "tables": [
+        {
+          "tableId": "s2",
+          "title": "S2 - What is your primary specialty?",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S2",
+              "label": "Cardiologist",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S2",
+              "label": "Internal Medicine / General Practitioner / Primary Care / Family Practice",
+              "filterValue": "2"
+            },
+            {
+              "variable": "S2",
+              "label": "Nephrologist",
+              "filterValue": "3"
+            },
+            {
+              "variable": "S2",
+              "label": "Endocrinologist",
+              "filterValue": "4"
+            },
+            {
+              "variable": "S2",
+              "label": "Lipidologist",
+              "filterValue": "5"
+            },
+            {
+              "variable": "S2",
+              "label": "Nurse Practitioner",
+              "filterValue": "6"
+            },
+            {
+              "variable": "S2",
+              "label": "Physician�s Assistant",
+              "filterValue": "7"
+            },
+            {
+              "variable": "S2",
+              "label": "Other",
+              "filterValue": "99"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "1 item with normalizedType categorical_select and 8 allowed values. Use a single frequency table with one row per value (8 rows < 20 so no split). Not a scale or ranking, so no hints."
+    },
+    {
+      "questionId": "S2a",
+      "questionText": "In what type of doctor’s office do you work?",
+      "tables": [
+        {
+          "tableId": "s2a",
+          "title": "S2a - In what type of doctor's office do you work?",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S2a",
+              "label": "Cardiologist",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S2a",
+              "label": "Internal Medicine / General Practitioner / Primary Care / Family Practice",
+              "filterValue": "2"
+            },
+            {
+              "variable": "S2a",
+              "label": "Other",
+              "filterValue": "3"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select item with three allowed values. Use a frequency table with one row per value (3 rows total, under the 20-row limit). No scale or ranking hints apply."
+    },
+    {
+      "questionId": "qCARD_SPECIALTY",
+      "questionText": "CARD SPECIALTY",
+      "tables": [
+        {
+          "tableId": "qCARD_SPECIALTY",
+          "title": "CARD SPECIALTY - Distribution",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "qCARD_SPECIALTY",
+              "label": "CARD",
+              "filterValue": "1"
+            },
+            {
+              "variable": "qCARD_SPECIALTY",
+              "label": "NEPH/ENDO/LIP",
+              "filterValue": "2"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select variable with two allowed values (1=CAR D, 2=NEPH/ENDO/LIP). Use a frequency table with one row per response value. Expected rows = 2, which is under the 20-row limit so no splitting is required."
+    },
+    {
+      "questionId": "qSPECIALTY",
+      "questionText": "SPECIALTY",
+      "tables": [
+        {
+          "tableId": "qSPECIALTY",
+          "title": "qSPECIALTY - SPECIALTY distribution",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "qSPECIALTY",
+              "label": "CARD",
+              "filterValue": "1"
+            },
+            {
+              "variable": "qSPECIALTY",
+              "label": "PCP",
+              "filterValue": "2"
+            },
+            {
+              "variable": "qSPECIALTY",
+              "label": "NPPA",
+              "filterValue": "3"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.96,
+      "reasoning": "Single categorical_select variable with 3 allowed values. Use a frequency table listing each response value (3 rows). Expected rows = 1 item * 3 values = 3 (<=20), so no splitting required. No ranking or Likert scale hints apply."
+    },
+    {
+      "questionId": "S3a",
+      "questionText": "What type of Cardiologist are you primarily?",
+      "tables": [
+        {
+          "tableId": "s3a",
+          "title": "S3a - What type of Cardiologist are you primarily?",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S3a",
+              "label": "Interventional Cardiologist",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S3a",
+              "label": "General Cardiologist",
+              "filterValue": "2"
+            },
+            {
+              "variable": "S3a",
+              "label": "Preventative Cardiologist",
+              "filterValue": "3"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.96,
+      "reasoning": "The item is categorical_select with three allowed values. Per the decision rules this should be a frequency table with one row per response value (3 rows total), which does not exceed the 20-row limit. No ranking or 5/7-point scale hints apply."
+    },
+    {
+      "questionId": "qTYPE_OF_CARD",
+      "questionText": "TYPE OF CARD",
+      "tables": [
+        {
+          "tableId": "qTYPE_OF_CARD",
+          "title": "qTYPE_OF_CARD - TYPE OF CARD",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "qTYPE_OF_CARD",
+              "label": "Interventional Card",
+              "filterValue": "1"
+            },
+            {
+              "variable": "qTYPE_OF_CARD",
+              "label": "General Card",
+              "filterValue": "2"
+            },
+            {
+              "variable": "qTYPE_OF_CARD",
+              "label": "Preventative Card",
+              "filterValue": "3"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select variable with 3 allowed values -> use a frequency table. Expected rows = 1 item * 3 values = 3 (<= 20), so no splitting required. Not a Likert scale or ranking, so no hints applied."
+    },
+    {
+      "questionId": "qON_LIST_OFF_LIST",
+      "questionText": "ON-LIST/OFF-LIST",
+      "tables": [
+        {
+          "tableId": "qON_LIST_OFF_LIST",
+          "title": "ON-LIST/OFF-LIST - Distribution",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "qON_LIST_OFF_LIST",
+              "label": "CARD ON-LIST",
+              "filterValue": "1"
+            },
+            {
+              "variable": "qON_LIST_OFF_LIST",
+              "label": "CARD OFF-LIST",
+              "filterValue": "2"
+            },
+            {
+              "variable": "qON_LIST_OFF_LIST",
+              "label": "PCP ON-LIST",
+              "filterValue": "3"
+            },
+            {
+              "variable": "qON_LIST_OFF_LIST",
+              "label": "PCP OFF-LIST",
+              "filterValue": "4"
+            },
+            {
+              "variable": "qON_LIST_OFF_LIST",
+              "label": "NPPA ON-LIST",
+              "filterValue": "5"
+            },
+            {
+              "variable": "qON_LIST_OFF_LIST",
+              "label": "NPPA OFF-LIST",
+              "filterValue": "6"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "1 item with normalizedType categorical_select and 6 allowed values. Use a single frequency table with one row per value (6 rows <= 20). Not a scale or ranking, so no hints."
+    },
+    {
+      "questionId": "qLIST_TIER",
+      "questionText": "LIST TIER",
+      "tables": [
+        {
+          "tableId": "qLIST_TIER",
+          "title": "qLIST_TIER - LIST TIER",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "qLIST_TIER",
+              "label": "TIER 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "qLIST_TIER",
+              "label": "TIER 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "qLIST_TIER",
+              "label": "TIER 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "qLIST_TIER",
+              "label": "TIER 4",
+              "filterValue": "4"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select variable with four allowed values (1-4). Use a frequency table showing each value as a separate row (filterValue set to the value code). No scale/ranking hint applies."
+    },
+    {
+      "questionId": "qLIST_PRIORITY_ACCOUNT",
+      "questionText": "LIST PRIORITY ACCOUNT",
+      "tables": [
+        {
+          "tableId": "qLIST_PRIORITY_ACCOUNT",
+          "title": "qLIST_PRIORITY_ACCOUNT - LIST PRIORITY ACCOUNT",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "qLIST_PRIORITY_ACCOUNT",
+              "label": "PRIORITY",
+              "filterValue": "1"
+            },
+            {
+              "variable": "qLIST_PRIORITY_ACCOUNT",
+              "label": "NOT PRIORITY",
+              "filterValue": "2"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "This question has one item with normalizedType 'categorical_select' and two allowed values (1=PRIORITY, 2=NOT PRIORITY). Per rules, use a frequency table with one row per value. Expected rows = 1 item * 2 values = 2 (<=20), so no splitting is required. No scale or ranking hints apply."
+    },
+    {
+      "questionId": "S4",
+      "questionText": "Are you currently board certified or eligible in your specialty?",
+      "tables": [
+        {
+          "tableId": "s4",
+          "title": "S4 - Are you currently board certified or eligible in your specialty?",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S4",
+              "label": "Board Eligible",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S4",
+              "label": "Board Certified",
+              "filterValue": "2"
+            },
+            {
+              "variable": "S4",
+              "label": "Neither",
+              "filterValue": "3"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select item with three response values. Use a frequency table with one row per value (3 rows total), which is under the 20-row limit. No scale or ranking hint applies."
+    },
+    {
+      "questionId": "S6",
+      "questionText": "How many years have you been in clinical practice, post residency/training?",
+      "tables": [
+        {
+          "tableId": "s6_years_in_practice",
+          "title": "S6 - Years in clinical practice (post residency/training)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "S6",
+              "label": "Years in clinical practice (post residency/training)",
+              "filterValue": ""
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single item with normalizedType 'numeric_range' -> use mean_rows. Only one row (<=20), so no splitting required. Downstream stats should compute mean, median, and std dev for the numeric years-in-practice variable."
+    },
+    {
+      "questionId": "S7",
+      "questionText": "And to confirm, are you currently practicing full-time (i.e. 40+ hours weekly across all settings) or part-time?",
+      "tables": [
+        {
+          "tableId": "s7",
+          "title": "S7 - Current practice: Full-Time or Part-Time",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S7",
+              "label": "Full-Time",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S7",
+              "label": "Part-Time",
+              "filterValue": "2"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select item with two allowed values (1=Full-Time, 2=Part-Time). A frequency table showing counts/percent for each value is appropriate. Only 2 rows, so no splitting required."
+    },
+    {
+      "questionId": "S9",
+      "questionText": "Which of the following best represents the setting in which you spend most of your professional time?",
+      "tables": [
+        {
+          "tableId": "s9",
+          "title": "S9 - Setting where you spend most professional time",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S9",
+              "label": "Private Solo Practice",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S9",
+              "label": "Private Group Practice",
+              "filterValue": "2"
+            },
+            {
+              "variable": "S9",
+              "label": "Multi-specialty Practice / Comprehensive Care",
+              "filterValue": "3"
+            },
+            {
+              "variable": "S9",
+              "label": "Staff HMO",
+              "filterValue": "4"
+            },
+            {
+              "variable": "S9",
+              "label": "Community Hospital",
+              "filterValue": "5"
+            },
+            {
+              "variable": "S9",
+              "label": "Academic/University Hospital",
+              "filterValue": "6"
+            },
+            {
+              "variable": "S9",
+              "label": "VA Hospital",
+              "filterValue": "7"
+            },
+            {
+              "variable": "S9",
+              "label": "None of the above",
+              "filterValue": "8"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select variable with 8 allowed values. Use a frequency table with one row per response value (8 rows total), which is under the 20-row limit. Not a ranking or a 5/7 point scale, so no hints apply."
+    },
+    {
+      "questionId": "S10",
+      "questionText": "Using your best estimate, how many adult patients, age 18 or older, do you personally manage in your practice in a month? By �personally�, we mean patients for whom you are a primary treatment decision maker.",
+      "tables": [
+        {
+          "tableId": "s10",
+          "title": "S10 - Number of adult patients personally managed per month",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "S10",
+              "label": "Using your best estimate, how many adult patients, age 18 or older, do you personally manage in your practice in a month? By �personally�, we mean patients for whom you are a primary treatment decision maker.",
+              "filterValue": ""
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "1 item with normalizedType 'numeric_range' maps to a mean_rows table. There is a single numeric variable (S10), so one mean_rows table is appropriate. Expected rows = 1, so no splitting required. No ranking or Likert scale hints apply."
+    },
+    {
+      "questionId": "S11",
+      "questionText": "Of those adult patients for whom you are the primary treatment decision maker, roughly how many have a confirmed diagnosis of hypercholesterolemia with established cardiovascular disease (CVD)?",
+      "tables": [
+        {
+          "tableId": "s11_mean",
+          "title": "S11 - Number of adult patients with hypercholesterolemia and CVD",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "S11",
+              "label": "Number of adult patients with hypercholesterolemia and CVD",
+              "filterValue": ""
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.96,
+      "reasoning": "1 item with normalizedType 'numeric_range' (values 0-999). Per rules, numeric_range maps to a mean_rows table. There is a single numeric item so one table with one row is appropriate; no splitting required."
+    },
+    {
+      "questionId": "A2a",
+      "questionText": "To the best of your knowledge, which of the following best describes the current post-ACS guideline recommendation regarding lipid-lowering?",
+      "tables": [
+        {
+          "tableId": "A2a",
+          "title": "A2a - Post-ACS guideline recommendation regarding lipid-lowering",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A2a",
+              "label": "Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels \u00055 mg/dL",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A2a",
+              "label": "Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels \u000570 mg/dL",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A2a",
+              "label": "Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels \u0005100 mg/dL",
+              "filterValue": "3"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select item with 3 allowed values. Use a frequency table with one row per response option (3 rows). No splitting required (<=20 rows). No scale or ranking hints apply."
+    },
+    {
+      "questionId": "A2b",
+      "questionText": "And to the best of your knowledge, which of the following best describes the current post-ACS guideline recommendation specific to lipid-lowering therapy?",
+      "tables": [
+        {
+          "tableId": "a2b",
+          "title": "A2b - Current post-ACS guideline recommendation (lipid-lowering therapy)",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A2b",
+              "label": "Recommend a statin first",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A2b",
+              "label": "Recommend a statin + ezetimibe first",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A2b",
+              "label": "Recommend a PCSK9i first",
+              "filterValue": "3"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select variable with three allowed values. Use a frequency table with one row per response value (3 rows total), which is under the 20-row limit. No scale or ranking hints apply."
+    },
+    {
+      "questionId": "A5",
+      "questionText": "How quickly might you expect to change your prescribing of PCSK9 inhibitors based on this indication change?",
+      "tables": [
+        {
+          "tableId": "a5",
+          "title": "A5 - How quickly might you expect to change your prescribing of PCSK9 inhibitors based on this indication change?",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A5",
+              "label": "Within 3 months",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A5",
+              "label": "4-6 months",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A5",
+              "label": "7-12 months",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A5",
+              "label": "Over a year",
+              "filterValue": "4"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select variable with 4 explicit response values. Per rules, use a frequency table with one row per response value. Total rows = 4 (<=20), so no splitting required. No scale-5/7 or ranking hint applies."
+    },
+    {
+      "questionId": "US_State",
+      "questionText": "US_State",
+      "tables": [
+        {
+          "tableId": "us_state_1",
+          "title": "US_State (part 1 of 3)",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "US_State",
+              "label": "Alaska",
+              "filterValue": "1"
+            },
+            {
+              "variable": "US_State",
+              "label": "Alabama",
+              "filterValue": "2"
+            },
+            {
+              "variable": "US_State",
+              "label": "Arkansas",
+              "filterValue": "3"
+            },
+            {
+              "variable": "US_State",
+              "label": "Arizona",
+              "filterValue": "4"
+            },
+            {
+              "variable": "US_State",
+              "label": "California",
+              "filterValue": "5"
+            },
+            {
+              "variable": "US_State",
+              "label": "Colorado",
+              "filterValue": "6"
+            },
+            {
+              "variable": "US_State",
+              "label": "Connecticut",
+              "filterValue": "7"
+            },
+            {
+              "variable": "US_State",
+              "label": "District of Columbia",
+              "filterValue": "8"
+            },
+            {
+              "variable": "US_State",
+              "label": "Delaware",
+              "filterValue": "9"
+            },
+            {
+              "variable": "US_State",
+              "label": "Florida",
+              "filterValue": "10"
+            },
+            {
+              "variable": "US_State",
+              "label": "Georgia",
+              "filterValue": "11"
+            },
+            {
+              "variable": "US_State",
+              "label": "Hawaii",
+              "filterValue": "12"
+            },
+            {
+              "variable": "US_State",
+              "label": "Iowa",
+              "filterValue": "13"
+            },
+            {
+              "variable": "US_State",
+              "label": "Idaho",
+              "filterValue": "14"
+            },
+            {
+              "variable": "US_State",
+              "label": "Illinois",
+              "filterValue": "15"
+            },
+            {
+              "variable": "US_State",
+              "label": "Indiana",
+              "filterValue": "16"
+            },
+            {
+              "variable": "US_State",
+              "label": "Kansas",
+              "filterValue": "17"
+            },
+            {
+              "variable": "US_State",
+              "label": "Kentucky",
+              "filterValue": "18"
+            },
+            {
+              "variable": "US_State",
+              "label": "Louisiana",
+              "filterValue": "19"
+            },
+            {
+              "variable": "US_State",
+              "label": "Massachusetts",
+              "filterValue": "20"
+            }
+          ],
+          "hints": []
+        },
+        {
+          "tableId": "us_state_2",
+          "title": "US_State (part 2 of 3)",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "US_State",
+              "label": "Maryland",
+              "filterValue": "21"
+            },
+            {
+              "variable": "US_State",
+              "label": "Maine",
+              "filterValue": "22"
+            },
+            {
+              "variable": "US_State",
+              "label": "Michigan",
+              "filterValue": "23"
+            },
+            {
+              "variable": "US_State",
+              "label": "Minnesota",
+              "filterValue": "24"
+            },
+            {
+              "variable": "US_State",
+              "label": "Missouri",
+              "filterValue": "25"
+            },
+            {
+              "variable": "US_State",
+              "label": "Mississippi",
+              "filterValue": "26"
+            },
+            {
+              "variable": "US_State",
+              "label": "Montana",
+              "filterValue": "27"
+            },
+            {
+              "variable": "US_State",
+              "label": "North Carolina",
+              "filterValue": "28"
+            },
+            {
+              "variable": "US_State",
+              "label": "North Dakota",
+              "filterValue": "29"
+            },
+            {
+              "variable": "US_State",
+              "label": "Nebraska",
+              "filterValue": "30"
+            },
+            {
+              "variable": "US_State",
+              "label": "New Hampshire",
+              "filterValue": "31"
+            },
+            {
+              "variable": "US_State",
+              "label": "New Jersey",
+              "filterValue": "32"
+            },
+            {
+              "variable": "US_State",
+              "label": "New Mexico",
+              "filterValue": "33"
+            },
+            {
+              "variable": "US_State",
+              "label": "Nevada",
+              "filterValue": "34"
+            },
+            {
+              "variable": "US_State",
+              "label": "New York",
+              "filterValue": "35"
+            },
+            {
+              "variable": "US_State",
+              "label": "Ohio",
+              "filterValue": "36"
+            },
+            {
+              "variable": "US_State",
+              "label": "Oklahoma",
+              "filterValue": "37"
+            },
+            {
+              "variable": "US_State",
+              "label": "Oregon",
+              "filterValue": "38"
+            },
+            {
+              "variable": "US_State",
+              "label": "Pennsylvania",
+              "filterValue": "39"
+            },
+            {
+              "variable": "US_State",
+              "label": "Rhode Island",
+              "filterValue": "40"
+            }
+          ],
+          "hints": []
+        },
+        {
+          "tableId": "us_state_3",
+          "title": "US_State (part 3 of 3)",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "US_State",
+              "label": "South Carolina",
+              "filterValue": "41"
+            },
+            {
+              "variable": "US_State",
+              "label": "South Dakota",
+              "filterValue": "42"
+            },
+            {
+              "variable": "US_State",
+              "label": "Tennessee",
+              "filterValue": "43"
+            },
+            {
+              "variable": "US_State",
+              "label": "Texas",
+              "filterValue": "44"
+            },
+            {
+              "variable": "US_State",
+              "label": "Utah",
+              "filterValue": "45"
+            },
+            {
+              "variable": "US_State",
+              "label": "Virginia",
+              "filterValue": "46"
+            },
+            {
+              "variable": "US_State",
+              "label": "Vermont",
+              "filterValue": "47"
+            },
+            {
+              "variable": "US_State",
+              "label": "Washington",
+              "filterValue": "48"
+            },
+            {
+              "variable": "US_State",
+              "label": "Wisconsin",
+              "filterValue": "49"
+            },
+            {
+              "variable": "US_State",
+              "label": "West Virginia",
+              "filterValue": "50"
+            },
+            {
+              "variable": "US_State",
+              "label": "Wyoming",
+              "filterValue": "51"
+            },
+            {
+              "variable": "US_State",
+              "label": "Other",
+              "filterValue": "52"
+            },
+            {
+              "variable": "US_State",
+              "label": "Invalid State",
+              "filterValue": "53"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select variable with 53 allowed values. Use frequency tables. Total rows = 53, which exceeds the 20-row limit, so split into three tables of 20 / 20 / 13 rows. No scale or ranking hints apply."
+    },
+    {
+      "questionId": "Region",
+      "questionText": "Region",
+      "tables": [
+        {
+          "tableId": "region",
+          "title": "Region - Distribution",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "Region",
+              "label": "Northeast",
+              "filterValue": "1"
+            },
+            {
+              "variable": "Region",
+              "label": "South",
+              "filterValue": "2"
+            },
+            {
+              "variable": "Region",
+              "label": "Midwest",
+              "filterValue": "3"
+            },
+            {
+              "variable": "Region",
+              "label": "West",
+              "filterValue": "4"
+            },
+            {
+              "variable": "Region",
+              "label": "Other",
+              "filterValue": "5"
+            },
+            {
+              "variable": "Region",
+              "label": "Invalid Region",
+              "filterValue": "6"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select variable with 6 allowed values. Use a frequency table showing each value's count/percent. Expected rows = 6 which is under the 20-row limit, so no splitting required. No scale or ranking hints apply."
+    },
+    {
+      "questionId": "B3",
+      "questionText": "Which of the following best describes where your primary practice is located?",
+      "tables": [
+        {
+          "tableId": "b3",
+          "title": "B3 - Primary practice location",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "B3",
+              "label": "Urban",
+              "filterValue": "1"
+            },
+            {
+              "variable": "B3",
+              "label": "Suburban",
+              "filterValue": "2"
+            },
+            {
+              "variable": "B3",
+              "label": "Rural",
+              "filterValue": "3"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "1 item with normalizedType categorical_select and 3 allowed values. Use a frequency table showing the distribution across the three response categories. Expected rows = 1 x 3 = 3, which is under the 20-row limit, so no splitting required."
+    },
+    {
+      "questionId": "B4",
+      "questionText": "How many physicians are in your practice?",
+      "tables": [
+        {
+          "tableId": "b4",
+          "title": "B4 - How many physicians are in your practice?",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "B4",
+              "label": "How many physicians are in your practice?",
+              "filterValue": ""
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single item with normalizedType 'numeric_range' -> use mean_rows. Only one numeric variable so a single mean_rows table is appropriate (shows mean, median, std dev). Expected rows = 1, no splitting required."
+    },
+    {
+      "questionId": "QCONSENT",
+      "questionText": "If you would be willing to participate in future research to further elaborate on the responses from this survey, please indicate below:",
+      "tables": [
+        {
+          "tableId": "qconsent",
+          "title": "QCONSENT - Willingness to participate in future research",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "QCONSENT",
+              "label": "Yes",
+              "filterValue": "1"
+            },
+            {
+              "variable": "QCONSENT",
+              "label": "No",
+              "filterValue": "2"
+            }
+          ],
+          "hints": []
+        }
+      ],
+      "confidence": 0.96,
+      "reasoning": "Single categorical_select item with two allowed values (Yes/No). Use a frequency table showing distribution across the two response values. Expected rows = 1 item x 2 values = 2 (no splitting required). Not a scale or ranking, so no hints."
+    }
+  ],
+  "processingInfo": {
+    "timestamp": "2026-01-04T04:48:58.515Z",
+    "aiProvider": "azure-openai",
+    "model": "azure/gpt-5-mini",
+    "totalQuestionGroups": 42,
+    "totalTablesGenerated": 51,
+    "averageConfidence": 0.9507142857142858,
+    "tableTypeDistribution": {
+      "frequency": 38,
+      "mean_rows": 13
+    },
+    "processingLog": [
+      "2026-01-04T04:42:54.852Z: [TableAgent] Starting processing: 42 question groups",
+      "2026-01-04T04:42:54.852Z: [TableAgent] Using model: azure/gpt-5-mini",
+      "2026-01-04T04:42:54.852Z: [TableAgent] Processing group 1/42: \"S5\" (7 items)",
+      "2026-01-04T04:43:02.946Z: [TableAgent] Question \"S5\" completed in 8094ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:43:02.946Z: [TableAgent] Processing group 2/42: \"S8\" (4 items)",
+      "2026-01-04T04:43:08.763Z: [TableAgent] Question \"S8\" completed in 5817ms - 1 tables, confidence: 0.96",
+      "2026-01-04T04:43:08.763Z: [TableAgent] Processing group 3/42: \"S12\" (4 items)",
+      "2026-01-04T04:43:15.171Z: [TableAgent] Question \"S12\" completed in 6408ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:43:15.171Z: [TableAgent] Processing group 4/42: \"A1\" (4 items)",
+      "2026-01-04T04:43:28.196Z: [TableAgent] Question \"A1\" completed in 13025ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:43:28.196Z: [TableAgent] Processing group 5/42: \"A3\" (7 items)",
+      "2026-01-04T04:43:34.620Z: [TableAgent] Question \"A3\" completed in 6424ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:43:34.620Z: [TableAgent] Processing group 6/42: \"A3a\" (10 items)",
+      "2026-01-04T04:43:46.209Z: [TableAgent] Question \"A3a\" completed in 11589ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:43:46.209Z: [TableAgent] Processing group 7/42: \"A3b\" (10 items)",
+      "2026-01-04T04:43:54.697Z: [TableAgent] Question \"A3b\" completed in 8488ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:43:54.698Z: [TableAgent] Processing group 8/42: \"A4\" (14 items)",
+      "2026-01-04T04:44:03.700Z: [TableAgent] Question \"A4\" completed in 9002ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:44:03.701Z: [TableAgent] Processing group 9/42: \"A4a\" (10 items)",
+      "2026-01-04T04:44:19.018Z: [TableAgent] Question \"A4a\" completed in 15317ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:44:19.018Z: [TableAgent] Processing group 10/42: \"A4b\" (10 items)",
+      "2026-01-04T04:44:29.942Z: [TableAgent] Question \"A4b\" completed in 10923ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:44:29.942Z: [TableAgent] Processing group 11/42: \"A6\" (8 items)",
+      "2026-01-04T04:44:48.373Z: [TableAgent] Question \"A6\" completed in 18430ms - 4 tables, confidence: 0.94",
+      "2026-01-04T04:44:48.373Z: [TableAgent] Processing group 12/42: \"A7\" (5 items)",
+      "2026-01-04T04:44:55.467Z: [TableAgent] Question \"A7\" completed in 7094ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:44:55.467Z: [TableAgent] Processing group 13/42: \"A8\" (15 items)",
+      "2026-01-04T04:45:25.950Z: [TableAgent] Question \"A8\" completed in 30483ms - 5 tables, confidence: 0.92",
+      "2026-01-04T04:45:25.950Z: [TableAgent] Processing group 14/42: \"A9\" (3 items)",
+      "2026-01-04T04:45:36.802Z: [TableAgent] Question \"A9\" completed in 10852ms - 1 tables, confidence: 0.96",
+      "2026-01-04T04:45:36.802Z: [TableAgent] Processing group 15/42: \"A10\" (6 items)",
+      "2026-01-04T04:45:43.778Z: [TableAgent] Question \"A10\" completed in 6976ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:45:43.778Z: [TableAgent] Processing group 16/42: \"B1\" (8 items)",
+      "2026-01-04T04:45:53.740Z: [TableAgent] Question \"B1\" completed in 9962ms - 1 tables, confidence: 0.96",
+      "2026-01-04T04:45:53.740Z: [TableAgent] Processing group 17/42: \"B5\" (5 items)",
+      "2026-01-04T04:46:02.744Z: [TableAgent] Question \"B5\" completed in 9004ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:46:02.745Z: [TableAgent] Processing group 18/42: \"S1\" (1 items)",
+      "2026-01-04T04:46:10.705Z: [TableAgent] Question \"S1\" completed in 7960ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:46:10.705Z: [TableAgent] Processing group 19/42: \"S2b\" (1 items)",
+      "2026-01-04T04:46:16.408Z: [TableAgent] Question \"S2b\" completed in 5703ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:46:16.408Z: [TableAgent] Processing group 20/42: \"S2\" (1 items)",
+      "2026-01-04T04:46:22.996Z: [TableAgent] Question \"S2\" completed in 6588ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:46:22.996Z: [TableAgent] Processing group 21/42: \"S2a\" (1 items)",
+      "2026-01-04T04:46:29.015Z: [TableAgent] Question \"S2a\" completed in 6018ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:46:29.015Z: [TableAgent] Processing group 22/42: \"qCARD_SPECIALTY\" (1 items)",
+      "2026-01-04T04:46:36.383Z: [TableAgent] Question \"qCARD_SPECIALTY\" completed in 7368ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:46:36.383Z: [TableAgent] Processing group 23/42: \"qSPECIALTY\" (1 items)",
+      "2026-01-04T04:46:42.065Z: [TableAgent] Question \"qSPECIALTY\" completed in 5682ms - 1 tables, confidence: 0.96",
+      "2026-01-04T04:46:42.065Z: [TableAgent] Processing group 24/42: \"S3a\" (1 items)",
+      "2026-01-04T04:46:48.566Z: [TableAgent] Question \"S3a\" completed in 6501ms - 1 tables, confidence: 0.96",
+      "2026-01-04T04:46:48.566Z: [TableAgent] Processing group 25/42: \"qTYPE_OF_CARD\" (1 items)",
+      "2026-01-04T04:46:55.174Z: [TableAgent] Question \"qTYPE_OF_CARD\" completed in 6608ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:46:55.174Z: [TableAgent] Processing group 26/42: \"qON_LIST_OFF_LIST\" (1 items)",
+      "2026-01-04T04:47:03.014Z: [TableAgent] Question \"qON_LIST_OFF_LIST\" completed in 7840ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:47:03.015Z: [TableAgent] Processing group 27/42: \"qLIST_TIER\" (1 items)",
+      "2026-01-04T04:47:09.616Z: [TableAgent] Question \"qLIST_TIER\" completed in 6601ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:47:09.616Z: [TableAgent] Processing group 28/42: \"qLIST_PRIORITY_ACCOUNT\" (1 items)",
+      "2026-01-04T04:47:16.089Z: [TableAgent] Question \"qLIST_PRIORITY_ACCOUNT\" completed in 6473ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:47:16.089Z: [TableAgent] Processing group 29/42: \"S4\" (1 items)",
+      "2026-01-04T04:47:21.393Z: [TableAgent] Question \"S4\" completed in 5304ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:47:21.393Z: [TableAgent] Processing group 30/42: \"S6\" (1 items)",
+      "2026-01-04T04:47:28.499Z: [TableAgent] Question \"S6\" completed in 7106ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:47:28.499Z: [TableAgent] Processing group 31/42: \"S7\" (1 items)",
+      "2026-01-04T04:47:34.202Z: [TableAgent] Question \"S7\" completed in 5703ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:47:34.202Z: [TableAgent] Processing group 32/42: \"S9\" (1 items)",
+      "2026-01-04T04:47:42.947Z: [TableAgent] Question \"S9\" completed in 8745ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:47:42.947Z: [TableAgent] Processing group 33/42: \"S10\" (1 items)",
+      "2026-01-04T04:47:49.312Z: [TableAgent] Question \"S10\" completed in 6365ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:47:49.312Z: [TableAgent] Processing group 34/42: \"S11\" (1 items)",
+      "2026-01-04T04:47:56.645Z: [TableAgent] Question \"S11\" completed in 7333ms - 1 tables, confidence: 0.96",
+      "2026-01-04T04:47:56.645Z: [TableAgent] Processing group 35/42: \"A2a\" (1 items)",
+      "2026-01-04T04:48:05.137Z: [TableAgent] Question \"A2a\" completed in 8492ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:48:05.137Z: [TableAgent] Processing group 36/42: \"A2b\" (1 items)",
+      "2026-01-04T04:48:10.672Z: [TableAgent] Question \"A2b\" completed in 5535ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:48:10.672Z: [TableAgent] Processing group 37/42: \"A5\" (1 items)",
+      "2026-01-04T04:48:17.831Z: [TableAgent] Question \"A5\" completed in 7159ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:48:17.831Z: [TableAgent] Processing group 38/42: \"US_State\" (1 items)",
+      "2026-01-04T04:48:34.517Z: [TableAgent] Question \"US_State\" completed in 16686ms - 3 tables, confidence: 0.95",
+      "2026-01-04T04:48:34.517Z: [TableAgent] Processing group 39/42: \"Region\" (1 items)",
+      "2026-01-04T04:48:41.971Z: [TableAgent] Question \"Region\" completed in 7454ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:48:41.971Z: [TableAgent] Processing group 40/42: \"B3\" (1 items)",
+      "2026-01-04T04:48:48.092Z: [TableAgent] Question \"B3\" completed in 6121ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:48:48.092Z: [TableAgent] Processing group 41/42: \"B4\" (1 items)",
+      "2026-01-04T04:48:52.185Z: [TableAgent] Question \"B4\" completed in 4093ms - 1 tables, confidence: 0.95",
+      "2026-01-04T04:48:52.185Z: [TableAgent] Processing group 42/42: \"QCONSENT\" (1 items)",
+      "2026-01-04T04:48:58.507Z: [TableAgent] Question \"QCONSENT\" completed in 6322ms - 1 tables, confidence: 0.96",
+      "2026-01-04T04:48:58.508Z: [TableAgent] Collected 15 scratchpad entries",
+      "2026-01-04T04:48:58.508Z: [TableAgent] Processing complete - 42 groups → 51 tables, avg confidence: 0.95"
+    ],
+    "scratchpadTrace": [
+      {
+        "timestamp": "2026-01-04T04:43:22.891Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "[4 items, normalizedType: categorical_select]. This is a multi-item categorical grid where each of the 4 treatments has 2 possible response values (1-2). Decision: Use frequency tables (categorical_select -> frequency). Expected rows = 4 items * 2 values = 8 rows. Split needed? No (8 <= 20). Therefore produce one frequency table with 8 rows: for each item, two rows (filterValue \"1\" and \"2\"). No hints apply (not ranking, not 5- or 7-point scale). Confidence high."
+      },
+      {
+        "timestamp": "2026-01-04T04:43:40.896Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "STRUCTURE: \"10 items, normalizedType: numeric_range. This is a numeric grid (percent estimates 0-100) with two columns per treatment (In addition to statin; Without a statin) across 5 treatments (Leqvio, Praluent, Repatha, Zetia, Nexletol).\"\n\nDECISION: \"Using mean_rows because normalizedType == numeric_range. Expected rows: 10 (one per numeric item). Split needed: no (10 <= 20). Tables: Single mean_rows table listing all 10 items as rows. filterValue for each row is empty string. Hints: none (not a categorical scale or ranking).\"\n\nCONFIDENCE: \"0.95 - Clear mapping: all items numeric_range and row count within limit.\""
+      },
+      {
+        "timestamp": "2026-01-04T04:44:12.643Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "[10 items, normalizedType: numeric_range]. This is a numeric grid / set of numeric percentage items (0-100) asking for percent of NEXT 100 patients. DECISION: Using mean_rows because normalizedType is numeric_range. Expected rows: 10 (one per item). Split needed: no (10 <= 20). Tables: Single mean_rows table with 10 rows, each row is one variable with filterValue \"\". Hints: none. CONFIDENCE: 0.95 - clear mapping, numeric percentage variables."
+      },
+      {
+        "timestamp": "2026-01-04T04:45:49.794Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "[8 items, normalizedType: numeric_range]. This is a numeric grid (percentages 0-100) where each item asks for percentage coverage by insurance type.\n\nDECISION: Using mean_rows. Expected rows: 8. Split needed: no (8 <= 20). Tables: Single mean_rows table listing each of the 8 items as a separate row, filterValue empty for each.\n\nCONFIDENCE: 0.96 - All items are numeric_range (percent values), clear mapping to mean_rows; row count well under limit."
+      },
+      {
+        "timestamp": "2026-01-04T04:45:59.027Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "[5 items, normalizedType: binary_flag]. This is a multi-select (each item is 0/1).\n\nDECISION: Using frequency table with filterValue \"1\" for each item. Expected rows: 5 (5 items x 1 value each). Split needed: no (5 <= 20). Tables: single frequency table listing each item with filterValue \"1\".\n\nCONFIDENCE: 0.95 - Straightforward mapping: all items are binary_flag multi-select; one frequency table is appropriate."
+      },
+      {
+        "timestamp": "2026-01-04T04:46:33.607Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "STRUCTURE: \"1 items, normalizedType: categorical_select. This is a single categorical question with 2 response values (binary choice).\"\n\nDECISION: \"Using frequency. Expected rows: 2 (one per response value). Split needed: no. Tables: one table with two rows: CARD (1) and NEPH/ENDO/LIP (2).\"\n\nCONFIDENCE: \"0.95 - Clear mapping: categorical question with two values; standard frequency table appropriate.\""
+      },
+      {
+        "timestamp": "2026-01-04T04:46:58.704Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "STRUCTURE: \"[1] items, normalizedType: categorical_select. This is a single categorical variable with 6 discrete named values (CARD ON-LIST, CARD OFF-LIST, PCP ON-LIST, PCP OFF-LIST, NPPA ON-LIST, NPPA OFF-LIST).\"\n\nDECISION: \"Using frequency. Expected rows: 6 (one row per value). Split needed: no (6 <= 20). Tables: One frequency table with 6 rows, each row filters on qON_LIST_OFF_LIST = '1'..'6' and uses corresponding label. Hints: none (not a scale or ranking).\"\n\nCONFIDENCE: \"0.95 - clear single categorical_select with 6 values, straightforward frequency table.\""
+      },
+      {
+        "timestamp": "2026-01-04T04:47:25.910Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "[1] items, normalizedType: numeric_range. This is a single numeric (continuous) question representing years in practice.\n\nDECISION: Using mean_rows. Expected rows: 1. Split needed: no (1 <= 20). Tables: One mean_rows table with a single row for variable S6 (filterValue empty).\n\nCONFIDENCE: 0.95 - numeric_range clearly maps to mean_rows; single item, no splitting."
+      },
+      {
+        "timestamp": "2026-01-04T04:47:31.936Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "[1] items, normalizedType: categorical_select. This is a single categorical (binary) question with values 1=Full-Time, 2=Part-Time.\n\nDECISION: Using frequency. Expected rows: 2 (1 item x 2 values). Split needed: no. Tables: One frequency table with two rows: Full-Time (filterValue=\"1\"), Part-Time (filterValue=\"2\").\n\nCONFIDENCE: 0.95 - Clear mapping: categorical with two values; straightforward frequency table."
+      },
+      {
+        "timestamp": "2026-01-04T04:47:38.982Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "[1] items, normalizedType: categorical_select. This is a single categorical question with 8 response values (1-8).\n\nDECISION: Using frequency. Expected rows: 1 item * 8 values = 8 rows. Split needed: no (8 <= 20). Tables: Single frequency table with one row per response value (filterValue set to each value code).\n\nHINTS: Not a ranking, not a 5- or 7-point scale. hints: [].\n\nCONFIDENCE: 0.95 - clear categorical mapping, simple table under 20 rows."
+      },
+      {
+        "timestamp": "2026-01-04T04:47:53.822Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "STRUCTURE: \"1 items, normalizedType: numeric_range. This is a single numeric question (numeric_range) representing a count (0-999).\"\n\nDECISION: \"Using mean_rows. Expected rows: 1 (one row per numeric variable). Split needed: no. Tables: Single mean_rows table with one row for variable 'S11'.\"\n\nCONFIDENCE: \"0.96 - Straightforward mapping: numeric_range -> mean_rows, only one item, no splitting required.\""
+      },
+      {
+        "timestamp": "2026-01-04T04:48:01.410Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "STRUCTURE: \"1 items, normalizedType: categorical_select. This is a single-choice categorical question with 3 response options.\" \n\nDECISION: \"Using frequency. Expected rows: 3 (1 item x 3 values). Split needed: no. Tables: One frequency table with three rows, one per allowed value. Hints: none.\" \n\nCONFIDENCE: \"0.95 - Straightforward categorical mapping; values 1-3, under 20 rows.\""
+      },
+      {
+        "timestamp": "2026-01-04T04:48:23.895Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "[1] items, normalizedType: categorical_select. This is a single categorical variable with 53 possible values (US states + other + invalid).\n\nDECISION: Using frequency table. Expected rows: 1 item x 53 values = 53 rows. Split needed: yes (max 20 rows per table).\n\nSplit plan: Create 3 frequency tables splitting the 53 values into chunks of 20, 20, and 13 rows to respect the 20-row limit. No hints apply (not a scale or ranking).\n\nCONFIDENCE: 0.95 - mapping is straightforward: categorical variable with many levels requiring splitting."
+      },
+      {
+        "timestamp": "2026-01-04T04:48:39.032Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "[1] items, normalizedType: categorical_select. This is a single categorical question with 6 allowed values (Northeast, South, Midwest, West, Other, Invalid Region).\n\nDECISION: Using frequency. Expected rows: 1 item x 6 values = 6 rows. Split needed: no (6 <= 20). Tables: One frequency table listing each region value with filterValue set to the value code as string. Hints: none.\n\nCONFIDENCE: 0.95 - Direct mapping from normalizedType categorical_select to a frequency table; unambiguous labels and allowed values."
+      },
+      {
+        "timestamp": "2026-01-04T04:48:45.794Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "STRUCTURE: \"[1 items, normalizedType: categorical_select]. This is a single categorical question with 3 response categories (Urban/Suburban/Rural).\"\n\nDECISION: \"Using frequency. Expected rows: 1 item x 3 values = 3. Split needed: no. Tables: One frequency table with 3 rows (filterValue '1','2','3').\"\n\nCONFIDENCE: \"0.95 - Clear categorical mapping, small number of categories, no ambiguity.\""
+      }
+    ]
+  }
+}

@@ -176,11 +176,11 @@ hawktab-ai/
 ```
 
 ### Key Files
-- **`/src/agents/`**: CrossTab Agent implementation with tools (scratchpad for transparency)
-- **`/src/schemas/`**: Zod-first schema definitions for type safety
-- **`/src/lib/processors/`**: Data processing pipeline (BannerProcessor, DataMapProcessor)
-- **`/src/guardrails/`**: Input validation and safety checks
-- **`/src/lib/`**: Utilities (env config, tracing, context builder, storage)
+- **`/src/agents/`**: BannerAgent, CrosstabAgent, TableAgent
+- **`/src/lib/r/RScriptGeneratorV2.ts`**: JSON-output R script generator
+- **`/src/lib/processors/`**: DataMapProcessor, BannerProcessor
+- **`/src/schemas/`**: Zod-first type definitions (tableAgentSchema, processingSchemas)
+- **`/scripts/`**: CLI test scripts (test-pipeline, test-table-agent, test-r-script-v2)
 
 ---
 
@@ -265,18 +265,18 @@ npx tsc --noEmit          # Must pass
 - Using Azure OpenAI (compliance requirement satisfied)
 - Task-based model selection: o4-mini (reasoning), gpt-5-nano (vision)
 
-**MVP Foundation (Core processing works)**:
-- Successfully processes 192+ variables with 130 parent relationships
-- 99% accuracy in SPSS variable matching
-- Handles complex expressions with intelligent inference
-- Provides graduated confidence scores for human review
-- Processes 19 columns across 6 banner groups
+**TableAgent Architecture (In Progress)**:
+- **TableAgent**: AI-based table structure decisions (replaces regex-based TablePlan)
+- **RScriptGeneratorV2**: JSON output with `frequency` and `mean_rows` table types
+- Correct base sizing: `base_n = sum(!is.na(cut_data[[variable]]))`
+- Steps 0-5 complete, Step 6 (ExcelJS) next
 
-**Next Steps** (see `docs/architecture-refactor-prd.md`):
-1. ~~Azure OpenAI migration~~ *(Phase 1 - Complete)*
-2. Decipher API + reliability improvements *(Phase 2 - the hard part)*
-3. Team access: auth, database, deployment *(Phase 3)*
-4. **Checkpoint**: Hawk Partners internal launch
+**Current Work** (see `docs/implementation-plans/table-agent-architecture.md`):
+1. Step 5.5: Verify R significance testing
+2. Step 6: ExcelJS Formatter (Antares-style output)
+3. Step 7: Excel Cleanup Agent (optional - uses survey document)
+
+**After TableAgent**: Return to `docs/implementation-plans/pre-phase-2-testing-plan.md`
 
 ---
 
@@ -290,8 +290,10 @@ npm run dev                    # Start with Turbopack
 npm run lint                   # ESLint
 npx tsc --noEmit              # Type check
 
-# R Script Testing
-Rscript r/master.R            # Run generated R script
+# Pipeline Testing (uses data/test-data/practice-files/)
+npx tsx scripts/test-pipeline.ts      # Full pipeline test
+npx tsx scripts/test-table-agent.ts   # TableAgent only
+npx tsx scripts/test-r-script-v2.ts   # R script from existing output
 
 # Git
 git status                     # Check changes
@@ -302,10 +304,15 @@ git diff                       # Review changes before commit
 
 ## References
 
-- `docs/architecture-refactor-prd.md` - Complete architecture plan
+**Implementation Plans**:
+- `docs/implementation-plans/table-agent-architecture.md` - Current work (Steps 5.5-7)
+- `docs/implementation-plans/pre-phase-2-testing-plan.md` - Testing milestones
+- `docs/architecture-refactor-prd.md` - Overall architecture
+
+**Security**:
 - `docs/audits/security-audit-prompt.md` - Security review checklist
+
+**External Docs**:
+- [Vercel AI SDK](https://ai-sdk.dev/docs/introduction)
 - [Convex Docs](https://docs.convex.dev/)
 - [WorkOS AuthKit](https://workos.com/docs/user-management)
-- [Vercel AI SDK](https://ai-sdk.dev/docs/introduction)
-- [Sentry Next.js](https://docs.sentry.io/platforms/javascript/guides/nextjs/)
-- [PostHog Next.js](https://posthog.com/docs/libraries/next-js)

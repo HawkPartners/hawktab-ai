@@ -28,7 +28,9 @@ Datamap CSV → DataMapProcessor → Verbose Datamap
 | 5 | RScriptGeneratorV2 (JSON output) | ✅ Complete |
 | 4 | API route integration | ✅ Complete |
 | — | Delete old files | ✅ Complete |
+| 5.5 | R significance testing | ⚠️ Verify before Step 6 |
 | 6 | ExcelJS Formatter | ⏳ Next |
+| 7 | Excel Cleanup Agent (optional) | 📋 Planned |
 
 ---
 
@@ -57,6 +59,27 @@ Deleted old files:
 - `src/lib/r/RScriptGenerator.ts`, `Manifest.ts`, `PreflightGenerator.ts`, `ValidationGenerator.ts`
 - `src/agents/RScriptAgent.ts`
 - `src/app/api/generate-crosstabs/`, `generate-r/`, `validate/`
+
+---
+
+## Step 5.5: R Calculations Verification
+
+**Flag**: Before implementing Step 6, verify R calculates everything needed:
+
+| Calculation | Status | Notes |
+|-------------|--------|-------|
+| Count per cell | ✅ | `sum(cut_data[[variable]] == value)` |
+| Percentage per cell | ✅ | `count / base_n * 100` |
+| Mean/Median/SD | ✅ | For `mean_rows` tables |
+| Base sizes (n) | ✅ | `sum(!is.na(cut_data[[variable]]))` |
+| Significance testing | ❓ | Z-test (proportions), T-test (means) |
+
+**Significance testing** is standard for Antares-style output. Need to add:
+- Column-to-column comparison (z-test for proportions)
+- Stat letters in output JSON indicating which columns differ significantly
+- Configurable significance level (typically 95%)
+
+This may require RScriptGeneratorV2 updates before ExcelJS work.
 
 ---
 
@@ -97,5 +120,56 @@ Reads `results/tables.json` from R output.
 
 ---
 
+## Step 7: Excel Cleanup Agent (Optional)
+
+**Goal**: Use the survey/questionnaire document to polish labels before final Excel output.
+
+### 7.1 Context
+
+This is the **first agent in the pipeline that sees the actual survey document** (`leqvio-demand-survey.docx` in practice files). Previous agents work from:
+- Datamap (variable definitions)
+- Banner plan (cut definitions)
+- SPSS data (raw values)
+
+The survey contains the actual question text as presented to respondents.
+
+### 7.2 Responsibilities
+
+| Field | What Agent Adjusts |
+|-------|-------------------|
+| Question labels | Rewrite for clarity if needed |
+| Answer labels | Match survey wording if datamap differs |
+| Table titles | Clean formatting |
+
+**Not adjusted**: Data values, calculations, structure
+
+### 7.3 Why This Matters
+
+Without this step:
+- Labels come from datamap (often abbreviated/coded)
+- Question text may not match what respondents saw
+- Some variables may lack descriptive labels entirely
+
+With this step:
+- Labels match the actual survey instrument
+- Output is immediately usable for reports
+- Less manual cleanup required
+
+### 7.4 Implementation Notes
+
+- Input: Table JSON + survey document (parsed)
+- Output: Adjusted label fields only
+- Structured output with Zod schema (only adjustable fields)
+- Confidence scoring for changes (high = exact match found, low = inference)
+
+---
+
+## After This Architecture
+
+Once Steps 6-7 complete and validated against `data/test-data/practice-files/`:
+→ Return to `docs/implementation-plans/pre-phase-2-testing-plan.md` (Milestone 2 continues there)
+
+---
+
 *Created: January 3, 2026*
-*Updated: January 4, 2026 - Steps 4+5 complete, Step 6 next*
+*Updated: January 3, 2026 - Steps 4+5 complete, added 5.5 flag and Step 7 plan*
