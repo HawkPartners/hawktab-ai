@@ -2,8 +2,8 @@
 /**
  * Pipeline Test Script
  *
- * Purpose: Run the full processing pipeline from raw files to R script generation,
- * without requiring the UI. Stops before Excel generation.
+ * Purpose: Run the full processing pipeline from raw files to Excel output,
+ * without requiring the UI.
  *
  * Usage:
  *   npx tsx scripts/test-pipeline.ts [dataset-folder]
@@ -27,6 +27,7 @@
  *   4. TableAgent → Table definitions
  *   5. RScriptGeneratorV2 → master.R
  *   6. R execution → results/tables.json
+ *   7. ExcelFormatter → results/crosstabs.xlsx
  *
  * Output:
  *   temp-outputs/test-pipeline-<dataset>-<timestamp>/
@@ -48,6 +49,7 @@ import { processAllGroups as processCrosstabGroups } from '../src/agents/Crossta
 import { processDataMap as processTableAgent } from '../src/agents/TableAgent';
 import { generateRScriptV2 } from '../src/lib/r/RScriptGeneratorV2';
 import { buildCutsSpec } from '../src/lib/tables/CutsSpec';
+import { ExcelFormatter } from '../src/lib/excel/ExcelFormatter';
 import type { VerboseDataMapType } from '../src/schemas/processingSchemas';
 
 const execAsync = promisify(exec);
@@ -140,7 +142,7 @@ async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
 
 async function runPipeline(datasetFolder: string) {
   const startTime = Date.now();
-  const totalSteps = 6;
+  const totalSteps = 7;
 
   log('', 'reset');
   log('='.repeat(70), 'magenta');
@@ -309,6 +311,27 @@ async function runPipeline(datasetFolder: string) {
     }
 
     log(`  Duration: ${Date.now() - stepStart6}ms`, 'dim');
+
+    // -------------------------------------------------------------------------
+    // Step 7: Excel Export
+    // -------------------------------------------------------------------------
+    logStep(7, totalSteps, 'Generating Excel workbook...');
+    const stepStart7 = Date.now();
+
+    const tablesJsonPath = path.join(resultsDir, 'tables.json');
+    const excelPath = path.join(resultsDir, 'crosstabs.xlsx');
+
+    try {
+      const formatter = new ExcelFormatter();
+      await formatter.formatFromFile(tablesJsonPath);
+      await formatter.saveToFile(excelPath);
+
+      log(`  Generated crosstabs.xlsx`, 'green');
+      log(`  Duration: ${Date.now() - stepStart7}ms`, 'dim');
+    } catch (excelError) {
+      log(`  Excel generation failed: ${excelError instanceof Error ? excelError.message : String(excelError)}`, 'red');
+    }
+
   } catch (rError) {
     const errorMsg = rError instanceof Error ? rError.message : String(rError);
     // Only "R not installed" if command literally not found (not just any error with "Rscript" in path)
@@ -319,6 +342,7 @@ async function runPipeline(datasetFolder: string) {
       log(`  ${errorMsg.substring(0, 200)}`, 'dim');
     }
   }
+  log('', 'reset');
 
   // -------------------------------------------------------------------------
   // Summary
