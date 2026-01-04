@@ -8,6 +8,7 @@ export type JobStage =
   | 'parsing'
   | 'banner_agent'
   | 'crosstab_agent'
+  | 'table_agent'
   | 'generating_r'
   | 'executing_r'
   | 'writing_outputs'

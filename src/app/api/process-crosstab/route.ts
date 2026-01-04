@@ -25,10 +25,9 @@ import { promisify } from 'util';
 import type { ValidationStatus } from '../../../schemas/humanValidationSchema';
 import type { ValidationResultType } from '../../../schemas/agentOutputSchema';
 import type { VerboseDataMapType } from '../../../schemas/processingSchemas';
-import { buildTablePlanFromDataMap } from '../../../lib/tables/TablePlan';
 import { buildCutsSpec } from '../../../lib/tables/CutsSpec';
-import { buildRManifest } from '../../../lib/r/Manifest';
-import { generateMasterRScript } from '../../../lib/r/RScriptGenerator';
+import { generateRScriptV2 } from '../../../lib/r/RScriptGeneratorV2';
+import { processDataMap } from '../../../agents/TableAgent';
 import { createBugTrackerTemplate } from '../../../lib/utils/bugTrackerTemplate';
 
 const execAsync = promisify(exec);
@@ -241,28 +240,29 @@ export async function POST(request: NextRequest) {
               const dataMap = JSON.parse(dataMapContent) as VerboseDataMapType[];
               console.log(`[API] Loaded data map with ${dataMap.length} variables`);
               
-              // Build TablePlan and CutsSpec
-              console.log(`[API] Building TablePlan from ${dataMap.length} variables`);
-              const tablePlan = buildTablePlanFromDataMap(dataMap);
+              // Build CutsSpec from CrosstabAgent validation
               const cutsSpec = buildCutsSpec(validation);
-              
-              console.log(`[API] Generated ${tablePlan.tables.length} tables and ${cutsSpec.cuts.length} cuts`);
-              
-              // Build and save R manifest
-              const manifest = buildRManifest(outputFolderTimestamp, tablePlan, cutsSpec);
+              console.log(`[API] Generated ${cutsSpec.cuts.length} cuts from CrosstabAgent`);
+
+              // Run TableAgent to decide how to display data as tables
+              console.log(`[API] Running TableAgent on ${dataMap.length} variables...`);
+              updateJob(job.jobId, { stage: 'table_agent', percent: 89, message: 'Analyzing table structures...' });
+
+              const { results: tableAgentResults } = await processDataMap(dataMap, outputFolderTimestamp);
+              const allTables = tableAgentResults.flatMap(r => r.tables);
+              console.log(`[API] TableAgent generated ${allTables.length} table definitions`);
+
+              // Generate R script V2 (outputs JSON, not CSV)
               const rDir = path.join(outputDir, 'r');
               await fs.mkdir(rDir, { recursive: true });
-              
-              await fs.writeFile(
-                path.join(rDir, 'manifest.json'),
-                JSON.stringify(manifest, null, 2),
-                'utf-8'
+
+              const masterScript = generateRScriptV2(
+                { tables: allTables, cuts: cutsSpec.cuts },
+                { sessionId: outputFolderTimestamp, outputDir: 'results' }
               );
-              
-              // Generate and save master R script
-              const masterScript = generateMasterRScript(manifest, outputFolderTimestamp);
               const masterPath = path.join(rDir, 'master.R');
               await fs.writeFile(masterPath, masterScript, 'utf-8');
+              console.log(`[API] Generated R script V2 with ${allTables.length} tables`);
               
               // Create results directory
               const resultsDir = path.join(outputDir, 'results');
@@ -305,12 +305,12 @@ export async function POST(request: NextRequest) {
                   console.error('[API] R execution stderr:', stderr.substring(0, 500));
                 }
                 
-                // Check if CSV files were generated
+                // Check if JSON output was generated (V2 outputs JSON, not CSV)
                 const resultFiles = await fs.readdir(resultsDir);
-                const csvFiles = resultFiles.filter(f => f.endsWith('.csv'));
-                
-                if (csvFiles.length > 0) {
-                  console.log(`[API] Successfully generated ${csvFiles.length} CSV files`);
+                const jsonFile = resultFiles.find(f => f === 'tables.json');
+
+                if (jsonFile) {
+                  console.log(`[API] Successfully generated tables.json`);
 
                   // Write run summary with timing info
                   const processingEndTime = Date.now();
@@ -325,10 +325,9 @@ export async function POST(request: NextRequest) {
                       durationFormatted: `${durationSec}s`
                     },
                     outputs: {
-                      tablesGenerated: tablePlan.tables.length,
+                      tablesGenerated: allTables.length,
                       cutsGenerated: cutsSpec.cuts.length,
-                      csvFilesCreated: csvFiles.length,
-                      files: csvFiles
+                      outputFile: 'results/tables.json'
                     },
                     status: 'success'
                   };
@@ -341,17 +340,17 @@ export async function POST(request: NextRequest) {
                   updateJob(job.jobId, {
                     stage: 'complete',
                     percent: 100,
-                    message: `Complete! Generated ${csvFiles.length} crosstab tables in ${durationSec}s. Download Excel at /api/export-workbook/${outputFolderTimestamp}`,
+                    message: `Complete! Generated ${allTables.length} crosstab tables in ${durationSec}s. Results in results/tables.json`,
                     sessionId: outputFolderTimestamp,
                     downloadUrl: `/api/export-workbook/${outputFolderTimestamp}`
                   });
                 } else {
-                  console.warn('[API] R executed but no CSV files generated');
-                  updateJob(job.jobId, { 
-                    stage: 'complete', 
-                    percent: 100, 
-                    message: 'R scripts generated but no tables produced. Check R installation.',
-                    sessionId: outputFolderTimestamp 
+                  console.warn('[API] R executed but tables.json not generated');
+                  updateJob(job.jobId, {
+                    stage: 'complete',
+                    percent: 100,
+                    message: 'R scripts generated but no output produced. Check R installation.',
+                    sessionId: outputFolderTimestamp
                   });
                 }
                 
