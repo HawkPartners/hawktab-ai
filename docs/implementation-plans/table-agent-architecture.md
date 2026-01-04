@@ -28,8 +28,8 @@ Datamap CSV → DataMapProcessor → Verbose Datamap
 | 5 | RScriptGeneratorV2 (JSON output) | ✅ Complete |
 | 4 | API route integration | ✅ Complete |
 | — | Delete old files | ✅ Complete |
-| 5.5 | R significance testing | ⚠️ Verify before Step 6 |
-| 6 | ExcelJS Formatter | ⏳ Next |
+| 5.5 | R calculations enhancement (sig testing, outliers, rounding) | 📋 Detailed plan ready |
+| 6 | ExcelJS Formatter | ⏳ Next after 5.5 |
 | 7 | VerificationAgent (survey → label cleanup) | 📋 Detailed plan ready |
 
 ---
@@ -62,24 +62,333 @@ Deleted old files:
 
 ---
 
-## Step 5.5: R Calculations Verification
+## Step 5.5: R Calculations Enhancement
 
-**Flag**: Before implementing Step 6, verify R calculates everything needed:
+**Goal**: Enhance RScriptGeneratorV2 with significance testing, outlier-adjusted means, and proper rounding before moving to ExcelJS formatting.
 
-| Calculation | Status | Notes |
-|-------------|--------|-------|
-| Count per cell | ✅ | `sum(cut_data[[variable]] == value)` |
-| Percentage per cell | ✅ | `count / base_n * 100` |
-| Mean/Median/SD | ✅ | For `mean_rows` tables |
-| Base sizes (n) | ✅ | `sum(!is.na(cut_data[[variable]]))` |
-| Significance testing | ❓ | Z-test (proportions), T-test (means) |
+### 5.5.1 Current State vs. Required
 
-**Significance testing** is standard for Antares-style output. Need to add:
-- Column-to-column comparison (z-test for proportions)
-- Stat letters in output JSON indicating which columns differ significantly
-- Configurable significance level (typically 95%)
+| Calculation | Current | Required | Notes |
+|-------------|---------|----------|-------|
+| Count per cell | ✅ | ✅ | `sum(cut_data[[variable]] == value)` |
+| Percentage per cell | ✅ | ✅ | Rounded to whole number |
+| Mean | ✅ | ✅ | Rounded to 1 decimal |
+| Median | ✅ | ✅ | Rounded to 1 decimal |
+| Standard Deviation | ✅ (2 dec) | ❌ (1 dec) | Change from 2 to 1 decimal |
+| Mean (minus outliers) | ❌ | ⏳ | IQR-based outlier removal |
+| Significance testing | ❌ | ⏳ | Z-test (proportions), T-test (means) |
+| Base sizes (n) | ✅ | ✅ | `sum(!is.na(cut_data[[variable]]))` |
 
-This may require RScriptGeneratorV2 updates before ExcelJS work.
+### 5.5.2 SD Rounding Fix
+
+**Current** (line 289 in RScriptGeneratorV2.ts):
+```r
+sd_val <- if (n > 1) round_half_up(sd(valid_vals), 2) else NA
+```
+
+**Required**:
+```r
+sd_val <- if (n > 1) round_half_up(sd(valid_vals), 1) else NA
+```
+
+All summary stats (mean, median, SD) should use 1 decimal place. Percentages remain whole numbers.
+
+### 5.5.3 Mean (Minus Outliers)
+
+Add outlier-adjusted mean calculation using IQR method:
+
+```r
+# Calculate mean excluding outliers (IQR method)
+calculate_mean_no_outliers <- function(x) {
+  valid <- x[!is.na(x)]
+  if (length(valid) < 4) return(NA)  # Need enough data for IQR
+
+  q1 <- quantile(valid, 0.25)
+  q3 <- quantile(valid, 0.75)
+  iqr <- q3 - q1
+
+  lower_bound <- q1 - 1.5 * iqr
+  upper_bound <- q3 + 1.5 * iqr
+
+  no_outliers <- valid[valid >= lower_bound & valid <= upper_bound]
+  if (length(no_outliers) == 0) return(NA)
+
+  return(round_half_up(mean(no_outliers), 1))
+}
+```
+
+**Output in mean_rows tables**:
+```json
+{
+  "label": "Leqvio (inclisiran)",
+  "n": 175,
+  "mean": 42.3,
+  "mean_label": "Mean (overall)",
+  "median": 40.0,
+  "median_label": "Median (overall)",
+  "sd": 12.1,
+  "mean_no_outliers": 41.8,
+  "mean_no_outliers_label": "Mean (minus outliers)"
+}
+```
+
+The `_label` fields clarify what each stat represents. ExcelJS uses these for row labels.
+
+### 5.5.4 Significance Testing
+
+**Key requirement**: Compare columns **within groups** + compare each column to **Total**.
+
+#### 5.5.4.1 Enhanced CutDefinition
+
+Current `CutDefinition` loses group structure. Enhance to preserve stat testing context:
+
+```typescript
+// src/lib/tables/CutsSpec.ts (updated)
+
+export type CutDefinition = {
+  id: string;
+  name: string;
+  rExpression: string;
+  statLetter: string;     // NEW: "A", "B", "C", etc.
+  groupName: string;      // NEW: "Specialty", "Role", etc.
+  groupIndex: number;     // NEW: Position within group (for comparison order)
+};
+
+export type CutGroup = {
+  groupName: string;
+  cuts: CutDefinition[];
+};
+
+export type CutsSpec = {
+  cuts: CutDefinition[];
+  groups: CutGroup[];     // NEW: Preserve group structure for stat testing
+  totalCut: CutDefinition | null;  // NEW: Reference to Total column
+};
+```
+
+#### 5.5.4.2 Updated buildCutsSpec
+
+```typescript
+export function buildCutsSpec(validation: ValidationResultType): CutsSpec {
+  const cuts: CutDefinition[] = [];
+  const groups: CutGroup[] = [];
+  let totalCut: CutDefinition | null = null;
+
+  for (const group of validation.bannerCuts) {
+    const groupCuts: CutDefinition[] = [];
+
+    for (let i = 0; i < group.columns.length; i++) {
+      const col = group.columns[i];
+      const id = `${slugify(group.groupName)}.${slugify(col.name)}`;
+      const cut: CutDefinition = {
+        id,
+        name: col.name,
+        rExpression: col.adjusted,
+        statLetter: col.statLetter,
+        groupName: group.groupName,
+        groupIndex: i,
+      };
+
+      cuts.push(cut);
+      groupCuts.push(cut);
+
+      // Track Total column separately
+      if (col.name === 'Total' || group.groupName === 'Total') {
+        totalCut = cut;
+      }
+    }
+
+    groups.push({ groupName: group.groupName, cuts: groupCuts });
+  }
+
+  return { cuts, groups, totalCut };
+}
+```
+
+#### 5.5.4.3 R Significance Testing Functions
+
+Add to helper functions in R script:
+
+```r
+# =============================================================================
+# Significance Testing (90% confidence level, p < 0.10)
+# =============================================================================
+
+p_threshold <- 0.10  # 90% significance level
+
+# Z-test for proportions (frequency tables)
+sig_test_proportion <- function(count1, n1, count2, n2, threshold = p_threshold) {
+  if (n1 < 5 || n2 < 5) return(NA)  # Insufficient sample size
+
+  # Pooled proportion
+  p_pool <- (count1 + count2) / (n1 + n2)
+  if (p_pool == 0 || p_pool == 1) return(NA)  # Can't test
+
+  # Standard error
+  se <- sqrt(p_pool * (1 - p_pool) * (1/n1 + 1/n2))
+  if (se == 0) return(NA)
+
+  # Z statistic
+  p1 <- count1 / n1
+  p2 <- count2 / n2
+  z <- (p1 - p2) / se
+
+  # Two-tailed p-value
+  p_value <- 2 * (1 - pnorm(abs(z)))
+
+  return(p_value < threshold)
+}
+
+# T-test for means (mean_rows tables)
+sig_test_mean <- function(vals1, vals2, threshold = p_threshold) {
+  n1 <- sum(!is.na(vals1))
+  n2 <- sum(!is.na(vals2))
+
+  if (n1 < 5 || n2 < 5) return(NA)  # Insufficient sample size
+
+  tryCatch({
+    result <- t.test(vals1, vals2, na.rm = TRUE)
+    return(result$p.value < threshold)
+  }, error = function(e) {
+    return(NA)
+  })
+}
+```
+
+#### 5.5.4.4 Comparison Logic
+
+For each cell, compare:
+1. **Within-group**: Compare to other columns in the same group
+2. **To Total**: Compare to the Total column
+
+```r
+# For a frequency cell in column A (group: Specialty)
+# Compare to: B, C, D, E (same group) + T (Total)
+# Output: sig_vs = ["B", "C"]  # A is significantly higher than B and C
+#         sig_vs_total = TRUE  # A is significantly different from Total
+```
+
+#### 5.5.4.5 Updated Output Structure
+
+**Note**: Only `sig_higher_than` is needed. If A is significantly higher than B, that implicitly means B is lower than A. No need for `sig_lower_than`.
+
+**Frequency table cell**:
+```json
+{
+  "label": "Statin only",
+  "n": 175,
+  "count": 98,
+  "pct": 56,
+  "sig_higher_than": ["B", "C"],
+  "sig_vs_total": "higher"
+}
+```
+
+**Mean_rows table cell**:
+```json
+{
+  "label": "Leqvio (inclisiran)",
+  "n": 175,
+  "mean": 42.3,
+  "median": 40.0,
+  "sd": 12.1,
+  "mean_no_outliers": 41.8,
+  "sig_higher_than": ["B"],
+  "sig_vs_total": null
+}
+```
+
+### 5.5.5 RScriptV2 Input Changes
+
+Extend input to include group structure for stat testing:
+
+```typescript
+// Current
+export interface RScriptV2Input {
+  tables: TableDefinition[];
+  cuts: CutDefinition[];
+  dataFilePath?: string;
+}
+
+// Updated
+export interface RScriptV2Input {
+  tables: TableDefinition[];
+  cuts: CutDefinition[];
+  cutGroups: CutGroup[];           // NEW: Preserve group structure
+  totalStatLetter: string | null;  // NEW: Letter for Total column (usually "T")
+  dataFilePath?: string;
+  significanceLevel?: number;      // NEW: Default 0.10 (90% confidence)
+}
+```
+
+### 5.5.6 Allocation Hint (for SD Display)
+
+**Problem**: Multi-item allocation questions (e.g., "allocate 100 points across medications") should not show SD, but other multi-item numeric questions should.
+
+**Solution**: Add `"allocation"` hint to the TableHintSchema. TableAgent adds this hint when it recognizes allocation semantics. ExcelJS uses the hint to hide SD.
+
+#### 5.5.6.1 Schema Update
+
+```typescript
+// src/schemas/tableAgentSchema.ts
+
+export const TableHintSchema = z.enum([
+  'ranking',     // Ranking question - add combined rank rows
+  'scale-5',     // 5-point Likert - add T2B, B2B, Middle
+  'scale-7',     // 7-point Likert - add T3B, B3B, etc.
+  'allocation',  // NEW: Allocation question - hide SD in ExcelJS
+]);
+```
+
+#### 5.5.6.2 Prompt Update
+
+Add to `src/prompts/table/production.ts`:
+
+```
+HINTS:
+
+Add hints to help downstream rendering:
+
+| Hint | When to use |
+|------|-------------|
+| "allocation" | Question asks to allocate points/percentages across items (e.g., "allocate 100 points", "what % of patients") |
+| "scale-5" | 5-point Likert scale |
+| "scale-7" | 7-point Likert scale |
+| "ranking" | Ranking question |
+
+Example allocation question text patterns:
+- "allocate 100 points"
+- "what percentage of your patients"
+- "distribute X across"
+- "out of your last 100 patients"
+
+If the question asks respondents to allocate or distribute a total across items, add "allocation" hint.
+```
+
+#### 5.5.6.3 ExcelJS Logic
+
+```typescript
+// In ExcelJS formatter
+const showSD = !table.hints.includes('allocation');
+```
+
+R always calculates SD. The display decision lives in ExcelJS.
+
+### 5.5.7 Implementation Checklist
+
+| Task | File(s) | Status |
+|------|---------|--------|
+| Fix SD rounding (2 → 1 decimal) | `RScriptGeneratorV2.ts` | ⏳ |
+| Add `calculate_mean_no_outliers` function | `RScriptGeneratorV2.ts` | ⏳ |
+| Enhance `CutDefinition` with `statLetter`, `groupName` | `CutsSpec.ts` | ⏳ |
+| Update `buildCutsSpec` to preserve groups | `CutsSpec.ts` | ⏳ |
+| Add significance testing helper functions | `RScriptGeneratorV2.ts` | ⏳ |
+| Update frequency table output with sig fields | `RScriptGeneratorV2.ts` | ⏳ |
+| Update mean_rows table output with sig fields | `RScriptGeneratorV2.ts` | ⏳ |
+| Update `RScriptV2Input` interface | `RScriptGeneratorV2.ts` | ⏳ |
+| Add `"allocation"` to TableHintSchema | `tableAgentSchema.ts` | ⏳ |
+| Update TableAgent prompt with allocation guidance | `prompts/table/production.ts` | ⏳ |
+| Test with practice files | `scripts/test-r-script-v2.ts` | ⏳ |
 
 ---
 
@@ -795,4 +1104,4 @@ Once Steps 6-7 complete and validated against `data/test-data/practice-files/`:
 ---
 
 *Created: January 3, 2026*
-*Updated: January 4, 2026 - Detailed VerificationAgent implementation plan (Step 7)*
+*Updated: January 4, 2026 - Detailed Step 5.5 (R calculations enhancement) and Step 7 (VerificationAgent) plans*
