@@ -367,7 +367,8 @@ function generateFrequencyTable(lines: string[], table: TableDefinition): void {
     lines.push('  if (!is.null(var_col)) {');
     lines.push('    # CRITICAL: Base = respondents who answered this question (non-NA)');
     lines.push('    base_n <- sum(!is.na(var_col))');
-    lines.push(`    count <- sum(var_col == "${filterValue}", na.rm = TRUE)`);
+    // Use as.numeric() to handle haven labelled vectors from SPSS files
+    lines.push(`    count <- sum(as.numeric(var_col) == ${filterValue}, na.rm = TRUE)`);
     lines.push('    pct <- if (base_n > 0) round_half_up(count / base_n * 100) else 0');
     lines.push('');
     lines.push(`    table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
@@ -534,7 +535,7 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('            row_data$count, row_data$n,');
   lines.push('            other_data$count, other_data$n');
   lines.push('          )');
-  lines.push('          if (!is.null(result) && !is.na(result$significant) && result$significant && result$higher) {');
+  lines.push('          if (is.list(result) && !is.na(result$significant) && result$significant && result$higher) {');
   lines.push('            sig_higher <- c(sig_higher, cut_stat_letters[[other_cut]])');
   lines.push('          }');
   lines.push('        } else if (table_type == "mean_rows") {');
@@ -560,7 +561,7 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('              row_data$count, row_data$n,');
   lines.push('              total_data$count, total_data$n');
   lines.push('            )');
-  lines.push('            if (!is.null(result) && !is.na(result$significant) && result$significant) {');
+  lines.push('            if (is.list(result) && !is.na(result$significant) && result$significant) {');
   lines.push('              sig_vs_total <- if (result$higher) "higher" else "lower"');
   lines.push('            }');
   lines.push('          } else if (table_type == "mean_rows") {');
