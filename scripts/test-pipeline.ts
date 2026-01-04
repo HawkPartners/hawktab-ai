@@ -311,10 +311,12 @@ async function runPipeline(datasetFolder: string) {
     log(`  Duration: ${Date.now() - stepStart6}ms`, 'dim');
   } catch (rError) {
     const errorMsg = rError instanceof Error ? rError.message : String(rError);
-    if (errorMsg.includes('command not found') || errorMsg.includes('Rscript')) {
+    // Only "R not installed" if command literally not found (not just any error with "Rscript" in path)
+    if (errorMsg.includes('command not found') && !errorMsg.includes('Error in')) {
       log(`  R not installed - script saved for manual execution`, 'yellow');
     } else {
-      log(`  R execution failed: ${errorMsg.substring(0, 100)}`, 'red');
+      log(`  R execution failed:`, 'red');
+      log(`  ${errorMsg.substring(0, 200)}`, 'dim');
     }
   }
 
