@@ -97,15 +97,20 @@ For grids, use the ROW LIMIT RULE below to determine how to split.
 
 ---
 
-ROW LIMIT RULE (important for frequency tables):
+ROW LIMIT RULE (for multi-dimensional grids only):
 
-A frequency table should have NO MORE THAN 20 ROWS. If it would exceed 20, split.
+A frequency table should have NO MORE THAN 20 ROWS. If it would exceed 20, split BY DIMENSION.
+
+IMPORTANT: This rule ONLY applies when there are multiple dimensions to split by.
+- If you have a SINGLE variable with many values (e.g., a state/region question with 50+ options), keep it as ONE table.
+- Do NOT arbitrarily split a single variable's values across multiple tables.
+- Only split when there are actual dimensions (e.g., multiple items, each with multiple values).
 
 Step 1: Calculate expected rows
 - For frequency: (number of items) x (number of values per item)
 - For mean_rows: (number of items)
 
-Step 2: If > 20 rows, split by first dimension
+Step 2: If > 20 rows AND you have multiple items, split by first dimension
 - Example: 15 items x 5 values = 75 rows, too many
 - Split by one dimension (e.g., 3 categories): 3 tables, each with 5 items x 5 values = 25 rows
 
@@ -117,6 +122,10 @@ Worked example - Grid with 5 rows x 3 columns, each cell has values 1-5:
 - All in one table: 15 items x 5 values = 75 rows (exceeds 20)
 - Split by column (3 tables): 5 items x 5 values = 25 rows each (still exceeds 20)
 - Split by column AND row (15 tables): 1 item x 5 values = 5 rows each (acceptable)
+
+Counter-example - Single variable with many values:
+- 1 item with 25 values (e.g., movies) = 25 rows
+- NO splitting needed - keep as single table, this is just the data
 
 When splitting, prefer to keep related items (e.g., brands, products) together as the outer grouping.
 

@@ -709,14 +709,14 @@ The datamap already contains sufficient information for table type decisions:
 | 1.3 | - Agent implementation (`TableAgent.ts`) | Steps 1.1, 1.2 | Medium | ✅ Complete |
 | 1.4 | - Grouping logic (pre-agent) | Step 1.1 | Small | ✅ Complete |
 | 2 | Survey processor | None | Medium | ⏸️ Deferred |
-| 3 | Table agent prompt (iterate) | Step 1 | Medium | 🔄 Ongoing |
+| 3 | Table agent prompt (iterate) | Step 1 | Medium | ✅ Complete (initial survey) |
 | 3.5 | Standalone testing mode | Step 1 | Small | ✅ Complete |
 | 4 | Integration (API) | Steps 3, 3.5 | Medium | |
 | 5 | R script updates | Step 4 | Medium | |
 | 6 | ExcelJS formatter | Step 5 | Medium | |
 
 **Key simplifications:**
-- **Step 2 deferred**: Datamap has sufficient context for table type decisions. Survey markdown only needed if agent struggles with ambiguous cases.
+- **Step 2 deferred**: Datamap has sufficient context for table type decisions. Survey markdown could help with scale label assignment but may be handled by a downstream agent during ExcelJS formatting instead.
 - **Base filters removed from TableAgent**: R handles this automatically (`!is.na(variable) & banner_filter`). TableAgent only decides display format.
 
 **Iteration approach**: After Step 1, test with sample datamap data. Use Step 3.5 (standalone mode) to iterate on prompt without waiting for full pipeline. Once table type selection is reliable, integrate into full API flow.
@@ -757,5 +757,68 @@ The datamap already contains sufficient information for table type decisions:
 
 ---
 
+### Step 3 Results: Alternative Prompt Approach
+
+After iterating on the production prompt, we developed an **alternative prompt** (`src/prompts/table/alternative.ts`) with significant simplifications. Set `TABLE_PROMPT_VERSION=alternative` to use.
+
+**Key differences from production prompt:**
+
+| Aspect | Production | Alternative |
+|--------|------------|-------------|
+| Table types | 6 types (frequency, mean_rows, grid_by_value, grid_by_item, multi_select, ranking) | **2 types** (frequency, mean_rows) |
+| Derived variables | Implicitly allowed | **Explicitly forbidden** |
+| Table quantity | "Be generous with table views" | **Row limit rule, split only when needed** |
+| Hints | Not included | **Added for downstream processing** |
+
+**Alternative prompt key features:**
+
+1. **Decision Rule**: Direct mapping from `normalizedType` to `tableType`
+   - `numeric_range` → `mean_rows`
+   - `categorical_select` → `frequency`
+   - `binary_flag` → `frequency` (filterValue="1")
+
+2. **Row Limit Rule**: Max 20 rows per table
+   - Only applies when multiple dimensions exist to split by
+   - Single variable with many values (e.g., US States) stays as one table
+   - Cascading split: first by dimension, then by sub-dimension if still > 20
+
+3. **Hints Array**: Metadata for downstream deterministic processing
+   - `"ranking"` - ranking question, downstream may add combined ranks
+   - `"scale-5"` - 5-point Likert, downstream may add T2B/B2B
+   - `"scale-7"` - 7-point Likert, downstream may add T3B/B3B
+
+**Schema addition** (`TableDefinitionSchema`):
+```typescript
+hints: z.array(z.enum(['ranking', 'scale-5', 'scale-7']))
+```
+
+**Results on initial survey (42 question groups):**
+- Correct table type selection based on normalizedType
+- Appropriate splitting for large grids (e.g., A8: 5×3×5 → 5 tables of 15 rows each)
+- Hints correctly applied (scale-5 for Likert questions, ranking for rank questions)
+- No derived variables or hallucinated table types
+
+---
+
+### Data Flow: TableAgent → R → ExcelJS
+
+Clarified pipeline responsibilities:
+
+```
+TableAgent                    R Script                      ExcelJS
+───────────                   ────────                      ───────
+Table definitions             For each (row × banner):      Takes JSON output
+- tableId                     - Apply filterValue           Places values in cells
+- tableType                   - Calculate count/%           Applies formatting
+- rows (variable, filterValue)- Output JSON with values
+- hints
+                              Output:
+                              { row, banner, n, count, % }
+```
+
+**R does all calculation**. ExcelJS is purely a formatter/renderer.
+
+---
+
 *Created: January 3, 2026*
-*Updated: January 3, 2026 - Step 1 complete, Step 3.5 complete (CLI test script)*
+*Updated: January 4, 2026 - Step 3 complete (alternative prompt), hints field added, row limit rule implemented*
