@@ -357,7 +357,7 @@ R always calculates all stats. ExcelJS decides what to display based on table st
 | Update frequency table output with sig fields | `RScriptGeneratorV2.ts` | ✅ |
 | Update mean_rows table output with sig fields | `RScriptGeneratorV2.ts` | ✅ |
 | Update `RScriptV2Input` interface | `RScriptGeneratorV2.ts` | ✅ |
-| Test with practice files | `scripts/test-r-script-v2.ts` | ⏳ Manual test needed |
+| Test with practice files | `scripts/test-pipeline.ts` | ⏳ Manual test needed |
 
 ---
 
