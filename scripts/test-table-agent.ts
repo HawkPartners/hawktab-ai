@@ -2,32 +2,47 @@
 /**
  * TableAgent Test Script
  *
- * Purpose: Run TableAgent in isolation to validate output before full pipeline integration.
+ * Purpose: Run TableAgent in isolation to validate table structure decisions.
  *
  * Usage:
- *   npx tsx scripts/test-table-agent.ts [datamap-path]
+ *   npx tsx scripts/test-table-agent.ts [input-path]
+ *
+ * Input can be:
+ *   - Nothing: Uses default data/test-data/practice-files/leqvio-demand-datamap.csv
+ *   - CSV file: Processes raw datamap CSV first, then runs TableAgent
+ *   - JSON file: Uses existing verbose datamap JSON
+ *   - Folder: Looks for *datamap*.csv in folder
  *
  * Examples:
  *   npx tsx scripts/test-table-agent.ts
- *   # Uses latest verbose datamap from temp-outputs
+ *   # Uses default practice files datamap
  *
- *   npx tsx scripts/test-table-agent.ts temp-outputs/output-2026-01-03/dataMap-verbose-*.json
- *   # Uses specified datamap file
+ *   npx tsx scripts/test-table-agent.ts data/test-data/practice-files
+ *   # Finds datamap CSV in folder
+ *
+ *   npx tsx scripts/test-table-agent.ts temp-outputs/output-xxx/dataMap-verbose-xxx.json
+ *   # Uses existing verbose JSON
  *
  * Output:
- *   Saves to temp-outputs/table-test-<timestamp>/table-output-<timestamp>.json
+ *   temp-outputs/table-test-<dataset>-<timestamp>/
  */
 
-// Load environment variables from .env file
+// Load environment variables
 import { loadEnvConfig } from '@next/env';
 loadEnvConfig(process.cwd());
 
 import fs from 'fs/promises';
 import path from 'path';
 import { processDataMap, groupDataMapByParent, EXCLUDED_NORMALIZED_TYPES } from '../src/agents/TableAgent';
+import { DataMapProcessor } from '../src/lib/processors/DataMapProcessor';
 import { VerboseDataMapType } from '../src/schemas/processingSchemas';
 
-// ANSI colors for console output
+// =============================================================================
+// Configuration
+// =============================================================================
+
+const DEFAULT_DATAMAP = 'data/test-data/practice-files/leqvio-demand-datamap.csv';
+
 const colors = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
@@ -37,51 +52,90 @@ const colors = {
   blue: '\x1b[34m',
   cyan: '\x1b[36m',
   red: '\x1b[31m',
+  magenta: '\x1b[35m',
 };
 
 function log(message: string, color: keyof typeof colors = 'reset') {
   console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
-async function findLatestDataMap(): Promise<string | null> {
-  const tempOutputsDir = path.join(process.cwd(), 'temp-outputs');
+// =============================================================================
+// Input Resolution
+// =============================================================================
 
-  try {
-    // Get all output directories sorted by name (timestamp-based)
-    const entries = await fs.readdir(tempOutputsDir, { withFileTypes: true });
-    const outputDirs = entries
-      .filter(e => e.isDirectory() && e.name.startsWith('output-'))
-      .map(e => e.name)
-      .sort()
-      .reverse(); // Most recent first
-
-    for (const dir of outputDirs) {
-      const dirPath = path.join(tempOutputsDir, dir);
-      const files = await fs.readdir(dirPath);
-
-      // Look for verbose datamap files
-      const verboseFile = files.find(f =>
-        f.includes('dataMap') &&
-        f.includes('verbose') &&
-        f.endsWith('.json')
-      );
-
-      if (verboseFile) {
-        return path.join(dirPath, verboseFile);
-      }
-    }
-  } catch (error) {
-    // temp-outputs doesn't exist or can't be read
-  }
-
-  return null;
+interface InputInfo {
+  type: 'csv' | 'json';
+  path: string;
+  name: string;
 }
 
-async function loadDataMap(filePath: string): Promise<VerboseDataMapType[]> {
-  const content = await fs.readFile(filePath, 'utf-8');
+async function resolveInput(inputArg?: string): Promise<InputInfo> {
+  const input = inputArg || DEFAULT_DATAMAP;
+  const absPath = path.isAbsolute(input) ? input : path.join(process.cwd(), input);
+
+  // Check if path exists
+  let stat;
+  try {
+    stat = await fs.stat(absPath);
+  } catch {
+    throw new Error(`Input not found: ${input}`);
+  }
+
+  // If it's a directory, look for datamap CSV
+  if (stat.isDirectory()) {
+    const files = await fs.readdir(absPath);
+    const csvFile = files.find(f =>
+      f.toLowerCase().includes('datamap') && f.endsWith('.csv')
+    );
+    if (!csvFile) {
+      throw new Error(`No *datamap*.csv found in ${input}`);
+    }
+    return {
+      type: 'csv',
+      path: path.join(absPath, csvFile),
+      name: path.basename(absPath),
+    };
+  }
+
+  // It's a file
+  if (input.endsWith('.csv')) {
+    return {
+      type: 'csv',
+      path: absPath,
+      name: path.basename(path.dirname(absPath)),
+    };
+  }
+
+  if (input.endsWith('.json')) {
+    return {
+      type: 'json',
+      path: absPath,
+      name: path.basename(path.dirname(absPath)),
+    };
+  }
+
+  throw new Error(`Unsupported file type: ${input}. Expected .csv or .json`);
+}
+
+// =============================================================================
+// Data Loading
+// =============================================================================
+
+async function loadDataMap(input: InputInfo, outputFolder: string): Promise<VerboseDataMapType[]> {
+  if (input.type === 'csv') {
+    log(`Processing CSV: ${path.basename(input.path)}`, 'blue');
+    const processor = new DataMapProcessor();
+    const result = await processor.processDataMap(input.path, undefined, outputFolder);
+    log(`  Generated ${result.verbose.length} variables`, 'green');
+    return result.verbose as VerboseDataMapType[];
+  }
+
+  // JSON file
+  log(`Loading JSON: ${path.basename(input.path)}`, 'blue');
+  const content = await fs.readFile(input.path, 'utf-8');
   const data = JSON.parse(content);
 
-  // Handle both raw array and wrapped formats
+  // Handle various JSON structures
   if (Array.isArray(data)) {
     return data;
   } else if (data.variables && Array.isArray(data.variables)) {
@@ -90,51 +144,64 @@ async function loadDataMap(filePath: string): Promise<VerboseDataMapType[]> {
     return data.verbose;
   }
 
-  throw new Error('Could not find verbose datamap array in file');
+  throw new Error('Could not find verbose datamap array in JSON file');
 }
 
+// =============================================================================
+// Main
+// =============================================================================
+
 async function main() {
-  log('\n========================================', 'cyan');
+  log('', 'reset');
+  log('='.repeat(60), 'magenta');
   log('  TableAgent Test Script', 'bright');
-  log('========================================\n', 'cyan');
+  log('='.repeat(60), 'magenta');
+  log('', 'reset');
 
-  // Get datamap path from args or find latest
-  let dataMapPath = process.argv[2];
-
-  if (!dataMapPath) {
-    log('No datamap path provided, searching for latest...', 'dim');
-    dataMapPath = await findLatestDataMap() || '';
-
-    if (!dataMapPath) {
-      log('ERROR: No verbose datamap found in temp-outputs/', 'red');
-      log('Run the full pipeline first to generate a datamap, or specify a path:', 'yellow');
-      log('  npx tsx scripts/test-table-agent.ts <path-to-datamap.json>', 'dim');
-      process.exit(1);
-    }
-
-    log(`Found: ${path.relative(process.cwd(), dataMapPath)}`, 'green');
-  }
-
-  // Load and validate datamap
-  log('\nLoading datamap...', 'blue');
-  let dataMap: VerboseDataMapType[];
+  // Resolve input
+  const inputArg = process.argv[2];
+  let input: InputInfo;
 
   try {
-    dataMap = await loadDataMap(dataMapPath);
-    log(`Loaded ${dataMap.length} total variables`, 'green');
+    input = await resolveInput(inputArg);
   } catch (error) {
-    log(`ERROR: Failed to load datamap: ${error instanceof Error ? error.message : 'Unknown error'}`, 'red');
+    log(`ERROR: ${error instanceof Error ? error.message : String(error)}`, 'red');
+    log('', 'reset');
+    log('Usage:', 'yellow');
+    log('  npx tsx scripts/test-table-agent.ts              # Use default practice files', 'dim');
+    log('  npx tsx scripts/test-table-agent.ts <folder>     # Find datamap in folder', 'dim');
+    log('  npx tsx scripts/test-table-agent.ts <file.csv>   # Process CSV file', 'dim');
+    log('  npx tsx scripts/test-table-agent.ts <file.json>  # Use verbose JSON', 'dim');
     process.exit(1);
   }
 
-  // Show filtering stats
+  log(`Input: ${input.path}`, 'blue');
+  log(`Type:  ${input.type}`, 'dim');
+  log('', 'reset');
+
+  // Create output folder
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const outputFolder = `table-test-${input.name}-${timestamp}`;
+
+  // Load datamap
+  let dataMap: VerboseDataMapType[];
+  try {
+    dataMap = await loadDataMap(input, outputFolder);
+    log(`Loaded ${dataMap.length} total variables`, 'green');
+  } catch (error) {
+    log(`ERROR loading datamap: ${error instanceof Error ? error.message : String(error)}`, 'red');
+    process.exit(1);
+  }
+
+  // Show type distribution
   const typeDistribution: Record<string, number> = {};
   for (const v of dataMap) {
     const type = v.normalizedType || 'undefined';
     typeDistribution[type] = (typeDistribution[type] || 0) + 1;
   }
 
-  log('\nNormalized type distribution:', 'bright');
+  log('', 'reset');
+  log('Normalized type distribution:', 'bright');
   let excludedCount = 0;
   for (const [type, count] of Object.entries(typeDistribution).sort((a, b) => b[1] - a[1])) {
     const isExcluded = EXCLUDED_NORMALIZED_TYPES.has(type);
@@ -144,46 +211,46 @@ async function main() {
   }
 
   const processableCount = dataMap.length - excludedCount;
-  log(`\nProcessable: ${processableCount} variables (${excludedCount} excluded)`, 'green');
+  log(``, 'reset');
+  log(`Processable: ${processableCount} variables (${excludedCount} excluded)`, 'green');
 
   // Preview grouping
   const groups = groupDataMapByParent(dataMap);
   log(`Question groups: ${groups.length}`, 'green');
-
-  // Create output folder
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const outputFolder = `table-test-${timestamp}`;
-
-  log(`\nOutput folder: temp-outputs/${outputFolder}/`, 'dim');
+  log(`Output folder: temp-outputs/${outputFolder}/`, 'dim');
 
   // Run TableAgent
-  log('\n----------------------------------------', 'cyan');
+  log('', 'reset');
+  log('-'.repeat(60), 'cyan');
   log('Running TableAgent...', 'bright');
-  log('----------------------------------------\n', 'cyan');
+  log('-'.repeat(60), 'cyan');
+  log('', 'reset');
 
   const startTime = Date.now();
 
   try {
-    const { results, processingLog } = await processDataMap(dataMap, outputFolder, (completed, total) => {
-      log(`  Progress: ${completed}/${total} question groups`, 'dim');
+    const { results } = await processDataMap(dataMap, outputFolder, (completed, total) => {
+      process.stdout.write(`\r  Progress: ${completed}/${total} question groups...`);
     });
+    console.log(''); // Clear progress line
 
     const duration = Date.now() - startTime;
 
     // Summary
-    log('\n========================================', 'green');
+    log('', 'reset');
+    log('='.repeat(60), 'green');
     log('  Processing Complete', 'bright');
-    log('========================================\n', 'green');
+    log('='.repeat(60), 'green');
 
     const totalTables = results.reduce((sum, r) => sum + r.tables.length, 0);
     const avgConfidence = results.length > 0
       ? results.reduce((sum, r) => sum + r.confidence, 0) / results.length
       : 0;
 
-    log(`Duration: ${(duration / 1000).toFixed(1)}s`, 'dim');
-    log(`Question groups processed: ${results.length}`, 'cyan');
-    log(`Total tables generated: ${totalTables}`, 'cyan');
-    log(`Average confidence: ${(avgConfidence * 100).toFixed(1)}%`, avgConfidence >= 0.8 ? 'green' : avgConfidence >= 0.6 ? 'yellow' : 'red');
+    log(`  Duration:    ${(duration / 1000).toFixed(1)}s`, 'reset');
+    log(`  Groups:      ${results.length}`, 'reset');
+    log(`  Tables:      ${totalTables}`, 'reset');
+    log(`  Confidence:  ${(avgConfidence * 100).toFixed(1)}%`, avgConfidence >= 0.8 ? 'green' : avgConfidence >= 0.6 ? 'yellow' : 'red');
 
     // Table type distribution
     const tableTypeDistribution: Record<string, number> = {};
@@ -193,7 +260,8 @@ async function main() {
       }
     }
 
-    log('\nTable type distribution:', 'bright');
+    log('', 'reset');
+    log('Table types:', 'bright');
     for (const [type, count] of Object.entries(tableTypeDistribution).sort((a, b) => b[1] - a[1])) {
       log(`  ${type}: ${count}`, 'dim');
     }
@@ -201,20 +269,23 @@ async function main() {
     // Low confidence warnings
     const lowConfidence = results.filter(r => r.confidence < 0.7);
     if (lowConfidence.length > 0) {
-      log('\nLow confidence questions (< 0.7):', 'yellow');
-      for (const r of lowConfidence) {
-        log(`  ${r.questionId}: ${(r.confidence * 100).toFixed(0)}% - ${r.reasoning.substring(0, 60)}...`, 'yellow');
+      log('', 'reset');
+      log('Low confidence (< 0.7):', 'yellow');
+      for (const r of lowConfidence.slice(0, 5)) {
+        log(`  ${r.questionId}: ${(r.confidence * 100).toFixed(0)}%`, 'yellow');
+      }
+      if (lowConfidence.length > 5) {
+        log(`  ... and ${lowConfidence.length - 5} more`, 'dim');
       }
     }
 
-    log(`\nOutput saved to: temp-outputs/${outputFolder}/`, 'green');
+    log('', 'reset');
+    log(`Output: temp-outputs/${outputFolder}/`, 'green');
     log('', 'reset');
 
   } catch (error) {
-    log(`\nERROR: TableAgent processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'red');
-    if (error instanceof Error && error.stack) {
-      log(error.stack, 'dim');
-    }
+    log(``, 'reset');
+    log(`ERROR: ${error instanceof Error ? error.message : String(error)}`, 'red');
     process.exit(1);
   }
 }

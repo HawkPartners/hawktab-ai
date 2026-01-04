@@ -1,0 +1,373 @@
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "extractionType": "banner_extraction",
+    "timestamp": "2026-01-03T00:00:00Z",
+    "extractedStructure": {
+      "bannerCuts": [
+        {
+          "groupName": "Specialty",
+          "columns": [
+            {
+              "name": "Cards",
+              "original": "S2=1 OR S2a=1",
+              "adjusted": "S2=1 OR S2a=1",
+              "statLetter": "A",
+              "confidence": 0.98,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "PCPs",
+              "original": "S2=2",
+              "adjusted": "S2=2",
+              "statLetter": "B",
+              "confidence": 0.98,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Nephs",
+              "original": "S2=3",
+              "adjusted": "S2=3",
+              "statLetter": "C",
+              "confidence": 0.98,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Endos",
+              "original": "S2=4",
+              "adjusted": "S2=4",
+              "statLetter": "D",
+              "confidence": 0.98,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Lipids",
+              "original": "S2=5",
+              "adjusted": "S2=5",
+              "statLetter": "E",
+              "confidence": 0.98,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            }
+          ]
+        },
+        {
+          "groupName": "Role",
+          "columns": [
+            {
+              "name": "Physician",
+              "original": "S2=1 OR S2=2 OR S2=3 OR S2=4 OR S2=5",
+              "adjusted": "S2=1 OR S2=2 OR S2=3 OR S2=4 OR S2=5",
+              "statLetter": "F",
+              "confidence": 0.97,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "NP/PA",
+              "original": "S2a=1",
+              "adjusted": "S2a=1",
+              "statLetter": "G",
+              "confidence": 0.98,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            }
+          ]
+        },
+        {
+          "groupName": "Volume of Adult ASCVD Patients",
+          "columns": [
+            {
+              "name": "Higher",
+              "original": "Joe to find the right cutoff",
+              "adjusted": "Joe to find the right cutoff",
+              "statLetter": "H",
+              "confidence": 0.6,
+              "requiresInference": true,
+              "crossRefStatus": "none",
+              "inferenceReason": "Placeholder text instructing a person (Joe) to determine a cutoff; exact numeric filter not provided.",
+              "humanInLoopRequired": true,
+              "aiRecommended": true,
+              "uncertainties": [
+                "Cutoff value not specified",
+                "Relies on 'Joe' to define threshold"
+              ]
+            },
+            {
+              "name": "Lower",
+              "original": "Joe to find the right cutoff",
+              "adjusted": "Joe to find the right cutoff",
+              "statLetter": "I",
+              "confidence": 0.6,
+              "requiresInference": true,
+              "crossRefStatus": "none",
+              "inferenceReason": "Placeholder text instructing a person (Joe) to determine a cutoff; exact numeric filter not provided.",
+              "humanInLoopRequired": true,
+              "aiRecommended": true,
+              "uncertainties": [
+                "Cutoff value not specified",
+                "Relies on 'Joe' to define threshold"
+              ]
+            }
+          ]
+        },
+        {
+          "groupName": "Tiers",
+          "columns": [
+            {
+              "name": "Tier 1",
+              "original": "Tier 1 from list",
+              "adjusted": "Tier 1 from list",
+              "statLetter": "J",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": [
+                "Depends on external 'list' definition"
+              ]
+            },
+            {
+              "name": "Tier 2",
+              "original": "Tier 2 from list",
+              "adjusted": "Tier 2 from list",
+              "statLetter": "K",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": [
+                "Depends on external 'list' definition"
+              ]
+            },
+            {
+              "name": "Tier 3",
+              "original": "Tier 3 from list",
+              "adjusted": "Tier 3 from list",
+              "statLetter": "L",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": [
+                "Depends on external 'list' definition"
+              ]
+            },
+            {
+              "name": "Tier 4",
+              "original": "Tier 4 from list",
+              "adjusted": "Tier 4 from list",
+              "statLetter": "M",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": [
+                "Depends on external 'list' definition"
+              ]
+            }
+          ]
+        },
+        {
+          "groupName": "Segments",
+          "columns": [
+            {
+              "name": "Segment A",
+              "original": "Segment=Segment A",
+              "adjusted": "Segment=Segment A",
+              "statLetter": "N",
+              "confidence": 0.98,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Segment B",
+              "original": "Segment=Segment B",
+              "adjusted": "Segment=Segment B",
+              "statLetter": "O",
+              "confidence": 0.98,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Segment C",
+              "original": "Segment=Segment C",
+              "adjusted": "Segment=Segment C",
+              "statLetter": "P",
+              "confidence": 0.98,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Segment D",
+              "original": "Segment=Segment D",
+              "adjusted": "Segment=Segment D",
+              "statLetter": "Q",
+              "confidence": 0.98,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": []
+            }
+          ]
+        },
+        {
+          "groupName": "Priority Accounts",
+          "columns": [
+            {
+              "name": "Priority Account",
+              "original": "Priority Account from list",
+              "adjusted": "Priority Account from list",
+              "statLetter": "R",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": [
+                "Depends on external 'list' definition"
+              ]
+            },
+            {
+              "name": "Non-Priority Account",
+              "original": "Non-Priority Account from list",
+              "adjusted": "Non-Priority Account from list",
+              "statLetter": "S",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "crossRefStatus": "none",
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "aiRecommended": false,
+              "uncertainties": [
+                "Depends on external 'list' definition"
+              ]
+            }
+          ]
+        },
+        {
+          "groupName": "Total",
+          "columns": [
+            {
+              "name": "Total",
+              "original": "qualified respondents",
+              "adjusted": "qualified respondents",
+              "statLetter": "T",
+              "confidence": 0.5,
+              "requiresInference": true,
+              "crossRefStatus": "none",
+              "inferenceReason": "No explicit Total column shown in the document; Total row was added per extraction rules.",
+              "humanInLoopRequired": true,
+              "aiRecommended": true,
+              "uncertainties": [
+                "Exact qualification criteria for 'qualified respondents' assumed from banner context"
+              ]
+            }
+          ]
+        }
+      ],
+      "notes": [
+        {
+          "type": "calculation_rows",
+          "original": "0-5 Scales\nT2B/MB/B2B",
+          "adjusted": "0-5 Scales\nT2B/MB/B2B"
+        },
+        {
+          "type": "main_tab_notes",
+          "original": "Please include tables that show the demand changes pre/post",
+          "adjusted": "Please include tables that show the demand changes pre/post"
+        }
+      ],
+      "processingMetadata": {
+        "totalColumns": 20,
+        "groupCount": 7,
+        "statisticalLettersUsed": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L",
+          "M",
+          "N",
+          "O",
+          "P",
+          "Q",
+          "R",
+          "S",
+          "T"
+        ],
+        "processingTimestamp": "2026-01-03T00:00:00Z"
+      }
+    },
+    "errors": [],
+    "warnings": [
+      "Volume of Adult ASCVD Patients rows use a placeholder ('Joe to find the right cutoff') — numeric cutoffs are not specified and require definition.",
+      "No explicit 'Total' column visible in the banner; a Total (qualified respondents) column was added per extraction rules.",
+      "Several items reference external lists (Tiers, Priority Account) — those lists must be provided for precise filter implementation."
+    ]
+  },
+  "timestamp": "2026-01-03T20:56:08.247Z"
+}

@@ -58,23 +58,40 @@ An AI-powered system that:
 | Component | Status | Details |
 |-----------|--------|---------|
 | **Banner Processing** | Production | PDF/DOC extraction via Vision API, group separation |
-| **Data Map Processing** | Production | CSV parsing with parent inference, 192+ variables |
+| **Data Map Processing** | Production | CSV parsing with parent inference, type classification |
 | **CrossTab Agent** | Production | Expression validation with confidence scoring |
-| **R Script Generation** | Production | Complete syntax generation with statistical summaries |
+| **Table Agent** | Production | AI-based table structure decisions (frequency vs mean) |
+| **R Script V2** | Production | JSON output with correct base sizing |
 | **SPSS Integration** | Production | 99% variable match rate via `haven` package |
 | **API Pipeline** | Production | Single endpoint, session-based processing |
 
 ### Key Achievements
+- **TableAgent**: AI decides table structure based on `normalizedType` (replaces regex)
+- **RScriptGeneratorV2**: JSON output with two table types (`frequency`, `mean_rows`)
 - Successfully processes complex banner plans (19 columns, 6 groups)
 - Handles sophisticated expressions like "IF HCP" with contextual inference
 - Generates graduated confidence scores for human review prioritization
-- Distinguishes overlapping categories (HCP vs NP/PA) using semantic understanding
 
 ---
 
 ## Next Steps
 
-The MVP demonstrates the concept works. Next phases to make it usable by the team:
+### Immediate: Finalize Table Agent Architecture
+
+| Step | Description | Status |
+|------|-------------|--------|
+| 5.5 | R significance testing | Verify |
+| 6 | ExcelJS Formatter | Next |
+| 7 | Excel Cleanup Agent (optional) | Planned |
+
+See `docs/implementation-plans/table-agent-architecture.md`
+
+### Then: Pre-Phase 2 Testing
+
+Validate pipeline against `data/test-data/practice-files/` before proceeding:
+→ `docs/implementation-plans/pre-phase-2-testing-plan.md`
+
+### Roadmap
 
 | Phase | Goal | Status |
 |-------|------|--------|
@@ -82,9 +99,6 @@ The MVP demonstrates the concept works. Next phases to make it usable by the tea
 | **2. Decipher + Reliability** | Skip logic from source, agent flow improvements | Not started |
 | **3. Team Access** | Deploy, auth, shared storage | Not started |
 | **Checkpoint** | Hawk Partners internal launch | — |
-| **4. Bob Pilot** | External validation | — |
-
-See `docs/architecture-refactor-prd.md` for full details.
 
 ---
 
@@ -107,20 +121,7 @@ npm install
 
 ### Environment Setup
 
-Create `.env.local`:
-```env
-# Azure OpenAI (required - Phase 1 complete)
-AZURE_API_KEY=your_azure_api_key
-AZURE_RESOURCE_NAME=your_resource_name
-AZURE_API_VERSION=2025-01-01-preview
-
-# Model Configuration (Azure deployment names)
-REASONING_MODEL=o4-mini
-BASE_MODEL=gpt-5-nano
-
-# Environment
-NODE_ENV=development
-```
+Copy `.env.example` to `.env.local` and fill in your Azure credentials.
 
 ### Development
 
@@ -128,17 +129,31 @@ NODE_ENV=development
 npm run dev      # Start development server (Turbopack)
 npm run lint     # ESLint checks
 npx tsc --noEmit # TypeScript type checking
-npm run build    # Production build
 ```
 
-### Testing
+### Testing (CLI)
 
-Upload files via the web interface at http://localhost:3000:
-1. Data Map (CSV) - Variable definitions
-2. Banner Plan (PDF/DOC) - Crosstab specification
-3. SPSS File (.sav) - Survey response data
+Test scripts that run against `data/test-data/practice-files/`:
 
-Review outputs in `temp-outputs/output-{timestamp}/`
+```bash
+# Full pipeline (DataMap → Banner → Crosstab → Table → R)
+npx tsx scripts/test-pipeline.ts
+
+# TableAgent only
+npx tsx scripts/test-table-agent.ts
+
+# R script generation from existing TableAgent output
+npx tsx scripts/test-r-script-v2.ts
+```
+
+Output: `temp-outputs/test-pipeline-<dataset>-<timestamp>/`
+
+### Testing (UI)
+
+Upload files via http://localhost:3000:
+1. Data Map (CSV)
+2. Banner Plan (PDF/DOC)
+3. SPSS File (.sav)
 
 ---
 
@@ -147,21 +162,21 @@ Review outputs in `temp-outputs/output-{timestamp}/`
 ```
 hawktab-ai/
 ├── src/
-│   ├── agents/           # AI agent implementations
-│   ├── app/              # Next.js app router
-│   │   └── api/          # API endpoints
-│   ├── components/       # React components
-│   ├── guardrails/       # Input/output validation
-│   ├── lib/              # Core utilities
-│   │   ├── processors/   # Data processing pipeline
-│   │   ├── r/            # R script generation
-│   │   └── tables/       # Table definitions
+│   ├── agents/           # AI agents (Banner, Crosstab, Table)
+│   ├── app/api/          # API endpoints
+│   ├── lib/
+│   │   ├── processors/   # DataMapProcessor, BannerProcessor
+│   │   ├── r/            # RScriptGeneratorV2
+│   │   └── tables/       # CutsSpec
 │   ├── prompts/          # AI prompt templates
 │   └── schemas/          # Zod type definitions
-├── convex/               # Convex backend (future)
-├── docs/                 # Documentation
-├── data/                 # Test data files
-└── temp-outputs/         # Development outputs
+├── scripts/              # CLI test scripts
+├── data/test-data/       # Test datasets (23 projects)
+│   └── practice-files/   # Default test dataset
+├── docs/implementation-plans/
+│   ├── table-agent-architecture.md
+│   └── pre-phase-2-testing-plan.md
+└── temp-outputs/         # Development outputs (git-ignored)
 ```
 
 ---
@@ -170,7 +185,9 @@ hawktab-ai/
 
 | Document | Purpose |
 |----------|---------|
-| `docs/architecture-refactor-prd.md` | Complete architecture plan and roadmap |
+| `docs/implementation-plans/table-agent-architecture.md` | Current work: Steps 5.5-7 |
+| `docs/implementation-plans/pre-phase-2-testing-plan.md` | Testing milestones |
+| `docs/architecture-refactor-prd.md` | Overall architecture and roadmap |
 | `CLAUDE.md` | AI assistant context and coding guidelines |
 | `docs/audits/security-audit-prompt.md` | Security review checklist |
 

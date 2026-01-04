@@ -1,0 +1,3575 @@
+{
+  "results": [
+    {
+      "questionId": "S5",
+      "questionText": "S5: Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+      "tables": [
+        {
+          "tableId": "s5",
+          "title": "Family/Respondent Affiliations (select all that apply)",
+          "tableType": "multi_select",
+          "rows": [
+            {
+              "variable": "S5r1",
+              "label": "Advertising Agency",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S5r2",
+              "label": "Marketing/Market Research Firm",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S5r3",
+              "label": "Public Relations Firm",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S5r4",
+              "label": "Any media company (Print, Radio, TV, Internet)",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S5r5",
+              "label": "Pharmaceutical Drug / Device Manufacturer (outside of clinical trials)",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S5r6",
+              "label": "Governmental Regulatory Agency (e.g., Food & Drug Administration (FDA))",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S5r7",
+              "label": "None of these",
+              "filterValue": "1"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All 7 items are binary_flag (0/1). This matches a select-all-that-apply structure. Displaying as a multi_select table with one row per option filtered to value=1 (selected) and showing counts and percents is appropriate. Note: 'None of these' is included as a binary option — data-quality checks may be needed to handle inconsistent selections (e.g., 'None of these' co-selected with other options)."
+    },
+    {
+      "questionId": "S8",
+      "questionText": "S8: Approximately what percentage of your professional time is spent performing each of the following activities?",
+      "tables": [
+        {
+          "tableId": "s8",
+          "title": "Average percentage of professional time spent by activity",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "S8r1",
+              "label": "Treating/Managing patients",
+              "filterValue": ""
+            },
+            {
+              "variable": "S8r2",
+              "label": "Performing academic functions (e.g., teaching, publishing)",
+              "filterValue": ""
+            },
+            {
+              "variable": "S8r3",
+              "label": "Participating in clinical research",
+              "filterValue": ""
+            },
+            {
+              "variable": "S8r4",
+              "label": "Performing other functions",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "mean",
+            "median",
+            "sd"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All four items are numeric_range with values 0-100 and the question asks respondents to allocate percentages of their professional time. This matches the common pattern for percentage allocation questions, so displaying each item as a row with summary statistics (mean, median, sd) is most informative for comparing time allocation across activities."
+    },
+    {
+      "questionId": "S12",
+      "questionText": "S12: Of those, how many patients have had an event (MI, CAD, coronary revascularization, stent placement, etc.) �",
+      "tables": [
+        {
+          "tableId": "s12",
+          "title": "Number of patients with an event by time since event",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "S12r1",
+              "label": "Over 5 years ago",
+              "filterValue": ""
+            },
+            {
+              "variable": "S12r2",
+              "label": "Within the last 3-5 years",
+              "filterValue": ""
+            },
+            {
+              "variable": "S12r3",
+              "label": "Within the last 1-2 years",
+              "filterValue": ""
+            },
+            {
+              "variable": "S12r4",
+              "label": "Within the last year",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "mean",
+            "median",
+            "sd"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Question S12 contains four numeric_range items (counts 0-999) representing how many patients experienced an event in each time window. These are numeric counts best summarized with central tendency and dispersion to compare across time windows. I therefore choose tableType 'mean_rows' with stats mean, median, and sd. An alternative would be to present respondent-level sums or total counts, but mean_rows is the clearest for comparing average counts per respondent across the four time categories."
+    },
+    {
+      "questionId": "A1",
+      "questionText": "A1: To the best of your knowledge, which statement below best describes the current indication for each of the following treatments?",
+      "tables": [
+        {
+          "tableId": "a1_value_1",
+          "title": "A1: Treatments — Response = 1",
+          "tableType": "grid_by_value",
+          "rows": [
+            {
+              "variable": "A1r1",
+              "label": "Leqvio (inclisiran)",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A1r2",
+              "label": "Praluent (alirocumab)",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A1r3",
+              "label": "Repatha (evolocumab)",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A1r4",
+              "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)",
+              "filterValue": "1"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        },
+        {
+          "tableId": "a1_value_2",
+          "title": "A1: Treatments — Response = 2",
+          "tableType": "grid_by_value",
+          "rows": [
+            {
+              "variable": "A1r1",
+              "label": "Leqvio (inclisiran)",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A1r2",
+              "label": "Praluent (alirocumab)",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A1r3",
+              "label": "Repatha (evolocumab)",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A1r4",
+              "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)",
+              "filterValue": "2"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.85,
+      "reasoning": "Question A1 contains 4 categorical_select items all sharing the same allowed values (1-2). This is best displayed as grid_by_value so the reader can see, for each response value, how the four treatments distribute (counts and percents). I chose two tables (one per allowed value). There is minor uncertainty because the semantic labels for values 1 and 2 were not provided, but the structural mapping is clear."
+    },
+    {
+      "questionId": "A3",
+      "questionText": "A3: For your LAST 100 [res PatientHoverover] with uncontrolled LDL-C, please indicate for how many you prescribed each of the following therapies?",
+      "tables": [
+        {
+          "tableId": "a3",
+          "title": "Average number (out of last 100 patients) prescribed each therapy",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "A3r1",
+              "label": "Statin only (i.e., no additional therapy)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3r2",
+              "label": "Leqvio (inclisiran)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3r3",
+              "label": "Praluent (alirocumab)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3r4",
+              "label": "Repatha (evolocumab)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3r5",
+              "label": "Zetia (ezetimibe) or generic ezetimibe",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3r6",
+              "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3r7",
+              "label": "Other",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "mean",
+            "median",
+            "sd"
+          ]
+        }
+      ],
+      "confidence": 0.94,
+      "reasoning": "All 7 items are numeric_range with values 0-100 representing counts (out of last 100 patients) prescribed each therapy. Summarizing as mean/median/sd across respondents (mean count out of 100, i.e., mean percent) is the most meaningful comparison across therapies. One table with one row per therapy (mean_rows) is appropriate."
+    },
+    {
+      "questionId": "A3a",
+      "questionText": "A3ar1: Leqvio (inclisiran) - For each treatment, approximately what % of those LAST 100 [res PatientHoverover] received that therapy in addition to a statin vs. without a statin?",
+      "tables": [
+        {
+          "tableId": "a3a_overview",
+          "title": "Percent of last 100 patients receiving treatment with vs without a statin (by treatment)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "A3ar1c1",
+              "label": "Treatment 1 - In addition to statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar1c2",
+              "label": "Treatment 1 - Without a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar2c1",
+              "label": "Treatment 2 - In addition to statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar2c2",
+              "label": "Treatment 2 - Without a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar3c1",
+              "label": "Treatment 3 - In addition to statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar3c2",
+              "label": "Treatment 3 - Without a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar4c1",
+              "label": "Treatment 4 - In addition to statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar4c2",
+              "label": "Treatment 4 - Without a statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar5c1",
+              "label": "Treatment 5 - In addition to statin",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3ar5c2",
+              "label": "Treatment 5 - Without a statin",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "mean",
+            "median",
+            "sd"
+          ]
+        }
+      ],
+      "confidence": 0.92,
+      "reasoning": "All 10 items are numeric_range fields with values 0-100 representing percentages. The question asks respondents to estimate percentages of the last 100 patients who received each treatment with vs without a statin. Summarizing these numeric percentage estimates with mean, median and standard deviation (mean_rows) gives a clear comparative view across the two subcategories for each treatment. I labeled the repeated pairs as Treatment 1..5 because the item labels provided only indicate the in/out-of-statin status; if canonical treatment names are available they should replace the generic Treatment N labels."
+    },
+    {
+      "questionId": "A3b",
+      "questionText": "A3br1: Leqvio (inclisiran) - For each treatment you just indicated that you prescribe without a statin, approximately what % of those [res PatientHoverover] who received that therapy without a statin did so…",
+      "tables": [
+        {
+          "tableId": "a3b_percent_without_statin",
+          "title": "Percent of patients receiving each therapy without a statin — Before vs After other lipid‑lowering therapy",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "A3br1c1",
+              "label": "Leqvio (inclisiran) — BEFORE any other lipid‑lowering therapy (first line)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br1c2",
+              "label": "Leqvio (inclisiran) — AFTER trying another lipid‑lowering therapy",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br2c1",
+              "label": "Therapy 2 — BEFORE any other lipid‑lowering therapy (first line)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br2c2",
+              "label": "Therapy 2 — AFTER trying another lipid‑lowering therapy",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br3c1",
+              "label": "Therapy 3 — BEFORE any other lipid‑lowering therapy (first line)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br3c2",
+              "label": "Therapy 3 — AFTER trying another lipid‑lowering therapy",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br4c1",
+              "label": "Therapy 4 — BEFORE any other lipid‑lowering therapy (first line)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br4c2",
+              "label": "Therapy 4 — AFTER trying another lipid‑lowering therapy",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br5c1",
+              "label": "Therapy 5 — BEFORE any other lipid‑lowering therapy (first line)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A3br5c2",
+              "label": "Therapy 5 — AFTER trying another lipid‑lowering therapy",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "mean",
+            "median",
+            "sd"
+          ]
+        }
+      ],
+      "confidence": 0.92,
+      "reasoning": "All 10 items are numeric_range variables with values 0–100 representing percentages (what % of patients received the therapy without a statin). These are best summarized with location and spread to compare usage patterns across items (before vs after other lipid‑lowering therapy). A single mean_rows table with one row per variable (clearly labeled by therapy and timing) is appropriate. Minor ambiguity: only the first therapy name (Leqvio) is explicit in the question text; other therapies are labeled generically here as Therapy 2–5 to match the item structure."
+    },
+    {
+      "questionId": "A4",
+      "questionText": "A4c1: LAST 100 [res PatientHoverover2] with Uncontrolled LDL-C - Now please assume that the FDA decides that all PCSK9is (Repatha, Praluent, Leqvio) will now be indicated for use as an adjunct to diet and exercise, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia … In that future state, for your NEXT 100 [res PatientHoverover] with uncontrolled LDL-C, for how many would you prescribe each of the following treatments? Your responses from the previous question are included for reference. If you do not believe this would impact your prescribing, it is fine to input the same responses.",
+      "tables": [
+        {
+          "tableId": "a4_mean_allocations",
+          "title": "Average number (out of 100) of patients prescribed each treatment (current vs future)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "A4r1c1",
+              "label": "Statin only (c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r1c2",
+              "label": "Statin only (c2)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r2c1",
+              "label": "Leqvio (inclisiran) (c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r2c2",
+              "label": "Leqvio (inclisiran) (c2)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r3c1",
+              "label": "Praluent (alirocumab) (c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r3c2",
+              "label": "Praluent (alirocumab) (c2)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r4c1",
+              "label": "Repatha (evolocumab) (c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r4c2",
+              "label": "Repatha (evolocumab) (c2)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r5c1",
+              "label": "Zetia (ezetimibe) or generic ezetimibe (c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r5c2",
+              "label": "Zetia (ezetimibe) or generic ezetimibe (c2)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r6c1",
+              "label": "Nexletol / Nexlizet (bempedoic acid ± ezetimibe) (c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r6c2",
+              "label": "Nexletol / Nexlizet (bempedoic acid ± ezetimibe) (c2)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r7c1",
+              "label": "Other (c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4r7c2",
+              "label": "Other (c2)",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "mean",
+            "median",
+            "sd"
+          ]
+        }
+      ],
+      "confidence": 0.91,
+      "reasoning": "DATA STRUCTURE ANALYSIS: Question A4 has 14 items. NormalizedType: numeric_range for all items. Values: integers 0-100 representing counts (out of next 100 patients) allocated to each treatment option, with two parallel columns (c1 and c2) representing two scenarios/timepoints. This looks like paired numeric allocation variables for the same set of treatment options.\n\nDISPLAY DECISION: Choosing tableType 'mean_rows' because these are numeric allocation variables (0-100) and the most meaningful summary is central tendency (average number of patients) with dispersion to compare across treatments and between the two columns (c1 vs c2). Stats: mean, median, sd. I will generate one table that lists each treatment/column variable as a row so the analyst can directly compare c1 vs c2 values side-by-side in the crosstabing UI (rendered as separate columns/series).\n\nCONFIDENCE ASSESSMENT: Confidence: 0.91 because the numeric_range 0-100 pattern strongly matches allocation/percentage data which should be summarized with means. Minor ambiguity exists about whether to present the two columns as separate tables instead of paired rows; I selected paired rows for clearer direct comparison."
+    },
+    {
+      "questionId": "A4a",
+      "questionText": "A4ar1: Leqvio (inclisiran) - For each treatment, for approximately what % of those NEXT 100 [res PatientHoverover] would you expect to prescribe that therapy in addition to a statin vs. without a statin? Your responses from the previous question are included for reference. If you do not believe this would impact your prescribing, it is fine to input the same responses.",
+      "tables": [
+        {
+          "tableId": "a4a_mean_rows",
+          "title": "Expected % of Next 100 Patients Prescribed Each Therapy (with vs without statin)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "A4ar1c1",
+              "label": "NEXT 100 patients with Uncontrolled LDL-C (A4ar1c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar1c2",
+              "label": "NEXT 100 patients with Uncontrolled LDL-C (A4ar1c2)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar2c1",
+              "label": "NEXT 100 patients with Uncontrolled LDL-C (A4ar2c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar2c2",
+              "label": "NEXT 100 patients with Uncontrolled LDL-C (A4ar2c2)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar3c1",
+              "label": "NEXT 100 patients with Uncontrolled LDL-C (A4ar3c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar3c2",
+              "label": "NEXT 100 patients with Uncontrolled LDL-C (A4ar3c2)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar4c1",
+              "label": "NEXT 100 patients with Uncontrolled LDL-C (A4ar4c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar4c2",
+              "label": "NEXT 100 patients with Uncontrolled LDL-C (A4ar4c2)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar5c1",
+              "label": "NEXT 100 patients with Uncontrolled LDL-C (A4ar5c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4ar5c2",
+              "label": "NEXT 100 patients with Uncontrolled LDL-C (A4ar5c2)",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "mean",
+            "median",
+            "sd"
+          ]
+        }
+      ],
+      "confidence": 0.92,
+      "reasoning": "All 10 items are numeric_range with values 0-100 representing percentage of the next 100 patients a respondent would prescribe the therapy (with vs without statin). These are continuous percent estimates; comparing means/medians and spread across items is the most informative display. A single mean_rows table with one row per item (10 rows) and stats mean, median, and sd will allow easy comparison. Note: the item labels in the input are identical; ensure final rendering shows the distinct treatment/condition labels if available (placeholders here were preserved)."
+    },
+    {
+      "questionId": "A4b",
+      "questionText": "A4br1: Leqvio (inclisiran) - For each treatment you just indicated that you would expect to prescribe without a statin, approximately what % of those [res PatientHoverover] who would receive that therapy without a statin would do so�",
+      "tables": [
+        {
+          "tableId": "a4b_meanrows",
+          "title": "Average % allocation to each next treatment (prescribe without a statin)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "A4br1c1",
+              "label": "Next treatment allocation (A4br1c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br1c2",
+              "label": "Next treatment allocation (A4br1c2)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br2c1",
+              "label": "Next treatment allocation (A4br2c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br2c2",
+              "label": "Next treatment allocation (A4br2c2)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br3c1",
+              "label": "Next treatment allocation (A4br3c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br3c2",
+              "label": "Next treatment allocation (A4br3c2)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br4c1",
+              "label": "Next treatment allocation (A4br4c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br4c2",
+              "label": "Next treatment allocation (A4br4c2)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br5c1",
+              "label": "Next treatment allocation (A4br5c1)",
+              "filterValue": ""
+            },
+            {
+              "variable": "A4br5c2",
+              "label": "Next treatment allocation (A4br5c2)",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "mean",
+            "median",
+            "sd"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All 10 items are numeric_range (0-100) and the question explicitly asks for percentages. This matches the common pattern 'Percentage allocation across categories' so a mean_rows table is appropriate to compare the average percent allocated to each sub-item. I used mean/median/sd as the statistics. Note: item labels in the input are identical; if more descriptive labels exist (e.g., treatment names or scenarios), they should replace the generic labels for clarity."
+    },
+    {
+      "questionId": "A6",
+      "questionText": "A6: Again, please assume that the FDA decides that all PCSK9 inhibitors (Repatha, Praluent, Leqvio) will now be indicated for use as an adjunct to diet and exercise, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia \u0002 and that this change is being made after reviewing existing data but without any new clinical data beyond what is already available today. For your NEXT 100 [res PatientHoverover] with uncontrolled LDL-C and not currently taking any lipid-lowering therapy, please rank which treatment paths you might be most likely to follow?",
+      "tables": [
+        {
+          "tableId": "a6_rank_1",
+          "title": "A6: Treatment paths ranked #1",
+          "tableType": "grid_by_value",
+          "rows": [
+            {
+              "variable": "A6r1",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A6r2",
+              "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A6r3",
+              "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A6r4",
+              "label": "Start statin first, add/switch to PCSK9i if needed",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A6r5",
+              "label": "Start statin and PCSK9i at the same time",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A6r6",
+              "label": "Start PCSK9i, no statin",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A6r7",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A6r8",
+              "label": "Other",
+              "filterValue": "1"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        },
+        {
+          "tableId": "a6_rank_2",
+          "title": "A6: Treatment paths ranked #2",
+          "tableType": "grid_by_value",
+          "rows": [
+            {
+              "variable": "A6r1",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A6r2",
+              "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A6r3",
+              "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A6r4",
+              "label": "Start statin first, add/switch to PCSK9i if needed",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A6r5",
+              "label": "Start statin and PCSK9i at the same time",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A6r6",
+              "label": "Start PCSK9i, no statin",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A6r7",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A6r8",
+              "label": "Other",
+              "filterValue": "2"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        },
+        {
+          "tableId": "a6_rank_3",
+          "title": "A6: Treatment paths ranked #3",
+          "tableType": "grid_by_value",
+          "rows": [
+            {
+              "variable": "A6r1",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A6r2",
+              "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A6r3",
+              "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A6r4",
+              "label": "Start statin first, add/switch to PCSK9i if needed",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A6r5",
+              "label": "Start statin and PCSK9i at the same time",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A6r6",
+              "label": "Start PCSK9i, no statin",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A6r7",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A6r8",
+              "label": "Other",
+              "filterValue": "3"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        },
+        {
+          "tableId": "a6_rank_4",
+          "title": "A6: Treatment paths ranked #4",
+          "tableType": "grid_by_value",
+          "rows": [
+            {
+              "variable": "A6r1",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A6r2",
+              "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A6r3",
+              "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A6r4",
+              "label": "Start statin first, add/switch to PCSK9i if needed",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A6r5",
+              "label": "Start statin and PCSK9i at the same time",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A6r6",
+              "label": "Start PCSK9i, no statin",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A6r7",
+              "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A6r8",
+              "label": "Other",
+              "filterValue": "4"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.9,
+      "reasoning": "All 8 items are categorical_select with identical allowedValues 1-4 and the question text explicitly asks respondents to \"rank\" treatment paths. This matches a ranking/top-N pattern where each item can be assigned ranks 1-4. Presenting as grid_by_value (one table per rank value 1-4) allows clear comparison of which treatment paths were placed in each rank. Stats chosen are count and percent. Minor ambiguity: there are 8 items but only ranks 1-4 available (suggests respondents ranked top 4), but the chosen display fits the provided data structure."
+    },
+    {
+      "questionId": "A7",
+      "questionText": "A7: How might being able to use PCKS9 inhibitors indicated for use with or without statin therapy impact your perceptions and/or prescribing?",
+      "tables": [
+        {
+          "tableId": "a7",
+          "title": "Impacts on perceptions/prescribing (select all that apply)",
+          "tableType": "multi_select",
+          "rows": [
+            {
+              "variable": "A7r1",
+              "label": "Makes PCSK9s easier to get covered by insurance / get patients on the medication",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A7r2",
+              "label": "Offers an option to patients who can't or won't take a statin",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A7r3",
+              "label": "Enables me to use PCSK9s sooner for patients",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A7r4",
+              "label": "Allows me to better customize treatment plans for patients",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A7r5",
+              "label": "Other (Specify)",
+              "filterValue": "1"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All five items are binary_flag (0/1) indicators, matching a select-all-that-apply format. Displaying as a single multi_select table with one row per item filtered to value=1 (selected) and showing count and percent is the appropriate and clear representation. 'Other (Specify)' is also a binary indicator here; any open-text detail would be handled separately."
+    },
+    {
+      "questionId": "A8",
+      "questionText": "A8r1: With established CVD - For each patient situation, how likely would you be to prescribe each of the following therapies alone (i.e., without a statin, ezetimibe or Nexletol/Nexlizet)?",
+      "tables": [
+        {
+          "tableId": "a8_value_1",
+          "title": "Likelihood rating = 1 (Response value 1)",
+          "tableType": "grid_by_value",
+          "rows": [
+            {
+              "variable": "A8r1c1",
+              "label": "Patient situation 1 - Repatha",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r1c2",
+              "label": "Patient situation 1 - Praluent",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r1c3",
+              "label": "Patient situation 1 - Leqvio",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r2c1",
+              "label": "Patient situation 2 - Repatha",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r2c2",
+              "label": "Patient situation 2 - Praluent",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r2c3",
+              "label": "Patient situation 2 - Leqvio",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r3c1",
+              "label": "Patient situation 3 - Repatha",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r3c2",
+              "label": "Patient situation 3 - Praluent",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r3c3",
+              "label": "Patient situation 3 - Leqvio",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r4c1",
+              "label": "Patient situation 4 - Repatha",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r4c2",
+              "label": "Patient situation 4 - Praluent",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r4c3",
+              "label": "Patient situation 4 - Leqvio",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r5c1",
+              "label": "Patient situation 5 - Repatha",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r5c2",
+              "label": "Patient situation 5 - Praluent",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A8r5c3",
+              "label": "Patient situation 5 - Leqvio",
+              "filterValue": "1"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        },
+        {
+          "tableId": "a8_value_2",
+          "title": "Likelihood rating = 2 (Response value 2)",
+          "tableType": "grid_by_value",
+          "rows": [
+            {
+              "variable": "A8r1c1",
+              "label": "Patient situation 1 - Repatha",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r1c2",
+              "label": "Patient situation 1 - Praluent",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r1c3",
+              "label": "Patient situation 1 - Leqvio",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r2c1",
+              "label": "Patient situation 2 - Repatha",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r2c2",
+              "label": "Patient situation 2 - Praluent",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r2c3",
+              "label": "Patient situation 2 - Leqvio",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r3c1",
+              "label": "Patient situation 3 - Repatha",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r3c2",
+              "label": "Patient situation 3 - Praluent",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r3c3",
+              "label": "Patient situation 3 - Leqvio",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r4c1",
+              "label": "Patient situation 4 - Repatha",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r4c2",
+              "label": "Patient situation 4 - Praluent",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r4c3",
+              "label": "Patient situation 4 - Leqvio",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r5c1",
+              "label": "Patient situation 5 - Repatha",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r5c2",
+              "label": "Patient situation 5 - Praluent",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A8r5c3",
+              "label": "Patient situation 5 - Leqvio",
+              "filterValue": "2"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        },
+        {
+          "tableId": "a8_value_3",
+          "title": "Likelihood rating = 3 (Response value 3)",
+          "tableType": "grid_by_value",
+          "rows": [
+            {
+              "variable": "A8r1c1",
+              "label": "Patient situation 1 - Repatha",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r1c2",
+              "label": "Patient situation 1 - Praluent",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r1c3",
+              "label": "Patient situation 1 - Leqvio",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r2c1",
+              "label": "Patient situation 2 - Repatha",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r2c2",
+              "label": "Patient situation 2 - Praluent",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r2c3",
+              "label": "Patient situation 2 - Leqvio",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r3c1",
+              "label": "Patient situation 3 - Repatha",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r3c2",
+              "label": "Patient situation 3 - Praluent",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r3c3",
+              "label": "Patient situation 3 - Leqvio",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r4c1",
+              "label": "Patient situation 4 - Repatha",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r4c2",
+              "label": "Patient situation 4 - Praluent",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r4c3",
+              "label": "Patient situation 4 - Leqvio",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r5c1",
+              "label": "Patient situation 5 - Repatha",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r5c2",
+              "label": "Patient situation 5 - Praluent",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A8r5c3",
+              "label": "Patient situation 5 - Leqvio",
+              "filterValue": "3"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        },
+        {
+          "tableId": "a8_value_4",
+          "title": "Likelihood rating = 4 (Response value 4)",
+          "tableType": "grid_by_value",
+          "rows": [
+            {
+              "variable": "A8r1c1",
+              "label": "Patient situation 1 - Repatha",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r1c2",
+              "label": "Patient situation 1 - Praluent",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r1c3",
+              "label": "Patient situation 1 - Leqvio",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r2c1",
+              "label": "Patient situation 2 - Repatha",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r2c2",
+              "label": "Patient situation 2 - Praluent",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r2c3",
+              "label": "Patient situation 2 - Leqvio",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r3c1",
+              "label": "Patient situation 3 - Repatha",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r3c2",
+              "label": "Patient situation 3 - Praluent",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r3c3",
+              "label": "Patient situation 3 - Leqvio",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r4c1",
+              "label": "Patient situation 4 - Repatha",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r4c2",
+              "label": "Patient situation 4 - Praluent",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r4c3",
+              "label": "Patient situation 4 - Leqvio",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r5c1",
+              "label": "Patient situation 5 - Repatha",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r5c2",
+              "label": "Patient situation 5 - Praluent",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A8r5c3",
+              "label": "Patient situation 5 - Leqvio",
+              "filterValue": "4"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        },
+        {
+          "tableId": "a8_value_5",
+          "title": "Likelihood rating = 5 (Response value 5)",
+          "tableType": "grid_by_value",
+          "rows": [
+            {
+              "variable": "A8r1c1",
+              "label": "Patient situation 1 - Repatha",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r1c2",
+              "label": "Patient situation 1 - Praluent",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r1c3",
+              "label": "Patient situation 1 - Leqvio",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r2c1",
+              "label": "Patient situation 2 - Repatha",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r2c2",
+              "label": "Patient situation 2 - Praluent",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r2c3",
+              "label": "Patient situation 2 - Leqvio",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r3c1",
+              "label": "Patient situation 3 - Repatha",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r3c2",
+              "label": "Patient situation 3 - Praluent",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r3c3",
+              "label": "Patient situation 3 - Leqvio",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r4c1",
+              "label": "Patient situation 4 - Repatha",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r4c2",
+              "label": "Patient situation 4 - Praluent",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r4c3",
+              "label": "Patient situation 4 - Leqvio",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r5c1",
+              "label": "Patient situation 5 - Repatha",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r5c2",
+              "label": "Patient situation 5 - Praluent",
+              "filterValue": "5"
+            },
+            {
+              "variable": "A8r5c3",
+              "label": "Patient situation 5 - Leqvio",
+              "filterValue": "5"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.9,
+      "reasoning": "All 15 items are categorical_select with identical allowed values (1-5) and item names indicate a 5 (patient situations) x 3 (therapies) grid. A 'grid_by_value' display is appropriate so users can compare which therapies/situations received each response level. Each table corresponds to one response value (1–5). Stats: count and percent. Minor ambiguity: the specific patient situation text is not present in the item labels, so row labels use 'Patient situation X' placeholders combined with the therapy name; if full situation text is available, those should replace the placeholders."
+    },
+    {
+      "questionId": "A9",
+      "questionText": "A9: To what extent have you encountered any issues with coverage, approvals, cost, etc. for using each of the following without a statin today?",
+      "tables": [
+        {
+          "tableId": "a9_value_1",
+          "title": "Extent of issues — Category 1 responses",
+          "tableType": "grid_by_value",
+          "rows": [
+            {
+              "variable": "A9c1",
+              "label": "Repatha",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A9c2",
+              "label": "Praluent",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A9c3",
+              "label": "Leqvio",
+              "filterValue": "1"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        },
+        {
+          "tableId": "a9_value_2",
+          "title": "Extent of issues — Category 2 responses",
+          "tableType": "grid_by_value",
+          "rows": [
+            {
+              "variable": "A9c1",
+              "label": "Repatha",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A9c2",
+              "label": "Praluent",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A9c3",
+              "label": "Leqvio",
+              "filterValue": "2"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        },
+        {
+          "tableId": "a9_value_3",
+          "title": "Extent of issues — Category 3 responses",
+          "tableType": "grid_by_value",
+          "rows": [
+            {
+              "variable": "A9c1",
+              "label": "Repatha",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A9c2",
+              "label": "Praluent",
+              "filterValue": "3"
+            },
+            {
+              "variable": "A9c3",
+              "label": "Leqvio",
+              "filterValue": "3"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        },
+        {
+          "tableId": "a9_value_4",
+          "title": "Extent of issues — Category 4 responses",
+          "tableType": "grid_by_value",
+          "rows": [
+            {
+              "variable": "A9c1",
+              "label": "Repatha",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A9c2",
+              "label": "Praluent",
+              "filterValue": "4"
+            },
+            {
+              "variable": "A9c3",
+              "label": "Leqvio",
+              "filterValue": "4"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.9,
+      "reasoning": "Question A9 contains 3 items (Repatha, Praluent, Leqvio) all with normalizedType 'categorical_select' and identical allowed values 1-4. This is a grid-style question asking extent of issues per drug. Choosing 'grid_by_value' to produce one table per response category (values 1-4) so readers can compare how each drug maps to each category. Stats: count and percent are appropriate for categorical distributions. Confidence is high (0.90) because the structure and semantics are clear; slight ambiguity remains only if the client instead prefers mean/average severity comparisons, but categorical distribution per value is the standard presentation."
+    },
+    {
+      "questionId": "A10",
+      "questionText": "A10: For what reasons are you using PCSK9 inhibitors without a statin today?",
+      "tables": [
+        {
+          "tableId": "a10",
+          "title": "Reasons for Using PCSK9 Inhibitors Without a Statin (Select all that apply)",
+          "tableType": "multi_select",
+          "rows": [
+            {
+              "variable": "A10r1",
+              "label": "Patient failed statins prior to starting PCSK9i",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A10r2",
+              "label": "Patient is statin intolerant",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A10r3",
+              "label": "Patient refused statins",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A10r4",
+              "label": "Statins are contraindicated for patient",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A10r5",
+              "label": "Patient not or unlikely to be compliant on statins",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A10r6",
+              "label": "Haven't prescribed PCSK9s without a statin",
+              "filterValue": "1"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All six items are binary_flag (0/1) sub-variables indicating whether each reason applies — a classic select-all-that-apply structure. Displaying as a multi_select table provides one row per reason and reports counts and percentages of respondents who selected each (filterValue = 1). Minor note: label A10r6 contained an encoding artifact (Haven�t) which was interpreted as \"Haven't prescribed PCSK9s without a statin.\""
+    },
+    {
+      "questionId": "B1",
+      "questionText": "B1: What percentage of your current [res PatientHoverover] are covered by each type of insurance?",
+      "tables": [
+        {
+          "tableId": "b1",
+          "title": "Percent of Patients by Insurance Type (average)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "B1r1",
+              "label": "Not insured",
+              "filterValue": ""
+            },
+            {
+              "variable": "B1r2",
+              "label": "Private insurance provided by employer / purchased in exchange",
+              "filterValue": ""
+            },
+            {
+              "variable": "B1r3",
+              "label": "Traditional Medicare (Medicare Part B Fee for Service)",
+              "filterValue": ""
+            },
+            {
+              "variable": "B1r4",
+              "label": "Traditional Medicare with supplemental insurance",
+              "filterValue": ""
+            },
+            {
+              "variable": "B1r5",
+              "label": "Private Medicare (Medicare Advantage / Part C managed through Private payer)",
+              "filterValue": ""
+            },
+            {
+              "variable": "B1r6",
+              "label": "Medicaid",
+              "filterValue": ""
+            },
+            {
+              "variable": "B1r7",
+              "label": "Veterans Administration (VA)",
+              "filterValue": ""
+            },
+            {
+              "variable": "B1r8",
+              "label": "Other",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "mean",
+            "median",
+            "sd"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All 8 items are numeric_range with values 0-100 and the question asks for percentages of patients by insurance type. This is a classic allocation/percentage question; displaying as mean rows (one row per insurance type) with mean, median and standard deviation allows easy comparison of average coverage percentages across insurance types. Minor caveat: respondents' reported percentages may not sum to 100 due to rounding or missing responses, but the mean_rows display remains the most informative aggregation."
+    },
+    {
+      "questionId": "B5",
+      "questionText": "B5: How would you describe your specialty/training?",
+      "tables": [
+        {
+          "tableId": "b5",
+          "title": "Specialty / Training (Select all that apply)",
+          "tableType": "multi_select",
+          "rows": [
+            {
+              "variable": "B5r1",
+              "label": "Internal Medicine",
+              "filterValue": "1"
+            },
+            {
+              "variable": "B5r2",
+              "label": "General Practitioner",
+              "filterValue": "1"
+            },
+            {
+              "variable": "B5r3",
+              "label": "Primary Care",
+              "filterValue": "1"
+            },
+            {
+              "variable": "B5r4",
+              "label": "Family Practice",
+              "filterValue": "1"
+            },
+            {
+              "variable": "B5r5",
+              "label": "Doctor of Osteopathic Medicine (DO)",
+              "filterValue": "1"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "All five items are binary_flag variables (values 0/1), indicating a select-all-that-apply question about specialty/training. Displaying as a multi_select table gives one row per option showing how many respondents selected each (count and percent). High confidence because the structure and labels are consistent with multi-select encoding."
+    },
+    {
+      "questionId": "S1",
+      "questionText": "You are about to enter a market research survey. We are being asked to pass on to our client details of adverse events about individual patients or groups of patients and / or product complaints that are raised during the course of market research surveys. Although this is a market research survey, and what is contributed is treated in confidence, should you raise an adverse event and / or product complaint, we will need to report this even if it has already been reported by you directly to the company or the regulatory authorities. In such a situation you will be contacted to ask whether or not you are willing to waive the confidentiality given to you under the market research codes of conduct specifically in relation to that adverse event and / or product complaint. Everything else you contribute during the course of the survey will continue to remain confidential. Are you happy to proceed on this basis?",
+      "tables": [
+        {
+          "tableId": "s1",
+          "title": "Willingness to proceed given adverse event reporting requirements",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S1",
+              "label": "I would like to proceed and protect my identity",
+              "filterValue": ""
+            },
+            {
+              "variable": "S1",
+              "label": "I would like to proceed and give permission for my contact details to be passed on to the Drug Safety department if an adverse event is mentioned by me during the survey",
+              "filterValue": ""
+            },
+            {
+              "variable": "S1",
+              "label": "I don't want to proceed",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select item with three mutually exclusive consent options. A frequency table (count and percent) is the appropriate display to show the distribution of respondents across the consent choices."
+    },
+    {
+      "questionId": "S2b",
+      "questionText": "What is your primary role?",
+      "tables": [
+        {
+          "tableId": "s2b",
+          "title": "Primary Role (Counts and Percentages)",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S2b",
+              "label": "Physician",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S2b",
+              "label": "Nurse Practitioner",
+              "filterValue": "2"
+            },
+            {
+              "variable": "S2b",
+              "label": "Physician’s Assistant",
+              "filterValue": "3"
+            },
+            {
+              "variable": "S2b",
+              "label": "Other",
+              "filterValue": "99"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single-item categorical_select with discrete labeled values (1=Physician, 2=Nurse Practitioner, 3=Physician’s Assistant, 99=Other). Best displayed as a frequency table listing each role with counts and percentages. Minor note: 'Other' may have an open-text follow-up not provided here, but that doesn't affect the choice of table type."
+    },
+    {
+      "questionId": "S2",
+      "questionText": "What is your primary specialty?",
+      "tables": [
+        {
+          "tableId": "s2",
+          "title": "Primary Specialty",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S2",
+              "label": "Cardiologist",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S2",
+              "label": "Internal Medicine / General Practitioner / Primary Care / Family Practice",
+              "filterValue": "2"
+            },
+            {
+              "variable": "S2",
+              "label": "Nephrologist",
+              "filterValue": "3"
+            },
+            {
+              "variable": "S2",
+              "label": "Endocrinologist",
+              "filterValue": "4"
+            },
+            {
+              "variable": "S2",
+              "label": "Lipidologist",
+              "filterValue": "5"
+            },
+            {
+              "variable": "S2",
+              "label": "Nurse Practitioner",
+              "filterValue": "6"
+            },
+            {
+              "variable": "S2",
+              "label": "Physician's Assistant",
+              "filterValue": "7"
+            },
+            {
+              "variable": "S2",
+              "label": "Other",
+              "filterValue": "99"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single-select categorical question (normalizedType = categorical_select) with labeled allowed values representing discrete specialties. A frequency table listing each specialty with counts and percentages is the most appropriate display."
+    },
+    {
+      "questionId": "S2a",
+      "questionText": "In what type of doctor's office do you work?",
+      "tables": [
+        {
+          "tableId": "s2a",
+          "title": "Type of Doctor's Office (S2a)",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S2a",
+              "label": "Cardiologist",
+              "filterValue": ""
+            },
+            {
+              "variable": "S2a",
+              "label": "Internal Medicine / General Practitioner / Primary Care / Family Practice",
+              "filterValue": ""
+            },
+            {
+              "variable": "S2a",
+              "label": "Other",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.94,
+      "reasoning": "Single categorical select item (values 1-3) representing mutually exclusive office types. A frequency table (counts and percentages) is the appropriate display to show the distribution across the three categories."
+    },
+    {
+      "questionId": "qCARD_SPECIALTY",
+      "questionText": "CARD SPECIALTY",
+      "tables": [
+        {
+          "tableId": "qcard_specialty",
+          "title": "CARD SPECIALTY - Frequency",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "qCARD_SPECIALTY",
+              "label": "CARD",
+              "filterValue": "1"
+            },
+            {
+              "variable": "qCARD_SPECIALTY",
+              "label": "NEPH/ENDO/LIP",
+              "filterValue": "2"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical select variable with two labeled values (1= CARD, 2= NEPH/ENDO/LIP). Best displayed as a frequency table showing counts and percentages for each specialty category."
+    },
+    {
+      "questionId": "qSPECIALTY",
+      "questionText": "SPECIALTY",
+      "tables": [
+        {
+          "tableId": "qspecialty",
+          "title": "SPECIALTY Distribution",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "qSPECIALTY",
+              "label": "CARD",
+              "filterValue": "1"
+            },
+            {
+              "variable": "qSPECIALTY",
+              "label": "PCP",
+              "filterValue": "2"
+            },
+            {
+              "variable": "qSPECIALTY",
+              "label": "NPPA",
+              "filterValue": "3"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.96,
+      "reasoning": "Single categorical select item with three mutually exclusive categories (1=CARD, 2=PCP, 3=NPPA). A frequency table (count and percent) is the appropriate display to show the distribution across specialties."
+    },
+    {
+      "questionId": "S3a",
+      "questionText": "What type of Cardiologist are you primarily?",
+      "tables": [
+        {
+          "tableId": "s3a",
+          "title": "Primary Cardiologist Type",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S3a",
+              "label": "Interventional Cardiologist",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S3a",
+              "label": "General Cardiologist",
+              "filterValue": "2"
+            },
+            {
+              "variable": "S3a",
+              "label": "Preventative Cardiologist",
+              "filterValue": "3"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical select item (normalizedType: categorical_select) with three labeled options. A frequency table (one row per option) showing count and percent is the standard and most informative display for this demographic-style question."
+    },
+    {
+      "questionId": "qTYPE_OF_CARD",
+      "questionText": "TYPE OF CARD",
+      "tables": [
+        {
+          "tableId": "qtype_of_card",
+          "title": "Type of Card (Distribution)",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "qTYPE_OF_CARD",
+              "label": "Interventional Card",
+              "filterValue": "1"
+            },
+            {
+              "variable": "qTYPE_OF_CARD",
+              "label": "General Card",
+              "filterValue": "2"
+            },
+            {
+              "variable": "qTYPE_OF_CARD",
+              "label": "Preventative Card",
+              "filterValue": "3"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical/select variable with three mutually exclusive options (1-3). Display as a frequency table showing counts and percentages for each card type."
+    },
+    {
+      "questionId": "qON_LIST_OFF_LIST",
+      "questionText": "ON-LIST/OFF-LIST",
+      "tables": [
+        {
+          "tableId": "qon_list_off_list",
+          "title": "ON-LIST / OFF-LIST Status Distribution",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "qON_LIST_OFF_LIST",
+              "label": "CARD ON-LIST",
+              "filterValue": "1"
+            },
+            {
+              "variable": "qON_LIST_OFF_LIST",
+              "label": "CARD OFF-LIST",
+              "filterValue": "2"
+            },
+            {
+              "variable": "qON_LIST_OFF_LIST",
+              "label": "PCP ON-LIST",
+              "filterValue": "3"
+            },
+            {
+              "variable": "qON_LIST_OFF_LIST",
+              "label": "PCP OFF-LIST",
+              "filterValue": "4"
+            },
+            {
+              "variable": "qON_LIST_OFF_LIST",
+              "label": "NPPA ON-LIST",
+              "filterValue": "5"
+            },
+            {
+              "variable": "qON_LIST_OFF_LIST",
+              "label": "NPPA OFF-LIST",
+              "filterValue": "6"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.94,
+      "reasoning": "Single categorical select variable with six mutually exclusive labeled categories (1-6). A frequency table (count and percent) is the most appropriate display to show distribution across the ON-LIST/OFF-LIST statuses."
+    },
+    {
+      "questionId": "qLIST_TIER",
+      "questionText": "LIST TIER",
+      "tables": [
+        {
+          "tableId": "qlist_tier",
+          "title": "LIST TIER Distribution",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "qLIST_TIER",
+              "label": "TIER 1",
+              "filterValue": "1"
+            },
+            {
+              "variable": "qLIST_TIER",
+              "label": "TIER 2",
+              "filterValue": "2"
+            },
+            {
+              "variable": "qLIST_TIER",
+              "label": "TIER 3",
+              "filterValue": "3"
+            },
+            {
+              "variable": "qLIST_TIER",
+              "label": "TIER 4",
+              "filterValue": "4"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical select variable with four mutually exclusive tiers (values 1-4 labeled TIER 1 to TIER 4). Best displayed as a frequency table showing counts and percentages for each tier."
+    },
+    {
+      "questionId": "qLIST_PRIORITY_ACCOUNT",
+      "questionText": "LIST PRIORITY ACCOUNT",
+      "tables": [
+        {
+          "tableId": "qlist_priority_account",
+          "title": "Priority Account (PRIORITY vs NOT PRIORITY)",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "qLIST_PRIORITY_ACCOUNT",
+              "label": "PRIORITY",
+              "filterValue": "1"
+            },
+            {
+              "variable": "qLIST_PRIORITY_ACCOUNT",
+              "label": "NOT PRIORITY",
+              "filterValue": "2"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical (categorical_select) item with two labeled values (1=PRIORITY, 2=NOT PRIORITY). A frequency table showing counts and percentages for each category is the most appropriate display."
+    },
+    {
+      "questionId": "S4",
+      "questionText": "Are you currently board certified or eligible in your specialty?",
+      "tables": [
+        {
+          "tableId": "s4",
+          "title": "Board Certification / Eligibility Status",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S4",
+              "label": "Board Eligible",
+              "filterValue": "1"
+            },
+            {
+              "variable": "S4",
+              "label": "Board Certified",
+              "filterValue": "2"
+            },
+            {
+              "variable": "S4",
+              "label": "Neither",
+              "filterValue": "3"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical select question (allowed values 1-3 with clear labels). A frequency table is the appropriate display to show how many respondents fall into each category and the percentage distribution."
+    },
+    {
+      "questionId": "S6",
+      "questionText": "How many years have you been in clinical practice, post residency/training?",
+      "tables": [
+        {
+          "tableId": "s6",
+          "title": "Years in Clinical Practice (post residency/training)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "S6",
+              "label": "Years in clinical practice (post residency/training)",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "mean",
+            "median",
+            "sd"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "The item is a numeric_range (0-99) representing years of clinical practice — a continuous numeric measure. Summarizing with central tendency and dispersion (mean, median, SD) is the most informative default for crosstabs. An alternative would be a frequency table with binned ranges (e.g., 0-5, 6-10), but that is a different presentation requirement not implied by the data structure."
+    },
+    {
+      "questionId": "S7",
+      "questionText": "And to confirm, are you currently practicing full-time (i.e. 40+ hours weekly across all settings) or part-time?",
+      "tables": [
+        {
+          "tableId": "s7",
+          "title": "Current Practice Status (Full-Time vs Part-Time)",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S7",
+              "label": "Full-Time",
+              "filterValue": ""
+            },
+            {
+              "variable": "S7",
+              "label": "Part-Time",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.97,
+      "reasoning": "Single categorical_select item with two labeled values (1=Full-Time, 2=Part-Time). Displaying as a frequency table is appropriate to show counts and percentages for each category."
+    },
+    {
+      "questionId": "S9",
+      "questionText": "Which of the following best represents the setting in which you spend most of your professional time?",
+      "tables": [
+        {
+          "tableId": "s9",
+          "title": "Primary Professional Setting",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "S9",
+              "label": "Private Solo Practice",
+              "filterValue": ""
+            },
+            {
+              "variable": "S9",
+              "label": "Private Group Practice",
+              "filterValue": ""
+            },
+            {
+              "variable": "S9",
+              "label": "Multi-specialty Practice / Comprehensive Care",
+              "filterValue": ""
+            },
+            {
+              "variable": "S9",
+              "label": "Staff HMO",
+              "filterValue": ""
+            },
+            {
+              "variable": "S9",
+              "label": "Community Hospital",
+              "filterValue": ""
+            },
+            {
+              "variable": "S9",
+              "label": "Academic/University Hospital",
+              "filterValue": ""
+            },
+            {
+              "variable": "S9",
+              "label": "VA Hospital",
+              "filterValue": ""
+            },
+            {
+              "variable": "S9",
+              "label": "None of the above",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single-item categorical_select with 8 labeled response options representing mutually exclusive professional settings. The frequency table (count, percent) is the standard display for single-response categorical/demographic questions, producing one row per response option to show distribution."
+    },
+    {
+      "questionId": "S10",
+      "questionText": "Using your best estimate, how many adult patients, age 18 or older, do you personally manage in your practice in a month? By “personally”, we mean patients for whom you are a primary treatment decision maker.",
+      "tables": [
+        {
+          "tableId": "s10",
+          "title": "Number of adult patients personally managed per month",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "S10",
+              "label": "Number of adult patients managed per month",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "mean",
+            "median",
+            "sd"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "ENTRY 1 - DATA STRUCTURE ANALYSIS: Question S10 has 1 item. NormalizedType: numeric_range. Values: integer range 0-999 representing the number of adult patients a respondent personally manages in a month. This is a continuous/count variable capturing workload.\n\nENTRY 2 - DISPLAY DECISION: Choosing tableType 'mean_rows' because a single numeric/count variable is best summarized with central tendency and dispersion (mean, median, sd) in a crosstab context. Will generate 1 table showing the S10 variable as a row.\n\nENTRY 3 - CONFIDENCE ASSESSMENT: Confidence: 0.95 because the variable is clearly numeric and the mean/median/sd presentation is standard. Note: an alternative would be to present a frequency distribution with bins, but that requires derived categories; the instructions and data favor summary statistics."
+    },
+    {
+      "questionId": "S11",
+      "questionText": "Of those adult patients for whom you are the primary treatment decision maker, roughly how many have a confirmed diagnosis of hypercholesterolemia with established cardiovascular disease (CVD)?",
+      "tables": [
+        {
+          "tableId": "s11",
+          "title": "Number of adult patients with hypercholesterolemia and established CVD (reported count)",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "S11",
+              "label": "Number of adult patients with hypercholesterolemia and established CVD",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "mean",
+            "median",
+            "sd"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single numeric_range item (0-999) representing a count of patients. Best displayed with summary statistics to convey central tendency and dispersion. Using 'mean_rows' with stats mean, median and sd to summarize the distribution. Note: counts may be skewed or have outliers; median is included to mitigate this."
+    },
+    {
+      "questionId": "A2a",
+      "questionText": "To the best of your knowledge, which of the following best describes the current post-ACS guideline recommendation regarding lipid-lowering?",
+      "tables": [
+        {
+          "tableId": "a2a",
+          "title": "Perceived current post-ACS guideline recommendation regarding lipid-lowering",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A2a",
+              "label": "Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels ≥55 mg/dL",
+              "filterValue": "1"
+            },
+            {
+              "variable": "A2a",
+              "label": "Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels ≥70 mg/dL",
+              "filterValue": "2"
+            },
+            {
+              "variable": "A2a",
+              "label": "Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels ≥100 mg/dL",
+              "filterValue": "3"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single-item categorical_select with three clearly labeled response options. Best displayed as a frequency table showing counts and percentages for each response option. No ambiguity in structure or labels."
+    },
+    {
+      "questionId": "A2b",
+      "questionText": "And to the best of your knowledge, which of the following best describes the current post-ACS guideline recommendation specific to lipid-lowering therapy?",
+      "tables": [
+        {
+          "tableId": "a2b",
+          "title": "Perceived current post-ACS guideline recommendation for lipid-lowering therapy",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A2b",
+              "label": "Recommend a statin first",
+              "filterValue": ""
+            },
+            {
+              "variable": "A2b",
+              "label": "Recommend a statin + ezetimibe first",
+              "filterValue": ""
+            },
+            {
+              "variable": "A2b",
+              "label": "Recommend a PCSK9i first",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single-item categorical_select (values 1-3) representing mutually exclusive choices about guideline recommendation. A frequency table (counts and percentages) is the clearest way to present the distribution of responses across the three labeled options."
+    },
+    {
+      "questionId": "A5",
+      "questionText": "How quickly might you expect to change your prescribing of PCSK9 inhibitors based on this indication change?",
+      "tables": [
+        {
+          "tableId": "a5",
+          "title": "Expected time to change PCSK9 prescribing",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "A5",
+              "label": "Within 3 months",
+              "filterValue": ""
+            },
+            {
+              "variable": "A5",
+              "label": "4-6 months",
+              "filterValue": ""
+            },
+            {
+              "variable": "A5",
+              "label": "7-12 months",
+              "filterValue": ""
+            },
+            {
+              "variable": "A5",
+              "label": "Over a year",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single-item categorical_select with four ordered time-interval response options. A frequency table (counts and percentages) is the most appropriate display to show distribution across the timeframes."
+    },
+    {
+      "questionId": "US_State",
+      "questionText": "US_State",
+      "tables": [
+        {
+          "tableId": "us_state",
+          "title": "Respondent State (US_State)",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "US_State",
+              "label": "Alaska",
+              "filterValue": "1"
+            },
+            {
+              "variable": "US_State",
+              "label": "Alabama",
+              "filterValue": "2"
+            },
+            {
+              "variable": "US_State",
+              "label": "Arkansas",
+              "filterValue": "3"
+            },
+            {
+              "variable": "US_State",
+              "label": "Arizona",
+              "filterValue": "4"
+            },
+            {
+              "variable": "US_State",
+              "label": "California",
+              "filterValue": "5"
+            },
+            {
+              "variable": "US_State",
+              "label": "Colorado",
+              "filterValue": "6"
+            },
+            {
+              "variable": "US_State",
+              "label": "Connecticut",
+              "filterValue": "7"
+            },
+            {
+              "variable": "US_State",
+              "label": "District of Columbia",
+              "filterValue": "8"
+            },
+            {
+              "variable": "US_State",
+              "label": "Delaware",
+              "filterValue": "9"
+            },
+            {
+              "variable": "US_State",
+              "label": "Florida",
+              "filterValue": "10"
+            },
+            {
+              "variable": "US_State",
+              "label": "Georgia",
+              "filterValue": "11"
+            },
+            {
+              "variable": "US_State",
+              "label": "Hawaii",
+              "filterValue": "12"
+            },
+            {
+              "variable": "US_State",
+              "label": "Iowa",
+              "filterValue": "13"
+            },
+            {
+              "variable": "US_State",
+              "label": "Idaho",
+              "filterValue": "14"
+            },
+            {
+              "variable": "US_State",
+              "label": "Illinois",
+              "filterValue": "15"
+            },
+            {
+              "variable": "US_State",
+              "label": "Indiana",
+              "filterValue": "16"
+            },
+            {
+              "variable": "US_State",
+              "label": "Kansas",
+              "filterValue": "17"
+            },
+            {
+              "variable": "US_State",
+              "label": "Kentucky",
+              "filterValue": "18"
+            },
+            {
+              "variable": "US_State",
+              "label": "Louisiana",
+              "filterValue": "19"
+            },
+            {
+              "variable": "US_State",
+              "label": "Massachusetts",
+              "filterValue": "20"
+            },
+            {
+              "variable": "US_State",
+              "label": "Maryland",
+              "filterValue": "21"
+            },
+            {
+              "variable": "US_State",
+              "label": "Maine",
+              "filterValue": "22"
+            },
+            {
+              "variable": "US_State",
+              "label": "Michigan",
+              "filterValue": "23"
+            },
+            {
+              "variable": "US_State",
+              "label": "Minnesota",
+              "filterValue": "24"
+            },
+            {
+              "variable": "US_State",
+              "label": "Missouri",
+              "filterValue": "25"
+            },
+            {
+              "variable": "US_State",
+              "label": "Mississippi",
+              "filterValue": "26"
+            },
+            {
+              "variable": "US_State",
+              "label": "Montana",
+              "filterValue": "27"
+            },
+            {
+              "variable": "US_State",
+              "label": "North Carolina",
+              "filterValue": "28"
+            },
+            {
+              "variable": "US_State",
+              "label": "North Dakota",
+              "filterValue": "29"
+            },
+            {
+              "variable": "US_State",
+              "label": "Nebraska",
+              "filterValue": "30"
+            },
+            {
+              "variable": "US_State",
+              "label": "New Hampshire",
+              "filterValue": "31"
+            },
+            {
+              "variable": "US_State",
+              "label": "New Jersey",
+              "filterValue": "32"
+            },
+            {
+              "variable": "US_State",
+              "label": "New Mexico",
+              "filterValue": "33"
+            },
+            {
+              "variable": "US_State",
+              "label": "Nevada",
+              "filterValue": "34"
+            },
+            {
+              "variable": "US_State",
+              "label": "New York",
+              "filterValue": "35"
+            },
+            {
+              "variable": "US_State",
+              "label": "Ohio",
+              "filterValue": "36"
+            },
+            {
+              "variable": "US_State",
+              "label": "Oklahoma",
+              "filterValue": "37"
+            },
+            {
+              "variable": "US_State",
+              "label": "Oregon",
+              "filterValue": "38"
+            },
+            {
+              "variable": "US_State",
+              "label": "Pennsylvania",
+              "filterValue": "39"
+            },
+            {
+              "variable": "US_State",
+              "label": "Rhode Island",
+              "filterValue": "40"
+            },
+            {
+              "variable": "US_State",
+              "label": "South Carolina",
+              "filterValue": "41"
+            },
+            {
+              "variable": "US_State",
+              "label": "South Dakota",
+              "filterValue": "42"
+            },
+            {
+              "variable": "US_State",
+              "label": "Tennessee",
+              "filterValue": "43"
+            },
+            {
+              "variable": "US_State",
+              "label": "Texas",
+              "filterValue": "44"
+            },
+            {
+              "variable": "US_State",
+              "label": "Utah",
+              "filterValue": "45"
+            },
+            {
+              "variable": "US_State",
+              "label": "Virginia",
+              "filterValue": "46"
+            },
+            {
+              "variable": "US_State",
+              "label": "Vermont",
+              "filterValue": "47"
+            },
+            {
+              "variable": "US_State",
+              "label": "Washington",
+              "filterValue": "48"
+            },
+            {
+              "variable": "US_State",
+              "label": "Wisconsin",
+              "filterValue": "49"
+            },
+            {
+              "variable": "US_State",
+              "label": "West Virginia",
+              "filterValue": "50"
+            },
+            {
+              "variable": "US_State",
+              "label": "Wyoming",
+              "filterValue": "51"
+            },
+            {
+              "variable": "US_State",
+              "label": "Other",
+              "filterValue": "52"
+            },
+            {
+              "variable": "US_State",
+              "label": "Invalid State",
+              "filterValue": "53"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select demographic variable with 53 labeled categories (US states + Other + Invalid). Frequency table is appropriate: one row per state label showing counts and percentages. 'Invalid State' is included as a row but may be suppressed in reporting if desired."
+    },
+    {
+      "questionId": "Region",
+      "questionText": "Region",
+      "tables": [
+        {
+          "tableId": "region",
+          "title": "Respondent Region",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "Region",
+              "label": "Northeast",
+              "filterValue": "1"
+            },
+            {
+              "variable": "Region",
+              "label": "South",
+              "filterValue": "2"
+            },
+            {
+              "variable": "Region",
+              "label": "Midwest",
+              "filterValue": "3"
+            },
+            {
+              "variable": "Region",
+              "label": "West",
+              "filterValue": "4"
+            },
+            {
+              "variable": "Region",
+              "label": "Other",
+              "filterValue": "5"
+            },
+            {
+              "variable": "Region",
+              "label": "Invalid Region",
+              "filterValue": "6"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single categorical_select item with six labeled categories (regions). This is a standard demographic single-select question best shown as a frequency table listing each region with counts and percentages. Note: the 'Invalid Region' category (6) is included as given; reporting rules might choose to hide or flag it."
+    },
+    {
+      "questionId": "B3",
+      "questionText": "Which of the following best describes where your primary practice is located?",
+      "tables": [
+        {
+          "tableId": "b3",
+          "title": "Primary Practice Location",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "B3",
+              "label": "Urban",
+              "filterValue": ""
+            },
+            {
+              "variable": "B3",
+              "label": "Suburban",
+              "filterValue": ""
+            },
+            {
+              "variable": "B3",
+              "label": "Rural",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.97,
+      "reasoning": "Single categorical select (values 1-3: Urban, Suburban, Rural). Best displayed as a frequency table with counts and percentages for each category."
+    },
+    {
+      "questionId": "B4",
+      "questionText": "How many physicians are in your practice?",
+      "tables": [
+        {
+          "tableId": "b4",
+          "title": "Number of Physicians in Practice — Summary",
+          "tableType": "mean_rows",
+          "rows": [
+            {
+              "variable": "B4",
+              "label": "How many physicians are in your practice?",
+              "filterValue": ""
+            }
+          ],
+          "stats": [
+            "mean",
+            "median",
+            "sd"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single numeric variable stored as numeric_range (0-9999) representing a count of physicians. Use a summary table showing mean, median, and standard deviation to describe the distribution. An alternative presentation could be a frequency/binned distribution for readability, but the numeric summary is the most direct and appropriate crosstab for this measure."
+    },
+    {
+      "questionId": "QCONSENT",
+      "questionText": "If you would be willing to participate in future research to further elaborate on the responses from this survey, please indicate below:",
+      "tables": [
+        {
+          "tableId": "qconsent",
+          "title": "Willingness to Participate in Future Research",
+          "tableType": "frequency",
+          "rows": [
+            {
+              "variable": "QCONSENT",
+              "label": "Yes",
+              "filterValue": "1"
+            },
+            {
+              "variable": "QCONSENT",
+              "label": "No",
+              "filterValue": "2"
+            }
+          ],
+          "stats": [
+            "count",
+            "percent"
+          ]
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Single-item categorical_select with two allowed values (1=Yes, 2=No). A frequency table showing counts and percentages for Yes and No is the most appropriate and clear display."
+    }
+  ],
+  "processingInfo": {
+    "timestamp": "2026-01-03T22:17:36.467Z",
+    "aiProvider": "azure-openai",
+    "model": "azure/gpt-5-mini",
+    "totalQuestionGroups": 42,
+    "totalTablesGenerated": 53,
+    "averageConfidence": 0.9414285714285716,
+    "tableTypeDistribution": {
+      "multi_select": 4,
+      "mean_rows": 13,
+      "grid_by_value": 15,
+      "frequency": 21
+    },
+    "processingLog": [
+      "2026-01-03T22:07:47.277Z: [TableAgent] Starting processing: 42 question groups",
+      "2026-01-03T22:07:47.277Z: [TableAgent] Using model: azure/gpt-5-mini",
+      "2026-01-03T22:07:47.277Z: [TableAgent] Processing group 1/42: \"S5\" (7 items)",
+      "2026-01-03T22:07:59.577Z: [TableAgent] Question \"S5\" completed in 12300ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:07:59.578Z: [TableAgent] Processing group 2/42: \"S8\" (4 items)",
+      "2026-01-03T22:08:10.596Z: [TableAgent] Question \"S8\" completed in 11018ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:08:10.596Z: [TableAgent] Processing group 3/42: \"S12\" (4 items)",
+      "2026-01-03T22:08:23.959Z: [TableAgent] Question \"S12\" completed in 13363ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:08:23.959Z: [TableAgent] Processing group 4/42: \"A1\" (4 items)",
+      "2026-01-03T22:08:37.946Z: [TableAgent] Question \"A1\" completed in 13987ms - 2 tables, confidence: 0.85",
+      "2026-01-03T22:08:37.946Z: [TableAgent] Processing group 5/42: \"A3\" (7 items)",
+      "2026-01-03T22:08:52.765Z: [TableAgent] Question \"A3\" completed in 14819ms - 1 tables, confidence: 0.94",
+      "2026-01-03T22:08:52.765Z: [TableAgent] Processing group 6/42: \"A3a\" (10 items)",
+      "2026-01-03T22:09:09.607Z: [TableAgent] Question \"A3a\" completed in 16842ms - 1 tables, confidence: 0.92",
+      "2026-01-03T22:09:09.607Z: [TableAgent] Processing group 7/42: \"A3b\" (10 items)",
+      "2026-01-03T22:09:34.809Z: [TableAgent] Question \"A3b\" completed in 25202ms - 1 tables, confidence: 0.92",
+      "2026-01-03T22:09:34.809Z: [TableAgent] Processing group 8/42: \"A4\" (14 items)",
+      "2026-01-03T22:09:56.292Z: [TableAgent] Question \"A4\" completed in 21483ms - 1 tables, confidence: 0.91",
+      "2026-01-03T22:09:56.292Z: [TableAgent] Processing group 9/42: \"A4a\" (10 items)",
+      "2026-01-03T22:10:14.119Z: [TableAgent] Question \"A4a\" completed in 17827ms - 1 tables, confidence: 0.92",
+      "2026-01-03T22:10:14.119Z: [TableAgent] Processing group 10/42: \"A4b\" (10 items)",
+      "2026-01-03T22:10:27.349Z: [TableAgent] Question \"A4b\" completed in 13230ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:10:27.349Z: [TableAgent] Processing group 11/42: \"A6\" (8 items)",
+      "2026-01-03T22:10:55.069Z: [TableAgent] Question \"A6\" completed in 27720ms - 4 tables, confidence: 0.90",
+      "2026-01-03T22:10:55.069Z: [TableAgent] Processing group 12/42: \"A7\" (5 items)",
+      "2026-01-03T22:11:06.168Z: [TableAgent] Question \"A7\" completed in 11099ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:11:06.168Z: [TableAgent] Processing group 13/42: \"A8\" (15 items)",
+      "2026-01-03T22:11:47.484Z: [TableAgent] Question \"A8\" completed in 41316ms - 5 tables, confidence: 0.90",
+      "2026-01-03T22:11:47.485Z: [TableAgent] Processing group 14/42: \"A9\" (3 items)",
+      "2026-01-03T22:12:04.579Z: [TableAgent] Question \"A9\" completed in 17094ms - 4 tables, confidence: 0.90",
+      "2026-01-03T22:12:04.579Z: [TableAgent] Processing group 15/42: \"A10\" (6 items)",
+      "2026-01-03T22:12:17.549Z: [TableAgent] Question \"A10\" completed in 12970ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:12:17.549Z: [TableAgent] Processing group 16/42: \"B1\" (8 items)",
+      "2026-01-03T22:12:29.305Z: [TableAgent] Question \"B1\" completed in 11756ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:12:29.305Z: [TableAgent] Processing group 17/42: \"B5\" (5 items)",
+      "2026-01-03T22:12:38.312Z: [TableAgent] Question \"B5\" completed in 9007ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:12:38.312Z: [TableAgent] Processing group 18/42: \"S1\" (1 items)",
+      "2026-01-03T22:12:49.660Z: [TableAgent] Question \"S1\" completed in 11348ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:12:49.661Z: [TableAgent] Processing group 19/42: \"S2b\" (1 items)",
+      "2026-01-03T22:12:59.724Z: [TableAgent] Question \"S2b\" completed in 10063ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:12:59.724Z: [TableAgent] Processing group 20/42: \"S2\" (1 items)",
+      "2026-01-03T22:13:11.041Z: [TableAgent] Question \"S2\" completed in 11317ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:13:11.041Z: [TableAgent] Processing group 21/42: \"S2a\" (1 items)",
+      "2026-01-03T22:13:22.489Z: [TableAgent] Question \"S2a\" completed in 11448ms - 1 tables, confidence: 0.94",
+      "2026-01-03T22:13:22.489Z: [TableAgent] Processing group 22/42: \"qCARD_SPECIALTY\" (1 items)",
+      "2026-01-03T22:13:34.082Z: [TableAgent] Question \"qCARD_SPECIALTY\" completed in 11593ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:13:34.082Z: [TableAgent] Processing group 23/42: \"qSPECIALTY\" (1 items)",
+      "2026-01-03T22:13:44.390Z: [TableAgent] Question \"qSPECIALTY\" completed in 10308ms - 1 tables, confidence: 0.96",
+      "2026-01-03T22:13:44.390Z: [TableAgent] Processing group 24/42: \"S3a\" (1 items)",
+      "2026-01-03T22:13:57.359Z: [TableAgent] Question \"S3a\" completed in 12969ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:13:57.359Z: [TableAgent] Processing group 25/42: \"qTYPE_OF_CARD\" (1 items)",
+      "2026-01-03T22:14:07.971Z: [TableAgent] Question \"qTYPE_OF_CARD\" completed in 10612ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:14:07.971Z: [TableAgent] Processing group 26/42: \"qON_LIST_OFF_LIST\" (1 items)",
+      "2026-01-03T22:14:18.353Z: [TableAgent] Question \"qON_LIST_OFF_LIST\" completed in 10382ms - 1 tables, confidence: 0.94",
+      "2026-01-03T22:14:18.353Z: [TableAgent] Processing group 27/42: \"qLIST_TIER\" (1 items)",
+      "2026-01-03T22:14:32.338Z: [TableAgent] Question \"qLIST_TIER\" completed in 13985ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:14:32.338Z: [TableAgent] Processing group 28/42: \"qLIST_PRIORITY_ACCOUNT\" (1 items)",
+      "2026-01-03T22:14:43.286Z: [TableAgent] Question \"qLIST_PRIORITY_ACCOUNT\" completed in 10948ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:14:43.286Z: [TableAgent] Processing group 29/42: \"S4\" (1 items)",
+      "2026-01-03T22:14:54.334Z: [TableAgent] Question \"S4\" completed in 11048ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:14:54.334Z: [TableAgent] Processing group 30/42: \"S6\" (1 items)",
+      "2026-01-03T22:15:05.880Z: [TableAgent] Question \"S6\" completed in 11546ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:15:05.880Z: [TableAgent] Processing group 31/42: \"S7\" (1 items)",
+      "2026-01-03T22:15:18.633Z: [TableAgent] Question \"S7\" completed in 12753ms - 1 tables, confidence: 0.97",
+      "2026-01-03T22:15:18.633Z: [TableAgent] Processing group 32/42: \"S9\" (1 items)",
+      "2026-01-03T22:15:29.122Z: [TableAgent] Question \"S9\" completed in 10489ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:15:29.122Z: [TableAgent] Processing group 33/42: \"S10\" (1 items)",
+      "2026-01-03T22:15:42.311Z: [TableAgent] Question \"S10\" completed in 13189ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:15:42.311Z: [TableAgent] Processing group 34/42: \"S11\" (1 items)",
+      "2026-01-03T22:15:54.780Z: [TableAgent] Question \"S11\" completed in 12469ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:15:54.780Z: [TableAgent] Processing group 35/42: \"A2a\" (1 items)",
+      "2026-01-03T22:16:05.840Z: [TableAgent] Question \"A2a\" completed in 11060ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:16:05.840Z: [TableAgent] Processing group 36/42: \"A2b\" (1 items)",
+      "2026-01-03T22:16:17.008Z: [TableAgent] Question \"A2b\" completed in 11168ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:16:17.009Z: [TableAgent] Processing group 37/42: \"A5\" (1 items)",
+      "2026-01-03T22:16:28.507Z: [TableAgent] Question \"A5\" completed in 11498ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:16:28.507Z: [TableAgent] Processing group 38/42: \"US_State\" (1 items)",
+      "2026-01-03T22:16:48.244Z: [TableAgent] Question \"US_State\" completed in 19737ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:16:48.244Z: [TableAgent] Processing group 39/42: \"Region\" (1 items)",
+      "2026-01-03T22:17:01.342Z: [TableAgent] Question \"Region\" completed in 13098ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:17:01.342Z: [TableAgent] Processing group 40/42: \"B3\" (1 items)",
+      "2026-01-03T22:17:13.512Z: [TableAgent] Question \"B3\" completed in 12170ms - 1 tables, confidence: 0.97",
+      "2026-01-03T22:17:13.513Z: [TableAgent] Processing group 41/42: \"B4\" (1 items)",
+      "2026-01-03T22:17:22.905Z: [TableAgent] Question \"B4\" completed in 9392ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:17:22.905Z: [TableAgent] Processing group 42/42: \"QCONSENT\" (1 items)",
+      "2026-01-03T22:17:36.464Z: [TableAgent] Question \"QCONSENT\" completed in 13559ms - 1 tables, confidence: 0.95",
+      "2026-01-03T22:17:36.464Z: [TableAgent] Collected 123 scratchpad entries",
+      "2026-01-03T22:17:36.465Z: [TableAgent] Processing complete - 42 groups → 53 tables, avg confidence: 0.94"
+    ],
+    "scratchpadTrace": [
+      {
+        "timestamp": "2026-01-03T22:07:52.388Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Question S5 has 7 items. NormalizedType: binary_flag for each sub-item. Values: 0-1 (allowedValues [0,1]) for each. This looks like a select-all-that-apply (multi-select) question where respondents mark which affiliations apply (1 = selected)."
+      },
+      {
+        "timestamp": "2026-01-03T22:07:54.097Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Choosing tableType 'multi_select' because each item is a binary flag indicating whether the respondent (or family member) has the listed affiliation. For multi-select we present one row per option and show count and percent of respondents who selected it (value=1). Will generate 1 table with 7 rows (one per affiliation option). Stats: ['count','percent']."
+      },
+      {
+        "timestamp": "2026-01-03T22:07:55.382Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Confidence: 0.95 because normalizedType binary_flag clearly indicates select-all-that-apply structure. No ambiguity. One potential concern: the 'None of these' item is binary like the others; display should treat it like other options but note that respondents selecting 'None of these' should not select other options; data may still contain inconsistent selections but that's a data-quality issue."
+      },
+      {
+        "timestamp": "2026-01-03T22:08:04.730Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion S8 has 4 items. NormalizedType: numeric_range. Values: 0-100 for each item (rangeMin=0, rangeMax=100). This looks like respondents allocating percentages of their professional time across activities (percentage allocation across categories)."
+      },
+      {
+        "timestamp": "2026-01-03T22:08:06.452Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'mean_rows' because these are numeric percentage allocations (0-100) across multiple items; it's most informative to show average percent of time spent on each activity, plus dispersion. Stats: mean, median, sd. Will generate 1 table with 4 rows (one per activity)."
+      },
+      {
+        "timestamp": "2026-01-03T22:08:07.740Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because normalizedType is numeric_range with 0-100 values and the question explicitly asks for percentages of time. This matches the common pattern for percentage allocation -> mean_rows. No major ambiguities."
+      },
+      {
+        "timestamp": "2026-01-03T22:08:17.135Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Question S12 has 4 items. NormalizedType: numeric_range. Values: 0-999 numeric counts for each time-since-event category. This looks like numeric count fields where respondents reported how many patients experienced an event in each time window (Over 5 years ago; Within the last 3-5 years; Within the last 1-2 years; Within the last year)."
+      },
+      {
+        "timestamp": "2026-01-03T22:08:18.739Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Choosing tableType 'mean_rows' because items are numeric counts (numeric_range) that are best summarized with averages and dispersion across respondents to compare counts across time windows. Stats: mean, median, sd. Will generate 1 table with 4 rows (one per time-window)."
+      },
+      {
+        "timestamp": "2026-01-03T22:08:19.975Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Confidence: 0.95 because normalizedType is numeric_range and question asks 'how many patients' which implies numeric counts. Summarizing with means/medians is appropriate. Minor ambiguity: could also show totals or distribution (sum across respondents) but mean_rows is standard for comparing numeric sub-items."
+      },
+      {
+        "timestamp": "2026-01-03T22:08:29.790Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion A1 has 4 items. NormalizedType: categorical_select. Values: 1-2 for each item. This looks like a grid question with 4 treatments each coded into one of two categories (e.g., 'option 1' vs 'option 2'), with the same allowed values across all items."
+      },
+      {
+        "timestamp": "2026-01-03T22:08:31.786Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'grid_by_value' because we have multiple items (treatments) sharing the same value set (1-2). This allows generating one table per value (i.e., one for value=1 and one for value=2) showing counts and percents across the four treatments. Stats: count, percent. Will generate 2 tables (one per allowed value)."
+      },
+      {
+        "timestamp": "2026-01-03T22:08:33.151Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.85 because the items are clearly categorical with identical allowed values, making grid_by_value a reasonable mapping. Slight uncertainty because we don't have the label definitions for values 1 and 2 (e.g., 'Approved' vs 'Not approved' or 'Indicated' vs 'Not indicated'), but structure is unambiguous."
+      },
+      {
+        "timestamp": "2026-01-03T22:08:42.725Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion A3 has 7 items. NormalizedType: numeric_range for all items. Values: integers between 0 and 100 (number of patients out of last 100 for whom each therapy was prescribed). This looks like numeric count/percentage data per therapy (each item records a numeric share out of 100)."
+      },
+      {
+        "timestamp": "2026-01-03T22:08:45.480Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'mean_rows' because items are numeric ranges representing counts (out of 100) per therapy, so comparing average counts/percentages across therapies is most meaningful. Stats: mean, median, sd. Will generate 1 table with 7 rows (one per therapy)."
+      },
+      {
+        "timestamp": "2026-01-03T22:08:47.095Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.94 because all items are numeric_range with the same 0-100 bounds and the question explicitly asks \"for how many\" out of last 100, implying percentages/counts. No ambiguity that these should be summarized with means/medians. Minor consideration: could present as percentage of patients (mean percent) or raw counts (mean out of 100) but that's equivalent; labeling should clarify 'mean count out of 100' or 'mean percent'. No major concerns."
+      },
+      {
+        "timestamp": "2026-01-03T22:09:03.939Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion A3a has 10 items. NormalizedType: numeric_range for all items. Values: 0-100 (percent) for each sub-item. This looks like percentage estimates (of the last 100 patients) split into two categories per treatment (\"In addition to statin\" vs \"Without a statin\"), repeated for 5 treatments (pairs c1/c2 per treatment).\n\nENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'mean_rows' because these are numeric percentage fields (0-100) where comparing central tendency across items/treatments is most informative. Showing means (with median and SD) will summarize the typical percent and variability across respondents for each sub-item. Stats: [\"mean\",\"median\",\"sd\"]. Will generate 1 table containing 10 rows (2 rows per treatment, 5 treatments total).\n\nENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.92 because the normalizedType (numeric_range 0-100) maps clearly to summary statistics and the question semantics ask for approximate percentages. Minor ambiguity: treatments beyond the first are not named in the provided labels, so I will label them generically as Treatment 1..5 (using the column index)."
+      },
+      {
+        "timestamp": "2026-01-03T22:09:17.975Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion A3b has 10 items. NormalizedType: numeric_range for all items. Values: 0-100 (percent) for each sub-item. This looks like percentage allocations — respondents provided the percent of patients who received a given therapy without a statin, split by timing (BEFORE any other lipid-lowering therapy vs AFTER trying another therapy)."
+      },
+      {
+        "timestamp": "2026-01-03T22:09:19.996Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'mean_rows' because numeric_range percent values across multiple related items are best summarized with means (and spread) to compare how often therapies are used before vs after other therapies. Stats: mean, median, sd. Will generate 1 table with 10 rows (one per variable). Alternatively could group into pairs (Before/After) per therapy, but a single mean_rows table allows direct comparison across all items; consider labeling to indicate therapy groups."
+      },
+      {
+        "timestamp": "2026-01-03T22:09:21.435Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.92 because all items are numeric_range 0-100 percent allocations and the question text explicitly asks \"approximately what %\". Clear structure for mean_rows. Minor ambiguity: items are duplicates across multiple therapies (A3br1..r5) — ensure labels clearly reflect therapy/timepoint pairing. No other major concerns."
+      },
+      {
+        "timestamp": "2026-01-03T22:09:43.067Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Question A4 has 14 items. NormalizedType: numeric_range for all items. Values: integers 0-100 representing counts (out of next 100 patients) for each treatment option, duplicated across two columns (c1 and c2). This looks like paired numeric allocations (e.g., previous/current or baseline vs future scenario) across the same set of treatments, i.e., a repeated-measures numeric grid where each treatment has two numeric variables."
+      },
+      {
+        "timestamp": "2026-01-03T22:09:45.937Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Choosing tableType 'mean_rows' because items are numeric allocations (0-100) and we want to compare average counts across treatments and between the two columns (c1 vs c2). Stats: mean, median, sd. Will generate 1 table with each treatment as a row and separate columns/series for c1 and c2 variables. Alternatively could create two separate tables (one per column), but a single mean_rows with paired columns is clearer for comparison."
+      },
+      {
+        "timestamp": "2026-01-03T22:09:48.175Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Confidence: 0.91 because all items are numeric_range 0-100 representing counts out of 100, matching the pattern 'percentage/allocation' that should be summarized with means. The only ambiguity: whether to present as separate tables per column (c1/c2) or as paired columns in one table. I choose paired columns in one mean_rows table for clearer direct comparison."
+      },
+      {
+        "timestamp": "2026-01-03T22:10:05.438Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion A4a has 10 items. NormalizedType: numeric_range for all items. Values: 0-100 (percent). This looks like percentage estimates (out of NEXT 100 patients) for prescribing each therapy, likely two columns per treatment (e.g., with statin vs without statin). Data are continuous percent measures, so numeric summary statistics (means, medians, sds) are appropriate."
+      },
+      {
+        "timestamp": "2026-01-03T22:10:07.344Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'mean_rows' because items are numeric percentage estimates (0-100) representing proportions of the next 100 patients the respondent would prescribe the therapy. The goal is to compare average expected prescribing across the different therapy/timepoint combinations. Stats: mean, median, sd. Will generate 1 table with 10 rows (one per item). Table rows should use the item labels; filterValue not needed."
+      },
+      {
+        "timestamp": "2026-01-03T22:10:08.582Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.92 because all items are numeric_range (0-100) clearly indicating percent estimates and the question text explicitly asks for % of NEXT 100 patients. No ambiguity about being categorical or multi-select. Minor concern: repeated identical labels may be placeholders; ensure labels correctly reflect distinct treatments/conditions in final rendering."
+      },
+      {
+        "timestamp": "2026-01-03T22:10:19.507Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion A4b has 10 items. NormalizedType: numeric_range for all items. Values: 0-100 for each sub-item. This looks like percentage allocation inputs (respondents entered an approximate percent for each treatment option) — consistent with pattern: Percentage allocation across categories."
+      },
+      {
+        "timestamp": "2026-01-03T22:10:21.260Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'mean_rows' because items are numeric_range representing percentage allocations (0-100). We should compare average percentage allocated to each treatment sub-item. Stats: mean, median, sd. Will generate 1 table with 10 rows (one per variable). FilterValue: \"\" for each row."
+      },
+      {
+        "timestamp": "2026-01-03T22:10:22.615Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because all items are numeric ranges 0-100 and the question text explicitly asks \"what % ...\" so mean/median/sd are appropriate summaries. Minor ambiguity: labels are identical 'Next treatment allocation' — unclear if there are meaningful distinct item labels (maybe different treatment scenarios). If available, more descriptive labels should replace generic ones."
+      },
+      {
+        "timestamp": "2026-01-03T22:10:35.258Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion A6 has 8 items. NormalizedType: categorical_select for all items. Values: 1-4 for each item (allowedValues [1,2,3,4]). This looks like a ranking-style grid where respondents assign rank positions (1 through 4) to treatment path options — likely indicating top choices/rank order rather than a simple Likert agreement scale, given the question text explicitly asks respondents to \"rank which treatment paths\"."
+      },
+      {
+        "timestamp": "2026-01-03T22:10:37.419Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'grid_by_value' because we have multiple items sharing the same categorical value set (1-4) representing rank positions. For ranking questions it's useful to present one table per rank (value) to show counts/percent of items receiving each rank. Stats: count, percent. Will generate 4 tables (one for each rank value 1,2,3,4). Rows for each table will list the 8 items as rows and filterValue set to the rank being shown."
+      },
+      {
+        "timestamp": "2026-01-03T22:10:40.346Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.90 because the question text explicitly states \"please rank\" and all items are categorical_select with identical allowedValues 1-4 consistent with ranking positions. Minor ambiguity: allowedValues only go 1-4 while there are 8 items. That suggests respondents may have been asked to pick top 4 ranks or forced to rank a subset; but presentation as grid_by_value (one table per rank 1-4) is appropriate. Note: If actually full ranking 1-8, allowedValues mismatch would change approach, but current data supports 1-4 ranks."
+      },
+      {
+        "timestamp": "2026-01-03T22:10:59.320Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Entry 1 - DATA STRUCTURE ANALYSIS:\nQuestion A7 has 5 items. NormalizedType: binary_flag for all items. Values: 0-1 (allowedValues [0,1]) for each sub-item. This looks like a multi-select ('select all that apply') grid where each item is a separate binary indicator of whether the respondent selected that impact."
+      },
+      {
+        "timestamp": "2026-01-03T22:11:01.130Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Entry 2 - DISPLAY DECISION:\nChoosing tableType 'multi_select' because all items are binary_flag (0/1) representing 'select all that apply' style responses. Stats: count, percent. Will generate 1 table with 5 rows (one per item) filtered to value=1 (i.e., selected). This presents how many respondents indicated each potential impact."
+      },
+      {
+        "timestamp": "2026-01-03T22:11:02.703Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Entry 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because the normalizedType is consistently binary_flag across all items and the question text asks 'How might ... impact your perceptions and/or prescribing?' which is a classic select-all-that-apply list of possible impacts. No ambiguity about ranking or scales. Minor ambiguity: 'Other (Specify)' is also binary_flag; if there were open-text details they are handled elsewhere."
+      },
+      {
+        "timestamp": "2026-01-03T22:11:19.435Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion A8 has 15 items. NormalizedType: categorical_select for all items. Values: 1-5 for each variable (allowedValues 1..5). The item naming (A8r1c1...A8r5c3) indicates a 5x3 grid: 5 patient situations (r1..r5) x 3 therapies (c1=Repatha, c2=Praluent, c3=Leqvio). This looks like a grid question where respondents rated likelihood (ordinal 1-5) for each therapy within each patient situation."
+      },
+      {
+        "timestamp": "2026-01-03T22:11:21.954Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'grid_by_value' because this is a grid with multiple items (therapies across patient situations) sharing the same response scale (1-5). The typical display for grid categorical_select with consistent allowed values is one table per value level, allowing comparison across therapies for a given response value (e.g., How many said '5 - Very likely' for each therapy across all patient situations). Stats: count, percent. Will generate 5 tables (one for each value 1 through 5). Rows in each table will be the 15 variables (or possibly grouped by patient situation with three therapies as rows). Better: for readability, each table will list the 5 patient situations as groups with 3 therapy rows each; but crosstab schema expects rows as variables, so list all 15 variables with labels combining patient situation and therapy. Will generate 5 tables."
+      },
+      {
+        "timestamp": "2026-01-03T22:11:23.569Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.90 because all items are categorical_select with identical allowedValues and clear grid row/column naming (r1..r5, c1..c3). The only minor ambiguity: exact wording of each patient situation (not provided) so I must include labels using available item labels; item labels repeat therapy names but not patient situation text. I will construct row labels by combining inferred patient situation index with therapy name (e.g., Situation 1 - Repatha). If actual situation text is available elsewhere it would be better to use that."
+      },
+      {
+        "timestamp": "2026-01-03T22:11:54.595Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Question A9 has 3 items. NormalizedType: categorical_select. Values: 1-4 for each item. This looks like a grid question with 3 drugs (Repatha, Praluent, Leqvio) each rated on a 4-point ordinal/categorical scale about extent of issues (coverage, approvals, cost)."
+      },
+      {
+        "timestamp": "2026-01-03T22:11:57.315Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Choosing tableType 'grid_by_value' because we have multiple items sharing the same allowedValues (1-4) and the question asks extent of issues for each drug. It's a grid-style question where it's useful to see for each response category (e.g., 'No issues' to 'Major issues') how responses distribute across drugs. Stats: count, percent. Will generate 4 tables, one per value (1,2,3,4)."
+      },
+      {
+        "timestamp": "2026-01-03T22:11:58.577Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Confidence: 0.90 because normalizedType is consistent across items and clearly represents a grid-like categorical rating. Slight uncertainty if client prefers mean comparisons, but for extent-of-issues categorical distribution tables per value are standard."
+      },
+      {
+        "timestamp": "2026-01-03T22:12:10.858Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Question A10 has 6 items. NormalizedType: binary_flag. Values: 0-1 for each item. This looks like a select-all-that-apply (multi-select) question where each sub-item indicates whether that reason applies to the patient."
+      },
+      {
+        "timestamp": "2026-01-03T22:12:12.501Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Choosing tableType 'multi_select' because normalizedType is binary_flag for all items (0/1). Multi-select tables show one row per option filtered to value=1 (selected), reporting counts and percentages. Will generate 1 table with 6 rows (one for each reason). Stats: count, percent."
+      },
+      {
+        "timestamp": "2026-01-03T22:12:13.788Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Confidence: 0.95 because the data are clearly binary flags representing 'select all that apply' reasons. No ambiguity in normalizedType or semantics. Minor concern: the label A10r6 contains an encoded apostrophe (Haven�t) which should be 'Haven't prescribed PCSK9s without a statin' — will keep label meaning intact."
+      },
+      {
+        "timestamp": "2026-01-03T22:12:22.299Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Question B1 has 8 items. NormalizedType: numeric_range. Values: 0-100 for each item. This looks like respondents allocated percentages of their current patients covered by each insurance type (a percentage allocation across categories / budget-style question)."
+      },
+      {
+        "timestamp": "2026-01-03T22:12:24.101Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Choosing tableType 'mean_rows' because items are numeric percentages (0-100) representing shares of patient coverage by insurance type. It's appropriate to show mean (average percentage) across respondents for each insurance type, plus median and sd. Will generate 1 table with 8 rows (one per insurance type). Stats: mean, median, sd."
+      },
+      {
+        "timestamp": "2026-01-03T22:12:25.486Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Confidence: 0.95 because the normalizedType is numeric_range with 0-100 and the question explicitly asks \"What percentage... are covered by each type of insurance?\" This strongly indicates continuous percentage allocation. Slight concerns: responses might not sum to 100 if respondents reported approximate values or missing categories, but display as means is still appropriate."
+      },
+      {
+        "timestamp": "2026-01-03T22:12:32.937Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion B5 has 5 items. NormalizedType: binary_flag for all items. Values: 0-1 (allowedValues [0,1]) for each sub-item. This looks like a multi-select (select-all-that-apply) question where each option is stored as a separate binary indicator representing whether the respondent selected that specialty/training."
+      },
+      {
+        "timestamp": "2026-01-03T22:12:34.382Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'multi_select' because the items are binary_flag indicators (0/1) representing 'select all that apply' style specialty/training options. Stats: count, percent. Will generate 1 table with one row per specialty option, filtered to value=1 (i.e., selected). Rows will list the five variables with their labels."
+      },
+      {
+        "timestamp": "2026-01-03T22:12:35.731Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because all items consistently use binary_flag (0/1) and labels clearly indicate specialty options. Little ambiguity. Concern: If any option actually represents a single-choice (mutually exclusive) category mis-coded as binary flags, but unlikely given pattern; still high confidence."
+      },
+      {
+        "timestamp": "2026-01-03T22:12:43.341Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion S1 has 1 item. NormalizedType: categorical_select. Values: discrete categorical values 1-3 with labels indicating consent preferences (proceed & protect identity; proceed & allow contact details to be passed to Drug Safety; do not proceed). This looks like a single-choice consent question (single-select categorical)."
+      },
+      {
+        "timestamp": "2026-01-03T22:12:45.042Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'frequency' because this is a single categorical single-select consent question. We want to show how many respondents selected each consent option. Stats: count, percent. Will generate 1 table."
+      },
+      {
+        "timestamp": "2026-01-03T22:12:46.115Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because the normalizedType is categorical_select and the item clearly presents mutually exclusive consent options. Minimal ambiguity."
+      },
+      {
+        "timestamp": "2026-01-03T22:12:54.204Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Question S2b has 1 item. NormalizedType: categorical_select. Values: valueType indicates 1-99, allowedValues present are [1,2,3,99] with scaleLabels for 1=Physician, 2=Nurse Practitioner, 3=Physician’s Assistant, 99=Other. This looks like a single-select categorical demographic question asking respondents to report their primary role."
+      },
+      {
+        "timestamp": "2026-01-03T22:12:55.827Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Choosing tableType 'frequency' because this is a single categorical/select question where each answer option should be a row. Stats: count and percent. Will generate 1 table showing counts and percentages for each role option (Physician, Nurse Practitioner, Physician's Assistant, Other)."
+      },
+      {
+        "timestamp": "2026-01-03T22:12:57.089Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Confidence: 0.95 because the item is a straightforward single-select categorical demographic with clearly labeled allowedValues. No ambiguity in display format. One possible minor ambiguity: value 99 labeled 'Other' might have open-text follow-up not shown here, but that doesn't change the frequency table choice."
+      },
+      {
+        "timestamp": "2026-01-03T22:13:04.959Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Question S2 has 1 items. NormalizedType: categorical_select. Values: integer codes 1-99 with specific allowed codes [1,2,3,4,5,6,7,99] and labeled categories (Cardiologist; Internal Medicine / GP / Primary Care / Family Practice; Nephrologist; Endocrinologist; Lipidologist; Nurse Practitioner; Physician's Assistant; Other). This looks like a single-select demographic question listing primary specialty options."
+      },
+      {
+        "timestamp": "2026-01-03T22:13:06.602Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Choosing tableType 'frequency' because this is a single categorical (single-select) question representing respondents' primary specialty. Frequency table will list each specialty as rows and show count and percent for each. Will generate 1 table."
+      },
+      {
+        "timestamp": "2026-01-03T22:13:07.708Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Confidence: 0.95 because normalizedType is categorical_select with explicit labeled allowed values mapping clearly to specialties. Low ambiguity — it's a straightforward demographic single-select. No major concerns."
+      },
+      {
+        "timestamp": "2026-01-03T22:13:17.299Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion S2a has 1 items. NormalizedType: categorical_select. Values: 1-3 (Cardiologist; Internal Medicine/General Practitioner/Primary Care/Family Practice; Other). This looks like a single-select categorical demographic question asking which type of doctor's office the respondent works in."
+      },
+      {
+        "timestamp": "2026-01-03T22:13:18.837Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'frequency' because this is a single categorical select question with mutually exclusive options. Frequency table will show counts and percentages per option. Will generate 1 table."
+      },
+      {
+        "timestamp": "2026-01-03T22:13:20.120Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.94 because normalizedType is categorical_select and question wording indicates a single-choice demographic classification. No ambiguity. Potential minor concern: 'Other' could be recoded but does not affect table type."
+      },
+      {
+        "timestamp": "2026-01-03T22:13:28.729Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Question qCARD_SPECIALTY has 1 items. NormalizedType: categorical_select. Values: 1-2 mapped to 'CARD' and 'NEPH/ENDO/LIP'. This looks like a single-selection categorical question (a single demographic/segment or specialty variable)."
+      },
+      {
+        "timestamp": "2026-01-03T22:13:30.492Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Choosing tableType 'frequency' because this is a single categorical select variable with two categories. Frequency table will show counts and percentages for each specialty category. Will generate 1 table with two rows (CARD, NEPH/ENDO/LIP). Stats: count, percent."
+      },
+      {
+        "timestamp": "2026-01-03T22:13:31.781Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Confidence: 0.95 because the variable is clearly a single categorical select with labeled values. No ambiguity on interpretation. Concern: none; only potential is if variable encodes 'other' or missing as codes outside allowedValues, but allowedValues specified. "
+      },
+      {
+        "timestamp": "2026-01-03T22:13:38.526Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Question qSPECIALTY has 1 items. NormalizedType: categorical_select. Values: allowedValues 1-3 with labels {1: CARD, 2: PCP, 3: NPPA}. This looks like a single-select categorical demographic question (one variable with three categories)."
+      },
+      {
+        "timestamp": "2026-01-03T22:13:41.118Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Choosing tableType 'frequency' because this is a single categorical select variable representing SPECIALTY with three mutually exclusive categories. Stats: count, percent. Will generate 1 table showing distribution across the three specialty categories."
+      },
+      {
+        "timestamp": "2026-01-03T22:13:42.129Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Confidence: 0.96 because the variable is a straightforward categorical select with clear labels and no ambiguity. No concerns."
+      },
+      {
+        "timestamp": "2026-01-03T22:13:51.844Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Entry 1 - DATA STRUCTURE ANALYSIS:\nQuestion S3a has 1 item. NormalizedType: categorical_select. Values: 1-3 with scaleLabels mapping 1=Interventional Cardiologist, 2=General Cardiologist, 3=Preventative Cardiologist. This looks like a single-select categorical demographic question (one variable with three mutually exclusive options)."
+      },
+      {
+        "timestamp": "2026-01-03T22:13:53.614Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Entry 2 - DISPLAY DECISION:\nChoosing tableType 'frequency' because this is a single categorical select question (respondents choose which type of cardiologist they are). For crosstab display, one row per option with stats count and percent is appropriate. Will generate 1 table."
+      },
+      {
+        "timestamp": "2026-01-03T22:13:54.862Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Entry 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because the normalizedType is categorical_select with clear scaleLabels and typical demographic question semantics. No ambiguity in how to display; frequency table is standard."
+      },
+      {
+        "timestamp": "2026-01-03T22:14:02.471Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion qTYPE_OF_CARD has 1 items. NormalizedType: categorical_select. Values: 1-3 with labels: 1=Interventional Card, 2=General Card, 3=Preventative Card. This looks like a single-select categorical question (one variable with three discrete categories)."
+      },
+      {
+        "timestamp": "2026-01-03T22:14:04.187Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'frequency' because this is a single categorical/select question where each response is exclusive and we want to show counts and percentages for each category. Stats: [count, percent]. Will generate 1 table."
+      },
+      {
+        "timestamp": "2026-01-03T22:14:05.459Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because the normalizedType is categorical_select and the question text 'TYPE OF CARD' matches a standard single-choice categorical demographic/style variable. No ambiguity. Concerns: None significant."
+      },
+      {
+        "timestamp": "2026-01-03T22:14:12.506Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion qON_LIST_OFF_LIST has 1 items. NormalizedType: categorical_select. Values: discrete codes 1-6 with scale labels: 1=CARD ON-LIST, 2=CARD OFF-LIST, 3=PCP ON-LIST, 4=PCP OFF-LIST, 5=NPPA ON-LIST, 6=NPPA OFF-LIST. This looks like a single-select categorical question where respondents pick one of six mutually exclusive categories describing ON-LIST/OFF-LIST status."
+      },
+      {
+        "timestamp": "2026-01-03T22:14:14.166Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'frequency' because this is a single categorical variable with six labeled categories. The appropriate stats are count and percent to show distribution across the six statuses. Will generate 1 table with one row per category."
+      },
+      {
+        "timestamp": "2026-01-03T22:14:15.294Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.94 because the item is clearly a single categorical select with explicit labels and no ambiguity. No concerns; straightforward frequency table is appropriate."
+      },
+      {
+        "timestamp": "2026-01-03T22:14:26.252Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion qLIST_TIER has 1 items. NormalizedType: categorical_select. Values: 1-4 with labels TIER 1, TIER 2, TIER 3, TIER 4. This looks like a single-select categorical question (one variable) with four mutually exclusive response categories."
+      },
+      {
+        "timestamp": "2026-01-03T22:14:28.734Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'frequency' because this is a single categorical select question with mutually exclusive tiers. The appropriate stats are count and percent. Will generate 1 table showing each tier as a row."
+      },
+      {
+        "timestamp": "2026-01-03T22:14:29.835Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because it's a straightforward single categorical variable with clear labels and allowedValues. No ambiguity about display format. No concerns."
+      },
+      {
+        "timestamp": "2026-01-03T22:14:40.682Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion qLIST_PRIORITY_ACCOUNT has 1 item. NormalizedType: categorical_select. Values: allowedValues [1,2] with scaleLabels 1=PRIORITY, 2=NOT PRIORITY. This looks like a single-select dichotomous categorical variable indicating whether the account is a priority account.\n\nENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'frequency' because this is a single categorical question (binary) where counts and percentages for each category are the appropriate summary. Stats: ['count', 'percent']. Will generate 1 table with one row per answer option (PRIORITY, NOT PRIORITY).\n\nENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because the structure is clear (one categorical variable with two labeled values). No ambiguity in interpretation."
+      },
+      {
+        "timestamp": "2026-01-03T22:14:49.294Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Question S4 has 1 items. NormalizedType: categorical_select. Values: 1-3 with labels: 1=Board Eligible, 2=Board Certified, 3=Neither. This looks like a single categorical (single-select) question asking the respondent's board certification/eligibility status."
+      },
+      {
+        "timestamp": "2026-01-03T22:14:50.873Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Choosing tableType 'frequency' because this is a single categorical select (single choice) question. Frequency tables are appropriate to show counts and percentages of respondents in each category. Stats: [count, percent]. Will generate 1 table."
+      },
+      {
+        "timestamp": "2026-01-03T22:14:51.954Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Confidence: 0.95 because mapping from categorical_select single-item question to a frequency table is straightforward. No ambiguity: labels provided and allowedValues consistent. No concerns."
+      },
+      {
+        "timestamp": "2026-01-03T22:14:59.840Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion S6 has 1 items. NormalizedType: numeric_range. Values: 0-99. This looks like a continuous numeric variable representing the number of years in clinical practice post residency/training."
+      },
+      {
+        "timestamp": "2026-01-03T22:15:01.955Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'mean_rows' because numeric_range values (years) are best summarized with central tendency and spread. Stats: mean, median, sd. Will generate 1 table showing the single variable as a row with those statistics. Rationale: respondents' years in practice is numeric; crosstabs usually show summary (mean/median) across any column banners; a frequency breakdown could be useful but with range 0-99 continuous, summary stats are more informative."
+      },
+      {
+        "timestamp": "2026-01-03T22:15:03.420Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because the variable is clearly numeric (years). Minimal ambiguity. Concern: If the client prefers distribution/frequency bins (e.g., 0-5,6-10) instead of means, alternative display could be a frequency table with bins, but default summary stats are appropriate."
+      },
+      {
+        "timestamp": "2026-01-03T22:15:12.993Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Question S7 has 1 items. NormalizedType: categorical_select. Values: 1-2 (Full-Time, Part-Time). This looks like a single-choice categorical question confirming whether respondent is full-time or part-time."
+      },
+      {
+        "timestamp": "2026-01-03T22:15:14.512Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Choosing tableType 'frequency' because it's a single categorical select question with two distinct categories. Stats: count, percent. Will generate 1 table listing Full-Time and Part-Time with counts and percentages."
+      },
+      {
+        "timestamp": "2026-01-03T22:15:15.509Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Confidence: 0.97 because the data is a straightforward single categorical variable with clear labeled values. No ambiguity."
+      },
+      {
+        "timestamp": "2026-01-03T22:15:22.750Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion S9 has 1 item. NormalizedType: categorical_select. Values: integers 1-8 with explicit scaleLabels mapping to professional settings (Private Solo Practice, Private Group Practice, Multi-specialty Practice / Comprehensive Care, Staff HMO, Community Hospital, Academic/University Hospital, VA Hospital, None of the above). This looks like a single-select categorical demographic question asking respondents to choose the setting where they spend most of their professional time."
+      },
+      {
+        "timestamp": "2026-01-03T22:15:24.572Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'frequency' because this is a single categorical select (single-response) question. The appropriate stats are count and percent to show distribution across the 8 response categories. Will generate 1 table representing the frequency distribution of professional setting. Rows will be one per allowed value using provided scaleLabels."
+      },
+      {
+        "timestamp": "2026-01-03T22:15:25.887Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because the structure is unambiguous: one categorical_select with labelled categories typical of a demographic/setting question. No ambiguity about multi-select or grid. Minor concern: 'None of the above' might be better labeled as 'Other/None' but labels are provided."
+      },
+      {
+        "timestamp": "2026-01-03T22:15:34.752Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion S10 has 1 items. NormalizedType: numeric_range. Values: integer range 0-999 representing the number of adult patients (age 18+) a respondent personally manages in a month. This looks like a single continuous/count variable measuring workload (patients per month)."
+      },
+      {
+        "timestamp": "2026-01-03T22:15:36.520Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'mean_rows' because this is a single numeric/count variable where summary statistics (mean, median, sd) are more informative than frequency distribution in a crosstab context. Stats: [mean, median, sd]. Will generate 1 table."
+      },
+      {
+        "timestamp": "2026-01-03T22:15:37.970Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because the variable is clearly numeric (range 0-999) representing counts; showing mean/median/sd is standard. Minor consideration: if reporting distribution bins (e.g., 0,1-10,11-50,51+) is desired but that would be a derived categorization; current instruction focuses on display format, so mean_rows is appropriate."
+      },
+      {
+        "timestamp": "2026-01-03T22:15:47.865Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion S11 has 1 items. NormalizedType: numeric_range. Values: integers from 0 to 999. This looks like a single numeric/count variable where each respondent reports the number of adult patients with hypercholesterolemia and established CVD for whom they are the primary treatment decision maker."
+      },
+      {
+        "timestamp": "2026-01-03T22:15:50.587Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'mean_rows' because the item is numeric (count) and the question asks for a rough quantity. As a single numeric item, showing summary statistics (mean, median, sd) is most informative to crosstab readers. Stats: [mean, median, sd]. Will generate 1 table."
+      },
+      {
+        "timestamp": "2026-01-03T22:15:52.169Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because normalizedType is clearly numeric_range and question semantics ask for a count. No ambiguity about grid or categorical interpretation. One possible consideration: distribution may be skewed with outliers; additional stats (median, IQR, percentiles) could help, but required stats are mean/median/sd per instructions."
+      },
+      {
+        "timestamp": "2026-01-03T22:15:59.044Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Question A2a has 1 items. NormalizedType: categorical_select. Values: 1-3 for the single item. This looks like a single-select categorical question where respondents choose one of three description options describing guideline recommendation."
+      },
+      {
+        "timestamp": "2026-01-03T22:16:00.661Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Choosing tableType 'frequency' because this is a single categorical select (one item with three labeled response options). Stats: count, percent. Will generate 1 table."
+      },
+      {
+        "timestamp": "2026-01-03T22:16:01.658Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Confidence: 0.95 because structure is unambiguous: single categorical question with clear labeled values. No ambiguity in display."
+      },
+      {
+        "timestamp": "2026-01-03T22:16:02.815Z",
+        "agentName": "TableAgent",
+        "action": "review",
+        "content": "Completed the required three scratchpad entries.\nNow prepare final output structure: one frequency table with three rows (one per allowed value) showing count and percent. tableId 'a2a'. Title should reflect question text concisely."
+      },
+      {
+        "timestamp": "2026-01-03T22:16:11.519Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion A2b has 1 items. NormalizedType: categorical_select. Values: integer codes 1-3 with labels: 1='Recommend a statin first', 2='Recommend a statin + ezetimibe first', 3='Recommend a PCSK9i first'. This looks like a single-select categorical question (one variable with three mutually exclusive response options)."
+      },
+      {
+        "timestamp": "2026-01-03T22:16:13.155Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'frequency' because this is a single categorical select question with three mutually exclusive options; showing counts and percentages for each response is the most appropriate. Stats: ['count','percent']. Will generate 1 table."
+      },
+      {
+        "timestamp": "2026-01-03T22:16:14.283Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because the variable is a clear single-select categorical variable with labeled options. No ambiguity in interpretation; standard frequency table is appropriate."
+      },
+      {
+        "timestamp": "2026-01-03T22:16:22.989Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion A5 has 1 item. NormalizedType: categorical_select. Values: integer codes 1-4 with labels: 1=Within 3 months, 2=4-6 months, 3=7-12 months, 4=Over a year. This looks like a single-select categorical question asking respondents when they might change prescribing—i.e., a single nominal/ordinal choice among time intervals."
+      },
+      {
+        "timestamp": "2026-01-03T22:16:24.717Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'frequency' because this is a single categorical (single-select) question with four ordered time-interval options. The most meaningful crosstab is counts and percentages for each response option. Stats: ['count','percent']. Will generate 1 table."
+      },
+      {
+        "timestamp": "2026-01-03T22:16:25.937Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because the normalizedType is categorical_select and question text clearly asks for one timeframe choice; little ambiguity. No concerns beyond possibly treating it as ordinal (could show mean rank but not appropriate for time intervals)."
+      },
+      {
+        "timestamp": "2026-01-03T22:16:34.559Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Question US_State has 1 items. NormalizedType: categorical_select. Values: allowedValues 1-53 with scaleLabels mapping to US states plus 'Other' and 'Invalid State'. This looks like a single-select demographic variable capturing respondent state of residence (one variable, many named categories)."
+      },
+      {
+        "timestamp": "2026-01-03T22:16:36.328Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Choosing tableType 'frequency' because this is a single categorical (demographic) variable where each answer option (state) should be shown as a row. Stats: count, percent. Will generate 1 table with 53 rows (one per allowed value/scaleLabel)."
+      },
+      {
+        "timestamp": "2026-01-03T22:16:37.584Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Confidence: 0.95 because normalizedType is categorical_select and it clearly represents US state choices with explicit labels. Minor concern: 'Invalid State' may be a coded response to catch bad data; include it as a row but could be suppressed in reporting if desired."
+      },
+      {
+        "timestamp": "2026-01-03T22:16:55.456Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Question Region has 1 items. NormalizedType: categorical_select. Values: 1-6 with labels: 1=Northeast, 2=South, 3=Midwest, 4=West, 5=Other, 6=Invalid Region. This looks like a single-select demographic variable (respondent region)."
+      },
+      {
+        "timestamp": "2026-01-03T22:16:57.087Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Choosing tableType 'frequency' because this is a single categorical question representing respondent region. Frequency table shows counts and percentages for each region category. Will generate 1 table with 6 rows (one per allowed value). Stats: count, percent."
+      },
+      {
+        "timestamp": "2026-01-03T22:16:58.315Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "Confidence: 0.95 because the normalizedType is categorical_select and this is clearly a single-select demographic question with labeled categories. Minimal ambiguity. Concern: 'Invalid Region' category (6) might be excluded in reporting or shown separately; but default is to include as a category."
+      },
+      {
+        "timestamp": "2026-01-03T22:17:08.284Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion B3 has 1 items. NormalizedType: categorical_select. Values: 1-3 mapped to Urban (1), Suburban (2), Rural (3). This looks like a single-select categorical question asking respondents to classify the location of their primary practice (a demographic-style question)."
+      },
+      {
+        "timestamp": "2026-01-03T22:17:10.027Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'frequency' because this is a single categorical select (one variable with three labeled categories). The typical crosstab for such demographic is counts and percentages per category. Stats: ['count', 'percent']. Will generate 1 table."
+      },
+      {
+        "timestamp": "2026-01-03T22:17:11.375Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.97 because the question is a straightforward single-select categorical demographic with clear labeled values (Urban/Suburban/Rural). No ambiguity about display format. No concerns."
+      },
+      {
+        "timestamp": "2026-01-03T22:17:17.519Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion B4 has 1 item. NormalizedType: numeric_range. Values: integer counts 0-9999 (rangeMin=0, rangeMax=9999). This looks like a single numeric/count measure (number of physicians in a practice), not categorical or multi-select."
+      },
+      {
+        "timestamp": "2026-01-03T22:17:19.202Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'mean_rows' because this is a single numeric variable representing counts; mean/median/sd are appropriate summary statistics to describe distribution. Stats: [mean, median, sd]. Will generate 1 table."
+      },
+      {
+        "timestamp": "2026-01-03T22:17:20.795Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because the normalizedType is numeric_range and the variable clearly captures a count. No ambiguity about being categorical. One potential concern: sometimes such counts are displayed as frequency distribution bins (e.g., 0, 1-2, 3-5, 6-10, 11+) for readability; but that is a visualization choice outside the agent's remit. Overall clear."
+      },
+      {
+        "timestamp": "2026-01-03T22:17:31.084Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 1 - DATA STRUCTURE ANALYSIS:\nQuestion QCONSENT has 1 item. NormalizedType: categorical_select. Values: 1-2 with labels 1=Yes, 2=No. This looks like a single-select categorical (binary) question asking whether respondent is willing to participate in future research."
+      },
+      {
+        "timestamp": "2026-01-03T22:17:32.880Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 2 - DISPLAY DECISION:\nChoosing tableType 'frequency' because this is a single categorical question (Yes/No). Stats: count, percent. Will generate 1 table showing the distribution of consent responses with two rows (Yes, No)."
+      },
+      {
+        "timestamp": "2026-01-03T22:17:34.109Z",
+        "agentName": "TableAgent",
+        "action": "add",
+        "content": "ENTRY 3 - CONFIDENCE ASSESSMENT:\nConfidence: 0.95 because normalizedType is categorical_select and the semantics are unambiguous (consent yes/no). No ambiguity about reference, single item."
+      }
+    ]
+  }
+}
