@@ -30,7 +30,7 @@ Datamap CSV → DataMapProcessor → Verbose Datamap
 | — | Delete old files | ✅ Complete |
 | 5.5 | R significance testing | ⚠️ Verify before Step 6 |
 | 6 | ExcelJS Formatter | ⏳ Next |
-| 7 | Excel Cleanup Agent (optional) | 📋 Planned |
+| 7 | VerificationAgent (survey → label cleanup) | 📋 Detailed plan ready |
 
 ---
 
@@ -120,47 +120,670 @@ Reads `results/tables.json` from R output.
 
 ---
 
-## Step 7: Excel Cleanup Agent (Optional)
+## Step 7: VerificationAgent
 
-**Goal**: Use the survey/questionnaire document to polish labels before final Excel output.
+**Goal**: Verify and enhance table labels against the actual survey document before Excel rendering.
 
-### 7.1 Context
+### 7.1 The Problem
 
-This is the **first agent in the pipeline that sees the actual survey document** (`leqvio-demand-survey.docx` in practice files). Previous agents work from:
-- Datamap (variable definitions)
+Current pipeline produces output like:
+```json
+{ "label": "Leqvio (inclisiran) - Value 1", "filterValue": "1" }
+{ "label": "Praluent - Value 3", "filterValue": "3" }
+```
+
+Market researchers need:
+```json
+{ "label": "Leqvio (inclisiran) - Not at all likely", "filterValue": "1" }
+{ "label": "Praluent - Somewhat likely", "filterValue": "3" }
+```
+
+**Root cause**: No agent in the current pipeline sees the survey document (`leqvio-demand-survey.docx`). Agents work from:
+- Datamap (variable codes, abbreviated labels)
 - Banner plan (cut definitions)
 - SPSS data (raw values)
 
-The survey contains the actual question text as presented to respondents.
+The survey contains:
+- Actual question text as presented to respondents
+- Scale anchors ("1 = Not at all likely", "5 = Extremely likely")
+- Full response option wording
 
-### 7.2 Responsibilities
+### 7.2 Pipeline Position
 
-| Field | What Agent Adjusts |
-|-------|-------------------|
-| Question labels | Rewrite for clarity if needed |
-| Answer labels | Match survey wording if datamap differs |
-| Table titles | Clean formatting |
+```
+R JSON output → VerificationAgent → Cleaned JSON → ExcelJS Formatter
+                       ↓
+              Survey Document (→ Markdown)
+```
 
-**Not adjusted**: Data values, calculations, structure
+The agent runs **after** R calculations, **before** ExcelJS formatting. This keeps:
+- R output pure (data calculations only)
+- ExcelJS simple (just render what it receives)
+- Verification testable independently
 
-### 7.3 Why This Matters
+### 7.3 Responsibilities
 
-Without this step:
-- Labels come from datamap (often abbreviated/coded)
-- Question text may not match what respondents saw
-- Some variables may lack descriptive labels entirely
+| Field | What Agent Adjusts | Example |
+|-------|-------------------|---------|
+| `row.label` | Add scale anchors, clarify wording | `"Value 1"` → `"Not at all likely (1)"` |
+| `questionText` | Match survey wording if different | Clean up truncated text |
+| `title` | Improve table title clarity | `"A6 - Items ranked #1"` → `"A6 - Treatment paths ranked first"` |
 
-With this step:
-- Labels match the actual survey instrument
-- Output is immediately usable for reports
-- Less manual cleanup required
+**NOT adjusted** (data integrity preserved):
+- `variable` names
+- `filterValue` codes
+- Calculated values (n, %, mean, etc.)
+- Table structure (`tableType`, row order)
 
-### 7.4 Implementation Notes
+### 7.4 Architecture
 
-- Input: Table JSON + survey document (parsed)
-- Output: Adjusted label fields only
-- Structured output with Zod schema (only adjustable fields)
-- Confidence scoring for changes (high = exact match found, low = inference)
+#### 7.4.1 Processing Strategy: Table-by-Table
+
+Same pattern as CrosstabAgent and TableAgent:
+- Process each table definition individually
+- Inject survey markdown + table JSON into agent context
+- Collect results, combine into final output
+- Graceful fallback on errors (return original labels)
+
+```typescript
+for (const table of tableDefinitions) {
+  const verified = await verifyTable(table, surveyMarkdown);
+  results.push(verified);
+}
+```
+
+#### 7.4.2 Survey → Markdown Conversion
+
+New utility: `SurveyProcessor`
+
+```typescript
+// src/lib/processors/SurveyProcessor.ts
+export async function parseSurveyToMarkdown(
+  surveyPath: string
+): Promise<string> {
+  // 1. Detect file type (.docx, .pdf, .txt)
+  // 2. Extract text content (mammoth for docx, pdf-parse for pdf)
+  // 3. Convert to clean markdown
+  // 4. Return markdown string
+}
+```
+
+Output format:
+```markdown
+# Survey: Leqvio Demand Study
+
+## S1. What is your primary specialty?
+- 1 = Cardiology
+- 2 = Endocrinology
+- 3 = Internal Medicine
+...
+
+## A5. How likely are you to prescribe each treatment?
+Scale: 1 = Not at all likely, 5 = Extremely likely
+
+| Treatment | 1 | 2 | 3 | 4 | 5 |
+|-----------|---|---|---|---|---|
+| Leqvio    | ○ | ○ | ○ | ○ | ○ |
+| Repatha   | ○ | ○ | ○ | ○ | ○ |
+...
+```
+
+#### 7.4.3 Scratchpad Tool
+
+Reuse existing scratchpad pattern for reasoning transparency:
+
+```typescript
+// src/agents/tools/scratchpad.ts - add verification entries
+export const verificationScratchpadTool = tool({
+  description: 'Log verification reasoning',
+  parameters: z.object({
+    action: z.enum(['LOOKUP', 'MATCH', 'CHANGE', 'KEEP', 'CONFIDENCE']),
+    content: z.string(),
+  }),
+  execute: async ({ action, content }) => {
+    addScratchpadEntry('verification', action, content);
+    return { logged: true };
+  }
+});
+```
+
+---
+
+### 7.5 Schemas
+
+#### 7.5.1 Input Schema
+
+```typescript
+// src/schemas/verificationAgentSchema.ts
+
+export const VerificationInputRowSchema = z.object({
+  variable: z.string(),
+  label: z.string(),
+  filterValue: z.string(),
+});
+
+export const VerificationInputTableSchema = z.object({
+  tableId: z.string(),
+  title: z.string(),
+  tableType: z.string(),
+  questionId: z.string(),
+  questionText: z.string(),
+  rows: z.array(VerificationInputRowSchema),
+  hints: z.array(z.string()),
+});
+
+export const VerificationAgentInputSchema = z.object({
+  table: VerificationInputTableSchema,
+  surveyMarkdown: z.string(),  // Full survey as markdown
+});
+
+export type VerificationAgentInput = z.infer<typeof VerificationAgentInputSchema>;
+```
+
+#### 7.5.2 Output Schema
+
+```typescript
+// Only fields the agent can modify (Azure OpenAI requires all fields)
+
+export const VerifiedRowSchema = z.object({
+  variable: z.string(),           // Pass-through (unchanged)
+  label: z.string(),              // May be updated
+  filterValue: z.string(),        // Pass-through (unchanged)
+  labelChanged: z.boolean(),      // Did we modify the label?
+  originalLabel: z.string(),      // For audit trail
+});
+
+export const VerificationAgentOutputSchema = z.object({
+  tableId: z.string(),            // Pass-through
+  title: z.string(),              // May be updated
+  titleChanged: z.boolean(),
+  questionText: z.string(),       // May be updated
+  questionTextChanged: z.boolean(),
+  rows: z.array(VerifiedRowSchema),
+
+  // Confidence and reasoning
+  confidence: z.number().min(0).max(1),
+  reasoning: z.string(),
+
+  // Summary stats for logging
+  changesApplied: z.number(),     // Count of modified labels
+});
+
+export type VerificationAgentOutput = z.infer<typeof VerificationAgentOutputSchema>;
+```
+
+---
+
+### 7.6 Environment Configuration
+
+Add to `src/lib/env.ts`:
+
+```typescript
+// In getEnvironmentConfig():
+const verificationModel = process.env.VERIFICATION_MODEL || 'gpt-5-nano';
+
+// In processingLimits:
+verificationModelTokens: parseInt(
+  process.env.VERIFICATION_MODEL_TOKENS || '128000'
+),
+
+// Add getter functions:
+export const getVerificationModel = () => {
+  const config = getEnvironmentConfig();
+  const provider = getAzureProvider();
+  return provider.chat(config.verificationModel);
+};
+
+export const getVerificationModelName = (): string => {
+  const config = getEnvironmentConfig();
+  return `azure/${config.verificationModel}`;
+};
+
+export const getVerificationModelTokenLimit = (): number => {
+  const config = getEnvironmentConfig();
+  return config.processingLimits.verificationModelTokens;
+};
+```
+
+Add to `src/lib/types.ts`:
+
+```typescript
+// In ProcessingLimits interface:
+verificationModelTokens: number;
+
+// In EnvironmentConfig interface:
+verificationModel: string;
+
+// In PromptVersions interface:
+verificationPromptVersion: string;
+```
+
+Environment variables:
+```bash
+# .env.local
+VERIFICATION_MODEL=gpt-5-nano          # Azure deployment name
+VERIFICATION_MODEL_TOKENS=128000       # Token limit
+VERIFICATION_PROMPT_VERSION=production # Prompt variant
+```
+
+---
+
+### 7.7 Prompts
+
+#### 7.7.1 Production Prompt
+
+```typescript
+// src/prompts/verification/production.ts
+
+export const VERIFICATION_AGENT_INSTRUCTIONS_PRODUCTION = `
+You are a survey research quality assurance specialist. Your job is to verify that crosstab table labels accurately reflect the survey instrument.
+
+You have access to:
+1. A table definition with variable names, labels, and filter values
+2. The complete survey document in markdown format
+
+YOUR TASK:
+1. Find the question in the survey that corresponds to this table
+2. Verify each row label matches the survey wording
+3. For scale questions (1-5, 1-7, etc.), add scale anchor text to labels
+4. Update question text if the survey wording is clearer
+5. Improve table title if needed for clarity
+
+---
+
+SCALE ANCHORS (critical):
+
+When you see labels like "Value 1", "Value 2", etc., look up the scale in the survey:
+- Find the scale definition (e.g., "1 = Not at all likely, 5 = Extremely likely")
+- Replace generic labels with descriptive text
+
+Before: { "label": "Leqvio - Value 1", "filterValue": "1" }
+After:  { "label": "Leqvio - Not at all likely (1)", "filterValue": "1" }
+
+Include the numeric value in parentheses for reference.
+
+---
+
+MATCHING STRATEGY:
+
+1. LOOKUP: Search survey markdown for question ID (e.g., "A5", "S12")
+2. MATCH: Compare survey text with table labels
+3. CHANGE: If survey wording is clearer or more complete, update the label
+4. KEEP: If label already matches survey, leave unchanged
+
+---
+
+CONSTRAINTS:
+
+DO NOT CHANGE:
+- variable names (these are SPSS column names)
+- filterValue codes (these map to data values)
+- Table structure or row order
+- Calculated values
+
+ONLY CHANGE:
+- label text (to match survey wording, add scale anchors)
+- questionText (to match survey wording)
+- title (for clarity)
+
+---
+
+USE YOUR SCRATCHPAD:
+
+ENTRY 1 - LOOKUP: "Searching for question [ID] in survey..."
+ENTRY 2 - MATCH: "Found question at [location]. Scale: [describe if applicable]."
+ENTRY 3 - CHANGES: "Updating [N] labels: [list changes]."
+ENTRY 4 - CONFIDENCE: "[0.X] - [reasoning]"
+
+---
+
+CONFIDENCE SCORING:
+
+0.95-1.0: Exact match found in survey, scale anchors clear
+0.85-0.94: Match found, minor wording differences resolved
+0.70-0.84: Inferred match, some uncertainty
+0.50-0.69: Partial match, may need review
+Below 0.50: Could not locate in survey, no changes made
+
+---
+
+OUTPUT:
+
+Return the verified table with:
+- Updated labels where improvements found
+- labelChanged: true for any modified row
+- originalLabel preserved for audit
+- Confidence score and reasoning
+`;
+```
+
+#### 7.7.2 Prompt Index
+
+```typescript
+// src/prompts/verification/index.ts
+
+import { VERIFICATION_AGENT_INSTRUCTIONS_PRODUCTION } from './production';
+import { VERIFICATION_AGENT_INSTRUCTIONS_ALTERNATIVE } from './alternative';
+
+export const getVerificationPrompt = (version: string): string => {
+  switch (version) {
+    case 'alternative':
+      return VERIFICATION_AGENT_INSTRUCTIONS_ALTERNATIVE;
+    case 'production':
+    default:
+      return VERIFICATION_AGENT_INSTRUCTIONS_PRODUCTION;
+  }
+};
+
+export { VERIFICATION_AGENT_INSTRUCTIONS_PRODUCTION };
+```
+
+---
+
+### 7.8 Agent Implementation
+
+```typescript
+// src/agents/VerificationAgent.ts
+
+import { generateText, Output, stepCountIs } from 'ai';
+import {
+  VerificationAgentInputSchema,
+  VerificationAgentOutputSchema,
+  type VerificationAgentInput,
+  type VerificationAgentOutput,
+} from '../schemas/verificationAgentSchema';
+import { getVerificationModel, getVerificationModelName, getVerificationModelTokenLimit, getPromptVersions } from '../lib/env';
+import { verificationScratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries } from './tools/scratchpad';
+import { getVerificationPrompt } from '../prompts';
+
+/**
+ * Verify a single table against survey document
+ */
+export async function verifyTable(
+  input: VerificationAgentInput
+): Promise<VerificationAgentOutput> {
+  console.log(`[VerificationAgent] Verifying table: ${input.table.tableId}`);
+
+  try {
+    const promptVersions = getPromptVersions();
+    const instructions = getVerificationPrompt(promptVersions.verificationPromptVersion);
+
+    const systemPrompt = `
+${instructions}
+
+SURVEY DOCUMENT:
+
+${input.surveyMarkdown}
+
+TABLE TO VERIFY:
+
+${JSON.stringify(input.table, null, 2)}
+
+Begin verification now.
+`;
+
+    const { output } = await generateText({
+      model: getVerificationModel(),
+      system: systemPrompt,
+      prompt: `Verify table "${input.table.tableId}" (${input.table.rows.length} rows) against the survey document. Focus on scale anchors and label clarity.`,
+      tools: {
+        scratchpad: verificationScratchpadTool,
+      },
+      stopWhen: stepCountIs(10),
+      maxOutputTokens: Math.min(getVerificationModelTokenLimit(), 8000),
+      output: Output.object({
+        schema: VerificationAgentOutputSchema,
+      }),
+    });
+
+    if (!output) {
+      throw new Error(`Invalid agent response for table ${input.table.tableId}`);
+    }
+
+    console.log(`[VerificationAgent] Table ${input.table.tableId}: ${output.changesApplied} changes, confidence: ${output.confidence.toFixed(2)}`);
+
+    return output;
+
+  } catch (error) {
+    console.error(`[VerificationAgent] Error verifying table ${input.table.tableId}:`, error);
+
+    // Return original table with no changes on error
+    return {
+      tableId: input.table.tableId,
+      title: input.table.title,
+      titleChanged: false,
+      questionText: input.table.questionText,
+      questionTextChanged: false,
+      rows: input.table.rows.map(row => ({
+        variable: row.variable,
+        label: row.label,
+        filterValue: row.filterValue,
+        labelChanged: false,
+        originalLabel: row.label,
+      })),
+      confidence: 0.0,
+      reasoning: `Error during verification: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      changesApplied: 0,
+    };
+  }
+}
+
+/**
+ * Verify all tables against survey
+ */
+export async function verifyAllTables(
+  tables: VerificationAgentInput['table'][],
+  surveyMarkdown: string,
+  onProgress?: (completed: number, total: number) => void
+): Promise<{ results: VerificationAgentOutput[]; processingLog: string[] }> {
+  const processingLog: string[] = [];
+  const logEntry = (msg: string) => {
+    console.log(msg);
+    processingLog.push(`${new Date().toISOString()}: ${msg}`);
+  };
+
+  clearScratchpadEntries();
+  logEntry(`[VerificationAgent] Starting: ${tables.length} tables to verify`);
+  logEntry(`[VerificationAgent] Using model: ${getVerificationModelName()}`);
+  logEntry(`[VerificationAgent] Survey context: ${surveyMarkdown.length} characters`);
+
+  const results: VerificationAgentOutput[] = [];
+
+  for (let i = 0; i < tables.length; i++) {
+    const table = tables[i];
+    const startTime = Date.now();
+
+    logEntry(`[VerificationAgent] Verifying ${i + 1}/${tables.length}: "${table.tableId}"`);
+
+    const result = await verifyTable({ table, surveyMarkdown });
+    results.push(result);
+
+    const duration = Date.now() - startTime;
+    logEntry(`[VerificationAgent] Table "${table.tableId}" done in ${duration}ms - ${result.changesApplied} changes`);
+
+    try { onProgress?.(i + 1, tables.length); } catch {}
+  }
+
+  // Summary stats
+  const totalChanges = results.reduce((sum, r) => sum + r.changesApplied, 0);
+  const avgConfidence = results.length > 0
+    ? results.reduce((sum, r) => sum + r.confidence, 0) / results.length
+    : 0;
+
+  logEntry(`[VerificationAgent] Complete: ${totalChanges} total changes across ${results.length} tables, avg confidence: ${avgConfidence.toFixed(2)}`);
+
+  return { results, processingLog };
+}
+```
+
+---
+
+### 7.9 API Integration
+
+Option A: Standalone endpoint for testing
+
+```typescript
+// src/app/api/verify-tables/route.ts
+
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyAllTables } from '@/agents/VerificationAgent';
+import { parseSurveyToMarkdown } from '@/lib/processors/SurveyProcessor';
+
+export async function POST(req: NextRequest) {
+  try {
+    const formData = await req.formData();
+    const tablesJson = formData.get('tables') as string;
+    const surveyFile = formData.get('survey') as File;
+
+    // Parse inputs
+    const tables = JSON.parse(tablesJson);
+    const surveyBuffer = await surveyFile.arrayBuffer();
+    const surveyMarkdown = await parseSurveyToMarkdown(Buffer.from(surveyBuffer));
+
+    // Run verification
+    const { results, processingLog } = await verifyAllTables(tables, surveyMarkdown);
+
+    return NextResponse.json({
+      success: true,
+      results,
+      summary: {
+        tablesVerified: results.length,
+        totalChanges: results.reduce((sum, r) => sum + r.changesApplied, 0),
+        averageConfidence: results.reduce((sum, r) => sum + r.confidence, 0) / results.length,
+      },
+      processingLog,
+    });
+
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+Option B: Integrate into main pipeline (after R, before ExcelJS)
+
+```typescript
+// In src/app/api/process-crosstab/route.ts
+
+// After R script execution, before ExcelJS:
+if (surveyFile) {
+  const surveyMarkdown = await parseSurveyToMarkdown(surveyFile);
+  const { results: verifiedTables } = await verifyAllTables(
+    rOutputTables,
+    surveyMarkdown
+  );
+  // Pass verifiedTables to ExcelJS instead of rOutputTables
+}
+```
+
+---
+
+### 7.10 Test Script
+
+```typescript
+// scripts/test-verification-agent.ts
+
+import { verifyAllTables } from '../src/agents/VerificationAgent';
+import { parseSurveyToMarkdown } from '../src/lib/processors/SurveyProcessor';
+import fs from 'fs/promises';
+import path from 'path';
+
+async function main() {
+  console.log('=== VerificationAgent Test ===\n');
+
+  // Load latest table output
+  const tableOutputPath = process.argv[2] ||
+    'temp-outputs/table-test-2026-01-04T04-42-54-851Z/table-output-2026-01-04T04-48-58-509Z.json';
+
+  const surveyPath = 'data/test-data/practice-files/leqvio-demand-survey.docx';
+
+  console.log(`Loading tables from: ${tableOutputPath}`);
+  console.log(`Loading survey from: ${surveyPath}\n`);
+
+  const tableOutput = JSON.parse(await fs.readFile(tableOutputPath, 'utf-8'));
+  const surveyMarkdown = await parseSurveyToMarkdown(surveyPath);
+
+  // Extract table definitions from results
+  const tables = tableOutput.results.flatMap((r: any) =>
+    r.tables.map((t: any) => ({
+      ...t,
+      questionId: r.questionId,
+      questionText: r.questionText,
+    }))
+  );
+
+  console.log(`Found ${tables.length} tables to verify`);
+  console.log(`Survey markdown: ${surveyMarkdown.length} characters\n`);
+
+  // Run verification
+  const { results, processingLog } = await verifyAllTables(
+    tables,
+    surveyMarkdown,
+    (completed, total) => console.log(`Progress: ${completed}/${total}`)
+  );
+
+  // Save results
+  const outputDir = `temp-outputs/verification-test-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+  await fs.mkdir(outputDir, { recursive: true });
+
+  await fs.writeFile(
+    path.join(outputDir, 'verified-tables.json'),
+    JSON.stringify({ results, processingLog }, null, 2)
+  );
+
+  // Summary
+  const totalChanges = results.reduce((sum, r) => sum + r.changesApplied, 0);
+  const avgConfidence = results.reduce((sum, r) => sum + r.confidence, 0) / results.length;
+
+  console.log('\n=== Summary ===');
+  console.log(`Tables verified: ${results.length}`);
+  console.log(`Total label changes: ${totalChanges}`);
+  console.log(`Average confidence: ${avgConfidence.toFixed(2)}`);
+  console.log(`Output saved to: ${outputDir}`);
+}
+
+main().catch(console.error);
+```
+
+---
+
+### 7.11 Implementation Checklist
+
+| Task | File(s) | Status |
+|------|---------|--------|
+| Add verification types to ProcessingLimits | `src/lib/types.ts` | ⏳ |
+| Add verification env config | `src/lib/env.ts` | ⏳ |
+| Create SurveyProcessor | `src/lib/processors/SurveyProcessor.ts` | ⏳ |
+| Create verificationAgentSchema | `src/schemas/verificationAgentSchema.ts` | ⏳ |
+| Create verification prompts | `src/prompts/verification/*.ts` | ⏳ |
+| Create VerificationAgent | `src/agents/VerificationAgent.ts` | ⏳ |
+| Update agents/index.ts | `src/agents/index.ts` | ⏳ |
+| Update schemas/index.ts | `src/schemas/index.ts` | ⏳ |
+| Update prompts/index.ts | `src/prompts/index.ts` | ⏳ |
+| Create test script | `scripts/test-verification-agent.ts` | ⏳ |
+| Create API route (optional) | `src/app/api/verify-tables/route.ts` | ⏳ |
+| Integrate into main pipeline | `src/app/api/process-crosstab/route.ts` | ⏳ |
+
+### 7.12 Dependencies
+
+New npm packages needed:
+```bash
+npm install mammoth    # DOCX → text extraction
+npm install pdf-parse  # PDF → text extraction (if supporting PDF surveys)
+```
+
+---
+
+### 7.13 Future Enhancements
+
+1. **Caching**: Cache survey markdown for repeated runs with same document
+2. **Batch optimization**: If survey is small enough, process multiple tables per API call
+3. **Confidence thresholds**: Only apply changes above certain confidence level
+4. **Manual review queue**: Flag low-confidence changes for human review
+5. **Survey format detection**: Auto-detect survey structure (Qualtrics, SurveyMonkey, etc.)
 
 ---
 
@@ -172,4 +795,4 @@ Once Steps 6-7 complete and validated against `data/test-data/practice-files/`:
 ---
 
 *Created: January 3, 2026*
-*Updated: January 3, 2026 - Steps 4+5 complete, added 5.5 flag and Step 7 plan*
+*Updated: January 4, 2026 - Detailed VerificationAgent implementation plan (Step 7)*
