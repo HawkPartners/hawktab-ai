@@ -434,6 +434,12 @@ _Truncated labels, encoding issues, missing titles_
 
 ---
 
+## Feature Enhancements
+_Ideas for new features or improvements_
+
+
+---
+
 ## Notes
 
 `;
