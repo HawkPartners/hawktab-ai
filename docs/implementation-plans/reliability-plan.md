@@ -12,11 +12,11 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 
 ## Part 1: Bug Capture
 
-**Status**: IN PROGRESS
+**Status**: COMPLETE
 
 Review the practice-files test output against Joe's tabs. Capture all differences in the session's `bugs.md` file.
 
-**Test Run Location**: `temp-outputs/test-pipeline-practice-files-*/`
+**Test Run Location**: `temp-outputs/test-pipeline-practice-files-2026-01-04T19-20-00-967Z/`
 
 **Process**:
 1. Open `results/crosstabs.xlsx` and Joe's reference tabs side-by-side
@@ -113,7 +113,6 @@ Problems that the VerificationAgent cannot solve. These require changes to R cal
 
 **R Calculations**:
 - 0% vs N/A distinction (base n = 0 should show dash, not 0%)
-- Significance testing parameter alignment (verify against Joe's settings)
 - A3a/A3b allocation questions accuracy
 
 **RScriptGenerator**:
@@ -135,9 +134,46 @@ After VerificationAgent is implemented:
 
 ---
 
-## Part 4: Iteration (Practice-Files)
+## Part 4: Significance Testing
 
-**Status**: NOT STARTED (begins after Parts 2-3 complete)
+**Status**: NOT STARTED (begins after Part 3 complete)
+
+Our significance testing differs from Joe's WinCross output. After talking with Joe, we identified the root cause: we use **pooled proportions** for z-tests, but WinCross defaults to **unpooled proportions**.
+
+### Key Changes Needed
+
+| Parameter | Current | WinCross Default | Action |
+|-----------|---------|------------------|--------|
+| Z-test Formula | Pooled | **Unpooled** | Fix required |
+| Min Sample Size | n < 5 → NA | No minimum | Fix required |
+| Confidence Level | 90% | 90% | No change |
+| T-test | Welch's | Welch's | No change |
+
+### Implementation
+
+1. **Update z-test function**: Change from pooled to unpooled standard error formula
+   - Pooled: `SE = sqrt(p_pool * (1-p_pool) * (1/n1 + 1/n2))`
+   - Unpooled: `SE = sqrt(p1*(1-p1)/n1 + p2*(1-p2)/n2)`
+
+2. **Remove n<5 hard block**: WinCross tests everything, so should we
+
+3. **Add SignificanceConfig schema**: Allow configuration of test parameters for flexibility
+
+4. **Update Excel footer**: Document methodology used
+
+### Validation
+
+- Run on practice-files with new formula
+- Compare significance letters to Joe's output
+- Document which cells changed and why
+
+**Detailed Plan**: See `docs/implementation-plans/significance-testing-plan.md`
+
+---
+
+## Part 5: Iteration (Practice-Files)
+
+**Status**: NOT STARTED (begins after Parts 2-4 complete)
 
 ### Banner Plan Versions
 
@@ -151,7 +187,7 @@ Three versions of the banner plan exist for each dataset:
 
 **Why this matters**: Joe's tabs may not match the original banner plan exactly. To truly validate our output matches Joe's, we need the adjusted version that reflects what Joe actually produced.
 
-**For practice-files**: Create `leqvio-demand-bannerplan-adjusted.docx` before completing Part 4 iteration.
+**For practice-files**: Create `leqvio-demand-bannerplan-adjusted.docx` before completing Part 5 iteration.
 
 ### Process
 
@@ -169,7 +205,7 @@ Three versions of the banner plan exist for each dataset:
 
 ---
 
-## Part 5: Broader Testing
+## Part 6: Broader Testing
 
 **Status**: NOT STARTED (begins after practice-files is stable)
 
@@ -282,4 +318,4 @@ Primary test case: `data/test-data/practice-files/`
 ---
 
 *Created: January 6, 2026*
-*Status: Part 1 in progress*
+*Status: Part 1 complete, Part 2 next*
