@@ -308,22 +308,25 @@ function generateHelperFunctions(lines: string[]): void {
   lines.push('}');
   lines.push('');
 
-  // Z-test for proportions
-  lines.push('# Z-test for proportions (returns TRUE if significantly different)');
+  // Z-test for proportions (unpooled - matches WinCross default)
+  lines.push('# Z-test for proportions (unpooled formula - WinCross default)');
+  lines.push('# No minimum sample size - WinCross tests all data');
   lines.push('sig_test_proportion <- function(count1, n1, count2, n2, threshold = p_threshold) {');
-  lines.push('  if (n1 < 5 || n2 < 5) return(NA)  # Insufficient sample size');
-  lines.push('');
-  lines.push('  # Pooled proportion');
-  lines.push('  p_pool <- (count1 + count2) / (n1 + n2)');
-  lines.push('  if (p_pool == 0 || p_pool == 1) return(NA)  # Can\'t test');
-  lines.push('');
-  lines.push('  # Standard error');
-  lines.push('  se <- sqrt(p_pool * (1 - p_pool) * (1/n1 + 1/n2))');
-  lines.push('  if (se == 0) return(NA)');
-  lines.push('');
-  lines.push('  # Z statistic');
+  lines.push('  # Calculate proportions');
   lines.push('  p1 <- count1 / n1');
   lines.push('  p2 <- count2 / n2');
+  lines.push('');
+  lines.push('  # Edge case: can\'t test if either proportion is undefined');
+  lines.push('  if (is.na(p1) || is.na(p2)) return(NA)');
+  lines.push('');
+  lines.push('  # Edge case: can\'t test if both are 0% or both are 100%');
+  lines.push('  if ((p1 == 0 && p2 == 0) || (p1 == 1 && p2 == 1)) return(NA)');
+  lines.push('');
+  lines.push('  # Standard error (unpooled formula)');
+  lines.push('  se <- sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2)');
+  lines.push('  if (is.na(se) || se == 0) return(NA)');
+  lines.push('');
+  lines.push('  # Z statistic');
   lines.push('  z <- (p1 - p2) / se');
   lines.push('');
   lines.push('  # Two-tailed p-value');

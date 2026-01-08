@@ -1,5 +1,9 @@
 #!/usr/bin/env npx tsx
 /**
+ * @deprecated Use test-r-changes.ts instead.
+ * This script is kept for backwards compatibility but test-r-changes.ts
+ * provides a better workflow for testing R script changes.
+ *
  * R Script Generator V2 Test Script
  *
  * Purpose: Test RScriptGeneratorV2 with TableAgent output.

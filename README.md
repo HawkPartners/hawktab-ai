@@ -174,12 +174,18 @@ npx tsx scripts/test-table-agent.ts
 npx tsx scripts/test-verification-agent.ts                     # Uses most recent pipeline output
 npx tsx scripts/test-verification-agent.ts [folder]            # Uses specific output folder
 
-# R script generation from existing TableAgent output
-npx tsx scripts/test-r-script-v2.ts
+# Test R script changes without re-running full pipeline
+# Uses existing pipeline outputs → generates new R script → runs R → generates Excel
+npx tsx scripts/test-r-changes.ts                  # Uses most recent pipeline output
+npx tsx scripts/test-r-changes.ts [folder]         # Uses specific pipeline folder
+# Output: temp-outputs/test-r-changes-<timestamp>/results/crosstabs-changes.xlsx
 
 # Export Excel from existing tables.json (if pipeline was interrupted)
 npx tsx scripts/export-excel.ts                    # Uses most recent session
 npx tsx scripts/export-excel.ts [sessionId]        # Uses specific session
+
+# DEPRECATED: Use test-r-changes.ts instead
+# npx tsx scripts/test-r-script-v2.ts
 ```
 
 **Full Pipeline Output** (`temp-outputs/test-pipeline-<dataset>-<timestamp>/`):
