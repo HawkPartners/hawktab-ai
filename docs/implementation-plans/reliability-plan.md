@@ -8,6 +8,10 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 
 **Current State**: Pipeline working end-to-end. Full test run completed against `practice-files` dataset.
 
+**What We're Validating**: Each part involves comparing our output to Joe's tabs for both:
+- **Data accuracy** - counts, percentages, means, bases match
+- **Significance testing** - letters appear on the correct cells
+
 ---
 
 ## Part 1: Bug Capture
@@ -122,9 +126,21 @@ for (const group of questionGroups) {
 
 **Status**: NOT STARTED
 
-Our significance testing differs from Joe's WinCross output. After talking with Joe, we identified the root cause: we use **pooled proportions** for z-tests, but WinCross defaults to **unpooled proportions**.
+Our significance testing differs from Joe's WinCross output. Two fixes needed.
 
-### Key Changes Needed
+### Context from Joe
+
+Joe confirmed HawkPartners' significance testing practices (January 2026):
+
+> "Almost all HawkPartners studies are done at a 90% confidence level -- that is the default."
+
+> "There is no minimum base for stat-testing as many of the HCP studies have only a hundred or so respondents so some of the subgroups get into the single digits. So stat-testing is done on all data cuts, even those with <10."
+
+> "The tabulation software determines the appropriate method of stat-testing -- including overlap handling, etc."
+
+**Key insight**: Joe uses WinCross defaults. WinCross does NOT auto-select test methods - the user selects the test type, and the default is **unpooled independent z-test** with no minimum sample size.
+
+### Changes Needed
 
 | Parameter | Current | WinCross Default | Action |
 |-----------|---------|------------------|--------|
@@ -135,21 +151,21 @@ Our significance testing differs from Joe's WinCross output. After talking with 
 
 ### Implementation
 
-1. **Update z-test function**: Change from pooled to unpooled standard error formula
-   - Pooled: `SE = sqrt(p_pool * (1-p_pool) * (1/n1 + 1/n2))`
-   - Unpooled: `SE = sqrt(p1*(1-p1)/n1 + p2*(1-p2)/n2)`
+Two changes in `src/lib/r/RScriptGeneratorV2.ts`:
 
-2. **Remove n<5 hard block**: WinCross tests everything, so should we
+1. **Switch to unpooled z-test formula**:
+   - Current: `SE = sqrt(p_pool * (1-p_pool) * (1/n1 + 1/n2))`
+   - New: `SE = sqrt(p1*(1-p1)/n1 + p2*(1-p2)/n2)`
 
-3. **Add SignificanceConfig schema**: Allow configuration of test parameters for flexibility
+2. **Remove n<5 hard block**: Delete the line that returns NA for small samples
 
-4. **Update Excel footer**: Document methodology used
+That's it. No configuration schemas, no optional features.
 
 ### Validation
 
-- Run on practice-files with new formula
-- Compare significance letters to Joe's output
-- Document which cells changed and why
+1. Run `npx tsx scripts/test-pipeline.ts` on practice-files
+2. Compare significance letters to Joe's output
+3. If they match, Part 3 is complete
 
 **Detailed Plan**: See `docs/implementation-plans/significance-testing-plan.md`
 
@@ -174,6 +190,18 @@ This is the standard approach for human-preference-centered LLM evaluation:
 2. **Strict Comparison**: Automated diff between actual output and golden data (surfaces all differences)
 3. **Human Annotation**: For each difference, mark as "wrong" (needs fix) or "acceptable" (different but fine)
 4. **Metrics Tracking**: Track both strict accuracy and practical accuracy over time
+
+### What We're Comparing
+
+The golden dataset comparison covers both **data accuracy** and **agent decisions**:
+
+| Category | What's Checked |
+|----------|----------------|
+| **Data Accuracy** | Base n, counts, percentages, means, medians, SDs |
+| **Significance Testing** | Correct letters on correct cells (after Part 3 fix) |
+| **Table Structure** | tableType, rows, grouping decisions |
+| **Labels** | Row labels, table titles |
+| **Derived Tables** | T2B/B2B presence, NET rows |
 
 ### Why This Matters
 
@@ -265,6 +293,17 @@ data/test-data/practice-files/
 
 **Status**: NOT STARTED (begins after Part 4 Evaluation Framework complete)
 
+### What We're Validating
+
+For each table in our output vs Joe's tabs:
+
+| Check | Description |
+|-------|-------------|
+| **Data Match** | Base n, counts, percentages, means all match |
+| **Significance Match** | Letters appear on same cells |
+| **Structure Match** | Same tables exist, rows in same order |
+| **Labels Acceptable** | Row labels readable and accurate |
+
 ### Banner Plan Versions
 
 Three versions of the banner plan exist for each dataset:
@@ -283,13 +322,14 @@ Three versions of the banner plan exist for each dataset:
 
 1. Create banner-plan-adjusted for practice-files (if not exists)
 2. Re-run `npx tsx scripts/test-pipeline.ts` with adjusted banner
-3. Compare output to Joe's tabs
+3. Compare output to Joe's tabs (data accuracy + significance letters)
 4. Update bugs.md with any new/remaining issues
 5. Address issues (prompt tweaks, code fixes)
 6. Repeat until practice-files output matches Joe's tabs
 
 **Success Criteria**:
-- Data accuracy matches Joe's tabs
+- Data accuracy matches Joe's tabs (counts, percentages, means)
+- Significance letters match Joe's tabs
 - Formatting acceptable for partner use
 - No blocking issues for report writing
 
@@ -318,7 +358,9 @@ Each dataset folder in `data/test-data/` needs:
 For each dataset:
 1. Prepare files (upload survey, banner original, Joe's tabs; create clean + adjusted)
 2. Run pipeline with adjusted banner
-3. Compare to Joe's tabs
+3. Compare to Joe's tabs:
+   - **Data accuracy**: Do the numbers match?
+   - **Significance**: Do the letters match?
 4. Log bugs, fix, re-run
 5. Mark dataset as passing only when satisfied
 
@@ -337,7 +379,7 @@ For each dataset:
    |--------|---------|
    | Not Started | Files not prepared |
    | In Progress | Actively testing/fixing |
-   | Passing | Output matches Joe's tabs |
+   | Passing | Output matches Joe's tabs (data + significance) |
    | Blocked | Has issue requiring architectural change |
 
 5. **Prioritize by client importance**: If certain datasets are for active clients, prioritize those.
@@ -390,7 +432,7 @@ User Uploads → BannerAgent → CrosstabAgent → TableAgent → VerificationAg
 |------|---------|
 | `src/agents/TableAgent.ts` | Table structure decisions |
 | `src/agents/VerificationAgent.ts` | Survey-aware optimization |
-| `src/lib/r/RScriptGeneratorV2.ts` | R script generation |
+| `src/lib/r/RScriptGeneratorV2.ts` | R script generation + significance testing |
 | `src/lib/excel/ExcelFormatter.ts` | Excel output formatting |
 | `scripts/test-pipeline.ts` | End-to-end test script |
 
@@ -398,15 +440,15 @@ User Uploads → BannerAgent → CrosstabAgent → TableAgent → VerificationAg
 
 Primary test case: `data/test-data/practice-files/`
 - `leqvio-demand-datamap.csv` (existing)
-- `leqvio-demand-W2.sav` (existing)
+- `leqvio-demand-data.sav` (existing)
 - `leqvio-demand-survey.docx` (for VerificationAgent)
 - `leqvio-demand-bannerplan-original.docx`
 - `leqvio-demand-bannerplan-clean.docx` (current testing)
 - `leqvio-demand-bannerplan-adjusted.docx` (to create for final validation)
-- `leqvio-demand-tabs-joe.xlsx` (reference output)
+- `leqvio-demand-tabs-joe.xlsx` (reference output - to upload)
 
 ---
 
 *Created: January 6, 2026*
 *Updated: January 8, 2026*
-*Status: Parts 1-2 complete, Parts 3-6 pending*
+*Status: Parts 1-2 complete, Part 3 ready for implementation, Parts 4-6 pending*
