@@ -27,6 +27,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { generateRScriptV2 } from '../src/lib/r/RScriptGeneratorV2';
 import type { TableDefinition, TableAgentOutput } from '../src/schemas/tableAgentSchema';
+import { toExtendedTable, type ExtendedTableDefinition } from '../src/schemas/verificationAgentSchema';
 import type { CutDefinition } from '../src/lib/tables/CutsSpec';
 
 // =============================================================================
@@ -185,9 +186,12 @@ async function main() {
     process.exit(1);
   }
 
+  // Convert to ExtendedTableDefinition (required by RScriptGeneratorV2)
+  const extendedTables: ExtendedTableDefinition[] = tables.map(toExtendedTable);
+
   // Count table types
   const typeCount: Record<string, number> = {};
-  for (const table of tables) {
+  for (const table of extendedTables) {
     typeCount[table.tableType] = (typeCount[table.tableType] || 0) + 1;
   }
   log(`  Table types: ${JSON.stringify(typeCount)}`, 'dim');
@@ -202,7 +206,7 @@ async function main() {
 
   const sessionId = new Date().toISOString().replace(/[:.]/g, '-');
   const script = generateRScriptV2(
-    { tables, cuts },
+    { tables: extendedTables, cuts },
     { sessionId, outputDir: 'results' }
   );
 

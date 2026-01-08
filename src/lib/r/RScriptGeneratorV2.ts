@@ -1,18 +1,21 @@
 /**
  * R Script Generator V2
  *
- * Purpose: Generate R script that consumes TableAgentOutput and produces JSON
+ * Purpose: Generate R script that consumes VerificationAgent output and produces JSON
  *
  * Key features:
- * - Input: TableDefinition[] (from TableAgent) + CutDefinition[] with stat testing info
+ * - Input: ExtendedTableDefinition[] (from VerificationAgent) + CutDefinition[] with stat testing info
  * - Output: JSON file with calculations and significance testing
  * - Two table types: frequency and mean_rows
  * - Correct base sizing: always rebase on who answered the question
  * - Significance testing: z-test for proportions, t-test for means
  * - Within-group comparisons + comparison to Total column
+ * - Handles ExtendedTableRow fields: isNet, netComponents, indent, comma-separated filterValues
+ *
+ * Note: Derived tables (T2B, Top 3) are now created by VerificationAgent, not here.
  */
 
-import type { TableDefinition } from '../../schemas/tableAgentSchema';
+import type { ExtendedTableDefinition, ExtendedTableRow } from '../../schemas/verificationAgentSchema';
 import type { CutDefinition, CutGroup } from '../tables/CutsSpec';
 
 // =============================================================================
@@ -33,7 +36,7 @@ export interface BannerGroup {
 }
 
 export interface RScriptV2Input {
-  tables: TableDefinition[];
+  tables: ExtendedTableDefinition[];  // From VerificationAgent (or converted TableAgent output)
   cuts: CutDefinition[];
   cutGroups?: CutGroup[];           // Group structure for within-group stat testing
   totalStatLetter?: string | null;  // Letter for Total column (usually "T")
@@ -134,10 +137,17 @@ export function generateRScriptV2(
   lines.push('');
 
   for (const table of tables) {
+    // Skip excluded tables (moved to reference sheet by VerificationAgent)
+    if (table.exclude) {
+      lines.push(`# Skipping excluded table: ${table.tableId} (${table.excludeReason})`);
+      lines.push('');
+      continue;
+    }
+
     if (table.tableType === 'frequency') {
       generateFrequencyTable(lines, table);
-      // Generate derived tables based on hints
-      generateDerivedTablesFromHints(lines, table);
+      // Note: Derived tables (T2B, Top 3) are now created by VerificationAgent
+      // and passed as separate tables with isDerived: true
     } else if (table.tableType === 'mean_rows') {
       generateMeanRowsTable(lines, table);
     } else {
@@ -359,14 +369,17 @@ function generateHelperFunctions(lines: string[]): void {
 // Frequency Table Generator
 // =============================================================================
 
-function generateFrequencyTable(lines: string[], table: TableDefinition): void {
+function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition): void {
   const tableId = escapeRString(table.tableId);
   const title = escapeRString(table.title);
 
   lines.push(`# -----------------------------------------------------------------------------`);
-  lines.push(`# Table: ${table.tableId} (frequency)`);
+  lines.push(`# Table: ${table.tableId} (frequency)${table.isDerived ? ' [DERIVED]' : ''}`);
   lines.push(`# Title: ${table.title}`);
   lines.push(`# Rows: ${table.rows.length}`);
+  if (table.sourceTableId) {
+    lines.push(`# Source: ${table.sourceTableId}`);
+  }
   lines.push(`# -----------------------------------------------------------------------------`);
   lines.push('');
 
@@ -375,6 +388,7 @@ function generateFrequencyTable(lines: string[], table: TableDefinition): void {
   lines.push(`  title = "${title}",`);
   lines.push(`  tableType = "frequency",`);
   lines.push(`  hints = c(${table.hints.map(h => `"${h}"`).join(', ')}),`);
+  lines.push(`  isDerived = ${table.isDerived ? 'TRUE' : 'FALSE'},`);
   lines.push('  data = list()');
   lines.push(')');
   lines.push('');
@@ -387,40 +401,81 @@ function generateFrequencyTable(lines: string[], table: TableDefinition): void {
 
   // Generate each row
   for (let i = 0; i < table.rows.length; i++) {
-    const row = table.rows[i];
+    const row = table.rows[i] as ExtendedTableRow;
     const varName = escapeRString(row.variable);
     const label = escapeRString(row.label);
-    const filterValue = escapeRString(row.filterValue);
+    const filterValue = row.filterValue;
     const rowKey = `${row.variable}_row_${i + 1}`;
+    const isNet = row.isNet || false;
+    const indent = row.indent || 0;
 
-    lines.push(`  # Row ${i + 1}: ${row.variable} == "${row.filterValue}"`);
-    lines.push(`  var_col <- safe_get_var(cut_data, "${varName}")`);
-    lines.push('  if (!is.null(var_col)) {');
-    lines.push('    # CRITICAL: Base = respondents who answered this question (non-NA)');
-    lines.push('    base_n <- sum(!is.na(var_col))');
-    // Use as.numeric() to handle haven labelled vectors from SPSS files
-    lines.push(`    count <- sum(as.numeric(var_col) == ${filterValue}, na.rm = TRUE)`);
-    lines.push('    pct <- if (base_n > 0) round_half_up(count / base_n * 100) else 0');
+    // Check if filterValue contains multiple values (comma-separated, e.g., "4,5" for T2B)
+    const filterValues = filterValue.split(',').map(v => v.trim()).filter(v => v);
+    const hasMultipleValues = filterValues.length > 1;
+
+    if (isNet && row.netComponents && row.netComponents.length > 0) {
+      // NET row: aggregate counts from multiple variables
+      lines.push(`  # Row ${i + 1}: NET - ${row.label} (components: ${row.netComponents.join(', ')})`);
+      const componentVars = row.netComponents.map(v => `"${escapeRString(v)}"`).join(', ');
+      lines.push(`  net_vars <- c(${componentVars})`);
+      lines.push('  net_respondents <- rep(FALSE, nrow(cut_data))');
+      lines.push('  for (net_var in net_vars) {');
+      lines.push('    var_col <- safe_get_var(cut_data, net_var)');
+      lines.push('    if (!is.null(var_col)) {');
+      lines.push('      # Mark respondent if they have any non-NA value for this variable');
+      lines.push('      net_respondents <- net_respondents | (!is.na(var_col) & var_col > 0)');
+      lines.push('    }');
+      lines.push('  }');
+      lines.push('  # Base = anyone who answered any component question');
+      lines.push('  base_n <- sum(!is.na(safe_get_var(cut_data, net_vars[1])))');
+      lines.push('  count <- sum(net_respondents, na.rm = TRUE)');
+      lines.push('  pct <- if (base_n > 0) round_half_up(count / base_n * 100) else 0');
+    } else if (hasMultipleValues) {
+      // Multiple filter values (e.g., T2B "4,5")
+      lines.push(`  # Row ${i + 1}: ${row.variable} IN (${filterValues.join(', ')})`);
+      lines.push(`  var_col <- safe_get_var(cut_data, "${varName}")`);
+      lines.push('  if (!is.null(var_col)) {');
+      lines.push('    base_n <- sum(!is.na(var_col))');
+      lines.push(`    count <- sum(as.numeric(var_col) %in% c(${filterValues.join(', ')}), na.rm = TRUE)`);
+      lines.push('    pct <- if (base_n > 0) round_half_up(count / base_n * 100) else 0');
+    } else {
+      // Standard single filter value
+      lines.push(`  # Row ${i + 1}: ${row.variable} == ${filterValue}`);
+      lines.push(`  var_col <- safe_get_var(cut_data, "${varName}")`);
+      lines.push('  if (!is.null(var_col)) {');
+      lines.push('    base_n <- sum(!is.na(var_col))');
+      lines.push(`    count <- sum(as.numeric(var_col) == ${filterValue}, na.rm = TRUE)`);
+      lines.push('    pct <- if (base_n > 0) round_half_up(count / base_n * 100) else 0');
+    }
+
     lines.push('');
     lines.push(`    table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
     lines.push(`      label = "${label}",`);
     lines.push('      n = base_n,');
     lines.push('      count = count,');
     lines.push('      pct = pct,');
+    lines.push(`      isNet = ${isNet ? 'TRUE' : 'FALSE'},`);
+    lines.push(`      indent = ${indent},`);
     lines.push('      sig_higher_than = c(),');
     lines.push('      sig_vs_total = NULL');
     lines.push('    )');
-    lines.push('  } else {');
-    lines.push(`    table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
-    lines.push(`      label = "${label}",`);
-    lines.push('      n = 0,');
-    lines.push('      count = 0,');
-    lines.push('      pct = 0,');
-    lines.push('      sig_higher_than = c(),');
-    lines.push('      sig_vs_total = NULL,');
-    lines.push(`      error = "Variable ${varName} not found"`);
-    lines.push('    )');
-    lines.push('  }');
+
+    // Close the if block for non-NET rows
+    if (!isNet || !row.netComponents || row.netComponents.length === 0) {
+      lines.push('  } else {');
+      lines.push(`    table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
+      lines.push(`      label = "${label}",`);
+      lines.push('      n = 0,');
+      lines.push('      count = 0,');
+      lines.push('      pct = 0,');
+      lines.push(`      isNet = ${isNet ? 'TRUE' : 'FALSE'},`);
+      lines.push(`      indent = ${indent},`);
+      lines.push('      sig_higher_than = c(),');
+      lines.push('      sig_vs_total = NULL,');
+      lines.push(`      error = "Variable ${varName} not found"`);
+      lines.push('    )');
+      lines.push('  }');
+    }
     lines.push('');
   }
 
@@ -435,14 +490,17 @@ function generateFrequencyTable(lines: string[], table: TableDefinition): void {
 // Mean Rows Table Generator
 // =============================================================================
 
-function generateMeanRowsTable(lines: string[], table: TableDefinition): void {
+function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition): void {
   const tableId = escapeRString(table.tableId);
   const title = escapeRString(table.title);
 
   lines.push(`# -----------------------------------------------------------------------------`);
-  lines.push(`# Table: ${table.tableId} (mean_rows)`);
+  lines.push(`# Table: ${table.tableId} (mean_rows)${table.isDerived ? ' [DERIVED]' : ''}`);
   lines.push(`# Title: ${table.title}`);
   lines.push(`# Rows: ${table.rows.length}`);
+  if (table.sourceTableId) {
+    lines.push(`# Source: ${table.sourceTableId}`);
+  }
   lines.push(`# -----------------------------------------------------------------------------`);
   lines.push('');
 
@@ -451,6 +509,7 @@ function generateMeanRowsTable(lines: string[], table: TableDefinition): void {
   lines.push(`  title = "${title}",`);
   lines.push(`  tableType = "mean_rows",`);
   lines.push(`  hints = c(${table.hints.map(h => `"${h}"`).join(', ')}),`);
+  lines.push(`  isDerived = ${table.isDerived ? 'TRUE' : 'FALSE'},`);
   lines.push('  data = list()');
   lines.push(')');
   lines.push('');
@@ -463,7 +522,7 @@ function generateMeanRowsTable(lines: string[], table: TableDefinition): void {
 
   // Generate each row
   for (let i = 0; i < table.rows.length; i++) {
-    const row = table.rows[i];
+    const row = table.rows[i] as ExtendedTableRow;
     const varName = escapeRString(row.variable);
     const label = escapeRString(row.label);
     const rowKey = row.variable;  // For mean_rows, use variable name as key
@@ -517,219 +576,6 @@ function generateMeanRowsTable(lines: string[], table: TableDefinition): void {
   lines.push('');
   lines.push(`all_tables[["${tableId}"]] <- table_${sanitizeVarName(table.tableId)}`);
   lines.push(`print(paste("Generated mean_rows table: ${tableId}"))`);
-  lines.push('');
-}
-
-// =============================================================================
-// Derived Tables from Hints
-// =============================================================================
-
-/**
- * Generate derived tables based on table hints
- * - scale-5: T2B/B2B table (5-point Likert)
- * - scale-7: T2B/B2B table (7-point Likert)
- * - ranking: Top 3 Combined table
- */
-function generateDerivedTablesFromHints(lines: string[], table: TableDefinition): void {
-  const hints = table.hints || [];
-
-  // Check for scale-5 hint
-  if (hints.includes('scale-5')) {
-    generateT2BB2BTable(lines, table, 5);
-  }
-
-  // Check for scale-7 hint
-  if (hints.includes('scale-7')) {
-    generateT2BB2BTable(lines, table, 7);
-  }
-
-  // Check for ranking hint
-  if (hints.includes('ranking')) {
-    generateTop3CombinedTable(lines, table);
-  }
-}
-
-/**
- * Generate T2B/B2B derived table for Likert scales
- * - For scale-5: T2B = 4,5; Middle = 3; B2B = 1,2
- * - For scale-7: T2B = 6,7; Middle = 3,4,5; B2B = 1,2
- */
-function generateT2BB2BTable(lines: string[], table: TableDefinition, scalePoints: 5 | 7): void {
-  const derivedTableId = `${table.tableId}_t2b_b2b`;
-  const title = `${table.title} (T2B/B2B)`;
-
-  // Determine values for each box based on scale
-  const t2bValues = scalePoints === 5 ? 'c(4, 5)' : 'c(6, 7)';
-  const b2bValues = 'c(1, 2)';
-  const middleValues = scalePoints === 5 ? 'c(3)' : 'c(3, 4, 5)';
-  const middleLabel = scalePoints === 5 ? 'Middle' : 'Middle 3 Box';
-
-  lines.push(`# -----------------------------------------------------------------------------`);
-  lines.push(`# Derived Table: ${derivedTableId} (T2B/B2B from ${table.tableId})`);
-  lines.push(`# Scale: ${scalePoints}-point Likert`);
-  lines.push(`# -----------------------------------------------------------------------------`);
-  lines.push('');
-
-  lines.push(`table_${sanitizeVarName(derivedTableId)} <- list(`);
-  lines.push(`  tableId = "${escapeRString(derivedTableId)}",`);
-  lines.push(`  title = "${escapeRString(title)}",`);
-  lines.push(`  tableType = "frequency",`);
-  lines.push(`  hints = c("derived", "t2b_b2b", "scale-${scalePoints}"),`);
-  lines.push('  data = list()');
-  lines.push(')');
-  lines.push('');
-
-  lines.push('for (cut_name in names(cuts)) {');
-  lines.push('  cut_data <- apply_cut(data, cuts[[cut_name]])');
-  lines.push(`  table_${sanitizeVarName(derivedTableId)}$data[[cut_name]] <- list()`);
-  lines.push(`  table_${sanitizeVarName(derivedTableId)}$data[[cut_name]]$stat_letter <- cut_stat_letters[[cut_name]]`);
-  lines.push('');
-
-  // For T2B/B2B, we need a variable to aggregate across
-  // Each row in the original table represents different values of the same variable
-  // We'll use the first row's variable as the source
-  if (table.rows.length === 0) {
-    lines.push('  # No rows to derive from');
-    lines.push('}');
-    lines.push('');
-    return;
-  }
-
-  // Get the variable from the first row (all rows should use same variable for a Likert scale)
-  const varName = escapeRString(table.rows[0].variable);
-
-  // T2B Row
-  lines.push(`  # T2B (Top 2 Box)`);
-  lines.push(`  var_col <- safe_get_var(cut_data, "${varName}")`);
-  lines.push('  if (!is.null(var_col)) {');
-  lines.push('    base_n <- sum(!is.na(var_col))');
-  lines.push(`    t2b_count <- sum(as.numeric(var_col) %in% ${t2bValues}, na.rm = TRUE)`);
-  lines.push('    t2b_pct <- if (base_n > 0) round_half_up(t2b_count / base_n * 100) else 0');
-  lines.push('');
-  lines.push(`    table_${sanitizeVarName(derivedTableId)}$data[[cut_name]][["t2b"]] <- list(`);
-  lines.push('      label = "Top 2 Box",');
-  lines.push('      n = base_n,');
-  lines.push('      count = t2b_count,');
-  lines.push('      pct = t2b_pct,');
-  lines.push('      sig_higher_than = c(),');
-  lines.push('      sig_vs_total = NULL');
-  lines.push('    )');
-  lines.push('');
-
-  // Middle Row
-  lines.push(`    # ${middleLabel}`);
-  lines.push(`    middle_count <- sum(as.numeric(var_col) %in% ${middleValues}, na.rm = TRUE)`);
-  lines.push('    middle_pct <- if (base_n > 0) round_half_up(middle_count / base_n * 100) else 0');
-  lines.push('');
-  lines.push(`    table_${sanitizeVarName(derivedTableId)}$data[[cut_name]][["middle"]] <- list(`);
-  lines.push(`      label = "${middleLabel}",`);
-  lines.push('      n = base_n,');
-  lines.push('      count = middle_count,');
-  lines.push('      pct = middle_pct,');
-  lines.push('      sig_higher_than = c(),');
-  lines.push('      sig_vs_total = NULL');
-  lines.push('    )');
-  lines.push('');
-
-  // B2B Row
-  lines.push(`    # B2B (Bottom 2 Box)`);
-  lines.push(`    b2b_count <- sum(as.numeric(var_col) %in% ${b2bValues}, na.rm = TRUE)`);
-  lines.push('    b2b_pct <- if (base_n > 0) round_half_up(b2b_count / base_n * 100) else 0');
-  lines.push('');
-  lines.push(`    table_${sanitizeVarName(derivedTableId)}$data[[cut_name]][["b2b"]] <- list(`);
-  lines.push('      label = "Bottom 2 Box",');
-  lines.push('      n = base_n,');
-  lines.push('      count = b2b_count,');
-  lines.push('      pct = b2b_pct,');
-  lines.push('      sig_higher_than = c(),');
-  lines.push('      sig_vs_total = NULL');
-  lines.push('    )');
-  lines.push('  } else {');
-  lines.push(`    table_${sanitizeVarName(derivedTableId)}$data[[cut_name]][["t2b"]] <- list(label = "Top 2 Box", n = 0, count = 0, pct = 0, sig_higher_than = c(), sig_vs_total = NULL, error = "Variable not found")`);
-  lines.push(`    table_${sanitizeVarName(derivedTableId)}$data[[cut_name]][["middle"]] <- list(label = "${middleLabel}", n = 0, count = 0, pct = 0, sig_higher_than = c(), sig_vs_total = NULL, error = "Variable not found")`);
-  lines.push(`    table_${sanitizeVarName(derivedTableId)}$data[[cut_name]][["b2b"]] <- list(label = "Bottom 2 Box", n = 0, count = 0, pct = 0, sig_higher_than = c(), sig_vs_total = NULL, error = "Variable not found")`);
-  lines.push('  }');
-  lines.push('');
-
-  lines.push('}');
-  lines.push('');
-  lines.push(`all_tables[["${escapeRString(derivedTableId)}"]] <- table_${sanitizeVarName(derivedTableId)}`);
-  lines.push(`print(paste("Generated T2B/B2B table: ${escapeRString(derivedTableId)}"))`);
-  lines.push('');
-}
-
-/**
- * Generate Top 3 Combined derived table for ranking questions
- * Counts respondents who ranked the item 1st, 2nd, or 3rd
- */
-function generateTop3CombinedTable(lines: string[], table: TableDefinition): void {
-  const derivedTableId = `${table.tableId}_top3`;
-  const title = `${table.title} (Top 3 Combined)`;
-
-  lines.push(`# -----------------------------------------------------------------------------`);
-  lines.push(`# Derived Table: ${derivedTableId} (Top 3 Combined from ${table.tableId})`);
-  lines.push(`# -----------------------------------------------------------------------------`);
-  lines.push('');
-
-  lines.push(`table_${sanitizeVarName(derivedTableId)} <- list(`);
-  lines.push(`  tableId = "${escapeRString(derivedTableId)}",`);
-  lines.push(`  title = "${escapeRString(title)}",`);
-  lines.push(`  tableType = "frequency",`);
-  lines.push(`  hints = c("derived", "top3_combined", "ranking"),`);
-  lines.push('  data = list()');
-  lines.push(')');
-  lines.push('');
-
-  lines.push('for (cut_name in names(cuts)) {');
-  lines.push('  cut_data <- apply_cut(data, cuts[[cut_name]])');
-  lines.push(`  table_${sanitizeVarName(derivedTableId)}$data[[cut_name]] <- list()`);
-  lines.push(`  table_${sanitizeVarName(derivedTableId)}$data[[cut_name]]$stat_letter <- cut_stat_letters[[cut_name]]`);
-  lines.push('');
-
-  // For ranking questions, each row represents a different item being ranked
-  // The variable contains the rank (1, 2, 3, etc.)
-  // We need to count respondents who gave rank 1, 2, or 3 for each item
-
-  for (let i = 0; i < table.rows.length; i++) {
-    const row = table.rows[i];
-    const varName = escapeRString(row.variable);
-    const label = escapeRString(row.label);
-    const rowKey = `${row.variable}_top3`;
-
-    lines.push(`  # Top 3 for: ${row.label}`);
-    lines.push(`  var_col <- safe_get_var(cut_data, "${varName}")`);
-    lines.push('  if (!is.null(var_col)) {');
-    lines.push('    base_n <- sum(!is.na(var_col))');
-    lines.push('    # Count respondents who ranked this item 1st, 2nd, or 3rd');
-    lines.push('    top3_count <- sum(as.numeric(var_col) <= 3, na.rm = TRUE)');
-    lines.push('    top3_pct <- if (base_n > 0) round_half_up(top3_count / base_n * 100) else 0');
-    lines.push('');
-    lines.push(`    table_${sanitizeVarName(derivedTableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
-    lines.push(`      label = "${label}",`);
-    lines.push('      n = base_n,');
-    lines.push('      count = top3_count,');
-    lines.push('      pct = top3_pct,');
-    lines.push('      sig_higher_than = c(),');
-    lines.push('      sig_vs_total = NULL');
-    lines.push('    )');
-    lines.push('  } else {');
-    lines.push(`    table_${sanitizeVarName(derivedTableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
-    lines.push(`      label = "${label}",`);
-    lines.push('      n = 0,');
-    lines.push('      count = 0,');
-    lines.push('      pct = 0,');
-    lines.push('      sig_higher_than = c(),');
-    lines.push('      sig_vs_total = NULL,');
-    lines.push(`      error = "Variable ${varName} not found"`);
-    lines.push('    )');
-    lines.push('  }');
-    lines.push('');
-  }
-
-  lines.push('}');
-  lines.push('');
-  lines.push(`all_tables[["${escapeRString(derivedTableId)}"]] <- table_${sanitizeVarName(derivedTableId)}`);
-  lines.push(`print(paste("Generated Top 3 Combined table: ${escapeRString(derivedTableId)}"))`);
   lines.push('');
 }
 
@@ -842,7 +688,7 @@ interface JsonOutputMetadata {
 
 function generateJsonOutput(
   lines: string[],
-  tables: TableDefinition[],
+  tables: ExtendedTableDefinition[],
   cuts: CutDefinition[],
   outputDir: string,
   metadata: JsonOutputMetadata
@@ -1008,9 +854,6 @@ export {
   generateHelperFunctions,
   generateFrequencyTable,
   generateMeanRowsTable,
-  generateDerivedTablesFromHints,
-  generateT2BB2BTable,
-  generateTop3CombinedTable,
   generateSignificanceTesting,
   generateJsonOutput,
   escapeRString,
