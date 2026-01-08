@@ -3,30 +3,15 @@
     {
       "tableId": "s5_multi",
       "title": "S5 - Employment / affiliation (Selected = 1)",
-      "tableType": "multi_select",
+      "tableType": "frequency",
       "rows": [
-        {
-          "variable": "S5r1",
-          "label": "Any employment/affiliation (NET)",
-          "filterValue": "",
-          "isNet": true,
-          "netComponents": [
-            "S5r1",
-            "S5r2",
-            "S5r3",
-            "S5r4",
-            "S5r5",
-            "S5r6"
-          ],
-          "indent": 0
-        },
         {
           "variable": "S5r1",
           "label": "Advertising Agency",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "S5r2",
@@ -34,7 +19,7 @@
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "S5r3",
@@ -42,7 +27,7 @@
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "S5r4",
@@ -50,23 +35,23 @@
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "S5r5",
-          "label": "Pharmaceutical drug / device manufacturer (outside of clinical trials)",
+          "label": "Pharmaceutical Drug / Device Manufacturer (outside of clinical trials)",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "S5r6",
-          "label": "Governmental regulatory agency (e.g., FDA)",
+          "label": "Governmental Regulatory Agency (e.g., Food & Drug Administration (FDA))",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "S5r7",
@@ -78,14 +63,14 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "s5_multi",
-      "isDerived": true,
-      "exclude": false,
-      "excludeReason": ""
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": true,
+      "excludeReason": "Screener question with terminate logic. Options 1-6 are termination flags used for qualification screening; this table is for screener verification only and should be excluded from the main outputs (retain in reference documentation if needed)."
     },
     {
       "tableId": "s8_time_allocation",
-      "title": "S8 - Percentage of professional time spent on activities (mean, median, std dev; values are % and sum to 100)",
+      "title": "S8 - Percentage of professional time spent on activities (mean/median/std)",
       "tableType": "mean_rows",
       "rows": [
         {
@@ -178,7 +163,7 @@
       "rows": [
         {
           "variable": "A1r1",
-          "label": "Leqvio (inclisiran) — As an adjunct to diet, alone or in combination with other LDL-C–lowering therapies, in adults with primary hyperlipidemia",
+          "label": "Leqvio (inclisiran) — As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
@@ -194,7 +179,7 @@
         },
         {
           "variable": "A1r2",
-          "label": "Praluent (alirocumab) — As an adjunct to diet, alone or in combination with other LDL-C–lowering therapies, in adults with primary hyperlipidemia",
+          "label": "Praluent (alirocumab) — As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
@@ -210,7 +195,7 @@
         },
         {
           "variable": "A1r3",
-          "label": "Repatha (evolocumab) — As an adjunct to diet, alone or in combination with other LDL-C–lowering therapies, in adults with primary hyperlipidemia",
+          "label": "Repatha (evolocumab) — As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
@@ -226,7 +211,7 @@
         },
         {
           "variable": "A1r4",
-          "label": "Nexletol / Nexlizet — As an adjunct to diet, alone or in combination with other LDL-C–lowering therapies, in adults with primary hyperlipidemia",
+          "label": "Nexletol (bempedoic acid) / Nexlizet — As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
@@ -234,7 +219,7 @@
         },
         {
           "variable": "A1r4",
-          "label": "Nexletol / Nexlizet — As an adjunct to diet and statin therapy for the treatment of adults with primary hyperlipidemia",
+          "label": "Nexletol (bempedoic acid) / Nexlizet — As an adjunct to diet and statin therapy for the treatment of adults with primary hyperlipidemia",
           "filterValue": "2",
           "isNet": false,
           "netComponents": [],
@@ -253,15 +238,11 @@
       "tableType": "mean_rows",
       "rows": [
         {
-          "variable": "_NET_A3_AnyPCSK9",
-          "label": "Any PCSK9 inhibitor (Leqvio, Praluent, Repatha) (NET)",
+          "variable": "A3r1",
+          "label": "Statin only (i.e., no additional therapy)",
           "filterValue": "",
-          "isNet": true,
-          "netComponents": [
-            "A3r2",
-            "A3r3",
-            "A3r4"
-          ],
+          "isNet": false,
+          "netComponents": [],
           "indent": 0
         },
         {
@@ -270,7 +251,7 @@
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "A3r3",
@@ -278,19 +259,11 @@
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "A3r4",
           "label": "Repatha (evolocumab)",
-          "filterValue": "",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 1
-        },
-        {
-          "variable": "A3r1",
-          "label": "Statin only (i.e., no additional therapy)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -322,19 +295,19 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "A3",
+      "sourceTableId": "",
       "isDerived": false,
       "exclude": false,
       "excludeReason": ""
     },
     {
       "tableId": "A3a_mean_rows",
-      "title": "A3a - % of LAST 100 patients receiving each therapy (In addition to statin vs Without a statin)",
+      "title": "A3a - % of last 100 patients receiving therapy (with vs without statin)",
       "tableType": "mean_rows",
       "rows": [
         {
           "variable": "A3ar1c1",
-          "label": "Leqvio (inclisiran) - In addition to statin",
+          "label": "Leqvio (inclisiran) — In addition to statin",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -342,7 +315,7 @@
         },
         {
           "variable": "A3ar1c2",
-          "label": "Leqvio (inclisiran) - Without a statin",
+          "label": "Leqvio (inclisiran) — Without a statin",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -350,7 +323,7 @@
         },
         {
           "variable": "A3ar2c1",
-          "label": "Praluent (alirocumab) - In addition to statin",
+          "label": "Praluent (alirocumab) — In addition to statin",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -358,7 +331,7 @@
         },
         {
           "variable": "A3ar2c2",
-          "label": "Praluent (alirocumab) - Without a statin",
+          "label": "Praluent (alirocumab) — Without a statin",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -366,7 +339,7 @@
         },
         {
           "variable": "A3ar3c1",
-          "label": "Repatha (evolocumab) - In addition to statin",
+          "label": "Repatha (evolocumab) — In addition to statin",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -374,7 +347,7 @@
         },
         {
           "variable": "A3ar3c2",
-          "label": "Repatha (evolocumab) - Without a statin",
+          "label": "Repatha (evolocumab) — Without a statin",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -382,7 +355,7 @@
         },
         {
           "variable": "A3ar4c1",
-          "label": "Zetia (ezetimibe) - In addition to statin",
+          "label": "Zetia (ezetimibe) — In addition to statin",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -390,7 +363,7 @@
         },
         {
           "variable": "A3ar4c2",
-          "label": "Zetia (ezetimibe) - Without a statin",
+          "label": "Zetia (ezetimibe) — Without a statin",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -398,7 +371,7 @@
         },
         {
           "variable": "A3ar5c1",
-          "label": "Nexletol / Nexlizet (bempedoic acid) - In addition to statin",
+          "label": "Nexletol / Nexlizet (bempedoic acid) — In addition to statin",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -406,7 +379,7 @@
         },
         {
           "variable": "A3ar5c2",
-          "label": "Nexletol / Nexlizet (bempedoic acid) - Without a statin",
+          "label": "Nexletol / Nexlizet (bempedoic acid) — Without a statin",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -414,7 +387,7 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "A3a_mean_rows",
+      "sourceTableId": "",
       "isDerived": false,
       "exclude": false,
       "excludeReason": ""
@@ -426,7 +399,7 @@
       "rows": [
         {
           "variable": "A3br1c1",
-          "label": "Leqvio (inclisiran) — BEFORE any other lipid-lowering therapy (first line)",
+          "label": "Leqvio (inclisiran) — BEFORE any other lipid-lowering therapy (i.e., first line)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -442,7 +415,7 @@
         },
         {
           "variable": "A3br2c1",
-          "label": "Praluent (alirocumab) — BEFORE any other lipid-lowering therapy (first line)",
+          "label": "Praluent (alirocumab) — BEFORE any other lipid-lowering therapy (i.e., first line)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -458,7 +431,7 @@
         },
         {
           "variable": "A3br3c1",
-          "label": "Repatha (evolocumab) — BEFORE any other lipid-lowering therapy (first line)",
+          "label": "Repatha (evolocumab) — BEFORE any other lipid-lowering therapy (i.e., first line)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -474,7 +447,7 @@
         },
         {
           "variable": "A3br4c1",
-          "label": "Zetia (ezetimibe) — BEFORE any other lipid-lowering therapy (first line)",
+          "label": "Zetia (ezetimibe) or generic ezetimibe — BEFORE any other lipid-lowering therapy (i.e., first line)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -482,7 +455,7 @@
         },
         {
           "variable": "A3br4c2",
-          "label": "Zetia (ezetimibe) — AFTER trying another lipid-lowering therapy",
+          "label": "Zetia (ezetimibe) or generic ezetimibe — AFTER trying another lipid-lowering therapy",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -490,7 +463,7 @@
         },
         {
           "variable": "A3br5c1",
-          "label": "Nexletol / Nexlizet (bempedoic acid or bempedoic acid + ezetimibe) — BEFORE any other lipid-lowering therapy (first line)",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) — BEFORE any other lipid-lowering therapy (i.e., first line)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -498,7 +471,7 @@
         },
         {
           "variable": "A3br5c2",
-          "label": "Nexletol / Nexlizet (bempedoic acid or bempedoic acid + ezetimibe) — AFTER trying another lipid-lowering therapy",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) — AFTER trying another lipid-lowering therapy",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -506,27 +479,19 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "A3b_mean_rows",
+      "sourceTableId": "",
       "isDerived": false,
       "exclude": false,
       "excludeReason": ""
     },
     {
       "tableId": "A4_meanrows",
-      "title": "A4 - Number of patients (of 100) prescribed each treatment (mean/median/stddev)",
+      "title": "A4 - NEXT 100 patients: Number prescribed each treatment (mean/median/stddev) — Combined view (In addition to statin AND Without a statin)",
       "tableType": "mean_rows",
       "rows": [
         {
           "variable": "A4r1c1",
-          "label": "Statin only (i.e., no additional therapy) — Last 100 patients",
-          "filterValue": "",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A4r1c2",
-          "label": "Statin only (i.e., no additional therapy) — Next 100 patients",
+          "label": "Statin only (i.e., no additional therapy) — In addition to statin (Column A)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -534,15 +499,7 @@
         },
         {
           "variable": "A4r2c1",
-          "label": "Leqvio (inclisiran) — Last 100 patients",
-          "filterValue": "",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A4r2c2",
-          "label": "Leqvio (inclisiran) — Next 100 patients",
+          "label": "Leqvio (inclisiran) — In addition to statin (Column A)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -550,15 +507,7 @@
         },
         {
           "variable": "A4r3c1",
-          "label": "Praluent (alirocumab) — Last 100 patients",
-          "filterValue": "",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A4r3c2",
-          "label": "Praluent (alirocumab) — Next 100 patients",
+          "label": "Praluent (alirocumab) — In addition to statin (Column A)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -566,15 +515,7 @@
         },
         {
           "variable": "A4r4c1",
-          "label": "Repatha (evolocumab) — Last 100 patients",
-          "filterValue": "",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A4r4c2",
-          "label": "Repatha (evolocumab) — Next 100 patients",
+          "label": "Repatha (evolocumab) — In addition to statin (Column A)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -582,15 +523,7 @@
         },
         {
           "variable": "A4r5c1",
-          "label": "Zetia (ezetimibe) or generic ezetimibe — Last 100 patients",
-          "filterValue": "",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A4r5c2",
-          "label": "Zetia (ezetimibe) or generic ezetimibe — Next 100 patients",
+          "label": "Zetia (ezetimibe) or generic ezetimibe — In addition to statin (Column A)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -598,15 +531,7 @@
         },
         {
           "variable": "A4r6c1",
-          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) — Last 100 patients",
-          "filterValue": "",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A4r6c2",
-          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) — Next 100 patients",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) — In addition to statin (Column A)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -614,7 +539,55 @@
         },
         {
           "variable": "A4r7c1",
-          "label": "Other — Last 100 patients",
+          "label": "Other — In addition to statin (Column A)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r1c2",
+          "label": "Statin only (i.e., no additional therapy) — Without a statin (Column B)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r2c2",
+          "label": "Leqvio (inclisiran) — Without a statin (Column B)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r3c2",
+          "label": "Praluent (alirocumab) — Without a statin (Column B)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r4c2",
+          "label": "Repatha (evolocumab) — Without a statin (Column B)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r5c2",
+          "label": "Zetia (ezetimibe) or generic ezetimibe — Without a statin (Column B)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r6c2",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) — Without a statin (Column B)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -622,7 +595,75 @@
         },
         {
           "variable": "A4r7c2",
-          "label": "Other — Next 100 patients",
+          "label": "Other — Without a statin (Column B)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "A4_inadditiontostatin_meanrows",
+      "title": "A4a - NEXT 100 patients: Number prescribed each treatment (mean/median/stddev) — In addition to statin",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4r1c1",
+          "label": "Statin only (i.e., no additional therapy)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r2c1",
+          "label": "Leqvio (inclisiran)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r3c1",
+          "label": "Praluent (alirocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r4c1",
+          "label": "Repatha (evolocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r5c1",
+          "label": "Zetia (ezetimibe) or generic ezetimibe",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r6c1",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r7c1",
+          "label": "Other",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -631,18 +672,86 @@
       ],
       "hints": [],
       "sourceTableId": "A4_meanrows",
-      "isDerived": false,
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "A4_withoutstatin_meanrows",
+      "title": "A4a - NEXT 100 patients: Number prescribed each treatment (mean/median/stddev) — Without a statin",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4r1c2",
+          "label": "Statin only (i.e., no additional therapy)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r2c2",
+          "label": "Leqvio (inclisiran)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r3c2",
+          "label": "Praluent (alirocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r4c2",
+          "label": "Repatha (evolocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r5c2",
+          "label": "Zetia (ezetimibe) or generic ezetimibe",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r6c2",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r7c2",
+          "label": "Other",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "A4_meanrows",
+      "isDerived": true,
       "exclude": false,
       "excludeReason": ""
     },
     {
       "tableId": "a4a_mean",
-      "title": "A4a - % of NEXT 100 patients with uncontrolled LDL-C prescribed (by treatment; In addition to statin vs Without a statin)",
+      "title": "A4a - % of NEXT 100 with Uncontrolled LDL-C prescribed (by treatment: In addition to statin vs Without a statin)",
       "tableType": "mean_rows",
       "rows": [
         {
           "variable": "A4ar1c1",
-          "label": "Leqvio (inclisiran) — % of NEXT 100 patients: In addition to statin (A)",
+          "label": "Leqvio (inclisiran) — In addition to statin (A4a)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -650,7 +759,7 @@
         },
         {
           "variable": "A4ar1c2",
-          "label": "Leqvio (inclisiran) — % of NEXT 100 patients: Without a statin (B)",
+          "label": "Leqvio (inclisiran) — Without a statin (A4a)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -658,7 +767,7 @@
         },
         {
           "variable": "A4ar2c1",
-          "label": "Praluent (alirocumab) — % of NEXT 100 patients: In addition to statin (A)",
+          "label": "Praluent (alirocumab) — In addition to statin (A4a)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -666,7 +775,7 @@
         },
         {
           "variable": "A4ar2c2",
-          "label": "Praluent (alirocumab) — % of NEXT 100 patients: Without a statin (B)",
+          "label": "Praluent (alirocumab) — Without a statin (A4a)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -674,7 +783,7 @@
         },
         {
           "variable": "A4ar3c1",
-          "label": "Repatha (evolocumab) — % of NEXT 100 patients: In addition to statin (A)",
+          "label": "Repatha (evolocumab) — In addition to statin (A4a)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -682,7 +791,7 @@
         },
         {
           "variable": "A4ar3c2",
-          "label": "Repatha (evolocumab) — % of NEXT 100 patients: Without a statin (B)",
+          "label": "Repatha (evolocumab) — Without a statin (A4a)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -690,7 +799,7 @@
         },
         {
           "variable": "A4ar4c1",
-          "label": "Zetia (ezetimibe) or generic ezetimibe — % of NEXT 100 patients: In addition to statin (A)",
+          "label": "Zetia (ezetimibe) or generic ezetimibe — In addition to statin (A4a)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -698,7 +807,7 @@
         },
         {
           "variable": "A4ar4c2",
-          "label": "Zetia (ezetimibe) or generic ezetimibe — % of NEXT 100 patients: Without a statin (B)",
+          "label": "Zetia (ezetimibe) or generic ezetimibe — Without a statin (A4a)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -706,7 +815,7 @@
         },
         {
           "variable": "A4ar5c1",
-          "label": "Nexletol (bempedoic acid) or Nexlizet — % of NEXT 100 patients: In addition to statin (A)",
+          "label": "Nexletol (bempedoic acid) or Nexlizet — In addition to statin (A4a)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -714,7 +823,7 @@
         },
         {
           "variable": "A4ar5c2",
-          "label": "Nexletol (bempedoic acid) or Nexlizet — % of NEXT 100 patients: Without a statin (B)",
+          "label": "Nexletol (bempedoic acid) or Nexlizet — Without a statin (A4a)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -729,12 +838,12 @@
     },
     {
       "tableId": "A4b_mean_rows",
-      "title": "A4b - For therapies you would prescribe without a statin: % who would receive therapy BEFORE vs AFTER other lipid‑lowering therapy (mean %)",
+      "title": "A4b - % of patients prescribed therapy WITHOUT a statin who received that therapy BEFORE vs AFTER other lipid-lowering therapy (mean %)",
       "tableType": "mean_rows",
       "rows": [
         {
           "variable": "A4br1c1",
-          "label": "Leqvio (inclisiran) — Before any other lipid‑lowering therapy (first line)",
+          "label": "Leqvio (inclisiran) — Before any other lipid-lowering therapy (first line)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -742,7 +851,7 @@
         },
         {
           "variable": "A4br1c2",
-          "label": "Leqvio (inclisiran) — After trying another lipid‑lowering therapy",
+          "label": "Leqvio (inclisiran) — After trying another lipid-lowering therapy",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -750,7 +859,7 @@
         },
         {
           "variable": "A4br2c1",
-          "label": "Praluent (alirocumab) — Before any other lipid‑lowering therapy (first line)",
+          "label": "Praluent (alirocumab) — Before any other lipid-lowering therapy (first line)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -758,7 +867,7 @@
         },
         {
           "variable": "A4br2c2",
-          "label": "Praluent (alirocumab) — After trying another lipid‑lowering therapy",
+          "label": "Praluent (alirocumab) — After trying another lipid-lowering therapy",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -766,7 +875,7 @@
         },
         {
           "variable": "A4br3c1",
-          "label": "Repatha (evolocumab) — Before any other lipid‑lowering therapy (first line)",
+          "label": "Repatha (evolocumab) — Before any other lipid-lowering therapy (first line)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -774,7 +883,7 @@
         },
         {
           "variable": "A4br3c2",
-          "label": "Repatha (evolocumab) — After trying another lipid‑lowering therapy",
+          "label": "Repatha (evolocumab) — After trying another lipid-lowering therapy",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -782,7 +891,7 @@
         },
         {
           "variable": "A4br4c1",
-          "label": "Zetia (ezetimibe) — Before any other lipid‑lowering therapy (first line)",
+          "label": "Zetia (ezetimibe) — Before any other lipid-lowering therapy (first line)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -790,7 +899,7 @@
         },
         {
           "variable": "A4br4c2",
-          "label": "Zetia (ezetimibe) — After trying another lipid‑lowering therapy",
+          "label": "Zetia (ezetimibe) — After trying another lipid-lowering therapy",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -798,7 +907,7 @@
         },
         {
           "variable": "A4br5c1",
-          "label": "Nexletol / Nexlizet (bempedoic acid) — Before any other lipid‑lowering therapy (first line)",
+          "label": "Nexletol / Nexlizet (bempedoic acid) — Before any other lipid-lowering therapy (first line)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -806,7 +915,7 @@
         },
         {
           "variable": "A4br5c2",
-          "label": "Nexletol / Nexlizet (bempedoic acid) — After trying another lipid‑lowering therapy",
+          "label": "Nexletol / Nexlizet (bempedoic acid) — After trying another lipid-lowering therapy",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -882,7 +991,7 @@
         },
         {
           "variable": "A6r8",
-          "label": "Other (Specify)",
+          "label": "Other",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
@@ -892,15 +1001,15 @@
       "hints": [
         "ranking"
       ],
-      "sourceTableId": "A6_rank1",
-      "isDerived": true,
+      "sourceTableId": "",
+      "isDerived": false,
       "exclude": false,
       "excludeReason": ""
     },
     {
       "tableId": "A6_rank2",
       "title": "A6 - Items ranked #2",
-      "tableType": "frequency",
+      "tableType": "ranking",
       "rows": [
         {
           "variable": "A6r1",
@@ -960,241 +1069,7 @@
         },
         {
           "variable": "A6r8",
-          "label": "Other (Specify)",
-          "filterValue": "2",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        }
-      ],
-      "hints": [
-        "ranking"
-      ],
-      "sourceTableId": "A6_rank1",
-      "isDerived": true,
-      "exclude": false,
-      "excludeReason": ""
-    },
-    {
-      "tableId": "A6_rank3",
-      "title": "A6 - Items ranked #3",
-      "tableType": "frequency",
-      "rows": [
-        {
-          "variable": "A6r1",
-          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
-          "filterValue": "3",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r2",
-          "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
-          "filterValue": "3",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r3",
-          "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
-          "filterValue": "3",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r4",
-          "label": "Start statin first, add/switch to PCSK9i if needed",
-          "filterValue": "3",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r5",
-          "label": "Start statin and PCSK9i at the same time",
-          "filterValue": "3",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r6",
-          "label": "Start PCSK9i, no statin",
-          "filterValue": "3",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r7",
-          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
-          "filterValue": "3",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r8",
-          "label": "Other (Specify)",
-          "filterValue": "3",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        }
-      ],
-      "hints": [
-        "ranking"
-      ],
-      "sourceTableId": "A6_rank1",
-      "isDerived": true,
-      "exclude": false,
-      "excludeReason": ""
-    },
-    {
-      "tableId": "A6_rank4",
-      "title": "A6 - Items ranked #4",
-      "tableType": "frequency",
-      "rows": [
-        {
-          "variable": "A6r1",
-          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
-          "filterValue": "4",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r2",
-          "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
-          "filterValue": "4",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r3",
-          "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
-          "filterValue": "4",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r4",
-          "label": "Start statin first, add/switch to PCSK9i if needed",
-          "filterValue": "4",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r5",
-          "label": "Start statin and PCSK9i at the same time",
-          "filterValue": "4",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r6",
-          "label": "Start PCSK9i, no statin",
-          "filterValue": "4",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r7",
-          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
-          "filterValue": "4",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r8",
-          "label": "Other (Specify)",
-          "filterValue": "4",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        }
-      ],
-      "hints": [
-        "ranking"
-      ],
-      "sourceTableId": "A6_rank1",
-      "isDerived": true,
-      "exclude": false,
-      "excludeReason": ""
-    },
-    {
-      "tableId": "A6_rank2",
-      "title": "A6 - Items ranked #2 (Second choice) — Treatment paths for NEXT 100 patients",
-      "tableType": "frequency",
-      "rows": [
-        {
-          "variable": "A6r1",
-          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
-          "filterValue": "2",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r2",
-          "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
-          "filterValue": "2",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r3",
-          "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
-          "filterValue": "2",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r4",
-          "label": "Start statin first, add/switch to PCSK9i if needed",
-          "filterValue": "2",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r5",
-          "label": "Start statin and PCSK9i at the same time",
-          "filterValue": "2",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r6",
-          "label": "Start PCSK9i, no statin",
-          "filterValue": "2",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r7",
-          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
-          "filterValue": "2",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A6r8",
-          "label": "Other (Specify)",
+          "label": "Other",
           "filterValue": "2",
           "isNet": false,
           "netComponents": [],
@@ -1210,8 +1085,86 @@
       "excludeReason": ""
     },
     {
+      "tableId": "A6_rank1",
+      "title": "A6 - Items ranked #1",
+      "tableType": "ranking",
+      "rows": [
+        {
+          "variable": "A6r1",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r2",
+          "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r3",
+          "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r4",
+          "label": "Start statin first, add/switch to PCSK9i if needed",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r5",
+          "label": "Start statin and PCSK9i at the same time",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r6",
+          "label": "Start PCSK9i, no statin",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r7",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r8",
+          "label": "Other",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "A6_rank2",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
       "tableId": "A6_rank3",
-      "title": "A6 - Treatment paths ranked #3 (NEXT 100 patients not on lipid-lowering therapy)",
+      "title": "A6 - Items ranked #3",
       "tableType": "ranking",
       "rows": [
         {
@@ -1272,7 +1225,163 @@
         },
         {
           "variable": "A6r8",
-          "label": "Other (Specify)",
+          "label": "Other",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "A6_rank2",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "A6_rank4",
+      "title": "A6 - Items ranked #4",
+      "tableType": "ranking",
+      "rows": [
+        {
+          "variable": "A6r1",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r2",
+          "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r3",
+          "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r4",
+          "label": "Start statin first, add/switch to PCSK9i if needed",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r5",
+          "label": "Start statin and PCSK9i at the same time",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r6",
+          "label": "Start PCSK9i, no statin",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r7",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r8",
+          "label": "Other",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "A6_rank2",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "A6_rank3",
+      "title": "A6 - Treatment paths ranked #3 (third choice) for NEXT 100 patients not currently on lipid-lowering therapy",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r1",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r2",
+          "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r3",
+          "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r4",
+          "label": "Start statin first, add/switch to PCSK9i if needed",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r5",
+          "label": "Start statin and PCSK9i at the same time",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r6",
+          "label": "Start PCSK9i, no statin",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r7",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r8",
+          "label": "Other",
           "filterValue": "3",
           "isNet": false,
           "netComponents": [],
@@ -1289,7 +1398,7 @@
     },
     {
       "tableId": "A6_rank4",
-      "title": "A6 - Items ranked #4 (4 = 4th choice)",
+      "title": "A6 - Items ranked #4",
       "tableType": "ranking",
       "rows": [
         {
@@ -1350,7 +1459,7 @@
         },
         {
           "variable": "A6r8",
-          "label": "Other (Specify)",
+          "label": "Other",
           "filterValue": "4",
           "isNet": false,
           "netComponents": [],
@@ -1360,23 +1469,37 @@
       "hints": [
         "ranking"
       ],
-      "sourceTableId": "A6_rank4",
+      "sourceTableId": "",
       "isDerived": false,
       "exclude": false,
       "excludeReason": ""
     },
     {
       "tableId": "A7_multi_select",
-      "title": "A7 - How might using PCSK9 inhibitors with or without statin therapy impact your perceptions/prescribing? (Select all that apply)",
+      "title": "A7 - How might being able to use PCSK9 inhibitors with or without statin therapy impact your perceptions/prescribing? (select all that apply)",
       "tableType": "multi_select",
       "rows": [
+        {
+          "variable": "_NET_A7_AnyImpact",
+          "label": "Any impact (NET)",
+          "filterValue": "",
+          "isNet": true,
+          "netComponents": [
+            "A7r1",
+            "A7r2",
+            "A7r3",
+            "A7r4",
+            "A7r5"
+          ],
+          "indent": 0
+        },
         {
           "variable": "A7r1",
           "label": "Makes PCSK9s easier to get covered by insurance / get patients on the medication",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 0
+          "indent": 1
         },
         {
           "variable": "A7r2",
@@ -1384,7 +1507,7 @@
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 0
+          "indent": 1
         },
         {
           "variable": "A7r3",
@@ -1392,7 +1515,7 @@
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 0
+          "indent": 1
         },
         {
           "variable": "A7r4",
@@ -1400,7 +1523,7 @@
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 0
+          "indent": 1
         },
         {
           "variable": "A7r5",
@@ -1408,7 +1531,7 @@
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 0
+          "indent": 1
         }
       ],
       "hints": [],
@@ -1418,13 +1541,13 @@
       "excludeReason": ""
     },
     {
-      "tableId": "A8r1_Repatha",
-      "title": "A8r1 - With established CVD: Likelihood to prescribe Repatha alone",
-      "tableType": "frequency",
+      "tableId": "A8_r1",
+      "title": "A8r1 - With established CVD: Likelihood to prescribe each therapy alone",
+      "tableType": "grid_by_item",
       "rows": [
         {
           "variable": "A8r1c1",
-          "label": "Likely (T2B: Very or Extremely likely)",
+          "label": "Likely (T2B) - Repatha (Very or Extremely likely)",
           "filterValue": "4,5",
           "isNet": true,
           "netComponents": [],
@@ -1456,7 +1579,7 @@
         },
         {
           "variable": "A8r1c1",
-          "label": "Not likely (B2B: Not at all or Slightly likely)",
+          "label": "Unlikely (B2B) - Repatha (Not at all or Slightly likely)",
           "filterValue": "1,2",
           "isNet": true,
           "netComponents": [],
@@ -1477,24 +1600,10 @@
           "isNet": false,
           "netComponents": [],
           "indent": 1
-        }
-      ],
-      "hints": [
-        "scale-5"
-      ],
-      "sourceTableId": "A8_r1",
-      "isDerived": true,
-      "exclude": false,
-      "excludeReason": ""
-    },
-    {
-      "tableId": "A8r1_Praluent",
-      "title": "A8r1 - With established CVD: Likelihood to prescribe Praluent alone",
-      "tableType": "frequency",
-      "rows": [
+        },
         {
           "variable": "A8r1c2",
-          "label": "Likely (T2B: Very or Extremely likely)",
+          "label": "Likely (T2B) - Praluent (Very or Extremely likely)",
           "filterValue": "4,5",
           "isNet": true,
           "netComponents": [],
@@ -1526,7 +1635,7 @@
         },
         {
           "variable": "A8r1c2",
-          "label": "Not likely (B2B: Not at all or Slightly likely)",
+          "label": "Unlikely (B2B) - Praluent (Not at all or Slightly likely)",
           "filterValue": "1,2",
           "isNet": true,
           "netComponents": [],
@@ -1547,24 +1656,10 @@
           "isNet": false,
           "netComponents": [],
           "indent": 1
-        }
-      ],
-      "hints": [
-        "scale-5"
-      ],
-      "sourceTableId": "A8_r1",
-      "isDerived": true,
-      "exclude": false,
-      "excludeReason": ""
-    },
-    {
-      "tableId": "A8r1_Leqvio",
-      "title": "A8r1 - With established CVD: Likelihood to prescribe Leqvio alone",
-      "tableType": "frequency",
-      "rows": [
+        },
         {
           "variable": "A8r1c3",
-          "label": "Likely (T2B: Very or Extremely likely)",
+          "label": "Likely (T2B) - Leqvio (Very or Extremely likely)",
           "filterValue": "4,5",
           "isNet": true,
           "netComponents": [],
@@ -1596,7 +1691,7 @@
         },
         {
           "variable": "A8r1c3",
-          "label": "Not likely (B2B: Not at all or Slightly likely)",
+          "label": "Unlikely (B2B) - Leqvio (Not at all or Slightly likely)",
           "filterValue": "1,2",
           "isNet": true,
           "netComponents": [],
@@ -1628,13 +1723,147 @@
       "excludeReason": ""
     },
     {
-      "tableId": "A8_r2_Repatha",
-      "title": "A8r2 - Repatha: With no history of CV events and at high-risk — Likelihood to prescribe alone",
+      "tableId": "A8_r2",
+      "title": "A8r2 - With no history of CV events and at high-risk: Likelihood to prescribe each therapy alone (full scale)",
       "tableType": "frequency",
       "rows": [
         {
           "variable": "A8r2c1",
-          "label": "Very or Extremely likely (T2B)",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c1",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c1",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c1",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c1",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "scale-5"
+      ],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "A8_r2_Top2Box",
+      "title": "A8r2 - Summary: Likely (T2B) and Unlikely (B2B) - With no history of CV events and at high-risk",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A8r2c1",
+          "label": "Likely (T2B)",
           "filterValue": "4,5",
           "isNet": true,
           "netComponents": [],
@@ -1666,7 +1895,7 @@
         },
         {
           "variable": "A8r2c1",
-          "label": "Not at all or Slightly likely (B2B)",
+          "label": "Unlikely (B2B)",
           "filterValue": "1,2",
           "isNet": true,
           "netComponents": [],
@@ -1682,6 +1911,118 @@
         },
         {
           "variable": "A8r2c1",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c3",
           "label": "Not at all likely",
           "filterValue": "1",
           "isNet": false,
@@ -1698,293 +2039,259 @@
       "excludeReason": ""
     },
     {
-      "tableId": "A8_r2_Praluent",
-      "title": "A8r2 - Praluent: With no history of CV events and at high-risk — Likelihood to prescribe alone",
+      "tableId": "A8_r3",
+      "title": "A8c (low-to-medium risk) — Likelihood to prescribe each therapy alone (Full scale)",
       "tableType": "frequency",
       "rows": [
         {
-          "variable": "A8r2c2",
-          "label": "Very or Extremely likely (T2B)",
-          "filterValue": "4,5",
-          "isNet": true,
+          "variable": "A8r3c1",
+          "label": "Repatha — Not at all likely (1)",
+          "filterValue": "1",
+          "isNet": false,
           "netComponents": [],
           "indent": 0
         },
         {
-          "variable": "A8r2c2",
-          "label": "Extremely likely",
-          "filterValue": "5",
+          "variable": "A8r3c1",
+          "label": "Repatha — Slightly likely (2)",
+          "filterValue": "2",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
-          "variable": "A8r2c2",
-          "label": "Very likely",
-          "filterValue": "4",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 1
-        },
-        {
-          "variable": "A8r2c2",
-          "label": "Somewhat likely",
+          "variable": "A8r3c1",
+          "label": "Repatha — Somewhat likely (3)",
           "filterValue": "3",
           "isNet": false,
           "netComponents": [],
           "indent": 0
         },
         {
-          "variable": "A8r2c2",
-          "label": "Not at all or Slightly likely (B2B)",
-          "filterValue": "1,2",
-          "isNet": true,
+          "variable": "A8r3c1",
+          "label": "Repatha — Very likely (4)",
+          "filterValue": "4",
+          "isNet": false,
           "netComponents": [],
           "indent": 0
         },
         {
-          "variable": "A8r2c2",
-          "label": "Slightly likely",
-          "filterValue": "2",
+          "variable": "A8r3c1",
+          "label": "Repatha — Extremely likely (5)",
+          "filterValue": "5",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
-          "variable": "A8r2c2",
-          "label": "Not at all likely",
+          "variable": "A8r3c2",
+          "label": "Praluent — Not at all likely (1)",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Praluent — Slightly likely (2)",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Praluent — Somewhat likely (3)",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Praluent — Very likely (4)",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Praluent — Extremely likely (5)",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Leqvio — Not at all likely (1)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Leqvio — Slightly likely (2)",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Leqvio — Somewhat likely (3)",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Leqvio — Very likely (4)",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Leqvio — Extremely likely (5)",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
         }
       ],
       "hints": [
         "scale-5"
       ],
-      "sourceTableId": "A8_r2",
-      "isDerived": true,
+      "sourceTableId": "",
+      "isDerived": false,
       "exclude": false,
       "excludeReason": ""
     },
     {
-      "tableId": "A8_r2_Leqvio",
-      "title": "A8r2 - Leqvio: With no history of CV events and at high-risk — Likelihood to prescribe alone",
+      "tableId": "A8_r3_t2b",
+      "title": "A8c (low-to-medium risk) — Likely / Unlikely summary (T2B / B2B)",
       "tableType": "frequency",
       "rows": [
         {
-          "variable": "A8r2c3",
-          "label": "Very or Extremely likely (T2B)",
+          "variable": "A8r3c1",
+          "label": "Repatha — Likely (Top 2 Box: Very or Extremely likely)",
           "filterValue": "4,5",
           "isNet": true,
           "netComponents": [],
           "indent": 0
         },
         {
-          "variable": "A8r2c3",
-          "label": "Extremely likely",
+          "variable": "A8r3c1",
+          "label": "Repatha — Extremely likely (5)",
           "filterValue": "5",
           "isNet": false,
           "netComponents": [],
           "indent": 1
         },
         {
-          "variable": "A8r2c3",
-          "label": "Very likely",
+          "variable": "A8r3c1",
+          "label": "Repatha — Very likely (4)",
           "filterValue": "4",
           "isNet": false,
           "netComponents": [],
           "indent": 1
         },
         {
-          "variable": "A8r2c3",
-          "label": "Somewhat likely",
+          "variable": "A8r3c1",
+          "label": "Repatha — Somewhat likely (3)",
           "filterValue": "3",
           "isNet": false,
           "netComponents": [],
           "indent": 0
         },
         {
-          "variable": "A8r2c3",
-          "label": "Not at all or Slightly likely (B2B)",
+          "variable": "A8r3c1",
+          "label": "Repatha — Unlikely (Bottom 2 Box: Not at all or Slightly likely)",
           "filterValue": "1,2",
           "isNet": true,
           "netComponents": [],
           "indent": 0
         },
         {
-          "variable": "A8r2c3",
-          "label": "Slightly likely",
+          "variable": "A8r3c1",
+          "label": "Repatha — Slightly likely (2)",
           "filterValue": "2",
           "isNet": false,
           "netComponents": [],
           "indent": 1
         },
         {
-          "variable": "A8r2c3",
-          "label": "Not at all likely",
+          "variable": "A8r3c1",
+          "label": "Repatha — Not at all likely (1)",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
           "indent": 1
-        }
-      ],
-      "hints": [
-        "scale-5"
-      ],
-      "sourceTableId": "A8_r2",
-      "isDerived": true,
-      "exclude": false,
-      "excludeReason": ""
-    },
-    {
-      "tableId": "A8_r3_Repatha",
-      "title": "A8r3 - Repatha: With no history of CV events and at low-to-medium risk — Likelihood to prescribe alone",
-      "tableType": "frequency",
-      "rows": [
+        },
         {
-          "variable": "A8r3c1",
-          "label": "Likely (T2B)",
+          "variable": "A8r3c2",
+          "label": "Praluent — Likely (Top 2 Box: Very or Extremely likely)",
           "filterValue": "4,5",
           "isNet": true,
           "netComponents": [],
           "indent": 0
         },
         {
-          "variable": "A8r3c1",
-          "label": "Extremely likely",
+          "variable": "A8r3c2",
+          "label": "Praluent — Extremely likely (5)",
           "filterValue": "5",
           "isNet": false,
           "netComponents": [],
           "indent": 1
         },
         {
-          "variable": "A8r3c1",
-          "label": "Very likely",
+          "variable": "A8r3c2",
+          "label": "Praluent — Very likely (4)",
           "filterValue": "4",
           "isNet": false,
           "netComponents": [],
           "indent": 1
         },
         {
-          "variable": "A8r3c1",
-          "label": "Somewhat likely",
+          "variable": "A8r3c2",
+          "label": "Praluent — Somewhat likely (3)",
           "filterValue": "3",
           "isNet": false,
           "netComponents": [],
           "indent": 0
         },
         {
-          "variable": "A8r3c1",
-          "label": "Not likely (B2B)",
+          "variable": "A8r3c2",
+          "label": "Praluent — Unlikely (Bottom 2 Box: Not at all or Slightly likely)",
           "filterValue": "1,2",
           "isNet": true,
           "netComponents": [],
           "indent": 0
         },
         {
-          "variable": "A8r3c1",
-          "label": "Slightly likely",
+          "variable": "A8r3c2",
+          "label": "Praluent — Slightly likely (2)",
           "filterValue": "2",
           "isNet": false,
           "netComponents": [],
           "indent": 1
         },
         {
-          "variable": "A8r3c1",
-          "label": "Not at all likely",
+          "variable": "A8r3c2",
+          "label": "Praluent — Not at all likely (1)",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
           "indent": 1
-        }
-      ],
-      "hints": [
-        "scale-5"
-      ],
-      "sourceTableId": "A8_r3",
-      "isDerived": true,
-      "exclude": false,
-      "excludeReason": ""
-    },
-    {
-      "tableId": "A8_r3_Praluent",
-      "title": "A8r3 - Praluent: With no history of CV events and at low-to-medium risk — Likelihood to prescribe alone",
-      "tableType": "frequency",
-      "rows": [
-        {
-          "variable": "A8r3c2",
-          "label": "Likely (T2B)",
-          "filterValue": "4,5",
-          "isNet": true,
-          "netComponents": [],
-          "indent": 0
         },
-        {
-          "variable": "A8r3c2",
-          "label": "Extremely likely",
-          "filterValue": "5",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 1
-        },
-        {
-          "variable": "A8r3c2",
-          "label": "Very likely",
-          "filterValue": "4",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 1
-        },
-        {
-          "variable": "A8r3c2",
-          "label": "Somewhat likely",
-          "filterValue": "3",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A8r3c2",
-          "label": "Not likely (B2B)",
-          "filterValue": "1,2",
-          "isNet": true,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A8r3c2",
-          "label": "Slightly likely",
-          "filterValue": "2",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 1
-        },
-        {
-          "variable": "A8r3c2",
-          "label": "Not at all likely",
-          "filterValue": "1",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 1
-        }
-      ],
-      "hints": [
-        "scale-5"
-      ],
-      "sourceTableId": "A8_r3",
-      "isDerived": true,
-      "exclude": false,
-      "excludeReason": ""
-    },
-    {
-      "tableId": "A8_r3_Leqvio",
-      "title": "A8r3 - Leqvio: With no history of CV events and at low-to-medium risk — Likelihood to prescribe alone",
-      "tableType": "frequency",
-      "rows": [
         {
           "variable": "A8r3c3",
-          "label": "Likely (T2B)",
+          "label": "Leqvio — Likely (Top 2 Box: Very or Extremely likely)",
           "filterValue": "4,5",
           "isNet": true,
           "netComponents": [],
@@ -1992,7 +2299,7 @@
         },
         {
           "variable": "A8r3c3",
-          "label": "Extremely likely",
+          "label": "Leqvio — Extremely likely (5)",
           "filterValue": "5",
           "isNet": false,
           "netComponents": [],
@@ -2000,7 +2307,7 @@
         },
         {
           "variable": "A8r3c3",
-          "label": "Very likely",
+          "label": "Leqvio — Very likely (4)",
           "filterValue": "4",
           "isNet": false,
           "netComponents": [],
@@ -2008,7 +2315,7 @@
         },
         {
           "variable": "A8r3c3",
-          "label": "Somewhat likely",
+          "label": "Leqvio — Somewhat likely (3)",
           "filterValue": "3",
           "isNet": false,
           "netComponents": [],
@@ -2016,7 +2323,7 @@
         },
         {
           "variable": "A8r3c3",
-          "label": "Not likely (B2B)",
+          "label": "Leqvio — Unlikely (Bottom 2 Box: Not at all or Slightly likely)",
           "filterValue": "1,2",
           "isNet": true,
           "netComponents": [],
@@ -2024,7 +2331,7 @@
         },
         {
           "variable": "A8r3c3",
-          "label": "Slightly likely",
+          "label": "Leqvio — Slightly likely (2)",
           "filterValue": "2",
           "isNet": false,
           "netComponents": [],
@@ -2032,7 +2339,7 @@
         },
         {
           "variable": "A8r3c3",
-          "label": "Not at all likely",
+          "label": "Leqvio — Not at all likely (1)",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
@@ -2049,12 +2356,12 @@
     },
     {
       "tableId": "A8_r4",
-      "title": "A8r4 - Who are not known to be compliant on statins: Likelihood to prescribe each therapy alone",
-      "tableType": "frequency",
+      "title": "A8r4 - Likelihood to prescribe each therapy alone (patients not known to be compliant on statins)",
+      "tableType": "grid_by_item",
       "rows": [
         {
           "variable": "A8r4c1",
-          "label": "Likely (T2B) — Repatha (Very or Extremely likely)",
+          "label": "Repatha - Likely (T2B: Very or Extremely likely)",
           "filterValue": "4,5",
           "isNet": true,
           "netComponents": [],
@@ -2086,14 +2393,6 @@
         },
         {
           "variable": "A8r4c1",
-          "label": "Unlikely (B2B) — Repatha (Not at all or Slightly likely)",
-          "filterValue": "1,2",
-          "isNet": true,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A8r4c1",
           "label": "Slightly likely",
           "filterValue": "2",
           "isNet": false,
@@ -2102,15 +2401,15 @@
         },
         {
           "variable": "A8r4c1",
-          "label": "Not at all likely",
-          "filterValue": "1",
-          "isNet": false,
+          "label": "Not at all likely (B2B: Not or Slightly likely)",
+          "filterValue": "1,2",
+          "isNet": true,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "A8r4c2",
-          "label": "Likely (T2B) — Praluent (Very or Extremely likely)",
+          "label": "Praluent - Likely (T2B: Very or Extremely likely)",
           "filterValue": "4,5",
           "isNet": true,
           "netComponents": [],
@@ -2142,14 +2441,6 @@
         },
         {
           "variable": "A8r4c2",
-          "label": "Unlikely (B2B) — Praluent (Not at all or Slightly likely)",
-          "filterValue": "1,2",
-          "isNet": true,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A8r4c2",
           "label": "Slightly likely",
           "filterValue": "2",
           "isNet": false,
@@ -2158,15 +2449,15 @@
         },
         {
           "variable": "A8r4c2",
-          "label": "Not at all likely",
-          "filterValue": "1",
-          "isNet": false,
+          "label": "Not at all likely (B2B: Not or Slightly likely)",
+          "filterValue": "1,2",
+          "isNet": true,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "A8r4c3",
-          "label": "Likely (T2B) — Leqvio (Very or Extremely likely)",
+          "label": "Leqvio - Likely (T2B: Very or Extremely likely)",
           "filterValue": "4,5",
           "isNet": true,
           "netComponents": [],
@@ -2198,14 +2489,6 @@
         },
         {
           "variable": "A8r4c3",
-          "label": "Unlikely (B2B) — Leqvio (Not at all or Slightly likely)",
-          "filterValue": "1,2",
-          "isNet": true,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A8r4c3",
           "label": "Slightly likely",
           "filterValue": "2",
           "isNet": false,
@@ -2214,11 +2497,11 @@
         },
         {
           "variable": "A8r4c3",
-          "label": "Not at all likely",
-          "filterValue": "1",
-          "isNet": false,
+          "label": "Not at all likely (B2B: Not or Slightly likely)",
+          "filterValue": "1,2",
+          "isNet": true,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         }
       ],
       "hints": [
@@ -2230,13 +2513,13 @@
       "excludeReason": ""
     },
     {
-      "tableId": "A8_r5_Repatha",
-      "title": "A8r5 - Repatha: Likelihood to prescribe alone (patients intolerant of statins)",
+      "tableId": "A8_r5",
+      "title": "A8r5 - Patients who are intolerant of statins: Likelihood to prescribe each therapy alone",
       "tableType": "frequency",
       "rows": [
         {
           "variable": "A8r5c1",
-          "label": "Likely (Top 2 Box: Very or Extremely likely)",
+          "label": "Repatha — Likely (T2B)",
           "filterValue": "4,5",
           "isNet": true,
           "netComponents": [],
@@ -2268,7 +2551,7 @@
         },
         {
           "variable": "A8r5c1",
-          "label": "Unlikely (Bottom 2 Box: Not at all or Slightly likely)",
+          "label": "Repatha — Unlikely (B2B)",
           "filterValue": "1,2",
           "isNet": true,
           "netComponents": [],
@@ -2289,24 +2572,10 @@
           "isNet": false,
           "netComponents": [],
           "indent": 1
-        }
-      ],
-      "hints": [
-        "scale-5"
-      ],
-      "sourceTableId": "A8_r5",
-      "isDerived": true,
-      "exclude": false,
-      "excludeReason": ""
-    },
-    {
-      "tableId": "A8_r5_Praluent",
-      "title": "A8r5 - Praluent: Likelihood to prescribe alone (patients intolerant of statins)",
-      "tableType": "frequency",
-      "rows": [
+        },
         {
           "variable": "A8r5c2",
-          "label": "Likely (Top 2 Box: Very or Extremely likely)",
+          "label": "Praluent — Likely (T2B)",
           "filterValue": "4,5",
           "isNet": true,
           "netComponents": [],
@@ -2338,7 +2607,7 @@
         },
         {
           "variable": "A8r5c2",
-          "label": "Unlikely (Bottom 2 Box: Not at all or Slightly likely)",
+          "label": "Praluent — Unlikely (B2B)",
           "filterValue": "1,2",
           "isNet": true,
           "netComponents": [],
@@ -2359,24 +2628,10 @@
           "isNet": false,
           "netComponents": [],
           "indent": 1
-        }
-      ],
-      "hints": [
-        "scale-5"
-      ],
-      "sourceTableId": "A8_r5",
-      "isDerived": true,
-      "exclude": false,
-      "excludeReason": ""
-    },
-    {
-      "tableId": "A8_r5_Leqvio",
-      "title": "A8r5 - Leqvio: Likelihood to prescribe alone (patients intolerant of statins)",
-      "tableType": "frequency",
-      "rows": [
+        },
         {
           "variable": "A8r5c3",
-          "label": "Likely (Top 2 Box: Very or Extremely likely)",
+          "label": "Leqvio — Likely (T2B)",
           "filterValue": "4,5",
           "isNet": true,
           "netComponents": [],
@@ -2408,7 +2663,7 @@
         },
         {
           "variable": "A8r5c3",
-          "label": "Unlikely (Bottom 2 Box: Not at all or Slightly likely)",
+          "label": "Leqvio — Unlikely (B2B)",
           "filterValue": "1,2",
           "isNet": true,
           "netComponents": [],
@@ -2440,21 +2695,13 @@
       "excludeReason": ""
     },
     {
-      "tableId": "a9_repatha",
-      "title": "A9 - Issues encountered for Repatha (without a statin)",
-      "tableType": "frequency",
+      "tableId": "a9",
+      "title": "A9 - Issues encountered using product without a statin",
+      "tableType": "grid_by_item",
       "rows": [
         {
           "variable": "A9c1",
-          "label": "Any issues (Some or Significant) (NET)",
-          "filterValue": "2,3",
-          "isNet": true,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A9c1",
-          "label": "No issues",
+          "label": "Repatha — No issues",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
@@ -2462,51 +2709,31 @@
         },
         {
           "variable": "A9c1",
-          "label": "Some issues",
+          "label": "Repatha — Some issues",
           "filterValue": "2",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "A9c1",
-          "label": "Significant issues",
+          "label": "Repatha — Significant issues",
           "filterValue": "3",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "A9c1",
-          "label": "Haven’t prescribed without a statin",
+          "label": "Repatha — Haven’t prescribed without a statin",
           "filterValue": "4",
           "isNet": false,
           "netComponents": [],
           "indent": 0
-        }
-      ],
-      "hints": [],
-      "sourceTableId": "a9",
-      "isDerived": false,
-      "exclude": false,
-      "excludeReason": ""
-    },
-    {
-      "tableId": "a9_praluent",
-      "title": "A9 - Issues encountered for Praluent (without a statin)",
-      "tableType": "frequency",
-      "rows": [
-        {
-          "variable": "A9c2",
-          "label": "Any issues (Some or Significant) (NET)",
-          "filterValue": "2,3",
-          "isNet": true,
-          "netComponents": [],
-          "indent": 0
         },
         {
           "variable": "A9c2",
-          "label": "No issues",
+          "label": "Praluent — No issues",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
@@ -2514,51 +2741,31 @@
         },
         {
           "variable": "A9c2",
-          "label": "Some issues",
+          "label": "Praluent — Some issues",
           "filterValue": "2",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "A9c2",
-          "label": "Significant issues",
+          "label": "Praluent — Significant issues",
           "filterValue": "3",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "A9c2",
-          "label": "Haven’t prescribed without a statin",
+          "label": "Praluent — Haven’t prescribed without a statin",
           "filterValue": "4",
           "isNet": false,
           "netComponents": [],
           "indent": 0
-        }
-      ],
-      "hints": [],
-      "sourceTableId": "a9",
-      "isDerived": false,
-      "exclude": false,
-      "excludeReason": ""
-    },
-    {
-      "tableId": "a9_leqvio",
-      "title": "A9 - Issues encountered for Leqvio (without a statin)",
-      "tableType": "frequency",
-      "rows": [
-        {
-          "variable": "A9c3",
-          "label": "Any issues (Some or Significant) (NET)",
-          "filterValue": "2,3",
-          "isNet": true,
-          "netComponents": [],
-          "indent": 0
         },
         {
           "variable": "A9c3",
-          "label": "No issues",
+          "label": "Leqvio — No issues",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
@@ -2566,23 +2773,23 @@
         },
         {
           "variable": "A9c3",
-          "label": "Some issues",
+          "label": "Leqvio — Some issues",
           "filterValue": "2",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "A9c3",
-          "label": "Significant issues",
+          "label": "Leqvio — Significant issues",
           "filterValue": "3",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "A9c3",
-          "label": "Haven’t prescribed without a statin",
+          "label": "Leqvio — Haven’t prescribed without a statin",
           "filterValue": "4",
           "isNet": false,
           "netComponents": [],
@@ -2598,29 +2805,15 @@
     {
       "tableId": "A10",
       "title": "A10 - Reasons for using PCSK9 inhibitors without a statin (multi-select)",
-      "tableType": "multi_select",
+      "tableType": "frequency",
       "rows": [
-        {
-          "variable": "_NET_A10_AnyReason",
-          "label": "Any reason for prescribing PCSK9s without a statin (NET)",
-          "filterValue": "",
-          "isNet": true,
-          "netComponents": [
-            "A10r1",
-            "A10r2",
-            "A10r3",
-            "A10r4",
-            "A10r5"
-          ],
-          "indent": 0
-        },
         {
           "variable": "A10r1",
           "label": "Patient failed statins prior to starting PCSK9i",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "A10r2",
@@ -2628,7 +2821,7 @@
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "A10r3",
@@ -2636,7 +2829,7 @@
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "A10r4",
@@ -2644,7 +2837,7 @@
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "A10r5",
@@ -2652,11 +2845,11 @@
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "A10r6",
-          "label": "Haven’t prescribed PCSK9s without a statin",
+          "label": "Haven't prescribed PCSK9s without a statin",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
@@ -2664,8 +2857,8 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "A10",
-      "isDerived": true,
+      "sourceTableId": "",
+      "isDerived": false,
       "exclude": false,
       "excludeReason": ""
     },
@@ -2708,7 +2901,7 @@
         },
         {
           "variable": "B1r5",
-          "label": "Private Medicare (Medicare Advantage / Part C managed through private payer)",
+          "label": "Private Medicare (Medicare Advantage / Part C managed through Private payer)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -2748,7 +2941,7 @@
     {
       "tableId": "B5",
       "title": "B5 - How would you describe your specialty/training? (Select all that apply)",
-      "tableType": "frequency",
+      "tableType": "multi_select",
       "rows": [
         {
           "variable": "B5r1",
@@ -2812,16 +3005,8 @@
         },
         {
           "variable": "S1",
-          "label": "I would like to proceed and give permission for my contact details to be passed on to the Drug Safety department if an adverse event is mentioned during the survey",
+          "label": "I would like to proceed and give permission for my contact details to be passed on to the Drug Safety department of the company if an adverse event is mentioned by me during the survey",
           "filterValue": "2",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "S1",
-          "label": "I don't want to proceed (terminate)",
-          "filterValue": "3",
           "isNet": false,
           "netComponents": [],
           "indent": 0
@@ -2840,14 +3025,6 @@
       "rows": [
         {
           "variable": "S2b",
-          "label": "Nurse Practitioners & Physician’s Assistants (NET)",
-          "filterValue": "2,3",
-          "isNet": true,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "S2b",
           "label": "Physician",
           "filterValue": "1",
           "isNet": false,
@@ -2860,15 +3037,15 @@
           "filterValue": "2",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "S2b",
-          "label": "Physician’s Assistant",
+          "label": "Physician's Assistant",
           "filterValue": "3",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "S2b",
@@ -2880,7 +3057,7 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "s2b",
+      "sourceTableId": "",
       "isDerived": false,
       "exclude": false,
       "excludeReason": ""
@@ -2945,18 +3122,10 @@
           "isNet": false,
           "netComponents": [],
           "indent": 0
-        },
-        {
-          "variable": "S2",
-          "label": "Other",
-          "filterValue": "99",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 0
         }
       ],
       "hints": [],
-      "sourceTableId": "",
+      "sourceTableId": "s2",
       "isDerived": false,
       "exclude": false,
       "excludeReason": ""
@@ -2999,7 +3168,7 @@
     },
     {
       "tableId": "qCARD_SPECIALTY",
-      "title": "qCARD_SPECIALTY - Primary specialty (grouped)",
+      "title": "qCARD_SPECIALTY - CARD SPECIALTY",
       "tableType": "frequency",
       "rows": [
         {
@@ -3020,7 +3189,7 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "qCARD_SPECIALTY",
+      "sourceTableId": "",
       "isDerived": false,
       "exclude": false,
       "excludeReason": ""
@@ -3048,7 +3217,7 @@
         },
         {
           "variable": "qSPECIALTY",
-          "label": "Nurse Practitioner / Physician Assistant (NP/PA)",
+          "label": "Nurse Practitioner / Physician Assistant",
           "filterValue": "3",
           "isNet": false,
           "netComponents": [],
@@ -3056,7 +3225,7 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "",
+      "sourceTableId": "qSPECIALTY",
       "isDerived": false,
       "exclude": false,
       "excludeReason": ""
@@ -3092,19 +3261,19 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "s3a",
+      "sourceTableId": "",
       "isDerived": false,
       "exclude": false,
       "excludeReason": ""
     },
     {
       "tableId": "qTYPE_OF_CARD",
-      "title": "S3a - What type of Cardiologist are you primarily? (TYPE OF CARD)",
+      "title": "Type of Cardiologist (S3a)",
       "tableType": "frequency",
       "rows": [
         {
           "variable": "qTYPE_OF_CARD",
-          "label": "Interventional Card",
+          "label": "Interventional Cardiologist",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
@@ -3112,7 +3281,7 @@
         },
         {
           "variable": "qTYPE_OF_CARD",
-          "label": "General Card",
+          "label": "General Cardiologist",
           "filterValue": "2",
           "isNet": false,
           "netComponents": [],
@@ -3120,7 +3289,7 @@
         },
         {
           "variable": "qTYPE_OF_CARD",
-          "label": "Preventative Card",
+          "label": "Preventative Cardiologist",
           "filterValue": "3",
           "isNet": false,
           "netComponents": [],
@@ -3135,101 +3304,61 @@
     },
     {
       "tableId": "qON_LIST_OFF_LIST",
-      "title": "Respondent source: On-list / Off-list and Role (Cardiologist, PCP, NP/PA)",
+      "title": "qON_LIST_OFF_LIST - ON-LIST/OFF-LIST",
       "tableType": "frequency",
       "rows": [
         {
           "variable": "qON_LIST_OFF_LIST",
-          "label": "Cardiologists (NET)",
-          "filterValue": "1,2",
-          "isNet": true,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "qON_LIST_OFF_LIST",
-          "label": "Cardiologist — ON-LIST",
+          "label": "CARD ON-LIST",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "qON_LIST_OFF_LIST",
-          "label": "Cardiologist — OFF-LIST",
+          "label": "CARD OFF-LIST",
           "filterValue": "2",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
-        },
-        {
-          "variable": "qON_LIST_OFF_LIST",
-          "label": "Primary Care (PCP) (NET)",
-          "filterValue": "3,4",
-          "isNet": true,
-          "netComponents": [],
           "indent": 0
         },
         {
           "variable": "qON_LIST_OFF_LIST",
-          "label": "Primary Care (PCP) — ON-LIST",
+          "label": "PCP ON-LIST",
           "filterValue": "3",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "qON_LIST_OFF_LIST",
-          "label": "Primary Care (PCP) — OFF-LIST",
+          "label": "PCP OFF-LIST",
           "filterValue": "4",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
-        },
-        {
-          "variable": "qON_LIST_OFF_LIST",
-          "label": "NP / PA (NET)",
-          "filterValue": "5,6",
-          "isNet": true,
-          "netComponents": [],
           "indent": 0
         },
         {
           "variable": "qON_LIST_OFF_LIST",
-          "label": "NP / PA — ON-LIST",
+          "label": "NPPA ON-LIST",
           "filterValue": "5",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
-        },
-        {
-          "variable": "qON_LIST_OFF_LIST",
-          "label": "NP / PA — OFF-LIST",
-          "filterValue": "6",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 1
-        },
-        {
-          "variable": "qON_LIST_OFF_LIST",
-          "label": "On-List (NET)",
-          "filterValue": "1,3,5",
-          "isNet": true,
-          "netComponents": [],
           "indent": 0
         },
         {
           "variable": "qON_LIST_OFF_LIST",
-          "label": "Off-List (NET)",
-          "filterValue": "2,4,6",
-          "isNet": true,
+          "label": "NPPA OFF-LIST",
+          "filterValue": "6",
+          "isNet": false,
           "netComponents": [],
           "indent": 0
         }
       ],
       "hints": [],
-      "sourceTableId": "qON_LIST_OFF_LIST",
-      "isDerived": true,
+      "sourceTableId": "",
+      "isDerived": false,
       "exclude": false,
       "excludeReason": ""
     },
@@ -3356,7 +3485,7 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "s6",
+      "sourceTableId": "",
       "isDerived": false,
       "exclude": false,
       "excludeReason": ""
@@ -3386,8 +3515,8 @@
       "hints": [],
       "sourceTableId": "",
       "isDerived": false,
-      "exclude": true,
-      "excludeReason": "Screener question with termination logic: respondents who selected Part-Time were screened out. In the analyzed dataset nearly all cases will be Full-Time, so this table has little analytical value for the main output. Keep in reference sheets only for QC."
+      "exclude": false,
+      "excludeReason": ""
     },
     {
       "tableId": "s9",
@@ -3467,12 +3596,12 @@
     },
     {
       "tableId": "s10",
-      "title": "S10 - Number of adult patients personally managed per month",
+      "title": "S10 - Number of adult patients managed per month",
       "tableType": "mean_rows",
       "rows": [
         {
           "variable": "S10",
-          "label": "Number of adult patients (age 18+) you personally manage per month (patients for whom you are the primary treatment decision maker)",
+          "label": "Number of adult patients (age 18+) you personally manage per month",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -3487,12 +3616,12 @@
     },
     {
       "tableId": "s11",
-      "title": "S11 - Number of adult patients with hypercholesterolemia and established CVD",
+      "title": "S11 - Of those adult patients for whom you are the primary treatment decision maker, roughly how many have a confirmed diagnosis of hypercholesterolemia with established cardiovascular disease (CVD)?",
       "tableType": "mean_rows",
       "rows": [
         {
           "variable": "S11",
-          "label": "Of those adult patients for whom you are the primary treatment decision maker, roughly how many have a confirmed diagnosis of hypercholesterolemia with established cardiovascular disease (CVD)?",
+          "label": "Number of adult patients with a confirmed diagnosis of hypercholesterolemia and established CVD (of those you personally manage)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -3500,7 +3629,7 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "",
+      "sourceTableId": "s11",
       "isDerived": false,
       "exclude": false,
       "excludeReason": ""
@@ -3536,14 +3665,14 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "A2a",
+      "sourceTableId": "",
       "isDerived": false,
       "exclude": false,
       "excludeReason": ""
     },
     {
       "tableId": "A2b",
-      "title": "A2b - Post-ACS guideline recommendation for lipid-lowering therapy",
+      "title": "A2b - Post-ACS guideline recommendation specific to lipid-lowering therapy",
       "tableType": "frequency",
       "rows": [
         {
@@ -3618,66 +3747,6 @@
       "hints": [],
       "sourceTableId": "",
       "isDerived": false,
-      "exclude": false,
-      "excludeReason": ""
-    },
-    {
-      "tableId": "A5_Timing_NETS",
-      "title": "A5 - Change timing (NETs): Early vs Later adopters",
-      "tableType": "frequency",
-      "rows": [
-        {
-          "variable": "A5",
-          "label": "Within 6 months (NET)",
-          "filterValue": "1,2",
-          "isNet": true,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A5",
-          "label": "Within 3 months",
-          "filterValue": "1",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 1
-        },
-        {
-          "variable": "A5",
-          "label": "4-6 months",
-          "filterValue": "2",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 1
-        },
-        {
-          "variable": "A5",
-          "label": "Over 6 months (NET)",
-          "filterValue": "3,4",
-          "isNet": true,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "A5",
-          "label": "7-12 months",
-          "filterValue": "3",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 1
-        },
-        {
-          "variable": "A5",
-          "label": "Over a year",
-          "filterValue": "4",
-          "isNet": false,
-          "netComponents": [],
-          "indent": 1
-        }
-      ],
-      "hints": [],
-      "sourceTableId": "A5",
-      "isDerived": true,
       "exclude": false,
       "excludeReason": ""
     },
@@ -4100,21 +4169,13 @@
           "filterValue": "52",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "US_State",
           "label": "Invalid State",
           "filterValue": "53",
           "isNet": false,
-          "netComponents": [],
-          "indent": 1
-        },
-        {
-          "variable": "US_State",
-          "label": "Other / Invalid (NET)",
-          "filterValue": "52,53",
-          "isNet": true,
           "netComponents": [],
           "indent": 0
         }
@@ -4132,19 +4193,11 @@
       "rows": [
         {
           "variable": "Region",
-          "label": "All regions (NET)",
-          "filterValue": "1,2,3,4,5",
-          "isNet": true,
-          "netComponents": [],
-          "indent": 0
-        },
-        {
-          "variable": "Region",
           "label": "Northeast",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "Region",
@@ -4152,7 +4205,7 @@
           "filterValue": "2",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "Region",
@@ -4160,7 +4213,7 @@
           "filterValue": "3",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "Region",
@@ -4168,7 +4221,7 @@
           "filterValue": "4",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "Region",
@@ -4176,7 +4229,7 @@
           "filterValue": "5",
           "isNet": false,
           "netComponents": [],
-          "indent": 1
+          "indent": 0
         },
         {
           "variable": "Region",
@@ -4188,8 +4241,8 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "region",
-      "isDerived": true,
+      "sourceTableId": "",
+      "isDerived": false,
       "exclude": false,
       "excludeReason": ""
     },
@@ -4236,7 +4289,7 @@
       "rows": [
         {
           "variable": "B4",
-          "label": "Number of physicians in your practice (including yourself, if applicable)",
+          "label": "How many physicians are in your practice? (numeric open-end; include yourself if applicable)",
           "filterValue": "",
           "isNet": false,
           "netComponents": [],
@@ -4244,7 +4297,7 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "b4",
+      "sourceTableId": "",
       "isDerived": false,
       "exclude": false,
       "excludeReason": ""
@@ -4256,7 +4309,7 @@
       "rows": [
         {
           "variable": "QCONSENT",
-          "label": "Yes",
+          "label": "Yes, I would be willing to participate in a follow-up interview for additional compensation",
           "filterValue": "1",
           "isNet": false,
           "netComponents": [],
@@ -4264,7 +4317,7 @@
         },
         {
           "variable": "QCONSENT",
-          "label": "No",
+          "label": "No, I am not interested in participating in a follow-up interview for additional compensation",
           "filterValue": "2",
           "isNet": false,
           "netComponents": [],
@@ -4280,9 +4333,9 @@
   ],
   "metadata": {
     "totalInputTables": 49,
-    "totalOutputTables": 63,
+    "totalOutputTables": 56,
     "tablesModified": 49,
-    "tablesSplit": 7,
+    "tablesSplit": 4,
     "tablesExcluded": 1,
     "averageConfidence": 0.9500000000000005
   },
@@ -4290,545 +4343,431 @@
     {
       "tableId": "s5_multi",
       "changes": [
-        "Added a multi-variable NET row 'Any employment/affiliation (NET)' combining S5r1-S5r6 so analysts can see the percent with any affiliation without manually summing items.",
-        "Set tableType to 'multi_select' (was 'frequency') to reflect the question's multi-select nature.",
-        "Normalized/cleaned a couple of labels to match survey language and readability (e.g., 'Pharmaceutical drug / device manufacturer (outside of clinical trials)', 'Governmental regulatory agency (e.g., FDA)').",
-        "Kept the original item rows and 'None of these' row. Marked the table as derived with sourceTableId pointing to original table for traceability."
+        "s5_multi: Exclude. S5 is a screener question with multiple TERMINATE options (options 1-6). This is used for qualification; exclude from main output and keep only in reference if needed. Rows preserved for reference; no label changes made."
       ]
     },
     {
       "tableId": "s8_time_allocation",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table s8_time_allocation shows respondent allocations (%) of professional time across four activities. First reaction: useful as-is.",
-        "ENTRY 2 - SURVEY CHECK: Found question S8 in survey: 'Approximately what percentage of your professional time is spent performing each of the following activities?' Items: Treating/Managing patients; Performing academic functions (e.g., teaching, publishing); Participating in clinical research; Performing other functions. Labels in the table match the survey text: yes. Variable types are numeric percentage ranges (0-100).",
-        "ENTRY 3 - ANALYST LENS: If I were analyzing this, I would want the table to explicitly note these are percentages that should sum to 100 and show standard summary stats (mean/median/std). I also want row metadata fields present for downstream processing (isNet, netComponents, indent). No NETs, T2B, or splits are appropriate because these are continuous % allocations across distinct activities. This is not a scale requiring top/bottom box. The question is core to sample characterization and should not be excluded.",
-        "ENTRY 4 - DECISION: Final: pass through with small clarifications. Changes: (1) Clarified table title to note values are percentages and sum to 100 and that mean/median/std dev are expected; (2) Added required row metadata fields (isNet=false, netComponents=[], indent=0) for each row. No NET rows, no splits, not excluded, not derived. sourceTableId left empty since not derived.",
-        "Implementation notes: Kept original variable names (S8r1-S8r4) unchanged. filterValue left empty because these are continuous numeric variables. Confidence in decisions: high."
+        "s8_time_allocation: Pass through. Labels match survey S8 which asks respondents to allocate 0-100% of professional time across four activities that must sum to 100%. Added required row fields (isNet, netComponents, indent) and left structure unchanged."
       ]
     },
     {
       "tableId": "s12",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table s12 shows respondent counts of patients by time since event (numeric counts). First reaction: useful as-is (needs only technical completion).",
-        "ENTRY 2 - SURVEY CHECK: Found question in survey S12: 'Of those, how many patients have had an event (MI, CAD, coronary revascularization, stent placement, etc.)' with four numeric buckets (Over 5 years ago; Within the last 3-5 years; Within the last 1-2 years; Within the last year). Labels in the input table match the survey wording exactly: yes.",
-        "ENTRY 3 - ANALYST LENS: As an analyst I would want the table to show means (and possibly distributions) of counts per bucket. I considered adding a NET (total patients with event = sum of the four buckets) because analysts often want the total; however the instructions include a critical constraint to never invent variable names (SPSS column names) that aren't in the input. Creating a multi-variable NET would require inventing a new variable name, so I did not add it here. If the project allows derived/net variables with a standard naming convention, we can add a NET row later using netComponents referencing S12r1..S12r4.",
-        "ENTRY 4 - DECISION: Final: pass through content but complete required structure. Changes: added required fields for each row (isNet=false, netComponents=[], indent=0) and table-level metadata (sourceTableId, isDerived, exclude, excludeReason). No label edits, no splits, no T2B (not a scale), not excluded.",
-        "Technical note: Rows are numeric ranges (counts). filterValue intentionally left empty because these are numeric open-end fields, not categorical codes."
+        "s12: Pass through. Labels and structure match the survey (numeric counts for four time-since-event buckets). Kept as mean_rows; no NETs/T2B/splits required."
       ]
     },
     {
       "tableId": "a1",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table a1 shows respondents' knowledge of the indication for four treatments (Leqvio, Praluent, Repatha, Nexletol/Nexlizet). First reaction: useful as-is but labels were unclear.",
-        "ENTRY 2 - SURVEY CHECK: Found question in survey: 'To the best of your knowledge, which statement below best describes the current indication for each of the following treatments?'. The two response options are: (1) 'As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia' and (2) 'As an adjunct to diet and statin therapy for the treatment of adults with primary hyperlipidemia'. Labels in the input did NOT match the survey text (they were 'Value 1/2').",
-        "ENTRY 3 - ANALYST LENS: If I were analyzing this, I would want the response labels to reflect the exact survey wording so I don't have to cross-reference the questionnaire. No NETs or T2B are appropriate for this single-choice per-row grid; don't split the table since the survey shows all treatments on the same grid.",
-        "ENTRY 4 - DECISION: Final: update labels to full survey text for each product+response value. Changes: replaced generic 'Value 1/Value 2' labels with the two full option texts for each product. Kept tableType as frequency, did not add NETs or derived rows, did not exclude the table."
+        "a1: Fixed unclear 'Value 1/2' labels using the exact survey option text for both response choices (A = 'As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia' and B = 'As an adjunct to diet and statin therapy for the treatment of adults with primary hyperlipidemia'). Kept one frequency table listing each product × two responses. No NETs/T2B or splits needed."
       ]
     },
     {
       "tableId": "A3",
       "changes": [
-        "Added a multi-variable NET row 'Any PCSK9 inhibitor (Leqvio, Praluent, Repatha) (NET)' to provide an analyst-friendly summary of PCSK9 use. This uses netComponents [A3r2, A3r3, A3r4].",
-        "Reordered rows so the NET appears first with its component therapies indented underneath for clarity.",
-        "Verified and kept the original survey wording for all therapy labels (no label text changes required).",
-        "Set sourceTableId to the original tableId and left isDerived false since this is a NET (not a T2B or other derived scale)."
+        "A3: Pass through. Labels in table match the survey wording for A3 (number prescribed out of last 100). Variables are numeric 0-100, so no NETs, T2B, or splits needed."
       ]
     },
     {
       "tableId": "A3a_mean_rows",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table A3a_mean_rows shows the mean % (for last 100 patients) split by therapy and whether prescribed 'In addition to statin' vs 'Without a statin'. First reaction: useful as-is but labels could be clarified to exactly match survey wording.",
-        "ENTRY 2 - SURVEY CHECK: Found question in survey A3a: respondents input % for each therapy 'In addition to statin' (col A) and 'Without a statin' (col B) for their LAST 100 patients. Survey wording for therapies: Leqvio (inclisarin), Praluent (alirocumab), Repatha (evolocumab), Zetia (ezetimibe) or generic ezetimibe, Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe). Labels updated to match survey text exactly. Structure (one numeric value per cell) matches mean_rows tableType.",
-        "ENTRY 3 - ANALYST LENS: If analyzing, I'd want the labels to match the survey language so there's no ambiguity about which product/generic is being referenced. I would not split the table by product because the survey already presents all products in the same matrix and analysts will often want the cross-product comparison. No NETs or T2B make sense because these are numeric-percentage fields (0-100).",
-        "ENTRY 4 - DECISION: Final: pass through table structure but update/clarify labels to match survey text. Changes: standardized product names and generics in parentheses where present; ensured each row includes required metadata fields (filterValue left blank because these are numeric range fields, isNet=false, netComponents=[], indent=0). No NET rows added, no splits, not excluded."
+        "A3a_mean_rows: Pass through with minor label edits to align wording to the survey (use exact product names and the phrases 'In addition to statin' and 'Without a statin').",
+        "Added required metadata fields for each row (isNet, netComponents, indent). No NETs, T2B, splits or exclusions required because these are numeric percentage fields split by treatment and statin status per the survey."
       ]
     },
     {
       "tableId": "A3b_mean_rows",
       "changes": [
-        "Updated row labels to match survey wording more closely and standardized formatting (e.g., 'BEFORE any other lipid-lowering therapy (first line)' and 'AFTER trying another lipid-lowering therapy').",
-        "Expanded Nexletol/Nexlizet label to clarify composition: 'bempedoic acid or bempedoic acid + ezetimibe' to match survey phrasing.",
-        "Added required metadata fields for every row: isNet:false, netComponents:[], indent:0.",
-        "Set sourceTableId to the original table id and left isDerived/exclude flags as false since this is a label/metadata cleanup only."
+        "A3b_mean_rows: Fixed/standardized row labels to match exact survey wording for each product and the two response contexts (BEFORE any other lipid-lowering therapy / AFTER trying another lipid-lowering therapy). No structural changes made; variables unchanged."
       ]
     },
     {
       "tableId": "A4_meanrows",
       "changes": [
-        "Clarified labels to indicate whether each variable represents responses for the respondent's Last 100 patients vs Next 100 patients (survey A4 collects both Last and Next columns).",
-        "Reordered rows to group each treatment's Last and Next measures together for easier analysis (Statin, Leqvio, Praluent, Repatha, Zetia, Nexletol, Other).",
-        "Ensured all rows include required metadata fields (isNet, netComponents, indent) and preserved original variable names."
+        "A4_meanrows: Fixed labels to explicitly state whether each row refers to Column A (In addition to statin) or Column B (Without a statin). Kept as combined view for analysts who want both sets in one table.",
+        "Added A4_inadditiontostatin_meanrows: Split view for clarity — isolates the 'In addition to statin' column (A4r#c1 variables). Marked as derived from A4_meanrows.",
+        "Added A4_withoutstatin_meanrows: Split view for clarity — isolates the 'Without a statin' column (A4r#c2 variables). Marked as derived from A4_meanrows.",
+        "No NETs or T2B added since these are numeric counts (0-100) rather than categorical/scale responses. Variable names preserved exactly per constraints."
       ]
     },
     {
       "tableId": "a4a_mean",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table a4a_mean shows mean percentage responses for 'NEXT 100' patients by treatment and by whether the therapy is given in addition to a statin or without a statin. First reaction: useful as-is but labels are unclear and include placeholder text.",
-        "ENTRY 2 - SURVEY CHECK: Found question A4a in survey: 'For each treatment, for approximately what % of those NEXT 100 patients would you expect to prescribe that therapy in addition to a statin vs. without a statin? Each row must add to 100%.' Variable mapping: c1 = 'In addition to statin (A)', c2 = 'Without a statin (B)'. Labels did not match survey wording (they contained internal placeholders like [res PatientHoverover2]).",
-        "ENTRY 3 - ANALYST LENS: If analyzing, I would want clear, survey-language labels that indicate treatment name and which column (In addition to statin vs Without a statin) the variable represents. No NETs or T2B apply because these are continuous percent (0-100) measures. Do not split into separate tables because the survey presents these treatments together with the two paired columns.",
-        "ENTRY 4 - DECISION: Final: update labels to match survey wording and remove placeholder text. Keep single mean_rows table with same tableId; set sourceTableId to original. Changes made: updated all 10 row labels to 'Treatment — % of NEXT 100 patients: In addition to statin (A)' or '... Without a statin (B)'; set isNet false, netComponents empty, indent 0 for all rows. No nets, no T2B, not excluded."
+        "a4a_mean: Labels clarified to match survey A4a wording. Mapped each variable to the two requested values per therapy: 'In addition to statin' (col A) and 'Without a statin' (col B). Kept table structure as mean_rows (percent / average of 0-100 inputs).",
+        "a4a_mean: sourceTableId set to original tableId for traceability. No NETs, splits, or T2B added because question captures % splits (two complementary numeric fields) per therapy."
       ]
     },
     {
       "tableId": "A4b_mean_rows",
       "changes": [
-        "Updated all row labels to replace cryptic 'c1'/'c2' with clear survey language: 'Before any other lipid‑lowering therapy (first line)' for c1 and 'After trying another lipid‑lowering therapy' for c2. Shortened and standardized product naming to match survey wording. Set sourceTableId to original tableId and kept table as mean_rows. No NETs, no T2B added, not excluded."
+        "A4b_mean_rows: Label fixes. Mapped c1/c2 to survey language: c1 = 'Before any other lipid-lowering therapy (first line)'; c2 = 'After trying another lipid-lowering therapy'. Clarified treatment names to match survey (Leqvio, Praluent, Repatha, Zetia, Nexletol/Nexlizet). Added required row metadata (isNet, netComponents, indent).",
+        "A4b_mean_rows: Kept as a single mean_rows table since variables are numeric % allocations (0-100) for two mutually exclusive timing categories; no NETs, T2B, or splits required."
       ]
     },
     {
       "tableId": "A6_rank1",
       "changes": [
-        "Split the original single table (rank #1 only) into four derived frequency tables for ranks 1-4 so analysts can see the distribution for each ranked position (A6_rank1, A6_rank2, A6_rank3, A6_rank4).",
-        "Updated label for A6r8 from 'Other' to 'Other (Specify)' to match survey wording and be explicit.",
-        "Set sourceTableId to the original tableId ('A6_rank1') and marked tables as isDerived=true to indicate these are derived views of the ranking variables.",
-        "Kept tableType as 'frequency' and preserved the 'ranking' hint."
+        "A6_rank1: Pass through. Labels match the survey wording for A6 rank items; table shows frequency of items ranked #1. No nets, splits, or T2B needed for a ranking question."
       ]
     },
     {
       "tableId": "A6_rank2",
       "changes": [
-        "Updated table title to clearly state this is the items ranked #2 (second choice) for question A6 to make the analytic intent explicit.",
-        "Ensured every row includes required metadata fields: isNet, netComponents (empty), and indent (0).",
-        "Adjusted label for A6r8 to 'Other (Specify)' to match common survey phrasing."
+        "A6_rank2: Pass through with labels fixed/confirmed to exactly match survey wording. Converted tableType to 'ranking' (question is a rank question).",
+        "A6_rank1 / A6_rank3 / A6_rank4: Added derived views for ranks #1, #3 and #4 to provide the common slices analysts want for ranking questions. Each derived table uses sourceTableId = 'A6_rank2' and filterValue set to the appropriate rank (1,3,4). No nets or T2B rows were added because this is a ranking (not a scale) and rollups are not meaningful here."
       ]
     },
     {
       "tableId": "A6_rank3",
       "changes": [
-        "Changed tableType from 'frequency' to 'ranking' to reflect this is a rank-item table (third-ranked items).",
-        "Clarified table title to explicitly state these are items ranked #3 for NEXT 100 patients not on lipid-lowering therapy.",
-        "Added required row fields: isNet=false, netComponents=[], indent=0 for every row.",
-        "Updated label for A6r8 to 'Other (Specify)' to match survey wording."
+        "A6_rank3: Pass-through with minor cleanup. Labels matched to survey wording and title clarified to indicate this is the items ranked #3 (third choice) for NEXT 100 patients not currently on lipid-lowering therapy. Added required metadata fields (isNet, netComponents, indent) for each row.",
+        "No NETs, T2B or splits added because this is a ranking question (discrete ranked positions) and the rows already map 1:1 to survey items."
       ]
     },
     {
       "tableId": "A6_rank4",
       "changes": [
-        "Added full required metadata fields to every row (isNet=false, netComponents=[], indent=0) so the table is ingestible.",
-        "Clarified table title to indicate this is the 4th choice (\"4 = 4th choice\").",
-        "Updated label for A6r8 to 'Other (Specify)' to match survey phrasing.",
-        "Kept original variables and filterValue coding (4) intact; no NETs or T2B added because this is a ranking question and rollups are not appropriate."
+        "A6_rank4: Minor edits. Confirmed labels match survey question A6; changed tableType to 'ranking' (was 'frequency') to reflect this is a rank question. Added required row fields (isNet, netComponents, indent) so table schema is complete.",
+        "A6_rank4: No splits, NETs, or T2B rows required — this is a straight ranking (rank up to 4) of predefined treatment paths."
       ]
     },
     {
       "tableId": "A7_multi_select",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table A7_multi_select shows the multi-select 'select all that apply' responses for A7. First reaction: needs minor updates (tableType and full row metadata) but the row labels match the survey and are meaningful.",
-        "ENTRY 2 - SURVEY CHECK: Found question in survey: 'How might being able to use PCKS9 inhibitors indicated for use with or without statin therapy impact your perceptions and/or prescribing? Select all that apply' — Options listed in survey match the datamap descriptions for A7r1–A7r5. Labels match: yes. Structure matches: yes (multi-select).",
-        "ENTRY 3 - ANALYST LENS: I would want this defined as a multi_select table (not a simple frequency) so analysts know these are binary flags from a select-all question. I would also normally add an 'Any selected (NET)' rollup, but per constraints I cannot invent new variable names/columns that aren't in the input datamap, so I did NOT add NET rows.",
-        "ENTRY 4 - DECISION: Final: update tableType to 'multi_select', keep/confirm survey language for all labels, add required row metadata fields (isNet=false, netComponents=[], indent=0) for every row. Did NOT add NET rows (would require creating a new variable) and did NOT create any T2B (not a scale). No exclusion applied.",
-        "Implementation details: - tableId kept as original 'A7_multi_select' - sourceTableId set to original table id for traceability - isDerived=false. All rows use original variable names and filterValue '1'."
+        "A7_multi_select: Pass-through content validated against survey. Fixed table title to correct 'PCSK9' spelling and made it explicit that this is a select-all-that-apply question.",
+        "A7_multi_select: Changed tableType to 'multi_select' to match question type.",
+        "A7_multi_select: Added an 'Any impact (NET)' multi-variable NET row combining A7r1-A7r5 so analysts can see percent selecting any option (net of all components). Kept all original component rows (filterValue=1) and indented them under the NET."
       ]
     },
     {
       "tableId": "A8_r1",
       "changes": [
-        "Split original combined table into three product-specific tables (Repatha, Praluent, Leqvio) because the survey displays products separately (carousel) and analysts will want product-level views.",
-        "Replaced numeric-only row labels with full survey language for the 5-point likelihood scale: 'Not at all likely', 'Slightly likely', 'Somewhat likely', 'Very likely', 'Extremely likely'.",
-        "Added Top 2 Box (T2B) row labeled 'Likely (T2B: Very or Extremely likely)' combining values 4 and 5 (isNet=true).",
-        "Added Bottom 2 Box (B2B) row labeled 'Not likely (B2B: Not at all or Slightly likely)' combining values 1 and 2 (isNet=true).",
-        "Set sourceTableId to original 'A8_r1' and marked these tables as isDerived=true to indicate they were created from the original table."
+        "A8_r1: Labels clarified to survey language for each scale point (Not at all likely; Slightly likely; Somewhat likely; Very likely; Extremely likely).",
+        "A8_r1: Added Top 2 Box (Likely - 4,5) and Bottom 2 Box (Unlikely - 1,2) NET rows for each product (Repatha, Praluent, Leqvio).",
+        "A8_r1: Set tableType to grid_by_item to reflect the matrix structure (products × 5-point likelihood scale). Marked as derived because NET rows were added; sourceTableId set to original tableId."
       ]
     },
     {
       "tableId": "A8_r2",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table A8_r2 shows respondents' likelihood to prescribe Repatha, Praluent, and Leqvio alone (without statin) for patients with no history of CV events and at high risk. First reaction: needs work — labels were generic (just product names and numeric codes) and the 5-point scale should have Top/Bottom box rollups; survey presented each product separately in a carousel so splitting by product will match the survey flow and be clearer for analysis.",
-        "ENTRY 2 - SURVEY CHECK: Found question text in survey: A8 asks 'For each patient situation, how likely would you be to prescribe each of the following therapies alone …' with scale labels: 'Not at all likely; Slightly likely; Somewhat likely; Very likely; Extremely likely.' Datamap confirms variables A8r2c1=A8 Repatha, A8r2c2=Praluent, A8r2c3=Leqvio. Original table rows used numeric filterValues only — labels did not reflect survey text. Structure: survey used a carousel (each product shown separately), so splitting is appropriate.",
-        "ENTRY 3 - ANALYST LENS: Analysts will want the full 5-point breakdown and common rollups: Top 2 Box (Very + Extremely likely) and Bottom 2 Box (Not at all + Slightly likely). Also, because the survey presented each product separately, separate tables per product make the results easier to interpret and reduce confusion. Therefore: update labels to survey language, add T2B and B2B net rows (filterValue '4,5' and '1,2'), keep full scale, and split into three product-specific tables. Set sourceTableId to the original table for traceability.",
-        "ENTRY 4 - DECISION: Final: split the single mixed table into three frequency tables (one per product: Repatha, Praluent, Leqvio). For each table, replaced vague labels with the survey wording for each scale point, added Top 2 Box 'Very or Extremely likely (T2B)' filterValue = '4,5' and Bottom 2 Box 'Not at all or Slightly likely (B2B)' filterValue = '1,2'. Kept the original scale rows and used indentation to show what rolls into the nets. Set sourceTableId = 'A8_r2' and isDerived = true because nets were added. Hints 'scale-5' preserved.",
-        "Summary of concrete changes: (1) Fixed labels to match survey text for all scale points. (2) Added T2B and B2B net rows for each product. (3) Split the original combined table into three product-specific tables. (4) Set sourceTableId to original 'A8_r2' and marked derived = true."
+        "A8_r2: Labels fixed. Replaced generic product labels per filterValue with the survey scale text: 1=Not at all likely, 2=Slightly likely, 3=Somewhat likely, 4=Very likely, 5=Extremely likely. Kept as the full-scale frequency table (one table per product variable).",
+        "A8_r2_Top2Box: Added a derived summary table (sourceTableId=A8_r2) providing Top-2-Box (Likely = 4,5) and Bottom-2-Box (Unlikely = 1,2) NET rows for each product with the underlying scale items indented. This gives analysts quick box-score rollups while preserving the full scale in the original table."
       ]
     },
     {
       "tableId": "A8_r3",
       "changes": [
-        "Split original table A8_r3 into three product-specific tables (Repatha, Praluent, Leqvio) to match the survey carousel presentation and to make analysis by product straightforward.",
-        "Replaced numeric-only row labels with survey language for the 5-point likelihood scale: 1 = Not at all likely, 2 = Slightly likely, 3 = Somewhat likely, 4 = Very likely, 5 = Extremely likely.",
-        "Added Top 2 Box (Likely (T2B) = 4,5) and Bottom 2 Box (Not likely (B2B) = 1,2) NET rows for each product to provide standard summary metrics analysts expect. Kept full scale detail as well.",
-        "Set sourceTableId to the original table (A8_r3) and marked these tables as isDerived = true because NET rows were added."
+        "A8_r3: Fixed labels to use full survey scale wording and product names; retained original variables and full 1-5 scale rows.",
+        "A8_r3_t2b: Added derived Top 2 Box (4,5) and Bottom 2 Box (1,2) summary table with indented individual scale rows. Set sourceTableId to original and isDerived=true. This provides the common box-score view analysts expect for scale questions."
       ]
     },
     {
       "tableId": "A8_r4",
       "changes": [
-        "Updated numeric-only labels to full survey text for the 5-point likelihood scale (1=Not at all likely, 2=Slightly likely, 3=Somewhat likely, 4=Very likely, 5=Extremely likely) for each product (Repatha, Praluent, Leqvio).",
-        "Added Top 2 Box (Likely, filterValue=\"4,5\") and Bottom 2 Box (Unlikely, filterValue=\"1,2\") NET rows for each product to support standard box-score analysis. Indented individual scale points under NETs for clarity.",
-        "Set isDerived=true and sourceTableId to the original tableId to indicate these summary NET rows derive from the original table."
+        "A8_r4: Labels updated to match survey scale wording for A8 ('Not at all likely' to 'Extremely likely').",
+        "A8_r4: Added Top 2 Box (T2B) rows (filterValue = 4,5) and Bottom 2 Box (B2B) rows (filterValue = 1,2) for each product (Repatha, Praluent, Leqvio) to provide standard box-score rollups while keeping full scale detail.",
+        "A8_r4: Changed tableType to grid_by_item to reflect identical scale applied across multiple products and set isDerived=true with sourceTableId to the original tableId."
       ]
     },
     {
       "tableId": "A8_r5",
       "changes": [
-        "Replaced numeric value labels (1-5) with survey language: 'Not at all likely', 'Slightly likely', 'Somewhat likely', 'Very likely', 'Extremely likely'.",
-        "Split the combined table into three product-specific tables (Repatha, Praluent, Leqvio) to match the survey's carousel/row structure. Set sourceTableId to original A8_r5 and marked derived=true.",
-        "Added Top 2 Box (T2B) net row (filterValue='4,5') labeled 'Likely (Top 2 Box: Very or Extremely likely)' and Bottom 2 Box (B2B) net row (filterValue='1,2') labeled 'Unlikely (Bottom 2 Box: Not at all or Slightly likely)' for each product to aid quick analysis. Kept full scale detail.",
-        "Maintained hint 'scale-5' and left tables as frequency type. No tables excluded."
+        "A8_r5: Labels clarified to match survey scale text (1=Not at all likely ... 5=Extremely likely) and product context added to NET rows.",
+        "A8_r5: Added Top-2-Box (Likely (T2B) = 4,5) and Bottom-2-Box (Unlikely (B2B) = 1,2) rollup rows for each product (Repatha, Praluent, Leqvio). Kept full 5-point scale rows intact. Marked table as derived and referenced sourceTableId."
       ]
     },
     {
       "tableId": "a9",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table a9 shows responses to issues encountered for three products (Repatha / Praluent / Leqvio). First reaction: needs work — labels are generic and the three products should be presented separately for clarity.",
-        "ENTRY 2 - SURVEY CHECK: Found question in survey: 'To what extent have you encountered any issues with coverage, approvals, cost, etc. for using each of the following without a statin today?' Response options (per survey) are: 1=No issues; 2=Some issues; 3=Significant issues; 4=Haven’t prescribed without a statin. Labels in the input ('Repatha - 1', etc.) did NOT match survey language. Variables A9c1/A9c2/A9c3 map to Repatha/Praluent/Leqvio respectively.",
-        "ENTRY 3 - ANALYST LENS: If I were analyzing this, I would want (a) clear labels using survey language so I don't have to cross-reference the questionnaire, (b) the three products split into separate tables (or at minimum clearly grouped) because the survey asks about each product separately, and (c) a simple NET for 'any issues' (Some or Significant) so analysts can quickly see overall problem prevalence without always summing 2 and 3 manually. The 'Haven’t prescribed' response should remain separate and not be combined with issue categories.",
-        "ENTRY 4 - DECISION: Final: split the original table into three frequency tables (one per product) with corrected labels. Added a NET row 'Any issues (Some or Significant) (NET)' that merges values 2 and 3 (filterValue '2,3') for each product. Kept all original variables and value codes unchanged. sourceTableId set to 'a9' for traceability.",
-        "Summary of concrete changes made: (1) Fixed labels to use the survey text for each value (No issues; Some issues; Significant issues; Haven’t prescribed without a statin). (2) Split the single combined table into three product-specific frequency tables (a9_repatha, a9_praluent, a9_leqvio) with sourceTableId='a9'. (3) Added an 'Any issues (Some or Significant) (NET)' roll-up (filterValue '2,3') for each product to aid quick analysis. (4) Set isNet flags and indents: NET rows are isNet=true, detail rows that roll into the NET are indented (indent=1)."
+        "a9: Fixed labels. Replaced generic 'Repatha - 1' / 'Praluent - 2' style labels with the survey answer text (No issues; Some issues; Significant issues; Haven’t prescribed without a statin) for each product (A9c1, A9c2, A9c3).",
+        "a9: Kept single grid view (grid_by_item). No NETs or T2B added since this is a 4-point categorical issue scale and rollups were not requested/obvious."
       ]
     },
     {
       "tableId": "A10",
       "changes": [
-        "Changed tableType from 'frequency' to 'multi_select' to reflect question design (select-all-that-apply).",
-        "Added a top-line NET row combining A10r1-A10r5: 'Any reason for prescribing PCSK9s without a statin (NET)' (isNet=true, netComponents set). This gives analysts a quick summary of anyone prescribing without a statin for any reason.",
-        "Set individual reason rows (A10r1-A10r5) as detail rows under the NET (indent=1).",
-        "Kept A10r6 ('Haven’t prescribed...') as a separate top-level row (indent=0) and did NOT include it in the NET, since it is conceptually exclusive from the affirmative reasons.",
-        "Populated required metadata fields for every row: isNet, netComponents, and indent.",
-        "Set sourceTableId to original tableId and isDerived=true because a derived NET row was added."
+        "A10: Pass through. Labels matched to survey text; fixed encoding in A10r6 (converted to straight apostrophe).",
+        "A10: Added required output fields (isNet, netComponents, indent) for each row. No NET row created to avoid inventing new variables (multi-select items retained as individual binary flags)."
       ]
     },
     {
       "tableId": "b1_mean_rows",
       "changes": [
-        "Added required row fields: isNet:false, netComponents:[], indent:0 for all rows.",
-        "Minor wording tweak: 'Private Medicare (Medicare Advantage / Part C managed through private payer)' to match natural capitalization and clarity.",
-        "Kept table as mean_rows and otherwise passed through because variables are numeric percent ranges (0-100) and the table is appropriate for mean/median/stddev summaries."
+        "b1_mean_rows: Pass through. Labels in the table were already accurate and match the survey wording for B1 (percentage of patients by insurance type). Added required fields (isNet, netComponents, indent) to each row for consistency with output schema. No NETs, splits, or T2B required because this is a 0-100 numeric allocation question that sums to 100%."
       ]
     },
     {
       "tableId": "B5",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table B5 shows a multi-select (select all that apply) listing five specialty/training flags. First reaction: useful as-is (needs minimal formatting to meet required schema).",
-        "ENTRY 2 - SURVEY CHECK: Found question in survey: 'B5. How would you describe your specialty/training? Select all that apply.' Labels in the table match the answer text in the survey and the datamap (Internal Medicine, General Practitioner, Primary Care, Family Practice, Doctor of Osteopathic Medicine (DO)). Labels match: yes. Structure matches: yes (binary flag variables, select-all).",
-        "ENTRY 3 - ANALYST LENS: As an analyst I'd potentially want a NET (any selected) to see % of respondents who selected any of these, but creating a synthetic variable would violate the 'NEVER invent variables' constraint. Therefore prefer to leave rows as individual binary flags so analysts can compute combined metrics as needed. Also no scale or directional summary is applicable.",
-        "ENTRY 4 - DECISION: Final: pass through with schema completions only. Changes: - Added required fields for each row (isNet=false, netComponents=[], indent=0). - Left sourceTableId empty and isDerived=false because this is the original table and not derived. - Did not add NET rows or T2B since this is a multi-select (not a scale) and we must not invent variables. No exclusion applied."
+        "B5: Pass through. Labels were verified against the survey and match the response text for B5. This is a select-all-that-apply question so tableType set to 'multi_select' to reflect the question format. No NET row added because there is no aggregate variable in the datamap to represent an 'Any' roll-up (we do not invent variables)."
       ]
     },
     {
       "tableId": "s1",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table s1 shows consent to proceed (adverse event / product complaint reporting). First reaction: useful as-is but labels need a minor cleanup (typo/encoding and shorten overly long label).",
-        "ENTRY 2 - SURVEY CHECK: Found question in survey and datamap. Exact response text matches datamap values. Labels matched overall but the third label in the input had an encoding error and the second label was very long; both are corrected to match survey wording. Also note that response 3 is a termination path in the screener.",
-        "ENTRY 3 - ANALYST LENS: If I were analyzing this, I would want the labels to exactly match survey language and to flag that choice 3 terminates the respondent. This is a screener item (important for QC) but not a scale or multi-select — no NETs or T2B required. Keep the table in main output (do not exclude).",
-        "ENTRY 4 - DECISION: Final: pass through with label fixes. Changes: (1) Fixed encoding/typo in option 3 to \"I don't want to proceed (terminate)\"; (2) Shortened/cleaned option 2 to remove redundancy while keeping meaning consistent with survey; (3) Set sourceTableId to the original tableId for traceability. No NET rows, no splits, not excluded."
+        "s1: Removed the TERMINATE response (value 3, 'I don't want to proceed') from the table per survey terminate logic — terminate rows should be excluded from analytic output. Kept only continuing responses (values 1 and 2).",
+        "s1: Ensured labels match survey language exactly."
       ]
     },
     {
       "tableId": "s2b",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table s2b shows the distribution of respondents' primary role (Physician / NP / PA / Other). First reaction: useful as-is but could be improved with a small roll-up for analysis.",
-        "ENTRY 2 - SURVEY CHECK: The survey asks about primary specialty/role and includes Nurse Practitioner and Physician’s Assistant. Datamap labels match the survey intent but one label had an encoding issue ('Physician�s Assistant'). I corrected the apostrophe to match the survey text: 'Physician’s Assistant'.",
-        "ENTRY 3 - ANALYST LENS: Analysts commonly want a combined figure for advanced practice providers (APPs). I added a NET row combining Nurse Practitioners and Physician’s Assistants (filterValue = '2,3') so users can see APPs as a single group while preserving the detail rows underneath (indented). This is a same-variable NET (no new variables invented).",
-        "ENTRY 4 - DECISION: Update labels (fix encoding), add NET row 'Nurse Practitioners & Physician’s Assistants (NET)' with filterValue '2,3', keep original detail rows (indented for NP and PA), keep Physician and Other at top-level. Set sourceTableId to the original 's2b'. No exclusion, not derived."
+        "s2b: Pass through. Labels match survey/datamap; fixed typographic apostrophe in 'Physician's Assistant' for clarity."
       ]
     },
     {
       "tableId": "s2",
       "changes": [
-        "Passed through table 's2' unchanged. Verified labels against the survey and added required metadata fields (isNet, netComponents, indent) to each row and table-level fields (sourceTableId, isDerived, exclude)."
+        "s2: Removed the TERMINATE 'Other' (99) response from the main frequency table per the survey (99 = Other is an anchored TERMINATE). Labels were already matching survey text; no other structural changes made."
       ]
     },
     {
       "tableId": "s2a",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table s2a shows response frequencies for S2a (type of doctor's office for NPs/PAs). First reaction: useful as-is.",
-        "ENTRY 2 - SURVEY CHECK: Found question in survey: 'S2a. In what type of doctor's office do you work?' (asked if S2 = Nurse Practitioner or Physician’s Assistant). Labels in the table match the survey and datamap exactly.",
-        "ENTRY 3 - ANALYST LENS: No splits, NETs, or T2B are appropriate. This is a simple categorical follow-up asked only of NPs/PAs; it should be retained (not excluded) so analysts can see the distribution among the conditional sample. I would not change labels or aggregate categories.",
-        "ENTRY 4 - DECISION: Final: pass through unchanged. Implementation details: expanded each row to include required fields (isNet=false, netComponents=[], indent=0). No label edits, no NET rows, not excluded."
+        "s2a: Pass through. Labels match the survey wording and the datamap; no nets, splits, or T2B required."
       ]
     },
     {
       "tableId": "qCARD_SPECIALTY",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table qCARD_SPECIALTY shows a two-way specialty grouping (CARD vs NEPH/ENDO/LIP). First reaction: useful as-is but labels are abbreviated and could be clearer for analysts.",
-        "ENTRY 2 - SURVEY CHECK: In the survey S2 lists multiple specialties including 'Cardiologist', 'Nephrologist', 'Endocrinologist', 'Lipidologist'. The datamap groups these into values 1='CARD' and 2='NEPH/ENDO/LIP'. Labels in the table did not use full survey wording.",
-        "ENTRY 3 - ANALYST LENS: Analysts will expect full survey wording. I would update the labels to the survey text (e.g., 'Cardiologist' and 'Nephrologist / Endocrinologist / Lipidologist') so the table is immediately interpretable. No NETs, T2B, splits or exclusions are needed because this is a simple grouping used for segmentation.",
-        "ENTRY 4 - DECISION: Update labels to full survey language and include required row metadata (isNet, netComponents, indent). Keep table as a frequency table, keep sourceTableId set to the original tableId, mark as not derived and not excluded. Changes made: updated row labels from 'CARD' and 'NEPH/ENDO/LIP' to 'Cardiologist' and 'Nephrologist / Endocrinologist / Lipidologist'; added isNet=false, netComponents=[], indent=0 for each row; set title to be slightly more descriptive; set sourceTableId to 'qCARD_SPECIALTY'."
+        "qCARD_SPECIALTY: Fixed labels to match survey wording. 'CARD' -> 'Cardiologist'; 'NEPH/ENDO/LIP' -> 'Nephrologist / Endocrinologist / Lipidologist'. Pass-through otherwise (structure and values align with datamap)."
       ]
     },
     {
       "tableId": "qSPECIALTY",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table qSPECIALTY shows respondent specialty. First reaction: needs clearer, human-readable labels (original labels were abbreviations).",
-        "ENTRY 2 - SURVEY CHECK: Survey S2 lists specialty options (Cardiologist; Internal Medicine / General Practitioner / Primary Care / Family Practice; Nurse Practitioner; Physician's Assistant, etc.). Datamap collapsed values to 1-3 with labels CARD / PCP / NPPA. Labels did not match survey wording exactly.",
-        "ENTRY 3 - ANALYST LENS: Analysts will expect full text labels from the survey rather than short codes. Also important to note that NP and PA were combined in the datamap (value 3) even though the survey presented them as separate options; we must not invent separate variables or values.",
-        "ENTRY 4 - DECISION: Update labels to match survey language / be clear to analysts. Changes made: replaced abbreviated labels with full descriptive labels: 'Cardiologist' (1); 'Primary care (Internal Medicine / General Practitioner / Family Practice)' (2); 'Nurse Practitioner / Physician Assistant (NP/PA)' (3). No splits, NETs, T2B rows, or exclusions were added because the variable is a straightforward categorical specialty question and the datamap values are limited to 1-3.",
-        "Technical note: Did NOT change variable names or filterValue codes (must match dataset). Did NOT invent or split values even though survey shows more granular options, because datamap only contains 1-3."
+        "qSPECIALTY: Labels updated to match survey language. Datamap used abbreviated codes (CARD, PCP, NPPA); replaced with full survey text: 'Cardiologist', 'Primary care (Internal Medicine / General Practitioner / Family Practice)', and 'Nurse Practitioner / Physician Assistant'. No structural changes made.",
+        "Reasoning: This is a simple categorical specialty variable (frequency). Values in the datamap are limited to 1-3; kept those filterValue codes unchanged per constraints. No NETs, splits or T2B needed."
       ]
     },
     {
       "tableId": "s3a",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table s3a shows respondent sub-type for cardiologists (3 options). First reaction: useful as-is.",
-        "ENTRY 2 - SURVEY CHECK: Found S3a in the survey: 'What type of Cardiologist are you primarily?' with options: 1=Interventional Cardiologist, 2=General Cardiologist, 3=Preventative Cardiologist. Labels match the survey.",
-        "ENTRY 3 - ANALYST LENS: No splits, NETs, or T2B rows are appropriate — this is a simple categorical breakdown only asked when S2=1 (Cardiologist). For clarity and downstream processing I added required metadata fields (isNet, netComponents, indent) for each row but did not change labels or values.",
-        "ENTRY 4 - DECISION: Final: pass through with schema completion. Changes: added isNet=false, netComponents=[], indent=0 for each row; set sourceTableId to original tableId; left exclude=false."
+        "s3a: Pass through. Labels match the survey question text and no nets/splits or derivations required."
       ]
     },
     {
       "tableId": "qTYPE_OF_CARD",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table qTYPE_OF_CARD shows responses to the cardiologist subtype question (S3a). First reaction: useful as-is.",
-        "ENTRY 2 - SURVEY CHECK: Found question in survey S3a: 'What type of Cardiologist are you primarily?' The value labels (Interventional Card; General Card; Preventative Card) match the survey/datamap: yes.",
-        "ENTRY 3 - ANALYST LENS: If I were analyzing this I would want the table title to reference S3a for clarity and the table rows to include the required metadata fields (isNet, netComponents, indent). No NETs, splits, or T2B rows are appropriate because this is a simple categorical asked only of cardiologists.",
-        "ENTRY 4 - DECISION: Final: pass through the content unchanged, but updated the table title for clarity and added the required metadata fields. Set sourceTableId to the original tableId so changes can be traced. No exclusion, no rollups, no scale summaries added."
+        "qTYPE_OF_CARD: Fixed labels to match survey S3a wording — expanded abbreviated labels to full response text ('Interventional Cardiologist', 'General Cardiologist', 'Preventative Cardiologist'). No structural changes required."
       ]
     },
     {
       "tableId": "qON_LIST_OFF_LIST",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table qON_LIST_OFF_LIST shows respondent recruitment source (on-list vs off-list by role). First reaction: useful but labels can be clearer and analysts will want simple rollups (role totals and overall on/off totals).",
-        "ENTRY 2 - SURVEY CHECK: Survey recruitment description distinguishes Card (Cardiologist), PCP, and NP/PA and whether they are 'on-list' or 'off-list'. Datamap labels matched but used shorthand. Updated labels to match survey wording (e.g., 'Cardiologist', 'Primary Care (PCP)', 'NP / PA').",
-        "ENTRY 3 - ANALYST LENS: Analysts will commonly want (a) counts by role (Card, PCP, NP/PA) and (b) overall On-List vs Off-List totals. I would add NET rows for role-level totals and On-List / Off-List totals while keeping the detailed six categories. This avoids forcing analysts to compute these rollups externally.",
-        "ENTRY 4 - DECISION: Final: update labels to full, user-friendly survey language and add NET rows. Changes: (1) Renamed shorthand labels to explicit ones (e.g., 'PCP' -> 'Primary Care (PCP)', 'NPPA' -> 'NP / PA'). (2) Added three role NETs (Cardiologists (NET), Primary Care (PCP) (NET), NP / PA (NET)) with indented ON/OFF detail rows. (3) Added overall On-List (NET) and Off-List (NET) rows. Kept variable names unchanged and used filterValue for NET merges (e.g., '1,2' for Cardiologists). Set isDerived true and sourceTableId to original to indicate table augmented with rollups."
+        "qON_LIST_OFF_LIST: Pass through. Labels match the datamap and survey context (sampling/on-list vs off-list segments); variable is a recruitment/segment indicator (administrative), so no changes required."
       ]
     },
     {
       "tableId": "qLIST_TIER",
       "changes": [
-        "First impression: Table qLIST_TIER shows distribution of respondent list tier (1-4). First reaction: useful as-is.",
-        "Survey check: Datamap and survey context indicate qLIST_TIER maps directly to 'TIER 1'..'TIER 4' (labels match the survey/datamap).",
-        "Analyst lens: No rollups, T2B, or splits are clearly required from the survey. This is a segmentation/demographic variable and should be reported intact. Analysts might later request a priority-tier NET (e.g., Tiers 1-2) but the survey does not define such a rollup, so none was added.",
-        "Decision: Passed through unchanged, but completed required row metadata fields (isNet, netComponents, indent) to conform to table schema."
+        "qLIST_TIER: Pass through. Variable and labels match the datamap/survey segmentation (TIER 1-4); table structure appropriate for a simple frequency distribution."
       ]
     },
     {
       "tableId": "qLIST_PRIORITY_ACCOUNT",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table qLIST_PRIORITY_ACCOUNT shows whether a respondent is from a priority account or not. First reaction: useful as-is.",
-        "ENTRY 2 - SURVEY CHECK: Datamap and survey show qLIST_PRIORITY_ACCOUNT has two values: 1 = PRIORITY, 2 = NOT PRIORITY. Labels in the incoming table already match the survey wording. Labels match: yes. Structure matches: yes.",
-        "ENTRY 3 - ANALYST LENS: This is a segmentation variable that analysts will use to split results by priority vs not priority. No NETs or T2B are needed. I would not split the table further or exclude it because it's analytically useful for subgroup analyses.",
-        "ENTRY 4 - DECISION: Final: pass through unchanged. Changes: expanded each row to include required metadata fields (isNet, netComponents, indent) and set table-level metadata (sourceTableId=\"\", isDerived=false, exclude=false). No label edits or rollups were required."
+        "qLIST_PRIORITY_ACCOUNT: Pass through. Labels match survey ('PRIORITY' / 'NOT PRIORITY'). Added required row fields (isNet, netComponents, indent) and standard table metadata."
       ]
     },
     {
       "tableId": "s4",
       "changes": [
-        "Kept table structure as-is (question is a straightforward screener categorical).",
-        "Added required metadata fields for each row: isNet:false, netComponents:[], indent:0.",
-        "Ensured table-level fields are present: sourceTableId:\"\", isDerived:false, exclude:false, excludeReason:\"\".",
-        "Labels match survey text and therefore were not changed."
+        "s4: Pass through. Labels match the survey wording. Added required metadata fields (isNet, netComponents, indent) to conform to output schema."
       ]
     },
     {
       "tableId": "s6",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table s6 shows respondents' years in clinical practice (numeric). First reaction: useful as-is for reporting a mean (and distribution if analysts request), but the input table was missing required row metadata.",
-        "ENTRY 2 - SURVEY CHECK: Found question in survey: 'How many years have you been in clinical practice, post residency/training?' (S6). Labels match the survey wording. Variable is a numeric range (0-99) as documented.",
-        "ENTRY 3 - ANALYST LENS: Analysts will expect a mean (and likely also median, min/max and a distribution). The current tableType 'mean_rows' is appropriate for the primary summary (mean). Creating distribution buckets would be helpful but would require defining bins or deriving new variables (do not invent variables here).",
-        "ENTRY 4 - DECISION: Pass through with minimal structural fixes. Changes made: completed the row definition with required fields (isNet=false, netComponents=[], indent=0) and updated the row label to match the survey question text exactly. Kept tableType as 'mean_rows', left as non-derived, not excluded. If analysts want frequency buckets, recommend adding a separate frequency table derived from S6 (request separately)."
+        "s6: Label updated to match exact survey wording. Kept as a mean_rows numeric summary (numeric_range 0-99). Note: this variable is used as a screener with termination rules in the survey (terminate if <3 or >35 years) — retained for sample description."
       ]
     },
     {
       "tableId": "s7",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table s7 shows current practice status (Full-Time vs Part-Time). First reaction: useful for QC but of limited analytical value for main output because this is a screener.",
-        "ENTRY 2 - SURVEY CHECK: Question text in survey: 'And to confirm, are you currently practicing full-time (i.e. 40+ hours weekly across all settings) or part-time?' Datamap labels match survey ('1' = Full-Time, '2' = Part-Time). Structure matches: single-choice categorical.",
-        "ENTRY 3 - ANALYST LENS: As an analyst I would expect almost all retained respondents to be Full-Time because Part-Time respondents were terminated per survey logic. This makes the table primarily a QC/screener variable rather than an analytic variable. No label fixes or NETs needed.",
-        "ENTRY 4 - DECISION: Final: pass through labels unchanged but exclude from main output. Changes: set exclude=true and add excludeReason explaining screener/termination logic. Table rows preserved for reference/QC."
+        "s7: Pass through. Labels match the survey wording for S7 (Full-Time vs Part-Time); simple demographic/practice-status variable so no nets, splits, or T2B needed."
       ]
     },
     {
       "tableId": "s9",
       "changes": [
-        "Passed table s9 through largely unchanged. Added required metadata fields for each row: isNet=false, netComponents=[], indent=0.",
-        "Added table-level fields sourceTableId='', isDerived=false, exclude=false, excludeReason=''.",
-        "No label edits, NETs, splits, or T2B rows were necessary because this is a single-response categorical question with clear answer text matching the survey."
+        "s9: Pass through. Labels match survey question S9 and datamap; no changes required."
       ]
     },
     {
       "tableId": "s10",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table s10 shows a single numeric question (count of adult patients managed per month). First reaction: useful as-is but label is overly long and should be simplified for readability.",
-        "ENTRY 2 - SURVEY CHECK: Found question in survey S10: 'Using your best estimate, how many adult patients, age 18 or older, do you personally manage in your practice in a month? By ‘personally’, we mean patients for whom you are a primary treatment decision maker.' Labels match survey intent: yes. Variable is numeric_range (0-999).",
-        "ENTRY 3 - ANALYST LENS: If I were analyzing this, I would want a concise label that preserves the key definition (age 18+, personally manage, primary treatment decision maker). I considered adding bins (e.g., categories) but cannot invent new variables and numeric binning would be a derived transformation — avoid making assumptions about desired bins. Also this variable was used as a screener (terminate if <50) so it's useful to keep in main output.",
-        "ENTRY 4 - DECISION: Final: pass through the table but update the row label to a concise, analyst-friendly wording. Changes: shortened/clarified label; kept tableType as mean_rows (so analysts can get mean/median/count); did not add NETs, T2B, splits, or exclude the table.",
-        "Change details: - Updated row label from full survey wording to: 'Number of adult patients (age 18+) you personally manage per month (patients for whom you are the primary treatment decision maker)'. - Ensured row includes required metadata fields (isNet:false, netComponents:[], indent:0). - Left filterValue blank (numeric input). - Table remains included (exclude:false)."
+        "s10: Label simplified to a concise survey phrasing while preserving the original question meaning. No structural changes made; kept as a mean_rows numeric summary."
       ]
     },
     {
       "tableId": "s11",
       "changes": [
-        "Updated the row label to exactly match the survey question text for clarity.",
-        "Added required row fields isNet (false), netComponents ([]), and indent (0).",
-        "Ensured table metadata fields (sourceTableId, isDerived, exclude, excludeReason) are present and set appropriately. No NETs, T2B, splits, or exclusions applied because this is a numeric open-ended screener/quota variable useful for sample description."
+        "s11: Label updated to exactly reflect the survey question wording and clarify this is 'of those you personally manage'. Variable S11 is a numeric_range (count) so keeping tableType 'mean_rows' is appropriate to show mean and distribution.",
+        "s11: Not excluding despite this being a screener with a termination rule (TERMINATE IF <10). The termination rule is noted but we keep the numeric data available for analysis rather than removing the table.",
+        "No NETs, splits, or T2B rows added — not applicable for a numeric count variable."
       ]
     },
     {
       "tableId": "A2a",
       "changes": [
-        "Fixed corrupted/unclear characters in all three row labels: replaced unknown character with the intended '≥' and matched survey wording exactly.",
-        "Kept table as a simple frequency table (no NETs, no T2B) because this is a single categorical select question."
+        "A2a: Fixed labels to match survey wording. Replaced encoding/artifact characters with the correct '≥' and full option text. Structure otherwise unchanged (frequency table)."
       ]
     },
     {
       "tableId": "A2b",
       "changes": [
-        "No substantive changes to content or labels — labels already matched survey wording.",
-        "Completed required row metadata: added isNet:false, netComponents:[], and indent:0 for each row.",
-        "Set sourceTableId to original tableId and left table as not derived and not excluded."
+        "A2b: Pass through. Labels already match the survey question wording; no NETs, T2B, or splits required. Added standard row fields (isNet, netComponents, indent) and metadata for consistency."
       ]
     },
     {
       "tableId": "A5",
       "changes": [
-        "Kept original table A5 unchanged (preserves detailed 4 response categories).",
-        "Added derived table A5_Timing_NETS to provide analyst-friendly NET rollups: 'Within 6 months (NET)' combining values 1 and 2, and 'Over 6 months (NET)' combining values 3 and 4. Detailed response rows included as indented items under each NET.",
-        "Rationale: Analysts typically want quick summaries of early adopters vs later adopters; these NETs make that immediate without removing the full-scale detail."
+        "A5: Pass through. Labels match the survey text exactly; categorical timing question — no NETs, T2B, or splits needed."
       ]
     },
     {
       "tableId": "US_State",
       "changes": [
-        "Added required metadata fields (isNet, netComponents, indent) to every row for consistency with output schema.",
-        "Added a NET row 'Other / Invalid (NET)' combining values 52 and 53 to surface non-standard responses in a single summary row. The individual 'Other' and 'Invalid State' rows are kept (indented) so analysts can see detail if needed."
+        "US_State: Pass through. Matches datamap and survey/context (B2 zip -> hidden state). Added required fields isNet, netComponents, and indent for every row; no label changes."
       ]
     },
     {
       "tableId": "region",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table 'region' shows geographic distribution of respondents. First reaction: useful as-is but missing a simple summary rollup that analysts commonly want (NET of valid regions).",
-        "ENTRY 2 - SURVEY CHECK: The survey doesn't list a 'Region' question verbatim but the datamap provides Region with values 1-6 labeled: Northeast, South, Midwest, West, Other, Invalid Region. Labels in the input matched the datamap, so no label text changes were required.",
-        "ENTRY 3 - ANALYST LENS: Analysts will often want a single row showing total valid regions (i.e., excluding system/invalid codes). I would add an 'All regions (NET)' that sums codes 1-5. Also ensure every row includes the required metadata fields (isNet, netComponents, indent).",
-        "ENTRY 4 - DECISION: Final: update table to include an 'All regions (NET)' rollup (filterValue '1,2,3,4,5'), set its isNet=true and indent=0, indent the five valid region detail rows under it (indent=1). Keep 'Invalid Region' separate at top-level (indent=0). Set sourceTableId to original ('region') and mark the table as isDerived=true because a NET row was added. No label text changes were needed.",
-        "Implementation changes performed: (a) Added 'All regions (NET)' row combining values 1-5. (b) Added required fields isNet (true/false), netComponents (empty arrays), and indent (0/1) to every row. (c) Set sourceTableId to 'region' and isDerived to true. (d) Left original region labels unchanged because they matched the datamap/survey."
+        "region: Pass through. Labels match the datamap/survey (Region categories); structure appropriate for a demographic frequency."
       ]
     },
     {
       "tableId": "B3",
       "changes": [
-        "ENTRY 1 - FIRST IMPRESSION: Table B3 shows distribution of primary practice location (Urban / Suburban / Rural). First reaction: useful as-is.",
-        "ENTRY 2 - SURVEY CHECK: Survey question B3 text matches the table title exactly: 'Which of the following best describes where your primary practice is located?' Datamap confirms value labels: 1=Urban, 2=Suburban, 3=Rural. Labels match: yes. Structure matches: yes (single-select categorical).",
-        "ENTRY 3 - ANALYST LENS: No structural changes needed (not a scale, not multi-select, no sensible NETs). For consistency and downstream processing, each row must include the required metadata fields (isNet, netComponents, indent) and the table must include required metadata (hints, sourceTableId, isDerived, exclude, excludeReason).",
-        "ENTRY 4 - DECISION: Final: pass through unchanged in content. Changes: added complete row metadata (isNet:false, netComponents:[], indent:0) for each row and added table-level metadata (hints:[], sourceTableId:\"\", isDerived:false, exclude:false, excludeReason:\"\") to conform to the required output schema. No label text changes, no NETs, no T2B, not excluded."
+        "B3: Pass through. Labels already match survey text; added required row fields (isNet, netComponents, indent) and table metadata."
       ]
     },
     {
       "tableId": "b4",
       "changes": [
-        "Normalized row to include required fields (isNet, netComponents, indent).",
-        "Updated row label to match survey wording and clarify conditional phrase: 'including yourself, if applicable'.",
-        "Set sourceTableId to the original table ID and marked table as not derived and not excluded."
+        "b4: Pass through. Question is a numeric open-end (0-9999) asking how many physicians are in the practice. Kept tableType as mean_rows. Expanded row metadata and clarified label to include 'include yourself' guidance from the survey."
       ]
     },
     {
       "tableId": "qconsent",
       "changes": [
-        "Passed table through unchanged but completed every required field.",
-        "Added isNet=false, netComponents=[], and indent=0 for each row to conform to output schema.",
-        "Confirmed labels match survey datamap (1=Yes, 2=No). No NETs, T2B, splits, or exclusions necessary."
+        "qconsent: Labels updated to match full survey wording (made response options explicit) for clarity. Structure otherwise passed through unchanged."
       ]
     }
   ],
   "processingInfo": {
-    "timestamp": "2026-01-08T00:17:15.668Z",
+    "timestamp": "2026-01-08T06:31:12.798Z",
     "aiProvider": "azure-openai",
     "model": "azure/gpt-5-mini",
     "processingLog": [
-      "2026-01-08T00:03:25.030Z: [VerificationAgent] Starting processing: 49 tables",
-      "2026-01-08T00:03:25.031Z: [VerificationAgent] Using model: azure/gpt-5-mini",
-      "2026-01-08T00:03:25.031Z: [VerificationAgent] Survey markdown: 20820 characters",
-      "2026-01-08T00:03:25.031Z: [VerificationAgent] Processing table 1/49: \"s5_multi\"",
-      "2026-01-08T00:03:51.592Z: [VerificationAgent] Table \"s5_multi\" completed in 26561ms - 1 output tables, 4 changes",
-      "2026-01-08T00:03:51.592Z: [VerificationAgent] Processing table 2/49: \"s8_time_allocation\"",
-      "2026-01-08T00:04:04.399Z: [VerificationAgent] Table \"s8_time_allocation\" completed in 12807ms - 1 output tables, 5 changes",
-      "2026-01-08T00:04:04.399Z: [VerificationAgent] Processing table 3/49: \"s12\"",
-      "2026-01-08T00:04:19.941Z: [VerificationAgent] Table \"s12\" completed in 15542ms - 1 output tables, 5 changes",
-      "2026-01-08T00:04:19.941Z: [VerificationAgent] Processing table 4/49: \"a1\"",
-      "2026-01-08T00:04:41.453Z: [VerificationAgent] Table \"a1\" completed in 21512ms - 1 output tables, 4 changes",
-      "2026-01-08T00:04:41.453Z: [VerificationAgent] Processing table 5/49: \"A3\"",
-      "2026-01-08T00:04:55.339Z: [VerificationAgent] Table \"A3\" completed in 13886ms - 1 output tables, 4 changes",
-      "2026-01-08T00:04:55.339Z: [VerificationAgent] Processing table 6/49: \"A3a_mean_rows\"",
-      "2026-01-08T00:05:11.735Z: [VerificationAgent] Table \"A3a_mean_rows\" completed in 16396ms - 1 output tables, 4 changes",
-      "2026-01-08T00:05:11.735Z: [VerificationAgent] Processing table 7/49: \"A3b_mean_rows\"",
-      "2026-01-08T00:05:28.443Z: [VerificationAgent] Table \"A3b_mean_rows\" completed in 16708ms - 1 output tables, 4 changes",
-      "2026-01-08T00:05:28.443Z: [VerificationAgent] Processing table 8/49: \"A4_meanrows\"",
-      "2026-01-08T00:05:52.615Z: [VerificationAgent] Table \"A4_meanrows\" completed in 24172ms - 1 output tables, 3 changes",
-      "2026-01-08T00:05:52.615Z: [VerificationAgent] Processing table 9/49: \"a4a_mean\"",
-      "2026-01-08T00:06:11.245Z: [VerificationAgent] Table \"a4a_mean\" completed in 18630ms - 1 output tables, 4 changes",
-      "2026-01-08T00:06:11.245Z: [VerificationAgent] Processing table 10/49: \"A4b_mean_rows\"",
-      "2026-01-08T00:06:29.988Z: [VerificationAgent] Table \"A4b_mean_rows\" completed in 18743ms - 1 output tables, 1 changes",
-      "2026-01-08T00:06:29.988Z: [VerificationAgent] Processing table 11/49: \"A6_rank1\"",
-      "2026-01-08T00:07:05.858Z: [VerificationAgent] Table \"A6_rank1\" completed in 35869ms - 4 output tables, 4 changes",
-      "2026-01-08T00:07:05.858Z: [VerificationAgent] Processing table 12/49: \"A6_rank2\"",
-      "2026-01-08T00:07:24.493Z: [VerificationAgent] Table \"A6_rank2\" completed in 18635ms - 1 output tables, 3 changes",
-      "2026-01-08T00:07:24.493Z: [VerificationAgent] Processing table 13/49: \"A6_rank3\"",
-      "2026-01-08T00:07:39.134Z: [VerificationAgent] Table \"A6_rank3\" completed in 14641ms - 1 output tables, 4 changes",
-      "2026-01-08T00:07:39.134Z: [VerificationAgent] Processing table 14/49: \"A6_rank4\"",
-      "2026-01-08T00:07:54.561Z: [VerificationAgent] Table \"A6_rank4\" completed in 15427ms - 1 output tables, 4 changes",
-      "2026-01-08T00:07:54.561Z: [VerificationAgent] Processing table 15/49: \"A7_multi_select\"",
-      "2026-01-08T00:08:13.777Z: [VerificationAgent] Table \"A7_multi_select\" completed in 19216ms - 1 output tables, 5 changes",
-      "2026-01-08T00:08:13.777Z: [VerificationAgent] Processing table 16/49: \"A8_r1\"",
-      "2026-01-08T00:08:40.177Z: [VerificationAgent] Table \"A8_r1\" completed in 26400ms - 3 output tables, 5 changes",
-      "2026-01-08T00:08:40.177Z: [VerificationAgent] Processing table 17/49: \"A8_r2\"",
-      "2026-01-08T00:09:08.484Z: [VerificationAgent] Table \"A8_r2\" completed in 28307ms - 3 output tables, 5 changes",
-      "2026-01-08T00:09:08.484Z: [VerificationAgent] Processing table 18/49: \"A8_r3\"",
-      "2026-01-08T00:09:42.914Z: [VerificationAgent] Table \"A8_r3\" completed in 34430ms - 3 output tables, 4 changes",
-      "2026-01-08T00:09:42.914Z: [VerificationAgent] Processing table 19/49: \"A8_r4\"",
-      "2026-01-08T00:10:09.816Z: [VerificationAgent] Table \"A8_r4\" completed in 26902ms - 1 output tables, 3 changes",
-      "2026-01-08T00:10:09.816Z: [VerificationAgent] Processing table 20/49: \"A8_r5\"",
-      "2026-01-08T00:10:40.618Z: [VerificationAgent] Table \"A8_r5\" completed in 30802ms - 3 output tables, 4 changes",
-      "2026-01-08T00:10:40.618Z: [VerificationAgent] Processing table 21/49: \"a9\"",
-      "2026-01-08T00:11:06.054Z: [VerificationAgent] Table \"a9\" completed in 25436ms - 3 output tables, 5 changes",
-      "2026-01-08T00:11:06.054Z: [VerificationAgent] Processing table 22/49: \"A10\"",
-      "2026-01-08T00:11:32.644Z: [VerificationAgent] Table \"A10\" completed in 26590ms - 1 output tables, 6 changes",
-      "2026-01-08T00:11:32.644Z: [VerificationAgent] Processing table 23/49: \"b1_mean_rows\"",
-      "2026-01-08T00:11:44.363Z: [VerificationAgent] Table \"b1_mean_rows\" completed in 11719ms - 1 output tables, 3 changes",
-      "2026-01-08T00:11:44.363Z: [VerificationAgent] Processing table 24/49: \"B5\"",
-      "2026-01-08T00:11:55.652Z: [VerificationAgent] Table \"B5\" completed in 11289ms - 1 output tables, 4 changes",
-      "2026-01-08T00:11:55.652Z: [VerificationAgent] Processing table 25/49: \"s1\"",
-      "2026-01-08T00:12:05.157Z: [VerificationAgent] Table \"s1\" completed in 9505ms - 1 output tables, 4 changes",
-      "2026-01-08T00:12:05.157Z: [VerificationAgent] Processing table 26/49: \"s2b\"",
-      "2026-01-08T00:12:20.832Z: [VerificationAgent] Table \"s2b\" completed in 15675ms - 1 output tables, 4 changes",
-      "2026-01-08T00:12:20.832Z: [VerificationAgent] Processing table 27/49: \"s2\"",
-      "2026-01-08T00:12:30.915Z: [VerificationAgent] Table \"s2\" completed in 10083ms - 1 output tables, 1 changes",
-      "2026-01-08T00:12:30.915Z: [VerificationAgent] Processing table 28/49: \"s2a\"",
-      "2026-01-08T00:12:40.096Z: [VerificationAgent] Table \"s2a\" completed in 9181ms - 1 output tables, 4 changes",
-      "2026-01-08T00:12:40.096Z: [VerificationAgent] Processing table 29/49: \"qCARD_SPECIALTY\"",
-      "2026-01-08T00:12:53.778Z: [VerificationAgent] Table \"qCARD_SPECIALTY\" completed in 13682ms - 1 output tables, 4 changes",
-      "2026-01-08T00:12:53.778Z: [VerificationAgent] Processing table 30/49: \"qSPECIALTY\"",
-      "2026-01-08T00:13:05.250Z: [VerificationAgent] Table \"qSPECIALTY\" completed in 11472ms - 1 output tables, 5 changes",
-      "2026-01-08T00:13:05.251Z: [VerificationAgent] Processing table 31/49: \"s3a\"",
-      "2026-01-08T00:13:14.753Z: [VerificationAgent] Table \"s3a\" completed in 9503ms - 1 output tables, 4 changes",
-      "2026-01-08T00:13:14.753Z: [VerificationAgent] Processing table 32/49: \"qTYPE_OF_CARD\"",
-      "2026-01-08T00:13:28.599Z: [VerificationAgent] Table \"qTYPE_OF_CARD\" completed in 13846ms - 1 output tables, 4 changes",
-      "2026-01-08T00:13:28.599Z: [VerificationAgent] Processing table 33/49: \"qON_LIST_OFF_LIST\"",
-      "2026-01-08T00:13:52.967Z: [VerificationAgent] Table \"qON_LIST_OFF_LIST\" completed in 24368ms - 1 output tables, 4 changes",
-      "2026-01-08T00:13:52.967Z: [VerificationAgent] Processing table 34/49: \"qLIST_TIER\"",
-      "2026-01-08T00:14:01.772Z: [VerificationAgent] Table \"qLIST_TIER\" completed in 8805ms - 1 output tables, 4 changes",
-      "2026-01-08T00:14:01.772Z: [VerificationAgent] Processing table 35/49: \"qLIST_PRIORITY_ACCOUNT\"",
-      "2026-01-08T00:14:09.558Z: [VerificationAgent] Table \"qLIST_PRIORITY_ACCOUNT\" completed in 7786ms - 1 output tables, 4 changes",
-      "2026-01-08T00:14:09.558Z: [VerificationAgent] Processing table 36/49: \"s4\"",
-      "2026-01-08T00:14:20.341Z: [VerificationAgent] Table \"s4\" completed in 10783ms - 1 output tables, 4 changes",
-      "2026-01-08T00:14:20.341Z: [VerificationAgent] Processing table 37/49: \"s6\"",
-      "2026-01-08T00:14:33.418Z: [VerificationAgent] Table \"s6\" completed in 13077ms - 1 output tables, 4 changes",
-      "2026-01-08T00:14:33.418Z: [VerificationAgent] Processing table 38/49: \"s7\"",
-      "2026-01-08T00:14:46.419Z: [VerificationAgent] Table \"s7\" completed in 13001ms - 1 output tables, 4 changes",
-      "2026-01-08T00:14:46.419Z: [VerificationAgent] Processing table 39/49: \"s9\"",
-      "2026-01-08T00:14:58.252Z: [VerificationAgent] Table \"s9\" completed in 11833ms - 1 output tables, 3 changes",
-      "2026-01-08T00:14:58.252Z: [VerificationAgent] Processing table 40/49: \"s10\"",
-      "2026-01-08T00:15:08.656Z: [VerificationAgent] Table \"s10\" completed in 10404ms - 1 output tables, 5 changes",
-      "2026-01-08T00:15:08.656Z: [VerificationAgent] Processing table 41/49: \"s11\"",
-      "2026-01-08T00:15:20.319Z: [VerificationAgent] Table \"s11\" completed in 11663ms - 1 output tables, 3 changes",
-      "2026-01-08T00:15:20.319Z: [VerificationAgent] Processing table 42/49: \"A2a\"",
-      "2026-01-08T00:15:32.578Z: [VerificationAgent] Table \"A2a\" completed in 12259ms - 1 output tables, 2 changes",
-      "2026-01-08T00:15:32.578Z: [VerificationAgent] Processing table 43/49: \"A2b\"",
-      "2026-01-08T00:15:42.435Z: [VerificationAgent] Table \"A2b\" completed in 9857ms - 1 output tables, 3 changes",
-      "2026-01-08T00:15:42.436Z: [VerificationAgent] Processing table 44/49: \"A5\"",
-      "2026-01-08T00:16:03.823Z: [VerificationAgent] Table \"A5\" completed in 21387ms - 2 output tables, 3 changes",
-      "2026-01-08T00:16:03.823Z: [VerificationAgent] Processing table 45/49: \"US_State\"",
-      "2026-01-08T00:16:31.832Z: [VerificationAgent] Table \"US_State\" completed in 28009ms - 1 output tables, 2 changes",
-      "2026-01-08T00:16:31.832Z: [VerificationAgent] Processing table 46/49: \"region\"",
-      "2026-01-08T00:16:48.681Z: [VerificationAgent] Table \"region\" completed in 16849ms - 1 output tables, 5 changes",
-      "2026-01-08T00:16:48.681Z: [VerificationAgent] Processing table 47/49: \"B3\"",
-      "2026-01-08T00:16:57.287Z: [VerificationAgent] Table \"B3\" completed in 8605ms - 1 output tables, 4 changes",
-      "2026-01-08T00:16:57.287Z: [VerificationAgent] Processing table 48/49: \"b4\"",
-      "2026-01-08T00:17:06.623Z: [VerificationAgent] Table \"b4\" completed in 9336ms - 1 output tables, 3 changes",
-      "2026-01-08T00:17:06.623Z: [VerificationAgent] Processing table 49/49: \"qconsent\"",
-      "2026-01-08T00:17:15.664Z: [VerificationAgent] Table \"qconsent\" completed in 9041ms - 1 output tables, 3 changes",
-      "2026-01-08T00:17:15.665Z: [VerificationAgent] Collected 27 scratchpad entries",
-      "2026-01-08T00:17:15.666Z: [VerificationAgent] Processing complete - 49 input → 63 output tables",
-      "2026-01-08T00:17:15.666Z: [VerificationAgent] Modified: 49, Split: 7, Excluded: 1"
+      "2026-01-08T06:17:26.726Z: [VerificationAgent] Starting processing: 49 tables",
+      "2026-01-08T06:17:26.726Z: [VerificationAgent] Using model: azure/gpt-5-mini",
+      "2026-01-08T06:17:26.726Z: [VerificationAgent] Survey markdown: 20820 characters",
+      "2026-01-08T06:17:26.726Z: [VerificationAgent] Processing table 1/49: \"s5_multi\"",
+      "2026-01-08T06:17:44.820Z: [VerificationAgent] Table \"s5_multi\" completed in 18094ms - 1 output tables, 1 changes",
+      "2026-01-08T06:17:44.820Z: [VerificationAgent] Processing table 2/49: \"s8_time_allocation\"",
+      "2026-01-08T06:17:56.274Z: [VerificationAgent] Table \"s8_time_allocation\" completed in 11454ms - 1 output tables, 1 changes",
+      "2026-01-08T06:17:56.275Z: [VerificationAgent] Processing table 3/49: \"s12\"",
+      "2026-01-08T06:18:04.771Z: [VerificationAgent] Table \"s12\" completed in 8496ms - 1 output tables, 1 changes",
+      "2026-01-08T06:18:04.772Z: [VerificationAgent] Processing table 4/49: \"a1\"",
+      "2026-01-08T06:18:23.212Z: [VerificationAgent] Table \"a1\" completed in 18440ms - 1 output tables, 1 changes",
+      "2026-01-08T06:18:23.212Z: [VerificationAgent] Processing table 5/49: \"A3\"",
+      "2026-01-08T06:18:33.450Z: [VerificationAgent] Table \"A3\" completed in 10238ms - 1 output tables, 1 changes",
+      "2026-01-08T06:18:33.450Z: [VerificationAgent] Processing table 6/49: \"A3a_mean_rows\"",
+      "2026-01-08T06:18:53.176Z: [VerificationAgent] Table \"A3a_mean_rows\" completed in 19726ms - 1 output tables, 2 changes",
+      "2026-01-08T06:18:53.176Z: [VerificationAgent] Processing table 7/49: \"A3b_mean_rows\"",
+      "2026-01-08T06:19:12.048Z: [VerificationAgent] Table \"A3b_mean_rows\" completed in 18872ms - 1 output tables, 1 changes",
+      "2026-01-08T06:19:12.048Z: [VerificationAgent] Processing table 8/49: \"A4_meanrows\"",
+      "2026-01-08T06:19:50.934Z: [VerificationAgent] Table \"A4_meanrows\" completed in 38886ms - 3 output tables, 4 changes",
+      "2026-01-08T06:19:50.934Z: [VerificationAgent] Processing table 9/49: \"a4a_mean\"",
+      "2026-01-08T06:20:09.129Z: [VerificationAgent] Table \"a4a_mean\" completed in 18195ms - 1 output tables, 2 changes",
+      "2026-01-08T06:20:09.129Z: [VerificationAgent] Processing table 10/49: \"A4b_mean_rows\"",
+      "2026-01-08T06:20:30.728Z: [VerificationAgent] Table \"A4b_mean_rows\" completed in 21599ms - 1 output tables, 2 changes",
+      "2026-01-08T06:20:30.728Z: [VerificationAgent] Processing table 11/49: \"A6_rank1\"",
+      "2026-01-08T06:20:41.703Z: [VerificationAgent] Table \"A6_rank1\" completed in 10975ms - 1 output tables, 1 changes",
+      "2026-01-08T06:20:41.703Z: [VerificationAgent] Processing table 12/49: \"A6_rank2\"",
+      "2026-01-08T06:21:14.262Z: [VerificationAgent] Table \"A6_rank2\" completed in 32559ms - 4 output tables, 2 changes",
+      "2026-01-08T06:21:14.262Z: [VerificationAgent] Processing table 13/49: \"A6_rank3\"",
+      "2026-01-08T06:21:28.958Z: [VerificationAgent] Table \"A6_rank3\" completed in 14696ms - 1 output tables, 2 changes",
+      "2026-01-08T06:21:28.958Z: [VerificationAgent] Processing table 14/49: \"A6_rank4\"",
+      "2026-01-08T06:21:43.643Z: [VerificationAgent] Table \"A6_rank4\" completed in 14685ms - 1 output tables, 2 changes",
+      "2026-01-08T06:21:43.643Z: [VerificationAgent] Processing table 15/49: \"A7_multi_select\"",
+      "2026-01-08T06:22:05.706Z: [VerificationAgent] Table \"A7_multi_select\" completed in 22063ms - 1 output tables, 3 changes",
+      "2026-01-08T06:22:05.706Z: [VerificationAgent] Processing table 16/49: \"A8_r1\"",
+      "2026-01-08T06:22:40.116Z: [VerificationAgent] Table \"A8_r1\" completed in 34410ms - 1 output tables, 3 changes",
+      "2026-01-08T06:22:40.116Z: [VerificationAgent] Processing table 17/49: \"A8_r2\"",
+      "2026-01-08T06:23:23.973Z: [VerificationAgent] Table \"A8_r2\" completed in 43857ms - 2 output tables, 2 changes",
+      "2026-01-08T06:23:23.973Z: [VerificationAgent] Processing table 18/49: \"A8_r3\"",
+      "2026-01-08T06:24:10.596Z: [VerificationAgent] Table \"A8_r3\" completed in 46623ms - 2 output tables, 2 changes",
+      "2026-01-08T06:24:10.596Z: [VerificationAgent] Processing table 19/49: \"A8_r4\"",
+      "2026-01-08T06:24:42.241Z: [VerificationAgent] Table \"A8_r4\" completed in 31645ms - 1 output tables, 3 changes",
+      "2026-01-08T06:24:42.241Z: [VerificationAgent] Processing table 20/49: \"A8_r5\"",
+      "2026-01-08T06:25:12.439Z: [VerificationAgent] Table \"A8_r5\" completed in 30198ms - 1 output tables, 2 changes",
+      "2026-01-08T06:25:12.439Z: [VerificationAgent] Processing table 21/49: \"a9\"",
+      "2026-01-08T06:25:34.704Z: [VerificationAgent] Table \"a9\" completed in 22265ms - 1 output tables, 2 changes",
+      "2026-01-08T06:25:34.704Z: [VerificationAgent] Processing table 22/49: \"A10\"",
+      "2026-01-08T06:25:54.421Z: [VerificationAgent] Table \"A10\" completed in 19717ms - 1 output tables, 2 changes",
+      "2026-01-08T06:25:54.421Z: [VerificationAgent] Processing table 23/49: \"b1_mean_rows\"",
+      "2026-01-08T06:26:08.675Z: [VerificationAgent] Table \"b1_mean_rows\" completed in 14254ms - 1 output tables, 1 changes",
+      "2026-01-08T06:26:08.675Z: [VerificationAgent] Processing table 24/49: \"B5\"",
+      "2026-01-08T06:26:22.260Z: [VerificationAgent] Table \"B5\" completed in 13585ms - 1 output tables, 1 changes",
+      "2026-01-08T06:26:22.260Z: [VerificationAgent] Processing table 25/49: \"s1\"",
+      "2026-01-08T06:26:37.891Z: [VerificationAgent] Table \"s1\" completed in 15631ms - 1 output tables, 2 changes",
+      "2026-01-08T06:26:37.891Z: [VerificationAgent] Processing table 26/49: \"s2b\"",
+      "2026-01-08T06:26:47.450Z: [VerificationAgent] Table \"s2b\" completed in 9559ms - 1 output tables, 1 changes",
+      "2026-01-08T06:26:47.450Z: [VerificationAgent] Processing table 27/49: \"s2\"",
+      "2026-01-08T06:27:11.797Z: [VerificationAgent] Table \"s2\" completed in 24347ms - 1 output tables, 1 changes",
+      "2026-01-08T06:27:11.797Z: [VerificationAgent] Processing table 28/49: \"s2a\"",
+      "2026-01-08T06:27:19.404Z: [VerificationAgent] Table \"s2a\" completed in 7607ms - 1 output tables, 1 changes",
+      "2026-01-08T06:27:19.404Z: [VerificationAgent] Processing table 29/49: \"qCARD_SPECIALTY\"",
+      "2026-01-08T06:27:30.545Z: [VerificationAgent] Table \"qCARD_SPECIALTY\" completed in 11141ms - 1 output tables, 1 changes",
+      "2026-01-08T06:27:30.545Z: [VerificationAgent] Processing table 30/49: \"qSPECIALTY\"",
+      "2026-01-08T06:27:41.130Z: [VerificationAgent] Table \"qSPECIALTY\" completed in 10585ms - 1 output tables, 2 changes",
+      "2026-01-08T06:27:41.130Z: [VerificationAgent] Processing table 31/49: \"s3a\"",
+      "2026-01-08T06:27:50.665Z: [VerificationAgent] Table \"s3a\" completed in 9535ms - 1 output tables, 1 changes",
+      "2026-01-08T06:27:50.665Z: [VerificationAgent] Processing table 32/49: \"qTYPE_OF_CARD\"",
+      "2026-01-08T06:28:01.826Z: [VerificationAgent] Table \"qTYPE_OF_CARD\" completed in 11161ms - 1 output tables, 1 changes",
+      "2026-01-08T06:28:01.826Z: [VerificationAgent] Processing table 33/49: \"qON_LIST_OFF_LIST\"",
+      "2026-01-08T06:28:12.484Z: [VerificationAgent] Table \"qON_LIST_OFF_LIST\" completed in 10658ms - 1 output tables, 1 changes",
+      "2026-01-08T06:28:12.484Z: [VerificationAgent] Processing table 34/49: \"qLIST_TIER\"",
+      "2026-01-08T06:28:20.448Z: [VerificationAgent] Table \"qLIST_TIER\" completed in 7964ms - 1 output tables, 1 changes",
+      "2026-01-08T06:28:20.448Z: [VerificationAgent] Processing table 35/49: \"qLIST_PRIORITY_ACCOUNT\"",
+      "2026-01-08T06:28:28.572Z: [VerificationAgent] Table \"qLIST_PRIORITY_ACCOUNT\" completed in 8124ms - 1 output tables, 1 changes",
+      "2026-01-08T06:28:28.573Z: [VerificationAgent] Processing table 36/49: \"s4\"",
+      "2026-01-08T06:28:37.863Z: [VerificationAgent] Table \"s4\" completed in 9290ms - 1 output tables, 1 changes",
+      "2026-01-08T06:28:37.863Z: [VerificationAgent] Processing table 37/49: \"s6\"",
+      "2026-01-08T06:28:48.205Z: [VerificationAgent] Table \"s6\" completed in 10342ms - 1 output tables, 1 changes",
+      "2026-01-08T06:28:48.205Z: [VerificationAgent] Processing table 38/49: \"s7\"",
+      "2026-01-08T06:28:55.475Z: [VerificationAgent] Table \"s7\" completed in 7270ms - 1 output tables, 1 changes",
+      "2026-01-08T06:28:55.475Z: [VerificationAgent] Processing table 39/49: \"s9\"",
+      "2026-01-08T06:29:06.125Z: [VerificationAgent] Table \"s9\" completed in 10649ms - 1 output tables, 1 changes",
+      "2026-01-08T06:29:06.125Z: [VerificationAgent] Processing table 40/49: \"s10\"",
+      "2026-01-08T06:29:15.632Z: [VerificationAgent] Table \"s10\" completed in 9507ms - 1 output tables, 1 changes",
+      "2026-01-08T06:29:15.632Z: [VerificationAgent] Processing table 41/49: \"s11\"",
+      "2026-01-08T06:29:29.165Z: [VerificationAgent] Table \"s11\" completed in 13533ms - 1 output tables, 3 changes",
+      "2026-01-08T06:29:29.166Z: [VerificationAgent] Processing table 42/49: \"A2a\"",
+      "2026-01-08T06:29:42.886Z: [VerificationAgent] Table \"A2a\" completed in 13720ms - 1 output tables, 1 changes",
+      "2026-01-08T06:29:42.886Z: [VerificationAgent] Processing table 43/49: \"A2b\"",
+      "2026-01-08T06:29:54.652Z: [VerificationAgent] Table \"A2b\" completed in 11766ms - 1 output tables, 1 changes",
+      "2026-01-08T06:29:54.652Z: [VerificationAgent] Processing table 44/49: \"A5\"",
+      "2026-01-08T06:30:02.925Z: [VerificationAgent] Table \"A5\" completed in 8273ms - 1 output tables, 1 changes",
+      "2026-01-08T06:30:02.925Z: [VerificationAgent] Processing table 45/49: \"US_State\"",
+      "2026-01-08T06:30:37.983Z: [VerificationAgent] Table \"US_State\" completed in 35058ms - 1 output tables, 1 changes",
+      "2026-01-08T06:30:37.983Z: [VerificationAgent] Processing table 46/49: \"region\"",
+      "2026-01-08T06:30:45.762Z: [VerificationAgent] Table \"region\" completed in 7779ms - 1 output tables, 1 changes",
+      "2026-01-08T06:30:45.762Z: [VerificationAgent] Processing table 47/49: \"B3\"",
+      "2026-01-08T06:30:55.548Z: [VerificationAgent] Table \"B3\" completed in 9786ms - 1 output tables, 1 changes",
+      "2026-01-08T06:30:55.548Z: [VerificationAgent] Processing table 48/49: \"b4\"",
+      "2026-01-08T06:31:04.908Z: [VerificationAgent] Table \"b4\" completed in 9360ms - 1 output tables, 1 changes",
+      "2026-01-08T06:31:04.908Z: [VerificationAgent] Processing table 49/49: \"qconsent\"",
+      "2026-01-08T06:31:12.794Z: [VerificationAgent] Table \"qconsent\" completed in 7886ms - 1 output tables, 1 changes",
+      "2026-01-08T06:31:12.795Z: [VerificationAgent] Collected 12 scratchpad entries",
+      "2026-01-08T06:31:12.796Z: [VerificationAgent] Processing complete - 49 input → 56 output tables",
+      "2026-01-08T06:31:12.796Z: [VerificationAgent] Modified: 49, Split: 4, Excluded: 1"
     ]
   }
 }

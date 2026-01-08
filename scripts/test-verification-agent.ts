@@ -20,7 +20,9 @@
  *   # Uses specific test output folder
  *
  * Output:
- *   Adds verified-table-output-*.json and scratchpad-verification-*.md to the input folder
+ *   Creates temp-outputs/test-verification-agent-<timestamp>/ with:
+ *   - verified-table-output-*.json
+ *   - scratchpad-verification-*.md
  */
 
 // Load environment variables
@@ -291,9 +293,16 @@ async function main() {
     process.exit(1);
   }
 
+  // Create dedicated output folder for this run
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const outputFolderName = `test-verification-agent-${timestamp}`;
+  const outputPath = path.join(process.cwd(), 'temp-outputs', outputFolderName);
+  await fs.mkdir(outputPath, { recursive: true });
+  log(`Output folder: temp-outputs/${outputFolderName}`, 'cyan');
+  log('', 'reset');
+
   // Load datamap
   log('Loading datamap...', 'blue');
-  const outputFolderName = path.basename(paths.folder);
   const dataMap = await loadVerboseDataMap(paths.dataMapVerbose, paths.dataMapCsv, outputFolderName);
   log(`  Loaded ${dataMap.length} variables`, dataMap.length > 0 ? 'green' : 'yellow');
 
@@ -302,7 +311,7 @@ async function main() {
   if (paths.surveyDoc) {
     log('Processing survey document...', 'blue');
     try {
-      const surveyResult = await processSurvey(paths.surveyDoc, paths.folder);
+      const surveyResult = await processSurvey(paths.surveyDoc, outputPath);
       surveyMarkdown = surveyResult.markdown;
       const stats = getSurveyStats(surveyMarkdown);
       log(`  Converted to markdown: ${stats.characterCount} chars, ~${stats.estimatedTokens} tokens`, 'green');
@@ -390,7 +399,8 @@ async function main() {
     }
 
     log('', 'reset');
-    log(`Output: ${paths.folder}/`, 'green');
+    log(`Output: temp-outputs/${outputFolderName}/`, 'green');
+    log(`Input:  ${paths.folder}/`, 'dim');
     log('', 'reset');
 
   } catch (error) {
