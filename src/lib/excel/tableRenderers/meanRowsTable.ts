@@ -28,6 +28,8 @@ export interface MeanRowData {
   mean_no_outliers_label?: string;
   sig_higher_than?: string[] | string;
   sig_vs_total?: string | null;
+  isNet?: boolean;    // NET/roll-up row (should be bold)
+  indent?: number;    // Indentation level (0 = normal, 1+ = indented under NET)
 }
 
 export interface MeanCutData {
@@ -232,7 +234,14 @@ export function renderMeanRowsTable(
   // -------------------------------------------------------------------------
   for (const rowKey of rowKeys) {
     const totalRowData = totalCutData?.[rowKey] as MeanRowData | undefined;
-    const rowLabel = totalRowData?.label || rowKey;
+    const isNet = totalRowData?.isNet || false;
+    const indent = totalRowData?.indent || 0;
+
+    // Build label with indentation prefix for component rows
+    let rowLabel = totalRowData?.label || rowKey;
+    if (indent > 0) {
+      rowLabel = '  '.repeat(indent) + rowLabel;  // 2 spaces per indent level
+    }
 
     if (isSingleRow) {
       // Single row: show Mean, Median, SD, Significance (4 rows)
@@ -243,7 +252,8 @@ export function renderMeanRowsTable(
         rowLabel,
         currentRow,
         cutOrder,
-        groupBoundaries
+        groupBoundaries,
+        isNet
       );
     } else {
       // Multi-row: show Mean, Significance only (2 rows per item)
@@ -254,7 +264,8 @@ export function renderMeanRowsTable(
         rowLabel,
         currentRow,
         cutOrder,
-        groupBoundaries
+        groupBoundaries,
+        isNet
       );
     }
   }
@@ -294,14 +305,15 @@ function renderSingleRowMeanTable(
   rowLabel: string,
   startRow: number,
   cutOrder: { name: string; statLetter: string; groupName: string }[],
-  groupBoundaries: number[]
+  groupBoundaries: number[],
+  isNet: boolean = false
 ): number {
   let currentRow = startRow;
 
   // Row 1: Label + Mean
   const labelCell = worksheet.getCell(currentRow, 1);
   labelCell.value = rowLabel;
-  labelCell.font = FONTS.label;
+  labelCell.font = isNet ? FONTS.labelNet : FONTS.label;  // Bold for NET rows
   labelCell.fill = FILLS.labelColumn;
   labelCell.alignment = ALIGNMENTS.wrapText;
   labelCell.border = BORDERS.thin;
@@ -396,14 +408,15 @@ function renderMultiRowMeanItem(
   rowLabel: string,
   startRow: number,
   cutOrder: { name: string; statLetter: string; groupName: string }[],
-  groupBoundaries: number[]
+  groupBoundaries: number[],
+  isNet: boolean = false
 ): number {
   let currentRow = startRow;
 
   // Row 1: Label + Mean
   const labelCell = worksheet.getCell(currentRow, 1);
   labelCell.value = rowLabel;
-  labelCell.font = FONTS.label;
+  labelCell.font = isNet ? FONTS.labelNet : FONTS.label;  // Bold for NET rows
   labelCell.fill = FILLS.labelColumn;
   labelCell.alignment = ALIGNMENTS.wrapText;
   labelCell.border = BORDERS.thin;

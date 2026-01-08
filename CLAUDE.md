@@ -1,155 +1,90 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code when working in this repository.
 
 ---
 
-## Core Philosophy: Internal Tool, Production Quality
+## Current Focus: Reliability Plan
 
-**This is an internal tool for Hawk Partners, but "internal" doesn't mean sloppy.**
+**Active Document**: `docs/implementation-plans/reliability-plan.md`
 
-80 people will use this. It handles real client data. Code quality matters:
+We're making HawkTab AI reliably produce publication-quality crosstabs that match Joe's output (the reference standard).
 
-1. **Production-ready from day one**: Code should work reliably, not just in happy-path scenarios
-2. **Security is not optional**: Firm data requires Azure OpenAI, proper auth, no PII leaks
-3. **Observable and debuggable**: Errors are logged, traced, and actionable (Sentry)
-4. **Type-safe and validated**: Runtime validation at system boundaries, TypeScript throughout
-5. **Deployable immediately**: No "we'll fix that later" shortcuts that block deployment
+| Part | Description | Status |
+|------|-------------|--------|
+| 1 | Bug Capture | Complete |
+| 2 | VerificationAgent | Complete |
+| 3 | Significance Testing (unpooled z-test) | Not started |
+| 4 | Evaluation Framework (golden dataset) | Not started |
+| 5 | Iteration on practice-files | Not started |
+| 6 | Broader Testing (23 datasets) | Not started |
 
-**The goal**: Hawk Partners team can use this to replace outsourcing crosstab generation. If it works well, we may pilot with Bob's fielding company.
-
----
-
-## Project Overview
-
-HawkTab AI replaces Hawk Partners' current crosstab outsourcing workflow. Instead of sending files to Joe or fielding partners and waiting days, the team generates tabs directly.
-
-**Primary Goal**: 80-person team can log in, upload survey materials, get accurate crosstabs.
-
-**Key Documents**:
-- `docs/architecture-refactor-prd.md` - Complete architecture plan and roadmap
-- `README.md` - Project overview and getting started
-- `docs/audits/security-audit-prompt.md` - Security review checklist
+**Test Data**: `data/test-data/practice-files/`
+**Reference Output**: `leqvio-demand-tabs-joe.xlsx`
 
 ---
 
-## Security-First Development
+## Pipeline Architecture
 
-Security is a first-class concern at every stage of development. Follow these principles:
+```
+User Uploads → BannerAgent → CrosstabAgent → TableAgent → VerificationAgent → R Script → Excel
+                   ↓              ↓              ↓              ↓                ↓          ↓
+              Banner PDF      DataMap        Questions      Survey Doc       tables.json  .xlsx
+              → Cuts          → Variables    → Tables       → Enhanced        (calculated)
+```
 
-### Before Writing Code
-- Consider: What data does this feature handle? Is it sensitive?
-- Consider: Who should have access to this? How is that enforced?
-- Consider: What happens if input is malicious or malformed?
+### The Four Agents
 
-### While Writing Code
-- **Validate all inputs** at system boundaries (API routes, user inputs, file uploads)
-- **Never log sensitive data** (API keys, user PII, financial data)
-- **Use parameterized queries** - never string concatenation for data access
-- **Sanitize outputs** - especially anything rendered in UI
-- **Fail securely** - errors should not leak internal details
+| Agent | Purpose | Key Outputs |
+|-------|---------|-------------|
+| **BannerAgent** | Extract banner structure from PDF/DOCX | Banner groups, columns, stat letters |
+| **CrosstabAgent** | Validate expressions, generate R syntax | CutDefinitions with R expressions |
+| **TableAgent** | Decide table structure per variable | TableDefinitions (frequency/mean_rows) |
+| **VerificationAgent** | Enhance tables using survey document | ExtendedTableDefinitions (NETs, T2B, labels) |
 
-### After Writing Code
-- Run `npm run lint` and `npx tsc --noEmit` before committing
-- Consider: Did I introduce any OWASP Top 10 vulnerabilities?
-- Document any security-relevant decisions in commit messages
+### Per-Agent Configuration
 
-### Weekly Security Audits
-Security audits are conducted weekly using the prompt in `docs/audits/security-audit-prompt.md`. Every new feature should be auditable.
+Each agent has independent environment variables:
+```bash
+# Model and reasoning effort per agent
+CROSSTAB_MODEL=gpt-5-mini
+CROSSTAB_REASONING_EFFORT=medium    # none|minimal|low|medium|high|xhigh
+
+TABLE_MODEL=gpt-5-mini
+TABLE_REASONING_EFFORT=high
+
+VERIFICATION_MODEL=gpt-5-mini
+VERIFICATION_REASONING_EFFORT=high
+
+BANNER_MODEL=gpt-5-nano
+BANNER_REASONING_EFFORT=medium
+```
+
+Getters in `src/lib/env.ts`: `getCrosstabModel()`, `getTableModel()`, `getVerificationModel()`, `getBannerModel()`
 
 ---
 
-## Target Architecture Stack
+## Test Scripts
 
-Migrating to this stack (see `docs/architecture-refactor-prd.md`):
-
-| Layer | Technology | Why |
-|-------|------------|-----|
-| **AI** | Vercel AI SDK + Azure OpenAI | Azure required for compliance (firm data) |
-| **Database** | Convex | 80 people need shared access, TypeScript-native |
-| **Auth** | WorkOS AuthKit | Free for team, SSO available if we productize |
-| **File Storage** | Cloudflare R2 | S3-compatible, generous free tier |
-| **Error Monitoring** | Sentry | Know when things break |
-| **Analytics** | PostHog (basic) | Usage tracking, low effort to add |
-
----
-
-## Development Commands
+All scripts use `data/test-data/practice-files/` by default.
 
 ```bash
-# Development (with Turbopack hot reload)
-npm run dev
+# Full pipeline (8 steps: DataMap → Banner → Crosstab → Table → Verification → R → Excel)
+npx tsx scripts/test-pipeline.ts
 
-# Production build and start
-npm run build
-npm run start
-
-# Code quality (run before EVERY commit)
-npm run lint              # ESLint checks
-npx tsc --noEmit          # TypeScript type checking
+# Individual components
+npx tsx scripts/test-table-agent.ts           # TableAgent only
+npx tsx scripts/test-verification-agent.ts   # VerificationAgent only
+npx tsx scripts/test-r-script-v2.ts           # R script from existing output
+npx tsx scripts/export-excel.ts               # Excel from existing tables.json
 ```
 
----
-
-## Current Architecture (Azure OpenAI - Phase 1 Complete)
-
-### Three-Phase Processing Pipeline
-The system operates in a structured workflow:
-- **Phase 5**: Data processing with dual output strategy (banner PDF→images→JSON, data map CSV→enhanced JSON)
-- **Phase 6**: CrossTab Agent validation using group-by-group processing strategy
-- **Phase 7**: API integration with single endpoint handling complete workflow
-
-### Agent-First Implementation
-Uses **Vercel AI SDK + Azure OpenAI** (Phase 1 migration complete):
-- **One agent, multiple calls**: Process banner groups individually for better focus
-- **Context-first strategy**: Full JSON data structures injected into agent instructions
-- **Structured outputs**: Uses Zod schemas with `Output.object({ schema })` pattern
-- **Task-based model selection**: `getReasoningModel()` for complex validation, `getBaseModel()` for vision tasks
-
-### Dual Output Strategy
-Every processor generates two formats:
-- **Verbose**: Complete metadata for debugging and tracing (`*-verbose-*.json`)
-- **Agent**: Simplified structure optimized for agent processing (`*-agent-*.json`)
-
----
-
-## Critical Technical Requirements
-
-### Zod Version
-```json
-{
-  "zod": "^3.25.76"  // Upgraded after Phase 1 migration (was locked to 3.25.67 for OpenAI Agents SDK)
-}
-```
-
-### Task-Based Model Selection
-Models are chosen based on task requirements, not environment:
-- **Reasoning model** (`getReasoningModel()`): o4-mini for complex validation (CrosstabAgent)
-- **Base model** (`getBaseModel()`): gpt-5-nano for vision/extraction (BannerAgent)
-- Configuration in `src/lib/env.ts`
-
-### Vercel AI SDK Patterns (Current)
-```typescript
-// Current pattern (Vercel AI SDK + Azure OpenAI)
-import { generateText, Output, tool } from 'ai';
-import { getReasoningModel } from '@/lib/env';
-
-// Tool definition
-const scratchpadTool = tool({
-  description: 'Reasoning transparency tool',
-  inputSchema: z.object({ action: z.string(), content: z.string() }),
-  execute: async ({ action, content }) => { /* implementation */ }
-});
-
-// Agent call with structured output
-const { output } = await generateText({
-  model: getReasoningModel(),  // Task-based selection
-  system: instructions,
-  prompt: userPrompt,
-  tools: { scratchpad: scratchpadTool },
-  output: Output.object({ schema: MySchema }),
-});
-```
+**Output Location**: `temp-outputs/test-pipeline-<dataset>-<timestamp>/`
+- `r/master.R` - Generated R script
+- `results/tables.json` - Calculated tables with significance
+- `results/crosstabs.xlsx` - Formatted Excel workbook
+- `scratchpad-*.md` - Agent reasoning traces
+- `pipeline-summary.json` - Timing and metadata
 
 ---
 
@@ -158,161 +93,174 @@ const { output } = await generateText({
 ```
 hawktab-ai/
 ├── src/
-│   ├── agents/           # AI agent implementations
-│   ├── app/              # Next.js app router
-│   │   └── api/          # API endpoints
-│   ├── components/       # React components
-│   ├── guardrails/       # Input/output validation
-│   ├── lib/              # Core utilities
-│   │   ├── processors/   # Data processing pipeline
-│   │   ├── r/            # R script generation
-│   │   └── tables/       # Table definitions
-│   ├── prompts/          # AI prompt templates
-│   └── schemas/          # Zod type definitions
-├── convex/               # Convex backend (future)
-├── docs/                 # Documentation
-├── data/                 # Test data files
-└── temp-outputs/         # Development outputs (git-ignored)
-```
-
-### Key Files
-- **`/src/agents/`**: BannerAgent, CrosstabAgent, TableAgent
-- **`/src/lib/r/RScriptGeneratorV2.ts`**: JSON-output R script generator
-- **`/src/lib/processors/`**: DataMapProcessor, BannerProcessor
-- **`/src/schemas/`**: Zod-first type definitions (tableAgentSchema, processingSchemas)
-- **`/scripts/`**: CLI test scripts (test-pipeline, test-table-agent, test-r-script-v2)
-
----
-
-## API Endpoints
-
-### Current (Pre-Refactor)
-`/api/process-crosstab` handles the complete workflow:
-1. File upload validation with guardrails
-2. Phase 5: Document processing and dual output generation
-3. Phase 6: CrossTab Agent validation with confidence scoring
-4. Comprehensive response with metrics and next steps
-
-### Data Flow
-```
-Files Upload → Guardrails → Phase 5 Processing → Context Builder → CrossTab Agent → Validated Results
-     ↓              ↓             ↓                    ↓              ↓            ↓
-  Validation    File Safety   Dual Outputs      Agent Context   Group Processing  R Syntax
+│   ├── agents/                    # AI agents
+│   │   ├── BannerAgent.ts
+│   │   ├── CrosstabAgent.ts
+│   │   ├── TableAgent.ts
+│   │   └── VerificationAgent.ts
+│   ├── schemas/                   # Zod type definitions
+│   │   ├── tableAgentSchema.ts        # TableDefinition
+│   │   └── verificationAgentSchema.ts # ExtendedTableDefinition
+│   ├── lib/
+│   │   ├── env.ts                 # Per-agent model getters
+│   │   ├── processors/            # DataMapProcessor, SurveyProcessor
+│   │   ├── r/RScriptGeneratorV2.ts
+│   │   ├── excel/                 # ExcelFormatter, table renderers
+│   │   └── tables/CutsSpec.ts
+│   └── prompts/                   # Agent prompt templates
+├── scripts/                       # CLI test scripts
+├── data/test-data/                # 23 test datasets
+│   └── practice-files/            # Primary test dataset
+├── docs/implementation-plans/
+│   ├── reliability-plan.md        # CURRENT WORK
+│   └── significance-testing-plan.md
+└── temp-outputs/                  # Dev outputs (git-ignored)
 ```
 
 ---
 
-## Key Implementation Details
+## Key Schemas
 
-### Group-by-Group Processing
-CrossTab Agent processes banner groups individually:
-- Creates separate agent instance per group with injected context
-- Uses scratchpad tool for reasoning transparency
-- Combines results with confidence scoring
-- Handles failures gracefully with fallback responses
+**TableDefinition** (`tableAgentSchema.ts`):
+- Basic table structure from TableAgent
+- Fields: `tableId`, `title`, `tableType`, `rows[]`, `hints[]`
 
-### Confidence-Based Validation
-Agent generates confidence scores (0.0-1.0) based on variable mapping quality:
-- **0.95-1.0**: Direct variable matches (`S2=1` → `S2 == 1`)
-- **0.85-0.94**: Complex logic with multiple variables
-- **0.70-0.84**: Conceptual matches (`IF HCP` → healthcare professional variables)
-- **Below 0.70**: Requires manual review
+**ExtendedTableDefinition** (`verificationAgentSchema.ts`):
+- Enhanced table from VerificationAgent
+- Adds: `isNet`, `netComponents`, `indent`, `isDerived`, `exclude`, `excludeReason`, `sourceTableId`
 
-### Development vs Production Behavior
-- **Development**: Saves verbose outputs to `temp-outputs/`, uses reasoning models, detailed logging
-- **Production**: Minimal logging, uses base models, no file outputs
-- Environment detection: `process.env.NODE_ENV`
+**Conversion**: `toExtendedTable(table)` converts TableDefinition → ExtendedTableDefinition
 
 ---
 
-## Schema-First Development
+## Prompt Iteration Best Practices
 
-All data structures defined with Zod schemas before implementation:
-- **DataMapSchema**: Enhanced CSV processing with parent relationships and context enrichment
-- **BannerPlanSchema**: PDF/DOC extraction results with banner cuts and columns
-- **ValidationResultSchema**: Agent outputs with R syntax and confidence scores
+When tuning agent prompts:
+
+1. **Change one thing at a time** - Isolate variables to understand what works
+2. **Use scratchpad traces** - Check `scratchpad-*.md` files to see agent reasoning
+3. **Test on specific cases first** - Before full pipeline, test on the problematic table
+4. **Document what changed and why** - Future you will thank present you
+5. **Compare before/after outputs** - Save outputs before changing prompts
+
+### Prompt File Locations
+- `src/prompts/tableAgentPrompt.ts`
+- `src/prompts/verificationAgentPrompt.ts`
+- `src/prompts/crosstabAgentPrompt.ts`
+- `src/prompts/bannerAgentPrompt.ts`
+
+### Reasoning Effort Tuning
+- Start with `medium`, increase to `high` or `xhigh` for complex decisions
+- `high` is good for VerificationAgent (needs to understand survey context)
+- `medium` is usually sufficient for CrosstabAgent (pattern matching)
 
 ---
 
-## Code Quality Standards
+## Evaluation Framework (Part 4)
 
-### Before Every Commit
-```bash
-npm run lint              # Must pass
-npx tsc --noEmit          # Must pass
+When we build the evaluation framework:
+
+### Golden Dataset Structure
+```
+data/test-data/practice-files/
+├── golden/
+│   ├── tables-expected.json           # What TableAgent should produce
+│   ├── verified-tables-expected.json  # What VerificationAgent should produce
+│   └── annotations.json               # Human verdicts on differences
+└── runs/
+    └── YYYY-MM-DD/
+        ├── comparison-report.json     # Auto-generated diff
+        └── human-review.json          # Annotations for this run
 ```
 
-### Pull Request Requirements
-- TypeScript strict mode enforced
-- No `any` types without justification
-- All API inputs validated with Zod
-- Error handling for all async operations
-- Security implications documented if relevant
+### Evaluation Workflow
+1. **Run pipeline** → Produces actual output
+2. **Compare to golden** → Generates diff report (strict comparison)
+3. **Human annotation** → Mark each difference as "wrong" or "acceptable"
+4. **Track metrics** → Strict accuracy vs practical accuracy over time
 
-### What NOT to Do
-- Don't skip type checking to "ship faster"
-- Don't log API keys, tokens, or PII
-- Don't use `eval()` or dynamic code execution
-- Don't trust client-side input without server validation
-- Don't commit `.env` files or secrets
+### Metrics
+- **Strict accuracy**: Exact match to golden dataset
+- **Practical accuracy**: Excludes "acceptable" differences
+- **Truly wrong rate**: Differences marked as actual bugs
 
 ---
 
-## Current Implementation Status
-
-**Phase 1 Complete (Azure OpenAI Migration)**:
-- Migrated from OpenAI Agents SDK to Vercel AI SDK
-- Using Azure OpenAI (compliance requirement satisfied)
-- Task-based model selection: o4-mini (reasoning), gpt-5-nano (vision)
-
-**TableAgent Architecture (In Progress)**:
-- **TableAgent**: AI-based table structure decisions (replaces regex-based TablePlan)
-- **RScriptGeneratorV2**: JSON output with `frequency` and `mean_rows` table types
-- Correct base sizing: `base_n = sum(!is.na(cut_data[[variable]]))`
-- Steps 0-5 complete, Step 6 (ExcelJS) next
-
-**Current Work** (see `docs/implementation-plans/table-agent-architecture.md`):
-1. Step 5.5: Verify R significance testing
-2. Step 6: ExcelJS Formatter (Antares-style output)
-3. Step 7: Excel Cleanup Agent (optional - uses survey document)
-
-**After TableAgent**: Return to `docs/implementation-plans/pre-phase-2-testing-plan.md`
-
----
-
-## Useful Commands
+## Development Commands
 
 ```bash
+# Quality (run before EVERY commit)
+npm run lint && npx tsc --noEmit
+
 # Development
 npm run dev                    # Start with Turbopack
 
-# Quality
-npm run lint                   # ESLint
-npx tsc --noEmit              # Type check
+# Full pipeline test
+npx tsx scripts/test-pipeline.ts
 
-# Pipeline Testing (uses data/test-data/practice-files/)
-npx tsx scripts/test-pipeline.ts      # Full pipeline test
-npx tsx scripts/test-table-agent.ts   # TableAgent only
-npx tsx scripts/test-r-script-v2.ts   # R script from existing output
-
-# Git
-git status                     # Check changes
-git diff                       # Review changes before commit
+# Quick verification test (uses latest pipeline output)
+npx tsx scripts/test-verification-agent.ts
 ```
 
 ---
 
-## References
+## Code Patterns
 
-**Implementation Plans**:
-- `docs/implementation-plans/table-agent-architecture.md` - Current work (Steps 5.5-7)
-- `docs/implementation-plans/pre-phase-2-testing-plan.md` - Testing milestones
-- `docs/architecture-refactor-prd.md` - Overall architecture
+### Agent Call Pattern
+```typescript
+import { generateText, Output } from 'ai';
+import { getVerificationModel, getVerificationReasoningEffort } from '@/lib/env';
 
-**Security**:
-- `docs/audits/security-audit-prompt.md` - Security review checklist
+const { output } = await generateText({
+  model: getVerificationModel(),
+  system: instructions,
+  prompt: userPrompt,
+  tools: { scratchpad },
+  output: Output.object({ schema: VerificationAgentOutputSchema }),
+  providerOptions: {
+    openai: {
+      reasoningEffort: getVerificationReasoningEffort(),
+    },
+  },
+});
+```
 
-**External Docs**:
-- [Vercel AI SDK](https://ai-sdk.dev/docs/introduction)
-- [Convex Docs](https://docs.convex.dev/)
-- [WorkOS AuthKit](https://workos.com/docs/user-management)
+### Schema-First Development
+Always define Zod schemas before implementation:
+```typescript
+// 1. Define schema
+const MyOutputSchema = z.object({
+  tables: z.array(ExtendedTableDefinitionSchema),
+  confidence: z.number(),
+});
+
+// 2. Use in agent call
+output: Output.object({ schema: MyOutputSchema })
+
+// 3. Type is inferred
+type MyOutput = z.infer<typeof MyOutputSchema>;
+```
+
+---
+
+## Quick Reference
+
+| Task | Command/Location |
+|------|------------------|
+| Run full pipeline | `npx tsx scripts/test-pipeline.ts` |
+| Check agent reasoning | `temp-outputs/*/scratchpad-*.md` |
+| Compare to Joe's output | `data/test-data/practice-files/leqvio-demand-tabs-joe.xlsx` |
+| Tune agent prompt | `src/prompts/*AgentPrompt.ts` |
+| Adjust reasoning effort | `.env.local` → `*_REASONING_EFFORT` |
+| Current work | `docs/implementation-plans/reliability-plan.md` |
+| Report bugs | `temp-outputs/*/bugs.md` |
+
+---
+
+## Philosophy
+
+**We're replacing Joe's usefulness, not replicating his exact format.** Antares-style output is our MVP target—functional, readable crosstabs that the team can write reports from.
+
+**Production quality for internal tools**: 80 people will use this with real client data. Type-safe, validated, observable.
+
+**Iterate based on evidence**: Use the evaluation framework to track improvements, not gut feelings.

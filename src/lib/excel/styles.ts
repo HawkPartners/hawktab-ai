@@ -141,6 +141,11 @@ export const FONTS: Record<string, Partial<Font>> = {
     size: 10,
     color: { argb: COLORS.textPrimary },
   },
+  labelNet: {
+    bold: true,
+    size: 10,
+    color: { argb: COLORS.textPrimary },
+  },
   data: {
     bold: false,
     size: 10,

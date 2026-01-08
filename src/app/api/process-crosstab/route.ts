@@ -29,6 +29,7 @@ import { buildCutsSpec } from '../../../lib/tables/CutsSpec';
 import { generateRScriptV2 } from '../../../lib/r/RScriptGeneratorV2';
 import { processDataMap } from '../../../agents/TableAgent';
 import { createBugTrackerTemplate } from '../../../lib/utils/bugTrackerTemplate';
+import { toExtendedTable } from '../../../schemas/verificationAgentSchema';
 
 const execAsync = promisify(exec);
 
@@ -252,12 +253,15 @@ export async function POST(request: NextRequest) {
               const allTables = tableAgentResults.flatMap(r => r.tables);
               console.log(`[API] TableAgent generated ${allTables.length} table definitions`);
 
+              // Convert to ExtendedTableDefinition (required by RScriptGeneratorV2)
+              const extendedTables = allTables.map(toExtendedTable);
+
               // Generate R script V2 (outputs JSON, not CSV)
               const rDir = path.join(outputDir, 'r');
               await fs.mkdir(rDir, { recursive: true });
 
               const masterScript = generateRScriptV2(
-                { tables: allTables, cuts: cutsSpec.cuts },
+                { tables: extendedTables, cuts: cutsSpec.cuts },
                 { sessionId: outputFolderTimestamp, outputDir: 'results' }
               );
               const masterPath = path.join(rDir, 'master.R');

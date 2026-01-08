@@ -61,13 +61,18 @@ An AI-powered system that:
 | **Data Map Processing** | Production | CSV parsing with parent inference, type classification |
 | **CrossTab Agent** | Production | Expression validation with confidence scoring |
 | **Table Agent** | Production | AI-based table structure decisions (frequency vs mean) |
-| **R Script V2** | Production | JSON output with correct base sizing |
+| **Verification Agent** | Production | Survey-aware label cleanup, NET rows, T2B, table splitting |
+| **R Script V2** | Production | JSON output with NET rows, derived tables, significance testing |
+| **Excel Formatter** | Production | Antares-style output with NET row styling and indentation |
 | **SPSS Integration** | Production | 99% variable match rate via `haven` package |
 | **API Pipeline** | Production | Single endpoint, session-based processing |
 
 ### Key Achievements
 - **TableAgent**: AI decides table structure based on `normalizedType` (replaces regex)
-- **RScriptGeneratorV2**: JSON output with two table types (`frequency`, `mean_rows`)
+- **VerificationAgent**: Uses survey document to fix labels, add NETs, create T2B/B2B tables
+- **RScriptGeneratorV2**: JSON output with `ExtendedTableDefinition` support (NET rows, indentation)
+- **ExcelFormatter**: Bold NET rows, indented component rows, full banner group styling
+- **Per-Agent Configuration**: Each agent has independent model, tokens, and reasoning effort settings
 - Successfully processes complex banner plans (19 columns, 6 groups)
 - Handles sophisticated expressions like "IF HCP" with contextual inference
 - Generates graduated confidence scores for human review prioritization
@@ -76,15 +81,20 @@ An AI-powered system that:
 
 ## Next Steps
 
-### Immediate: Finalize Table Agent Architecture
+### Current: Reliability Testing
 
-| Step | Description | Status |
+Working through the reliability plan to ensure consistent, publication-quality output.
+
+| Part | Description | Status |
 |------|-------------|--------|
-| 5.5 | R significance testing | Verify |
-| 6 | ExcelJS Formatter | Next |
-| 7 | Excel Cleanup Agent (optional) | Planned |
+| 1 | Bug Capture (compare to Joe's tabs) | Complete |
+| 2 | VerificationAgent Implementation | Complete |
+| 3 | Significance Testing (unpooled z-test) | Not started |
+| 4 | Evaluation Framework (golden dataset) | Not started |
+| 5 | Iteration on practice-files | Not started |
+| 6 | Broader Testing (23 datasets) | Not started |
 
-See `docs/implementation-plans/table-agent-architecture.md`
+See `docs/implementation-plans/reliability-plan.md`
 
 ### Then: Pre-Phase 2 Testing
 
@@ -96,6 +106,7 @@ Validate pipeline against `data/test-data/practice-files/` before proceeding:
 | Phase | Goal | Status |
 |-------|------|--------|
 | **1. Azure OpenAI** | Switch to Azure (compliance) | **Complete** |
+| **1.5. Reliability** | Match Joe's output quality | **In Progress** |
 | **2. Decipher + Reliability** | Skip logic from source, agent flow improvements | Not started |
 | **3. Team Access** | Deploy, auth, shared storage | Not started |
 | **Checkpoint** | Hawk Partners internal launch | — |
@@ -122,6 +133,23 @@ npm install
 ### Environment Setup
 
 Copy `.env.example` to `.env.local` and fill in your Azure credentials.
+
+**Per-Agent Configuration** (optional):
+```bash
+# Each agent can have independent model, token limit, and reasoning effort
+CROSSTAB_MODEL=gpt-5-mini
+CROSSTAB_MODEL_TOKENS=128000
+CROSSTAB_REASONING_EFFORT=medium    # none | minimal | low | medium | high | xhigh
+
+TABLE_MODEL=gpt-5-mini
+TABLE_REASONING_EFFORT=high
+
+VERIFICATION_MODEL=gpt-5-mini
+VERIFICATION_REASONING_EFFORT=high
+
+BANNER_MODEL=gpt-5-nano
+BANNER_REASONING_EFFORT=medium
+```
 
 ### Development
 
@@ -208,7 +236,8 @@ hawktab-ai/
 
 | Document | Purpose |
 |----------|---------|
-| `docs/implementation-plans/table-agent-architecture.md` | Current work: Steps 5.5-7 |
+| `docs/implementation-plans/reliability-plan.md` | Current work: reliability testing and evaluation |
+| `docs/implementation-plans/table-agent-architecture.md` | Table/Verification agent architecture |
 | `docs/implementation-plans/pre-phase-2-testing-plan.md` | Testing milestones |
 | `docs/architecture-refactor-prd.md` | Overall architecture and roadmap |
 | `CLAUDE.md` | AI assistant context and coding guidelines |

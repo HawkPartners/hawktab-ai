@@ -47,10 +47,13 @@ import { DataMapProcessor } from '../src/lib/processors/DataMapProcessor';
 import { BannerAgent } from '../src/agents/BannerAgent';
 import { processAllGroups as processCrosstabGroups } from '../src/agents/CrosstabAgent';
 import { processDataMap as processTableAgent } from '../src/agents/TableAgent';
+import { verifyAllTables } from '../src/agents/VerificationAgent';
+import { processSurvey } from '../src/lib/processors/SurveyProcessor';
 import { generateRScriptV2 } from '../src/lib/r/RScriptGeneratorV2';
 import { buildCutsSpec } from '../src/lib/tables/CutsSpec';
 import { ExcelFormatter } from '../src/lib/excel/ExcelFormatter';
 import type { VerboseDataMapType } from '../src/schemas/processingSchemas';
+import type { ExtendedTableDefinition } from '../src/schemas/verificationAgentSchema';
 
 const execAsync = promisify(exec);
 
@@ -88,6 +91,7 @@ interface DatasetFiles {
   datamap: string;
   banner: string;
   spss: string;
+  survey: string | null;  // Optional - needed for VerificationAgent
   name: string;
 }
 
@@ -125,6 +129,12 @@ async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
     throw new Error(`No SPSS file found in ${folder}. Expected .sav file.`);
   }
 
+  // Find survey document (optional - for VerificationAgent)
+  const survey = files.find(f =>
+    f.toLowerCase().includes('survey') &&
+    (f.endsWith('.docx') || f.endsWith('.pdf'))
+  );
+
   // Derive dataset name from folder
   const name = path.basename(absFolder);
 
@@ -132,6 +142,7 @@ async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
     datamap: path.join(absFolder, datamap),
     banner: path.join(absFolder, banner),
     spss: path.join(absFolder, spss),
+    survey: survey ? path.join(absFolder, survey) : null,
     name,
   };
 }
@@ -142,7 +153,7 @@ async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
 
 async function runPipeline(datasetFolder: string) {
   const startTime = Date.now();
-  const totalSteps = 7;
+  const totalSteps = 8;  // Added VerificationAgent step
 
   log('', 'reset');
   log('='.repeat(70), 'magenta');
@@ -156,6 +167,7 @@ async function runPipeline(datasetFolder: string) {
   log(`  Datamap: ${path.basename(files.datamap)}`, 'dim');
   log(`  Banner:  ${path.basename(files.banner)}`, 'dim');
   log(`  SPSS:    ${path.basename(files.spss)}`, 'dim');
+  log(`  Survey:  ${files.survey ? path.basename(files.survey) : '(not found - VerificationAgent will use passthrough)'}`, 'dim');
   log('', 'reset');
 
   // Create output folder
@@ -238,24 +250,70 @@ async function runPipeline(datasetFolder: string) {
   const stepStart4 = Date.now();
 
   const { results: tableAgentResults } = await processTableAgent(verboseDataMap, outputFolder);
-  const allTables = tableAgentResults.flatMap(r => r.tables);
+  const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
 
-  log(`  Generated ${allTables.length} table definitions`, 'green');
+  log(`  Generated ${tableAgentTables.length} table definitions`, 'green');
   log(`  Duration: ${Date.now() - stepStart4}ms`, 'dim');
   log('', 'reset');
 
   // -------------------------------------------------------------------------
-  // Step 5: RScriptGeneratorV2
+  // Step 5: VerificationAgent
   // -------------------------------------------------------------------------
-  logStep(5, totalSteps, 'Generating R script...');
+  logStep(5, totalSteps, 'Verifying tables with survey document...');
   const stepStart5 = Date.now();
+
+  let verifiedTables: ExtendedTableDefinition[];
+
+  if (files.survey) {
+    try {
+      // First, process the survey document to get markdown
+      log(`  Processing survey: ${path.basename(files.survey)}`, 'dim');
+      const surveyResult = await processSurvey(files.survey, outputDir);
+
+      if (!surveyResult.markdown) {
+        throw new Error(`Survey processing failed: ${surveyResult.warnings.join(', ')}`);
+      }
+
+      log(`  Survey markdown: ${surveyResult.markdown.length} characters`, 'dim');
+
+      // Now run VerificationAgent with the markdown
+      const verificationResult = await verifyAllTables(
+        tableAgentResults,
+        surveyResult.markdown,
+        verboseDataMap,
+        { outputFolder }
+      );
+      verifiedTables = verificationResult.tables;
+      log(`  Verified ${verifiedTables.length} tables (${verificationResult.metadata.tablesModified} modified)`, 'green');
+    } catch (verifyError) {
+      log(`  VerificationAgent failed, using TableAgent output: ${verifyError instanceof Error ? verifyError.message : String(verifyError)}`, 'yellow');
+      // Fallback: convert TableAgent output to ExtendedTableDefinition format
+      const { toExtendedTable } = await import('../src/schemas/verificationAgentSchema');
+      verifiedTables = tableAgentTables.map(t => toExtendedTable(t));
+    }
+  } else {
+    log(`  No survey file - using TableAgent output directly`, 'yellow');
+    // Convert TableAgent output to ExtendedTableDefinition format
+    const { toExtendedTable } = await import('../src/schemas/verificationAgentSchema');
+    verifiedTables = tableAgentTables.map(t => toExtendedTable(t));
+  }
+
+  log(`  Duration: ${Date.now() - stepStart5}ms`, 'dim');
+  log('', 'reset');
+
+  // -------------------------------------------------------------------------
+  // Step 6: RScriptGeneratorV2
+  // -------------------------------------------------------------------------
+  logStep(6, totalSteps, 'Generating R script...');
+  const stepStart6 = Date.now();
 
   const cutsSpec = buildCutsSpec(crosstabResult.result);
   const rDir = path.join(outputDir, 'r');
   await fs.mkdir(rDir, { recursive: true });
 
+  // Use verified tables (ExtendedTableDefinition) for R script generation
   const masterScript = generateRScriptV2(
-    { tables: allTables, cuts: cutsSpec.cuts },
+    { tables: verifiedTables, cuts: cutsSpec.cuts },
     { sessionId: outputFolder, outputDir: 'results' }
   );
 
@@ -263,14 +321,14 @@ async function runPipeline(datasetFolder: string) {
   await fs.writeFile(masterPath, masterScript, 'utf-8');
 
   log(`  Generated R script (${Math.round(masterScript.length / 1024)} KB)`, 'green');
-  log(`  Duration: ${Date.now() - stepStart5}ms`, 'dim');
+  log(`  Duration: ${Date.now() - stepStart6}ms`, 'dim');
   log('', 'reset');
 
   // -------------------------------------------------------------------------
-  // Step 6: R Execution
+  // Step 7: R Execution
   // -------------------------------------------------------------------------
-  logStep(6, totalSteps, 'Executing R script...');
-  const stepStart6 = Date.now();
+  logStep(7, totalSteps, 'Executing R script...');
+  const stepStart7 = Date.now();
 
   // Create results directory
   const resultsDir = path.join(outputDir, 'results');
@@ -310,13 +368,13 @@ async function runPipeline(datasetFolder: string) {
       log(`  WARNING: No tables.json generated`, 'yellow');
     }
 
-    log(`  Duration: ${Date.now() - stepStart6}ms`, 'dim');
+    log(`  Duration: ${Date.now() - stepStart7}ms`, 'dim');
 
     // -------------------------------------------------------------------------
-    // Step 7: Excel Export
+    // Step 8: Excel Export
     // -------------------------------------------------------------------------
-    logStep(7, totalSteps, 'Generating Excel workbook...');
-    const stepStart7 = Date.now();
+    logStep(8, totalSteps, 'Generating Excel workbook...');
+    const stepStart8 = Date.now();
 
     const tablesJsonPath = path.join(resultsDir, 'tables.json');
     const excelPath = path.join(resultsDir, 'crosstabs.xlsx');
@@ -327,7 +385,7 @@ async function runPipeline(datasetFolder: string) {
       await formatter.saveToFile(excelPath);
 
       log(`  Generated crosstabs.xlsx`, 'green');
-      log(`  Duration: ${Date.now() - stepStart7}ms`, 'dim');
+      log(`  Duration: ${Date.now() - stepStart8}ms`, 'dim');
     } catch (excelError) {
       log(`  Excel generation failed: ${excelError instanceof Error ? excelError.message : String(excelError)}`, 'red');
     }
@@ -355,7 +413,7 @@ async function runPipeline(datasetFolder: string) {
   log('='.repeat(70), 'magenta');
   log(`  Dataset:     ${files.name}`, 'reset');
   log(`  Variables:   ${verboseDataMap.length}`, 'reset');
-  log(`  Tables:      ${allTables.length}`, 'reset');
+  log(`  Tables:      ${verifiedTables.length} (${tableAgentTables.length} from TableAgent)`, 'reset');
   log(`  Cuts:        ${cutsSpec.cuts.length + 1} (including Total)`, 'reset');
   log(`  Duration:    ${(totalDuration / 1000).toFixed(1)}s`, 'reset');
   log(`  Output:      temp-outputs/${outputFolder}/`, 'reset');
@@ -370,10 +428,12 @@ async function runPipeline(datasetFolder: string) {
       datamap: path.basename(files.datamap),
       banner: path.basename(files.banner),
       spss: path.basename(files.spss),
+      survey: files.survey ? path.basename(files.survey) : null,
     },
     outputs: {
       variables: verboseDataMap.length,
-      tables: allTables.length,
+      tableAgentTables: tableAgentTables.length,
+      verifiedTables: verifiedTables.length,
       cuts: cutsSpec.cuts.length + 1,
       bannerGroups: groupCount,
     },
