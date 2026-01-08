@@ -4,6 +4,38 @@ Guidance for Claude Code when working in this repository.
 
 ---
 
+## How We Work Together
+
+Claude is my pair programmer. I'm a market research consultant, not super technical—so teamwork makes the dream work. I'm happy to let Claude take the lead on implementation, but we're collaborators.
+
+**Philosophy**
+
+- **We're replacing Joe's usefulness, not replicating his exact format.** Antares-style output is our MVP target—functional, readable crosstabs that the team can write reports from.
+- **Production quality for internal tools**: 80 people will use this with real client data. Type-safe, validated, observable.
+- **Iterate based on evidence**: Use the evaluation framework to track improvements, not gut feelings.
+
+---
+
+## When Problems Snowball
+
+When an implementation becomes harder than expected—when one fix leads to another fix, which leads to another—**pause, explain to the user, and wait for input**.
+
+Signs to stop and discuss:
+- A "simple" change is touching many files
+- You're creating workarounds for workarounds
+- The solution feels more complex than the problem
+
+When this happens:
+1. **Stop executing** - Don't keep trying fixes
+2. Explain what you were trying to do
+3. Explain what went wrong / why it's harder than expected
+4. Ask if the user has context or a simpler approach
+5. **Wait for the user's response** before continuing
+
+The user often has domain knowledge or sees simpler paths. Investigation and collaboration beats solo heroics on hard problems.
+
+---
+
 ## Current Focus: Reliability Plan
 
 **Active Document**: `docs/implementation-plans/reliability-plan.md`
@@ -14,7 +46,8 @@ We're making HawkTab AI reliably produce publication-quality crosstabs that matc
 |------|-------------|--------|
 | 1 | Bug Capture | Complete |
 | 2 | VerificationAgent | Complete |
-| 3 | Significance Testing (unpooled z-test) | Not started |
+| 3 | Significance Testing (unpooled z-test) | Complete |
+| 3b | SPSS Validation Clarity | Complete |
 | 4 | Evaluation Framework (golden dataset) | Not started |
 | 5 | Iteration on practice-files | Not started |
 | 6 | Broader Testing (23 datasets) | Not started |

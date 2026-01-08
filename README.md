@@ -89,7 +89,8 @@ Working through the reliability plan to ensure consistent, publication-quality o
 |------|-------------|--------|
 | 1 | Bug Capture (compare to Joe's tabs) | Complete |
 | 2 | VerificationAgent Implementation | Complete |
-| 3 | Significance Testing (unpooled z-test) | Not started |
+| 3 | Significance Testing (unpooled z-test) | Complete |
+| 3b | SPSS Validation Clarity | Complete |
 | 4 | Evaluation Framework (golden dataset) | Not started |
 | 5 | Iteration on practice-files | Not started |
 | 6 | Broader Testing (23 datasets) | Not started |

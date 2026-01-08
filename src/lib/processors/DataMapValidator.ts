@@ -134,6 +134,10 @@ export class DataMapValidator {
             missingInDataMap: [],
             matchRate: 0
           },
+          categorizedMismatches: {
+            explained: [],
+            unexpected: []
+          },
           summary: `SPSS validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
         }
       };

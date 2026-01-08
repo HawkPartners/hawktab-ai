@@ -198,7 +198,14 @@ export async function verifyAllTables(
   // If passthrough mode or no survey, return all tables unchanged
   if (passthrough || !surveyMarkdown || surveyMarkdown.trim() === '') {
     logEntry(`[VerificationAgent] Passthrough mode - returning tables unchanged`);
-    const passthroughResults = allTables.map(({ table }) => createPassthroughOutput(table));
+    const passthroughResults = allTables.map(({ table, questionId }) => {
+      const output = createPassthroughOutput(table);
+      // Attach questionId to passthrough tables
+      return {
+        ...output,
+        tables: output.tables.map((t) => ({ ...t, questionId })),
+      };
+    });
     const allVerifiedTables = passthroughResults.flatMap((r) => r.tables);
 
     return {
@@ -215,6 +222,7 @@ export async function verifyAllTables(
   }
 
   const results: VerificationAgentOutput[] = [];
+  const questionIdByIndex: string[] = []; // Track questionId for each result
 
   // Process each table
   for (let i = 0; i < allTables.length; i++) {
@@ -238,6 +246,7 @@ export async function verifyAllTables(
 
     const result = await verifyTable(input);
     results.push(result);
+    questionIdByIndex.push(questionId); // Track questionId for this result
 
     const duration = Date.now() - startTime;
     logEntry(
@@ -255,8 +264,10 @@ export async function verifyAllTables(
   const scratchpadEntries = getAndClearScratchpadEntries();
   logEntry(`[VerificationAgent] Collected ${scratchpadEntries.length} scratchpad entries`);
 
-  // Combine all verified tables
-  const allVerifiedTables: ExtendedTableDefinition[] = results.flatMap((r) => r.tables);
+  // Combine all verified tables, attaching questionId from the tracked array
+  const allVerifiedTables: ExtendedTableDefinition[] = results.flatMap((r, i) =>
+    r.tables.map((t) => ({ ...t, questionId: questionIdByIndex[i] }))
+  );
 
   // Collect all changes
   const allChanges = results

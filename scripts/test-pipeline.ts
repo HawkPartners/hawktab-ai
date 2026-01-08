@@ -51,6 +51,7 @@ import { verifyAllTables } from '../src/agents/VerificationAgent';
 import { processSurvey } from '../src/lib/processors/SurveyProcessor';
 import { generateRScriptV2 } from '../src/lib/r/RScriptGeneratorV2';
 import { buildCutsSpec } from '../src/lib/tables/CutsSpec';
+import { sortTables, getSortingMetadata } from '../src/lib/tables/sortTables';
 import { ExcelFormatter } from '../src/lib/excel/ExcelFormatter';
 import type { VerboseDataMapType } from '../src/schemas/processingSchemas';
 import type { ExtendedTableDefinition } from '../src/schemas/verificationAgentSchema';
@@ -287,18 +288,32 @@ async function runPipeline(datasetFolder: string) {
       log(`  Verified ${verifiedTables.length} tables (${verificationResult.metadata.tablesModified} modified)`, 'green');
     } catch (verifyError) {
       log(`  VerificationAgent failed, using TableAgent output: ${verifyError instanceof Error ? verifyError.message : String(verifyError)}`, 'yellow');
-      // Fallback: convert TableAgent output to ExtendedTableDefinition format
+      // Fallback: convert TableAgent output to ExtendedTableDefinition format with questionId
       const { toExtendedTable } = await import('../src/schemas/verificationAgentSchema');
-      verifiedTables = tableAgentTables.map(t => toExtendedTable(t));
+      verifiedTables = tableAgentResults.flatMap(group =>
+        group.tables.map(t => toExtendedTable(t, group.questionId))
+      );
     }
   } else {
     log(`  No survey file - using TableAgent output directly`, 'yellow');
-    // Convert TableAgent output to ExtendedTableDefinition format
+    // Convert TableAgent output to ExtendedTableDefinition format with questionId
     const { toExtendedTable } = await import('../src/schemas/verificationAgentSchema');
-    verifiedTables = tableAgentTables.map(t => toExtendedTable(t));
+    verifiedTables = tableAgentResults.flatMap(group =>
+      group.tables.map(t => toExtendedTable(t, group.questionId))
+    );
   }
 
   log(`  Duration: ${Date.now() - stepStart5}ms`, 'dim');
+  log('', 'reset');
+
+  // -------------------------------------------------------------------------
+  // Sort tables for logical Excel output order
+  // -------------------------------------------------------------------------
+  log('Sorting tables...', 'cyan');
+  const sortingMetadata = getSortingMetadata(verifiedTables);
+  const sortedTables = sortTables(verifiedTables);
+  log(`  Screeners: ${sortingMetadata.screenerCount}, Main: ${sortingMetadata.mainCount}, Other: ${sortingMetadata.otherCount}`, 'dim');
+  log(`  Sorted ${sortedTables.length} tables`, 'green');
   log('', 'reset');
 
   // -------------------------------------------------------------------------
@@ -311,9 +326,9 @@ async function runPipeline(datasetFolder: string) {
   const rDir = path.join(outputDir, 'r');
   await fs.mkdir(rDir, { recursive: true });
 
-  // Use verified tables (ExtendedTableDefinition) for R script generation
+  // Use sorted tables (ExtendedTableDefinition) for R script generation
   const masterScript = generateRScriptV2(
-    { tables: verifiedTables, cuts: cutsSpec.cuts },
+    { tables: sortedTables, cuts: cutsSpec.cuts },
     { sessionId: outputFolder, outputDir: 'results' }
   );
 
@@ -413,7 +428,7 @@ async function runPipeline(datasetFolder: string) {
   log('='.repeat(70), 'magenta');
   log(`  Dataset:     ${files.name}`, 'reset');
   log(`  Variables:   ${verboseDataMap.length}`, 'reset');
-  log(`  Tables:      ${verifiedTables.length} (${tableAgentTables.length} from TableAgent)`, 'reset');
+  log(`  Tables:      ${sortedTables.length} (${tableAgentTables.length} from TableAgent)`, 'reset');
   log(`  Cuts:        ${cutsSpec.cuts.length + 1} (including Total)`, 'reset');
   log(`  Duration:    ${(totalDuration / 1000).toFixed(1)}s`, 'reset');
   log(`  Output:      temp-outputs/${outputFolder}/`, 'reset');
@@ -433,9 +448,14 @@ async function runPipeline(datasetFolder: string) {
     outputs: {
       variables: verboseDataMap.length,
       tableAgentTables: tableAgentTables.length,
-      verifiedTables: verifiedTables.length,
+      verifiedTables: sortedTables.length,
       cuts: cutsSpec.cuts.length + 1,
       bannerGroups: groupCount,
+      sorting: {
+        screeners: sortingMetadata.screenerCount,
+        main: sortingMetadata.mainCount,
+        other: sortingMetadata.otherCount,
+      },
     },
   };
   await fs.writeFile(

@@ -254,7 +254,7 @@ export async function POST(request: NextRequest) {
               console.log(`[API] TableAgent generated ${allTables.length} table definitions`);
 
               // Convert to ExtendedTableDefinition (required by RScriptGeneratorV2)
-              const extendedTables = allTables.map(toExtendedTable);
+              const extendedTables = allTables.map(t => toExtendedTable(t));
 
               // Generate R script V2 (outputs JSON, not CSV)
               const rDir = path.join(outputDir, 'r');

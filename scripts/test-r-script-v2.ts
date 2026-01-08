@@ -191,7 +191,7 @@ async function main() {
   }
 
   // Convert to ExtendedTableDefinition (required by RScriptGeneratorV2)
-  const extendedTables: ExtendedTableDefinition[] = tables.map(toExtendedTable);
+  const extendedTables: ExtendedTableDefinition[] = tables.map(t => toExtendedTable(t));
 
   // Count table types
   const typeCount: Record<string, number> = {};
