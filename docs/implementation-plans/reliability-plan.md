@@ -38,18 +38,22 @@ Review the practice-files test output against Joe's tabs. Capture all difference
 
 ## Part 2: VerificationAgent
 
-**Status**: ARCHITECTURE COMPLETE - Review output and track bugs
+**Status**: COMPLETE
 
-**Test Output Location**: `temp-outputs/test-pipeline-practice-files-2026-01-04T19-20-00-967Z/`
-- `verified-table-output-*.json` - VerificationAgent output
-- `scratchpad-verification-*.md` - Agent reasoning traces
-- `bugs.md` - Track issues found during review
+VerificationAgent has been implemented with the following capabilities:
+- Survey-aware label cleanup
+- Table restructuring decisions
+- NET/roll-up row identification
+- Low-value table flagging
+- Per-agent environment configuration (model, tokens, reasoning effort)
 
-**Next Steps**:
-1. Review verified-table-output JSON for correctness
-2. Review scratchpad for reasoning quality
-3. Log issues to bugs.md (screener handling, edge cases, etc.)
-4. Iterate on prompt as needed
+**Test Output Location**: `temp-outputs/test-verification-agent-*/`
+
+**Implementation Details**:
+- `src/agents/VerificationAgent.ts` - Core agent implementation
+- `src/schemas/verificationAgentSchema.ts` - Output schema with extended row types
+- `src/lib/processors/SurveyProcessor.ts` - DOCX → Markdown conversion
+- Environment variables: `VERIFICATION_MODEL`, `VERIFICATION_MODEL_TOKENS`, `VERIFICATION_REASONING_EFFORT`, `VERIFICATION_PROMPT_VERSION`
 
 ### What It Does
 
@@ -114,40 +118,9 @@ for (const group of questionGroups) {
 
 ---
 
-## Part 3: Non-VerificationAgent Problems
+## Part 3: Significance Testing
 
-**Status**: NOT STARTED (begins after Part 2 complete)
-
-Problems that the VerificationAgent cannot solve. These require changes to R calculations, RScriptGenerator, or ExcelJS formatter.
-
-### Categories
-
-**R Calculations**:
-- 0% vs N/A distinction (base n = 0 should show dash, not 0%)
-- A3a/A3b allocation questions accuracy
-
-**RScriptGenerator**:
-- T2B/B2B dimensionality collapse (loses row-level structure for multi-row scales)
-- Top 3 Combined placement (should appear once at end, not after each ranking table)
-
-**ExcelJS Formatter**:
-- Table ordering (Screener → Main → Admin, alphanumeric within each)
-- Column width / text wrapping
-- Percentages stored as text (should be actual numbers)
-
-### Process
-
-After VerificationAgent is implemented:
-1. Re-run practice-files test
-2. Review remaining issues in bugs.md
-3. Fix each by category (R → RScriptGenerator → ExcelJS)
-4. Track fixes in this section
-
----
-
-## Part 4: Significance Testing
-
-**Status**: NOT STARTED (begins after Part 3 complete)
+**Status**: NOT STARTED
 
 Our significance testing differs from Joe's WinCross output. After talking with Joe, we identified the root cause: we use **pooled proportions** for z-tests, but WinCross defaults to **unpooled proportions**.
 
@@ -182,9 +155,115 @@ Our significance testing differs from Joe's WinCross output. After talking with 
 
 ---
 
+## Part 4: Evaluation Framework
+
+**Status**: NOT STARTED (required before Part 5)
+
+### The Problem
+
+Our current testing workflow is "run pipeline, eyeball JSON, manually compare." This doesn't scale and makes it hard to:
+- Know if we're improving or regressing
+- Focus review time on actual problems
+- Track patterns in failures for prompt iteration
+
+### The Solution: Golden Dataset + Annotation Workflow
+
+This is the standard approach for human-preference-centered LLM evaluation:
+
+1. **Golden Dataset**: Manually-created "expected output" files that represent what we want the agents to produce
+2. **Strict Comparison**: Automated diff between actual output and golden data (surfaces all differences)
+3. **Human Annotation**: For each difference, mark as "wrong" (needs fix) or "acceptable" (different but fine)
+4. **Metrics Tracking**: Track both strict accuracy and practical accuracy over time
+
+### Why This Matters
+
+Each agent has a preference component:
+- **TableAgent**: Right tableType, variable, filterValue. Structure decisions.
+- **VerificationAgent**: Labels, splits, NETs, derived tables. Most preference-driven.
+
+We can't fully automate evaluation because "good" is subjective. But we can:
+- Be strict about surfacing differences (nothing hidden)
+- Let humans annotate what's actually wrong
+- Track improvement systematically
+- Identify patterns for prompt fixes
+
+### Implementation
+
+**Folder Structure**:
+```
+data/test-data/practice-files/
+├── golden/
+│   ├── tables-expected.json           # What TableAgent should produce
+│   ├── verified-tables-expected.json  # What VerificationAgent should produce
+│   └── annotations.json               # Human verdicts on differences
+└── runs/
+    └── YYYY-MM-DD/
+        ├── comparison-report.json     # Auto-generated diff
+        └── human-review.json          # Annotations for this run
+```
+
+**Comparison Report** (auto-generated):
+```json
+{
+  "agent": "TableAgent",
+  "summary": {
+    "total_tables": 48,
+    "exact_matches": 29,
+    "differences": 19,
+    "strict_accuracy": 0.604
+  },
+  "differences": [
+    {
+      "id": "diff_001",
+      "table_id": "s8",
+      "field": "tableType",
+      "expected": "frequency",
+      "actual": "grid_by_value",
+      "human_verdict": null
+    }
+  ]
+}
+```
+
+**Human Review** (filled in by reviewer):
+```json
+{
+  "verdicts": {
+    "diff_001": {
+      "verdict": "wrong",
+      "notes": "Single-select question, not a grid"
+    },
+    "diff_002": {
+      "verdict": "acceptable",
+      "notes": "VerificationAgent handles labels"
+    }
+  },
+  "metrics_after_review": {
+    "strict_accuracy": 0.604,
+    "practical_accuracy": 0.812,
+    "truly_wrong_rate": 0.188
+  }
+}
+```
+
+### Deliverables
+
+1. **Golden dataset creation**: Manually create `tables-expected.json` and `verified-tables-expected.json` for practice-files
+2. **Comparison script**: `scripts/evaluate-run.ts` that generates comparison reports
+3. **Annotation workflow**: Simple JSON-based human review process
+4. **Metrics dashboard**: Track strict vs practical accuracy over runs
+
+### Exit Criteria
+
+- Golden datasets exist for practice-files (TableAgent + VerificationAgent)
+- Comparison script produces actionable diff reports
+- At least one full evaluation cycle completed (run → compare → annotate → identify patterns)
+
+---
+
 ## Part 5: Iteration (Practice-Files)
 
-**Status**: NOT STARTED (begins after Parts 2-4 complete)
+**Status**: NOT STARTED (begins after Part 4 Evaluation Framework complete)
 
 ### Banner Plan Versions
 
@@ -329,5 +408,5 @@ Primary test case: `data/test-data/practice-files/`
 ---
 
 *Created: January 6, 2026*
-*Updated: January 7, 2026*
-*Status: Part 1 complete, Part 2 architecture complete (review pending)*
+*Updated: January 8, 2026*
+*Status: Parts 1-2 complete, Parts 3-6 pending*
