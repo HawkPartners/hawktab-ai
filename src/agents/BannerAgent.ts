@@ -22,7 +22,13 @@ const execAsync = promisify(exec);
 // import mammoth from 'mammoth';
 import { z } from 'zod';
 import { VerboseBannerPlan, AgentBannerGroup } from '../lib/contextBuilder';
-import { getPromptVersions, getBaseModel, getBaseModelName, getBaseModelTokenLimit } from '../lib/env';
+import {
+  getPromptVersions,
+  getBannerModel,
+  getBannerModelName,
+  getBannerModelTokenLimit,
+  getBannerReasoningEffort,
+} from '../lib/env';
 import { getBannerPrompt } from '../prompts';
 import { bannerScratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
 
@@ -173,7 +179,8 @@ export class BannerAgent {
   // Agent-based extraction using Vercel AI SDK with vision
   private async extractBannerStructureWithAgent(images: ProcessedImage[]): Promise<BannerExtractionResult> {
     console.log(`[BannerAgent] Starting agent-based extraction with ${images.length} images`);
-    console.log(`[BannerAgent] Using model: ${getBaseModelName()}`);
+    console.log(`[BannerAgent] Using model: ${getBannerModelName()}`);
+    console.log(`[BannerAgent] Reasoning effort: ${getBannerReasoningEffort()}`);
 
     try {
       const systemPrompt = `
@@ -196,7 +203,7 @@ Begin analysis now.
       // OpenAI Agents SDK: { type: 'input_image', image: 'data:image/png;base64,...' }
       // Vercel AI SDK: { type: 'image', image: Buffer.from(base64, 'base64') }
       const { output } = await generateText({
-        model: getBaseModel(),  // Task-based: base model for vision/extraction tasks
+        model: getBannerModel(),  // Task-based: banner model for vision/extraction tasks
         system: systemPrompt,
         messages: [
           {
@@ -215,7 +222,13 @@ Begin analysis now.
           scratchpad: bannerScratchpadTool,
         },
         stopWhen: stepCountIs(15),  // AI SDK 5+: replaces maxTurns/maxSteps
-        maxOutputTokens: Math.min(getBaseModelTokenLimit(), 32000),
+        maxOutputTokens: Math.min(getBannerModelTokenLimit(), 32000),
+        // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+        providerOptions: {
+          openai: {
+            reasoningEffort: getBannerReasoningEffort(),
+          },
+        },
         output: Output.object({
           schema: BannerExtractionResultSchema,
         }),

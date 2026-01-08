@@ -1,12 +1,38 @@
 /**
  * Environment configuration
- * Purpose: Resolve Azure OpenAI model, token limits, prompt versions, and validation
- * Required: AZURE_API_KEY, AZURE_RESOURCE_NAME, REASONING_MODEL, BASE_MODEL
- * Optional: NODE_ENV, prompt versions, token/limit overrides
+ * Purpose: Resolve Azure OpenAI model, token limits, prompt versions, reasoning effort, and validation
+ * Required: AZURE_API_KEY, AZURE_RESOURCE_NAME
+ * Optional: Per-agent MODEL, MODEL_TOKENS, PROMPT_VERSION, REASONING_EFFORT
+ *
+ * Per-Agent Configuration Pattern:
+ * - CROSSTAB_MODEL, CROSSTAB_MODEL_TOKENS, CROSSTAB_PROMPT_VERSION, CROSSTAB_REASONING_EFFORT
+ * - BANNER_MODEL, BANNER_MODEL_TOKENS, BANNER_PROMPT_VERSION, BANNER_REASONING_EFFORT
+ * - TABLE_MODEL, TABLE_MODEL_TOKENS, TABLE_PROMPT_VERSION, TABLE_REASONING_EFFORT
+ * - VERIFICATION_MODEL, VERIFICATION_MODEL_TOKENS, VERIFICATION_PROMPT_VERSION, VERIFICATION_REASONING_EFFORT
  */
 
 import { createAzure } from '@ai-sdk/azure';
-import { EnvironmentConfig } from './types';
+import { EnvironmentConfig, ReasoningEffort } from './types';
+
+/**
+ * Valid reasoning effort levels for Azure OpenAI GPT-5 and o-series models
+ * @see https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/reasoning
+ */
+const VALID_REASONING_EFFORTS: ReasoningEffort[] = ['none', 'minimal', 'low', 'medium', 'high', 'xhigh'];
+
+/**
+ * Parse and validate reasoning effort from environment variable
+ * Defaults to 'medium' (AI SDK default) if not specified or invalid
+ */
+function parseReasoningEffort(value: string | undefined, agentName: string): ReasoningEffort {
+  if (!value) return 'medium';
+  const normalized = value.toLowerCase().trim() as ReasoningEffort;
+  if (VALID_REASONING_EFFORTS.includes(normalized)) {
+    return normalized;
+  }
+  console.warn(`[env.ts] Invalid ${agentName}_REASONING_EFFORT "${value}", using default "medium"`);
+  return 'medium';
+}
 
 // Create Azure provider instance (cached)
 let azureProvider: ReturnType<typeof createAzure> | null = null;
@@ -44,14 +70,22 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   const azureApiVersion = process.env.AZURE_API_VERSION || '2025-01-01-preview';
 
   // Per-agent model configuration (Azure deployment names)
-  // New: Each agent has its own model configuration
+  // Each agent has its own model configuration for flexibility
   const crosstabModel = process.env.CROSSTAB_MODEL || process.env.REASONING_MODEL || 'o4-mini';
   const bannerModel = process.env.BANNER_MODEL || process.env.BASE_MODEL || 'gpt-5-nano';
   const tableModel = process.env.TABLE_MODEL || 'gpt-5-nano';
+  const verificationModel = process.env.VERIFICATION_MODEL || process.env.TABLE_MODEL || 'gpt-5-mini';
 
   // Legacy model aliases (for backward compatibility)
   const reasoningModel = process.env.REASONING_MODEL || crosstabModel;
   const baseModel = process.env.BASE_MODEL || bannerModel;
+
+  // Per-agent reasoning effort configuration
+  // Defaults to 'medium' (AI SDK default) if not specified
+  const crosstabReasoningEffort = parseReasoningEffort(process.env.CROSSTAB_REASONING_EFFORT, 'CROSSTAB');
+  const bannerReasoningEffort = parseReasoningEffort(process.env.BANNER_REASONING_EFFORT, 'BANNER');
+  const tableReasoningEffort = parseReasoningEffort(process.env.TABLE_REASONING_EFFORT, 'TABLE');
+  const verificationReasoningEffort = parseReasoningEffort(process.env.VERIFICATION_REASONING_EFFORT, 'VERIFICATION');
 
   const nodeEnv = (process.env.NODE_ENV as 'development' | 'production') || 'development';
 
@@ -68,6 +102,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
     crosstabModel,
     bannerModel,
     tableModel,
+    verificationModel,
 
     // Deprecated
     openaiApiKey: process.env.OPENAI_API_KEY,  // Optional, deprecated
@@ -79,6 +114,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
       crosstabPromptVersion: process.env.CROSSTAB_PROMPT_VERSION || 'production',
       bannerPromptVersion: process.env.BANNER_PROMPT_VERSION || 'production',
       tablePromptVersion: process.env.TABLE_PROMPT_VERSION || 'production',
+      verificationPromptVersion: process.env.VERIFICATION_PROMPT_VERSION || 'production',
     },
     processingLimits: {
       maxDataMapVariables: parseInt(process.env.MAX_DATA_MAP_VARIABLES || '1000'),
@@ -90,6 +126,13 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
       crosstabModelTokens: parseInt(process.env.CROSSTAB_MODEL_TOKENS || process.env.REASONING_MODEL_TOKENS || '100000'),
       bannerModelTokens: parseInt(process.env.BANNER_MODEL_TOKENS || process.env.BASE_MODEL_TOKENS || '128000'),
       tableModelTokens: parseInt(process.env.TABLE_MODEL_TOKENS || '128000'),
+      verificationModelTokens: parseInt(process.env.VERIFICATION_MODEL_TOKENS || process.env.TABLE_MODEL_TOKENS || '128000'),
+    },
+    reasoningConfig: {
+      crosstabReasoningEffort,
+      bannerReasoningEffort,
+      tableReasoningEffort,
+      verificationReasoningEffort,
     },
   };
 };
@@ -136,6 +179,16 @@ export const getTableModel = () => {
 };
 
 /**
+ * Get VerificationAgent model for survey-aware table enhancement
+ * Used by: VerificationAgent (enhances TableAgent output using survey document)
+ */
+export const getVerificationModel = () => {
+  const config = getEnvironmentConfig();
+  const provider = getAzureProvider();
+  return provider.chat(config.verificationModel);
+};
+
+/**
  * Get per-agent model name strings (for logging)
  */
 export const getCrosstabModelName = (): string => {
@@ -151,6 +204,11 @@ export const getBannerModelName = (): string => {
 export const getTableModelName = (): string => {
   const config = getEnvironmentConfig();
   return `azure/${config.tableModel}`;
+};
+
+export const getVerificationModelName = (): string => {
+  const config = getEnvironmentConfig();
+  return `azure/${config.verificationModel}`;
 };
 
 /**
@@ -169,6 +227,49 @@ export const getBannerModelTokenLimit = (): number => {
 export const getTableModelTokenLimit = (): number => {
   const config = getEnvironmentConfig();
   return config.processingLimits.tableModelTokens;
+};
+
+export const getVerificationModelTokenLimit = (): number => {
+  const config = getEnvironmentConfig();
+  return config.processingLimits.verificationModelTokens;
+};
+
+// =============================================================================
+// Per-Agent Reasoning Effort Configuration
+// Used to configure how much reasoning effort the model applies
+// =============================================================================
+
+/**
+ * Get per-agent reasoning effort levels
+ * Returns the configured reasoning effort for each agent
+ * Used with providerOptions: { openai: { reasoningEffort: '...' } }
+ */
+export const getCrosstabReasoningEffort = (): ReasoningEffort => {
+  const config = getEnvironmentConfig();
+  return config.reasoningConfig.crosstabReasoningEffort;
+};
+
+export const getBannerReasoningEffort = (): ReasoningEffort => {
+  const config = getEnvironmentConfig();
+  return config.reasoningConfig.bannerReasoningEffort;
+};
+
+export const getTableReasoningEffort = (): ReasoningEffort => {
+  const config = getEnvironmentConfig();
+  return config.reasoningConfig.tableReasoningEffort;
+};
+
+export const getVerificationReasoningEffort = (): ReasoningEffort => {
+  const config = getEnvironmentConfig();
+  return config.reasoningConfig.verificationReasoningEffort;
+};
+
+/**
+ * Get all reasoning effort configuration (for logging/debugging)
+ */
+export const getReasoningConfig = () => {
+  const config = getEnvironmentConfig();
+  return config.reasoningConfig;
 };
 
 // =============================================================================
@@ -288,6 +389,10 @@ export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
 
     if (config.processingLimits.tableModelTokens < 1000) {
       errors.push('TABLE_MODEL_TOKENS must be at least 1000');
+    }
+
+    if (config.processingLimits.verificationModelTokens < 1000) {
+      errors.push('VERIFICATION_MODEL_TOKENS must be at least 1000');
     }
 
   } catch (error) {

@@ -15,7 +15,13 @@ import {
   type TableDefinition,
 } from '../schemas/tableAgentSchema';
 import { type VerboseDataMapType } from '../schemas/processingSchemas';
-import { getTableModel, getTableModelName, getTableModelTokenLimit, getPromptVersions } from '../lib/env';
+import {
+  getTableModel,
+  getTableModelName,
+  getTableModelTokenLimit,
+  getTableReasoningEffort,
+  getPromptVersions,
+} from '../lib/env';
 import { tableScratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
 import { getTablePrompt } from '../prompts';
 import fs from 'fs/promises';
@@ -170,6 +176,12 @@ Begin analysis now.
       },
       stopWhen: stepCountIs(15),  // Fewer steps needed than CrosstabAgent
       maxOutputTokens: Math.min(getTableModelTokenLimit(), 8000),
+      // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+      providerOptions: {
+        openai: {
+          reasoningEffort: getTableReasoningEffort(),
+        },
+      },
       output: Output.object({
         schema: TableAgentOutputSchema,
       }),
@@ -226,6 +238,7 @@ export async function processAllGroups(
 
   logEntry(`[TableAgent] Starting processing: ${groups.length} question groups`);
   logEntry(`[TableAgent] Using model: ${getTableModelName()}`);
+  logEntry(`[TableAgent] Reasoning effort: ${getTableReasoningEffort()}`);
 
   const results: TableAgentOutput[] = [];
 
@@ -372,6 +385,7 @@ async function saveDevelopmentOutputs(
         timestamp: new Date().toISOString(),
         aiProvider: 'azure-openai',
         model: getTableModelName(),
+        reasoningEffort: getTableReasoningEffort(),
         totalQuestionGroups: results.length,
         totalTablesGenerated: totalTables,
         averageConfidence: avgConfidence,

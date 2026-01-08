@@ -24,7 +24,12 @@ import {
 } from '../schemas/verificationAgentSchema';
 import { type TableDefinition, type TableAgentOutput } from '../schemas/tableAgentSchema';
 import { type VerboseDataMapType } from '../schemas/processingSchemas';
-import { getTableModel, getTableModelName, getTableModelTokenLimit } from '../lib/env';
+import {
+  getVerificationModel,
+  getVerificationModelName,
+  getVerificationModelTokenLimit,
+  getVerificationReasoningEffort,
+} from '../lib/env';
 import {
   verificationScratchpadTool,
   clearScratchpadEntries,
@@ -105,14 +110,20 @@ Analyze the table against the survey document. Fix labels, split if needed, add 
 
     // Use generateText with structured output
     const { output } = await generateText({
-      model: getTableModel(), // Same model as TableAgent
+      model: getVerificationModel(),
       system: systemPrompt,
       prompt: userPrompt,
       tools: {
         scratchpad: verificationScratchpadTool,
       },
       stopWhen: stepCountIs(15),
-      maxOutputTokens: Math.min(getTableModelTokenLimit(), 8000),
+      maxOutputTokens: Math.min(getVerificationModelTokenLimit(), 8000),
+      // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+      providerOptions: {
+        openai: {
+          reasoningEffort: getVerificationReasoningEffort(),
+        },
+      },
       output: Output.object({
         schema: VerificationAgentOutputSchema,
       }),
@@ -180,7 +191,8 @@ export async function verifyAllTables(
   }
 
   logEntry(`[VerificationAgent] Starting processing: ${allTables.length} tables`);
-  logEntry(`[VerificationAgent] Using model: ${getTableModelName()}`);
+  logEntry(`[VerificationAgent] Using model: ${getVerificationModelName()}`);
+  logEntry(`[VerificationAgent] Reasoning effort: ${getVerificationReasoningEffort()}`);
   logEntry(`[VerificationAgent] Survey markdown: ${surveyMarkdown.length} characters`);
 
   // If passthrough mode or no survey, return all tables unchanged
@@ -356,7 +368,8 @@ async function saveDevelopmentOutputs(
       processingInfo: {
         timestamp: new Date().toISOString(),
         aiProvider: 'azure-openai',
-        model: getTableModelName(),
+        model: getVerificationModelName(),
+        reasoningEffort: getVerificationReasoningEffort(),
         processingLog,
       },
     };
