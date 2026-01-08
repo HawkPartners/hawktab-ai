@@ -51,6 +51,7 @@ export function createScratchpadTool(agentName: string) {
 export const crosstabScratchpadTool = createScratchpadTool('CrosstabAgent');
 export const tableScratchpadTool = createScratchpadTool('TableAgent');
 export const bannerScratchpadTool = createScratchpadTool('BannerAgent');
+export const verificationScratchpadTool = createScratchpadTool('VerificationAgent');
 
 // Legacy export for backward compatibility
 // TODO: Migrate existing agents to use agent-specific tools
