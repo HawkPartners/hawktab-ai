@@ -103,7 +103,6 @@ export class DataMapValidator {
       const confidence = fullValidation.columnMatching.matchRate / 100;
       
       console.log(`[DataMapValidator] SPSS validation complete: ${fullValidation.columnMatching.matchRate}% match rate`);
-      console.log(`[DataMapValidator] Summary: ${fullValidation.summary}`);
       
       return {
         passed: confidence >= 0.8, // 80% column match required
