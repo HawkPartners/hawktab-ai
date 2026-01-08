@@ -9,6 +9,7 @@
 import { generateText, Output, stepCountIs } from 'ai';
 import fs from 'fs/promises';
 import path from 'path';
+import os from 'os';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { PDFDocument } from 'pdf-lib';
@@ -153,7 +154,7 @@ export class BannerAgent {
 
       // Step 6: Save outputs (always save for MVP)
       if (outputFolder) {
-        await this.saveDevelopmentOutputs(dualOutputs, filePath, outputFolder, scratchpadEntries, pdfPath, images);
+        await this.saveDevelopmentOutputs(dualOutputs, filePath, outputFolder, scratchpadEntries, images);
       }
 
       const processingTime = Date.now() - startTime;
@@ -303,8 +304,10 @@ Begin analysis now.
     console.log(`[BannerAgent] Converting ${path.basename(docPath)} to PDF via LibreOffice`);
 
     try {
-      const outputDir = path.dirname(docPath);
-      const pdfPath = docPath.replace(/\.(doc|docx)$/i, '.pdf');
+      // Use temp directory for PDF output (don't pollute source folder)
+      const outputDir = await fs.mkdtemp(path.join(os.tmpdir(), 'banner-pdf-'));
+      const baseName = path.basename(docPath).replace(/\.(doc|docx)$/i, '.pdf');
+      const pdfPath = path.join(outputDir, baseName);
 
       // Find LibreOffice in common locations
       const libreofficePaths = [
@@ -521,7 +524,6 @@ Begin analysis now.
     originalFilePath: string,
     outputFolder: string,
     scratchpadEntries?: Array<{ timestamp: string; action: string; content: string }>,
-    pdfPath?: string,
     images?: ProcessedImage[]
   ): Promise<void> {
     try {
@@ -547,18 +549,6 @@ Begin analysis now.
         const scratchpadPath = path.join(outputDir, scratchpadFilename);
         const markdown = formatScratchpadAsMarkdown('BannerAgent', scratchpadEntries);
         await fs.writeFile(scratchpadPath, markdown, 'utf-8');
-      }
-
-      // Save PDF so we can see what the model was shown (before image conversion)
-      if (pdfPath) {
-        try {
-          const pdfFilename = `banner-${baseName}-converted.pdf`;
-          const pdfOutputPath = path.join(outputDir, pdfFilename);
-          await fs.copyFile(pdfPath, pdfOutputPath);
-          console.log(`[BannerAgent] Saved converted PDF: ${pdfFilename}`);
-        } catch (pdfError) {
-          console.warn(`[BannerAgent] Failed to save PDF: ${pdfError}`);
-        }
       }
 
       // Save images so we can see exactly what the model saw
