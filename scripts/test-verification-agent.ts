@@ -1,0 +1,409 @@
+#!/usr/bin/env npx tsx
+/**
+ * VerificationAgent Test Script
+ *
+ * Purpose: Run VerificationAgent in isolation using existing TableAgent output.
+ *
+ * Usage:
+ *   npx tsx scripts/test-verification-agent.ts [table-output-path]
+ *
+ * Input can be:
+ *   - Nothing: Uses most recent test-pipeline-practice-files output
+ *   - Folder: Looks for table-output*.json and survey*.docx in folder
+ *   - JSON file: Uses specific table output JSON
+ *
+ * Examples:
+ *   npx tsx scripts/test-verification-agent.ts
+ *   # Uses most recent practice-files test output
+ *
+ *   npx tsx scripts/test-verification-agent.ts temp-outputs/test-pipeline-practice-files-xxx
+ *   # Uses specific test output folder
+ *
+ * Output:
+ *   Adds verified-table-output-*.json and scratchpad-verification-*.md to the input folder
+ */
+
+// Load environment variables
+import { loadEnvConfig } from '@next/env';
+loadEnvConfig(process.cwd());
+
+import fs from 'fs/promises';
+import path from 'path';
+import { verifyAllTables, getIncludedTables, getExcludedTables } from '../src/agents/VerificationAgent';
+import { processSurvey, getSurveyStats } from '../src/lib/processors/SurveyProcessor';
+import { DataMapProcessor } from '../src/lib/processors/DataMapProcessor';
+import { TableAgentOutput } from '../src/schemas/tableAgentSchema';
+import { VerboseDataMapType } from '../src/schemas/processingSchemas';
+
+// =============================================================================
+// Configuration
+// =============================================================================
+
+const DEFAULT_TEST_FOLDER = 'temp-outputs';
+const PRACTICE_FILES_PREFIX = 'test-pipeline-practice-files';
+
+const colors = {
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  dim: '\x1b[2m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  cyan: '\x1b[36m',
+  red: '\x1b[31m',
+  magenta: '\x1b[35m',
+};
+
+function log(message: string, color: keyof typeof colors = 'reset') {
+  console.log(`${colors[color]}${message}${colors.reset}`);
+}
+
+// =============================================================================
+// Input Resolution
+// =============================================================================
+
+interface ResolvedPaths {
+  folder: string;
+  tableOutput: string;
+  surveyDoc: string | null;
+  dataMapCsv: string | null;
+  dataMapVerbose: string | null;
+}
+
+async function findMostRecentPracticeFilesRun(): Promise<string | null> {
+  const tempOutputs = path.join(process.cwd(), DEFAULT_TEST_FOLDER);
+
+  try {
+    const entries = await fs.readdir(tempOutputs);
+    const practiceRuns = entries
+      .filter((e) => e.startsWith(PRACTICE_FILES_PREFIX))
+      .sort()
+      .reverse();
+
+    if (practiceRuns.length === 0) return null;
+    return path.join(tempOutputs, practiceRuns[0]);
+  } catch {
+    return null;
+  }
+}
+
+async function resolveInputPaths(inputArg?: string): Promise<ResolvedPaths> {
+  let folder: string;
+
+  if (!inputArg) {
+    // Find most recent practice-files run
+    const recent = await findMostRecentPracticeFilesRun();
+    if (!recent) {
+      throw new Error(
+        `No ${PRACTICE_FILES_PREFIX}* folder found in ${DEFAULT_TEST_FOLDER}. Run test-pipeline.ts first.`
+      );
+    }
+    folder = recent;
+  } else if (inputArg.endsWith('.json')) {
+    // Specific JSON file - use its folder
+    folder = path.dirname(inputArg);
+  } else {
+    // Folder path
+    folder = path.isAbsolute(inputArg) ? inputArg : path.join(process.cwd(), inputArg);
+  }
+
+  // Check folder exists
+  try {
+    await fs.stat(folder);
+  } catch {
+    throw new Error(`Folder not found: ${folder}`);
+  }
+
+  // Find table output JSON
+  const files = await fs.readdir(folder);
+  const tableOutputFile =
+    inputArg?.endsWith('.json') && path.basename(inputArg).startsWith('table-output')
+      ? path.basename(inputArg)
+      : files.find((f) => f.startsWith('table-output') && f.endsWith('.json'));
+
+  if (!tableOutputFile) {
+    throw new Error(`No table-output*.json found in ${folder}`);
+  }
+
+  // Find survey document (optional)
+  const surveyFile = files.find(
+    (f) => f.toLowerCase().includes('survey') && (f.endsWith('.docx') || f.endsWith('.doc'))
+  );
+
+  // Find datamap CSV (optional - for context)
+  // First check the folder itself, then check practice-files if this is a test-pipeline output
+  let dataMapCsv: string | null = null;
+  let dataMapVerbose: string | null = null;
+
+  // Check for CSV in current folder
+  const csvInFolder = files.find((f) => f.toLowerCase().includes('datamap') && f.endsWith('.csv'));
+  if (csvInFolder) {
+    dataMapCsv = path.join(folder, csvInFolder);
+  } else {
+    // Check practice-files folder
+    const practiceFilesPath = path.join(process.cwd(), 'data/test-data/practice-files');
+    try {
+      const practiceFiles = await fs.readdir(practiceFilesPath);
+      const practiceCsv = practiceFiles.find(
+        (f) => f.toLowerCase().includes('datamap') && f.endsWith('.csv')
+      );
+      if (practiceCsv) {
+        dataMapCsv = path.join(practiceFilesPath, practiceCsv);
+      }
+    } catch {
+      // Ignore if practice-files doesn't exist
+    }
+  }
+
+  // Check for verbose JSON in current folder (case-insensitive)
+  const verboseInFolder = files.find(
+    (f) => f.toLowerCase().includes('datamap-verbose') && f.endsWith('.json')
+  );
+  if (verboseInFolder) {
+    dataMapVerbose = path.join(folder, verboseInFolder);
+  }
+
+  // Find survey document - check folder then practice-files
+  let surveyPath: string | null = null;
+  if (surveyFile) {
+    surveyPath = path.join(folder, surveyFile);
+  } else {
+    // Check practice-files folder
+    const practiceFilesPath = path.join(process.cwd(), 'data/test-data/practice-files');
+    try {
+      const practiceFiles = await fs.readdir(practiceFilesPath);
+      const practiceSurvey = practiceFiles.find(
+        (f) => f.toLowerCase().includes('survey') && (f.endsWith('.docx') || f.endsWith('.doc'))
+      );
+      if (practiceSurvey) {
+        surveyPath = path.join(practiceFilesPath, practiceSurvey);
+      }
+    } catch {
+      // Ignore if practice-files doesn't exist
+    }
+  }
+
+  return {
+    folder,
+    tableOutput: path.join(folder, tableOutputFile),
+    surveyDoc: surveyPath,
+    dataMapCsv,
+    dataMapVerbose,
+  };
+}
+
+// =============================================================================
+// Data Loading
+// =============================================================================
+
+async function loadTableAgentOutput(filePath: string): Promise<TableAgentOutput[]> {
+  const content = await fs.readFile(filePath, 'utf-8');
+  const data = JSON.parse(content);
+
+  // Handle enhanced output format (with processingInfo)
+  if (data.results && Array.isArray(data.results)) {
+    return data.results;
+  }
+
+  // Direct array
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  throw new Error('Could not find TableAgentOutput array in JSON file');
+}
+
+async function loadVerboseDataMap(
+  verbosePath: string | null,
+  csvPath: string | null,
+  outputFolder: string
+): Promise<VerboseDataMapType[]> {
+  // Try verbose JSON first
+  if (verbosePath) {
+    try {
+      const content = await fs.readFile(verbosePath, 'utf-8');
+      const data = JSON.parse(content);
+      if (Array.isArray(data)) return data;
+      if (data.variables && Array.isArray(data.variables)) return data.variables;
+      if (data.verbose && Array.isArray(data.verbose)) return data.verbose;
+    } catch {
+      // Fall through to CSV
+    }
+  }
+
+  // Try processing CSV
+  if (csvPath) {
+    try {
+      const processor = new DataMapProcessor();
+      const result = await processor.processDataMap(csvPath, undefined, outputFolder);
+      return result.verbose as VerboseDataMapType[];
+    } catch (error) {
+      log(`Warning: Could not process datamap CSV: ${error}`, 'yellow');
+    }
+  }
+
+  // Return empty array - verification will work but without datamap context
+  return [];
+}
+
+// =============================================================================
+// Main
+// =============================================================================
+
+async function main() {
+  log('', 'reset');
+  log('='.repeat(60), 'magenta');
+  log('  VerificationAgent Test Script', 'bright');
+  log('='.repeat(60), 'magenta');
+  log('', 'reset');
+
+  // Resolve input paths
+  const inputArg = process.argv[2];
+  let paths: ResolvedPaths;
+
+  try {
+    paths = await resolveInputPaths(inputArg);
+  } catch (error) {
+    log(`ERROR: ${error instanceof Error ? error.message : String(error)}`, 'red');
+    log('', 'reset');
+    log('Usage:', 'yellow');
+    log('  npx tsx scripts/test-verification-agent.ts              # Use most recent practice-files run', 'dim');
+    log('  npx tsx scripts/test-verification-agent.ts <folder>     # Use specific test output folder', 'dim');
+    log('  npx tsx scripts/test-verification-agent.ts <file.json>  # Use specific table output JSON', 'dim');
+    process.exit(1);
+  }
+
+  log(`Folder:       ${paths.folder}`, 'blue');
+  log(`Table Output: ${path.basename(paths.tableOutput)}`, 'dim');
+  log(`Survey Doc:   ${paths.surveyDoc ? path.basename(paths.surveyDoc) : '(not found)'}`, paths.surveyDoc ? 'dim' : 'yellow');
+  log(`DataMap:      ${paths.dataMapCsv ? path.basename(paths.dataMapCsv) : paths.dataMapVerbose ? path.basename(paths.dataMapVerbose) : '(not found)'}`, 'dim');
+  log('', 'reset');
+
+  // Load table agent output
+  log('Loading TableAgent output...', 'blue');
+  let tableOutput: TableAgentOutput[];
+  try {
+    tableOutput = await loadTableAgentOutput(paths.tableOutput);
+    const totalTables = tableOutput.reduce((sum, g) => sum + g.tables.length, 0);
+    log(`  Loaded ${tableOutput.length} question groups, ${totalTables} tables`, 'green');
+  } catch (error) {
+    log(`ERROR loading table output: ${error instanceof Error ? error.message : String(error)}`, 'red');
+    process.exit(1);
+  }
+
+  // Load datamap
+  log('Loading datamap...', 'blue');
+  const outputFolderName = path.basename(paths.folder);
+  const dataMap = await loadVerboseDataMap(paths.dataMapVerbose, paths.dataMapCsv, outputFolderName);
+  log(`  Loaded ${dataMap.length} variables`, dataMap.length > 0 ? 'green' : 'yellow');
+
+  // Process survey document
+  let surveyMarkdown = '';
+  if (paths.surveyDoc) {
+    log('Processing survey document...', 'blue');
+    try {
+      const surveyResult = await processSurvey(paths.surveyDoc, paths.folder);
+      surveyMarkdown = surveyResult.markdown;
+      const stats = getSurveyStats(surveyMarkdown);
+      log(`  Converted to markdown: ${stats.characterCount} chars, ~${stats.estimatedTokens} tokens`, 'green');
+
+      if (surveyResult.warnings.length > 0) {
+        for (const warning of surveyResult.warnings) {
+          log(`  Warning: ${warning}`, 'yellow');
+        }
+      }
+    } catch (error) {
+      log(`  Warning: Survey processing failed: ${error}`, 'yellow');
+      log(`  Continuing without survey context...`, 'dim');
+    }
+  } else {
+    log('No survey document found - running in passthrough mode', 'yellow');
+  }
+
+  // Run VerificationAgent
+  log('', 'reset');
+  log('-'.repeat(60), 'cyan');
+  log('Running VerificationAgent...', 'bright');
+  log('-'.repeat(60), 'cyan');
+  log('', 'reset');
+
+  const startTime = Date.now();
+  const totalInputTables = tableOutput.reduce((sum, g) => sum + g.tables.length, 0);
+
+  try {
+    const results = await verifyAllTables(tableOutput, surveyMarkdown, dataMap, {
+      outputFolder: outputFolderName,
+      onProgress: (completed, total, tableId) => {
+        process.stdout.write(`\r  Progress: ${completed}/${total} tables (${tableId})...`);
+      },
+    });
+    console.log(''); // Clear progress line
+
+    const duration = Date.now() - startTime;
+
+    // Summary
+    log('', 'reset');
+    log('='.repeat(60), 'green');
+    log('  Processing Complete', 'bright');
+    log('='.repeat(60), 'green');
+
+    const includedTables = getIncludedTables(results);
+    const excludedTables = getExcludedTables(results);
+
+    log(`  Duration:       ${(duration / 1000).toFixed(1)}s`, 'reset');
+    log(`  Input tables:   ${totalInputTables}`, 'reset');
+    log(`  Output tables:  ${results.tables.length}`, 'reset');
+    log(`  Included:       ${includedTables.length}`, 'reset');
+    log(`  Excluded:       ${excludedTables.length}`, excludedTables.length > 0 ? 'yellow' : 'reset');
+    log(`  Modified:       ${results.metadata.tablesModified}`, results.metadata.tablesModified > 0 ? 'green' : 'reset');
+    log(`  Split:          ${results.metadata.tablesSplit}`, results.metadata.tablesSplit > 0 ? 'green' : 'reset');
+    log(`  Confidence:     ${(results.metadata.averageConfidence * 100).toFixed(1)}%`, results.metadata.averageConfidence >= 0.8 ? 'green' : results.metadata.averageConfidence >= 0.6 ? 'yellow' : 'red');
+
+    // Show changes summary
+    if (results.allChanges.length > 0) {
+      log('', 'reset');
+      log('Changes made:', 'bright');
+      for (const { tableId, changes } of results.allChanges.slice(0, 10)) {
+        log(`  ${tableId}:`, 'cyan');
+        for (const change of changes.slice(0, 3)) {
+          log(`    - ${change}`, 'dim');
+        }
+        if (changes.length > 3) {
+          log(`    ... and ${changes.length - 3} more`, 'dim');
+        }
+      }
+      if (results.allChanges.length > 10) {
+        log(`  ... and ${results.allChanges.length - 10} more tables`, 'dim');
+      }
+    }
+
+    // Show excluded tables
+    if (excludedTables.length > 0) {
+      log('', 'reset');
+      log('Excluded tables:', 'yellow');
+      for (const table of excludedTables.slice(0, 5)) {
+        log(`  ${table.tableId}: ${table.excludeReason}`, 'dim');
+      }
+      if (excludedTables.length > 5) {
+        log(`  ... and ${excludedTables.length - 5} more`, 'dim');
+      }
+    }
+
+    log('', 'reset');
+    log(`Output: ${paths.folder}/`, 'green');
+    log('', 'reset');
+
+  } catch (error) {
+    log(``, 'reset');
+    log(`ERROR: ${error instanceof Error ? error.message : String(error)}`, 'red');
+    if (error instanceof Error && error.stack) {
+      log(error.stack, 'dim');
+    }
+    process.exit(1);
+  }
+}
+
+main().catch((error) => {
+  console.error('Unhandled error:', error);
+  process.exit(1);
+});

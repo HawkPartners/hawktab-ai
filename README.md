@@ -142,6 +142,10 @@ npx tsx scripts/test-pipeline.ts
 # TableAgent only (table structure analysis)
 npx tsx scripts/test-table-agent.ts
 
+# VerificationAgent only (enhance tables using survey document)
+npx tsx scripts/test-verification-agent.ts                     # Uses most recent pipeline output
+npx tsx scripts/test-verification-agent.ts [folder]            # Uses specific output folder
+
 # R script generation from existing TableAgent output
 npx tsx scripts/test-r-script-v2.ts
 
@@ -156,14 +160,15 @@ npx tsx scripts/export-excel.ts [sessionId]        # Uses specific session
 - `results/crosstabs.xlsx` - Formatted Excel workbook (Antares-style)
 - `pipeline-summary.json` - Run metadata and timing
 
-The pipeline runs 7 steps:
+The pipeline runs 8 steps:
 1. **DataMapProcessor** - Parse datamap CSV with SPSS metadata
 2. **BannerAgent** - Extract banner structure from PDF/DOCX
 3. **CrosstabAgent** - Validate and generate R expressions for cuts
 4. **TableAgent** - Analyze variables and generate table definitions
-5. **RScriptGeneratorV2** - Generate R script with derived tables (T2B/B2B, Top 3)
-6. **R Execution** - Run R script to calculate tables with significance testing
-7. **ExcelFormatter** - Format tables.json into Antares-style Excel workbook
+5. **VerificationAgent** - Enhance tables using survey document (fix labels, add NETs, T2B)
+6. **RScriptGeneratorV2** - Generate R script with derived tables
+7. **R Execution** - Run R script to calculate tables with significance testing
+8. **ExcelFormatter** - Format tables.json into Antares-style Excel workbook
 
 ### Testing (UI)
 
@@ -179,7 +184,7 @@ Upload files via http://localhost:3000:
 ```
 hawktab-ai/
 ├── src/
-│   ├── agents/           # AI agents (Banner, Crosstab, Table)
+│   ├── agents/           # AI agents (Banner, Crosstab, Table, Verification)
 │   ├── app/api/          # API endpoints
 │   ├── lib/
 │   │   ├── excel/        # ExcelFormatter and table renderers

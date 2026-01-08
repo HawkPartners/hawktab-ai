@@ -38,7 +38,18 @@ Review the practice-files test output against Joe's tabs. Capture all difference
 
 ## Part 2: VerificationAgent
 
-**Status**: NOT STARTED (begins after Part 1 complete)
+**Status**: ARCHITECTURE COMPLETE - Review output and track bugs
+
+**Test Output Location**: `temp-outputs/test-pipeline-practice-files-2026-01-04T19-20-00-967Z/`
+- `verified-table-output-*.json` - VerificationAgent output
+- `scratchpad-verification-*.md` - Agent reasoning traces
+- `bugs.md` - Track issues found during review
+
+**Next Steps**:
+1. Review verified-table-output JSON for correctness
+2. Review scratchpad for reasoning quality
+3. Log issues to bugs.md (screener handling, edge cases, etc.)
+4. Iterate on prompt as needed
 
 ### What It Does
 
@@ -299,7 +310,7 @@ User Uploads → BannerAgent → CrosstabAgent → TableAgent → VerificationAg
 | File | Purpose |
 |------|---------|
 | `src/agents/TableAgent.ts` | Table structure decisions |
-| `src/agents/VerificationAgent.ts` | Survey-aware optimization (to be created) |
+| `src/agents/VerificationAgent.ts` | Survey-aware optimization |
 | `src/lib/r/RScriptGeneratorV2.ts` | R script generation |
 | `src/lib/excel/ExcelFormatter.ts` | Excel output formatting |
 | `scripts/test-pipeline.ts` | End-to-end test script |
@@ -318,4 +329,5 @@ Primary test case: `data/test-data/practice-files/`
 ---
 
 *Created: January 6, 2026*
-*Status: Part 1 complete, Part 2 next*
+*Updated: January 7, 2026*
+*Status: Part 1 complete, Part 2 architecture complete (review pending)*
