@@ -55,10 +55,16 @@ export type ExtendedTableRow = z.infer<typeof ExtendedTableRowSchema>;
 
 /**
  * Extended table definition with derived table and exclusion support.
+ *
+ * NOTE: questionId is required for Azure OpenAI structured output compatibility.
+ * The agent outputs it (can be empty string), and we overwrite with the correct value after.
  */
 export const ExtendedTableDefinitionSchema = z.object({
   /** Unique table ID */
   tableId: z.string(),
+
+  /** Question ID (e.g., "S1", "A3", "B2") - agent outputs empty string, we overwrite after */
+  questionId: z.string(),
 
   /** Display title */
   title: z.string(),
@@ -198,13 +204,16 @@ export function toExtendedRow(row: z.infer<typeof TableRowSchema>): ExtendedTabl
 }
 
 /**
- * Convert a standard TableDefinition to ExtendedTableDefinition with defaults.
+ * Convert a standard TableDefinition to ExtendedTableDefinition.
+ * questionId defaults to empty string - caller should overwrite with correct value.
  */
 export function toExtendedTable(
-  table: z.infer<typeof TableDefinitionSchema>
+  table: z.infer<typeof TableDefinitionSchema>,
+  questionId: string = ''
 ): ExtendedTableDefinition {
   return {
     tableId: table.tableId,
+    questionId,
     title: table.title,
     tableType: table.tableType,
     rows: table.rows.map(toExtendedRow),
@@ -218,12 +227,13 @@ export function toExtendedTable(
 
 /**
  * Create a passthrough output (no changes).
+ * questionId is empty - will be overwritten by caller.
  */
 export function createPassthroughOutput(
   table: z.infer<typeof TableDefinitionSchema>
 ): VerificationAgentOutput {
   return {
-    tables: [toExtendedTable(table)],
+    tables: [toExtendedTable(table, '')],
     changes: [],
     confidence: 1.0,
   };

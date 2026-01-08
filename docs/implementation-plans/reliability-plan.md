@@ -124,7 +124,7 @@ for (const group of questionGroups) {
 
 ## Part 3: Significance Testing
 
-**Status**: NOT STARTED
+**Status**: COMPLETE
 
 Our significance testing differs from Joe's WinCross output. Two fixes needed.
 
@@ -168,6 +168,84 @@ That's it. No configuration schemas, no optional features.
 3. If they match, Part 3 is complete
 
 **Detailed Plan**: See `docs/implementation-plans/significance-testing-plan.md`
+
+---
+
+## Part 3b: SPSS Validation Clarity
+
+**Status**: COMPLETE
+
+### The Problem
+
+Current SPSS validation logs show scary-looking mismatches that are actually expected:
+
+```
+- 1 variables in datamap missing from SPSS file
+- 2 variables in SPSS file not documented in datamap
+```
+
+Users may think something is wrong when it's actually fine. The mismatches are explainable:
+- `834_flag` → `x834_flag` (SPSS can't start variable names with numbers)
+- `region_dupe1` (SPSS duplicate column not in datamap)
+
+### The Solution: Categorize & Explain
+
+Use a waterfall approach to categorize each mismatch:
+
+```
+All Mismatches
+    │
+    ▼
+┌─────────────────────────────────┐
+│ Try x-prefix: "x" + varName     │  → Found? → "SPSS numeric-start naming"
+└─────────────────────────────────┘
+    │ remaining
+    ▼
+┌─────────────────────────────────┐
+│ Try dupe pattern: *_dupe*       │  → Found? → "SPSS duplicate column"
+└─────────────────────────────────┘
+    │ remaining
+    ▼
+┌─────────────────────────────────┐
+│ Try case-insensitive match      │  → Found? → "Case mismatch (harmless)"
+└─────────────────────────────────┘
+    │ remaining
+    ▼
+┌─────────────────────────────────┐
+│ Whatever's left = UNEXPECTED    │  → Flag for user attention
+└─────────────────────────────────┘
+```
+
+### New Log Output
+
+```
+SPSS Validation Complete:
+- Matched 191/192 variables (99%)
+
+Explained differences:
+  • 834_flag ↔ x834_flag (numeric-start naming convention)
+  • region ↔ region_dupe1 (duplicate column)
+
+Unexpected differences: 0
+
+✓ All differences resolved - data is consistent
+```
+
+### Implementation
+
+**File**: `src/lib/processors/SPSSReader.ts`
+
+1. Add `categorizeMismatch()` function that tries each pattern
+2. Update `generateValidationSummary()` to show categorized output
+3. Only flag "Unexpected differences" as needing attention
+
+**Level of Effort**: ~30-60 minutes
+
+### Exit Criteria
+
+- Validation logs show categorized mismatches with explanations
+- Users can distinguish "expected SPSS behavior" from "actual problems"
+- Zero unexplained mismatches for practice-files dataset
 
 ---
 
@@ -451,4 +529,4 @@ Primary test case: `data/test-data/practice-files/`
 
 *Created: January 6, 2026*
 *Updated: January 8, 2026*
-*Status: Parts 1-2 complete, Part 3 ready for implementation, Parts 4-6 pending*
+*Status: Parts 1-3b complete, Parts 4-6 pending*
