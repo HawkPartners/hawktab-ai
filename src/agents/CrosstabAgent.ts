@@ -10,7 +10,13 @@ import { generateText, Output, stepCountIs } from 'ai';
 import { ValidationResultSchema, ValidatedGroupSchema, combineValidationResults, type ValidationResultType, type ValidatedGroupType } from '../schemas/agentOutputSchema';
 import { DataMapType } from '../schemas/dataMapSchema';
 import { BannerGroupType, BannerPlanInputType } from '../schemas/bannerPlanSchema';
-import { getReasoningModel, getReasoningModelName, getReasoningModelTokenLimit, getPromptVersions } from '../lib/env';
+import {
+  getCrosstabModel,
+  getCrosstabModelName,
+  getCrosstabModelTokenLimit,
+  getCrosstabReasoningEffort,
+  getPromptVersions,
+} from '../lib/env';
 import { crosstabScratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
 import { getCrosstabPrompt } from '../prompts';
 import fs from 'fs/promises';
@@ -51,14 +57,20 @@ Begin validation now.
 
     // Use generateText with structured output and multi-step tool calling
     const { output } = await generateText({
-      model: getReasoningModel(),  // Task-based: reasoning model for complex validation
+      model: getCrosstabModel(),  // Task-based: crosstab model for complex validation
       system: systemPrompt,
       prompt: `Validate banner group "${group.groupName}" with ${group.columns.length} columns against the data map.`,
       tools: {
         scratchpad: crosstabScratchpadTool,
       },
       stopWhen: stepCountIs(25),  // AI SDK 5+: replaces maxTurns/maxSteps
-      maxOutputTokens: Math.min(getReasoningModelTokenLimit(), 10000),
+      maxOutputTokens: Math.min(getCrosstabModelTokenLimit(), 10000),
+      // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+      providerOptions: {
+        openai: {
+          reasoningEffort: getCrosstabReasoningEffort(),
+        },
+      },
       output: Output.object({
         schema: ValidatedGroupSchema,
       }),
@@ -112,7 +124,8 @@ export async function processAllGroups(
   clearScratchpadEntries();
 
   logEntry(`[CrosstabAgent] Starting group-by-group processing: ${bannerPlan.bannerCuts.length} groups`);
-  logEntry(`[CrosstabAgent] Using model: ${getReasoningModelName()}`);
+  logEntry(`[CrosstabAgent] Using model: ${getCrosstabModelName()}`);
+  logEntry(`[CrosstabAgent] Reasoning effort: ${getCrosstabReasoningEffort()}`);
 
   const results: ValidatedGroupType[] = [];
 
@@ -161,7 +174,8 @@ export async function processAllGroupsParallel(
   };
 
   logEntry(`[CrosstabAgent] Starting parallel processing: ${bannerPlan.bannerCuts.length} groups`);
-  logEntry(`[CrosstabAgent] Using model: ${getReasoningModelName()}`);
+  logEntry(`[CrosstabAgent] Using model: ${getCrosstabModelName()}`);
+  logEntry(`[CrosstabAgent] Reasoning effort: ${getCrosstabReasoningEffort()}`);
 
   try {
     logEntry(`[CrosstabAgent] Starting parallel group processing`);
@@ -231,7 +245,8 @@ async function saveDevelopmentOutputs(
         timestamp: new Date().toISOString(),
         processingMode: 'group-by-group',
         aiProvider: 'azure-openai',
-        model: getReasoningModelName(),
+        model: getCrosstabModelName(),
+        reasoningEffort: getCrosstabReasoningEffort(),
         totalGroups: result.bannerCuts.length,
         totalColumns: result.bannerCuts.reduce((total, group) => total + group.columns.length, 0),
         averageConfidence: result.bannerCuts.length > 0

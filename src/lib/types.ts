@@ -3,6 +3,27 @@
  * Purpose: Common environment, limits, and execution context types for agents and APIs
  */
 
+/**
+ * Reasoning effort levels supported by Azure OpenAI GPT-5 and o-series models
+ * - 'none': No reasoning (GPT-5.1 only)
+ * - 'minimal': Fastest responses, basic reasoning
+ * - 'low': Quick reasoning, good for simple tasks
+ * - 'medium': Default, balanced reasoning (AI SDK default)
+ * - 'high': Deep reasoning, complex tasks
+ * - 'xhigh': Maximum reasoning (GPT-5.1-Codex-Max only)
+ */
+export type ReasoningEffort = 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh';
+
+/**
+ * Per-agent reasoning effort configuration
+ */
+export interface AgentReasoningConfig {
+  crosstabReasoningEffort: ReasoningEffort;
+  bannerReasoningEffort: ReasoningEffort;
+  tableReasoningEffort: ReasoningEffort;
+  verificationReasoningEffort: ReasoningEffort;
+}
+
 export interface ProcessingLimits {
   maxDataMapVariables: number;
   maxBannerColumns: number;
@@ -13,12 +34,14 @@ export interface ProcessingLimits {
   crosstabModelTokens: number;
   bannerModelTokens: number;
   tableModelTokens: number;
+  verificationModelTokens: number;
 }
 
 export interface PromptVersions {
   crosstabPromptVersion: string;
   bannerPromptVersion: string;
   tablePromptVersion: string;
+  verificationPromptVersion: string;
 }
 
 export interface EnvironmentConfig {
@@ -35,6 +58,7 @@ export interface EnvironmentConfig {
   crosstabModel: string;   // e.g., 'o4-mini' - used by CrosstabAgent (complex validation)
   bannerModel: string;     // e.g., 'gpt-5-nano' - used by BannerAgent (vision/extraction)
   tableModel: string;      // e.g., 'gpt-5-nano' - used by TableAgent (table definitions)
+  verificationModel: string; // e.g., 'gpt-5-mini' - used by VerificationAgent (survey enhancement)
 
   // Deprecated (optional, for rollback purposes)
   openaiApiKey?: string;
@@ -44,6 +68,7 @@ export interface EnvironmentConfig {
   tableAgentOnly: boolean;  // Stop after TableAgent, skip R generation (for testing)
   promptVersions: PromptVersions;
   processingLimits: ProcessingLimits;
+  reasoningConfig: AgentReasoningConfig;
 }
 
 export interface FileUploadResult {
