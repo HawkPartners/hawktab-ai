@@ -20,11 +20,11 @@
  *   npx tsx scripts/test-table-agent.ts data/test-data/some-dataset
  *   # Finds datamap CSV in folder (supports inputs/ subfolder)
  *
- *   npx tsx scripts/test-table-agent.ts temp-outputs/output-xxx/dataMap-verbose-xxx.json
+ *   npx tsx scripts/test-table-agent.ts outputs/some-dataset/pipeline-xxx/dataMap-verbose-xxx.json
  *   # Uses existing verbose JSON
  *
  * Output:
- *   temp-outputs/table-test-<dataset>-<timestamp>/
+ *   outputs/<dataset>/table-<timestamp>/
  */
 
 // Load environment variables
@@ -186,14 +186,16 @@ async function main() {
   log(`Type:  ${input.type}`, 'dim');
   log('', 'reset');
 
-  // Create output folder
+  // Create output folder: outputs/<dataset>/table-<timestamp>/
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const outputFolder = `table-test-${input.name}-${timestamp}`;
+  const outputFolder = `table-${timestamp}`;
+  const outputDir = path.join(process.cwd(), 'outputs', input.name, outputFolder);
+  await fs.mkdir(outputDir, { recursive: true });
 
   // Load datamap
   let dataMap: VerboseDataMapType[];
   try {
-    dataMap = await loadDataMap(input, outputFolder);
+    dataMap = await loadDataMap(input, outputDir);
     log(`Loaded ${dataMap.length} total variables`, 'green');
   } catch (error) {
     log(`ERROR loading datamap: ${error instanceof Error ? error.message : String(error)}`, 'red');
@@ -224,7 +226,7 @@ async function main() {
   // Preview grouping
   const groups = groupDataMapByParent(dataMap);
   log(`Question groups: ${groups.length}`, 'green');
-  log(`Output folder: temp-outputs/${outputFolder}/`, 'dim');
+  log(`Output folder: outputs/${input.name}/${outputFolder}/`, 'dim');
 
   // Run TableAgent
   log('', 'reset');
@@ -236,7 +238,7 @@ async function main() {
   const startTime = Date.now();
 
   try {
-    const { results } = await processDataMap(dataMap, outputFolder, (completed, total) => {
+    const { results } = await processDataMap(dataMap, outputDir, (completed, total) => {
       process.stdout.write(`\r  Progress: ${completed}/${total} question groups...`);
     });
     console.log(''); // Clear progress line
@@ -287,7 +289,7 @@ async function main() {
     }
 
     log('', 'reset');
-    log(`Output: temp-outputs/${outputFolder}/`, 'green');
+    log(`Output: outputs/${input.name}/${outputFolder}/`, 'green');
     log('', 'reset');
 
   } catch (error) {

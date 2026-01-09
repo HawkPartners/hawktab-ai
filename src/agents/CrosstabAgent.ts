@@ -29,12 +29,13 @@ const getCrosstabValidationInstructions = (): string => {
 };
 
 // Process single banner group using Vercel AI SDK
+const MAX_RETRIES = 2;
+
 export async function processGroup(dataMap: DataMapType, group: BannerGroupType): Promise<ValidatedGroupType> {
   console.log(`[CrosstabAgent] Processing group: ${group.groupName} (${group.columns.length} columns)`);
 
-  try {
-    // Build system prompt with context injection
-    const systemPrompt = `
+  // Build system prompt with context injection
+  const systemPrompt = `
 ${getCrosstabValidationInstructions()}
 
 CURRENT CONTEXT DATA:
@@ -55,63 +56,82 @@ PROCESSING REQUIREMENTS:
 Begin validation now.
 `;
 
-    // Use generateText with structured output and multi-step tool calling
-    const { output } = await generateText({
-      model: getCrosstabModel(),  // Task-based: crosstab model for complex validation
-      system: systemPrompt,
-      prompt: `Validate banner group "${group.groupName}" with ${group.columns.length} columns against the data map.`,
-      tools: {
-        scratchpad: crosstabScratchpadTool,
-      },
-      stopWhen: stepCountIs(25),  // AI SDK 5+: replaces maxTurns/maxSteps
-      maxOutputTokens: Math.min(getCrosstabModelTokenLimit(), 10000),
-      // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
-      providerOptions: {
-        openai: {
-          reasoningEffort: getCrosstabReasoningEffort(),
-        },
-      },
-      output: Output.object({
-        schema: ValidatedGroupSchema,
-      }),
-    });
+  let lastError: Error | null = null;
 
-    if (!output || !output.columns) {
-      throw new Error(`Invalid agent response for group ${group.groupName}`);
+  // Retry loop - try up to MAX_RETRIES + 1 times
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (attempt > 0) {
+      console.log(`[CrosstabAgent] Retry attempt ${attempt}/${MAX_RETRIES} for group: ${group.groupName}`);
     }
 
-    console.log(`[CrosstabAgent] Group ${group.groupName} processed successfully - ${output.columns.length} columns validated`);
+    try {
+      // Use generateText with structured output and multi-step tool calling
+      const { output } = await generateText({
+        model: getCrosstabModel(),  // Task-based: crosstab model for complex validation
+        system: systemPrompt,
+        prompt: `Validate banner group "${group.groupName}" with ${group.columns.length} columns against the data map.`,
+        tools: {
+          scratchpad: crosstabScratchpadTool,
+        },
+        stopWhen: stepCountIs(25),  // AI SDK 5+: replaces maxTurns/maxSteps
+        maxOutputTokens: Math.min(getCrosstabModelTokenLimit(), 100000),
+        // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+        providerOptions: {
+          openai: {
+            reasoningEffort: getCrosstabReasoningEffort(),
+          },
+        },
+        output: Output.object({
+          schema: ValidatedGroupSchema,
+        }),
+      });
 
-    return output;
+      if (!output || !output.columns) {
+        throw new Error(`Invalid agent response for group ${group.groupName}`);
+      }
 
-  } catch (error) {
-    console.error(`[CrosstabAgent] Error processing group ${group.groupName}:`, error);
+      console.log(`[CrosstabAgent] Group ${group.groupName} processed successfully - ${output.columns.length} columns validated`);
 
-    // Check if it's a step limit error (stopWhen condition reached)
-    const isStepLimitError = error instanceof Error &&
-      (error.message.includes('step') || error.message.includes('limit') || error.message.includes('maximum'));
-    const errorType = isStepLimitError
-      ? 'Step limit reached - consider simplifying expressions'
-      : 'Processing error';
+      return output;
 
-    // Return fallback result with low confidence
-    return {
-      groupName: group.groupName,
-      columns: group.columns.map(col => ({
-        name: col.name,
-        adjusted: `# Error: ${errorType} for "${col.original}"`,
-        confidence: 0.0,
-        reason: `${errorType}: ${error instanceof Error ? error.message : 'Unknown error'}. Manual review required.`
-      }))
-    };
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      console.error(`[CrosstabAgent] Error processing group ${group.groupName} (attempt ${attempt + 1}/${MAX_RETRIES + 1}):`, lastError.message);
+
+      // Continue to retry unless it's the last attempt
+      if (attempt < MAX_RETRIES) {
+        continue;
+      }
+    }
   }
+
+  // All retries exhausted - return fallback result
+  console.error(`[CrosstabAgent] All retries exhausted for group ${group.groupName}`);
+
+  // Check if it's a step limit error (stopWhen condition reached)
+  const isStepLimitError = lastError &&
+    (lastError.message.includes('step') || lastError.message.includes('limit') || lastError.message.includes('maximum'));
+  const errorType = isStepLimitError
+    ? 'Step limit reached - consider simplifying expressions'
+    : 'Processing error';
+
+  // Return fallback result with zero confidence (will be skipped by R generator)
+  return {
+    groupName: group.groupName,
+    columns: group.columns.map(col => ({
+      name: col.name,
+      adjusted: `# Error: ${errorType} for "${col.original}"`,
+      confidence: 0.0,
+      reason: `${errorType}: ${lastError?.message || 'Unknown error'}. Manual review required.`
+    }))
+  };
 }
 
 // Process all banner groups using group-by-group strategy
 export async function processAllGroups(
   dataMap: DataMapType,
   bannerPlan: BannerPlanInputType,
-  outputFolder?: string,
+  outputDir?: string,
   onProgress?: (completedGroups: number, totalGroups: number) => void
 ): Promise<{ result: ValidationResultType; processingLog: string[] }> {
   const processingLog: string[] = [];
@@ -153,8 +173,8 @@ export async function processAllGroups(
   logEntry(`[CrosstabAgent] Collected ${scratchpadEntries.length} scratchpad entries`);
 
   // Save outputs with processing log and scratchpad
-  if (outputFolder) {
-    await saveDevelopmentOutputs(combinedResult, outputFolder, processingLog, scratchpadEntries);
+  if (outputDir) {
+    await saveDevelopmentOutputs(combinedResult, outputDir, processingLog, scratchpadEntries);
   }
 
   logEntry(`[CrosstabAgent] All ${results.length} groups processed successfully - Total columns: ${combinedResult.bannerCuts.reduce((total, group) => total + group.columns.length, 0)}`);
@@ -226,17 +246,18 @@ export const isValidAgentResult = (result: unknown): result is ValidationResultT
 //   - Added: scratchpadEntries for reasoning transparency
 async function saveDevelopmentOutputs(
   result: ValidationResultType,
-  outputFolder: string,
+  outputDir: string,
   processingLog?: string[],
   scratchpadEntries?: Array<{ timestamp: string; action: string; content: string }>
 ): Promise<void> {
   try {
-    const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolder);
-    await fs.mkdir(outputDir, { recursive: true });
+    // Create crosstab subfolder for all CrosstabAgent outputs
+    const crosstabDir = path.join(outputDir, 'crosstab');
+    await fs.mkdir(crosstabDir, { recursive: true });
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `crosstab-output-${timestamp}.json`;
-    const filePath = path.join(outputDir, filename);
+    const filePath = path.join(crosstabDir, filename);
 
     // Enhanced output with processing information
     const enhancedOutput = {
@@ -262,15 +283,22 @@ async function saveDevelopmentOutputs(
 
     await fs.writeFile(filePath, JSON.stringify(enhancedOutput, null, 2), 'utf-8');
 
+    // Save raw output (just what the agent produced - for golden dataset comparison)
+    const rawOutput = {
+      bannerCuts: result.bannerCuts,
+    };
+    const rawPath = path.join(crosstabDir, 'crosstab-output-raw.json');
+    await fs.writeFile(rawPath, JSON.stringify(rawOutput, null, 2), 'utf-8');
+
     // Save scratchpad trace as separate markdown file for easy reading
     if (scratchpadEntries && scratchpadEntries.length > 0) {
       const scratchpadFilename = `scratchpad-crosstab-${timestamp}.md`;
-      const scratchpadPath = path.join(outputDir, scratchpadFilename);
+      const scratchpadPath = path.join(crosstabDir, scratchpadFilename);
       const markdown = formatScratchpadAsMarkdown('CrosstabAgent', scratchpadEntries);
       await fs.writeFile(scratchpadPath, markdown, 'utf-8');
-      console.log(`[CrosstabAgent] Development output saved: ${filename}, ${scratchpadFilename}`);
+      console.log(`[CrosstabAgent] Development output saved to crosstab/: ${filename}, ${scratchpadFilename}`);
     } else {
-      console.log(`[CrosstabAgent] Development output saved: ${filename}`);
+      console.log(`[CrosstabAgent] Development output saved to crosstab/: ${filename}`);
     }
   } catch (error) {
     console.error('[CrosstabAgent] Failed to save development outputs:', error);

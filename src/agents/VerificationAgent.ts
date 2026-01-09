@@ -40,6 +40,9 @@ import { getVerificationPrompt } from '../prompts/verification';
 import fs from 'fs/promises';
 import path from 'path';
 
+// Retry configuration for transient failures
+const MAX_RETRIES = 2;
+
 // =============================================================================
 // Types
 // =============================================================================
@@ -57,8 +60,8 @@ export interface VerificationInput {
 }
 
 export interface VerificationProcessingOptions {
-  /** Output folder for development outputs */
-  outputFolder?: string;
+  /** Output directory for development outputs (full path) */
+  outputDir?: string;
   /** Progress callback */
   onProgress?: (completed: number, total: number, tableId: string) => void;
   /** Whether to skip verification and pass through (e.g., when no survey available) */
@@ -81,9 +84,8 @@ export async function verifyTable(input: VerificationInput): Promise<Verificatio
     return createPassthroughOutput(input.table);
   }
 
-  try {
-    // Build system prompt with survey and datamap context
-    const systemPrompt = `
+  // Build system prompt with survey and datamap context
+  const systemPrompt = `
 ${getVerificationPrompt()}
 
 ## Survey Document
@@ -97,7 +99,7 @@ ${input.datamapContext}
 </datamap>
 `;
 
-    const userPrompt = `
+  const userPrompt = `
 Review this table and output the desired end state:
 
 Question: ${input.questionId} - ${input.questionText}
@@ -108,45 +110,63 @@ ${JSON.stringify(input.table, null, 2)}
 Analyze the table against the survey document. Fix labels, split if needed, add NETs if appropriate, create T2B if it's a scale, or flag for exclusion if low value. Output the tables array representing the desired end state.
 `;
 
-    // Use generateText with structured output
-    const { output } = await generateText({
-      model: getVerificationModel(),
-      system: systemPrompt,
-      prompt: userPrompt,
-      tools: {
-        scratchpad: verificationScratchpadTool,
-      },
-      stopWhen: stepCountIs(15),
-      maxOutputTokens: Math.min(getVerificationModelTokenLimit(), 8000),
-      // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
-      providerOptions: {
-        openai: {
-          reasoningEffort: getVerificationReasoningEffort(),
-        },
-      },
-      output: Output.object({
-        schema: VerificationAgentOutputSchema,
-      }),
-    });
+  let lastError: Error | null = null;
 
-    if (!output || !output.tables || output.tables.length === 0) {
-      console.warn(
-        `[VerificationAgent] Invalid output for table ${input.table.tableId} - passing through`
-      );
-      return createPassthroughOutput(input.table);
+  // Retry loop - try up to MAX_RETRIES + 1 times
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (attempt > 0) {
+      console.log(`[VerificationAgent] Retry attempt ${attempt}/${MAX_RETRIES} for table: ${input.table.tableId}`);
     }
 
-    console.log(
-      `[VerificationAgent] Table ${input.table.tableId} processed - ${output.tables.length} tables, ${output.changes.length} changes, confidence: ${output.confidence.toFixed(2)}`
-    );
+    try {
+      // Use generateText with structured output
+      const { output } = await generateText({
+        model: getVerificationModel(),
+        system: systemPrompt,
+        prompt: userPrompt,
+        tools: {
+          scratchpad: verificationScratchpadTool,
+        },
+        stopWhen: stepCountIs(15),
+        maxOutputTokens: Math.min(getVerificationModelTokenLimit(), 100000),
+        // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+        providerOptions: {
+          openai: {
+            reasoningEffort: getVerificationReasoningEffort(),
+          },
+        },
+        output: Output.object({
+          schema: VerificationAgentOutputSchema,
+        }),
+      });
 
-    return output;
-  } catch (error) {
-    console.error(`[VerificationAgent] Error processing table ${input.table.tableId}:`, error);
+      if (!output || !output.tables || output.tables.length === 0) {
+        console.warn(
+          `[VerificationAgent] Invalid output for table ${input.table.tableId} - passing through`
+        );
+        return createPassthroughOutput(input.table);
+      }
 
-    // Return passthrough on error
-    return createPassthroughOutput(input.table);
+      console.log(
+        `[VerificationAgent] Table ${input.table.tableId} processed - ${output.tables.length} tables, ${output.changes.length} changes, confidence: ${output.confidence.toFixed(2)}`
+      );
+
+      return output;
+
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      console.error(`[VerificationAgent] Error processing table ${input.table.tableId} (attempt ${attempt + 1}/${MAX_RETRIES + 1}):`, lastError.message);
+
+      // Continue to retry unless it's the last attempt
+      if (attempt < MAX_RETRIES) {
+        continue;
+      }
+    }
   }
+
+  // All retries exhausted - return passthrough
+  console.error(`[VerificationAgent] All retries exhausted for table ${input.table.tableId}`);
+  return createPassthroughOutput(input.table);
 }
 
 // =============================================================================
@@ -162,7 +182,7 @@ export async function verifyAllTables(
   verboseDataMap: VerboseDataMapType[],
   options: VerificationProcessingOptions = {}
 ): Promise<VerificationResults> {
-  const { outputFolder, onProgress, passthrough } = options;
+  const { outputDir, onProgress, passthrough } = options;
   const processingLog: string[] = [];
 
   const logEntry = (message: string) => {
@@ -294,10 +314,10 @@ export async function verifyAllTables(
   };
 
   // Save outputs
-  if (outputFolder) {
+  if (outputDir) {
     await saveDevelopmentOutputs(
       verificationResults,
-      outputFolder,
+      outputDir,
       processingLog,
       scratchpadEntries
     );
@@ -360,19 +380,20 @@ export function getExcludedTables(results: VerificationResults): ExtendedTableDe
 
 async function saveDevelopmentOutputs(
   results: VerificationResults,
-  outputFolder: string,
+  outputDir: string,
   processingLog: string[],
   scratchpadEntries: Array<{ timestamp: string; agentName: string; action: string; content: string }>
 ): Promise<void> {
   try {
-    const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolder);
-    await fs.mkdir(outputDir, { recursive: true });
+    // Create verification subfolder for all VerificationAgent outputs
+    const verificationDir = path.join(outputDir, 'verification');
+    await fs.mkdir(verificationDir, { recursive: true });
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 
     // Save verified table output
     const filename = `verified-table-output-${timestamp}.json`;
-    const filePath = path.join(outputDir, filename);
+    const filePath = path.join(verificationDir, filename);
 
     const enhancedOutput = {
       ...results,
@@ -386,15 +407,22 @@ async function saveDevelopmentOutputs(
     };
 
     await fs.writeFile(filePath, JSON.stringify(enhancedOutput, null, 2), 'utf-8');
-    console.log(`[VerificationAgent] Development output saved: ${filename}`);
+    console.log(`[VerificationAgent] Development output saved to verification/: ${filename}`);
+
+    // Save raw output (just what the agent produced - for golden dataset comparison)
+    const rawOutput = {
+      tables: results.tables,
+    };
+    const rawPath = path.join(verificationDir, 'verification-output-raw.json');
+    await fs.writeFile(rawPath, JSON.stringify(rawOutput, null, 2), 'utf-8');
 
     // Save scratchpad trace as separate markdown file
     if (scratchpadEntries.length > 0) {
       const scratchpadFilename = `scratchpad-verification-${timestamp}.md`;
-      const scratchpadPath = path.join(outputDir, scratchpadFilename);
+      const scratchpadPath = path.join(verificationDir, scratchpadFilename);
       const markdown = formatScratchpadAsMarkdown('VerificationAgent', scratchpadEntries);
       await fs.writeFile(scratchpadPath, markdown, 'utf-8');
-      console.log(`[VerificationAgent] Scratchpad saved: ${scratchpadFilename}`);
+      console.log(`[VerificationAgent] Scratchpad saved to verification/: ${scratchpadFilename}`);
     }
   } catch (error) {
     console.error('[VerificationAgent] Failed to save development outputs:', error);

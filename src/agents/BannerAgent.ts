@@ -121,7 +121,7 @@ const getBannerExtractionPrompt = (): string => {
 
 export class BannerAgent {
   // Main entry point - complete banner processing workflow
-  async processDocument(filePath: string, outputFolder?: string): Promise<BannerProcessingResult> {
+  async processDocument(filePath: string, outputDir?: string): Promise<BannerProcessingResult> {
     console.log(`[BannerAgent] Starting document processing: ${path.basename(filePath)}`);
     const startTime = Date.now();
 
@@ -153,8 +153,8 @@ export class BannerAgent {
       const dualOutputs = this.generateDualOutputs(extractionResult);
 
       // Step 6: Save outputs (always save for MVP)
-      if (outputFolder) {
-        await this.saveDevelopmentOutputs(dualOutputs, filePath, outputFolder, scratchpadEntries, images);
+      if (outputDir) {
+        await this.saveDevelopmentOutputs(dualOutputs, filePath, outputDir, scratchpadEntries, images);
       }
 
       const processingTime = Date.now() - startTime;
@@ -178,13 +178,14 @@ export class BannerAgent {
   }
 
   // Agent-based extraction using Vercel AI SDK with vision
+  private static readonly MAX_RETRIES = 2;
+
   private async extractBannerStructureWithAgent(images: ProcessedImage[]): Promise<BannerExtractionResult> {
     console.log(`[BannerAgent] Starting agent-based extraction with ${images.length} images`);
     console.log(`[BannerAgent] Using model: ${getBannerModelName()}`);
     console.log(`[BannerAgent] Reasoning effort: ${getBannerReasoningEffort()}`);
 
-    try {
-      const systemPrompt = `
+    const systemPrompt = `
 ${getBannerExtractionPrompt()}
 
 IMAGES TO ANALYZE:
@@ -200,71 +201,89 @@ PROCESSING REQUIREMENTS:
 Begin analysis now.
 `;
 
-      // CRITICAL: Image format is different in Vercel AI SDK
-      // OpenAI Agents SDK: { type: 'input_image', image: 'data:image/png;base64,...' }
-      // Vercel AI SDK: { type: 'image', image: Buffer.from(base64, 'base64') }
-      const { output } = await generateText({
-        model: getBannerModel(),  // Task-based: banner model for vision/extraction tasks
-        system: systemPrompt,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: 'Analyze the banner plan images and extract column specifications with proper group separation.' },
-              ...images.map(img => ({
-                type: 'image' as const,
-                image: Buffer.from(img.base64, 'base64'),
-                mimeType: `image/${img.format}` as const,
-              })),
-            ],
-          },
-        ],
-        tools: {
-          scratchpad: bannerScratchpadTool,
-        },
-        stopWhen: stepCountIs(15),  // AI SDK 5+: replaces maxTurns/maxSteps
-        maxOutputTokens: Math.min(getBannerModelTokenLimit(), 32000),
-        // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
-        providerOptions: {
-          openai: {
-            reasoningEffort: getBannerReasoningEffort(),
-          },
-        },
-        output: Output.object({
-          schema: BannerExtractionResultSchema,
-        }),
-      });
+    let lastError: Error | null = null;
 
-      if (!output || !output.extractedStructure) {
-        throw new Error('Invalid agent response structure');
+    // Retry loop - try up to MAX_RETRIES + 1 times
+    for (let attempt = 0; attempt <= BannerAgent.MAX_RETRIES; attempt++) {
+      if (attempt > 0) {
+        console.log(`[BannerAgent] Retry attempt ${attempt}/${BannerAgent.MAX_RETRIES}`);
       }
 
-      console.log(`[BannerAgent] Agent extracted ${output.extractedStructure.bannerCuts.length} groups`);
+      try {
+        // CRITICAL: Image format is different in Vercel AI SDK
+        // OpenAI Agents SDK: { type: 'input_image', image: 'data:image/png;base64,...' }
+        // Vercel AI SDK: { type: 'image', image: Buffer.from(base64, 'base64') }
+        const { output } = await generateText({
+          model: getBannerModel(),  // Task-based: banner model for vision/extraction tasks
+          system: systemPrompt,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: 'Analyze the banner plan images and extract column specifications with proper group separation.' },
+                ...images.map(img => ({
+                  type: 'image' as const,
+                  image: Buffer.from(img.base64, 'base64'),
+                  mimeType: `image/${img.format}` as const,
+                })),
+              ],
+            },
+          ],
+          tools: {
+            scratchpad: bannerScratchpadTool,
+          },
+          stopWhen: stepCountIs(15),  // AI SDK 5+: replaces maxTurns/maxSteps
+          maxOutputTokens: Math.min(getBannerModelTokenLimit(), 100000),
+          // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+          providerOptions: {
+            openai: {
+              reasoningEffort: getBannerReasoningEffort(),
+            },
+          },
+          output: Output.object({
+            schema: BannerExtractionResultSchema,
+          }),
+        });
 
-      return output;
+        if (!output || !output.extractedStructure) {
+          throw new Error('Invalid agent response structure');
+        }
 
-    } catch (error) {
-      console.error('[BannerAgent] Agent extraction failed:', error);
+        console.log(`[BannerAgent] Agent extracted ${output.extractedStructure.bannerCuts.length} groups`);
 
-      // Return structured failure result
-      return {
-        success: false,
-        extractionType: 'banner_extraction',
-        timestamp: new Date().toISOString(),
-        extractedStructure: {
-          bannerCuts: [],
-          notes: [],
-          processingMetadata: {
-            totalColumns: 0,
-            groupCount: 0,
-            statisticalLettersUsed: [],
-            processingTimestamp: new Date().toISOString()
-          }
-        },
-        errors: [error instanceof Error ? error.message : 'Agent extraction failed'],
-        warnings: []
-      };
+        return output;
+
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        console.error(`[BannerAgent] Extraction failed (attempt ${attempt + 1}/${BannerAgent.MAX_RETRIES + 1}):`, lastError.message);
+
+        // Continue to retry unless it's the last attempt
+        if (attempt < BannerAgent.MAX_RETRIES) {
+          continue;
+        }
+      }
     }
+
+    // All retries exhausted - return structured failure result
+    console.error('[BannerAgent] All retries exhausted');
+
+    return {
+      success: false,
+      extractionType: 'banner_extraction',
+      timestamp: new Date().toISOString(),
+      extractedStructure: {
+        bannerCuts: [],
+        notes: [],
+        processingMetadata: {
+          totalColumns: 0,
+          groupCount: 0,
+          statisticalLettersUsed: [],
+          processingTimestamp: new Date().toISOString()
+        }
+      },
+      errors: [lastError?.message || 'Agent extraction failed after retries'],
+      warnings: []
+    };
   }
 
   // Step 1: DOC/DOCX → PDF conversion
@@ -522,36 +541,44 @@ Begin analysis now.
   private async saveDevelopmentOutputs(
     dualOutputs: { verbose: VerboseBannerPlan; agent: AgentBannerGroup[] },
     originalFilePath: string,
-    outputFolder: string,
+    outputDir: string,
     scratchpadEntries?: Array<{ timestamp: string; action: string; content: string }>,
     images?: ProcessedImage[]
   ): Promise<void> {
     try {
-      const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolder);
-      await fs.mkdir(outputDir, { recursive: true });
+      // Create banner subfolder for all BannerAgent outputs
+      const bannerDir = path.join(outputDir, 'banner');
+      await fs.mkdir(bannerDir, { recursive: true });
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const baseName = path.basename(originalFilePath, path.extname(originalFilePath));
 
       // Save verbose output
       const verboseFilename = `banner-${baseName}-verbose-${timestamp}.json`;
-      const verbosePath = path.join(outputDir, verboseFilename);
+      const verbosePath = path.join(bannerDir, verboseFilename);
       await fs.writeFile(verbosePath, JSON.stringify(dualOutputs.verbose, null, 2), 'utf-8');
 
       // Save agent output
       const agentFilename = `banner-${baseName}-agent-${timestamp}.json`;
-      const agentPath = path.join(outputDir, agentFilename);
+      const agentPath = path.join(bannerDir, agentFilename);
       await fs.writeFile(agentPath, JSON.stringify(dualOutputs.agent, null, 2), 'utf-8');
+
+      // Save raw output (just what the agent produced - for golden dataset comparison)
+      const rawOutput = {
+        bannerCuts: dualOutputs.verbose.data.extractedStructure.bannerCuts,
+      };
+      const rawPath = path.join(bannerDir, 'banner-output-raw.json');
+      await fs.writeFile(rawPath, JSON.stringify(rawOutput, null, 2), 'utf-8');
 
       // Save scratchpad trace as markdown
       if (scratchpadEntries) {
         const scratchpadFilename = `scratchpad-banner-${timestamp}.md`;
-        const scratchpadPath = path.join(outputDir, scratchpadFilename);
+        const scratchpadPath = path.join(bannerDir, scratchpadFilename);
         const markdown = formatScratchpadAsMarkdown('BannerAgent', scratchpadEntries);
         await fs.writeFile(scratchpadPath, markdown, 'utf-8');
       }
 
-      // Save images so we can see exactly what the model saw
+      // Save images at root level (these are INPUTS, not agent outputs)
       if (images && images.length > 0) {
         const imagesDir = path.join(outputDir, 'banner-images');
         await fs.mkdir(imagesDir, { recursive: true });
@@ -562,10 +589,10 @@ Begin analysis now.
           const imgBuffer = Buffer.from(img.base64, 'base64');
           await fs.writeFile(imgPath, imgBuffer);
         }
-        console.log(`[BannerAgent] Saved ${images.length} images to banner-images/`);
+        console.log(`[BannerAgent] Saved ${images.length} input images to banner-images/`);
       }
 
-      console.log(`[BannerAgent] Development outputs saved: ${verboseFilename}, ${agentFilename}`);
+      console.log(`[BannerAgent] Development outputs saved to banner/: ${verboseFilename}, ${agentFilename}`);
     } catch (error) {
       console.error('[BannerAgent] Failed to save development outputs:', error);
     }

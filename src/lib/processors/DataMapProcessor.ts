@@ -94,7 +94,7 @@ export class DataMapProcessor {
    * Main entry point - complete workflow
    * CSV Upload → Parse → Inference → Enrichment → Validation → Dual Outputs
    */
-  async processDataMap(filePath: string, spssFilePath?: string, outputFolder?: string): Promise<ProcessingResult> {
+  async processDataMap(filePath: string, spssFilePath?: string, outputDir?: string): Promise<ProcessingResult> {
     const errors: string[] = [];
     const warnings: string[] = [];
 
@@ -131,8 +131,8 @@ export class DataMapProcessor {
       const dualOutputs = this.generateDualOutputs(normalized);
       
       // Save outputs (always save for MVP)
-      if (outputFolder) {
-        await this.saveDevelopmentOutputs(dualOutputs, path.basename(filePath), outputFolder);
+      if (outputDir) {
+        await this.saveDevelopmentOutputs(dualOutputs, path.basename(filePath), outputDir);
       }
 
       return {
@@ -840,9 +840,8 @@ export class DataMapProcessor {
 
   // ===== DEVELOPMENT OUTPUT =====
 
-  private async saveDevelopmentOutputs(outputs: { verbose: VerboseDataMap[]; agent: AgentDataMap[] }, filename: string, outputFolder: string): Promise<void> {
+  private async saveDevelopmentOutputs(outputs: { verbose: VerboseDataMap[]; agent: AgentDataMap[] }, filename: string, outputDir: string): Promise<void> {
     try {
-      const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolder);
       await fs.mkdir(outputDir, { recursive: true });
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
