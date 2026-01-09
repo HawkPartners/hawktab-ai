@@ -55,7 +55,7 @@ import { processAllGroups as processCrosstabGroups } from '../src/agents/Crossta
 import { processDataMap as processTableAgent } from '../src/agents/TableAgent';
 import { verifyAllTables } from '../src/agents/VerificationAgent';
 import { processSurvey } from '../src/lib/processors/SurveyProcessor';
-import { generateRScriptV2 } from '../src/lib/r/RScriptGeneratorV2';
+import { generateRScriptV2WithValidation, type ValidationReport } from '../src/lib/r/RScriptGeneratorV2';
 import { buildCutsSpec } from '../src/lib/tables/CutsSpec';
 import { sortTables, getSortingMetadata } from '../src/lib/tables/sortTables';
 import { ExcelFormatter } from '../src/lib/excel/ExcelFormatter';
@@ -393,8 +393,8 @@ async function runPipeline(datasetFolder: string) {
   const rDir = path.join(outputDir, 'r');
   await fs.mkdir(rDir, { recursive: true });
 
-  // Use sorted tables (ExtendedTableDefinition) for R script generation
-  const masterScript = generateRScriptV2(
+  // Use sorted tables (ExtendedTableDefinition) for R script generation with validation
+  const { script: masterScript, validation: validationReport } = generateRScriptV2WithValidation(
     { tables: sortedTables, cuts: cutsSpec.cuts },
     { sessionId: outputFolder, outputDir: 'results' }
   );
@@ -402,7 +402,16 @@ async function runPipeline(datasetFolder: string) {
   const masterPath = path.join(rDir, 'master.R');
   await fs.writeFile(masterPath, masterScript, 'utf-8');
 
+  // Save validation report if there were any issues
+  if (validationReport.invalidTables > 0 || validationReport.warnings.length > 0) {
+    const validationPath = path.join(rDir, 'validation-report.json');
+    await fs.writeFile(validationPath, JSON.stringify(validationReport, null, 2), 'utf-8');
+    log(`  ⚠️  Validation issues: ${validationReport.invalidTables} invalid, ${validationReport.warnings.length} warnings`, 'yellow');
+    log(`  Validation report saved to: ${validationPath}`, 'dim');
+  }
+
   log(`  Generated R script (${Math.round(masterScript.length / 1024)} KB)`, 'green');
+  log(`  Valid tables: ${validationReport.validTables}/${validationReport.totalTables}`, 'green');
   log(`  Duration: ${Date.now() - stepStart6}ms`, 'dim');
   log('', 'reset');
 
