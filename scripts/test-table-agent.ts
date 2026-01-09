@@ -8,17 +8,17 @@
  *   npx tsx scripts/test-table-agent.ts [input-path]
  *
  * Input can be:
- *   - Nothing: Uses default data/test-data/practice-files/leqvio-demand-datamap.csv
+ *   - Nothing: Uses default data/leqvio-monotherapy-demand-NOV217/
  *   - CSV file: Processes raw datamap CSV first, then runs TableAgent
  *   - JSON file: Uses existing verbose datamap JSON
- *   - Folder: Looks for *datamap*.csv in folder
+ *   - Folder: Looks for *datamap*.csv in folder (or inputs/ subfolder)
  *
  * Examples:
  *   npx tsx scripts/test-table-agent.ts
- *   # Uses default practice files datamap
+ *   # Uses default dataset
  *
- *   npx tsx scripts/test-table-agent.ts data/test-data/practice-files
- *   # Finds datamap CSV in folder
+ *   npx tsx scripts/test-table-agent.ts data/test-data/some-dataset
+ *   # Finds datamap CSV in folder (supports inputs/ subfolder)
  *
  *   npx tsx scripts/test-table-agent.ts temp-outputs/output-xxx/dataMap-verbose-xxx.json
  *   # Uses existing verbose JSON
@@ -41,7 +41,7 @@ import { VerboseDataMapType } from '../src/schemas/processingSchemas';
 // Configuration
 // =============================================================================
 
-const DEFAULT_DATAMAP = 'data/test-data/practice-files/leqvio-demand-datamap.csv';
+const DEFAULT_DATASET = 'data/leqvio-monotherapy-demand-NOV217';
 
 const colors = {
   reset: '\x1b[0m',
@@ -70,7 +70,7 @@ interface InputInfo {
 }
 
 async function resolveInput(inputArg?: string): Promise<InputInfo> {
-  const input = inputArg || DEFAULT_DATAMAP;
+  const input = inputArg || DEFAULT_DATASET;
   const absPath = path.isAbsolute(input) ? input : path.join(process.cwd(), input);
 
   // Check if path exists
@@ -83,7 +83,14 @@ async function resolveInput(inputArg?: string): Promise<InputInfo> {
 
   // If it's a directory, look for datamap CSV
   if (stat.isDirectory()) {
-    const files = await fs.readdir(absPath);
+    // Check for nested structure (inputs/ subfolder)
+    let inputsFolder = absPath;
+    const subfolders = await fs.readdir(absPath);
+    if (subfolders.includes('inputs')) {
+      inputsFolder = path.join(absPath, 'inputs');
+    }
+
+    const files = await fs.readdir(inputsFolder);
     const csvFile = files.find(f =>
       f.toLowerCase().includes('datamap') && f.endsWith('.csv')
     );
@@ -92,7 +99,7 @@ async function resolveInput(inputArg?: string): Promise<InputInfo> {
     }
     return {
       type: 'csv',
-      path: path.join(absPath, csvFile),
+      path: path.join(inputsFolder, csvFile),
       name: path.basename(absPath),
     };
   }
@@ -168,8 +175,8 @@ async function main() {
     log(`ERROR: ${error instanceof Error ? error.message : String(error)}`, 'red');
     log('', 'reset');
     log('Usage:', 'yellow');
-    log('  npx tsx scripts/test-table-agent.ts              # Use default practice files', 'dim');
-    log('  npx tsx scripts/test-table-agent.ts <folder>     # Find datamap in folder', 'dim');
+    log('  npx tsx scripts/test-table-agent.ts              # Use default dataset', 'dim');
+    log('  npx tsx scripts/test-table-agent.ts <folder>     # Find datamap in folder (supports inputs/ subfolder)', 'dim');
     log('  npx tsx scripts/test-table-agent.ts <file.csv>   # Process CSV file', 'dim');
     log('  npx tsx scripts/test-table-agent.ts <file.json>  # Use verbose JSON', 'dim');
     process.exit(1);

@@ -8,15 +8,15 @@
  *   npx tsx scripts/test-verification-agent.ts [table-output-path]
  *
  * Input can be:
- *   - Nothing: Uses most recent test-pipeline-practice-files output
+ *   - Nothing: Uses most recent test-pipeline output for default dataset
  *   - Folder: Looks for table-output*.json and survey*.docx in folder
  *   - JSON file: Uses specific table output JSON
  *
  * Examples:
  *   npx tsx scripts/test-verification-agent.ts
- *   # Uses most recent practice-files test output
+ *   # Uses most recent default dataset test output
  *
- *   npx tsx scripts/test-verification-agent.ts temp-outputs/test-pipeline-practice-files-xxx
+ *   npx tsx scripts/test-verification-agent.ts temp-outputs/test-pipeline-xxx
  *   # Uses specific test output folder
  *
  * Output:
@@ -42,7 +42,8 @@ import { VerboseDataMapType } from '../src/schemas/processingSchemas';
 // =============================================================================
 
 const DEFAULT_TEST_FOLDER = 'temp-outputs';
-const PRACTICE_FILES_PREFIX = 'test-pipeline-practice-files';
+const DEFAULT_DATASET = 'data/leqvio-monotherapy-demand-NOV217';
+const DEFAULT_RUN_PREFIX = 'test-pipeline-leqvio-monotherapy-demand-NOV217';
 
 const colors = {
   reset: '\x1b[0m',
@@ -72,18 +73,18 @@ interface ResolvedPaths {
   dataMapVerbose: string | null;
 }
 
-async function findMostRecentPracticeFilesRun(): Promise<string | null> {
+async function findMostRecentDefaultRun(): Promise<string | null> {
   const tempOutputs = path.join(process.cwd(), DEFAULT_TEST_FOLDER);
 
   try {
     const entries = await fs.readdir(tempOutputs);
-    const practiceRuns = entries
-      .filter((e) => e.startsWith(PRACTICE_FILES_PREFIX))
+    const defaultRuns = entries
+      .filter((e) => e.startsWith(DEFAULT_RUN_PREFIX))
       .sort()
       .reverse();
 
-    if (practiceRuns.length === 0) return null;
-    return path.join(tempOutputs, practiceRuns[0]);
+    if (defaultRuns.length === 0) return null;
+    return path.join(tempOutputs, defaultRuns[0]);
   } catch {
     return null;
   }
@@ -93,11 +94,11 @@ async function resolveInputPaths(inputArg?: string): Promise<ResolvedPaths> {
   let folder: string;
 
   if (!inputArg) {
-    // Find most recent practice-files run
-    const recent = await findMostRecentPracticeFilesRun();
+    // Find most recent default dataset run
+    const recent = await findMostRecentDefaultRun();
     if (!recent) {
       throw new Error(
-        `No ${PRACTICE_FILES_PREFIX}* folder found in ${DEFAULT_TEST_FOLDER}. Run test-pipeline.ts first.`
+        `No ${DEFAULT_RUN_PREFIX}* folder found in ${DEFAULT_TEST_FOLDER}. Run test-pipeline.ts first.`
       );
     }
     folder = recent;
@@ -133,7 +134,7 @@ async function resolveInputPaths(inputArg?: string): Promise<ResolvedPaths> {
   );
 
   // Find datamap CSV (optional - for context)
-  // First check the folder itself, then check practice-files if this is a test-pipeline output
+  // First check the folder itself, then check default dataset if this is a test-pipeline output
   let dataMapCsv: string | null = null;
   let dataMapVerbose: string | null = null;
 
@@ -142,18 +143,22 @@ async function resolveInputPaths(inputArg?: string): Promise<ResolvedPaths> {
   if (csvInFolder) {
     dataMapCsv = path.join(folder, csvInFolder);
   } else {
-    // Check practice-files folder
-    const practiceFilesPath = path.join(process.cwd(), 'data/test-data/practice-files');
+    // Check default dataset folder (supports inputs/ subfolder)
+    const defaultDatasetPath = path.join(process.cwd(), DEFAULT_DATASET);
     try {
-      const practiceFiles = await fs.readdir(practiceFilesPath);
-      const practiceCsv = practiceFiles.find(
+      const datasetContents = await fs.readdir(defaultDatasetPath);
+      const inputsPath = datasetContents.includes('inputs')
+        ? path.join(defaultDatasetPath, 'inputs')
+        : defaultDatasetPath;
+      const inputFiles = await fs.readdir(inputsPath);
+      const datasetCsv = inputFiles.find(
         (f) => f.toLowerCase().includes('datamap') && f.endsWith('.csv')
       );
-      if (practiceCsv) {
-        dataMapCsv = path.join(practiceFilesPath, practiceCsv);
+      if (datasetCsv) {
+        dataMapCsv = path.join(inputsPath, datasetCsv);
       }
     } catch {
-      // Ignore if practice-files doesn't exist
+      // Ignore if default dataset doesn't exist
     }
   }
 
@@ -165,23 +170,27 @@ async function resolveInputPaths(inputArg?: string): Promise<ResolvedPaths> {
     dataMapVerbose = path.join(folder, verboseInFolder);
   }
 
-  // Find survey document - check folder then practice-files
+  // Find survey document - check folder then default dataset
   let surveyPath: string | null = null;
   if (surveyFile) {
     surveyPath = path.join(folder, surveyFile);
   } else {
-    // Check practice-files folder
-    const practiceFilesPath = path.join(process.cwd(), 'data/test-data/practice-files');
+    // Check default dataset folder (supports inputs/ subfolder)
+    const defaultDatasetPath = path.join(process.cwd(), DEFAULT_DATASET);
     try {
-      const practiceFiles = await fs.readdir(practiceFilesPath);
-      const practiceSurvey = practiceFiles.find(
+      const datasetContents = await fs.readdir(defaultDatasetPath);
+      const inputsPath = datasetContents.includes('inputs')
+        ? path.join(defaultDatasetPath, 'inputs')
+        : defaultDatasetPath;
+      const inputFiles = await fs.readdir(inputsPath);
+      const datasetSurvey = inputFiles.find(
         (f) => f.toLowerCase().includes('survey') && (f.endsWith('.docx') || f.endsWith('.doc'))
       );
-      if (practiceSurvey) {
-        surveyPath = path.join(practiceFilesPath, practiceSurvey);
+      if (datasetSurvey) {
+        surveyPath = path.join(inputsPath, datasetSurvey);
       }
     } catch {
-      // Ignore if practice-files doesn't exist
+      // Ignore if default dataset doesn't exist
     }
   }
 
@@ -269,7 +278,7 @@ async function main() {
     log(`ERROR: ${error instanceof Error ? error.message : String(error)}`, 'red');
     log('', 'reset');
     log('Usage:', 'yellow');
-    log('  npx tsx scripts/test-verification-agent.ts              # Use most recent practice-files run', 'dim');
+    log('  npx tsx scripts/test-verification-agent.ts              # Use most recent default dataset run', 'dim');
     log('  npx tsx scripts/test-verification-agent.ts <folder>     # Use specific test output folder', 'dim');
     log('  npx tsx scripts/test-verification-agent.ts <file.json>  # Use specific table output JSON', 'dim');
     process.exit(1);

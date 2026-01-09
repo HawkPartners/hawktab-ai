@@ -6,7 +6,7 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 
 **Philosophy**: We're replacing Joe's usefulness (the manual work of generating crosstabs), not necessarily replicating his exact format. Antares-style output is our MVP target - functional, readable crosstabs that the team can write reports from.
 
-**Current State**: Pipeline working end-to-end. Full test run completed against `practice-files` dataset.
+**Current State**: Pipeline working end-to-end. Full test run completed against primary dataset (`leqvio-monotherapy-demand-NOV217`).
 
 **What We're Validating**: Each part involves comparing our output to Joe's tabs for both:
 - **Data accuracy** - counts, percentages, means, bases match
@@ -18,9 +18,9 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 
 **Status**: COMPLETE
 
-Review the practice-files test output against Joe's tabs. Capture all differences in the session's `bugs.md` file.
+Review the primary test output against Joe's tabs. Capture all differences in the session's `bugs.md` file.
 
-**Test Run Location**: `temp-outputs/test-pipeline-practice-files-2026-01-04T19-20-00-967Z/`
+**Test Run Location**: `temp-outputs/test-pipeline-leqvio-monotherapy-demand-NOV217-<timestamp>/`
 
 **Process**:
 1. Open `results/crosstabs.xlsx` and Joe's reference tabs side-by-side
@@ -163,7 +163,7 @@ That's it. No configuration schemas, no optional features.
 
 ### Validation
 
-1. Run `npx tsx scripts/test-pipeline.ts` on practice-files
+1. Run `npx tsx scripts/test-pipeline.ts` on primary dataset
 2. Compare significance letters to Joe's output
 3. If they match, Part 3 is complete
 
@@ -245,13 +245,13 @@ Unexpected differences: 0
 
 - Validation logs show categorized mismatches with explanations
 - Users can distinguish "expected SPSS behavior" from "actual problems"
-- Zero unexplained mismatches for practice-files dataset
+- Zero unexplained mismatches for primary dataset
 
 ---
 
 ## Part 4: Evaluation Framework
 
-**Status**: NOT STARTED (required before Part 5)
+**Status**: IN PROGRESS
 
 ### The Problem
 
@@ -297,12 +297,19 @@ We can't fully automate evaluation because "good" is subjective. But we can:
 
 **Folder Structure**:
 ```
-data/test-data/practice-files/
-├── golden/
+data/leqvio-monotherapy-demand-NOV217/
+├── inputs/                            # Input files
+│   ├── leqvio-monotherapy-demand-datamap.csv
+│   ├── leqvio-monotherapy-demand-data.sav
+│   ├── leqvio-monotherapy-demand-survey.docx
+│   └── leqvio-monotherapy-demand-bannerplan-clean.docx
+├── tabs/                              # Reference output
+│   └── leqvio-monotherapy-demand-tabs-joe.xlsx
+├── golden-datasets/                   # For evaluation framework
 │   ├── tables-expected.json           # What TableAgent should produce
 │   ├── verified-tables-expected.json  # What VerificationAgent should produce
 │   └── annotations.json               # Human verdicts on differences
-└── runs/
+└── runs/                              # Pipeline run history
     └── YYYY-MM-DD/
         ├── comparison-report.json     # Auto-generated diff
         └── human-review.json          # Annotations for this run
@@ -354,20 +361,20 @@ data/test-data/practice-files/
 
 ### Deliverables
 
-1. **Golden dataset creation**: Manually create `tables-expected.json` and `verified-tables-expected.json` for practice-files
+1. **Golden dataset creation**: Manually create `tables-expected.json` and `verified-tables-expected.json` for primary dataset
 2. **Comparison script**: `scripts/evaluate-run.ts` that generates comparison reports
 3. **Annotation workflow**: Simple JSON-based human review process
 4. **Metrics dashboard**: Track strict vs practical accuracy over runs
 
 ### Exit Criteria
 
-- Golden datasets exist for practice-files (TableAgent + VerificationAgent)
+- Golden datasets exist for primary dataset (TableAgent + VerificationAgent)
 - Comparison script produces actionable diff reports
 - At least one full evaluation cycle completed (run → compare → annotate → identify patterns)
 
 ---
 
-## Part 5: Iteration (Practice-Files)
+## Part 5: Iteration (Primary Dataset)
 
 **Status**: NOT STARTED (begins after Part 4 Evaluation Framework complete)
 
@@ -394,16 +401,16 @@ Three versions of the banner plan exist for each dataset:
 
 **Why this matters**: Joe's tabs may not match the original banner plan exactly. To truly validate our output matches Joe's, we need the adjusted version that reflects what Joe actually produced.
 
-**For practice-files**: Create `leqvio-demand-bannerplan-adjusted.docx` before completing Part 5 iteration.
+**For primary dataset**: Create `leqvio-monotherapy-demand-bannerplan-adjusted.docx` before completing Part 5 iteration.
 
 ### Process
 
-1. Create banner-plan-adjusted for practice-files (if not exists)
+1. Create banner-plan-adjusted for primary dataset (if not exists)
 2. Re-run `npx tsx scripts/test-pipeline.ts` with adjusted banner
 3. Compare output to Joe's tabs (data accuracy + significance letters)
 4. Update bugs.md with any new/remaining issues
 5. Address issues (prompt tweaks, code fixes)
-6. Repeat until practice-files output matches Joe's tabs
+6. Repeat until primary dataset output matches Joe's tabs
 
 **Success Criteria**:
 - Data accuracy matches Joe's tabs (counts, percentages, means)
@@ -415,7 +422,7 @@ Three versions of the banner plan exist for each dataset:
 
 ## Part 6: Broader Testing
 
-**Status**: NOT STARTED (begins after practice-files is stable)
+**Status**: NOT STARTED (begins after primary dataset is stable)
 
 ### Test Data Structure
 
@@ -471,9 +478,9 @@ data/test-data/
 ├── Cambridge-Savings-Bank-W2_4.1.25/
 ├── GVHD-Data_12.27.22/
 ├── Iptacopan-Data_2.23.24/
-├── Leqvio-Demand-W1_3.13.23/
-├── Leqvio-Demand-W2_8.16.24 v2/
-├── Leqvio-Demand-W3_5.16.25/
+├── leqvio-monotherapy-demand-W1_3.13.23/
+├── leqvio-monotherapy-demand-W2_8.16.24 v2/
+├── leqvio-monotherapy-demand-W3_5.16.25/
 ├── Leqvio-Segmentation-Data-HCP-W1_7.11.23/
 ├── Leqvio-Segmentation-Data-HCP-W2_2.21.2025/
 ├── Leqvio-Segmentation-Patients-Data_7.7.23/
@@ -514,19 +521,27 @@ User Uploads → BannerAgent → CrosstabAgent → TableAgent → VerificationAg
 | `src/lib/excel/ExcelFormatter.ts` | Excel output formatting |
 | `scripts/test-pipeline.ts` | End-to-end test script |
 
-### Practice-Files Test Data
+### Primary Test Data
 
-Primary test case: `data/test-data/practice-files/`
-- `leqvio-demand-datamap.csv` (existing)
-- `leqvio-demand-data.sav` (existing)
-- `leqvio-demand-survey.docx` (for VerificationAgent)
-- `leqvio-demand-bannerplan-original.docx`
-- `leqvio-demand-bannerplan-clean.docx` (current testing)
-- `leqvio-demand-bannerplan-adjusted.docx` (to create for final validation)
-- `leqvio-demand-tabs-joe.xlsx` (reference output - to upload)
+Primary test case: `data/leqvio-monotherapy-demand-NOV217/`
+
+**Structure**:
+```
+leqvio-monotherapy-demand-NOV217/
+├── inputs/
+│   ├── leqvio-monotherapy-demand-datamap.csv
+│   ├── leqvio-monotherapy-demand-data.sav
+│   ├── leqvio-monotherapy-demand-survey.docx
+│   ├── leqvio-monotherapy-demand-bannerplan-original.docx
+│   └── leqvio-monotherapy-demand-bannerplan-clean.docx
+├── tabs/
+│   └── leqvio-monotherapy-demand-tabs-joe.xlsx (reference output)
+└── golden-datasets/
+    └── (to be created for evaluation framework)
+```
 
 ---
 
 *Created: January 6, 2026*
 *Updated: January 8, 2026*
-*Status: Parts 1-3b complete, Parts 4-6 pending*
+*Status: Parts 1-3b complete, Part 4 in progress, Parts 5-6 pending*

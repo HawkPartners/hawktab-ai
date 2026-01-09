@@ -10,15 +10,21 @@
  *
  * Examples:
  *   npx tsx scripts/test-pipeline.ts
- *   # Uses default: data/test-data/practice-files/
+ *   # Uses default: data/leqvio-monotherapy-demand-NOV217/
  *
- *   npx tsx scripts/test-pipeline.ts data/test-data/practice-files
+ *   npx tsx scripts/test-pipeline.ts data/test-data/some-dataset
  *   # Explicit path to dataset folder
  *
- * Required files in dataset folder:
+ * Required files in dataset folder (or inputs/ subfolder):
  *   - *datamap*.csv  (datamap file)
  *   - *banner*.docx  (banner plan)
  *   - *.sav          (SPSS data file)
+ *
+ * Supports nested structure:
+ *   dataset-folder/
+ *   ├── inputs/           # Input files go here
+ *   ├── tabs/             # Reference output (Joe's tabs)
+ *   └── golden-datasets/  # For evaluation framework
  *
  * Pipeline stages:
  *   1. DataMapProcessor → Verbose datamap JSON
@@ -62,7 +68,7 @@ const execAsync = promisify(exec);
 // Configuration
 // =============================================================================
 
-const DEFAULT_DATASET = 'data/test-data/practice-files';
+const DEFAULT_DATASET = 'data/leqvio-monotherapy-demand-NOV217';
 
 const colors = {
   reset: '\x1b[0m',
@@ -98,7 +104,19 @@ interface DatasetFiles {
 
 async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
   const absFolder = path.isAbsolute(folder) ? folder : path.join(process.cwd(), folder);
-  const files = await fs.readdir(absFolder);
+
+  // Check for nested structure (inputs/ subfolder)
+  let inputsFolder = absFolder;
+  try {
+    const subfolders = await fs.readdir(absFolder);
+    if (subfolders.includes('inputs')) {
+      inputsFolder = path.join(absFolder, 'inputs');
+    }
+  } catch {
+    // Continue with absFolder
+  }
+
+  const files = await fs.readdir(inputsFolder);
 
   // Find datamap CSV
   const datamap = files.find(f =>
@@ -136,14 +154,14 @@ async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
     (f.endsWith('.docx') || f.endsWith('.pdf'))
   );
 
-  // Derive dataset name from folder
+  // Derive dataset name from folder (use the main folder, not inputs/)
   const name = path.basename(absFolder);
 
   return {
-    datamap: path.join(absFolder, datamap),
-    banner: path.join(absFolder, banner),
-    spss: path.join(absFolder, spss),
-    survey: survey ? path.join(absFolder, survey) : null,
+    datamap: path.join(inputsFolder, datamap),
+    banner: path.join(inputsFolder, banner),
+    spss: path.join(inputsFolder, spss),
+    survey: survey ? path.join(inputsFolder, survey) : null,
     name,
   };
 }
