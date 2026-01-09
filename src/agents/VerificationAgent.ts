@@ -29,6 +29,7 @@ import {
   getVerificationModelName,
   getVerificationModelTokenLimit,
   getVerificationReasoningEffort,
+  getPromptVersions,
 } from '../lib/env';
 import {
   verificationScratchpadTool,
@@ -36,9 +37,15 @@ import {
   getAndClearScratchpadEntries,
   formatScratchpadAsMarkdown,
 } from './tools/scratchpad';
-import { getVerificationPrompt } from '../prompts/verification';
+import { getVerificationPrompt } from '../prompts';
 import fs from 'fs/promises';
 import path from 'path';
+
+// Get modular prompt based on environment variable
+const getVerificationAgentInstructions = (): string => {
+  const promptVersions = getPromptVersions();
+  return getVerificationPrompt(promptVersions.verificationPromptVersion);
+};
 
 // =============================================================================
 // Types
@@ -83,7 +90,7 @@ export async function verifyTable(input: VerificationInput): Promise<Verificatio
 
   // Build system prompt with survey and datamap context
   const systemPrompt = `
-${getVerificationPrompt()}
+${getVerificationAgentInstructions()}
 
 ## Survey Document
 <survey>
