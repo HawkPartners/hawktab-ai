@@ -36,7 +36,7 @@
  *   7. ExcelFormatter → results/crosstabs.xlsx
  *
  * Output:
- *   temp-outputs/test-pipeline-<dataset>-<timestamp>/
+ *   outputs/<dataset>/pipeline-<timestamp>/
  */
 
 // Load environment variables
@@ -126,12 +126,19 @@ async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
     throw new Error(`No datamap CSV found in ${folder}. Expected file containing "datamap" with .csv extension.`);
   }
 
-  // Find banner plan (prefer 'clean' version)
+  // Find banner plan (prefer 'adjusted' > 'clean' > original)
   let banner = files.find(f =>
     f.toLowerCase().includes('banner') &&
-    f.toLowerCase().includes('clean') &&
+    f.toLowerCase().includes('adjusted') &&
     (f.endsWith('.docx') || f.endsWith('.pdf'))
   );
+  if (!banner) {
+    banner = files.find(f =>
+      f.toLowerCase().includes('banner') &&
+      f.toLowerCase().includes('clean') &&
+      (f.endsWith('.docx') || f.endsWith('.pdf'))
+    );
+  }
   if (!banner) {
     banner = files.find(f =>
       f.toLowerCase().includes('banner') &&
@@ -148,11 +155,19 @@ async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
     throw new Error(`No SPSS file found in ${folder}. Expected .sav file.`);
   }
 
-  // Find survey document (optional - for VerificationAgent)
-  const survey = files.find(f =>
-    f.toLowerCase().includes('survey') &&
+  // Find survey/questionnaire document (optional - for VerificationAgent)
+  // Priority: 1) file with 'survey' or 'questionnaire', 2) .docx that's not a banner plan
+  let survey = files.find(f =>
+    (f.toLowerCase().includes('survey') || f.toLowerCase().includes('questionnaire')) &&
     (f.endsWith('.docx') || f.endsWith('.pdf'))
   );
+  if (!survey) {
+    // Fall back to any .docx that's not a banner plan (likely the main survey document)
+    survey = files.find(f =>
+      f.endsWith('.docx') &&
+      !f.toLowerCase().includes('banner')
+    );
+  }
 
   // Derive dataset name from folder (use the main folder, not inputs/)
   const name = path.basename(absFolder);
@@ -189,12 +204,12 @@ async function runPipeline(datasetFolder: string) {
   log(`  Survey:  ${files.survey ? path.basename(files.survey) : '(not found - VerificationAgent will use passthrough)'}`, 'dim');
   log('', 'reset');
 
-  // Create output folder
+  // Create output folder: outputs/<dataset>/pipeline-<timestamp>/
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const outputFolder = `test-pipeline-${files.name}-${timestamp}`;
-  const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolder);
+  const outputFolder = `pipeline-${timestamp}`;
+  const outputDir = path.join(process.cwd(), 'outputs', files.name, outputFolder);
   await fs.mkdir(outputDir, { recursive: true });
-  log(`Output folder: temp-outputs/${outputFolder}`, 'blue');
+  log(`Output folder: outputs/${files.name}/${outputFolder}`, 'blue');
   log('', 'reset');
 
   // Copy SPSS file to output folder (needed for R)
@@ -208,7 +223,7 @@ async function runPipeline(datasetFolder: string) {
   const stepStart1 = Date.now();
 
   const dataMapProcessor = new DataMapProcessor();
-  const dataMapResult = await dataMapProcessor.processDataMap(files.datamap, files.spss, outputFolder);
+  const dataMapResult = await dataMapProcessor.processDataMap(files.datamap, files.spss, outputDir);
   const verboseDataMap = dataMapResult.verbose as VerboseDataMapType[];
   log(`  Processed ${verboseDataMap.length} variables`, 'green');
   log(`  Duration: ${Date.now() - stepStart1}ms`, 'dim');
@@ -221,7 +236,7 @@ async function runPipeline(datasetFolder: string) {
   const stepStart2 = Date.now();
 
   const bannerAgent = new BannerAgent();
-  const bannerResult = await bannerAgent.processDocument(files.banner, outputFolder);
+  const bannerResult = await bannerAgent.processDocument(files.banner, outputDir);
 
   if (!bannerResult.success) {
     log(`  WARNING: Banner extraction had issues`, 'yellow');
@@ -251,7 +266,7 @@ async function runPipeline(datasetFolder: string) {
   const crosstabResult = await processCrosstabGroups(
     agentDataMap,
     { bannerCuts: agentBanner.map(g => ({ groupName: g.groupName, columns: g.columns })) },
-    outputFolder,
+    outputDir,
     (completed, total) => {
       process.stdout.write(`\r  Processing group ${completed}/${total}...`);
     }
@@ -268,7 +283,7 @@ async function runPipeline(datasetFolder: string) {
   logStep(4, totalSteps, 'Analyzing table structures...');
   const stepStart4 = Date.now();
 
-  const { results: tableAgentResults } = await processTableAgent(verboseDataMap, outputFolder);
+  const { results: tableAgentResults } = await processTableAgent(verboseDataMap, outputDir);
   const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
 
   log(`  Generated ${tableAgentTables.length} table definitions`, 'green');
@@ -300,7 +315,7 @@ async function runPipeline(datasetFolder: string) {
         tableAgentResults,
         surveyResult.markdown,
         verboseDataMap,
-        { outputFolder }
+        { outputDir }
       );
       verifiedTables = verificationResult.tables;
       log(`  Verified ${verifiedTables.length} tables (${verificationResult.metadata.tablesModified} modified)`, 'green');
@@ -311,6 +326,16 @@ async function runPipeline(datasetFolder: string) {
       verifiedTables = tableAgentResults.flatMap(group =>
         group.tables.map(t => toExtendedTable(t, group.questionId))
       );
+
+      // Still create verification folder with raw output for consistency
+      const verificationDir = path.join(outputDir, 'verification');
+      await fs.mkdir(verificationDir, { recursive: true });
+      const rawOutput = { tables: verifiedTables };
+      await fs.writeFile(
+        path.join(verificationDir, 'verification-output-raw.json'),
+        JSON.stringify(rawOutput, null, 2),
+        'utf-8'
+      );
     }
   } else {
     log(`  No survey file - using TableAgent output directly`, 'yellow');
@@ -318,6 +343,16 @@ async function runPipeline(datasetFolder: string) {
     const { toExtendedTable } = await import('../src/schemas/verificationAgentSchema');
     verifiedTables = tableAgentResults.flatMap(group =>
       group.tables.map(t => toExtendedTable(t, group.questionId))
+    );
+
+    // Still create verification folder with raw output for consistency
+    const verificationDir = path.join(outputDir, 'verification');
+    await fs.mkdir(verificationDir, { recursive: true });
+    const rawOutput = { tables: verifiedTables };
+    await fs.writeFile(
+      path.join(verificationDir, 'verification-output-raw.json'),
+      JSON.stringify(rawOutput, null, 2),
+      'utf-8'
     );
   }
 
@@ -449,7 +484,7 @@ async function runPipeline(datasetFolder: string) {
   log(`  Tables:      ${sortedTables.length} (${tableAgentTables.length} from TableAgent)`, 'reset');
   log(`  Cuts:        ${cutsSpec.cuts.length + 1} (including Total)`, 'reset');
   log(`  Duration:    ${(totalDuration / 1000).toFixed(1)}s`, 'reset');
-  log(`  Output:      temp-outputs/${outputFolder}/`, 'reset');
+  log(`  Output:      outputs/${files.name}/${outputFolder}/`, 'reset');
   log('', 'reset');
 
   // Write summary file
@@ -481,71 +516,46 @@ async function runPipeline(datasetFolder: string) {
     JSON.stringify(summary, null, 2)
   );
 
-  // Write bug tracker template
-  const bugTrackerContent = `# Bug Tracker - ${files.name}
-Generated: ${new Date().toISOString()}
-Session: ${outputFolder}
+  // -------------------------------------------------------------------------
+  // Cleanup temporary files
+  // -------------------------------------------------------------------------
+  log('Cleaning up temporary files...', 'dim');
+  const filesToCleanup: string[] = [];
 
-Compare against: Joe's tabs / Antares output
+  // Remove dataFile.sav (only needed for R execution)
+  const spssPath = path.join(outputDir, 'dataFile.sav');
+  try {
+    await fs.unlink(spssPath);
+    filesToCleanup.push('dataFile.sav');
+  } catch { /* File may not exist */ }
 
----
+  // Remove banner-images/ folder (input images for BannerAgent)
+  const bannerImagesDir = path.join(outputDir, 'banner-images');
+  try {
+    await fs.rm(bannerImagesDir, { recursive: true });
+    filesToCleanup.push('banner-images/');
+  } catch { /* Folder may not exist */ }
 
-## Data Accuracy Issues
-Issues where our numbers don't match the reference tabs.
+  // Remove survey conversion artifacts (HTML and PNG files)
+  try {
+    const allFiles = await fs.readdir(outputDir);
+    for (const file of allFiles) {
+      // Remove HTML files from survey conversion
+      if (file.endsWith('.html')) {
+        await fs.unlink(path.join(outputDir, file));
+        filesToCleanup.push(file);
+      }
+      // Remove PNG files from survey conversion (typically have _html_ in name)
+      if (file.endsWith('.png') && file.includes('_html_')) {
+        await fs.unlink(path.join(outputDir, file));
+        filesToCleanup.push(file);
+      }
+    }
+  } catch { /* Ignore cleanup errors */ }
 
-### BannerAgent
-_Issues with banner extraction (missing columns, wrong group names, incorrect structure)_
-
-
-### CrosstabAgent
-_Issues with R expression generation (wrong filter logic, incorrect variable mappings)_
-
-
-### TableAgent
-_Issues with table structure decisions (wrong tableType, missing rows, incorrect grouping)_
-
-
-### RScriptGenerator
-_Issues with R code generation (wrong filter values, incorrect variable references)_
-
-
-### R Calculations
-_Issues with the calculated values (wrong base n, percentage errors, significance testing)_
-
-
-### Derived Tables (T2B/B2B, Top 3)
-_Issues with hint-derived tables (wrong scale values, incorrect aggregation)_
-
-
----
-
-## Formatting / UX Issues
-Issues that don't affect data accuracy but impact usability.
-
-### ExcelJS Formatter
-_Styling, borders, colors, column widths, merged cells_
-
-
-### Labels / Text
-_Truncated labels, encoding issues, missing titles_
-
-
----
-
-## Feature Enhancements
-_Ideas for new features or improvements_
-
-
----
-
-## Notes
-
-`;
-
-  await fs.writeFile(
-    path.join(outputDir, 'bugs.md'),
-    bugTrackerContent
-  );
+  if (filesToCleanup.length > 0) {
+    log(`  Removed: ${filesToCleanup.join(', ')}`, 'dim');
+  }
 
   log('Output files:', 'blue');
   const outputFiles = await fs.readdir(outputDir);

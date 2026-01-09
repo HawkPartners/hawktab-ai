@@ -208,7 +208,7 @@ Every table must have ALL fields:
 - tableId: string
 - questionId: string (output "" - system will fill this in)
 - title: string
-- tableType: string
+- tableType: "frequency" or "mean_rows" only (do not invent new types)
 - rows: ExtendedTableRow[]
 - hints: string[] (pass through from input, or empty [] for new tables)
 - sourceTableId: string (original table ID, or "" if unchanged)

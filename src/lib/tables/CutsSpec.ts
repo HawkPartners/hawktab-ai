@@ -60,12 +60,21 @@ export function buildCutsSpec(validation: ValidationResultType): CutsSpec {
   const groups: CutGroup[] = [];
   let totalCut: CutDefinition | null = null;
   let letterIndex = 0;
+  let skippedCount = 0;
 
   for (const group of validation.bannerCuts) {
     const groupCuts: CutDefinition[] = [];
 
     for (let i = 0; i < group.columns.length; i++) {
       const col = group.columns[i];
+
+      // Skip columns with zero confidence (failed to process)
+      if (col.confidence === 0) {
+        console.log(`[CutsSpec] Skipping column "${col.name}" in group "${group.groupName}" (confidence: 0)`);
+        skippedCount++;
+        continue;
+      }
+
       const id = `${slugify(group.groupName)}.${slugify(col.name)}`;
 
       // Use 'T' for Total column, otherwise sequential letters
@@ -94,7 +103,14 @@ export function buildCutsSpec(validation: ValidationResultType): CutsSpec {
       }
     }
 
-    groups.push({ groupName: group.groupName, cuts: groupCuts });
+    // Only add group if it has valid cuts
+    if (groupCuts.length > 0) {
+      groups.push({ groupName: group.groupName, cuts: groupCuts });
+    }
+  }
+
+  if (skippedCount > 0) {
+    console.log(`[CutsSpec] Skipped ${skippedCount} columns with zero confidence`);
   }
 
   return { cuts, groups, totalCut };

@@ -8,19 +8,19 @@
  *   npx tsx scripts/test-verification-agent.ts [table-output-path]
  *
  * Input can be:
- *   - Nothing: Uses most recent test-pipeline output for default dataset
+ *   - Nothing: Uses most recent pipeline run for default dataset
  *   - Folder: Looks for table-output*.json and survey*.docx in folder
  *   - JSON file: Uses specific table output JSON
  *
  * Examples:
  *   npx tsx scripts/test-verification-agent.ts
- *   # Uses most recent default dataset test output
+ *   # Uses most recent pipeline run from outputs/<default-dataset>/
  *
- *   npx tsx scripts/test-verification-agent.ts temp-outputs/test-pipeline-xxx
- *   # Uses specific test output folder
+ *   npx tsx scripts/test-verification-agent.ts outputs/some-dataset/pipeline-xxx
+ *   # Uses specific pipeline output folder
  *
  * Output:
- *   Creates temp-outputs/test-verification-agent-<timestamp>/ with:
+ *   outputs/<dataset>/verification-<timestamp>/
  *   - verified-table-output-*.json
  *   - scratchpad-verification-*.md
  */
@@ -41,9 +41,9 @@ import { VerboseDataMapType } from '../src/schemas/processingSchemas';
 // Configuration
 // =============================================================================
 
-const DEFAULT_TEST_FOLDER = 'temp-outputs';
 const DEFAULT_DATASET = 'data/leqvio-monotherapy-demand-NOV217';
-const DEFAULT_RUN_PREFIX = 'test-pipeline-leqvio-monotherapy-demand-NOV217';
+const DEFAULT_DATASET_NAME = 'leqvio-monotherapy-demand-NOV217';
+const PIPELINE_RUN_PREFIX = 'pipeline-';
 
 const colors = {
   reset: '\x1b[0m',
@@ -73,18 +73,18 @@ interface ResolvedPaths {
   dataMapVerbose: string | null;
 }
 
-async function findMostRecentDefaultRun(): Promise<string | null> {
-  const tempOutputs = path.join(process.cwd(), DEFAULT_TEST_FOLDER);
+async function findMostRecentPipelineRun(datasetName: string = DEFAULT_DATASET_NAME): Promise<string | null> {
+  const datasetOutputs = path.join(process.cwd(), 'outputs', datasetName);
 
   try {
-    const entries = await fs.readdir(tempOutputs);
-    const defaultRuns = entries
-      .filter((e) => e.startsWith(DEFAULT_RUN_PREFIX))
+    const entries = await fs.readdir(datasetOutputs);
+    const pipelineRuns = entries
+      .filter((e) => e.startsWith(PIPELINE_RUN_PREFIX))
       .sort()
       .reverse();
 
-    if (defaultRuns.length === 0) return null;
-    return path.join(tempOutputs, defaultRuns[0]);
+    if (pipelineRuns.length === 0) return null;
+    return path.join(datasetOutputs, pipelineRuns[0]);
   } catch {
     return null;
   }
@@ -92,13 +92,14 @@ async function findMostRecentDefaultRun(): Promise<string | null> {
 
 async function resolveInputPaths(inputArg?: string): Promise<ResolvedPaths> {
   let folder: string;
+  let datasetName = DEFAULT_DATASET_NAME;
 
   if (!inputArg) {
-    // Find most recent default dataset run
-    const recent = await findMostRecentDefaultRun();
+    // Find most recent pipeline run for default dataset
+    const recent = await findMostRecentPipelineRun();
     if (!recent) {
       throw new Error(
-        `No ${DEFAULT_RUN_PREFIX}* folder found in ${DEFAULT_TEST_FOLDER}. Run test-pipeline.ts first.`
+        `No pipeline runs found in outputs/${DEFAULT_DATASET_NAME}/. Run test-pipeline.ts first.`
       );
     }
     folder = recent;
@@ -227,7 +228,7 @@ async function loadTableAgentOutput(filePath: string): Promise<TableAgentOutput[
 async function loadVerboseDataMap(
   verbosePath: string | null,
   csvPath: string | null,
-  outputFolder: string
+  outputDir: string
 ): Promise<VerboseDataMapType[]> {
   // Try verbose JSON first
   if (verbosePath) {
@@ -246,7 +247,7 @@ async function loadVerboseDataMap(
   if (csvPath) {
     try {
       const processor = new DataMapProcessor();
-      const result = await processor.processDataMap(csvPath, undefined, outputFolder);
+      const result = await processor.processDataMap(csvPath, undefined, outputDir);
       return result.verbose as VerboseDataMapType[];
     } catch (error) {
       log(`Warning: Could not process datamap CSV: ${error}`, 'yellow');
@@ -302,17 +303,24 @@ async function main() {
     process.exit(1);
   }
 
-  // Create dedicated output folder for this run
+  // Create dedicated output folder for this run: outputs/<dataset>/verification-<timestamp>/
+  // Extract dataset name from input folder path (e.g., outputs/dataset-name/pipeline-xxx → dataset-name)
+  const folderParts = paths.folder.split(path.sep);
+  const outputsIndex = folderParts.indexOf('outputs');
+  const datasetName = outputsIndex >= 0 && folderParts[outputsIndex + 1]
+    ? folderParts[outputsIndex + 1]
+    : DEFAULT_DATASET_NAME;
+
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  const outputFolderName = `test-verification-agent-${timestamp}`;
-  const outputPath = path.join(process.cwd(), 'temp-outputs', outputFolderName);
+  const outputFolderName = `verification-${timestamp}`;
+  const outputPath = path.join(process.cwd(), 'outputs', datasetName, outputFolderName);
   await fs.mkdir(outputPath, { recursive: true });
-  log(`Output folder: temp-outputs/${outputFolderName}`, 'cyan');
+  log(`Output folder: outputs/${datasetName}/${outputFolderName}`, 'cyan');
   log('', 'reset');
 
   // Load datamap
   log('Loading datamap...', 'blue');
-  const dataMap = await loadVerboseDataMap(paths.dataMapVerbose, paths.dataMapCsv, outputFolderName);
+  const dataMap = await loadVerboseDataMap(paths.dataMapVerbose, paths.dataMapCsv, outputPath);
   log(`  Loaded ${dataMap.length} variables`, dataMap.length > 0 ? 'green' : 'yellow');
 
   // Process survey document
@@ -350,7 +358,7 @@ async function main() {
 
   try {
     const results = await verifyAllTables(tableOutput, surveyMarkdown, dataMap, {
-      outputFolder: outputFolderName,
+      outputDir: outputPath,
       onProgress: (completed, total, tableId) => {
         process.stdout.write(`\r  Progress: ${completed}/${total} tables (${tableId})...`);
       },
@@ -408,7 +416,7 @@ async function main() {
     }
 
     log('', 'reset');
-    log(`Output: temp-outputs/${outputFolderName}/`, 'green');
+    log(`Output: outputs/${datasetName}/${outputFolderName}/`, 'green');
     log(`Input:  ${paths.folder}/`, 'dim');
     log('', 'reset');
 

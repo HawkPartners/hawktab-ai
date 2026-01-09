@@ -33,6 +33,9 @@ const getTableAgentInstructions = (): string => {
   return getTablePrompt(promptVersions.tablePromptVersion);
 };
 
+// Retry configuration for transient failures
+const MAX_RETRIES = 2;
+
 // =============================================================================
 // Grouping Logic - Pre-processing before agent calls
 // =============================================================================
@@ -148,9 +151,8 @@ export function groupDataMapByParent(dataMap: VerboseDataMapType[]): TableAgentI
 export async function processQuestionGroup(input: TableAgentInput): Promise<TableAgentOutput> {
   console.log(`[TableAgent] Processing question: ${input.questionId} (${input.items.length} items)`);
 
-  try {
-    // Build system prompt with context injection
-    const systemPrompt = `
+  // Build system prompt with context injection
+  const systemPrompt = `
 ${getTableAgentInstructions()}
 
 CURRENT QUESTION GROUP:
@@ -166,57 +168,76 @@ PROCESSING REQUIREMENTS:
 Begin analysis now.
 `;
 
-    // Use generateText with structured output
-    const { output } = await generateText({
-      model: getTableModel(),  // Task-based: table model for display decisions
-      system: systemPrompt,
-      prompt: `Analyze question "${input.questionId}" with ${input.items.length} items and decide how to display as crosstab table(s).`,
-      tools: {
-        scratchpad: tableScratchpadTool,
-      },
-      stopWhen: stepCountIs(15),  // Fewer steps needed than CrosstabAgent
-      maxOutputTokens: Math.min(getTableModelTokenLimit(), 8000),
-      // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
-      providerOptions: {
-        openai: {
-          reasoningEffort: getTableReasoningEffort(),
-        },
-      },
-      output: Output.object({
-        schema: TableAgentOutputSchema,
-      }),
-    });
+  let lastError: Error | null = null;
 
-    if (!output || !output.tables) {
-      throw new Error(`Invalid agent response for question ${input.questionId}`);
+  // Retry loop - try up to MAX_RETRIES + 1 times
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (attempt > 0) {
+      console.log(`[TableAgent] Retry attempt ${attempt}/${MAX_RETRIES} for question: ${input.questionId}`);
     }
 
-    console.log(`[TableAgent] Question ${input.questionId} processed - ${output.tables.length} tables generated, confidence: ${output.confidence.toFixed(2)}`);
+    try {
+      // Use generateText with structured output
+      const { output } = await generateText({
+        model: getTableModel(),  // Task-based: table model for display decisions
+        system: systemPrompt,
+        prompt: `Analyze question "${input.questionId}" with ${input.items.length} items and decide how to display as crosstab table(s).`,
+        tools: {
+          scratchpad: tableScratchpadTool,
+        },
+        stopWhen: stepCountIs(15),  // Fewer steps needed than CrosstabAgent
+        maxOutputTokens: Math.min(getTableModelTokenLimit(), 100000),
+        // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+        providerOptions: {
+          openai: {
+            reasoningEffort: getTableReasoningEffort(),
+          },
+        },
+        output: Output.object({
+          schema: TableAgentOutputSchema,
+        }),
+      });
 
-    return output;
+      if (!output || !output.tables) {
+        throw new Error(`Invalid agent response for question ${input.questionId}`);
+      }
 
-  } catch (error) {
-    console.error(`[TableAgent] Error processing question ${input.questionId}:`, error);
+      console.log(`[TableAgent] Question ${input.questionId} processed - ${output.tables.length} tables generated, confidence: ${output.confidence.toFixed(2)}`);
 
-    // Return fallback result with low confidence
-    return {
-      questionId: input.questionId,
-      questionText: input.questionText,
-      tables: [{
-        tableId: input.questionId.toLowerCase(),
-        title: `Error: ${input.questionId}`,
-        tableType: 'frequency',  // Safe default
-        rows: input.items.map(item => ({
-          variable: item.column,
-          label: item.label,
-          filterValue: '',  // Required field for Azure compatibility
-        })),
-        hints: [],  // No hints for fallback
-      }],
-      confidence: 0.0,
-      reasoning: `Error processing question: ${error instanceof Error ? error.message : 'Unknown error'}. Manual review required.`,
-    };
+      return output;
+
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      console.error(`[TableAgent] Error processing question ${input.questionId} (attempt ${attempt + 1}/${MAX_RETRIES + 1}):`, lastError.message);
+
+      // Continue to retry unless it's the last attempt
+      if (attempt < MAX_RETRIES) {
+        continue;
+      }
+    }
   }
+
+  // All retries exhausted - return fallback result
+  console.error(`[TableAgent] All retries exhausted for question ${input.questionId}`);
+
+  // Return fallback result with low confidence
+  return {
+    questionId: input.questionId,
+    questionText: input.questionText,
+    tables: [{
+      tableId: input.questionId.toLowerCase(),
+      title: `Error: ${input.questionId}`,
+      tableType: 'frequency',  // Safe default
+      rows: input.items.map(item => ({
+        variable: item.column,
+        label: item.label,
+        filterValue: '',  // Required field for Azure compatibility
+      })),
+      hints: [],  // No hints for fallback
+    }],
+    confidence: 0.0,
+    reasoning: `Error processing question: ${lastError?.message || 'Unknown error'}. Manual review required.`,
+  };
 }
 
 /**
@@ -224,7 +245,7 @@ Begin analysis now.
  */
 export async function processAllGroups(
   groups: TableAgentInput[],
-  outputFolder?: string,
+  outputDir?: string,
   onProgress?: (completed: number, total: number) => void
 ): Promise<{ results: TableAgentOutput[]; processingLog: string[] }> {
   const processingLog: string[] = [];
@@ -271,8 +292,8 @@ export async function processAllGroups(
   logEntry(`[TableAgent] Processing complete - ${results.length} groups → ${totalTables} tables, avg confidence: ${avgConfidence.toFixed(2)}`);
 
   // Save outputs
-  if (outputFolder) {
-    await saveDevelopmentOutputs(groups, results, outputFolder, processingLog, scratchpadEntries);
+  if (outputDir) {
+    await saveDevelopmentOutputs(groups, results, outputDir, processingLog, scratchpadEntries);
   }
 
   return { results, processingLog };
@@ -284,12 +305,12 @@ export async function processAllGroups(
  */
 export async function processDataMap(
   dataMap: VerboseDataMapType[],
-  outputFolder?: string,
+  outputDir?: string,
   onProgress?: (completed: number, total: number) => void
 ): Promise<{ results: TableAgentOutput[]; processingLog: string[] }> {
   const groups = groupDataMapByParent(dataMap);
   console.log(`[TableAgent] Grouped ${dataMap.length} variables into ${groups.length} question groups`);
-  return processAllGroups(groups, outputFolder, onProgress);
+  return processAllGroups(groups, outputDir, onProgress);
 }
 
 // =============================================================================
@@ -344,25 +365,24 @@ export const isValidTableAgentOutput = (output: unknown): output is TableAgentOu
 // =============================================================================
 
 async function saveDevelopmentOutputs(
-  groups: TableAgentInput[],
+  _groups: TableAgentInput[],  // Kept for API compatibility; grouped data saved by DataMapProcessor
   results: TableAgentOutput[],
-  outputFolder: string,
+  outputDir: string,
   processingLog?: string[],
   scratchpadEntries?: Array<{ timestamp: string; action: string; content: string }>
 ): Promise<void> {
   try {
-    const outputDir = path.join(process.cwd(), 'temp-outputs', outputFolder);
-    await fs.mkdir(outputDir, { recursive: true });
+    // Create table subfolder for TableAgent outputs
+    const tableDir = path.join(outputDir, 'table');
+    await fs.mkdir(tableDir, { recursive: true });
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 
-    // Save table-agent input (grouped datamap) for debugging
-    const tableAgentInputFile = path.join(outputDir, `dataMap-table-agent-${timestamp}.json`);
-    await fs.writeFile(tableAgentInputFile, JSON.stringify(groups, null, 2), 'utf-8');
-    console.log(`[TableAgent] Development output saved: dataMap-table-agent-${timestamp}.json`);
+    // NOTE: Grouped datamap input is already saved by DataMapProcessor at root level
+    // (as <dataset>-datamap-table-agent-*.json), so we don't duplicate it here
 
     const filename = `table-output-${timestamp}.json`;
-    const filePath = path.join(outputDir, filename);
+    const filePath = path.join(tableDir, filename);
 
     // Calculate summary statistics
     const totalTables = results.reduce((sum, r) => sum + r.tables.length, 0);
@@ -397,15 +417,22 @@ async function saveDevelopmentOutputs(
 
     await fs.writeFile(filePath, JSON.stringify(enhancedOutput, null, 2), 'utf-8');
 
+    // Save raw output (just what the agent produced - for golden dataset comparison)
+    const rawOutput = {
+      results,
+    };
+    const rawPath = path.join(tableDir, 'table-output-raw.json');
+    await fs.writeFile(rawPath, JSON.stringify(rawOutput, null, 2), 'utf-8');
+
     // Save scratchpad trace as separate markdown file
     if (scratchpadEntries && scratchpadEntries.length > 0) {
       const scratchpadFilename = `scratchpad-table-${timestamp}.md`;
-      const scratchpadPath = path.join(outputDir, scratchpadFilename);
+      const scratchpadPath = path.join(tableDir, scratchpadFilename);
       const markdown = formatScratchpadAsMarkdown('TableAgent', scratchpadEntries);
       await fs.writeFile(scratchpadPath, markdown, 'utf-8');
-      console.log(`[TableAgent] Development output saved: ${filename}, ${scratchpadFilename}`);
+      console.log(`[TableAgent] Development output saved to table/: ${filename}, ${scratchpadFilename}`);
     } else {
-      console.log(`[TableAgent] Development output saved: ${filename}`);
+      console.log(`[TableAgent] Development output saved to table/: ${filename}`);
     }
   } catch (error) {
     console.error('[TableAgent] Failed to save development outputs:', error);
