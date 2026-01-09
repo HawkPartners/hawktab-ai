@@ -264,113 +264,221 @@ Our current testing workflow is "run pipeline, eyeball JSON, manually compare." 
 
 This is the standard approach for human-preference-centered LLM evaluation:
 
-1. **Golden Dataset**: Manually-created "expected output" files that represent what we want the agents to produce
+1. **Golden Dataset**: Manually-reviewed "expected output" files for each agent, representing correct behavior
 2. **Strict Comparison**: Automated diff between actual output and golden data (surfaces all differences)
-3. **Human Annotation**: For each difference, mark as "wrong" (needs fix) or "acceptable" (different but fine)
+3. **Human Annotation**: For each difference, mark as "wrong" or "acceptable", with attribution to the responsible component
 4. **Metrics Tracking**: Track both strict accuracy and practical accuracy over time
 
-### What We're Comparing
+### Golden Datasets (4 files per dataset)
 
-The golden dataset comparison covers both **data accuracy** and **agent decisions**:
+Each agent produces output that we compare against a golden reference:
 
-| Category | What's Checked |
-|----------|----------------|
-| **Data Accuracy** | Base n, counts, percentages, means, medians, SDs |
-| **Significance Testing** | Correct letters on correct cells (after Part 3 fix) |
-| **Table Structure** | tableType, rows, grouping decisions |
-| **Labels** | Row labels, table titles |
-| **Derived Tables** | T2B/B2B presence, NET rows |
+| Golden File | Source | What It Tests | Attribution |
+|-------------|--------|---------------|-------------|
+| `banner-expected.json` | `banner-output-raw.json` | Groups, columns, stat letters | banner_agent |
+| `crosstab-expected.json` | `crosstab-output-raw.json` | Cut names, R expressions | crosstab_agent |
+| `verified-tables-expected.json` | `verified-table-output-*.json` | Table structure, labels, NETs, T2B | table_agent, verification_agent |
+| `data-expected.json` | `tables.json` (streamlined) | Calculated values, significance | system, r_script |
 
-### Why This Matters
+**Note**: We skip a separate `table-expected.json` because verification agent output supersedes table agent output (verification enhances the table definitions).
 
-Each agent has a preference component:
-- **TableAgent**: Right tableType, variable, filterValue. Structure decisions.
-- **VerificationAgent**: Labels, splits, NETs, derived tables. Most preference-driven.
+### What Each Golden Dataset Contains
 
-We can't fully automate evaluation because "good" is subjective. But we can:
-- Be strict about surfacing differences (nothing hidden)
-- Let humans annotate what's actually wrong
-- Track improvement systematically
-- Identify patterns for prompt fixes
+**banner-expected.json** - Banner agent decisions:
+- Banner group names
+- Column names within each group
+- Stat letters (A, B, C, etc.)
 
-### Implementation
+**crosstab-expected.json** - Crosstab agent decisions:
+- Cut definitions (name + R expression)
+- Group assignments for stat testing
 
-**Folder Structure**:
+**verified-tables-expected.json** - Table + Verification agent decisions:
+- tableId, title, tableType
+- rows (variable, label, filterValue)
+- isNet, netComponents, indent
+- isDerived, exclude, excludeReason
+- hints
+
+**data-expected.json** - Calculated data (streamlined):
+```json
+{
+  "s1": {
+    "Total": {
+      "S1_row_1": { "n": 180, "count": 45, "pct": 25, "sig_higher_than": [], "sig_vs_total": null }
+    },
+    "Cards": {
+      "S1_row_1": { "n": 60, "count": 20, "pct": 33, "sig_higher_than": ["B"], "sig_vs_total": "higher" }
+    }
+  }
+}
+```
+
+This strips metadata and table-level fields from `tables.json`, keeping only the actual calculated values.
+
+### Comparison Report Structure
+
+The comparison script generates a unified report covering all golden datasets:
+
+```json
+{
+  "metadata": {
+    "dataset": "leqvio-monotherapy-demand-NOV217",
+    "runTimestamp": "2026-01-09T16:54:54.155Z",
+    "generatedAt": "2026-01-09T17:30:00.000Z",
+    "status": "pending_review"
+  },
+  "summary": {
+    "banner": { "total": 8, "matches": 8, "diffs": 0 },
+    "crosstab": { "total": 19, "matches": 18, "diffs": 1 },
+    "structure": { "total": 52, "matches": 48, "diffs": 4 },
+    "data": { "total": 988, "matches": 970, "diffs": 18 }
+  },
+  "overall": {
+    "totalDiffs": 23,
+    "reviewed": 0,
+    "acceptable": 0,
+    "wrong": 0
+  },
+  "differences": [
+    {
+      "id": "diff_001",
+      "category": "structure",
+      "tableId": "a6_ranking",
+      "diffType": "field_mismatch",
+      "path": "tableType",
+      "expected": "frequency",
+      "actual": "ranking",
+      "annotation": null,
+      "attribution": null,
+      "notes": ""
+    },
+    {
+      "id": "diff_002",
+      "category": "data",
+      "tableId": "s1",
+      "rowKey": "S1_row_1",
+      "cut": "Cards",
+      "diffType": "value_mismatch",
+      "field": "pct",
+      "expected": 33,
+      "actual": 32,
+      "annotation": null,
+      "attribution": null,
+      "notes": ""
+    }
+  ]
+}
+```
+
+### Annotation Fields
+
+For each difference, the reviewer fills in:
+
+**annotation** (required):
+- `null` - Not yet reviewed
+- `"acceptable"` - Different but not wrong (e.g., label case difference)
+- `"wrong"` - Actual error that needs fixing
+
+**attribution** (required when `annotation: "wrong"`):
+- `"banner_agent"` - Banner agent made incorrect decision
+- `"crosstab_agent"` - Crosstab agent made incorrect decision
+- `"table_agent"` - Table agent made incorrect decision
+- `"verification_agent"` - Verification agent made incorrect decision
+- `"r_script"` - R script generator bug
+- `"system"` - Edge case our pipeline doesn't handle yet
+- `"user"` - Bad input (wrong banner plan, datamap issues)
+- `"data"` - Source data issue
+
+**notes** (optional): Free text for context
+
+### Metrics Calculation
+
+After annotation, the script calculates:
+
+```json
+{
+  "strictAccuracy": 0.77,
+  "practicalAccuracy": 0.92,
+  "errorRate": 0.08,
+  "attributionBreakdown": {
+    "table_agent": 2,
+    "verification_agent": 1,
+    "system": 1
+  }
+}
+```
+
+- **Strict Accuracy**: matches / total (before annotation)
+- **Practical Accuracy**: (matches + acceptable) / total
+- **Error Rate**: wrong / total
+
+### Folder Structure
+
 ```
 data/leqvio-monotherapy-demand-NOV217/
 ├── inputs/                            # Input files
 │   ├── leqvio-monotherapy-demand-datamap.csv
 │   ├── leqvio-monotherapy-demand-data.sav
 │   ├── leqvio-monotherapy-demand-survey.docx
-│   └── leqvio-monotherapy-demand-bannerplan-clean.docx
+│   └── leqvio-monotherapy-demand-bannerplan-adjusted.docx
 ├── tabs/                              # Reference output
 │   └── leqvio-monotherapy-demand-tabs-joe.xlsx
-├── golden-datasets/                   # For evaluation framework
-│   ├── tables-expected.json           # What TableAgent should produce
-│   ├── verified-tables-expected.json  # What VerificationAgent should produce
-│   └── annotations.json               # Human verdicts on differences
-└── runs/                              # Pipeline run history
-    └── YYYY-MM-DD/
-        ├── comparison-report.json     # Auto-generated diff
-        └── human-review.json          # Annotations for this run
+└── golden-datasets/                   # Evaluation framework
+    ├── banner-expected.json           # Banner agent golden
+    ├── crosstab-expected.json         # Crosstab agent golden
+    ├── verified-tables-expected.json  # Table + Verification agent golden
+    └── data-expected.json             # Calculated data golden (streamlined)
 ```
 
-**Comparison Report** (auto-generated):
-```json
-{
-  "agent": "TableAgent",
-  "summary": {
-    "total_tables": 48,
-    "exact_matches": 29,
-    "differences": 19,
-    "strict_accuracy": 0.604
-  },
-  "differences": [
-    {
-      "id": "diff_001",
-      "table_id": "s8",
-      "field": "tableType",
-      "expected": "frequency",
-      "actual": "grid_by_value",
-      "human_verdict": null
-    }
-  ]
-}
-```
+Pipeline outputs go to `outputs/` folder as usual. Comparison script reads from both locations.
 
-**Human Review** (filled in by reviewer):
-```json
-{
-  "verdicts": {
-    "diff_001": {
-      "verdict": "wrong",
-      "notes": "Single-select question, not a grid"
-    },
-    "diff_002": {
-      "verdict": "acceptable",
-      "notes": "VerificationAgent handles labels"
-    }
-  },
-  "metrics_after_review": {
-    "strict_accuracy": 0.604,
-    "practical_accuracy": 0.812,
-    "truly_wrong_rate": 0.188
-  }
-}
-```
+### Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/extract-data-json.ts` | Extract streamlined data from tables.json (for creating data-expected.json) |
+| `scripts/compare-to-golden.ts` | Generate comparison report from pipeline output vs golden datasets |
+| `scripts/calculate-metrics.ts` | Calculate final metrics from annotated comparison report |
+
+The pipeline also outputs `data-streamlined.json` alongside `tables.json` automatically.
+
+### Workflow
+
+1. **Create Golden Datasets** (one-time per dataset):
+   - Run pipeline to get baseline outputs
+   - Copy `banner-output-raw.json` → `golden-datasets/banner-expected.json`
+   - Copy `crosstab-output-raw.json` → `golden-datasets/crosstab-expected.json`
+   - Copy `verified-table-output-*.json` → `golden-datasets/verified-tables-expected.json`
+   - Run `npx tsx scripts/extract-data-json.ts` → `golden-datasets/data-expected.json`
+   - Review each file, correct any errors manually
+
+2. **Evaluate a Run**:
+   - Run pipeline: `npx tsx scripts/test-pipeline.ts`
+   - Compare: `npx tsx scripts/compare-to-golden.ts <output-folder>`
+   - Review: Open comparison report, annotate each difference
+   - Metrics: `npx tsx scripts/calculate-metrics.ts <comparison-report>`
+
+3. **Iterate**:
+   - Identify patterns in "wrong" annotations
+   - Fix prompts or code
+   - Re-run, compare again
+   - Track metrics over time
 
 ### Deliverables
 
-1. **Golden dataset creation**: Manually create `tables-expected.json` and `verified-tables-expected.json` for primary dataset
-2. **Comparison script**: `scripts/evaluate-run.ts` that generates comparison reports
-3. **Annotation workflow**: Simple JSON-based human review process
-4. **Metrics dashboard**: Track strict vs practical accuracy over runs
+1. **Golden datasets**: 4 files for primary dataset (banner, crosstab, verified-tables, data)
+2. **Extract script**: `scripts/extract-data-json.ts` for creating streamlined data golden
+3. **Comparison script**: `scripts/compare-to-golden.ts` for generating diff reports
+4. **Metrics script**: `scripts/calculate-metrics.ts` for final metrics calculation
+5. **Pipeline update**: Auto-output `data-streamlined.json` alongside `tables.json`
 
 ### Exit Criteria
 
-- Golden datasets exist for primary dataset (TableAgent + VerificationAgent)
-- Comparison script produces actionable diff reports
-- At least one full evaluation cycle completed (run → compare → annotate → identify patterns)
+- All 4 golden datasets exist for primary dataset
+- Comparison script produces unified diff report covering all agents
+- At least one full evaluation cycle completed (run → compare → annotate → calculate metrics)
+- Attribution breakdown identifies which agents need prompt iteration
 
 ---
 
