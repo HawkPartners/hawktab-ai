@@ -59,6 +59,7 @@ import { generateRScriptV2WithValidation, type ValidationReport } from '../src/l
 import { buildCutsSpec } from '../src/lib/tables/CutsSpec';
 import { sortTables, getSortingMetadata } from '../src/lib/tables/sortTables';
 import { ExcelFormatter } from '../src/lib/excel/ExcelFormatter';
+import { extractStreamlinedData } from '../src/lib/data/extractStreamlinedData';
 import { getPromptVersions } from '../src/lib/env';
 import type { VerboseDataMapType } from '../src/schemas/processingSchemas';
 import type { ExtendedTableDefinition } from '../src/schemas/verificationAgentSchema';
@@ -455,6 +456,12 @@ async function runPipeline(datasetFolder: string) {
       const tableCount = Object.keys(jsonData.tables || {}).length;
 
       log(`  Generated tables.json with ${tableCount} tables`, 'green');
+
+      // Extract and save streamlined data (for golden dataset evaluation)
+      const streamlinedData = extractStreamlinedData(jsonData);
+      const streamlinedPath = path.join(resultsDir, 'data-streamlined.json');
+      await fs.writeFile(streamlinedPath, JSON.stringify(streamlinedData, null, 2), 'utf-8');
+      log(`  Generated data-streamlined.json`, 'green');
     } else {
       log(`  WARNING: No tables.json generated`, 'yellow');
     }
