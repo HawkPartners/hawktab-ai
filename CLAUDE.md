@@ -48,12 +48,12 @@ We're making HawkTab AI reliably produce publication-quality crosstabs that matc
 | 2 | VerificationAgent | Complete |
 | 3 | Significance Testing (unpooled z-test) | Complete |
 | 3b | SPSS Validation Clarity | Complete |
-| 4 | Evaluation Framework (golden dataset) | Not started |
-| 5 | Iteration on practice-files | Not started |
+| 4 | Evaluation Framework (golden dataset) | In Progress |
+| 5 | Iteration on primary dataset | Not started |
 | 6 | Broader Testing (23 datasets) | Not started |
 
-**Test Data**: `data/test-data/practice-files/`
-**Reference Output**: `leqvio-demand-tabs-joe.xlsx`
+**Primary Test Data**: `data/leqvio-monotherapy-demand-NOV217/`
+**Reference Output**: `tabs/leqvio-monotherapy-demand-tabs-joe.xlsx`
 
 ---
 
@@ -99,7 +99,7 @@ Getters in `src/lib/env.ts`: `getCrosstabModel()`, `getTableModel()`, `getVerifi
 
 ## Test Scripts
 
-All scripts use `data/test-data/practice-files/` by default.
+All scripts use `data/leqvio-monotherapy-demand-NOV217/` by default (with nested `inputs/` subfolder support).
 
 ```bash
 # Full pipeline (8 steps: DataMap → Banner → Crosstab → Table → Verification → R → Excel)
@@ -142,8 +142,12 @@ hawktab-ai/
 │   │   └── tables/CutsSpec.ts
 │   └── prompts/                   # Agent prompt templates
 ├── scripts/                       # CLI test scripts
-├── data/test-data/                # 23 test datasets
-│   └── practice-files/            # Primary test dataset
+├── data/
+│   ├── leqvio-monotherapy-demand-NOV217/  # Primary test dataset
+│   │   ├── inputs/                # Input files (datamap, data.sav, etc.)
+│   │   ├── tabs/                  # Reference output (Joe's tabs)
+│   │   └── golden-datasets/       # Golden datasets for evaluation
+│   └── test-data/                 # 23 additional test datasets
 ├── docs/implementation-plans/
 │   ├── reliability-plan.md        # CURRENT WORK
 │   └── significance-testing-plan.md
@@ -195,12 +199,19 @@ When we build the evaluation framework:
 
 ### Golden Dataset Structure
 ```
-data/test-data/practice-files/
-├── golden/
+data/leqvio-monotherapy-demand-NOV217/
+├── inputs/                            # Input files
+│   ├── leqvio-monotherapy-demand-datamap.csv
+│   ├── leqvio-monotherapy-demand-data.sav
+│   ├── leqvio-monotherapy-demand-survey.docx
+│   └── leqvio-monotherapy-demand-bannerplan-clean.docx
+├── tabs/                              # Reference output
+│   └── leqvio-monotherapy-demand-tabs-joe.xlsx
+├── golden-datasets/                   # For evaluation framework
 │   ├── tables-expected.json           # What TableAgent should produce
 │   ├── verified-tables-expected.json  # What VerificationAgent should produce
 │   └── annotations.json               # Human verdicts on differences
-└── runs/
+└── runs/                              # Pipeline run history
     └── YYYY-MM-DD/
         ├── comparison-report.json     # Auto-generated diff
         └── human-review.json          # Annotations for this run
@@ -282,7 +293,7 @@ type MyOutput = z.infer<typeof MyOutputSchema>;
 |------|------------------|
 | Run full pipeline | `npx tsx scripts/test-pipeline.ts` |
 | Check agent reasoning | `temp-outputs/*/scratchpad-*.md` |
-| Compare to Joe's output | `data/test-data/practice-files/leqvio-demand-tabs-joe.xlsx` |
+| Compare to Joe's output | `data/leqvio-monotherapy-demand-NOV217/tabs/leqvio-monotherapy-demand-tabs-joe.xlsx` |
 | Tune agent prompt | `src/prompts/*AgentPrompt.ts` |
 | Adjust reasoning effort | `.env.local` → `*_REASONING_EFFORT` |
 | Current work | `docs/implementation-plans/reliability-plan.md` |
