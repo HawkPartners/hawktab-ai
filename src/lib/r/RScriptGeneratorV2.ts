@@ -52,13 +52,185 @@ export interface RScriptV2Options {
 }
 
 // =============================================================================
+// Table Validation Types
+// =============================================================================
+
+/**
+ * Result of validating a single table
+ */
+export interface TableValidationResult {
+  tableId: string;
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+/**
+ * Summary of all table validations
+ */
+export interface ValidationReport {
+  totalTables: number;
+  validTables: number;
+  invalidTables: number;
+  skippedTables: TableValidationResult[];
+  warnings: TableValidationResult[];
+}
+
+/**
+ * Extended return type that includes validation info
+ */
+export interface RScriptV2Result {
+  script: string;
+  validation: ValidationReport;
+}
+
+// =============================================================================
+// Table Validation Functions
+// =============================================================================
+
+/**
+ * Valid table types that the R script generator can handle
+ */
+const VALID_TABLE_TYPES = ['frequency', 'mean_rows'] as const;
+
+/**
+ * Validate a single table definition before R code generation.
+ * Returns errors that would cause R script failure and warnings for potential issues.
+ */
+export function validateTable(table: ExtendedTableDefinition): TableValidationResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  // Check tableType is valid
+  if (!VALID_TABLE_TYPES.includes(table.tableType as typeof VALID_TABLE_TYPES[number])) {
+    errors.push(`Invalid tableType "${table.tableType}". Must be "frequency" or "mean_rows".`);
+  }
+
+  // Check rows exist
+  if (!table.rows || table.rows.length === 0) {
+    errors.push('Table has no rows.');
+  }
+
+  // Validate rows based on tableType
+  if (table.tableType === 'frequency') {
+    for (let i = 0; i < table.rows.length; i++) {
+      const row = table.rows[i];
+
+      // For frequency tables, filterValue must not be empty (unless it's a NET with netComponents)
+      const isNetWithComponents = row.isNet && row.netComponents && row.netComponents.length > 0;
+      if (!row.filterValue && !isNetWithComponents) {
+        errors.push(`Row ${i + 1} (${row.variable}): Empty filterValue on frequency table. This will generate invalid R code.`);
+      }
+
+      // Check variable name exists
+      if (!row.variable) {
+        errors.push(`Row ${i + 1}: Missing variable name.`);
+      }
+    }
+  } else if (table.tableType === 'mean_rows') {
+    for (let i = 0; i < table.rows.length; i++) {
+      const row = table.rows[i];
+
+      // For mean_rows, filterValue should be empty
+      if (row.filterValue && row.filterValue.trim() !== '') {
+        warnings.push(`Row ${i + 1} (${row.variable}): Non-empty filterValue "${row.filterValue}" on mean_rows table. Will be ignored.`);
+      }
+
+      // Check variable name exists
+      if (!row.variable) {
+        errors.push(`Row ${i + 1}: Missing variable name.`);
+      }
+    }
+  }
+
+  // Check for duplicate row keys (variable + filterValue combination for frequency)
+  if (table.tableType === 'frequency') {
+    const seen = new Set<string>();
+    for (let i = 0; i < table.rows.length; i++) {
+      const row = table.rows[i];
+      const key = `${row.variable}:${row.filterValue}`;
+      if (seen.has(key)) {
+        warnings.push(`Row ${i + 1}: Duplicate variable/filterValue combination "${key}".`);
+      }
+      seen.add(key);
+    }
+  }
+
+  return {
+    tableId: table.tableId,
+    valid: errors.length === 0,
+    errors,
+    warnings,
+  };
+}
+
+/**
+ * Validate all tables and return a validation report.
+ * Invalid tables will be filtered out with logged warnings.
+ */
+export function validateAllTables(
+  tables: ExtendedTableDefinition[]
+): { validTables: ExtendedTableDefinition[]; report: ValidationReport } {
+  const validTables: ExtendedTableDefinition[] = [];
+  const skippedTables: TableValidationResult[] = [];
+  const tablesWithWarnings: TableValidationResult[] = [];
+
+  for (const table of tables) {
+    // Skip excluded tables (they're intentionally excluded by VerificationAgent)
+    if (table.exclude) {
+      validTables.push(table); // Keep them for the skip comment in R
+      continue;
+    }
+
+    const validation = validateTable(table);
+
+    if (validation.valid) {
+      validTables.push(table);
+      if (validation.warnings.length > 0) {
+        tablesWithWarnings.push(validation);
+      }
+    } else {
+      // Log validation errors
+      console.error(`[RScriptGeneratorV2] Skipping invalid table "${table.tableId}":`);
+      for (const error of validation.errors) {
+        console.error(`  - ${error}`);
+      }
+      skippedTables.push(validation);
+    }
+
+    // Log warnings even for valid tables
+    if (validation.warnings.length > 0) {
+      console.warn(`[RScriptGeneratorV2] Warnings for table "${table.tableId}":`);
+      for (const warning of validation.warnings) {
+        console.warn(`  - ${warning}`);
+      }
+    }
+  }
+
+  const report: ValidationReport = {
+    totalTables: tables.length,
+    validTables: validTables.filter(t => !t.exclude).length,
+    invalidTables: skippedTables.length,
+    skippedTables,
+    warnings: tablesWithWarnings,
+  };
+
+  return { validTables, report };
+}
+
+// =============================================================================
 // Main Generator
 // =============================================================================
 
-export function generateRScriptV2(
+/**
+ * Generate R script with validation.
+ * Returns both the script and a validation report.
+ * Invalid tables are skipped (not included in the script) but logged in the report.
+ */
+export function generateRScriptV2WithValidation(
   input: RScriptV2Input,
   options: RScriptV2Options = {}
-): string {
+): RScriptV2Result {
   const {
     tables,
     cuts,
@@ -70,6 +242,14 @@ export function generateRScriptV2(
     bannerGroups = []
   } = input;
   const { sessionId = 'unknown', outputDir = 'results' } = options;
+
+  // Validate all tables first
+  const { validTables, report } = validateAllTables(tables);
+
+  // Log summary
+  if (report.invalidTables > 0) {
+    console.error(`[RScriptGeneratorV2] Validation failed for ${report.invalidTables} table(s). They will be skipped.`);
+  }
 
   // Build banner groups from cuts if not provided
   const effectiveBannerGroups = bannerGroups.length > 0
@@ -87,9 +267,14 @@ export function generateRScriptV2(
   lines.push('# HawkTab AI - R Script V2');
   lines.push(`# Session: ${sessionId}`);
   lines.push(`# Generated: ${new Date().toISOString()}`);
-  lines.push(`# Tables: ${tables.length}`);
+  lines.push(`# Tables: ${report.validTables} (${report.invalidTables} skipped due to validation errors)`);
   lines.push(`# Cuts: ${cuts.length + 1}`);  // +1 for Total
   lines.push(`# Significance Level: ${significanceLevel} (${Math.round((1 - significanceLevel) * 100)}% confidence)`);
+  if (report.invalidTables > 0) {
+    lines.push('#');
+    lines.push('# WARNING: Some tables were skipped due to validation errors.');
+    lines.push('# Check validation report for details.');
+  }
   lines.push('');
 
   // -------------------------------------------------------------------------
@@ -136,7 +321,19 @@ export function generateRScriptV2(
   lines.push('all_tables <- list()');
   lines.push('');
 
-  for (const table of tables) {
+  // Add comments for skipped invalid tables
+  if (report.skippedTables.length > 0) {
+    lines.push('# -----------------------------------------------------------------------------');
+    lines.push('# SKIPPED TABLES (validation errors):');
+    for (const skipped of report.skippedTables) {
+      lines.push(`#   ${skipped.tableId}: ${skipped.errors.join('; ')}`);
+    }
+    lines.push('# -----------------------------------------------------------------------------');
+    lines.push('');
+  }
+
+  // Generate code only for valid tables
+  for (const table of validTables) {
     // Skip excluded tables (moved to reference sheet by VerificationAgent)
     if (table.exclude) {
       lines.push(`# Skipping excluded table: ${table.tableId} (${table.excludeReason})`);
@@ -144,17 +341,13 @@ export function generateRScriptV2(
       continue;
     }
 
+    // Since we validated upfront, tableType should always be valid
     if (table.tableType === 'frequency') {
       generateFrequencyTable(lines, table);
-      // Note: Derived tables (T2B, Top 3) are now created by VerificationAgent
-      // and passed as separate tables with isDerived: true
     } else if (table.tableType === 'mean_rows') {
       generateMeanRowsTable(lines, table);
-    } else {
-      // Fallback: treat unknown types as frequency
-      console.warn(`[RScriptGeneratorV2] Unknown tableType "${table.tableType}", treating as frequency`);
-      generateFrequencyTable(lines, table);
     }
+    // No else/fallback needed - validation already caught invalid types
   }
 
   // -------------------------------------------------------------------------
@@ -165,13 +358,29 @@ export function generateRScriptV2(
   // -------------------------------------------------------------------------
   // JSON Output
   // -------------------------------------------------------------------------
-  generateJsonOutput(lines, tables, cuts, outputDir, {
+  generateJsonOutput(lines, validTables, cuts, outputDir, {
     totalRespondents,
     bannerGroups: effectiveBannerGroups,
     comparisonGroups,
   });
 
-  return lines.join('\n');
+  return {
+    script: lines.join('\n'),
+    validation: report,
+  };
+}
+
+/**
+ * Generate R script (backward-compatible wrapper).
+ * Uses validation internally but only returns the script string.
+ * Invalid tables are silently skipped with console warnings.
+ */
+export function generateRScriptV2(
+  input: RScriptV2Input,
+  options: RScriptV2Options = {}
+): string {
+  const result = generateRScriptV2WithValidation(input, options);
+  return result.script;
 }
 
 // =============================================================================
@@ -852,13 +1061,18 @@ function buildComparisonGroups(bannerGroups: BannerGroup[]): string[] {
 // Exports for Testing
 // =============================================================================
 
+// Note: generateRScriptV2, generateRScriptV2WithValidation, validateTable, validateAllTables
+// are already exported at their definition sites above.
+
 export {
+  // Internal generators (for testing)
   generateCutsDefinition,
   generateHelperFunctions,
   generateFrequencyTable,
   generateMeanRowsTable,
   generateSignificanceTesting,
   generateJsonOutput,
+  // Utilities
   escapeRString,
   sanitizeVarName,
   buildBannerGroupsFromCuts,

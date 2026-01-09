@@ -7,26 +7,38 @@ import { z } from 'zod';
  *
  * Key distinction:
  * - normalizedType: Data structure from DataMapProcessor (e.g., "numeric_range", "categorical_select")
- * - tableType: Display format for crosstab output (e.g., "frequency", "mean_rows", "grid_by_value")
+ * - tableType: Display format for crosstab output (ONLY "frequency" or "mean_rows")
  *
  * The agent maps data structures to display formats based on survey semantics.
+ *
+ * IMPORTANT: There are only TWO valid table types:
+ * - "frequency": For categorical data (counts/percentages per value)
+ * - "mean_rows": For numeric data (mean/median/sd per item)
+ *
+ * All question patterns (rankings, grids, multi-selects) are handled using these two types
+ * with appropriate row structures and filterValues.
  */
 
 // =============================================================================
-// Table Type Catalog
+// Table Type Catalog (STRICT - only 2 types allowed)
 // =============================================================================
 
 /**
  * Available table types the agent can output.
- * Each maps to a specific display format in the final Excel output.
+ * CRITICAL: Only these two types are valid. The R script generator will reject any other values.
+ *
+ * - frequency: For categorical variables. Each row represents one answer value.
+ *              filterValue must be the value code (e.g., "1", "2", "3") - NEVER empty.
+ *
+ * - mean_rows: For numeric variables. Each row represents one variable/item.
+ *              filterValue must be empty string "".
+ *
+ * Rankings, grids, and multi-selects are all handled as "frequency" tables with appropriate
+ * row structures and filterValues.
  */
 export const TableTypeSchema = z.enum([
-  'frequency',      // Single categorical question - each answer option is a row
-  'mean_rows',      // Multiple numeric items - each item is a row showing mean/median/sd
-  'grid_by_value',  // Grid question - each item is a row, filtered to one value
-  'grid_by_item',   // Grid question - each value is a row for a single item
-  'multi_select',   // Multi-select question - each option is a row (value=1)
-  'ranking',        // Ranking questions - each option is a row showing mean rank
+  'frequency',      // Categorical data - count/percent per value (filterValue = value code, never empty)
+  'mean_rows',      // Numeric data - mean/median/sd per item (filterValue = "" always)
 ]);
 
 export type TableType = z.infer<typeof TableTypeSchema>;
@@ -108,8 +120,9 @@ export const TableRowSchema = z.object({
   variable: z.string(),         // SPSS variable name: "S8r1", "A1r1"
   label: z.string(),            // Display label: "Treating/Managing patients"
 
-  // For grid_by_value: which value this row represents
-  // Use empty string "" when not applicable (Azure requires all fields)
+  // For frequency tables: the value code to filter on (e.g., "1", "2", "3") - REQUIRED, never empty
+  // For mean_rows tables: must be empty string ""
+  // Use comma-separated for merged values (e.g., "4,5" for T2B)
   filterValue: z.string(),
 });
 
@@ -134,7 +147,7 @@ export type TableHint = z.infer<typeof TableHintSchema>;
 export const TableDefinitionSchema = z.object({
   tableId: z.string(),          // Unique ID: "s8", "a1_indication_a"
   title: z.string(),            // Display title for the table
-  tableType: TableTypeSchema,   // From catalog: "mean_rows", "grid_by_value", etc.
+  tableType: TableTypeSchema,   // ONLY "frequency" or "mean_rows" - nothing else
 
   // Rows in the table
   rows: z.array(TableRowSchema),

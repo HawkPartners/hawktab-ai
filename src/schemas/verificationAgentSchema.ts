@@ -69,7 +69,7 @@ export const ExtendedTableDefinitionSchema = z.object({
   /** Display title */
   title: z.string(),
 
-  /** Table type from catalog */
+  /** Table type - ONLY "frequency" or "mean_rows" allowed */
   tableType: TableTypeSchema,
 
   /** Table rows */

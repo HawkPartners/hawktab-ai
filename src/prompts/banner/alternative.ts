@@ -61,6 +61,7 @@ COMMON ERRORS TO AVOID:
 - Creating separate groups for each column (5 values under one header = 1 group with 5 columns)
 - Merging distinct groups (separate headers = separate groups, even if conceptually related)
 - Over-aggregation (creating mega-groups that obscure logical dimensions)
+- Mis-appropriating a column, filter or otherwise, found in another group to a different unrelated group
 </group_identification_protocol>
 
 <extraction_specifications>
