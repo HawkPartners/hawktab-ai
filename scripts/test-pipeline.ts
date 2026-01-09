@@ -59,6 +59,7 @@ import { generateRScriptV2 } from '../src/lib/r/RScriptGeneratorV2';
 import { buildCutsSpec } from '../src/lib/tables/CutsSpec';
 import { sortTables, getSortingMetadata } from '../src/lib/tables/sortTables';
 import { ExcelFormatter } from '../src/lib/excel/ExcelFormatter';
+import { getPromptVersions } from '../src/lib/env';
 import type { VerboseDataMapType } from '../src/schemas/processingSchemas';
 import type { ExtendedTableDefinition } from '../src/schemas/verificationAgentSchema';
 
@@ -204,6 +205,15 @@ async function runPipeline(datasetFolder: string) {
   log(`  Survey:  ${files.survey ? path.basename(files.survey) : '(not found - VerificationAgent will use passthrough)'}`, 'dim');
   log('', 'reset');
 
+  // Get prompt versions for logging
+  const promptVersions = getPromptVersions();
+  log('Prompt Versions:', 'blue');
+  log(`  Banner:        ${promptVersions.bannerPromptVersion}`, 'dim');
+  log(`  Crosstab:      ${promptVersions.crosstabPromptVersion}`, 'dim');
+  log(`  Table:         ${promptVersions.tablePromptVersion}`, 'dim');
+  log(`  Verification:  ${promptVersions.verificationPromptVersion}`, 'dim');
+  log('', 'reset');
+
   // Create output folder: outputs/<dataset>/pipeline-<timestamp>/
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const outputFolder = `pipeline-${timestamp}`;
@@ -233,6 +243,7 @@ async function runPipeline(datasetFolder: string) {
   // Step 2: BannerAgent
   // -------------------------------------------------------------------------
   logStep(2, totalSteps, 'Extracting banner plan...');
+  log(`  Using prompt version: ${promptVersions.bannerPromptVersion}`, 'dim');
   const stepStart2 = Date.now();
 
   const bannerAgent = new BannerAgent();
@@ -252,6 +263,7 @@ async function runPipeline(datasetFolder: string) {
   // Step 3: CrosstabAgent
   // -------------------------------------------------------------------------
   logStep(3, totalSteps, 'Validating banner expressions...');
+  log(`  Using prompt version: ${promptVersions.crosstabPromptVersion}`, 'dim');
   const stepStart3 = Date.now();
 
   // Build simple data structures for CrosstabAgent
@@ -281,6 +293,7 @@ async function runPipeline(datasetFolder: string) {
   // Step 4: TableAgent
   // -------------------------------------------------------------------------
   logStep(4, totalSteps, 'Analyzing table structures...');
+  log(`  Using prompt version: ${promptVersions.tablePromptVersion}`, 'dim');
   const stepStart4 = Date.now();
 
   const { results: tableAgentResults } = await processTableAgent(verboseDataMap, outputDir);
@@ -294,6 +307,7 @@ async function runPipeline(datasetFolder: string) {
   // Step 5: VerificationAgent
   // -------------------------------------------------------------------------
   logStep(5, totalSteps, 'Verifying tables with survey document...');
+  log(`  Using prompt version: ${promptVersions.verificationPromptVersion}`, 'dim');
   const stepStart5 = Date.now();
 
   let verifiedTables: ExtendedTableDefinition[];
@@ -492,6 +506,12 @@ async function runPipeline(datasetFolder: string) {
     dataset: files.name,
     timestamp: new Date().toISOString(),
     duration: { ms: totalDuration, formatted: `${(totalDuration / 1000).toFixed(1)}s` },
+    promptVersions: {
+      banner: promptVersions.bannerPromptVersion,
+      crosstab: promptVersions.crosstabPromptVersion,
+      table: promptVersions.tablePromptVersion,
+      verification: promptVersions.verificationPromptVersion,
+    },
     inputs: {
       datamap: path.basename(files.datamap),
       banner: path.basename(files.banner),
