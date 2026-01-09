@@ -29,8 +29,6 @@ const getCrosstabValidationInstructions = (): string => {
 };
 
 // Process single banner group using Vercel AI SDK
-const MAX_RETRIES = 2;
-
 export async function processGroup(dataMap: DataMapType, group: BannerGroupType): Promise<ValidatedGroupType> {
   console.log(`[CrosstabAgent] Processing group: ${group.groupName} (${group.columns.length} columns)`);
 
@@ -56,75 +54,52 @@ PROCESSING REQUIREMENTS:
 Begin validation now.
 `;
 
-  let lastError: Error | null = null;
+  try {
+    // Use generateText with structured output and multi-step tool calling
+    const { output } = await generateText({
+      model: getCrosstabModel(),  // Task-based: crosstab model for complex validation
+      system: systemPrompt,
+      maxRetries: 3,  // SDK handles transient/network errors
+      prompt: `Validate banner group "${group.groupName}" with ${group.columns.length} columns against the data map.`,
+      tools: {
+        scratchpad: crosstabScratchpadTool,
+      },
+      stopWhen: stepCountIs(25),  // AI SDK 5+: replaces maxTurns/maxSteps
+      maxOutputTokens: Math.min(getCrosstabModelTokenLimit(), 100000),
+      // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+      providerOptions: {
+        openai: {
+          reasoningEffort: getCrosstabReasoningEffort(),
+        },
+      },
+      output: Output.object({
+        schema: ValidatedGroupSchema,
+      }),
+    });
 
-  // Retry loop - try up to MAX_RETRIES + 1 times
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    if (attempt > 0) {
-      console.log(`[CrosstabAgent] Retry attempt ${attempt}/${MAX_RETRIES} for group: ${group.groupName}`);
+    if (!output || !output.columns) {
+      throw new Error(`Invalid agent response for group ${group.groupName}`);
     }
 
-    try {
-      // Use generateText with structured output and multi-step tool calling
-      const { output } = await generateText({
-        model: getCrosstabModel(),  // Task-based: crosstab model for complex validation
-        system: systemPrompt,
-        prompt: `Validate banner group "${group.groupName}" with ${group.columns.length} columns against the data map.`,
-        tools: {
-          scratchpad: crosstabScratchpadTool,
-        },
-        stopWhen: stepCountIs(25),  // AI SDK 5+: replaces maxTurns/maxSteps
-        maxOutputTokens: Math.min(getCrosstabModelTokenLimit(), 100000),
-        // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
-        providerOptions: {
-          openai: {
-            reasoningEffort: getCrosstabReasoningEffort(),
-          },
-        },
-        output: Output.object({
-          schema: ValidatedGroupSchema,
-        }),
-      });
+    console.log(`[CrosstabAgent] Group ${group.groupName} processed successfully - ${output.columns.length} columns validated`);
 
-      if (!output || !output.columns) {
-        throw new Error(`Invalid agent response for group ${group.groupName}`);
-      }
+    return output;
 
-      console.log(`[CrosstabAgent] Group ${group.groupName} processed successfully - ${output.columns.length} columns validated`);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`[CrosstabAgent] Error processing group ${group.groupName}:`, errorMessage);
 
-      return output;
-
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-      console.error(`[CrosstabAgent] Error processing group ${group.groupName} (attempt ${attempt + 1}/${MAX_RETRIES + 1}):`, lastError.message);
-
-      // Continue to retry unless it's the last attempt
-      if (attempt < MAX_RETRIES) {
-        continue;
-      }
-    }
+    // Return fallback result with zero confidence (will be skipped by R generator)
+    return {
+      groupName: group.groupName,
+      columns: group.columns.map(col => ({
+        name: col.name,
+        adjusted: `# Error: Processing failed for "${col.original}"`,
+        confidence: 0.0,
+        reason: `Processing error: ${errorMessage}. Manual review required.`
+      }))
+    };
   }
-
-  // All retries exhausted - return fallback result
-  console.error(`[CrosstabAgent] All retries exhausted for group ${group.groupName}`);
-
-  // Check if it's a step limit error (stopWhen condition reached)
-  const isStepLimitError = lastError &&
-    (lastError.message.includes('step') || lastError.message.includes('limit') || lastError.message.includes('maximum'));
-  const errorType = isStepLimitError
-    ? 'Step limit reached - consider simplifying expressions'
-    : 'Processing error';
-
-  // Return fallback result with zero confidence (will be skipped by R generator)
-  return {
-    groupName: group.groupName,
-    columns: group.columns.map(col => ({
-      name: col.name,
-      adjusted: `# Error: ${errorType} for "${col.original}"`,
-      confidence: 0.0,
-      reason: `${errorType}: ${lastError?.message || 'Unknown error'}. Manual review required.`
-    }))
-  };
 }
 
 // Process all banner groups using group-by-group strategy
