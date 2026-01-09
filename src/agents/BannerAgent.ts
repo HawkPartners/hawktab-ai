@@ -178,8 +178,6 @@ export class BannerAgent {
   }
 
   // Agent-based extraction using Vercel AI SDK with vision
-  private static readonly MAX_RETRIES = 2;
-
   private async extractBannerStructureWithAgent(images: ProcessedImage[]): Promise<BannerExtractionResult> {
     console.log(`[BannerAgent] Starting agent-based extraction with ${images.length} images`);
     console.log(`[BannerAgent] Using model: ${getBannerModelName()}`);
@@ -201,89 +199,74 @@ PROCESSING REQUIREMENTS:
 Begin analysis now.
 `;
 
-    let lastError: Error | null = null;
+    try {
+      // CRITICAL: Image format is different in Vercel AI SDK
+      // OpenAI Agents SDK: { type: 'input_image', image: 'data:image/png;base64,...' }
+      // Vercel AI SDK: { type: 'image', image: Buffer.from(base64, 'base64') }
+      const { output } = await generateText({
+        model: getBannerModel(),  // Task-based: banner model for vision/extraction tasks
+        system: systemPrompt,
+        maxRetries: 3,  // SDK handles transient/network errors
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: 'Analyze the banner plan images and extract column specifications with proper group separation.' },
+              ...images.map(img => ({
+                type: 'image' as const,
+                image: Buffer.from(img.base64, 'base64'),
+                mimeType: `image/${img.format}` as const,
+              })),
+            ],
+          },
+        ],
+        tools: {
+          scratchpad: bannerScratchpadTool,
+        },
+        stopWhen: stepCountIs(15),  // AI SDK 5+: replaces maxTurns/maxSteps
+        maxOutputTokens: Math.min(getBannerModelTokenLimit(), 100000),
+        // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+        providerOptions: {
+          openai: {
+            reasoningEffort: getBannerReasoningEffort(),
+          },
+        },
+        output: Output.object({
+          schema: BannerExtractionResultSchema,
+        }),
+      });
 
-    // Retry loop - try up to MAX_RETRIES + 1 times
-    for (let attempt = 0; attempt <= BannerAgent.MAX_RETRIES; attempt++) {
-      if (attempt > 0) {
-        console.log(`[BannerAgent] Retry attempt ${attempt}/${BannerAgent.MAX_RETRIES}`);
+      if (!output || !output.extractedStructure) {
+        throw new Error('Invalid agent response structure');
       }
 
-      try {
-        // CRITICAL: Image format is different in Vercel AI SDK
-        // OpenAI Agents SDK: { type: 'input_image', image: 'data:image/png;base64,...' }
-        // Vercel AI SDK: { type: 'image', image: Buffer.from(base64, 'base64') }
-        const { output } = await generateText({
-          model: getBannerModel(),  // Task-based: banner model for vision/extraction tasks
-          system: systemPrompt,
-          messages: [
-            {
-              role: 'user',
-              content: [
-                { type: 'text', text: 'Analyze the banner plan images and extract column specifications with proper group separation.' },
-                ...images.map(img => ({
-                  type: 'image' as const,
-                  image: Buffer.from(img.base64, 'base64'),
-                  mimeType: `image/${img.format}` as const,
-                })),
-              ],
-            },
-          ],
-          tools: {
-            scratchpad: bannerScratchpadTool,
-          },
-          stopWhen: stepCountIs(15),  // AI SDK 5+: replaces maxTurns/maxSteps
-          maxOutputTokens: Math.min(getBannerModelTokenLimit(), 100000),
-          // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
-          providerOptions: {
-            openai: {
-              reasoningEffort: getBannerReasoningEffort(),
-            },
-          },
-          output: Output.object({
-            schema: BannerExtractionResultSchema,
-          }),
-        });
+      console.log(`[BannerAgent] Agent extracted ${output.extractedStructure.bannerCuts.length} groups`);
 
-        if (!output || !output.extractedStructure) {
-          throw new Error('Invalid agent response structure');
-        }
+      return output;
 
-        console.log(`[BannerAgent] Agent extracted ${output.extractedStructure.bannerCuts.length} groups`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`[BannerAgent] Extraction failed:`, errorMessage);
 
-        return output;
-
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-        console.error(`[BannerAgent] Extraction failed (attempt ${attempt + 1}/${BannerAgent.MAX_RETRIES + 1}):`, lastError.message);
-
-        // Continue to retry unless it's the last attempt
-        if (attempt < BannerAgent.MAX_RETRIES) {
-          continue;
-        }
-      }
+      // Return structured failure result
+      return {
+        success: false,
+        extractionType: 'banner_extraction',
+        timestamp: new Date().toISOString(),
+        extractedStructure: {
+          bannerCuts: [],
+          notes: [],
+          processingMetadata: {
+            totalColumns: 0,
+            groupCount: 0,
+            statisticalLettersUsed: [],
+            processingTimestamp: new Date().toISOString()
+          }
+        },
+        errors: [errorMessage],
+        warnings: []
+      };
     }
-
-    // All retries exhausted - return structured failure result
-    console.error('[BannerAgent] All retries exhausted');
-
-    return {
-      success: false,
-      extractionType: 'banner_extraction',
-      timestamp: new Date().toISOString(),
-      extractedStructure: {
-        bannerCuts: [],
-        notes: [],
-        processingMetadata: {
-          totalColumns: 0,
-          groupCount: 0,
-          statisticalLettersUsed: [],
-          processingTimestamp: new Date().toISOString()
-        }
-      },
-      errors: [lastError?.message || 'Agent extraction failed after retries'],
-      warnings: []
-    };
   }
 
   // Step 1: DOC/DOCX → PDF conversion

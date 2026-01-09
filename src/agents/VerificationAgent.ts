@@ -40,9 +40,6 @@ import { getVerificationPrompt } from '../prompts/verification';
 import fs from 'fs/promises';
 import path from 'path';
 
-// Retry configuration for transient failures
-const MAX_RETRIES = 2;
-
 // =============================================================================
 // Types
 // =============================================================================
@@ -110,63 +107,49 @@ ${JSON.stringify(input.table, null, 2)}
 Analyze the table against the survey document. Fix labels, split if needed, add NETs if appropriate, create T2B if it's a scale, or flag for exclusion if low value. Output the tables array representing the desired end state.
 `;
 
-  let lastError: Error | null = null;
-
-  // Retry loop - try up to MAX_RETRIES + 1 times
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    if (attempt > 0) {
-      console.log(`[VerificationAgent] Retry attempt ${attempt}/${MAX_RETRIES} for table: ${input.table.tableId}`);
-    }
-
-    try {
-      // Use generateText with structured output
-      const { output } = await generateText({
-        model: getVerificationModel(),
-        system: systemPrompt,
-        prompt: userPrompt,
-        tools: {
-          scratchpad: verificationScratchpadTool,
+  try {
+    // Use generateText with structured output
+    const { output } = await generateText({
+      model: getVerificationModel(),
+      system: systemPrompt,
+      maxRetries: 3,  // SDK handles transient/network errors
+      prompt: userPrompt,
+      tools: {
+        scratchpad: verificationScratchpadTool,
+      },
+      stopWhen: stepCountIs(15),
+      maxOutputTokens: Math.min(getVerificationModelTokenLimit(), 100000),
+      // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+      providerOptions: {
+        openai: {
+          reasoningEffort: getVerificationReasoningEffort(),
         },
-        stopWhen: stepCountIs(15),
-        maxOutputTokens: Math.min(getVerificationModelTokenLimit(), 100000),
-        // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
-        providerOptions: {
-          openai: {
-            reasoningEffort: getVerificationReasoningEffort(),
-          },
-        },
-        output: Output.object({
-          schema: VerificationAgentOutputSchema,
-        }),
-      });
+      },
+      output: Output.object({
+        schema: VerificationAgentOutputSchema,
+      }),
+    });
 
-      if (!output || !output.tables || output.tables.length === 0) {
-        console.warn(
-          `[VerificationAgent] Invalid output for table ${input.table.tableId} - passing through`
-        );
-        return createPassthroughOutput(input.table);
-      }
-
-      console.log(
-        `[VerificationAgent] Table ${input.table.tableId} processed - ${output.tables.length} tables, ${output.changes.length} changes, confidence: ${output.confidence.toFixed(2)}`
+    if (!output || !output.tables || output.tables.length === 0) {
+      console.warn(
+        `[VerificationAgent] Invalid output for table ${input.table.tableId} - passing through`
       );
-
-      return output;
-
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-      console.error(`[VerificationAgent] Error processing table ${input.table.tableId} (attempt ${attempt + 1}/${MAX_RETRIES + 1}):`, lastError.message);
-
-      // Continue to retry unless it's the last attempt
-      if (attempt < MAX_RETRIES) {
-        continue;
-      }
+      return createPassthroughOutput(input.table);
     }
-  }
 
-  // All retries exhausted - return passthrough
-  console.error(`[VerificationAgent] All retries exhausted for table ${input.table.tableId}`);
-  return createPassthroughOutput(input.table);
+    console.log(
+      `[VerificationAgent] Table ${input.table.tableId} processed - ${output.tables.length} tables, ${output.changes.length} changes, confidence: ${output.confidence.toFixed(2)}`
+    );
+
+    return output;
+
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`[VerificationAgent] Error processing table ${input.table.tableId}:`, errorMessage);
+
+    // Return passthrough on error
+    return createPassthroughOutput(input.table);
+  }
 }
 
 // =============================================================================

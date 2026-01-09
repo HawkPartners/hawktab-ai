@@ -33,9 +33,6 @@ const getTableAgentInstructions = (): string => {
   return getTablePrompt(promptVersions.tablePromptVersion);
 };
 
-// Retry configuration for transient failures
-const MAX_RETRIES = 2;
-
 // =============================================================================
 // Grouping Logic - Pre-processing before agent calls
 // =============================================================================
@@ -168,76 +165,60 @@ PROCESSING REQUIREMENTS:
 Begin analysis now.
 `;
 
-  let lastError: Error | null = null;
+  try {
+    // Use generateText with structured output
+    const { output } = await generateText({
+      model: getTableModel(),  // Task-based: table model for display decisions
+      system: systemPrompt,
+      maxRetries: 3,  // SDK handles transient/network errors
+      prompt: `Analyze question "${input.questionId}" with ${input.items.length} items and decide how to display as crosstab table(s).`,
+      tools: {
+        scratchpad: tableScratchpadTool,
+      },
+      stopWhen: stepCountIs(15),  // Fewer steps needed than CrosstabAgent
+      maxOutputTokens: Math.min(getTableModelTokenLimit(), 100000),
+      // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+      providerOptions: {
+        openai: {
+          reasoningEffort: getTableReasoningEffort(),
+        },
+      },
+      output: Output.object({
+        schema: TableAgentOutputSchema,
+      }),
+    });
 
-  // Retry loop - try up to MAX_RETRIES + 1 times
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    if (attempt > 0) {
-      console.log(`[TableAgent] Retry attempt ${attempt}/${MAX_RETRIES} for question: ${input.questionId}`);
+    if (!output || !output.tables) {
+      throw new Error(`Invalid agent response for question ${input.questionId}`);
     }
 
-    try {
-      // Use generateText with structured output
-      const { output } = await generateText({
-        model: getTableModel(),  // Task-based: table model for display decisions
-        system: systemPrompt,
-        prompt: `Analyze question "${input.questionId}" with ${input.items.length} items and decide how to display as crosstab table(s).`,
-        tools: {
-          scratchpad: tableScratchpadTool,
-        },
-        stopWhen: stepCountIs(15),  // Fewer steps needed than CrosstabAgent
-        maxOutputTokens: Math.min(getTableModelTokenLimit(), 100000),
-        // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
-        providerOptions: {
-          openai: {
-            reasoningEffort: getTableReasoningEffort(),
-          },
-        },
-        output: Output.object({
-          schema: TableAgentOutputSchema,
-        }),
-      });
+    console.log(`[TableAgent] Question ${input.questionId} processed - ${output.tables.length} tables generated, confidence: ${output.confidence.toFixed(2)}`);
 
-      if (!output || !output.tables) {
-        throw new Error(`Invalid agent response for question ${input.questionId}`);
-      }
+    return output;
 
-      console.log(`[TableAgent] Question ${input.questionId} processed - ${output.tables.length} tables generated, confidence: ${output.confidence.toFixed(2)}`);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`[TableAgent] Error processing question ${input.questionId}:`, errorMessage);
 
-      return output;
-
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-      console.error(`[TableAgent] Error processing question ${input.questionId} (attempt ${attempt + 1}/${MAX_RETRIES + 1}):`, lastError.message);
-
-      // Continue to retry unless it's the last attempt
-      if (attempt < MAX_RETRIES) {
-        continue;
-      }
-    }
+    // Return fallback result with low confidence
+    return {
+      questionId: input.questionId,
+      questionText: input.questionText,
+      tables: [{
+        tableId: input.questionId.toLowerCase(),
+        title: `Error: ${input.questionId}`,
+        tableType: 'frequency',  // Safe default
+        rows: input.items.map(item => ({
+          variable: item.column,
+          label: item.label,
+          filterValue: '',  // Required field for Azure compatibility
+        })),
+        hints: [],  // No hints for fallback
+      }],
+      confidence: 0.0,
+      reasoning: `Error processing question: ${errorMessage}. Manual review required.`,
+    };
   }
-
-  // All retries exhausted - return fallback result
-  console.error(`[TableAgent] All retries exhausted for question ${input.questionId}`);
-
-  // Return fallback result with low confidence
-  return {
-    questionId: input.questionId,
-    questionText: input.questionText,
-    tables: [{
-      tableId: input.questionId.toLowerCase(),
-      title: `Error: ${input.questionId}`,
-      tableType: 'frequency',  // Safe default
-      rows: input.items.map(item => ({
-        variable: item.column,
-        label: item.label,
-        filterValue: '',  // Required field for Azure compatibility
-      })),
-      hints: [],  // No hints for fallback
-    }],
-    confidence: 0.0,
-    reasoning: `Error processing question: ${lastError?.message || 'Unknown error'}. Manual review required.`,
-  };
 }
 
 /**
