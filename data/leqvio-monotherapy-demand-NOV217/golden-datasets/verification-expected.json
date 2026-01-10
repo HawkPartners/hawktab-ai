@@ -1,0 +1,4762 @@
+{
+  "tables": [
+    {
+      "tableId": "s5_affiliations",
+      "questionId": "S5",
+      "title": "S5: Employment/affiliation - response counts",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "S5r1",
+          "label": "Advertising Agency",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S5r2",
+          "label": "Marketing/Market Research Firm",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S5r3",
+          "label": "Public Relations Firm",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S5r4",
+          "label": "Any media company (Print, Radio, TV, Internet)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S5r5",
+          "label": "Pharmaceutical Drug / Device Manufacturer (outside of clinical trials)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S5r6",
+          "label": "Governmental Regulatory Agency (e.g., Food & Drug Administration (FDA))",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S5r7",
+          "label": "None of these",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "s8",
+      "questionId": "S8",
+      "title": "S8: Percentage of professional time spent (mean/median per activity)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "S8r1",
+          "label": "Treating/Managing patients",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S8r2",
+          "label": "Performing academic functions (e.g., teaching, publishing)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S8r3",
+          "label": "Participating in clinical research",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S8r4",
+          "label": "Performing other functions",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "s12_counts",
+      "questionId": "S12",
+      "title": "S12 - Number of patients with an event by time-since-event",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "S12r1",
+          "label": "Over 5 years ago",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S12r2",
+          "label": "Within the last 3-5 years",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S12r3",
+          "label": "Within the last 1-2 years",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S12r4",
+          "label": "Within the last year",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a1_overview",
+      "questionId": "A1",
+      "title": "A1: Current indication - distribution by treatment",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A1r1",
+          "label": "Leqvio (inclisiran) - As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r1",
+          "label": "Leqvio (inclisiran) - As an adjunct to diet and statin therapy for the treatment of adults with primary hyperlipidemia",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r2",
+          "label": "Praluent (alirocumab) - As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r2",
+          "label": "Praluent (alirocumab) - As an adjunct to diet and statin therapy for the treatment of adults with primary hyperlipidemia",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r3",
+          "label": "Repatha (evolocumab) - As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r3",
+          "label": "Repatha (evolocumab) - As an adjunct to diet and statin therapy for the treatment of adults with primary hyperlipidemia",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r4",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r4",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - As an adjunct to diet and statin therapy for the treatment of adults with primary hyperlipidemia",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3_therapies",
+      "questionId": "A3",
+      "title": "A3 - Mean number (of last 100 patients) prescribed each therapy",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3r1",
+          "label": "Statin only (i.e., no additional therapy)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3r2",
+          "label": "Leqvio (inclisiran)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3r3",
+          "label": "Praluent (alirocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3r4",
+          "label": "Repatha (evolocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3r5",
+          "label": "Zetia (ezetimibe) or generic ezetimibe",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3r6",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3r7",
+          "label": "Other",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3a_mean_rows",
+      "questionId": "A3a",
+      "title": "A3a — % of last 100 patients receiving each treatment (with vs without statin) — means",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3ar1c1",
+          "label": "Leqvio (inclisiran) - In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar1c2",
+          "label": "Leqvio (inclisiran) - Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar2c1",
+          "label": "Praluent (alirocumab) - In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar2c2",
+          "label": "Praluent (alirocumab) - Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar3c1",
+          "label": "Repatha (evolocumab) - In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar3c2",
+          "label": "Repatha (evolocumab) - Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar4c1",
+          "label": "Zetia (ezetimibe) - In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar4c2",
+          "label": "Zetia (ezetimibe) - Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar5c1",
+          "label": "Nexletol / Nexlizet (bempedoic acid) - In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar5c2",
+          "label": "Nexletol / Nexlizet (bempedoic acid) - Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3b_mean",
+      "questionId": "A3b",
+      "title": "A3b - Percent prescribed without a statin (mean by treatment and timing)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3br1c1",
+          "label": "Leqvio (inclisiran) - BEFORE any other lipid-lowering therapy (i.e., first line)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br1c2",
+          "label": "Leqvio (inclisiran) - AFTER trying another lipid-lowering therapy",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br2c1",
+          "label": "Praluent (alirocumab) - BEFORE any other lipid-lowering therapy (i.e., first line)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br2c2",
+          "label": "Praluent (alirocumab) - AFTER trying another lipid-lowering therapy",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br3c1",
+          "label": "Repatha (evolocumab) - BEFORE any other lipid-lowering therapy (i.e., first line)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br3c2",
+          "label": "Repatha (evolocumab) - AFTER trying another lipid-lowering therapy",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br4c1",
+          "label": "Zetia (ezetimibe) or generic ezetimibe - BEFORE any other lipid-lowering therapy (i.e., first line)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br4c2",
+          "label": "Zetia (ezetimibe) or generic ezetimibe - AFTER trying another lipid-lowering therapy",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br5c1",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - BEFORE any other lipid-lowering therapy (i.e., first line)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br5c2",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - AFTER trying another lipid-lowering therapy",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4_last100",
+      "questionId": "A4",
+      "title": "A4 - NEXT 100: Prescribed treatments (mean number of patients per 100)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4r1c1",
+          "label": "Statin only (i.e., no additional therapy)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r2c1",
+          "label": "Leqvio (inclisiran)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r3c1",
+          "label": "Praluent (alirocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r4c1",
+          "label": "Repatha (evolocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r5c1",
+          "label": "Zetia (ezetimibe) or generic ezetimibe",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r6c1",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r7c1",
+          "label": "Other",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4_next100",
+      "questionId": "A4",
+      "title": "A4 - NEXT 100: Prescribed treatments (mean number of patients per 100)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4r1c2",
+          "label": "Statin only (i.e., no additional therapy)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r2c2",
+          "label": "Leqvio (inclisiran)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r3c2",
+          "label": "Praluent (alirocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r4c2",
+          "label": "Repatha (evolocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r5c2",
+          "label": "Zetia (ezetimibe) or generic ezetimibe",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r6c2",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r7c2",
+          "label": "Other",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4a_mean_rows",
+      "questionId": "A4a",
+      "title": "A4a — % of NEXT 100 patients with uncontrolled LDL-C by treatment and statin condition",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4ar1c1",
+          "label": "Leqvio (inclisiran) - In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar1c2",
+          "label": "Leqvio (inclisiran) - Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar2c1",
+          "label": "Praluent (alirocumab) - In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar2c2",
+          "label": "Praluent (alirocumab) - Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar3c1",
+          "label": "Repatha (evolocumab) - In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar3c2",
+          "label": "Repatha (evolocumab) - Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar4c1",
+          "label": "Zetia (ezetimibe) or generic ezetimibe - In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar4c2",
+          "label": "Zetia (ezetimibe) or generic ezetimibe - Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar5c1",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar5c2",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4b_mean_all",
+      "questionId": "A4b",
+      "title": "A4b — Mean % next treatment allocation (by item)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4br1c1",
+          "label": "Leqvio (inclisiran) — Before any other lipid‑lowering therapy (i.e., first line)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4br1c2",
+          "label": "Leqvio (inclisiran) — After trying another lipid‑lowering therapy",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4br2c1",
+          "label": "Praluent (alirocumab) — Before any other lipid‑lowering therapy (i.e., first line)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4br2c2",
+          "label": "Praluent (alirocumab) — After trying another lipid‑lowering therapy",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4br3c1",
+          "label": "Repatha (evolocumab) — Before any other lipid‑lowering therapy (i.e., first line)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4br3c2",
+          "label": "Repatha (evolocumab) — After trying another lipid‑lowering therapy",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4br4c1",
+          "label": "Zetia (ezetimibe) or generic ezetimibe — Before any other lipid‑lowering therapy (i.e., first line)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4br4c2",
+          "label": "Zetia (ezetimibe) or generic ezetimibe — After trying another lipid‑lowering therapy",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4br5c1",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid + ezetimibe) — Before any other lipid‑lowering therapy (i.e., first line)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4br5c2",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid + ezetimibe) — After trying another lipid‑lowering therapy",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a6_rank1",
+      "questionId": "A6",
+      "title": "A6 - Items ranked #1 (most likely)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r1",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r2",
+          "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r3",
+          "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r4",
+          "label": "Start statin first, add/switch to PCSK9i if needed",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r5",
+          "label": "Start statin and PCSK9i at the same time",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r6",
+          "label": "Start PCSK9i, no statin",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r7",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r8",
+          "label": "Other",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a6_rank2",
+      "questionId": "A6",
+      "title": "A6 - Items ranked #2",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r1",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r2",
+          "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r3",
+          "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r4",
+          "label": "Start statin first, add/switch to PCSK9i if needed",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r5",
+          "label": "Start statin and PCSK9i at the same time",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r6",
+          "label": "Start PCSK9i, no statin",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r7",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r8",
+          "label": "Other",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a6_rank3",
+      "questionId": "A6",
+      "title": "A6 - Items ranked #3",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r1",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r2",
+          "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r3",
+          "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r4",
+          "label": "Start statin first, add/switch to PCSK9i if needed",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r5",
+          "label": "Start statin and PCSK9i at the same time",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r6",
+          "label": "Start PCSK9i, no statin",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r7",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r8",
+          "label": "Other",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a6_rank4",
+      "questionId": "A6",
+      "title": "A6 - Items ranked #4 (least likely)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r1",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r2",
+          "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r3",
+          "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r4",
+          "label": "Start statin first, add/switch to PCSK9i if needed",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r5",
+          "label": "Start statin and PCSK9i at the same time",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r6",
+          "label": "Start PCSK9i, no statin",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r7",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r8",
+          "label": "Other",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a7",
+      "questionId": "A7",
+      "title": "A7 - Impact on perceptions/prescribing (select all that apply)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A7r1",
+          "label": "Makes PCSK9s easier to get covered by insurance / get patients on the medication",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A7r2",
+          "label": "Offers an option to patients who can't or won't take a statin",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A7r3",
+          "label": "Enables me to use PCSK9s sooner for patients",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A7r4",
+          "label": "Allows me to better customize treatment plans for patients",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A7r5",
+          "label": "Other (Specify)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a8_r1",
+      "questionId": "A8",
+      "title": "A8 r1 - With established CVD: Likelihood to prescribe each therapy alone",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A8r1c1",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c1",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c1",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c1",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c1",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c2",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c2",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c2",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c2",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c2",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c3",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c3",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c3",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c3",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c3",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "scale-5"
+      ],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a8_r1_t2b",
+      "questionId": "A8",
+      "title": "A8 r1 - With established CVD: Likelihood to prescribe each therapy alone (Likely = Top 2 Box / Unlikely = Bottom 2 Box)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A8r1c1",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c1",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r1c1",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r1c1",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c1",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c1",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r1c1",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r1c2",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c2",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r1c2",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r1c2",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c2",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c2",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r1c2",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r1c3",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c3",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r1c3",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r1c3",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c3",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r1c3",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r1c3",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        }
+      ],
+      "hints": [
+        "scale-5"
+      ],
+      "sourceTableId": "a8_r1",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a8_r2",
+      "questionId": "A8",
+      "title": "A8 r2 - No history of CV events and at high-risk: Likelihood to prescribe each therapy alone",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A8r2c1",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c1",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c1",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c1",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c1",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "scale-5"
+      ],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a8_r2_t2b",
+      "questionId": "A8",
+      "title": "A8 r2 - No history of CV events and at high-risk: Likely (T2B) / Unlikely (B2B) and full scale (derived)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A8r2c1",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c1",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c1",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c1",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c1",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c1",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c1",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c2",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r2c3",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        }
+      ],
+      "hints": [
+        "scale-5"
+      ],
+      "sourceTableId": "a8_r2",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a8_r3",
+      "questionId": "A8",
+      "title": "A8 r3 - No history of CV events and low-to-medium risk: Likelihood to prescribe each therapy alone",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A8r3c1",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c1",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c1",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c1",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c1",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "scale-5"
+      ],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a8_r3_t2b",
+      "questionId": "A8",
+      "title": "A8 r3 - No history of CV events and low-to-medium risk: Likelihood to prescribe each therapy alone (Likely T2B / Unlikely B2B view)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A8r3c1",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c1",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r3c1",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r3c1",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c1",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c1",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r3c1",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r3c2",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r3c3",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        }
+      ],
+      "hints": [
+        "scale-5"
+      ],
+      "sourceTableId": "a8_r3",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a8_r4",
+      "questionId": "A8",
+      "title": "A8 r4 - Who are not known to be compliant on statins: Likelihood to prescribe each therapy alone",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A8r4c1",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c1",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c1",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c1",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c1",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c2",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c2",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c2",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c2",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c2",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c3",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c3",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c3",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c3",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c3",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "scale-5"
+      ],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a8_r4_t2b",
+      "questionId": "A8",
+      "title": "A8 r4 - Who are not known to be compliant on statins: Likely (T2B) / Unlikely (B2B) summary + full scale (derived)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A8r4c1",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c1",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r4c1",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r4c1",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c1",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c1",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r4c1",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r4c2",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c2",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r4c2",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r4c2",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c2",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c2",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r4c2",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r4c3",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c3",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r4c3",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r4c3",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c3",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r4c3",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r4c3",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        }
+      ],
+      "hints": [
+        "scale-5"
+      ],
+      "sourceTableId": "a8_r4",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a8_r5",
+      "questionId": "A8",
+      "title": "A8 r5 - Who are intolerant of statins: Likelihood to prescribe each therapy alone",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A8r5c1",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c1",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c1",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c1",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c1",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c2",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c2",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c2",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c2",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c2",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c3",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c3",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c3",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c3",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c3",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "scale-5"
+      ],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a8_r5_t2b",
+      "questionId": "A8",
+      "title": "A8 r5 - Who are intolerant of statins: Likelihood to prescribe each therapy alone (T2B/B2B)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A8r5c1",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c1",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r5c1",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r5c1",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c1",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c1",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r5c1",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r5c2",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c2",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r5c2",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r5c2",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c2",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c2",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r5c2",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r5c3",
+          "label": "Likely (T2B)",
+          "filterValue": "4,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c3",
+          "label": "Extremely likely",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r5c3",
+          "label": "Very likely",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r5c3",
+          "label": "Somewhat likely",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c3",
+          "label": "Unlikely (B2B)",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A8r5c3",
+          "label": "Slightly likely",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A8r5c3",
+          "label": "Not at all likely",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        }
+      ],
+      "hints": [
+        "scale-5"
+      ],
+      "sourceTableId": "a8_r5",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a9",
+      "questionId": "A9",
+      "title": "A9: Issues encountered for using each product without a statin (distribution by response)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A9c1",
+          "label": "No issues",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A9c1",
+          "label": "Some issues",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A9c1",
+          "label": "Significant issues",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A9c1",
+          "label": "Haven't prescribed without a statin",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A9c2",
+          "label": "No issues",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A9c2",
+          "label": "Some issues",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A9c2",
+          "label": "Significant issues",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A9c2",
+          "label": "Haven't prescribed without a statin",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A9c3",
+          "label": "No issues",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A9c3",
+          "label": "Some issues",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A9c3",
+          "label": "Significant issues",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A9c3",
+          "label": "Haven't prescribed without a statin",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a10_reasons",
+      "questionId": "A10",
+      "title": "A10: For what reasons are you using PCSK9 inhibitors without a statin today? (Select all that apply)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "_NET_A10_AnyReason",
+          "label": "Any reason for using PCSK9 inhibitors without a statin (NET)",
+          "filterValue": "",
+          "isNet": true,
+          "netComponents": [
+            "A10r1",
+            "A10r2",
+            "A10r3",
+            "A10r4",
+            "A10r5"
+          ],
+          "indent": 0
+        },
+        {
+          "variable": "A10r1",
+          "label": "Patient failed statins prior to starting PCSK9i",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A10r2",
+          "label": "Patient is statin intolerant",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A10r3",
+          "label": "Patient refused statins",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A10r4",
+          "label": "Statins are contraindicated for patient",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A10r5",
+          "label": "Patient not or unlikely to be compliant on statins",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "A10r6",
+          "label": "Haven't prescribed PCSK9s without a statin",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "b1_insurance_pct",
+      "questionId": "B1",
+      "title": "B1: Percentage of patients by insurance type (mean/average)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "B1r1",
+          "label": "Not insured",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "B1r2",
+          "label": "Private insurance provided by employer / purchased in exchange",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "B1r3",
+          "label": "Traditional Medicare (Medicare Part B Fee for Service)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "B1r4",
+          "label": "Traditional Medicare with supplemental insurance",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "B1r5",
+          "label": "Private Medicare (Medicare Advantage / Part C managed through Private payer)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "B1r6",
+          "label": "Medicaid",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "B1r7",
+          "label": "Veterans Administration (VA)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "B1r8",
+          "label": "Other",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "b5_specialty",
+      "questionId": "B5",
+      "title": "B5: Specialty / Training (multi-select) - Selected = 1",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "B5r1",
+          "label": "Internal Medicine",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "B5r2",
+          "label": "General Practitioner",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "B5r3",
+          "label": "Primary Care",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "B5r4",
+          "label": "Family Practice",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "B5r5",
+          "label": "Doctor of Osteopathic Medicine (DO)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "s1",
+      "questionId": "S1",
+      "title": "S1 - Proceed on this basis",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "S1",
+          "label": "I would like to proceed and protect my identity",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S1",
+          "label": "I would like to proceed and give permission for my contact details to be passed on to the Drug Safety department of the company if an adverse event is mentioned by me during the survey",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S1",
+          "label": "I don't want to proceed [TERMINATE]",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "s2b",
+      "questionId": "S2b",
+      "title": "S2b - What is your primary role?",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "S2b",
+          "label": "Physician",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S2b",
+          "label": "Nurse Practitioner",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S2b",
+          "label": "Physician's Assistant",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S2b",
+          "label": "Other",
+          "filterValue": "99",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "s2",
+      "questionId": "S2",
+      "title": "S2 - Primary specialty",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "S2",
+          "label": "Cardiologist",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S2",
+          "label": "Internal Medicine / General Practitioner / Primary Care / Family Practice",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S2",
+          "label": "Nephrologist",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S2",
+          "label": "Endocrinologist",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S2",
+          "label": "Lipidologist",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S2",
+          "label": "Nurse Practitioner",
+          "filterValue": "6",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S2",
+          "label": "Physician’s Assistant",
+          "filterValue": "7",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S2",
+          "label": "Other",
+          "filterValue": "99",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "s2a",
+      "questionId": "S2a",
+      "title": "S2a - Type of doctor's office",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "S2a",
+          "label": "Cardiologist",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S2a",
+          "label": "Internal Medicine / General Practitioner / Primary Care / Family Practice",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S2a",
+          "label": "Other",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "qcard_specialty",
+      "questionId": "qCARD_SPECIALTY",
+      "title": "CARD SPECIALTY",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "qCARD_SPECIALTY",
+          "label": "Cardiologist",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "qCARD_SPECIALTY",
+          "label": "Nephrologist/Endocrinologist/Lipidologist",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "qspecialty",
+      "questionId": "qSPECIALTY",
+      "title": "SPECIALTY - distribution",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "qSPECIALTY",
+          "label": "Cardiologist",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "qSPECIALTY",
+          "label": "Internal Medicine / General Practitioner / Primary Care / Family Practice",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "qSPECIALTY",
+          "label": "Nurse Practitioner / Physician Assistant",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "s3a",
+      "questionId": "S3a",
+      "title": "S3a - Type of Cardiologist",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "S3a",
+          "label": "Interventional Cardiologist",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S3a",
+          "label": "General Cardiologist",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S3a",
+          "label": "Preventative Cardiologist",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "qtype_of_card",
+      "questionId": "qTYPE_OF_CARD",
+      "title": "TYPE OF CARD - distribution",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "qTYPE_OF_CARD",
+          "label": "Interventional Cardiologist",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "qTYPE_OF_CARD",
+          "label": "General Cardiologist",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "qTYPE_OF_CARD",
+          "label": "Preventative Cardiologist",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "qon_list_off_list",
+      "questionId": "qON_LIST_OFF_LIST",
+      "title": "ON-LIST/OFF-LIST - Distribution",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "qON_LIST_OFF_LIST",
+          "label": "On-list (NET)",
+          "filterValue": "1,3,5",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "qON_LIST_OFF_LIST",
+          "label": "CARD ON-LIST",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "qON_LIST_OFF_LIST",
+          "label": "PCP ON-LIST",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "qON_LIST_OFF_LIST",
+          "label": "NPPA ON-LIST",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "qON_LIST_OFF_LIST",
+          "label": "Off-list (NET)",
+          "filterValue": "2,4,6",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "qON_LIST_OFF_LIST",
+          "label": "CARD OFF-LIST",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "qON_LIST_OFF_LIST",
+          "label": "PCP OFF-LIST",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        },
+        {
+          "variable": "qON_LIST_OFF_LIST",
+          "label": "NPPA OFF-LIST",
+          "filterValue": "6",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 1
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "qlist_tier",
+      "questionId": "qLIST_TIER",
+      "title": "LIST TIER - Distribution",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "qLIST_TIER",
+          "label": "TIER 1",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "qLIST_TIER",
+          "label": "TIER 2",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "qLIST_TIER",
+          "label": "TIER 3",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "qLIST_TIER",
+          "label": "TIER 4",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "qlist_priority_account",
+      "questionId": "qLIST_PRIORITY_ACCOUNT",
+      "title": "LIST PRIORITY ACCOUNT - Distribution",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "qLIST_PRIORITY_ACCOUNT",
+          "label": "PRIORITY",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "qLIST_PRIORITY_ACCOUNT",
+          "label": "NOT PRIORITY",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "s4",
+      "questionId": "S4",
+      "title": "S4 - Board certification / eligibility",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "S4",
+          "label": "Board Eligible",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S4",
+          "label": "Board Certified",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S4",
+          "label": "Neither",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "s6_years_practice",
+      "questionId": "S6",
+      "title": "S6 - Years in clinical practice (mean/summary)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "S6",
+          "label": "How many years have you been in clinical practice, post residency/training?",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "s7",
+      "questionId": "S7",
+      "title": "S7 - Current practicing status (Full-Time vs Part-Time)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "S7",
+          "label": "Full-Time",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S7",
+          "label": "Part-Time",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "s9",
+      "questionId": "S9",
+      "title": "S9 - Professional setting (most time spent)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "S9",
+          "label": "Private Solo Practice",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S9",
+          "label": "Private Group Practice",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S9",
+          "label": "Multi-specialty Practice / Comprehensive Care",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S9",
+          "label": "Staff HMO",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S9",
+          "label": "Community Hospital",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S9",
+          "label": "Academic/University Hospital",
+          "filterValue": "6",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S9",
+          "label": "VA Hospital",
+          "filterValue": "7",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "S9",
+          "label": "None of the above",
+          "filterValue": "8",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "s10",
+      "questionId": "S10",
+      "title": "S10 - Number of adult patients personally managed per month",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "S10",
+          "label": "Number of adult patients personally managed per month",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "s11_counts",
+      "questionId": "S11",
+      "title": "S11 - Number of adult patients with hypercholesterolemia and established CVD (mean/median)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "S11",
+          "label": "Of those adult patients for whom you are the primary treatment decision maker, roughly how many have a confirmed diagnosis of hypercholesterolemia with established cardiovascular disease (CVD)?",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a2a",
+      "questionId": "A2a",
+      "title": "A2a - Post-ACS guideline recommendation regarding lipid-lowering",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A2a",
+          "label": "Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels ≥55 mg/dL",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A2a",
+          "label": "Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels ≥70 mg/dL",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A2a",
+          "label": "Recommend a non-statin lipid-lowering agent for patients on maximally tolerated statins with LDL-C levels ≥100 mg/dL",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a2b",
+      "questionId": "A2b",
+      "title": "A2b - Guideline recommendation for post-ACS lipid-lowering therapy",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A2b",
+          "label": "Recommend a statin first",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A2b",
+          "label": "Recommend a statin + ezetimibe first",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A2b",
+          "label": "Recommend a PCSK9i first",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a5",
+      "questionId": "A5",
+      "title": "A5 - Time to change prescribing of PCSK9 inhibitors",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A5",
+          "label": "Within 3 months",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A5",
+          "label": "4-6 months",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A5",
+          "label": "7-12 months",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A5",
+          "label": "Over a year",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "us_state",
+      "questionId": "US_State",
+      "title": "US_State - distribution",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "US_State",
+          "label": "Alaska",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Alabama",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Arkansas",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Arizona",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "California",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Colorado",
+          "filterValue": "6",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Connecticut",
+          "filterValue": "7",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "District of Columbia",
+          "filterValue": "8",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Delaware",
+          "filterValue": "9",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Florida",
+          "filterValue": "10",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Georgia",
+          "filterValue": "11",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Hawaii",
+          "filterValue": "12",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Iowa",
+          "filterValue": "13",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Idaho",
+          "filterValue": "14",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Illinois",
+          "filterValue": "15",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Indiana",
+          "filterValue": "16",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Kansas",
+          "filterValue": "17",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Kentucky",
+          "filterValue": "18",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Louisiana",
+          "filterValue": "19",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Massachusetts",
+          "filterValue": "20",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Maryland",
+          "filterValue": "21",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Maine",
+          "filterValue": "22",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Michigan",
+          "filterValue": "23",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Minnesota",
+          "filterValue": "24",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Missouri",
+          "filterValue": "25",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Mississippi",
+          "filterValue": "26",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Montana",
+          "filterValue": "27",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "North Carolina",
+          "filterValue": "28",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "North Dakota",
+          "filterValue": "29",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Nebraska",
+          "filterValue": "30",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "New Hampshire",
+          "filterValue": "31",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "New Jersey",
+          "filterValue": "32",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "New Mexico",
+          "filterValue": "33",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Nevada",
+          "filterValue": "34",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "New York",
+          "filterValue": "35",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Ohio",
+          "filterValue": "36",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Oklahoma",
+          "filterValue": "37",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Oregon",
+          "filterValue": "38",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Pennsylvania",
+          "filterValue": "39",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Rhode Island",
+          "filterValue": "40",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "South Carolina",
+          "filterValue": "41",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "South Dakota",
+          "filterValue": "42",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Tennessee",
+          "filterValue": "43",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Texas",
+          "filterValue": "44",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Utah",
+          "filterValue": "45",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Virginia",
+          "filterValue": "46",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Vermont",
+          "filterValue": "47",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Washington",
+          "filterValue": "48",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Wisconsin",
+          "filterValue": "49",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "West Virginia",
+          "filterValue": "50",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Wyoming",
+          "filterValue": "51",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Other",
+          "filterValue": "52",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "US_State",
+          "label": "Invalid State",
+          "filterValue": "53",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "region",
+      "questionId": "Region",
+      "title": "Region",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "Region",
+          "label": "Northeast",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "Region",
+          "label": "South",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "Region",
+          "label": "Midwest",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "Region",
+          "label": "West",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "Region",
+          "label": "Other",
+          "filterValue": "5",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "Region",
+          "label": "Invalid Region",
+          "filterValue": "6",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "b3",
+      "questionId": "B3",
+      "title": "B3 - Primary practice location",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "B3",
+          "label": "Urban",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "B3",
+          "label": "Suburban",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "B3",
+          "label": "Rural",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "b4_physicians_count",
+      "questionId": "B4",
+      "title": "B4 - Number of physicians in practice (mean/summary)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "B4",
+          "label": "How many physicians are in your practice?",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "qconsent",
+      "questionId": "QCONSENT",
+      "title": "Willingness to participate in future research",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "QCONSENT",
+          "label": "Yes",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "QCONSENT",
+          "label": "No",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    }
+  ],
+  "allChanges": [
+    {
+      "tableId": "s12_counts",
+      "changes": [
+        "<?json version 1?>",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "tableId": "a1_overview",
+      "changes": [
+        "a1_overview: labels. Replaced generic 'Option 1'/'Option 2' labels with the exact survey answer text for A1 (1 = 'As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia'; 2 = 'As an adjunct to diet and statin therapy for the treatment of adults with primary hyperlipidemia'). No structural changes made."
+      ]
+    },
+    {
+      "tableId": "a3_therapies",
+      "changes": [
+        "a3_therapies: Pass through. Labels match survey question A3 (mean number out of last 100 patients for each therapy); structure (mean_rows) is appropriate for numeric-range responses."
+      ]
+    },
+    {
+      "tableId": "a3a_mean_rows",
+      "changes": [
+        "a3a_mean_rows: Pass through. Labels already match survey A3a (products × 'In addition to statin' vs 'Without a statin'); structure appropriate for mean_rows of percentage values. No NET/T2B or splits required."
+      ]
+    },
+    {
+      "tableId": "a3b_mean",
+      "changes": [
+        "a3b_mean: Pass through. Labels and structure align with survey A3b; added required schema fields (isNet, netComponents, indent, questionId placeholder) and preserved original variable names."
+      ]
+    },
+    {
+      "tableId": "a4_last100",
+      "changes": [
+        "{\"tableId\":\"a4_last100\",\"action\":\"labels\",\"description\":\"Corrected table title to match survey A4: this question asks about the NEXT 100 patients (was incorrectly labeled 'LAST 100'). Row labels already match the survey/datamap; no structural changes, splits, NETs, or T2B rows added.\"}"
+      ]
+    },
+    {
+      "tableId": "a4_next100",
+      "changes": [
+        "{\"tableId\":\"a4_next100\",\"action\":\"passthrough\",\"description\":\"Pass through. Table structure and labels match survey question A4 (NEXT 100 patients, mean number per 100). No analytical splits, NETs, or T2B applicable. Added required row metadata fields (isNet, netComponents, indent) to meet output spec.\"}"
+      ]
+    },
+    {
+      "tableId": "a4a_mean_rows",
+      "changes": [
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?><change><tableId>a4a_mean_rows</tableId><action>labels</action><description>Updated row labels to match survey wording for A4a: expanded product names to match survey text (e.g., \"Zetia (ezetimibe) or generic ezetimibe\", \"Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)\") and standardized statin-condition descriptors to 'In addition to statin' and 'Without a statin'. Variables unchanged.</description></change>"
+      ]
+    },
+    {
+      "tableId": "a4b_mean_all",
+      "changes": [
+        "{\"tableId\":\"a4b_mean_all\",\"action\":\"labels\",\"description\":\"Updated row labels to match survey A4b wording: col1 = 'Before any other lipid‑lowering therapy (first line)', col2 = 'After trying another lipid‑lowering therapy'. Used full survey product names (Leqvio, Praluent, Repatha, Zetia, Nexletol/Nexlizet). No structural changes made.\"}"
+      ]
+    },
+    {
+      "tableId": "a6_rank1",
+      "changes": [
+        "Table a6_rank1: passthrough. Labels match survey A6 and the table correctly represents frequency of items ranked #1; no changes required."
+      ]
+    },
+    {
+      "tableId": "a6_rank2",
+      "changes": [
+        "{\"tableId\":\"a6_rank2\",\"action\":\"passthrough\",\"description\":\"Pass through. Labels match survey text and structure appropriate for ranking question A6; no changes required.\"}"
+      ]
+    },
+    {
+      "tableId": "a6_rank3",
+      "changes": [
+        "a6_rank3: passthrough. Labels and structure match survey A6 (ranking question for next 100 patients not on lipid-lowering therapy). No label, NET, T2B, split, or exclusion changes required."
+      ]
+    },
+    {
+      "tableId": "a6_rank4",
+      "changes": [
+        "a6_rank4: passthrough. Labels match the survey wording for A6 rank items and the structure is appropriate for a 'ranked #4 (least likely)' frequency table. No NETs, splits or T2B required."
+      ]
+    },
+    {
+      "tableId": "a7",
+      "changes": [
+        "a7: passthrough. Labels match survey A7 and map to binary_flag variables A7r1–A7r5; structure appropriate for a select-all-that-apply question. No NET row added to avoid inventing new variables."
+      ]
+    },
+    {
+      "tableId": "a8_r1",
+      "changes": [
+        "tableId: a8_r1, action: labels. Updated generic numeric labels to survey text for A8 (1=Not at all likely; 2=Slightly likely; 3=Somewhat likely; 4=Very likely; 5=Extremely likely). Reason: clarify category labels so analysts don't need to cross-reference the questionnaire.",
+        "tableId: a8_r1_t2b, action: t2b. Added a derived table (sourceTableId = a8_r1) with Top-2-Box ('Likely (T2B)' = 4,5) and Bottom-2-Box ('Unlikely (B2B)' = 1,2) rollups for each product while keeping full-scale detail rows (indented). Reason: standard T2B/B2B summaries are analytically useful for 5-point likelihood scales."
+      ]
+    },
+    {
+      "tableId": "a8_r2",
+      "changes": [
+        "{\"tableId\":\"a8_r2\",\"action\":\"labels\",\"description\":\"Replaced generic product labels with survey scale text for A8 row 2: 1=Not at all likely; 2=Slightly likely; 3=Somewhat likely; 4=Very likely; 5=Extremely likely. Variable names unchanged.\"}",
+        "{\"tableId\":\"a8_r2_t2b\",\"action\":\"t2b\",\"description\":\"Added a derived table (sourceTableId=a8_r2) with Top 2 Box (4,5) labelled 'Likely (T2B)' and Bottom 2 Box (1,2) labelled 'Unlikely (B2B)'. Included full scale items indented under the NET rows for analyst convenience.\"}"
+      ]
+    },
+    {
+      "tableId": "a8_r3",
+      "changes": [
+        "{\"tableId\":\"a8_r3\",\"action\":\"labels\",\"description\":\"Updated labels to match survey A8 scale: 1=Not at all likely; 2=Slightly likely; 3=Somewhat likely; 4=Very likely; 5=Extremely likely.\"}",
+        "{\"tableId\":\"a8_r3_t2b\",\"action\":\"t2b\",\"description\":\"Added Likely (T2B) (4,5) and Unlikely (B2B) (1,2) NET rows for each product (Repatha=A8r3c1, Praluent=A8r3c2, Leqvio=A8r3c3). Kept full 5-point scale detail rows. Source table: a8_r3.\"}"
+      ]
+    },
+    {
+      "tableId": "a8_r4",
+      "changes": [
+        "a8_r4: Labels. Updated numeric value labels for A8r4c1/A8r4c2/A8r4c3 to match survey A8 scale (1 = Not at all likely; 2 = Slightly likely; 3 = Somewhat likely; 4 = Very likely; 5 = Extremely likely).",
+        "a8_r4_t2b: T2B/Nets (derived). Created a derived view from a8_r4 adding 'Likely (T2B)' (4,5) and 'Unlikely (B2B)' (1,2) NET rows for each product while retaining the full 5-point scale detail rows. sourceTableId = a8_r4."
+      ]
+    },
+    {
+      "tableId": "a8_r5",
+      "changes": [
+        "{\"tableId\":\"a8_r5\",\"action\":\"labels\",\"description\":\"Updated row labels to use survey scale text for A8 (1=Not at all likely, 2=Slightly likely, 3=Somewhat likely, 4=Very likely, 5=Extremely likely). Added required row metadata (isNet, netComponents, indent).\"}",
+        "{\"tableId\":\"a8_r5_t2b\",\"action\":\"t2b\",\"description\":\"Added derived T2B (Likely = 4,5) and B2B (Unlikely = 1,2) NET rows for each product (A8r5c1-3). Kept full scale detail rows indented under NETs. sourceTableId=a8_r5.\"}"
+      ]
+    },
+    {
+      "tableId": "a9",
+      "changes": [
+        "{\"tableId\":\"a9\",\"action\":\"labels\",\"description\":\"Updated row labels to match survey A9 response text: 1=No issues; 2=Some issues; 3=Significant issues; 4=Haven't prescribed without a statin. Variable names and filterValues unchanged.\"}"
+      ]
+    },
+    {
+      "tableId": "a10_reasons",
+      "changes": [
+        "tableId: a10_reasons; action: nets; description: Added a multi-variable NET row 'Any reason for using PCSK9 inhibitors without a statin (NET)' that combines A10r1-A10r5 (reasons respondents select). Indented the five reason rows under the NET. Minor label normalization for A10r6 (standard ASCII apostrophe)."
+      ]
+    },
+    {
+      "tableId": "b5_specialty",
+      "changes": [
+        "{\"tableId\":\"b5_specialty\",\"action\":\"passthrough\",\"description\":\"Pass through. Labels already match survey question B5 and structure is appropriate for multi-select binary flags.\"}"
+      ]
+    },
+    {
+      "tableId": "s2b",
+      "changes": [
+        "s2b: labels. Corrected encoding artifact in the 'Physician's Assistant' label to use a standard apostrophe so labels match the survey/datamap."
+      ]
+    },
+    {
+      "tableId": "s2",
+      "changes": [
+        "s2: labels. Fixed encoding in label for value 7 from 'Physician�s Assistant' to 'Physician’s Assistant' to match survey wording. No structural changes made."
+      ]
+    },
+    {
+      "tableId": "qcard_specialty",
+      "changes": [
+        "qcard_specialty: labels. Updated shorthand labels to full survey wording for clarity — '1' = 'Cardiologist'; '2' = 'Nephrologist/Endocrinologist/Lipidologist'. Structure unchanged."
+      ]
+    },
+    {
+      "tableId": "s3a",
+      "changes": [
+        "{\"tableId\":\"s3a\",\"action\":\"passthrough\",\"description\":\"Pass through. Labels match survey S3a; structure appropriate for a simple categorical question.\"}"
+      ]
+    },
+    {
+      "tableId": "qtype_of_card",
+      "changes": [
+        "tableId: qtype_of_card, action: labels, description: Updated row labels to match survey S3a wording ('What type of Cardiologist are you primarily?'). Replaced truncated labels with full terms: 'Interventional Cardiologist', 'General Cardiologist', 'Preventative Cardiologist'."
+      ]
+    },
+    {
+      "tableId": "qon_list_off_list",
+      "changes": [
+        "qon_list_off_list: nets. Added On-list (NET) and Off-list (NET) rows to summarize role-specific on/off values (On-list = 1,3,5; Off-list = 2,4,6). Detail rows retained and indented under each NET. Labels retained from datamap/survey."
+      ]
+    },
+    {
+      "tableId": "qlist_tier",
+      "changes": [
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?><change><tableId>qlist_tier</tableId><action>passthrough</action><description>Pass through. Variable not found in survey document; labels match datamap and are already meaningful. Retained existing structure unchanged.</description></change>"
+      ]
+    },
+    {
+      "tableId": "s4",
+      "changes": [
+        "{\"tableId\":\"s4\",\"action\":\"passthrough\",\"description\":\"Pass through. Labels match survey S4 wording ('Board Eligible', 'Board Certified', 'Neither'). Screener variable; structure appropriate; no NETs/T2B needed.\"}"
+      ]
+    },
+    {
+      "tableId": "s6_years_practice",
+      "changes": [
+        "{"
+      ]
+    },
+    {
+      "tableId": "s7",
+      "changes": [
+        "{\"tableId\":\"s7\",\"action\":\"passthrough\",\"description\":\"Pass through. Labels and structure match survey S7 (1=Full-Time, 2=Part-Time). No changes needed.\"}"
+      ]
+    },
+    {
+      "tableId": "s9",
+      "changes": [
+        "{\"tableId\":\"s9\",\"action\":\"passthrough\",\"description\":\"Labels match survey S9; structure appropriate. No changes required.\"}"
+      ]
+    },
+    {
+      "tableId": "s10",
+      "changes": [
+        "tableId: s10, action: passthrough, description: Pass through. S10 is a numeric open-ended screener question; mean_rows is appropriate and the label already matches the survey wording. No NETs/T2B or splits required."
+      ]
+    },
+    {
+      "tableId": "s11_counts",
+      "changes": [
+        "s11_counts: labels. Updated the row label to match the exact survey question wording for clarity. No structural changes made—mean/median summary (mean_rows) is appropriate for this numeric response."
+      ]
+    },
+    {
+      "tableId": "a2a",
+      "changes": [
+        "a2a: labels. Fixed malformed comparison character in labels (replaced '?' placeholders with '≥') to match survey wording for thresholds (≥55, ≥70, ≥100 mg/dL)."
+      ]
+    },
+    {
+      "tableId": "a5",
+      "changes": [
+        "a5: Pass through. Labels and structure match the survey question A5; no changes required."
+      ]
+    },
+    {
+      "tableId": "us_state",
+      "changes": [
+        "<?xml version=\"1.0\"?>\n{\"tableId\":\"us_state\",\"action\":\"passthrough\",\"description\":\"Pass through. US_State is a datamap/derived variable (from ZIP) and labels match the datamap/survey context. No label or structural changes required; retained structure.\"}"
+      ]
+    },
+    {
+      "tableId": "region",
+      "changes": [
+        "region: Pass through. Labels match the datamap; the survey does not include an explicit 'Region' question (likely derived from ZIP), so structure retained unchanged."
+      ]
+    },
+    {
+      "tableId": "b3",
+      "changes": [
+        "{\"tableId\":\"b3\",\"action\":\"passthrough\",\"description\":\"Pass through. Labels and structure match survey question B3 (Urban/Suburban/Rural); no NETs or splits needed.\"}"
+      ]
+    },
+    {
+      "tableId": "b4_physicians_count",
+      "changes": [
+        "{\"tableId\":\"b4_physicians_count\",\"action\":\"passthrough\",\"description\":\"Pass through. B4 is a numeric open-ended question in the survey; mean_rows is appropriate to show average/summary. Label matches survey text; no NETs, T2B, splits, or exclusion needed.\"}"
+      ]
+    },
+    {
+      "tableId": "qconsent",
+      "changes": [
+        "qconsent: passthrough. Labels match survey wording for QCONSENT (1=Yes, 2=No); no structural changes needed."
+      ]
+    }
+  ]
+}

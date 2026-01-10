@@ -24,10 +24,8 @@ export interface VerboseBannerGroup {
     statLetter: string;
     confidence: number;
     requiresInference: boolean;
-    crossRefStatus: string;
     inferenceReason: string;
     humanInLoopRequired: boolean;
-    aiRecommended: boolean;
     uncertainties: unknown[];
   }>;
 }

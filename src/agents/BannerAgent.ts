@@ -60,12 +60,10 @@ const BannerColumnSchema = z.object({
   adjusted: z.string(),  // Required - AI must provide this
   statLetter: z.string(),
   confidence: z.number().min(0).max(1),
-  requiresInference: z.boolean(),
-  crossRefStatus: z.string(),
-  inferenceReason: z.string(),
-  humanInLoopRequired: z.boolean(),
-  aiRecommended: z.boolean(),
-  uncertainties: z.array(z.string())
+  requiresInference: z.boolean(),  // True if cut came from outside the banner plan
+  inferenceReason: z.string(),     // Explains what was inferred and why
+  humanInLoopRequired: z.boolean(), // True if confidence < 0.85
+  uncertainties: z.array(z.string()) // What human should verify
 });
 
 const BannerCutSchema = z.object({
@@ -546,10 +544,9 @@ Begin analysis now.
       const agentPath = path.join(bannerDir, agentFilename);
       await fs.writeFile(agentPath, JSON.stringify(dualOutputs.agent, null, 2), 'utf-8');
 
-      // Save raw output (just what the agent produced - for golden dataset comparison)
-      const rawOutput = {
-        bannerCuts: dualOutputs.verbose.data.extractedStructure.bannerCuts,
-      };
+      // Save raw output (complete model output - for golden dataset comparison)
+      // This is the full extractedStructure: bannerCuts, notes, processingMetadata
+      const rawOutput = dualOutputs.verbose.data.extractedStructure;
       const rawPath = path.join(bannerDir, 'banner-output-raw.json');
       await fs.writeFile(rawPath, JSON.stringify(rawOutput, null, 2), 'utf-8');
 

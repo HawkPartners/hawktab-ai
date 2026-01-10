@@ -1,0 +1,152 @@
+{
+  "bannerCuts": [
+    {
+      "groupName": "HCP Specialty",
+      "columns": [
+        {
+          "name": "Cards",
+          "adjusted": "(S2 == 1 | S2a == 1)",
+          "confidence": 0.98,
+          "reason": "VARIABLE SEARCH RESULTS: Searched the entire data map (192 variables) using the required sequence: exact name match → name contains → description → value labels. Exact name matches found: S2 and S2a. S2 description: What is your primary specialty? Answer_Options include 1=Cardiologist, 2=Internal Medicine / General Practitioner / Primary Care / Family Practice, 3=Nephrologist, 4=Endocrinologist, 5=Lipidologist, 6=Nurse Practitioner, 7=Physician's Assistant, 99=Other. S2a description: In what type of doctor's office do you work? Answer_Options include 1=Cardiologist, 2=Internal Medicine / General Practitioner / Primary Care / Family Practice, 3=Other. OTHER CANDIDATES CONSIDERED: qCARD_SPECIALTY (1=CARD,2=NEPH/ENDO/LIP), qSPECIALTY (1=CARD,2=PCP,3=NPPA), qTYPE_OF_CARD; these were reviewed but not used because the banner explicitly references S2 and S2a. INTERPRETATION DECISIONS: The banner expression 'S2=1 OR S2a=1' directly maps to numeric equality checks for code 1 on S2 and S2a; implemented as (S2 == 1 | S2a == 1). ASSUMPTIONS: S2 and S2a use numeric coding per the documented Answer_Options and code 1 = Cardiologist in both. CONFIDENCE RATIONALE: Direct exact-variable matches with explicit codes → high confidence. No ambiguity penalty applied because the banner explicitly names S2 and S2a. Confidence = 0.98. What would increase confidence: confirming the live dataset contains these exact variable names and that no recoding or label changes occurred."
+        },
+        {
+          "name": "PCPs",
+          "adjusted": "S2 == 2",
+          "confidence": 0.98,
+          "reason": "VARIABLE SEARCH RESULTS: Full data map scan found an exact match for S2. S2 description: What is your primary specialty? Answer_Options include 1=Cardiologist, 2=Internal Medicine / General Practitioner / Primary Care / Family Practice, 3=Nephrologist, 4=Endocrinologist, 5=Lipidologist, etc. OTHER CANDIDATES CONSIDERED: qSPECIALTY (1=CARD,2=PCP,3=NPPA) could also represent PCPs, but the banner expression explicitly references S2 so S2 was selected. INTERPRETATION DECISIONS: 'S2=2' maps directly to S2 == 2. ASSUMPTIONS: S2 uses numeric codes as documented and code 2 corresponds to PCPs. CONFIDENCE RATIONALE: Exact variable name and explicit code → high confidence. Confidence = 0.98. What would increase confidence: verifying the raw dataset to ensure no recoding of S2 values."
+        },
+        {
+          "name": "Other",
+          "adjusted": "S2 %in% c(3,4,5)",
+          "confidence": 0.98,
+          "reason": "VARIABLE SEARCH RESULTS: Full data map scan located S2 as an exact match. S2 description: What is your primary specialty? Answer_Options include 1=Cardiologist, 2=Internal Medicine / General Practitioner / Primary Care / Family Practice, 3=Nephrologist, 4=Endocrinologist, 5=Lipidologist, 6=Nurse Practitioner, 7=Physician's Assistant, 99=Other. OTHER CANDIDATES CONSIDERED: qCARD_SPECIALTY (1=CARD,2=NEPH/ENDO/LIP) groups neph/endo/lip together (could be an alternative), but the banner explicitly lists S2 codes 3,4,5 so S2 was used. INTERPRETATION DECISIONS: 'S2=3 OR S2=4 OR S2=5' implemented compactly as S2 %in% c(3,4,5). ASSUMPTIONS: S2 values are numeric per Answer_Options and codes 3,4,5 correspond to the intended specialties. CONFIDENCE RATIONALE: Exact variable match and explicit value codes → high confidence. Confidence = 0.98. What would increase confidence: confirming the live dataset coding and that no additional mapping logic is applied to S2."
+        }
+      ]
+    },
+    {
+      "groupName": "HCP Role",
+      "columns": [
+        {
+          "name": "Physician",
+          "adjusted": "S2 %in% c(1,2,3,4,5)",
+          "confidence": 0.98,
+          "reason": "VARIABLE SEARCH RESULTS: Searched entire data map (exact name, name contains, description, value labels). Found exact match S2 (Column: 'S2'; Description: 'What is your primary specialty?'; Answer_Options: 1=Cardiologist,2=Internal Medicine / General Practitioner / Primary Care / Family Practice,3=Nephrologist,4=Endocrinologist,5=Lipidologist,6=Nurse Practitioner,7=Physician's Assistant,99=Other). Also identified related variables S2b ('What is your primary role?' 1=Physician,2=Nurse Practitioner,3=Physician's Assistant,99=Other), S2a ('In what type of doctor's office do you work?'), qSPECIALTY and qCARD_SPECIALTY. INTERPRETATION DECISIONS: The banner expression explicitly lists S2=1 OR S2=2 OR S2=3 OR S2=4 OR S2=5; converted to R using %in% for the equivalent compact expression: S2 %in% c(1,2,3,4,5). This implements the literal logic in the banner. ASSUMPTIONS MADE: S2 is numeric-coded per Answer_Options; values 1-5 represent physician specialties and should be treated as numeric values in R. No NA handling added. ALTERNATIVES CONSIDERED: S2b == 1 would capture respondents whose primary role is 'Physician' (role-based rather than specialty-based); S2 %in% c(1,2,3,4,5) follows the banner exactly. CONFIDENCE RATIONALE: Exact variable name and explicit numeric values present → high confidence (0.98). Confidence would be unchanged unless the client intended a role-based filter (S2b) rather than specialty codes in S2."
+        },
+        {
+          "name": "APP",
+          "adjusted": "S2a == 1",
+          "confidence": 0.95,
+          "reason": "VARIABLE SEARCH RESULTS: Searched entire data map (exact name, name contains, description, value labels). Found exact match S2a (Column: 'S2a'; Description: 'In what type of doctor's office do you work?'; Answer_Options: 1=Cardiologist,2=Internal Medicine / General Practitioner / Primary Care / Family Practice,3=Other). Also found S2 ('What is your primary specialty?' includes 6=NP,7=Physician's Assistant) and S2b ('What is your primary role?' 1=Physician,2=Nurse Practitioner,3=Physician's Assistant,99=Other). INTERPRETATION DECISIONS: The banner expression is S2a=1; to faithfully translate the literal filter, converted to S2a == 1. However the column name 'APP' (commonly meaning Advanced Practice Provider) appears semantically inconsistent with S2a (office type). ASSUMPTIONS MADE: S2a is numeric-coded per Answer_Options; mapping provided is a literal translation of the banner expression. ALTERNATIVES CONSIDERED / RECOMMENDATION: If the intent is to capture Advanced Practice Providers (APPs: NP/PA), preferred mappings would be S2b %in% c(2,3) (role-based) or S2 %in% c(6,7) (specialty codes). CONFIDENCE RATIONALE: Exact variable S2a exists and the literal expression S2a=1 is unambiguous → high confidence for the literal translation (0.95). Because the column name suggests a different conceptual target (APP), this should be confirmed with the client; the semantic mismatch does not reduce confidence in the literal R translation but does flag likely required correction."
+        }
+      ]
+    },
+    {
+      "groupName": "Volume of ASCVD Patients",
+      "columns": [
+        {
+          "name": "150+ (Higher)",
+          "adjusted": "S11 >= 150",
+          "confidence": 0.95,
+          "reason": "VARIABLE SEARCH RESULTS:\n- Performed a full scan of the provided data map for variables related to 'S11', 'ASCVD', 'patients', and numeric patient counts.\n- Found exact variable: S11. Description: \"Of those adult patients for whom you are the primary treatment decision maker, roughly how many have a confirmed diagnosis of hypercholesterolemia with established cardiovascular disease (CVD)?\" Answer_Options: NA.\n- Other variables reviewed during the full scan (not selected): S10 (how many adult patients you personally manage in your practice in a month?), S12r1-4 (time since), B4 (how many physicians in your practice), and other demographic/capture vars. None match the banner target population as directly as S11.\n\nINTERPRETATION DECISIONS:\n- Banner expression 'S11=150+' is interpreted as selecting respondents with S11 >= 150 (150 or more ASCVD patients with hypercholesterolemia).\n- Numeric comparison chosen because S11's question wording asks 'how many' and Answer_Options is NA (no pre-coded category labels provided).\n\nASSUMPTIONS MADE:\n- Assumed S11 stores a raw numeric count (or numeric values representing counts) rather than pre-coded categorical bins. Assumed '150+' means inclusive of 150 and above.\n\nCONFIDENCE RATIONALE:\n- Exact variable name match (S11) and description directly aligned with the banner expression → high confidence.\n- Minor residual uncertainty because Answer_Options is NA (the data map does not explicitly show whether S11 is numeric or pre-binned categorical). If S11 is actually stored as categorical codes with labels (e.g., 1=0-19, 2=20-49, ...), this numeric comparison would be invalid. Confirming S11's data type/value labels would increase confidence.\n- Assigned confidence: 0.95 (high confidence given exact variable match and descriptive alignment; small penalty for missing explicit answer-option documentation)."
+        },
+        {
+          "name": "20-149 (Lower)",
+          "adjusted": "(S11 >= 20 & S11 <= 149)",
+          "confidence": 0.95,
+          "reason": "VARIABLE SEARCH RESULTS:\n- Performed a full scan of the provided data map for variables related to 'S11' and numeric counts of ASCVD patients.\n- Found exact variable: S11. Description: \"Of those adult patients for whom you are the primary treatment decision maker, roughly how many have a confirmed diagnosis of hypercholesterolemia with established cardiovascular disease (CVD)?\" Answer_Options: NA.\n- Other variables reviewed during the full scan (not selected): S10 (total patients managed), S12r1-4, B4, etc. None matched the banner target as directly as S11.\n\nINTERPRETATION DECISIONS:\n- Banner expression 'S11=20 - 149' is interpreted as the inclusive numeric range 20 through 149. Implemented as (S11 >= 20 & S11 <= 149).\n- Chose inclusive bounds because typical range expressions in banners are inclusive unless stated otherwise.\n\nASSUMPTIONS MADE:\n- Assumed S11 stores raw numeric counts (or numeric-coded counts) rather than categorical bins. Assumed the '20 - 149' range is inclusive of both endpoints.\n\nCONFIDENCE RATIONALE:\n- Exact variable name match with a description that matches the banner's target population → high confidence.\n- Residual uncertainty because Answer_Options is NA (no explicit coding information). If S11 is pre-binned into coded categories, the numeric comparisons would be inappropriate. Confirming S11's data type/value labels would increase confidence.\n- Assigned confidence: 0.95 (high confidence given exact match and wording; small penalty for missing explicit answer-option documentation)."
+        }
+      ]
+    },
+    {
+      "groupName": "Tiers",
+      "columns": [
+        {
+          "name": "Tier 1",
+          "adjusted": "qLIST_TIER == 1",
+          "confidence": 0.65,
+          "reason": "VARIABLE SEARCH RESULTS: Searched the entire data map for variables/labels matching 'Tier' / 'TIER' and for list variables. Found qLIST_TIER with Answer_Options: 1=TIER 1,2=TIER 2,3=TIER 3,4=TIER 4 (exact label match). Also found other variables with 'TIER' in their names: LEQ_TIER (Captured variable, no labels shown), FINAL_FACILITY_TIER (Captured variable, no labels shown), FINAL_SOC_TIER (Captured variable, no labels shown). Search sequence followed: (1) exact name/label match -> qLIST_TIER, (2) name contains 'TIER' -> LEQ_TIER / FINAL_*, (3) description/labels review.\n\nINTERPRETATION DECISIONS: The banner text 'Tier 1 from list' is a label reference (TYPE 5). I selected qLIST_TIER because it provides explicit value labels 'TIER 1'..'TIER 4' and best matches the 'from list' phrasing. Mapping applied: Tier 1 -> qLIST_TIER == 1.\n\nASSUMPTIONS MADE: Assuming qLIST_TIER stores numeric codes 1..4 corresponding to TIER 1..4 as shown in Answer_Options. Assuming 'from list' indicates the list variable qLIST_TIER rather than captured tier fields. No string comparisons used because Answer_Options are numeric codes.\n\nCONFIDENCE RATIONALE: qLIST_TIER is an exact label match which gives a strong baseline, but multiple other 'tier' variables exist in the map without label metadata (LEQ_TIER, FINAL_FACILITY_TIER, FINAL_SOC_TIER). Per the variable search ambiguity rules (3+ plausible candidates) the confidence is capped and set to 0.65. What would increase confidence: confirmation that the banner expects qLIST_TIER specifically or provision of label metadata for LEQ_TIER / FINAL_* variables."
+        },
+        {
+          "name": "Tier 2",
+          "adjusted": "qLIST_TIER == 2",
+          "confidence": 0.65,
+          "reason": "VARIABLE SEARCH RESULTS: Searched the entire data map for variables/labels matching 'Tier' / 'TIER' and for list variables. Found qLIST_TIER with Answer_Options: 1=TIER 1,2=TIER 2,3=TIER 3,4=TIER 4 (exact label match). Also found LEQ_TIER, FINAL_FACILITY_TIER, FINAL_SOC_TIER as captured variables with no label details. Full scan followed the mandated search sequence (name match, name contains term, description, labels).\n\nINTERPRETATION DECISIONS: 'Tier 2 from list' is a label reference (TYPE 5). Selected qLIST_TIER because it explicitly contains 'TIER 2' as code 2. Mapping applied: Tier 2 -> qLIST_TIER == 2.\n\nASSUMPTIONS MADE: qLIST_TIER uses numeric coding 1..4 as per Answer_Options. Other 'tier' variables may represent similar concepts but lack label metadata in the provided map.\n\nCONFIDENCE RATIONALE: The explicit label match to qLIST_TIER gives confidence, but presence of 3+ other 'tier' candidates reduces maximal confidence per protocol to 0.65. To improve confidence, confirm which variable the reporting/banner expects or provide labels for the alternative 'tier' variables."
+        },
+        {
+          "name": "Tier 3",
+          "adjusted": "qLIST_TIER == 3",
+          "confidence": 0.65,
+          "reason": "VARIABLE SEARCH RESULTS: Conducted a full data map search for 'Tier' / 'TIER'. qLIST_TIER contains Answer_Options: 1=TIER 1,2=TIER 2,3=TIER 3,4=TIER 4 (direct label match). Additional candidates with 'TIER' in their name exist: LEQ_TIER, FINAL_FACILITY_TIER, FINAL_SOC_TIER (all listed as captured variables without Answer_Options).\n\nINTERPRETATION DECISIONS: Treated 'Tier 3 from list' as a label reference (TYPE 5). qLIST_TIER was chosen because of explicit label alignment. Mapping applied: Tier 3 -> qLIST_TIER == 3.\n\nASSUMPTIONS MADE: Assuming numeric coding 1..4 in qLIST_TIER correspond to TIER 1..4. Assuming 'from list' points to the list variable qLIST_TIER rather than other captured tier fields.\n\nCONFIDENCE RATIONALE: Although qLIST_TIER is an exact label match, multiple plausible 'tier' variables exist in the map. Per the ambiguity handling rules (3+ candidates) confidence is capped at 0.65. Confirmation of the intended source variable would raise confidence."
+        },
+        {
+          "name": "Tier 4",
+          "adjusted": "qLIST_TIER == 4",
+          "confidence": 0.65,
+          "reason": "VARIABLE SEARCH RESULTS: Full-scan located qLIST_TIER with Answer_Options: 1=TIER 1,2=TIER 2,3=TIER 3,4=TIER 4 (explicit label match). Also identified LEQ_TIER, FINAL_FACILITY_TIER, FINAL_SOC_TIER as additional 'tier' candidates but without label metadata in the provided map.\n\nINTERPRETATION DECISIONS: 'Tier 4 from list' mapped to qLIST_TIER because qLIST_TIER directly enumerates TIER 1-4. Mapping applied: Tier 4 -> qLIST_TIER == 4.\n\nASSUMPTIONS MADE: qLIST_TIER numeric codes correspond to the TIER labels shown. Other tier-like variables might be relevant but lack label details.\n\nCONFIDENCE RATIONALE: Exact label match supports the mapping, but presence of 3+ alternative 'tier' variables reduces confidence per protocol to 0.65. To increase confidence, provide explicit confirmation that qLIST_TIER is the intended field or supply label metadata for the alternative tier variables."
+        }
+      ]
+    },
+    {
+      "groupName": "Currently Prescribe Leqvio without a Statin and Before Other Therapies",
+      "columns": [
+        {
+          "name": "Yes",
+          "adjusted": "A3br1c1 > 0",
+          "confidence": 0.98,
+          "reason": "VARIABLE SEARCH RESULTS: Per the required full-data-map search, an exact-name match was found: A3br1c1 (Description: \"BEFORE any other lipid-lowering therapy (i.e., first line)\"; Answer_Options: NA). I also inspected related variables (e.g., A3br1c2, A3br2c1, A3br2c2, A3r1, A3r2) and found no better candidate.\nINTERPRETATION DECISIONS: The original expression 'A3br1c1>0' is a numeric greater-than check; translated directly to R as A3br1c1 > 0.\nASSUMPTIONS MADE: I assume A3br1c1 is numeric (or numeric-coded) where 0 indicates none/no and values >0 indicate presence/yes. Answer_Options are not provided in the data map, so exact value-label coding could not be confirmed.\nCONFIDENCE RATIONALE: Exact variable-name match and straightforward numeric comparison give high confidence. A small deduction (hence <1.0) reflects missing documented answer options/value labels; providing those would increase confidence to 1.0."
+        },
+        {
+          "name": "No",
+          "adjusted": "(A3br1c1 == 0 | is.na(A3br1c1))",
+          "confidence": 0.95,
+          "reason": "VARIABLE SEARCH RESULTS: Per the full-data-map search, an exact-name match was found: A3br1c1 (Description: \"BEFORE any other lipid-lowering therapy (i.e., first line)\"; Answer_Options: NA). Related variables (A3br1c2, A3br2c1, A3br2c2, etc.) were reviewed and not selected.\nINTERPRETATION DECISIONS: The banner expression 'A3br1c1=0 OR A3br1c1=NA' maps to numeric equality and an R missing-value check. In R this is expressed as (A3br1c1 == 0 | is.na(A3br1c1)).\nASSUMPTIONS MADE: I assume A3br1c1 uses 0 to indicate 'no' and that NA represents missing; Answer_Options are not documented so this is unconfirmed. If the variable were string-coded (e.g., \"No\"/\"Yes\") the expression would need adjustment.\nCONFIDENCE RATIONALE: Exact variable match and direct mapping to is.na() gives high confidence. Confidence is slightly reduced because Answer_Options/value labels are not provided and because NA semantics depend on the raw data encoding."
+        }
+      ]
+    },
+    {
+      "groupName": "Leqvio Rx'ing Would Increase with New PCSK9s Indication",
+      "columns": [
+        {
+          "name": "All Leqvio Prescribing",
+          "adjusted": "A4r2c2 > A4r2c1",
+          "confidence": 0.93,
+          "reason": "VARIABLE SEARCH RESULTS: Searched the entire data map using the full search sequence. Found exact variable name matches for both sides: A4r2c2 (Description: 'Leqvio (inclisiran)', Answer_Options: NA) and A4r2c1 (Description: 'Leqvio (inclisiran)', Answer_Options: NA). No other candidate variables with these exact names were found.\n\nINTERPRETATION DECISIONS: The expression is a direct variable comparison (TYPE 2). Translated directly to R comparison syntax preserving variable names: A4r2c2 > A4r2c1.\n\nASSUMPTIONS MADE: Assumed both variables are numeric or ordinal so the '>' operator is appropriate. Answer_Options are NA, so exact value codings/types were not provided; nonetheless variable names match exactly.\n\nCONFIDENCE RATIONALE: Confidence 0.93 (TYPE 2 guideline 0.90-0.95). Assigned high confidence because both variables exist with exact names and the expression is a straightforward comparison. Slightly reduced from the maximum because Answer_Options are NA (variable type implicit) but this does not affect the syntactic mapping."
+        },
+        {
+          "name": "Leqvio RX'ing without a Statin & Before Other Therapies",
+          "adjusted": "A4br1c1 > A3br1c1",
+          "confidence": 0.93,
+          "reason": "VARIABLE SEARCH RESULTS: Completed full data map search. Found exact variable name matches for both sides: A4br1c1 (Description: 'Next treatment allocation', Answer_Options: NA) and A3br1c1 (Description: 'BEFORE any other lipid-lowering therapy (i.e., first line)', Answer_Options: NA). No alternative candidates with these names were found.\n\nINTERPRETATION DECISIONS: Expression is a variable-to-variable comparison (TYPE 2). Mapped directly to R syntax: A4br1c1 > A3br1c1.\n\nASSUMPTIONS MADE: Assumed both variables are numeric or ordinal and comparable with '>'. The 'br' suffix appears in the data map and exact matches were found; treated as literal variable names.\n\nCONFIDENCE RATIONALE: Confidence 0.93 (within TYPE 2 guideline 0.90-0.95). Exact variable matches on both sides provide high certainty. Confidence slightly reduced because Answer_Options are NA, leaving variable measurement scale implicit, though this does not affect the translation to R syntax."
+        }
+      ]
+    },
+    {
+      "groupName": "Primary Practice Setting",
+      "columns": [
+        {
+          "name": "Academic / Univ. Hospital",
+          "adjusted": "S9 == 6",
+          "confidence": 0.95,
+          "reason": "VARIABLE SEARCH RESULTS: Searched entire data map. Found exact variable name 'S9' with description 'Which of the following best represents the setting in which you spend most of your professional time?' and answer options '1=Private Solo Practice,2=Private Group Practice,3=Multi-specialty Practice / Comprehensive Care,4=Staff HMO,5=Community Hospital,6=Academic/University Hospital,7=VA Hospital,8=None of the above'. No other variables matched the term 'S9' or the specific label. INTERPRETATION DECISIONS: The banner expression 'S9=6' is a direct variable equality (TYPE 1). Mapped directly to numeric equality using S9 == 6. ASSUMPTIONS MADE: Assumed S9 is numeric-coded as per 'Answer_Options' and code 6 corresponds to 'Academic/University Hospital' exactly as listed. CONFIDENCE RATIONALE: High confidence (0.95) because this is an exact variable name match and a clear numeric code present in the data map; no ambiguity or alternatives found."
+        },
+        {
+          "name": "Total Community",
+          "adjusted": "S9 %in% c(1,2,3,4,5)",
+          "confidence": 0.95,
+          "reason": "VARIABLE SEARCH RESULTS: Completed full data map search and found exact variable 'S9' (see description and answer options documented above). The banner original expression 'S9=1 OR S9=2 OR S9=3 OR S9=4 OR S9=5' references S9 values 1-5. No other variables with matching descriptions or labels were found. INTERPRETATION DECISIONS: This is a direct multiple-value equality (TYPE 1). Converted the OR chain to R's %in% notation for concise, executable syntax: S9 %in% c(1,2,3,4,5). ASSUMPTIONS MADE: Assumed the intent of 'Total Community' is to aggregate settings coded 1-5 (Private Solo Practice, Private Group Practice, Multi-specialty Practice / Comprehensive Care, Staff HMO, Community Hospital) as listed in S9. CONFIDENCE RATIONALE: High confidence (0.95) because of exact variable match and explicit numeric codes in the data map; no ambiguity or alternative candidate variables. "
+        }
+      ]
+    },
+    {
+      "groupName": "Total",
+      "columns": [
+        {
+          "name": "Total",
+          "adjusted": "status == 3",
+          "confidence": 0.95,
+          "reason": "VARIABLE SEARCH RESULTS: Searched the entire data map (192 variables) using the required sequence: 1) exact variable name match (none for 'qualified respondents'), 2) variable name contains search term (none), 3) description contains search term (none), 4) value labels containing 'Qualified' — found one clear match: variable 'status' with Answer_Options '1=Terminated,2=Overquota,3=Qualified,4=Partial'. No other variables contained the label 'Qualified'.\n\nINTERPRETATION DECISIONS: The banner expression 'qualified respondents' most plausibly refers to respondents coded as 'Qualified' in the survey disposition. Given the explicit value label in the data map, I mapped this to status == 3. I considered the TYPE 7 default (Total/Base → TRUE) but rejected it because the data map provides a specific 'Qualified' code that is more precise.\n\nASSUMPTIONS MADE: Assumed 'Qualified' in the banner corresponds to the 'Qualified' value label (code 3) of the 'status' variable. Treated the value as numeric (per Answer_Options). No other contextual meaning (e.g., 'all respondents') was inferred.\n\nCONFIDENCE RATIONALE: Assigned confidence = 0.95 because this is a direct, unambiguous mapping from a value label to a numeric code in the data map (direct variable equality). This would increase with explicit confirmation from the client that 'qualified respondents' indeed means survey disposition == 'Qualified'; it would decrease if the client intended 'Total' to mean all respondents (in which case adjusted should be TRUE)."
+        }
+      ]
+    }
+  ]
+}
