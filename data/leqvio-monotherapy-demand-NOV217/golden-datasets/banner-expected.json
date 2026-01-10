@@ -146,8 +146,8 @@
       "columns": [
         {
           "name": "Yes",
-          "original": "A3br1c1>0",
-          "adjusted": "A3br1c1>0",
+          "original": "A3ar1c2>0 AND A3br1c1>0",
+          "adjusted": "A3ar1c2>0 AND A3br1c1>0",
           "statLetter": "L",
           "confidence": 0.90,
           "requiresInference": false,
@@ -157,8 +157,8 @@
         },
         {
           "name": "No",
-          "original": "A3br1c1=0 OR A3br1c1=NA",
-          "adjusted": "A3br1c1=0 OR A3br1c1=NA",
+          "original": "NOT (A3ar1c2>0 AND A3br1c1>0)",
+          "adjusted": "NOT (A3ar1c2>0 AND A3br1c1>0)",
           "statLetter": "M",
           "confidence": 0.90,
           "requiresInference": false,
@@ -184,8 +184,8 @@
         },
         {
           "name": "Leqvio RX’ing without a Statin & Before Other Therapies",
-          "original": "A4br1c1>A3br1c1",
-          "adjusted": "A4br1c1>A3br1c1",
+          "original": "A3ar1c2 > 0 AND A4ar1c2 > 0 AND A4br1c1 > A3br1c1",
+          "adjusted": "A3ar1c2 > 0 AND A4ar1c2 > 0 AND A4br1c1 > A3br1c1",
           "statLetter": "O",
           "confidence": 0.90,
           "requiresInference": false,

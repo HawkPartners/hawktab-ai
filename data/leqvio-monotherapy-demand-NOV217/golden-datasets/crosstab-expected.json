@@ -91,13 +91,13 @@
       "columns": [
         {
           "name": "Yes",
-          "adjusted": "A3br1c1 > 0",
+          "adjusted": "(A3ar1c2 > 0) & (A3br1c1 > 0)",
           "confidence": 0.98,
           "reason": "VARIABLE SEARCH RESULTS: Per the required full-data-map search, an exact-name match was found: A3br1c1 (Description: \"BEFORE any other lipid-lowering therapy (i.e., first line)\"; Answer_Options: NA). I also inspected related variables (e.g., A3br1c2, A3br2c1, A3br2c2, A3r1, A3r2) and found no better candidate.\nINTERPRETATION DECISIONS: The original expression 'A3br1c1>0' is a numeric greater-than check; translated directly to R as A3br1c1 > 0.\nASSUMPTIONS MADE: I assume A3br1c1 is numeric (or numeric-coded) where 0 indicates none/no and values >0 indicate presence/yes. Answer_Options are not provided in the data map, so exact value-label coding could not be confirmed.\nCONFIDENCE RATIONALE: Exact variable-name match and straightforward numeric comparison give high confidence. A small deduction (hence <1.0) reflects missing documented answer options/value labels; providing those would increase confidence to 1.0."
         },
         {
           "name": "No",
-          "adjusted": "(A3br1c1 == 0 | is.na(A3br1c1))",
+          "adjusted": "!((A3ar1c2 > 0) & (A3br1c1 > 0))",
           "confidence": 0.95,
           "reason": "VARIABLE SEARCH RESULTS: Per the full-data-map search, an exact-name match was found: A3br1c1 (Description: \"BEFORE any other lipid-lowering therapy (i.e., first line)\"; Answer_Options: NA). Related variables (A3br1c2, A3br2c1, A3br2c2, etc.) were reviewed and not selected.\nINTERPRETATION DECISIONS: The banner expression 'A3br1c1=0 OR A3br1c1=NA' maps to numeric equality and an R missing-value check. In R this is expressed as (A3br1c1 == 0 | is.na(A3br1c1)).\nASSUMPTIONS MADE: I assume A3br1c1 uses 0 to indicate 'no' and that NA represents missing; Answer_Options are not documented so this is unconfirmed. If the variable were string-coded (e.g., \"No\"/\"Yes\") the expression would need adjustment.\nCONFIDENCE RATIONALE: Exact variable match and direct mapping to is.na() gives high confidence. Confidence is slightly reduced because Answer_Options/value labels are not provided and because NA semantics depend on the raw data encoding."
         }
@@ -113,8 +113,8 @@
           "reason": "VARIABLE SEARCH RESULTS: Searched the entire data map using the full search sequence. Found exact variable name matches for both sides: A4r2c2 (Description: 'Leqvio (inclisiran)', Answer_Options: NA) and A4r2c1 (Description: 'Leqvio (inclisiran)', Answer_Options: NA). No other candidate variables with these exact names were found.\n\nINTERPRETATION DECISIONS: The expression is a direct variable comparison (TYPE 2). Translated directly to R comparison syntax preserving variable names: A4r2c2 > A4r2c1.\n\nASSUMPTIONS MADE: Assumed both variables are numeric or ordinal so the '>' operator is appropriate. Answer_Options are NA, so exact value codings/types were not provided; nonetheless variable names match exactly.\n\nCONFIDENCE RATIONALE: Confidence 0.93 (TYPE 2 guideline 0.90-0.95). Assigned high confidence because both variables exist with exact names and the expression is a straightforward comparison. Slightly reduced from the maximum because Answer_Options are NA (variable type implicit) but this does not affect the syntactic mapping."
         },
         {
-          "name": "Leqvio RX'ing without a Statin & Before Other Therapies",
-          "adjusted": "A4br1c1 > A3br1c1",
+          "name": "Leqvio RX’ing without a Statin & Before Other Therapies",
+          "adjusted": "(A3ar1c2 > 0) & (A4ar1c2 > 0) & (A4br1c1 > A3br1c1)",
           "confidence": 0.93,
           "reason": "VARIABLE SEARCH RESULTS: Completed full data map search. Found exact variable name matches for both sides: A4br1c1 (Description: 'Next treatment allocation', Answer_Options: NA) and A3br1c1 (Description: 'BEFORE any other lipid-lowering therapy (i.e., first line)', Answer_Options: NA). No alternative candidates with these names were found.\n\nINTERPRETATION DECISIONS: Expression is a variable-to-variable comparison (TYPE 2). Mapped directly to R syntax: A4br1c1 > A3br1c1.\n\nASSUMPTIONS MADE: Assumed both variables are numeric or ordinal and comparable with '>'. The 'br' suffix appears in the data map and exact matches were found; treated as literal variable names.\n\nCONFIDENCE RATIONALE: Confidence 0.93 (within TYPE 2 guideline 0.90-0.95). Exact variable matches on both sides provide high certainty. Confidence slightly reduced because Answer_Options are NA, leaving variable measurement scale implicit, though this does not affect the translation to R syntax."
         }
