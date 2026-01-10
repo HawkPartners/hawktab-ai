@@ -253,6 +253,36 @@ Unexpected differences: 0
 
 **Status**: IN PROGRESS
 
+### Current Progress (as of 2026-01-10)
+
+**Infrastructure: ✅ Complete**
+- `scripts/compare-to-golden.ts` - Compares pipeline output to golden datasets
+- `scripts/calculate-metrics.ts` - Calculates accuracy metrics from comparison report
+- `scripts/extract-data-json.ts` - Extracts streamlined data for golden dataset creation
+- Pipeline auto-outputs `data-streamlined.json` alongside `tables.json`
+- Raw agent outputs now capture complete model output (not filtered subsets)
+
+**Golden Datasets: 🔄 In Progress**
+| File | Status | Notes |
+|------|--------|-------|
+| `banner-expected.json` | ✅ Complete | Removed unused fields (crossRefStatus, aiRecommended). Added inline guidance for remaining fields. |
+| `crosstab-expected.json` | ✅ Complete | Fixed skip logic issues (A3ar1c2, A4ar1c2 filters) discovered during review. |
+| `verification-expected.json` | 🔄 Needs review | Copied from raw output, needs manual verification. |
+| `data-expected.json` | 🔄 Needs review | Copied from raw output, needs manual verification against Joe's tabs. |
+
+**Prompt Updates Made:**
+- `src/prompts/banner/alternative.ts` - Clarified field guidance (humanInLoopRequired, requiresInference, uncertainties, inferenceReason)
+- `src/agents/BannerAgent.ts` - Schema updated to remove unused fields
+- `src/lib/contextBuilder.ts` - Types updated to match schema
+
+**Next Steps:**
+1. Finalize `verification-expected.json` review
+2. Finalize `data-expected.json` review
+3. Run first comparison: `npx tsx scripts/compare-to-golden.ts <pipeline-output>`
+4. Review comparison report and annotate differences
+
+---
+
 ### The Problem
 
 Our current testing workflow is "run pipeline, eyeball JSON, manually compare." This doesn't scale and makes it hard to:
