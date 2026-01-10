@@ -399,9 +399,11 @@ async function saveDevelopmentOutputs(
     await fs.writeFile(filePath, JSON.stringify(enhancedOutput, null, 2), 'utf-8');
     console.log(`[VerificationAgent] Development output saved to verification/: ${filename}`);
 
-    // Save raw output (just what the agent produced - for golden dataset comparison)
+    // Save raw output (complete model output - for golden dataset comparison)
+    // This includes tables and allChanges (model decisions), but NOT metadata (system-calculated)
     const rawOutput = {
       tables: results.tables,
+      allChanges: results.allChanges,
     };
     const rawPath = path.join(verificationDir, 'verification-output-raw.json');
     await fs.writeFile(rawPath, JSON.stringify(rawOutput, null, 2), 'utf-8');

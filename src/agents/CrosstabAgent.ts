@@ -258,12 +258,10 @@ async function saveDevelopmentOutputs(
 
     await fs.writeFile(filePath, JSON.stringify(enhancedOutput, null, 2), 'utf-8');
 
-    // Save raw output (just what the agent produced - for golden dataset comparison)
-    const rawOutput = {
-      bannerCuts: result.bannerCuts,
-    };
+    // Save raw output (complete model output - for golden dataset comparison)
+    // This is the full combined result: bannerCuts with groupName, columns (name, adjusted, confidence, reason)
     const rawPath = path.join(crosstabDir, 'crosstab-output-raw.json');
-    await fs.writeFile(rawPath, JSON.stringify(rawOutput, null, 2), 'utf-8');
+    await fs.writeFile(rawPath, JSON.stringify(result, null, 2), 'utf-8');
 
     // Save scratchpad trace as separate markdown file for easy reading
     if (scratchpadEntries && scratchpadEntries.length > 0) {
