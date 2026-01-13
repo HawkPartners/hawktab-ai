@@ -13,6 +13,7 @@ interface FileUploadProps {
   fileExtensions: string[];
   onFileSelect: (file: File | null) => void;
   selectedFile: File | null;
+  optional?: boolean;
 }
 
 export default function FileUpload({
@@ -22,6 +23,7 @@ export default function FileUpload({
   fileExtensions,
   onFileSelect,
   selectedFile,
+  optional = false,
 }: FileUploadProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -80,7 +82,12 @@ export default function FileUpload({
   return (
     <Card className="w-full max-w-sm mx-auto">
       <CardHeader>
-        <CardTitle className="text-lg">{title}</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle className="text-lg">{title}</CardTitle>
+          {optional && (
+            <Badge variant="outline" className="text-xs font-normal">Optional</Badge>
+          )}
+        </div>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>

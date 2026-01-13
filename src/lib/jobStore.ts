@@ -9,6 +9,7 @@ export type JobStage =
   | 'banner_agent'
   | 'crosstab_agent'
   | 'table_agent'
+  | 'verification_agent'
   | 'generating_r'
   | 'executing_r'
   | 'writing_outputs'
@@ -22,6 +23,8 @@ export interface JobStatus {
   percent: number
   message: string
   sessionId?: string
+  pipelineId?: string
+  dataset?: string
   error?: string
   warning?: string
   downloadUrl?: string

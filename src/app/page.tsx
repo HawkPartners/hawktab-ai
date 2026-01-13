@@ -3,69 +3,100 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import FileUpload from '../components/FileUpload';
-import LoadingModal, { ProcessingStep, type JobProgress } from '../components/LoadingModal';
 import { useValidationQueue } from '../hooks/useValidationQueue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/PageHeader';
+import { PipelineHistory } from '@/components/PipelineHistory';
 
 export default function Home() {
   const [dataMapFile, setDataMapFile] = useState<File | null>(null);
   const [bannerPlanFile, setBannerPlanFile] = useState<File | null>(null);
   const [dataFile, setDataFile] = useState<File | null>(null);
+  const [surveyFile, setSurveyFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [processingStep, setProcessingStep] = useState<ProcessingStep | undefined>();
   const [jobId, setJobId] = useState<string | null>(null);
-  const [jobProgress, setJobProgress] = useState<JobProgress | undefined>();
-  const [, setJobStage] = useState<string | null>(null);
   const [jobError, setJobError] = useState<string | null>(null);
-  const [jobStartTs, setJobStartTs] = useState<number | null>(null);
   const router = useRouter();
   const { counts, refresh } = useValidationQueue();
 
-  const allFilesUploaded = dataMapFile && bannerPlanFile && dataFile;
+  // Required files check (survey is optional)
+  const requiredFilesUploaded = dataMapFile && bannerPlanFile && dataFile;
 
   const handleSubmit = async () => {
-    if (!allFilesUploaded) return;
-    
+    if (!requiredFilesUploaded) return;
+
     setIsProcessing(true);
-    setProcessingStep({ step: 'initial', message: 'Processing your files...' });
-    
+    setJobError(null);
+
+    // Clear uploaded files immediately so UI shows empty state
+    const submittedFiles = {
+      dataMap: dataMapFile!,
+      bannerPlan: bannerPlanFile!,
+      dataFile: dataFile!,
+      survey: surveyFile,
+    };
+    setDataMapFile(null);
+    setBannerPlanFile(null);
+    setDataFile(null);
+    setSurveyFile(null);
+
+    // Show initial toast
+    toast.loading('Processing pipeline...', {
+      id: 'pipeline-progress',
+      description: 'Starting...',
+      duration: Infinity,
+    });
+
     try {
       const formData = new FormData();
-      formData.append('dataMap', dataMapFile!);
-      formData.append('bannerPlan', bannerPlanFile!);
-      formData.append('dataFile', dataFile!);
-      
-      // Call our single API endpoint for complete processing (returns early with jobId)
+      formData.append('dataMap', submittedFiles.dataMap);
+      formData.append('bannerPlan', submittedFiles.bannerPlan);
+      formData.append('dataFile', submittedFiles.dataFile);
+      if (submittedFiles.survey) {
+        formData.append('surveyDocument', submittedFiles.survey);
+      }
+
+      // Call our API endpoint for complete processing (returns early with jobId)
       const response = await fetch('/api/process-crosstab', {
         method: 'POST',
         body: formData,
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Processing failed');
       }
-      
+
       const result = await response.json();
       if (result.jobId) {
         setJobId(result.jobId);
-        setIsProcessing(true);
-        setJobStartTs(Date.now());
       }
-      
-      // Do not toast success or clear files here; completion toast handled by the poller when stage==='complete'
-      
+
     } catch (error) {
       console.error('Processing error:', error);
+      setIsProcessing(false);
       toast.error('Processing failed', {
-        description: error instanceof Error ? error.message : 'Unknown error occurred'
+        id: 'pipeline-progress',
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
       });
-    } finally {
-      // Do not close the modal here; let job status control it
     }
+  };
+
+  const handleCancel = () => {
+    // Clear processing state
+    setIsProcessing(false);
+    setJobId(null);
+    setJobError(null);
+
+    // Dismiss the toast
+    toast.dismiss('pipeline-progress');
+
+    // Show cancellation confirmation
+    toast.info('Pipeline cancelled', {
+      description: 'The processing has been stopped.',
+    });
   };
 
   // Poll job progress when jobId is set
@@ -78,71 +109,80 @@ export default function Home() {
         if (!res.ok) return;
         const data = await res.json();
         if (cancelled) return;
-        setJobStage(String(data.stage || ''));
-        setJobProgress({ percent: Math.max(1, Math.min(100, Number(data.percent) || 0)), message: data.message || 'Processing...' });
+
+        // Update toast with progress
+        const percent = Math.max(1, Math.min(100, Number(data.percent) || 0));
+        toast.loading('Processing pipeline...', {
+          id: 'pipeline-progress',
+          description: `${data.message || 'Processing...'} (${percent}%)`,
+          duration: Infinity,
+        });
+
         if (data.error) setJobError(String(data.error));
+
         if (data.stage === 'complete' || data.stage === 'error') {
           clearInterval(interval);
-          const close = () => {
-            setIsProcessing(false);
-            setJobId(null);
-            setJobProgress(undefined);
-            setJobStage(null);
-            const doneOk = data.stage === 'complete' && !data.error;
-            if (doneOk) {
-              // Clear uploaded files, refresh counts, toast success with link
-              setDataMapFile(null);
-              setBannerPlanFile(null);
-              setDataFile(null);
-              refresh();
-              toast.success('Processing completed successfully!', {
-                description: 'Your files have been processed and are ready for validation.',
-                action: { label: 'View Queue', onClick: () => router.push('/validate') },
-              });
-            } else {
-              toast.error('Processing failed', { description: data.error || jobError || 'Unknown error' });
-            }
-          };
-          // Ensure minimum visible time to avoid flicker
-          const minMs = 800;
-          const elapsed = jobStartTs ? Date.now() - jobStartTs : minMs;
-          if (elapsed < minMs) setTimeout(close, minMs - elapsed);
-          else close();
+          setIsProcessing(false);
+          setJobId(null);
+
+          const doneOk = data.stage === 'complete' && !data.error;
+          if (doneOk) {
+            // Refresh pipeline history counts
+            refresh();
+
+            // Show success toast with action to view pipeline
+            const pipelineId = data.pipelineId;
+            toast.success('Pipeline complete!', {
+              id: 'pipeline-progress',
+              description: data.message || 'Your crosstabs have been generated.',
+              action: pipelineId
+                ? { label: 'View Details', onClick: () => router.push(`/pipelines/${encodeURIComponent(pipelineId)}`) }
+                : { label: 'View History', onClick: () => {} },
+            });
+          } else {
+            toast.error('Processing failed', {
+              id: 'pipeline-progress',
+              description: data.error || jobError || 'Unknown error',
+            });
+          }
         }
       } catch {
         // ignore transient errors
       }
-    }, 1200);
+    }, 1500);
     return () => {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [jobId, router, refresh, jobError, jobStartTs]);
+  }, [jobId, router, refresh, jobError]);
 
   return (
     <div className="py-12 px-4">
       <div className="max-w-6xl mx-auto">
         <PageHeader
-          title="HawkTab AI - Crosstab Generator"
+          title="CrossTab AI - Crosstab Generator"
           description="Upload your data files to generate automated crosstabs. Provide a data map, banner plan, and your raw data to get started."
           actions={
-            <div className="relative">
-              <Button
-                onClick={() => router.push('/validate')}
-                variant="secondary"
-              >
-                Validation Queue
-              </Button>
-              {counts.pending > 0 && (
-                <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                  {counts.pending}
-                </Badge>
-              )}
+            <div className="flex items-center gap-2">
+              <PipelineHistory />
+              <div className="relative">
+                <Button
+                  onClick={() => router.push('/validate')}
+                  variant="secondary"
+                >
+                  Validation Queue
+                </Button>
+                {counts.pending > 0 && (
+                  <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                    {counts.pending}
+                  </Badge>
+                )}
+              </div>
             </div>
           }
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <FileUpload
             title="Data Map"
             description="Upload your data mapping file"
@@ -151,7 +191,7 @@ export default function Home() {
             onFileSelect={setDataMapFile}
             selectedFile={dataMapFile}
           />
-          
+
           <FileUpload
             title="Banner Plan"
             description="Upload your banner plan document"
@@ -160,7 +200,7 @@ export default function Home() {
             onFileSelect={setBannerPlanFile}
             selectedFile={bannerPlanFile}
           />
-          
+
           <FileUpload
             title="Data File"
             description="Upload your SPSS data file"
@@ -169,27 +209,53 @@ export default function Home() {
             onFileSelect={setDataFile}
             selectedFile={dataFile}
           />
+
+          <FileUpload
+            title="Survey Document"
+            description="Upload questionnaire for enhanced table labels"
+            acceptedTypes=".doc,.docx"
+            fileExtensions={['.doc', '.docx']}
+            onFileSelect={setSurveyFile}
+            selectedFile={surveyFile}
+            optional
+          />
         </div>
 
         <div className="text-center">
-          <Button
-            onClick={handleSubmit}
-            disabled={!allFilesUploaded || isProcessing}
-            size="lg"
-            className="px-8"
-          >
-            {isProcessing ? 'Processing...' : 'Generate Crosstabs'}
-          </Button>
-          
-          {!allFilesUploaded && (
-            <p className="text-sm text-muted-foreground mt-2">
-              Please upload all three files to continue
-            </p>
+          {isProcessing ? (
+            <div className="flex flex-col items-center gap-4">
+              <p className="text-sm text-muted-foreground">
+                Pipeline is running in the background. You can navigate away or cancel below.
+              </p>
+              <Button
+                onClick={handleCancel}
+                variant="outline"
+                size="lg"
+                className="px-8"
+              >
+                Cancel Pipeline
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Button
+                onClick={handleSubmit}
+                disabled={!requiredFilesUploaded}
+                size="lg"
+                className="px-8"
+              >
+                Generate Crosstabs
+              </Button>
+
+              {!requiredFilesUploaded && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Please upload the required files to continue
+                </p>
+              )}
+            </>
           )}
         </div>
       </div>
-
-      <LoadingModal isOpen={isProcessing} currentStep={processingStep} jobProgress={jobProgress} />
     </div>
   );
 }

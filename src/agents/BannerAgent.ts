@@ -197,74 +197,98 @@ PROCESSING REQUIREMENTS:
 Begin analysis now.
 `;
 
-    try {
-      // CRITICAL: Image format is different in Vercel AI SDK
-      // OpenAI Agents SDK: { type: 'input_image', image: 'data:image/png;base64,...' }
-      // Vercel AI SDK: { type: 'image', image: Buffer.from(base64, 'base64') }
-      const { output } = await generateText({
-        model: getBannerModel(),  // Task-based: banner model for vision/extraction tasks
-        system: systemPrompt,
-        maxRetries: 3,  // SDK handles transient/network errors
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: 'Analyze the banner plan images and extract column specifications with proper group separation.' },
-              ...images.map(img => ({
-                type: 'image' as const,
-                image: Buffer.from(img.base64, 'base64'),
-                mimeType: `image/${img.format}` as const,
-              })),
-            ],
-          },
-        ],
-        tools: {
-          scratchpad: bannerScratchpadTool,
-        },
-        stopWhen: stepCountIs(15),  // AI SDK 5+: replaces maxTurns/maxSteps
-        maxOutputTokens: Math.min(getBannerModelTokenLimit(), 100000),
-        // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
-        providerOptions: {
-          openai: {
-            reasoningEffort: getBannerReasoningEffort(),
-          },
-        },
-        output: Output.object({
-          schema: BannerExtractionResultSchema,
-        }),
-      });
+    const MAX_POLICY_RETRIES = 3;
+    let lastError: string = '';
 
-      if (!output || !output.extractedStructure) {
-        throw new Error('Invalid agent response structure');
+    for (let attempt = 1; attempt <= MAX_POLICY_RETRIES; attempt++) {
+      try {
+        // CRITICAL: Image format is different in Vercel AI SDK
+        // OpenAI Agents SDK: { type: 'input_image', image: 'data:image/png;base64,...' }
+        // Vercel AI SDK: { type: 'image', image: Buffer.from(base64, 'base64') }
+        const { output } = await generateText({
+          model: getBannerModel(),  // Task-based: banner model for vision/extraction tasks
+          system: systemPrompt,
+          maxRetries: 3,  // SDK handles transient/network errors
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: 'Analyze the banner plan images and extract column specifications with proper group separation.' },
+                ...images.map(img => ({
+                  type: 'image' as const,
+                  image: Buffer.from(img.base64, 'base64'),
+                  mimeType: `image/${img.format}` as const,
+                })),
+              ],
+            },
+          ],
+          tools: {
+            scratchpad: bannerScratchpadTool,
+          },
+          stopWhen: stepCountIs(15),  // AI SDK 5+: replaces maxTurns/maxSteps
+          maxOutputTokens: Math.min(getBannerModelTokenLimit(), 100000),
+          // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+          providerOptions: {
+            openai: {
+              reasoningEffort: getBannerReasoningEffort(),
+            },
+          },
+          output: Output.object({
+            schema: BannerExtractionResultSchema,
+          }),
+        });
+
+        if (!output || !output.extractedStructure) {
+          throw new Error('Invalid agent response structure');
+        }
+
+        console.log(`[BannerAgent] Agent extracted ${output.extractedStructure.bannerCuts.length} groups`);
+
+        return output;
+
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        lastError = errorMessage;
+
+        // Check if this is a content policy violation error (retryable)
+        const isPolicyError = errorMessage.toLowerCase().includes('usage policy') ||
+                              errorMessage.toLowerCase().includes('content policy') ||
+                              errorMessage.toLowerCase().includes('flagged as potentially violating');
+
+        if (isPolicyError && attempt < MAX_POLICY_RETRIES) {
+          console.warn(`[BannerAgent] Content policy error on attempt ${attempt}/${MAX_POLICY_RETRIES}, retrying in 2s...`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          continue;
+        }
+
+        // Non-retryable error or max retries reached
+        if (isPolicyError) {
+          console.error(`[BannerAgent] Content policy error persisted after ${MAX_POLICY_RETRIES} attempts`);
+        } else {
+          console.error(`[BannerAgent] Extraction failed:`, errorMessage);
+        }
+        break;
       }
-
-      console.log(`[BannerAgent] Agent extracted ${output.extractedStructure.bannerCuts.length} groups`);
-
-      return output;
-
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(`[BannerAgent] Extraction failed:`, errorMessage);
-
-      // Return structured failure result
-      return {
-        success: false,
-        extractionType: 'banner_extraction',
-        timestamp: new Date().toISOString(),
-        extractedStructure: {
-          bannerCuts: [],
-          notes: [],
-          processingMetadata: {
-            totalColumns: 0,
-            groupCount: 0,
-            statisticalLettersUsed: [],
-            processingTimestamp: new Date().toISOString()
-          }
-        },
-        errors: [errorMessage],
-        warnings: []
-      };
     }
+
+    // Return structured failure result
+    return {
+      success: false,
+      extractionType: 'banner_extraction',
+      timestamp: new Date().toISOString(),
+      extractedStructure: {
+        bannerCuts: [],
+        notes: [],
+        processingMetadata: {
+          totalColumns: 0,
+          groupCount: 0,
+          statisticalLettersUsed: [],
+          processingTimestamp: new Date().toISOString()
+        }
+      },
+      errors: [lastError],
+      warnings: []
+    };
   }
 
   // Step 1: DOC/DOCX → PDF conversion
