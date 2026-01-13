@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HawkTab AI - Crosstab Generator",
+  title: "CrossTab AI - Crosstab Generator",
   description: "Automated crosstab generation using AI-powered data processing",
 };
 
@@ -32,7 +32,7 @@ export default function RootLayout({
           <div className="min-h-screen bg-background text-foreground">
             <header className="border-b">
               <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-                <div className="font-semibold">HawkTab AI</div>
+                <div className="font-semibold">CrossTab AI</div>
                 <div className="flex items-center gap-2">
                   <ModeToggle />
                 </div>
