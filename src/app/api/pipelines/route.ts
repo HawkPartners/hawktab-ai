@@ -78,6 +78,11 @@ export async function GET() {
             // No Excel file
           }
 
+          // Only show UI-created pipelines in the sidebar (skip test script runs)
+          if (summary.source !== 'ui') {
+            continue;
+          }
+
           // Tables count can be in different fields depending on pipeline source
           const tablesCount = summary.outputs?.tables
             || summary.outputs?.verifiedTables
