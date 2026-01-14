@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import FileUpload from '../components/FileUpload';
 import { useValidationQueue } from '../hooks/useValidationQueue';
@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/PageHeader';
 import { PipelineHistory } from '@/components/PipelineHistory';
+
+const ACTIVE_JOB_KEY = 'crosstab-active-job';
 
 export default function Home() {
   const [dataMapFile, setDataMapFile] = useState<File | null>(null);
@@ -20,6 +22,35 @@ export default function Home() {
   const [jobError, setJobError] = useState<string | null>(null);
   const router = useRouter();
   const { counts, refresh } = useValidationQueue();
+
+  // Restore active job from localStorage on mount
+  useEffect(() => {
+    const savedJobId = localStorage.getItem(ACTIVE_JOB_KEY);
+    if (savedJobId) {
+      // Check if job is still active
+      fetch(`/api/process-crosstab/status?jobId=${encodeURIComponent(savedJobId)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.stage && data.stage !== 'complete' && data.stage !== 'error') {
+            // Job still running - restore state
+            setJobId(savedJobId);
+            setIsProcessing(true);
+            toast.loading('Processing pipeline...', {
+              id: 'pipeline-progress',
+              description: `${data.message || 'Processing...'} (${data.percent || 0}%)`,
+              duration: Infinity,
+            });
+          } else {
+            // Job finished - clear storage
+            localStorage.removeItem(ACTIVE_JOB_KEY);
+          }
+        })
+        .catch(() => {
+          // Error checking - clear storage
+          localStorage.removeItem(ACTIVE_JOB_KEY);
+        });
+    }
+  }, []);
 
   // Required files check (survey is optional)
   const requiredFilesUploaded = dataMapFile && bannerPlanFile && dataFile;
@@ -72,6 +103,7 @@ export default function Home() {
       const result = await response.json();
       if (result.jobId) {
         setJobId(result.jobId);
+        localStorage.setItem(ACTIVE_JOB_KEY, result.jobId);
       }
 
     } catch (error) {
@@ -89,6 +121,7 @@ export default function Home() {
     setIsProcessing(false);
     setJobId(null);
     setJobError(null);
+    localStorage.removeItem(ACTIVE_JOB_KEY);
 
     // Dismiss the toast
     toast.dismiss('pipeline-progress');
@@ -124,6 +157,7 @@ export default function Home() {
           clearInterval(interval);
           setIsProcessing(false);
           setJobId(null);
+          localStorage.removeItem(ACTIVE_JOB_KEY);
 
           const doneOk = data.stage === 'complete' && !data.error;
           if (doneOk) {

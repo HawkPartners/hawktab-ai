@@ -206,6 +206,7 @@ export async function POST(request: NextRequest) {
             pipelineId,
             dataset: datasetName,
             timestamp: new Date().toISOString(),
+            source: 'ui',  // Mark as UI-created (vs test script)
             status: 'error',
             error: errorMsg,
             inputs: {
@@ -460,6 +461,7 @@ export async function POST(request: NextRequest) {
           pipelineId,
           dataset: datasetName,
           timestamp: new Date().toISOString(),
+          source: 'ui',  // Mark as UI-created (vs test script)
           duration: {
             ms: durationMs,
             formatted: `${durationSec}s`
@@ -476,7 +478,7 @@ export async function POST(request: NextRequest) {
             tableAgentTables: tableAgentTables.length,
             verifiedTables: sortedTables.length,
             tables: sortedTables.length,
-            cuts: cutsSpec.cuts.length + 1,
+            cuts: cutsSpec.cuts.length,
             bannerGroups: groupCount,
             sorting: {
               screeners: sortingMetadata.screenerCount,
