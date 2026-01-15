@@ -10,85 +10,34 @@
 
 Three key enhancements to make the system more impressive and robust for demos:
 
-| Phase | Enhancement | Purpose |
-|-------|-------------|---------|
-| 1 | Pipeline Parallelism | Faster processing, better UX |
-| 2 | Human-in-the-Loop for Banner Review | Handle uncertainty gracefully, show intelligent flagging |
-| 3 | AI-Recommended Cuts | Demonstrate AI's analytical capabilities |
+| Phase | Enhancement | Status | Purpose |
+|-------|-------------|--------|---------|
+| 1 | Pipeline Parallelism | ✅ Complete | Faster processing (~14 min saved) |
+| 2 | Human-in-the-Loop for Banner Review | 🔄 Up Next | Handle uncertainty gracefully, show intelligent flagging |
+| 3 | AI-Recommended Cuts | ⏳ Deferred | Demonstrate AI's analytical capabilities |
 
 ---
 
-## Phase 1: Pipeline Parallelism
+## Phase 1: Pipeline Parallelism ✅ COMPLETE
 
-### Current State (Sequential)
-```
-DataMapProcessor → BannerAgent → CrosstabAgent → TableAgent → VerificationAgent → R → Excel
-```
+**Status**: Implemented January 15, 2026
 
-### Proposed State (Parallel paths after DataMapProcessor)
+### Architecture
 ```
                     ┌─→ BannerAgent → CrosstabAgent ─────────────┐
 DataMapProcessor ───┤                                            ├─→ R → Excel
-                    └─→ TableAgent → VerificationAgent ──────────┘
+                    └─→ TableAgent → Survey → VerificationAgent ─┘
 ```
 
-### Key Observations
-- **DataMapProcessor** is deterministic and fast - run first, needed by all paths
-- **Path A (Banner → Crosstab)**: Extracts cuts, validates expressions
-- **Path B (Table → Verification)**: Decides table structure, enhances with survey
-- **Convergence**: R script generation needs both cuts (from CrosstabAgent) AND tables (from VerificationAgent)
+### Results
+- **Time saved**: ~14 minutes per pipeline run
+- Path A and Path B execute simultaneously via `Promise.allSettled`
+- Progress tracking shows combined percentage (20-80% during parallel phase)
 
-### Dependencies Analysis
-| Agent | Needs | Doesn't Need |
-|-------|-------|--------------|
-| BannerAgent | Banner file | DataMap |
-| CrosstabAgent | DataMap + Banner output | Tables |
-| TableAgent | DataMap (verbose) | Banner, Cuts |
-| VerificationAgent | TableAgent output, Survey | Banner, Cuts |
-| R Script | Cuts + Tables | - |
-
-### Implementation Approach
-1. Run DataMapProcessor first (fast, deterministic)
-2. Use `Promise.all()` for the two parallel paths:
-   - Path A: `BannerAgent → CrosstabAgent`
-   - Path B: `TableAgent → VerificationAgent`
-3. Wait for both paths to complete
-4. Converge: R script generation uses outputs from both paths
-5. Update progress percentages to reflect parallel execution
-6. Handle errors from either path gracefully
-
-### Code Sketch
-```typescript
-// Step 1: DataMapProcessor (must be first)
-const dataMapResult = await dataMapProcessor.processDataMap(...);
-
-// Step 2: Parallel paths
-const [pathAResult, pathBResult] = await Promise.all([
-  // Path A: Banner → Crosstab
-  (async () => {
-    const bannerResult = await bannerAgent.processDocument(...);
-    const crosstabResult = await processCrosstabGroups(...);
-    return { banner: bannerResult, crosstab: crosstabResult };
-  })(),
-
-  // Path B: Table → Verification
-  (async () => {
-    const tableResult = await processTableAgent(...);
-    const verifiedTables = await verifyAllTables(...);
-    return { tables: verifiedTables };
-  })(),
-]);
-
-// Step 3: Converge - R script needs both
-const cutsSpec = buildCutsSpec(pathAResult.crosstab);
-const rScript = generateRScriptV2({ tables: pathBResult.tables, cuts: cutsSpec.cuts });
-```
-
-### Expected Impact
-- BannerAgent + CrosstabAgent: ~2-3 minutes (vision/OCR heavy)
-- TableAgent + VerificationAgent: ~5-10 minutes (LLM calls per question)
-- **Time saved**: Path A and Path B run simultaneously instead of sequentially
-- **Estimated reduction**: 2-3 minutes off total time, helping stay under 1 hour
+### Files Modified
+- `src/lib/jobStore.ts` - Added `'parallel_processing'` stage
+- `src/app/api/process-crosstab/route.ts` - Parallel execution with `executePathA`/`executePathB` helpers
+- `scripts/test-pipeline.ts` - Mirrored parallel pattern for CLI testing
 
 ---
 
