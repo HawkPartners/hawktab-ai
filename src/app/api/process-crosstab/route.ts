@@ -37,6 +37,71 @@ import type { ValidationResultType } from '../../../schemas/agentOutputSchema';
 const execAsync = promisify(exec);
 
 // -------------------------------------------------------------------------
+// Pipeline Status Types and Helpers
+// -------------------------------------------------------------------------
+
+type PipelineStatus = 'in_progress' | 'pending_review' | 'resuming' | 'success' | 'partial' | 'error' | 'cancelled';
+
+interface PipelineSummary {
+  pipelineId: string;
+  dataset: string;
+  timestamp: string;
+  source: 'ui' | 'cli';
+  status: PipelineStatus;
+  currentStage?: string;
+  inputs: {
+    datamap: string;
+    banner: string;
+    spss: string;
+    survey: string | null;
+  };
+  duration?: {
+    ms: number;
+    formatted: string;
+  };
+  outputs?: {
+    variables: number;
+    tableAgentTables: number;
+    verifiedTables: number;
+    tables: number;
+    cuts: number;
+    bannerGroups: number;
+    sorting: {
+      screeners: number;
+      main: number;
+      other: number;
+    };
+  };
+  error?: string;
+  review?: {
+    flaggedColumnCount: number;
+    reviewUrl: string;
+  };
+}
+
+async function writePipelineSummary(outputDir: string, summary: PipelineSummary): Promise<void> {
+  await fs.writeFile(
+    path.join(outputDir, 'pipeline-summary.json'),
+    JSON.stringify(summary, null, 2)
+  );
+}
+
+async function updatePipelineSummary(
+  outputDir: string,
+  updates: Partial<PipelineSummary>
+): Promise<void> {
+  const summaryPath = path.join(outputDir, 'pipeline-summary.json');
+  try {
+    const existing = JSON.parse(await fs.readFile(summaryPath, 'utf-8')) as PipelineSummary;
+    const updated = { ...existing, ...updates };
+    await fs.writeFile(summaryPath, JSON.stringify(updated, null, 2));
+  } catch {
+    // If file doesn't exist, ignore - should have been created already
+    console.warn('[API] Could not update pipeline summary - file may not exist');
+  }
+}
+
+// -------------------------------------------------------------------------
 // Types for parallel path execution
 // -------------------------------------------------------------------------
 
@@ -56,8 +121,10 @@ interface BannerGroupAgent {
 
 interface PathAResult {
   bannerResult: BannerProcessingResult;
-  crosstabResult: { result: ValidationResultType; processingLog: string[] };
+  crosstabResult?: { result: ValidationResultType; processingLog: string[] };
   agentBanner: BannerGroupAgent[];
+  reviewRequired: boolean;
+  flaggedColumns?: FlaggedColumn[];
 }
 
 interface PathBResult {
@@ -66,19 +133,92 @@ interface PathBResult {
 }
 
 // -------------------------------------------------------------------------
+// Human-in-the-Loop Review Types and Helpers
+// -------------------------------------------------------------------------
+
+interface FlaggedColumn {
+  groupName: string;
+  columnName: string;
+  original: string;
+  adjusted: string;
+  confidence: number;
+  uncertainties: string[];
+  requiresInference: boolean;
+  inferenceReason: string;
+  humanInLoopRequired: boolean;
+}
+
+interface BannerReviewState {
+  pipelineId: string;
+  status: 'awaiting_review' | 'approved' | 'cancelled';
+  createdAt: string;
+  bannerResult: BannerProcessingResult;
+  flaggedColumns: FlaggedColumn[];
+  agentDataMap: AgentDataMapItem[];
+  outputDir: string;
+  pathBStatus: 'running' | 'completed' | 'error';
+  pathBResult?: PathBResult;
+  pathBError?: string;
+  decisions?: Array<{
+    groupName: string;
+    columnName: string;
+    action: 'approve' | 'edit' | 'skip';
+    editedValue?: string;
+  }>;
+}
+
+/**
+ * Check BannerAgent output for columns that need human review
+ * Returns columns with low confidence, explicit flags, or inference needed
+ */
+function getFlaggedColumns(bannerResult: BannerProcessingResult): FlaggedColumn[] {
+  const extractedStructure = bannerResult.verbose?.data?.extractedStructure;
+  if (!extractedStructure?.bannerCuts) {
+    return [];
+  }
+
+  const allColumns: FlaggedColumn[] = [];
+
+  for (const group of extractedStructure.bannerCuts) {
+    for (const col of group.columns) {
+      allColumns.push({
+        groupName: group.groupName,
+        columnName: col.name,
+        original: col.original,
+        adjusted: col.adjusted,
+        confidence: col.confidence,
+        uncertainties: (col.uncertainties as string[]) || [],
+        requiresInference: col.requiresInference,
+        inferenceReason: col.inferenceReason || '',
+        humanInLoopRequired: col.humanInLoopRequired
+      });
+    }
+  }
+
+  // Return columns that need review based on any of these conditions
+  return allColumns.filter(col =>
+    col.humanInLoopRequired === true ||
+    col.confidence < 0.85 ||
+    col.requiresInference === true
+  );
+}
+
+// -------------------------------------------------------------------------
 // Parallel path helper functions
 // -------------------------------------------------------------------------
 
 /**
- * Path A: BannerAgent → CrosstabAgent
- * Extracts banner structure and validates R expressions
+ * Path A: BannerAgent → [Review Check] → CrosstabAgent
+ * Extracts banner structure, checks for review needs, validates R expressions
+ * If review is needed, returns early without running CrosstabAgent
  */
 async function executePathA(
   bannerAgent: BannerAgent,
   bannerPlanPath: string,
   agentDataMap: AgentDataMapItem[],
   outputDir: string,
-  onProgress: (percent: number) => void
+  onProgress: (percent: number) => void,
+  skipReviewCheck: boolean = false // Used when resuming after review
 ): Promise<PathAResult> {
   // 1. BannerAgent (0-40% of path progress)
   onProgress(5);
@@ -96,8 +236,23 @@ async function executePathA(
   onProgress(40);
   console.log(`[PathA] BannerAgent complete: ${groupCount} groups extracted`);
 
-  // 2. CrosstabAgent (40-100% of path progress)
   const agentBanner = bannerResult.agent || [];
+
+  // 2. Check if human review is needed (unless skipped for resume)
+  if (!skipReviewCheck) {
+    const flaggedColumns = getFlaggedColumns(bannerResult);
+    if (flaggedColumns.length > 0) {
+      console.log(`[PathA] Review required: ${flaggedColumns.length} columns flagged for human review`);
+      return {
+        bannerResult,
+        agentBanner,
+        reviewRequired: true,
+        flaggedColumns
+      };
+    }
+  }
+
+  // 3. CrosstabAgent (40-100% of path progress) - only if no review needed
   console.log('[PathA] Starting CrosstabAgent...');
 
   const crosstabResult = await processCrosstabGroups(
@@ -113,7 +268,7 @@ async function executePathA(
   onProgress(100);
   console.log(`[PathA] CrosstabAgent complete: ${crosstabResult.result.bannerCuts.length} groups validated`);
 
-  return { bannerResult, crosstabResult, agentBanner };
+  return { bannerResult, crosstabResult, agentBanner, reviewRequired: false };
 }
 
 /**
@@ -332,13 +487,37 @@ export async function POST(request: NextRequest) {
         // -------------------------------------------------------------------------
         // Step 1: DataMapProcessor
         // -------------------------------------------------------------------------
-        updateJob(job.jobId, { stage: 'parsing', percent: 15, message: 'Processing data map...' });
+        updateJob(job.jobId, {
+          stage: 'parsing',
+          percent: 15,
+          message: 'Processing data map...',
+          pipelineId,
+          dataset: datasetName
+        });
         console.log('[API] Step 1: Processing data map...');
 
         const dataMapProcessor = new DataMapProcessor();
         const dataMapResult = await dataMapProcessor.processDataMap(dataMapPath, spssPath, outputDir);
         const verboseDataMap = dataMapResult.verbose as VerboseDataMapType[];
         console.log(`[API] Processed ${verboseDataMap.length} variables`);
+
+        // Write initial pipeline summary immediately (for sidebar visibility)
+        const initialSummary: PipelineSummary = {
+          pipelineId,
+          dataset: datasetName,
+          timestamp: new Date().toISOString(),
+          source: 'ui',
+          status: 'in_progress',
+          currentStage: 'parallel_processing',
+          inputs: {
+            datamap: dataMapFile.name,
+            banner: bannerPlanFile.name,
+            spss: dataFile.name,
+            survey: surveyFile?.name || null
+          }
+        };
+        await writePipelineSummary(outputDir, initialSummary);
+        console.log('[API] Initial pipeline summary written');
 
         // -------------------------------------------------------------------------
         // Steps 2-5: Parallel Path Execution
@@ -363,7 +542,9 @@ export async function POST(request: NextRequest) {
             updateJob(job.jobId, {
               stage: 'parallel_processing',
               percent: currentParallelPercent,
-              message: 'Processing banner and tables...'
+              message: 'Processing banner and tables...',
+              pipelineId,
+              dataset: datasetName
             });
           }
         };
@@ -371,7 +552,9 @@ export async function POST(request: NextRequest) {
         updateJob(job.jobId, {
           stage: 'parallel_processing',
           percent: 20,
-          message: 'Processing banner and tables...'
+          message: 'Processing banner and tables...',
+          pipelineId,
+          dataset: datasetName
         });
 
         console.log('[API] Starting parallel paths...');
@@ -466,7 +649,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Both paths succeeded - extract values
-        const { bannerResult, crosstabResult } = pathAResult.value;
+        const { bannerResult, crosstabResult, reviewRequired, flaggedColumns } = pathAResult.value;
         const { tableAgentResults, verifiedTables } = pathBResult.value;
 
         // Log summary from both paths
@@ -474,7 +657,65 @@ export async function POST(request: NextRequest) {
         const groupCount = extractedStructure?.bannerCuts?.length || 0;
         const columnCount = (extractedStructure?.processingMetadata as { totalColumns?: number })?.totalColumns || 0;
         const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
-        console.log(`[API] Path A: ${groupCount} groups, ${columnCount} columns, ${crosstabResult.result.bannerCuts.length} validated`);
+
+        // -------------------------------------------------------------------------
+        // Handle Human-in-the-Loop Review if needed
+        // -------------------------------------------------------------------------
+        if (reviewRequired && flaggedColumns && flaggedColumns.length > 0) {
+          console.log(`[API] Review required: ${flaggedColumns.length} columns need human review`);
+
+          // Write review state to disk
+          const reviewState: BannerReviewState = {
+            pipelineId,
+            status: 'awaiting_review',
+            createdAt: new Date().toISOString(),
+            bannerResult,
+            flaggedColumns,
+            agentDataMap,
+            outputDir,
+            pathBStatus: 'completed',
+            pathBResult: { tableAgentResults, verifiedTables }
+          };
+
+          await fs.writeFile(
+            path.join(outputDir, 'banner-review-state.json'),
+            JSON.stringify(reviewState, null, 2)
+          );
+          console.log('[API] Review state saved to banner-review-state.json');
+
+          // Update pipeline summary to pending_review
+          const reviewUrl = `/pipelines/${encodeURIComponent(pipelineId)}/review`;
+          await updatePipelineSummary(outputDir, {
+            status: 'pending_review',
+            currentStage: 'banner_review',
+            review: {
+              flaggedColumnCount: flaggedColumns.length,
+              reviewUrl
+            }
+          });
+
+          // Update job status for polling
+          updateJob(job.jobId, {
+            stage: 'banner_review_required',
+            percent: 35,
+            message: `Review required - ${flaggedColumns.length} columns flagged`,
+            sessionId,
+            pipelineId,
+            dataset: datasetName,
+            reviewRequired: true,
+            reviewUrl,
+            flaggedColumnCount: flaggedColumns.length
+          });
+
+          console.log(`[API] Pipeline paused for human review. Path B completed with ${verifiedTables.length} tables.`);
+          console.log(`[API] Resume via POST /api/pipelines/${pipelineId}/review`);
+
+          // Don't proceed to R script - wait for human approval
+          return;
+        }
+
+        // No review needed - log and continue
+        console.log(`[API] Path A: ${groupCount} groups, ${columnCount} columns, ${crosstabResult!.result.bannerCuts.length} validated`);
         console.log(`[API] Path B: ${tableAgentTables.length} table definitions, ${verifiedTables.length} verified`);
 
         // Sort tables for logical Excel output order
@@ -486,10 +727,16 @@ export async function POST(request: NextRequest) {
         // -------------------------------------------------------------------------
         // Step 6: R Script Generation
         // -------------------------------------------------------------------------
-        updateJob(job.jobId, { stage: 'generating_r', percent: 80, message: 'Generating R script...' });
+        updateJob(job.jobId, {
+          stage: 'generating_r',
+          percent: 80,
+          message: 'Generating R script...',
+          pipelineId,
+          dataset: datasetName
+        });
         console.log('[API] Step 6: Generating R script...');
 
-        const cutsSpec = buildCutsSpec(crosstabResult.result);
+        const cutsSpec = buildCutsSpec(crosstabResult!.result);
         const rDir = path.join(outputDir, 'r');
         await fs.mkdir(rDir, { recursive: true });
 
@@ -514,7 +761,13 @@ export async function POST(request: NextRequest) {
         // -------------------------------------------------------------------------
         // Step 7: R Execution
         // -------------------------------------------------------------------------
-        updateJob(job.jobId, { stage: 'executing_r', percent: 85, message: 'Executing R script...' });
+        updateJob(job.jobId, {
+          stage: 'executing_r',
+          percent: 85,
+          message: 'Executing R script...',
+          pipelineId,
+          dataset: datasetName
+        });
         console.log('[API] Step 7: Executing R script...');
 
         // Create results directory
@@ -553,7 +806,13 @@ export async function POST(request: NextRequest) {
             // -------------------------------------------------------------------------
             // Step 8: Excel Export
             // -------------------------------------------------------------------------
-            updateJob(job.jobId, { stage: 'writing_outputs', percent: 95, message: 'Generating Excel workbook...' });
+            updateJob(job.jobId, {
+              stage: 'writing_outputs',
+              percent: 95,
+              message: 'Generating Excel workbook...',
+              pipelineId,
+              dataset: datasetName
+            });
             console.log('[API] Step 8: Generating Excel workbook...');
 
             const tablesJsonPath = path.join(resultsDir, 'tables.json');

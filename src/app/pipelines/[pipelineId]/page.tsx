@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PageHeader } from '@/components/PageHeader';
 import {
   ArrowLeft,
   Download,
@@ -19,8 +18,23 @@ import {
   Table,
   BarChart3,
   Layers,
+  AlertTriangle,
+  Play,
 } from 'lucide-react';
 import type { PipelineDetails, FileInfo } from '@/app/api/pipelines/[pipelineId]/route';
+
+/**
+ * Format date for display (e.g., "Monday, January 12, 2026")
+ */
+function formatDate(timestamp: string): string {
+  const date = new Date(timestamp);
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
 
 /**
  * Format file size for display
@@ -78,11 +92,32 @@ function StatusBadge({ status }: { status: string }) {
           Error
         </Badge>
       );
+    case 'in_progress':
+      return (
+        <Badge variant="secondary" className="bg-blue-500/20 text-blue-700 dark:text-blue-400">
+          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+          Processing
+        </Badge>
+      );
+    case 'pending_review':
+      return (
+        <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-700 dark:text-yellow-400">
+          <AlertTriangle className="h-3 w-3 mr-1" />
+          Review Required
+        </Badge>
+      );
+    case 'cancelled':
+      return (
+        <Badge variant="secondary" className="bg-gray-500/20 text-gray-700 dark:text-gray-400">
+          <AlertCircle className="h-3 w-3 mr-1" />
+          Cancelled
+        </Badge>
+      );
     default:
       return (
         <Badge variant="secondary">
           <Clock className="h-3 w-3 mr-1" />
-          Unknown
+          Processing
         </Badge>
       );
   }
@@ -174,16 +209,16 @@ export default function PipelineDetailPage({
     return (
       <div className="py-12 px-4">
         <div className="max-w-4xl mx-auto">
-          <PageHeader
-            title="Pipeline Not Found"
-            description={error || 'The requested pipeline could not be found.'}
-            actions={
-              <Button variant="outline" onClick={() => router.push('/')}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Home
-              </Button>
-            }
-          />
+          <div className="text-center">
+            <Button variant="outline" size="sm" onClick={() => router.push('/')} className="mb-6">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Home
+            </Button>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">Pipeline Not Found</h1>
+            <p className="text-muted-foreground">
+              {error || 'The requested pipeline could not be found.'}
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -193,59 +228,127 @@ export default function PipelineDetailPage({
   const outputFiles = details.files.filter((f) => f.type === 'output');
   const inputFiles = details.files.filter((f) => f.type === 'input');
 
+  // Check if pipeline is still active
+  const isActive = details.status === 'in_progress' || details.status === 'pending_review';
+  const hasOutputs = details.outputs.tables > 0 || details.outputs.cuts > 0;
+
   return (
     <div className="py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <PageHeader
-          title={`Pipeline: ${details.dataset}`}
-          description={`Run on ${new Date(details.timestamp).toLocaleString()}`}
-          actions={
-            <Button variant="outline" onClick={() => router.push('/')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Button>
-          }
-        />
+        {/* Centered Header */}
+        <div className="text-center mb-8">
+          <Button variant="outline" size="sm" onClick={() => router.push('/')} className="mb-6">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Home
+          </Button>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">
+            Pipeline: {details.dataset}
+          </h1>
+          <p className="text-muted-foreground">
+            Run on {formatDate(details.timestamp)}
+          </p>
+        </div>
 
-        {/* Status and Duration */}
-        <div className="flex items-center gap-4 mb-8">
+        {/* Status and Duration - Centered */}
+        <div className="flex items-center justify-center gap-4 mb-8">
           <StatusBadge status={details.status} />
           <Badge variant="outline">
             <Clock className="h-3 w-3 mr-1" />
-            Duration: {details.duration.formatted}
+            {isActive ? details.duration.formatted : `Duration: ${details.duration.formatted}`}
           </Badge>
         </div>
 
-        {/* Summary Stats */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-lg">Summary Statistics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-3 bg-muted rounded-lg">
-                <Table className="h-5 w-5 mx-auto mb-1 text-primary" />
-                <p className="text-2xl font-bold">{details.outputs.tables}</p>
-                <p className="text-xs text-muted-foreground">Tables</p>
+        {/* Review Required Banner */}
+        {details.status === 'pending_review' && details.review && (
+          <Card className="mb-8 border-yellow-500/50 bg-yellow-500/5">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                  <div>
+                    <p className="font-medium">Human Review Required</p>
+                    <p className="text-sm text-muted-foreground">
+                      {details.review.flaggedColumnCount} banner column{details.review.flaggedColumnCount !== 1 ? 's' : ''} need your attention before processing can continue.
+                    </p>
+                  </div>
+                </div>
+                <Button onClick={() => router.push(details.review!.reviewUrl)}>
+                  <Play className="h-4 w-4 mr-2" />
+                  Review Now
+                </Button>
               </div>
-              <div className="text-center p-3 bg-muted rounded-lg">
-                <BarChart3 className="h-5 w-5 mx-auto mb-1 text-primary" />
-                <p className="text-2xl font-bold">{details.outputs.cuts}</p>
-                <p className="text-xs text-muted-foreground">Cuts</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Processing Banner for in_progress */}
+        {details.status === 'in_progress' && (
+          <Card className="mb-8 border-blue-500/50 bg-blue-500/5">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />
+                <div>
+                  <p className="font-medium">Processing Crosstabs</p>
+                  <p className="text-sm text-muted-foreground">
+                    {details.currentStage
+                      ? `Currently: ${details.currentStage.replace(/_/g, ' ')}`
+                      : 'Your crosstabs are being generated. This may take several minutes.'}
+                  </p>
+                </div>
               </div>
-              <div className="text-center p-3 bg-muted rounded-lg">
-                <Layers className="h-5 w-5 mx-auto mb-1 text-primary" />
-                <p className="text-2xl font-bold">{details.outputs.bannerGroups}</p>
-                <p className="text-xs text-muted-foreground">Banner Groups</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Cancelled Banner */}
+        {details.status === 'cancelled' && (
+          <Card className="mb-8 border-gray-500/50 bg-gray-500/5">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="h-5 w-5 text-gray-500" />
+                <div>
+                  <p className="font-medium">Pipeline Cancelled</p>
+                  <p className="text-sm text-muted-foreground">
+                    This pipeline was cancelled and did not complete processing.
+                  </p>
+                </div>
               </div>
-              <div className="text-center p-3 bg-muted rounded-lg">
-                <FileText className="h-5 w-5 mx-auto mb-1 text-primary" />
-                <p className="text-2xl font-bold">{details.outputs.variables}</p>
-                <p className="text-xs text-muted-foreground">Variables</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Summary Stats - only show if we have data or pipeline is complete (and not cancelled) */}
+        {(hasOutputs || (!isActive && details.status !== 'cancelled')) && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="text-lg">Summary Statistics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <Table className="h-5 w-5 mx-auto mb-1 text-primary" />
+                  <p className="text-2xl font-bold">{details.outputs.tables}</p>
+                  <p className="text-xs text-muted-foreground">Tables</p>
+                </div>
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <BarChart3 className="h-5 w-5 mx-auto mb-1 text-primary" />
+                  <p className="text-2xl font-bold">{details.outputs.cuts}</p>
+                  <p className="text-xs text-muted-foreground">Cuts</p>
+                </div>
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <Layers className="h-5 w-5 mx-auto mb-1 text-primary" />
+                  <p className="text-2xl font-bold">{details.outputs.bannerGroups}</p>
+                  <p className="text-xs text-muted-foreground">Banner Groups</p>
+                </div>
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <FileText className="h-5 w-5 mx-auto mb-1 text-primary" />
+                  <p className="text-2xl font-bold">{details.outputs.variables}</p>
+                  <p className="text-xs text-muted-foreground">Variables</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Output Files */}
         <Card className="mb-8">
@@ -260,7 +363,9 @@ export default function PipelineDetailPage({
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No output files available</p>
+              <p className="text-sm text-muted-foreground">
+                {isActive ? 'Output files will appear here once processing completes.' : 'No output files available'}
+              </p>
             )}
           </CardContent>
         </Card>

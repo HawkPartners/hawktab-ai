@@ -25,7 +25,8 @@ export interface PipelineDetails {
     ms: number;
     formatted: string;
   };
-  status: 'success' | 'partial' | 'error';
+  status: 'success' | 'partial' | 'error' | 'in_progress' | 'pending_review' | 'cancelled';
+  currentStage?: string;
   inputs: {
     datamap: string;
     banner: string;
@@ -39,6 +40,10 @@ export interface PipelineDetails {
     bannerGroups: number;
   };
   files: FileInfo[];
+  review?: {
+    flaggedColumnCount: number;
+    reviewUrl: string;
+  };
 }
 
 /**
@@ -202,15 +207,39 @@ export async function GET(
       || summary.outputs?.tableAgentTables
       || 0;
 
+    // Map internal status to display status
+    const rawStatus: string = summary.status || 'success';
+    let displayStatus: 'success' | 'partial' | 'error' | 'in_progress' | 'pending_review' | 'cancelled';
+    if (rawStatus === 'resuming') {
+      displayStatus = 'in_progress';
+    } else if (rawStatus === 'success' || rawStatus === 'partial' || rawStatus === 'error' || rawStatus === 'in_progress' || rawStatus === 'pending_review' || rawStatus === 'cancelled') {
+      displayStatus = rawStatus;
+    } else {
+      displayStatus = 'success';
+    }
+
+    // Determine duration display
+    const isActive = displayStatus === 'in_progress' || displayStatus === 'pending_review';
+    const isCancelled = displayStatus === 'cancelled';
+    let durationFormatted: string;
+    if (isActive) {
+      durationFormatted = 'Processing...';
+    } else if (isCancelled) {
+      durationFormatted = 'Cancelled';
+    } else {
+      durationFormatted = summary.duration?.ms ? formatDuration(summary.duration.ms) : (summary.duration?.formatted || 'Unknown');
+    }
+
     const details: PipelineDetails = {
       pipelineId: summary.pipelineId || pipelineId,
       dataset: summary.dataset || pipelineInfo.dataset,
       timestamp: summary.timestamp,
       duration: {
         ms: summary.duration?.ms || 0,
-        formatted: summary.duration?.ms ? formatDuration(summary.duration.ms) : (summary.duration?.formatted || 'Unknown'),
+        formatted: durationFormatted,
       },
-      status: summary.status || 'success',
+      status: displayStatus,
+      currentStage: summary.currentStage,
       inputs: summary.inputs || {
         datamap: '',
         banner: '',
@@ -225,6 +254,14 @@ export async function GET(
       },
       files,
     };
+
+    // Add review info for pending_review status
+    if (displayStatus === 'pending_review' && summary.review) {
+      details.review = {
+        flaggedColumnCount: summary.review.flaggedColumnCount || 0,
+        reviewUrl: summary.review.reviewUrl || `/pipelines/${encodeURIComponent(pipelineId)}/review`,
+      };
+    }
 
     return NextResponse.json(details);
   } catch (error) {
