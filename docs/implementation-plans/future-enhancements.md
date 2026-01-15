@@ -37,19 +37,119 @@ After R calculates base sizes, show sample counts before final output:
 
 ---
 
-## Banner Generation
+## Banner Generation / AI-Recommended Cuts
 
-Agent-created banner plans when none provided.
+Intelligent banner plan creation and enhancement.
 
-**Concept**: Given survey document + data map, an agent could identify the most important cuts:
-1. Parse survey to find key demographic/screening questions
-2. Identify common segmentation variables (specialty, role, region, etc.)
-3. Propose banner groups with suggested cuts
-4. Human reviews and adjusts before proceeding
+### Use Cases
 
-**Use case**: Partners who don't have a banner plan yet, or want AI suggestions for what cuts to include.
+1. **No banner plan provided**: Partner uploads survey + data, AI generates recommended cuts from scratch
+2. **Expand existing banner**: Partner has basic banner, AI suggests additional valuable cuts
+3. **Validate coverage**: AI reviews banner against survey to identify missing important segments
 
-**Complexity**: Medium - requires survey understanding + domain knowledge about what makes useful crosstab cuts.
+### Why This Requires a New Agent
+
+Considered adding this to existing agents, but:
+- **BannerAgent**: Optimized for extraction (image → structured data), not generation
+- **CrosstabAgent**: Has data map access but focused on validation, not recommendation
+- **TableAgent/VerificationAgent**: Wrong stage of pipeline, don't have banner context
+
+Each existing agent is reliable because it's narrowly focused. Adding generation responsibilities would compromise that reliability.
+
+### Architectural Options
+
+**Option A: Single RecommendationAgent**
+```
+Inputs: Survey document + Data map
+Output: Recommended banner groups with cuts
+```
+- Pros: Simple, one call
+- Cons: Large context, may miss nuances
+
+**Option B: Dual-Agent System**
+```
+SurveyAnalysisAgent: Survey → Key variables + segments identified
+CutRecommendationAgent: Survey analysis + Data map → Recommended cuts
+```
+- Pros: Separation of concerns, can debug each step
+- Cons: More complexity, slower
+
+**Option C: Single Agent with Multiple Tools**
+```
+RecommendationAgent with tools:
+  - survey_parser: Extract question structure and logic
+  - datamap_analyzer: Identify variable types and distributions
+  - cut_generator: Propose cuts based on analysis
+```
+- Pros: Agent decides what tools to use when
+- Cons: Tool design complexity
+
+### Input Requirements
+
+| Input | Required? | What It Provides |
+|-------|-----------|------------------|
+| Survey document | Yes (for generation) | Question text, answer options, skip logic context |
+| Data map | Yes | Variable names, types, available answer codes |
+| Existing banner | Optional | Context for expansion suggestions |
+| SPSS data | Optional | Actual distributions for base size warnings |
+
+### Output Format
+
+```typescript
+interface BannerRecommendation {
+  groups: Array<{
+    groupName: string;
+    rationale: string;  // Why this grouping makes sense
+    columns: Array<{
+      name: string;
+      suggestedFilter: string;  // Human-readable, not R syntax
+      variableSource: string;   // Which variable(s) this uses
+      confidence: number;
+      reasoning: string;
+    }>;
+  }>;
+  warnings: Array<{
+    type: 'low_base' | 'missing_variable' | 'complex_logic';
+    message: string;
+  }>;
+  alternatives: Array<{
+    instead_of: string;
+    suggestion: string;
+    reason: string;
+  }>;
+}
+```
+
+### User Flow
+
+1. User uploads survey + data map (no banner)
+2. RecommendationAgent analyzes and proposes cuts
+3. UI shows proposed banner with rationale for each cut
+4. User can:
+   - Accept all
+   - Accept with modifications
+   - Add their own cuts
+   - Reject and upload their own banner
+5. Approved banner flows into normal pipeline (BannerAgent skipped, CrosstabAgent validates)
+
+### Implementation Complexity
+
+**High** - This is not a simple addition:
+- Requires domain knowledge about market research segmentation
+- Needs to understand survey skip logic to avoid impossible cuts
+- Must balance comprehensiveness vs. manageable number of cuts
+- UI for reviewing/editing recommendations needs design
+
+### When to Implement
+
+After MVP launch, based on user feedback. If partners frequently ask "what cuts should I include?", this becomes valuable. If partners always have clear banner plans, lower priority.
+
+### Research Needed
+
+- What makes a "good" cut in market research? (Talk to analysts)
+- Common patterns: demographics, screening questions, key behaviors
+- How many cuts is typical? (Too few = missing insights, too many = unreadable output)
+- Should AI explain trade-offs? ("Adding Region gives geographic insights but splits base sizes")
 
 ---
 
