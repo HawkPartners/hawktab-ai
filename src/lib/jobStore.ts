@@ -11,6 +11,8 @@ export type JobStage =
   | 'table_agent'
   | 'verification_agent'
   | 'parallel_processing'
+  | 'banner_review_required'
+  | 'banner_review_complete'
   | 'generating_r'
   | 'executing_r'
   | 'writing_outputs'
@@ -29,6 +31,9 @@ export interface JobStatus {
   error?: string
   warning?: string
   downloadUrl?: string
+  reviewRequired?: boolean
+  reviewUrl?: string
+  flaggedColumnCount?: number
 }
 
 const jobs = new Map<string, JobStatus>()

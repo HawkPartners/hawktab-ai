@@ -14,7 +14,7 @@ export interface PipelineListItem {
   dataset: string;
   timestamp: string;
   duration: string;
-  status: 'success' | 'partial' | 'error';
+  status: 'success' | 'partial' | 'error' | 'in_progress' | 'pending_review' | 'cancelled';
   tables: number;
   cuts: number;
   variables: number;
@@ -26,6 +26,8 @@ export interface PipelineListItem {
     spss: string;
     survey: string | null;
   };
+  reviewUrl?: string;
+  flaggedColumnCount?: number;
 }
 
 export async function GET() {
@@ -83,18 +85,29 @@ export async function GET() {
             continue;
           }
 
+          // Map internal status to display status
+          const rawStatus: string = summary.status || 'success';
+          let displayStatus: 'success' | 'partial' | 'error' | 'in_progress' | 'pending_review' | 'cancelled';
+          if (rawStatus === 'resuming') {
+            displayStatus = 'in_progress';
+          } else if (rawStatus === 'success' || rawStatus === 'partial' || rawStatus === 'error' || rawStatus === 'in_progress' || rawStatus === 'pending_review' || rawStatus === 'cancelled') {
+            displayStatus = rawStatus;
+          } else {
+            displayStatus = 'success'; // Default fallback
+          }
+
           // Tables count can be in different fields depending on pipeline source
           const tablesCount = summary.outputs?.tables
             || summary.outputs?.verifiedTables
             || summary.outputs?.tableAgentTables
             || 0;
 
-          pipelines.push({
+          const pipelineItem: PipelineListItem = {
             pipelineId: summary.pipelineId || pipelineDir,
             dataset: summary.dataset || dataset,
             timestamp: summary.timestamp,
             duration: summary.duration?.ms ? formatDuration(summary.duration.ms) : (summary.duration?.formatted || 'Unknown'),
-            status: summary.status || 'success',
+            status: displayStatus,
             tables: tablesCount,
             cuts: summary.outputs?.cuts || 0,
             variables: summary.outputs?.variables || 0,
@@ -106,7 +119,15 @@ export async function GET() {
               spss: summary.inputs?.spss || '',
               survey: summary.inputs?.survey || null,
             },
-          });
+          };
+
+          // Add review info for pending_review pipelines
+          if (displayStatus === 'pending_review' && summary.review) {
+            pipelineItem.reviewUrl = summary.review.reviewUrl;
+            pipelineItem.flaggedColumnCount = summary.review.flaggedColumnCount;
+          }
+
+          pipelines.push(pipelineItem);
         } catch {
           // Skip pipelines without valid summary
           console.warn(`[Pipelines API] Skipping ${pipelineDir}: no valid summary`);

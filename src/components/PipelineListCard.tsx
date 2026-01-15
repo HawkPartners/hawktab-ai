@@ -2,7 +2,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertCircle, Clock, Table, ChevronRight } from 'lucide-react';
+import { CheckCircle, AlertCircle, Clock, Table, ChevronRight, Loader2, AlertTriangle, XCircle } from 'lucide-react';
 import type { PipelineListItem } from '@/app/api/pipelines/route';
 
 interface PipelineListCardProps {
@@ -45,15 +45,56 @@ function StatusIcon({ status }: { status: string }) {
       return <AlertCircle className="h-4 w-4 text-yellow-500" />;
     case 'error':
       return <AlertCircle className="h-4 w-4 text-red-500" />;
+    case 'in_progress':
+      return <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />;
+    case 'pending_review':
+      return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+    case 'cancelled':
+      return <XCircle className="h-4 w-4 text-gray-500" />;
     default:
       return <Clock className="h-4 w-4 text-muted-foreground" />;
   }
 }
 
+/**
+ * Get status badge for pending_review status
+ */
+function StatusBadge({ status }: { status: string }) {
+  if (status === 'pending_review') {
+    return (
+      <Badge variant="secondary" className="text-xs bg-yellow-500/20 text-yellow-700 dark:text-yellow-400">
+        Review Required
+      </Badge>
+    );
+  }
+  if (status === 'in_progress') {
+    return (
+      <Badge variant="secondary" className="text-xs bg-blue-500/20 text-blue-700 dark:text-blue-400">
+        Processing
+      </Badge>
+    );
+  }
+  if (status === 'cancelled') {
+    return (
+      <Badge variant="secondary" className="text-xs bg-gray-500/20 text-gray-700 dark:text-gray-400">
+        Cancelled
+      </Badge>
+    );
+  }
+  return null;
+}
+
 export function PipelineListCard({ pipeline, onClick }: PipelineListCardProps) {
+  const isActive = pipeline.status === 'in_progress' || pipeline.status === 'pending_review';
+  const isCancelled = pipeline.status === 'cancelled';
+
   return (
     <Card
-      className="p-3 cursor-pointer hover:bg-muted/50 transition-colors"
+      className={`p-3 cursor-pointer hover:bg-muted/50 transition-colors ${
+        pipeline.status === 'pending_review' ? 'border-yellow-500/50' : ''
+      } ${pipeline.status === 'in_progress' ? 'border-blue-500/50' : ''} ${
+        isCancelled ? 'opacity-60' : ''
+      }`}
       onClick={() => onClick(pipeline.pipelineId)}
     >
       <div className="flex items-start justify-between">
@@ -66,17 +107,26 @@ export function PipelineListCard({ pipeline, onClick }: PipelineListCardProps) {
           </div>
           <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
             <span>{formatRelativeTime(pipeline.timestamp)}</span>
-            <span className="text-muted-foreground/50">|</span>
-            <span>{pipeline.duration}</span>
+            {!isActive && (
+              <>
+                <span className="text-muted-foreground/50">|</span>
+                <span>{pipeline.duration}</span>
+              </>
+            )}
           </div>
-          <div className="flex items-center gap-2 mt-2">
-            <Badge variant="secondary" className="text-xs">
-              <Table className="h-3 w-3 mr-1" />
-              {pipeline.tables} tables
-            </Badge>
-            <Badge variant="outline" className="text-xs">
-              {pipeline.cuts} cuts
-            </Badge>
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
+            <StatusBadge status={pipeline.status} />
+            {!isActive && !isCancelled && (
+              <>
+                <Badge variant="secondary" className="text-xs">
+                  <Table className="h-3 w-3 mr-1" />
+                  {pipeline.tables} tables
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  {pipeline.cuts} cuts
+                </Badge>
+              </>
+            )}
           </div>
         </div>
         <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />

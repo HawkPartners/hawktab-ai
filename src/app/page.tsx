@@ -143,6 +143,29 @@ export default function Home() {
         const data = await res.json();
         if (cancelled) return;
 
+        // Check if review is required
+        if (data.stage === 'banner_review_required') {
+          clearInterval(interval);
+          setIsProcessing(false);
+          setJobId(null);
+          localStorage.removeItem(ACTIVE_JOB_KEY);
+
+          // Refresh pipeline history
+          refresh();
+
+          const reviewUrl = data.reviewUrl || `/pipelines/${encodeURIComponent(data.pipelineId)}/review`;
+          toast.warning('Review Required', {
+            id: 'pipeline-progress',
+            description: `${data.flaggedColumnCount || 'Some'} columns need your attention`,
+            action: {
+              label: 'Review Now',
+              onClick: () => router.push(reviewUrl),
+            },
+            duration: 30000, // Show for 30 seconds
+          });
+          return;
+        }
+
         // Update toast with progress
         const percent = Math.max(1, Math.min(100, Number(data.percent) || 0));
         toast.loading('Processing pipeline...', {

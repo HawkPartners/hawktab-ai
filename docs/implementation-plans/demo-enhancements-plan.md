@@ -13,7 +13,7 @@ Three key enhancements to make the system more impressive and robust for demos:
 | Phase | Enhancement | Status | Purpose |
 |-------|-------------|--------|---------|
 | 1 | Pipeline Parallelism | ✅ Complete | Faster processing (~14 min saved) |
-| 2 | Human-in-the-Loop for Banner Review | 🔄 Up Next | Handle uncertainty gracefully, show intelligent flagging |
+| 2 | Human-in-the-Loop for Banner Review | ✅ Complete | Handle uncertainty gracefully, show intelligent flagging |
 | 3 | AI-Recommended Cuts | ⏳ Deferred | Demonstrate AI's analytical capabilities |
 
 ---
@@ -402,3 +402,100 @@ For the Bob demo:
 2. **Phase 2 (Human-in-the-Loop)** - Most impressive for demo, shows system handles uncertainty gracefully
 
 **Note:** AI-Recommended Cuts was considered for Phase 3 but removed from demo scope. It requires a new agent and doesn't directly support the demo goals. See `future-enhancements.md` for detailed exploration of this feature.
+
+---
+
+## Phase 2 Completion Notes ✅
+
+**Implemented January 15, 2026**
+
+### What Was Built
+
+1. **Backend Infrastructure (Phase 2a)**
+   - Early `pipeline-summary.json` creation for sidebar visibility
+   - Review state persistence in `banner-review-state.json`
+   - `getFlaggedColumns()` detection based on confidence < 0.85, `humanInLoopRequired`, or `requiresInference`
+   - Review API endpoints: GET/POST `/api/pipelines/[pipelineId]/review`
+   - Resume logic after human approval
+   - Cancel endpoint: POST `/api/pipelines/[pipelineId]/cancel`
+
+2. **Frontend UI (Phase 2b)**
+   - Review page at `/pipelines/[pipelineId]/review`
+   - Toast notification with "Review Now" action button
+   - Sidebar status badges for `in_progress`, `pending_review`, `cancelled`
+   - Pipeline detail page with status banners and centered layout
+
+### Files Created/Modified
+- `src/app/api/pipelines/[pipelineId]/review/route.ts` (NEW)
+- `src/app/api/pipelines/[pipelineId]/cancel/route.ts` (NEW)
+- `src/app/pipelines/[pipelineId]/review/page.tsx` (NEW)
+- `src/app/api/process-crosstab/route.ts` - Early summary, review detection, state persistence
+- `src/lib/jobStore.ts` - New stages and status fields
+- `src/components/PipelineListCard.tsx` - Status icons and badges
+- `src/app/pipelines/[pipelineId]/page.tsx` - Status banners, centered layout
+
+---
+
+## Known Issues & Next Steps
+
+### 🐛 Bug: Cancel Pipeline Not Fully Working
+
+**Issue:** Cancel pipeline endpoint exists but may not be properly stopping the running processes. The pipeline continues processing in the background even after cancellation.
+
+**Root Cause (suspected):** The cancel endpoint updates `pipeline-summary.json` status to `cancelled`, but the actual Node.js promises executing the agents are not aborted.
+
+**Fix Required:**
+- Add AbortController pattern to agent execution
+- Check for cancellation between pipeline stages
+- Properly clean up when cancellation is detected
+
+### 🧪 Testing: Human-in-the-Loop Needs Harder Test Cases
+
+**Issue:** Current test banner documents are too clean/clear. BannerAgent extracts them with high confidence (>0.85), so the human review flow never triggers during demos.
+
+**Solutions to explore:**
+1. **Lower threshold temporarily** - Change confidence threshold from 0.85 to 0.95 for testing
+2. **Create ambiguous test banner** - Design a banner document with:
+   - Unclear filter expressions (e.g., "Doctors who treat X or Y")
+   - Missing variable references
+   - Ambiguous group boundaries
+   - OCR-unfriendly formatting
+3. **Force flag for demo** - Add a `?forceReview=true` query param that forces review regardless of confidence
+
+### ⚡ Optimization: Staggered Agent Processing
+
+**Issue:** Currently Path A and Path B start simultaneously after DataMapProcessor. This means all agents compete for API rate limits at once.
+
+**Proposed Optimization:**
+```
+DataMapProcessor
+    │
+    ├─→ BannerAgent (starts immediately)
+    │       │
+    │       └─→ CrosstabAgent (after BannerAgent)
+    │
+    └─→ TableAgent (starts after 2-3 second delay)
+            │
+            └─→ VerificationAgent (after TableAgent)
+```
+
+**Benefits:**
+- Smoother API usage, less rate limiting
+- BannerAgent gets head start (it's the review bottleneck)
+- Overall pipeline may complete faster due to fewer API throttles
+
+**Implementation:**
+- Add configurable delay before starting Path B
+- Or start Path B after BannerAgent completes (still parallel with CrosstabAgent)
+
+---
+
+## Demo Readiness Checklist
+
+- [x] Pipeline parallelism working
+- [x] Human-in-the-loop UI complete
+- [x] Sidebar shows in-progress pipelines
+- [x] Cancel button updates status
+- [ ] Cancel actually stops processing (bug)
+- [ ] Human review flow tested end-to-end
+- [ ] Staggered processing for API optimization

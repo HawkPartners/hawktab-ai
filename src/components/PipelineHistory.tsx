@@ -45,7 +45,13 @@ export function PipelineHistory() {
 
   const handleSelect = (pipelineId: string) => {
     setIsOpen(false);
-    router.push(`/pipelines/${encodeURIComponent(pipelineId)}`);
+    // Find the pipeline to check its status
+    const pipeline = pipelines.find(p => p.pipelineId === pipelineId);
+    if (pipeline?.status === 'pending_review') {
+      router.push(`/pipelines/${encodeURIComponent(pipelineId)}/review`);
+    } else {
+      router.push(`/pipelines/${encodeURIComponent(pipelineId)}`);
+    }
   };
 
   return (
