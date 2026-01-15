@@ -241,31 +241,17 @@ async function runPipeline(datasetFolder: string) {
   log('', 'reset');
 
   // -------------------------------------------------------------------------
-  // Step 2: BannerAgent
+  // Steps 2-5: Parallel Path Execution
+  // Path A: BannerAgent → CrosstabAgent
+  // Path B: TableAgent → Survey → VerificationAgent
   // -------------------------------------------------------------------------
-  logStep(2, totalSteps, 'Extracting banner plan...');
-  log(`  Using prompt version: ${promptVersions.bannerPromptVersion}`, 'dim');
-  const stepStart2 = Date.now();
-
-  const bannerAgent = new BannerAgent();
-  const bannerResult = await bannerAgent.processDocument(files.banner, outputDir);
-
-  if (!bannerResult.success) {
-    log(`  WARNING: Banner extraction had issues`, 'yellow');
-  }
-  const extractedStructure = bannerResult.verbose?.data?.extractedStructure;
-  const groupCount = extractedStructure?.bannerCuts?.length || 0;
-  const columnCount = (extractedStructure?.processingMetadata as { totalColumns?: number })?.totalColumns || 0;
-  log(`  Extracted ${groupCount} groups, ${columnCount} columns`, 'green');
-  log(`  Duration: ${Date.now() - stepStart2}ms`, 'dim');
+  log('', 'reset');
+  logStep(2, totalSteps, 'Starting parallel paths...');
+  log(`  Path A: BannerAgent → CrosstabAgent`, 'dim');
+  log(`  Path B: TableAgent → VerificationAgent`, 'dim');
   log('', 'reset');
 
-  // -------------------------------------------------------------------------
-  // Step 3: CrosstabAgent
-  // -------------------------------------------------------------------------
-  logStep(3, totalSteps, 'Validating banner expressions...');
-  log(`  Using prompt version: ${promptVersions.crosstabPromptVersion}`, 'dim');
-  const stepStart3 = Date.now();
+  const parallelStartTime = Date.now();
 
   // Build simple data structures for CrosstabAgent
   const agentDataMap = dataMapResult.agent.map(v => ({
@@ -274,104 +260,130 @@ async function runPipeline(datasetFolder: string) {
     Answer_Options: v.Answer_Options,
   }));
 
-  const agentBanner = bannerResult.agent || [];
+  // Path A: BannerAgent → CrosstabAgent
+  const pathAPromise = (async () => {
+    const pathAStart = Date.now();
+    log(`  [Path A] Starting BannerAgent...`, 'cyan');
 
-  const crosstabResult = await processCrosstabGroups(
-    agentDataMap,
-    { bannerCuts: agentBanner.map(g => ({ groupName: g.groupName, columns: g.columns })) },
-    outputDir,
-    (completed, total) => {
-      process.stdout.write(`\r  Processing group ${completed}/${total}...`);
+    const bannerAgent = new BannerAgent();
+    const bannerResult = await bannerAgent.processDocument(files.banner, outputDir);
+
+    if (!bannerResult.success) {
+      log(`  [Path A] WARNING: Banner extraction had issues`, 'yellow');
     }
-  );
-  console.log(''); // Clear the progress line
 
-  log(`  Validated ${crosstabResult.result.bannerCuts.length} groups`, 'green');
-  log(`  Duration: ${Date.now() - stepStart3}ms`, 'dim');
-  log('', 'reset');
+    const extractedStructure = bannerResult.verbose?.data?.extractedStructure;
+    const groupCount = extractedStructure?.bannerCuts?.length || 0;
+    const columnCount = (extractedStructure?.processingMetadata as { totalColumns?: number })?.totalColumns || 0;
 
-  // -------------------------------------------------------------------------
-  // Step 4: TableAgent
-  // -------------------------------------------------------------------------
-  logStep(4, totalSteps, 'Analyzing table structures...');
-  log(`  Using prompt version: ${promptVersions.tablePromptVersion}`, 'dim');
-  const stepStart4 = Date.now();
+    if (groupCount === 0) {
+      throw new Error('Banner extraction failed - 0 groups extracted');
+    }
 
-  const { results: tableAgentResults } = await processTableAgent(verboseDataMap, outputDir);
-  const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
+    log(`  [Path A] BannerAgent: ${groupCount} groups, ${columnCount} columns`, 'green');
+    log(`  [Path A] Starting CrosstabAgent...`, 'cyan');
 
-  log(`  Generated ${tableAgentTables.length} table definitions`, 'green');
-  log(`  Duration: ${Date.now() - stepStart4}ms`, 'dim');
-  log('', 'reset');
+    const agentBanner = bannerResult.agent || [];
+    const crosstabResult = await processCrosstabGroups(
+      agentDataMap,
+      { bannerCuts: agentBanner.map(g => ({ groupName: g.groupName, columns: g.columns })) },
+      outputDir
+    );
 
-  // -------------------------------------------------------------------------
-  // Step 5: VerificationAgent
-  // -------------------------------------------------------------------------
-  logStep(5, totalSteps, 'Verifying tables with survey document...');
-  log(`  Using prompt version: ${promptVersions.verificationPromptVersion}`, 'dim');
-  const stepStart5 = Date.now();
+    log(`  [Path A] CrosstabAgent: ${crosstabResult.result.bannerCuts.length} groups validated`, 'green');
+    log(`  [Path A] Complete in ${((Date.now() - pathAStart) / 1000).toFixed(1)}s`, 'dim');
 
-  let verifiedTables: ExtendedTableDefinition[];
+    return { bannerResult, crosstabResult, agentBanner, groupCount, columnCount };
+  })();
 
-  if (files.survey) {
-    try {
-      // First, process the survey document to get markdown
-      log(`  Processing survey: ${path.basename(files.survey)}`, 'dim');
+  // Path B: TableAgent → Survey → VerificationAgent
+  const pathBPromise = (async () => {
+    const pathBStart = Date.now();
+    log(`  [Path B] Starting TableAgent...`, 'cyan');
+
+    const { results: tableAgentResults } = await processTableAgent(verboseDataMap, outputDir);
+    const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
+    log(`  [Path B] TableAgent: ${tableAgentTables.length} table definitions`, 'green');
+
+    // Survey processing
+    let surveyMarkdown: string | null = null;
+    if (files.survey) {
+      log(`  [Path B] Processing survey: ${path.basename(files.survey)}`, 'cyan');
       const surveyResult = await processSurvey(files.survey, outputDir);
-
-      if (!surveyResult.markdown) {
-        throw new Error(`Survey processing failed: ${surveyResult.warnings.join(', ')}`);
+      surveyMarkdown = surveyResult.markdown;
+      if (surveyMarkdown) {
+        log(`  [Path B] Survey: ${surveyMarkdown.length} characters`, 'green');
+      } else {
+        log(`  [Path B] Survey processing failed: ${surveyResult.warnings.join(', ')}`, 'yellow');
       }
+    }
 
-      log(`  Survey markdown: ${surveyResult.markdown.length} characters`, 'dim');
+    // VerificationAgent
+    let verifiedTables: ExtendedTableDefinition[];
+    const { toExtendedTable } = await import('../src/schemas/verificationAgentSchema');
 
-      // Now run VerificationAgent with the markdown
-      const verificationResult = await verifyAllTables(
-        tableAgentResults,
-        surveyResult.markdown,
-        verboseDataMap,
-        { outputDir }
-      );
-      verifiedTables = verificationResult.tables;
-      log(`  Verified ${verifiedTables.length} tables (${verificationResult.metadata.tablesModified} modified)`, 'green');
-    } catch (verifyError) {
-      log(`  VerificationAgent failed, using TableAgent output: ${verifyError instanceof Error ? verifyError.message : String(verifyError)}`, 'yellow');
-      // Fallback: convert TableAgent output to ExtendedTableDefinition format with questionId
-      const { toExtendedTable } = await import('../src/schemas/verificationAgentSchema');
+    if (surveyMarkdown) {
+      log(`  [Path B] Starting VerificationAgent...`, 'cyan');
+      try {
+        const verificationResult = await verifyAllTables(
+          tableAgentResults,
+          surveyMarkdown,
+          verboseDataMap,
+          { outputDir }
+        );
+        verifiedTables = verificationResult.tables;
+        log(`  [Path B] VerificationAgent: ${verifiedTables.length} tables (${verificationResult.metadata.tablesModified} modified)`, 'green');
+      } catch (verifyError) {
+        log(`  [Path B] VerificationAgent failed: ${verifyError instanceof Error ? verifyError.message : String(verifyError)}`, 'yellow');
+        verifiedTables = tableAgentResults.flatMap(group =>
+          group.tables.map(t => toExtendedTable(t, group.questionId))
+        );
+      }
+    } else {
+      log(`  [Path B] No survey - using TableAgent output directly`, 'yellow');
       verifiedTables = tableAgentResults.flatMap(group =>
         group.tables.map(t => toExtendedTable(t, group.questionId))
       );
 
-      // Still create verification folder with raw output for consistency
+      // Create verification folder with passthrough output
       const verificationDir = path.join(outputDir, 'verification');
       await fs.mkdir(verificationDir, { recursive: true });
-      const rawOutput = { tables: verifiedTables };
       await fs.writeFile(
         path.join(verificationDir, 'verification-output-raw.json'),
-        JSON.stringify(rawOutput, null, 2),
+        JSON.stringify({ tables: verifiedTables }, null, 2),
         'utf-8'
       );
     }
-  } else {
-    log(`  No survey file - using TableAgent output directly`, 'yellow');
-    // Convert TableAgent output to ExtendedTableDefinition format with questionId
-    const { toExtendedTable } = await import('../src/schemas/verificationAgentSchema');
-    verifiedTables = tableAgentResults.flatMap(group =>
-      group.tables.map(t => toExtendedTable(t, group.questionId))
-    );
 
-    // Still create verification folder with raw output for consistency
-    const verificationDir = path.join(outputDir, 'verification');
-    await fs.mkdir(verificationDir, { recursive: true });
-    const rawOutput = { tables: verifiedTables };
-    await fs.writeFile(
-      path.join(verificationDir, 'verification-output-raw.json'),
-      JSON.stringify(rawOutput, null, 2),
-      'utf-8'
-    );
+    log(`  [Path B] Complete in ${((Date.now() - pathBStart) / 1000).toFixed(1)}s`, 'dim');
+
+    return { tableAgentResults, verifiedTables };
+  })();
+
+  // Wait for both paths
+  const [pathAResult, pathBResult] = await Promise.allSettled([pathAPromise, pathBPromise]);
+
+  const parallelDuration = Date.now() - parallelStartTime;
+  log('', 'reset');
+  log(`Parallel paths completed in ${(parallelDuration / 1000).toFixed(1)}s`, 'green');
+
+  // Check results
+  if (pathAResult.status === 'rejected') {
+    const errorMsg = pathAResult.reason instanceof Error ? pathAResult.reason.message : String(pathAResult.reason);
+    throw new Error(`Path A (Banner/Crosstab) failed: ${errorMsg}`);
+  }
+  if (pathBResult.status === 'rejected') {
+    const errorMsg = pathBResult.reason instanceof Error ? pathBResult.reason.message : String(pathBResult.reason);
+    throw new Error(`Path B (Table/Verification) failed: ${errorMsg}`);
   }
 
-  log(`  Duration: ${Date.now() - stepStart5}ms`, 'dim');
+  // Extract results
+  const { bannerResult, crosstabResult, agentBanner, groupCount, columnCount } = pathAResult.value;
+  const { tableAgentResults, verifiedTables } = pathBResult.value;
+  const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
+
+  log(`  Path A: ${groupCount} groups, ${columnCount} columns, ${crosstabResult.result.bannerCuts.length} validated`, 'dim');
+  log(`  Path B: ${tableAgentTables.length} table definitions, ${verifiedTables.length} verified`, 'dim');
   log('', 'reset');
 
   // -------------------------------------------------------------------------

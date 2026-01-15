@@ -10,6 +10,7 @@ export type JobStage =
   | 'crosstab_agent'
   | 'table_agent'
   | 'verification_agent'
+  | 'parallel_processing'
   | 'generating_r'
   | 'executing_r'
   | 'writing_outputs'
