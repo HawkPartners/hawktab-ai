@@ -301,7 +301,62 @@ After reliability testing proves the pipeline works correctly. This is infrastru
 
 ---
 
+## Pipeline Optimizations
+
+### Streaming TableAgent → VerificationAgent
+
+**Idea**: Instead of waiting for TableAgent to complete all tables before starting VerificationAgent, stream tables to VerificationAgent as they become available.
+
+**Current flow**:
+```
+TableAgent:        [Group1] [Group2] [Group3] [Group4] [Group5] ... [Done]
+                                                                      │
+VerificationAgent:                                                   [All tables at once]
+```
+
+**Proposed flow**:
+```
+TableAgent:        [Group1] [Group2] [Group3] [Group4] [Group5] ...
+                      │        │        │
+                      ▼        ▼        ▼
+VerificationAgent:   [G1]    [G2]    [G3]    [G4]    [G5] ...
+                   (starts after ~30% of tables ready)
+```
+
+**Implementation considerations**:
+- TableAgent already processes groups sequentially - emit results as each completes
+- VerificationAgent would need to accept a stream/queue rather than a full array
+- Simple backpressure: if VerificationAgent catches up, it waits for the next table
+- Need synchronization to ensure VerificationAgent doesn't overtake TableAgent
+
+**Estimated savings**: ~15 minutes (VerificationAgent work overlaps with TableAgent)
+
+**When to implement**: After all agents are finalized. Adding new agents to the pipeline would require re-optimizing, so better to wait until agent architecture is stable.
+
+*Added: January 15, 2026*
+
+---
+
 ## Polish
+
+### Fix "Number Stored as Text" Warning in Excel
+
+Excel shows warning icons on cells where numeric values are stored as text strings.
+
+**Root cause**:
+- `formatNumber()` in table renderers returns `val.toString()` instead of keeping numbers as numbers
+- Percentages use string interpolation (`` `${pct}%` ``) instead of Excel number formatting
+
+**Fix**:
+- Assign numeric values directly to `cell.value` (not stringified)
+- Use `cell.numFmt` for formatting (e.g., `'0.0'` for decimals, `'0%'` for percentages)
+- Store percentages as decimals (0.42) with Excel percentage format
+
+**Files**: `src/lib/excel/tableRenderers/frequencyTable.ts`, `meanRowsTable.ts`
+
+**Effort**: ~15-20 lines across both renderers
+
+*Added: January 15, 2026*
 
 ### Joe's Advanced Formatting
 

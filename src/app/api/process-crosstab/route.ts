@@ -31,8 +31,166 @@ import { ExcelFormatter } from '../../../lib/excel/ExcelFormatter';
 import { toExtendedTable, type ExtendedTableDefinition } from '../../../schemas/verificationAgentSchema';
 import type { VerboseDataMapType } from '../../../schemas/processingSchemas';
 import type { TableAgentOutput } from '../../../schemas/tableAgentSchema';
+import type { BannerProcessingResult } from '../../../agents/BannerAgent';
+import type { ValidationResultType } from '../../../schemas/agentOutputSchema';
 
 const execAsync = promisify(exec);
+
+// -------------------------------------------------------------------------
+// Types for parallel path execution
+// -------------------------------------------------------------------------
+
+interface AgentDataMapItem {
+  Column: string;
+  Description: string;
+  Answer_Options: string;
+}
+
+interface BannerGroupAgent {
+  groupName: string;
+  columns: Array<{
+    name: string;
+    original: string;
+  }>;
+}
+
+interface PathAResult {
+  bannerResult: BannerProcessingResult;
+  crosstabResult: { result: ValidationResultType; processingLog: string[] };
+  agentBanner: BannerGroupAgent[];
+}
+
+interface PathBResult {
+  tableAgentResults: TableAgentOutput[];
+  verifiedTables: ExtendedTableDefinition[];
+}
+
+// -------------------------------------------------------------------------
+// Parallel path helper functions
+// -------------------------------------------------------------------------
+
+/**
+ * Path A: BannerAgent → CrosstabAgent
+ * Extracts banner structure and validates R expressions
+ */
+async function executePathA(
+  bannerAgent: BannerAgent,
+  bannerPlanPath: string,
+  agentDataMap: AgentDataMapItem[],
+  outputDir: string,
+  onProgress: (percent: number) => void
+): Promise<PathAResult> {
+  // 1. BannerAgent (0-40% of path progress)
+  onProgress(5);
+  console.log('[PathA] Starting BannerAgent...');
+  const bannerResult = await bannerAgent.processDocument(bannerPlanPath, outputDir);
+
+  const extractedStructure = bannerResult.verbose?.data?.extractedStructure;
+  const groupCount = extractedStructure?.bannerCuts?.length || 0;
+
+  if (!bannerResult.success || groupCount === 0) {
+    const errorMsg = bannerResult.errors?.join('; ') || 'Banner extraction failed - 0 groups extracted';
+    throw new Error(errorMsg);
+  }
+
+  onProgress(40);
+  console.log(`[PathA] BannerAgent complete: ${groupCount} groups extracted`);
+
+  // 2. CrosstabAgent (40-100% of path progress)
+  const agentBanner = bannerResult.agent || [];
+  console.log('[PathA] Starting CrosstabAgent...');
+
+  const crosstabResult = await processCrosstabGroups(
+    agentDataMap,
+    { bannerCuts: agentBanner.map(g => ({ groupName: g.groupName, columns: g.columns })) },
+    outputDir,
+    (completed, total) => {
+      const percent = 40 + Math.floor((completed / total) * 60);
+      onProgress(percent);
+    }
+  );
+
+  onProgress(100);
+  console.log(`[PathA] CrosstabAgent complete: ${crosstabResult.result.bannerCuts.length} groups validated`);
+
+  return { bannerResult, crosstabResult, agentBanner };
+}
+
+/**
+ * Path B: TableAgent → Survey Processing → VerificationAgent
+ * Analyzes table structures and enhances with survey context
+ */
+async function executePathB(
+  verboseDataMap: VerboseDataMapType[],
+  surveyPath: string | null,
+  outputDir: string,
+  onProgress: (percent: number) => void
+): Promise<PathBResult> {
+  // 1. TableAgent (0-40% of path progress)
+  onProgress(5);
+  console.log('[PathB] Starting TableAgent...');
+  const { results: tableAgentResults } = await processTableAgent(verboseDataMap, outputDir);
+  const tableCount = tableAgentResults.flatMap(r => r.tables).length;
+  onProgress(40);
+  console.log(`[PathB] TableAgent complete: ${tableCount} table definitions`);
+
+  // 2. Survey Processing (40-50% of path progress)
+  let surveyMarkdown: string | null = null;
+  if (surveyPath) {
+    onProgress(45);
+    console.log('[PathB] Processing survey document...');
+    const surveyResult = await processSurvey(surveyPath, outputDir);
+    surveyMarkdown = surveyResult.markdown;
+    if (surveyMarkdown) {
+      console.log(`[PathB] Survey processed: ${surveyMarkdown.length} characters`);
+    } else {
+      console.warn(`[PathB] Survey processing failed: ${surveyResult.warnings.join(', ')}`);
+    }
+  }
+  onProgress(50);
+
+  // 3. VerificationAgent (50-100% of path progress)
+  let verifiedTables: ExtendedTableDefinition[];
+
+  if (surveyMarkdown) {
+    onProgress(55);
+    console.log('[PathB] Starting VerificationAgent...');
+    try {
+      const verificationResult = await verifyAllTables(
+        tableAgentResults as TableAgentOutput[],
+        surveyMarkdown,
+        verboseDataMap,
+        { outputDir }
+      );
+      verifiedTables = verificationResult.tables;
+      console.log(`[PathB] VerificationAgent complete: ${verifiedTables.length} tables (${verificationResult.metadata.tablesModified} modified)`);
+    } catch (verifyError) {
+      console.error('[PathB] VerificationAgent failed:', verifyError);
+      verifiedTables = tableAgentResults.flatMap(group =>
+        group.tables.map(t => toExtendedTable(t, group.questionId))
+      );
+    }
+  } else {
+    console.log('[PathB] No survey - using TableAgent output directly');
+    verifiedTables = tableAgentResults.flatMap(group =>
+      group.tables.map(t => toExtendedTable(t, group.questionId))
+    );
+
+    // Create verification folder with passthrough output
+    const verificationDir = path.join(outputDir, 'verification');
+    await fs.mkdir(verificationDir, { recursive: true });
+    await fs.writeFile(
+      path.join(verificationDir, 'verification-output-raw.json'),
+      JSON.stringify({ tables: verifiedTables }, null, 2),
+      'utf-8'
+    );
+  }
+
+  onProgress(100);
+  console.log(`[PathB] Complete: ${verifiedTables.length} verified tables`);
+
+  return { tableAgentResults, verifiedTables };
+}
 
 /**
  * Sanitize dataset name for use in file paths
@@ -183,32 +341,70 @@ export async function POST(request: NextRequest) {
         console.log(`[API] Processed ${verboseDataMap.length} variables`);
 
         // -------------------------------------------------------------------------
-        // Step 2: BannerAgent
+        // Steps 2-5: Parallel Path Execution
+        // Path A: BannerAgent → CrosstabAgent
+        // Path B: TableAgent → Survey → VerificationAgent
         // -------------------------------------------------------------------------
-        updateJob(job.jobId, { stage: 'banner_agent', percent: 25, message: 'Extracting banner plan...' });
-        console.log('[API] Step 2: Extracting banner plan...');
+
+        // Prepare data for both paths
+        const agentDataMap = dataMapResult.agent.map(v => ({
+          Column: v.Column,
+          Description: v.Description,
+          Answer_Options: v.Answer_Options,
+        }));
+
+        // Progress tracking for parallel execution (20-80% range)
+        let currentParallelPercent = 20;
+        const updateParallelProgress = (pathPercent: number) => {
+          // Map path's 0-100% to the 20-80% overall range (60 percentage points)
+          const overallPercent = 20 + Math.floor(pathPercent * 0.6);
+          if (overallPercent > currentParallelPercent) {
+            currentParallelPercent = overallPercent;
+            updateJob(job.jobId, {
+              stage: 'parallel_processing',
+              percent: currentParallelPercent,
+              message: 'Processing banner and tables...'
+            });
+          }
+        };
+
+        updateJob(job.jobId, {
+          stage: 'parallel_processing',
+          percent: 20,
+          message: 'Processing banner and tables...'
+        });
+
+        console.log('[API] Starting parallel paths...');
+        const parallelStartTime = Date.now();
 
         const bannerAgent = new BannerAgent();
-        const bannerResult = await bannerAgent.processDocument(bannerPlanPath, outputDir);
 
-        const extractedStructure = bannerResult.verbose?.data?.extractedStructure;
-        const groupCount = extractedStructure?.bannerCuts?.length || 0;
-        const columnCount = (extractedStructure?.processingMetadata as { totalColumns?: number })?.totalColumns || 0;
-        console.log(`[API] Extracted ${groupCount} groups, ${columnCount} columns`);
+        const [pathAResult, pathBResult] = await Promise.allSettled([
+          executePathA(bannerAgent, bannerPlanPath, agentDataMap, outputDir, updateParallelProgress),
+          executePathB(verboseDataMap, surveyPath ?? null, outputDir, updateParallelProgress)
+        ]);
 
-        // CRITICAL: Fail early if banner extraction returned 0 groups
-        if (!bannerResult.success || groupCount === 0) {
-          const errorMsg = bannerResult.errors?.join('; ') || 'Banner extraction failed - 0 groups extracted';
-          console.error(`[API] Banner extraction failed: ${errorMsg}`);
+        const parallelDuration = Date.now() - parallelStartTime;
+        console.log(`[API] Parallel paths completed in ${(parallelDuration / 1000).toFixed(1)}s`);
+
+        // Check results from both paths
+        const pathAFailed = pathAResult.status === 'rejected';
+        const pathBFailed = pathBResult.status === 'rejected';
+
+        if (pathAFailed) {
+          const errorMsg = pathAResult.reason instanceof Error
+            ? pathAResult.reason.message
+            : String(pathAResult.reason);
+          console.error(`[API] Path A failed: ${errorMsg}`);
 
           // Write a partial summary for debugging
           const failureSummary = {
             pipelineId,
             dataset: datasetName,
             timestamp: new Date().toISOString(),
-            source: 'ui',  // Mark as UI-created (vs test script)
+            source: 'ui',
             status: 'error',
-            error: errorMsg,
+            error: `Banner/Crosstab processing failed: ${errorMsg}`,
             inputs: {
               datamap: dataMapFile.name,
               banner: bannerPlanFile.name,
@@ -229,100 +425,57 @@ export async function POST(request: NextRequest) {
             pipelineId,
             dataset: datasetName
           });
-          return; // Stop pipeline
+          return; // Stop pipeline - Path A is required
         }
 
-        // -------------------------------------------------------------------------
-        // Step 3: CrosstabAgent
-        // -------------------------------------------------------------------------
-        updateJob(job.jobId, { stage: 'crosstab_agent', percent: 45, message: 'Validating banner expressions...' });
-        console.log('[API] Step 3: Validating banner expressions...');
+        if (pathBFailed) {
+          const errorMsg = pathBResult.reason instanceof Error
+            ? pathBResult.reason.message
+            : String(pathBResult.reason);
+          console.error(`[API] Path B failed: ${errorMsg}`);
 
-        // Build simple data structures for CrosstabAgent
-        const agentDataMap = dataMapResult.agent.map(v => ({
-          Column: v.Column,
-          Description: v.Description,
-          Answer_Options: v.Answer_Options,
-        }));
-
-        const agentBanner = bannerResult.agent || [];
-
-        const crosstabResult = await processCrosstabGroups(
-          agentDataMap,
-          { bannerCuts: agentBanner.map(g => ({ groupName: g.groupName, columns: g.columns })) },
-          outputDir,
-          (completed, total) => {
-            const percent = Math.min(65, 45 + Math.floor((completed / total) * 20));
-            updateJob(job.jobId, {
-              stage: 'crosstab_agent',
-              percent,
-              message: `Validating banner expressions (${completed}/${total})...`
-            });
-          }
-        );
-        console.log(`[API] Validated ${crosstabResult.result.bannerCuts.length} groups`);
-
-        // -------------------------------------------------------------------------
-        // Step 4: TableAgent
-        // -------------------------------------------------------------------------
-        updateJob(job.jobId, { stage: 'table_agent', percent: 70, message: 'Analyzing table structures...' });
-        console.log('[API] Step 4: Analyzing table structures...');
-
-        const { results: tableAgentResults } = await processTableAgent(verboseDataMap, outputDir);
-        const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
-        console.log(`[API] Generated ${tableAgentTables.length} table definitions`);
-
-        // -------------------------------------------------------------------------
-        // Step 5: VerificationAgent
-        // -------------------------------------------------------------------------
-        updateJob(job.jobId, { stage: 'verification_agent', percent: 80, message: 'Verifying tables...' });
-        console.log('[API] Step 5: Verifying tables...');
-
-        let verifiedTables: ExtendedTableDefinition[];
-
-        if (surveyPath) {
-          try {
-            console.log(`[API] Processing survey document...`);
-            const surveyResult = await processSurvey(surveyPath, outputDir);
-
-            if (surveyResult.markdown) {
-              console.log(`[API] Survey markdown: ${surveyResult.markdown.length} characters`);
-
-              const verificationResult = await verifyAllTables(
-                tableAgentResults as TableAgentOutput[],
-                surveyResult.markdown,
-                verboseDataMap,
-                { outputDir }
-              );
-              verifiedTables = verificationResult.tables;
-              console.log(`[API] VerificationAgent produced ${verifiedTables.length} tables (${verificationResult.metadata.tablesModified} modified)`);
-            } else {
-              console.warn(`[API] Survey processing failed: ${surveyResult.warnings.join(', ')}`);
-              verifiedTables = tableAgentResults.flatMap(group =>
-                group.tables.map(t => toExtendedTable(t, group.questionId))
-              );
+          // Write a partial summary for debugging
+          const failureSummary = {
+            pipelineId,
+            dataset: datasetName,
+            timestamp: new Date().toISOString(),
+            source: 'ui',
+            status: 'error',
+            error: `Table processing failed: ${errorMsg}`,
+            inputs: {
+              datamap: dataMapFile.name,
+              banner: bannerPlanFile.name,
+              spss: dataFile.name,
+              survey: surveyFile?.name || null
             }
-          } catch (verifyError) {
-            console.error(`[API] VerificationAgent failed:`, verifyError);
-            verifiedTables = tableAgentResults.flatMap(group =>
-              group.tables.map(t => toExtendedTable(t, group.questionId))
-            );
-          }
-        } else {
-          console.log(`[API] No survey file - using TableAgent output directly`);
-          verifiedTables = tableAgentResults.flatMap(group =>
-            group.tables.map(t => toExtendedTable(t, group.questionId))
+          };
+          await fs.writeFile(
+            path.join(outputDir, 'pipeline-summary.json'),
+            JSON.stringify(failureSummary, null, 2)
           );
 
-          // Create verification folder with passthrough output
-          const verificationDir = path.join(outputDir, 'verification');
-          await fs.mkdir(verificationDir, { recursive: true });
-          await fs.writeFile(
-            path.join(verificationDir, 'verification-output-raw.json'),
-            JSON.stringify({ tables: verifiedTables }, null, 2),
-            'utf-8'
-          );
+          updateJob(job.jobId, {
+            stage: 'error',
+            percent: 100,
+            message: 'Table processing failed',
+            error: errorMsg,
+            pipelineId,
+            dataset: datasetName
+          });
+          return; // Stop pipeline - Path B is required
         }
+
+        // Both paths succeeded - extract values
+        const { bannerResult, crosstabResult } = pathAResult.value;
+        const { tableAgentResults, verifiedTables } = pathBResult.value;
+
+        // Log summary from both paths
+        const extractedStructure = bannerResult.verbose?.data?.extractedStructure;
+        const groupCount = extractedStructure?.bannerCuts?.length || 0;
+        const columnCount = (extractedStructure?.processingMetadata as { totalColumns?: number })?.totalColumns || 0;
+        const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
+        console.log(`[API] Path A: ${groupCount} groups, ${columnCount} columns, ${crosstabResult.result.bannerCuts.length} validated`);
+        console.log(`[API] Path B: ${tableAgentTables.length} table definitions, ${verifiedTables.length} verified`);
 
         // Sort tables for logical Excel output order
         console.log('[API] Sorting tables...');
@@ -333,7 +486,7 @@ export async function POST(request: NextRequest) {
         // -------------------------------------------------------------------------
         // Step 6: R Script Generation
         // -------------------------------------------------------------------------
-        updateJob(job.jobId, { stage: 'generating_r', percent: 85, message: 'Generating R script...' });
+        updateJob(job.jobId, { stage: 'generating_r', percent: 80, message: 'Generating R script...' });
         console.log('[API] Step 6: Generating R script...');
 
         const cutsSpec = buildCutsSpec(crosstabResult.result);
@@ -361,7 +514,7 @@ export async function POST(request: NextRequest) {
         // -------------------------------------------------------------------------
         // Step 7: R Execution
         // -------------------------------------------------------------------------
-        updateJob(job.jobId, { stage: 'executing_r', percent: 90, message: 'Executing R script...' });
+        updateJob(job.jobId, { stage: 'executing_r', percent: 85, message: 'Executing R script...' });
         console.log('[API] Step 7: Executing R script...');
 
         // Create results directory
