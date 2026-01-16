@@ -18,6 +18,8 @@ export type JobStage =
   | 'parallel_processing'
   | 'banner_review_required'
   | 'banner_review_complete'
+  | 'crosstab_review_required'   // NEW: Waiting for crosstab mapping review
+  | 'crosstab_review_complete'   // NEW: Crosstab review submitted
   | 'generating_r'
   | 'executing_r'
   | 'writing_outputs'
@@ -40,6 +42,7 @@ export interface JobStatus {
   reviewRequired?: boolean
   reviewUrl?: string
   flaggedColumnCount?: number
+  reviewType?: 'banner' | 'crosstab'  // NEW: Which type of review is needed
   cancelled?: boolean
   cancelledAt?: string
 }

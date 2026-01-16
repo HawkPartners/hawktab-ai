@@ -204,8 +204,8 @@ export default function Home() {
           return;
         }
 
-        // Check if review is required
-        if (data.stage === 'banner_review_required') {
+        // Check if review is required (both banner and crosstab review stages)
+        if (data.stage === 'banner_review_required' || data.stage === 'crosstab_review_required') {
           clearInterval(interval);
           setIsProcessing(false);
           setJobId(null);
@@ -215,7 +215,8 @@ export default function Home() {
           refresh();
 
           const reviewUrl = data.reviewUrl || `/pipelines/${encodeURIComponent(data.pipelineId)}/review`;
-          toast.warning('Review Required', {
+          const reviewType = data.stage === 'crosstab_review_required' ? 'Mapping Review' : 'Review';
+          toast.warning(`${reviewType} Required`, {
             id: 'pipeline-progress',
             description: `${data.flaggedColumnCount || 'Some'} columns need your attention`,
             action: {

@@ -173,10 +173,9 @@ interface BannerGroupAgent {
 
 interface PathAResult {
   bannerResult: BannerProcessingResult;
-  crosstabResult?: { result: ValidationResultType; processingLog: string[] };
+  crosstabResult: { result: ValidationResultType; processingLog: string[] };
   agentBanner: BannerGroupAgent[];
-  reviewRequired: boolean;
-  flaggedColumns?: FlaggedColumn[];
+  reviewRequired: boolean;  // Always false - actual review check happens after parallel paths complete
 }
 
 interface PathBResult {
@@ -188,71 +187,98 @@ interface PathBResult {
 // Human-in-the-Loop Review Types and Helpers
 // -------------------------------------------------------------------------
 
-interface FlaggedColumn {
+// -------------------------------------------------------------------------
+// CrosstabAgent Human-in-the-Loop Review Types
+// -------------------------------------------------------------------------
+
+interface FlaggedCrosstabColumn {
   groupName: string;
   columnName: string;
-  original: string;
-  adjusted: string;
+  original: string;           // From banner document
+  proposed: string;           // CrosstabAgent's R expression
   confidence: number;
+  reason: string;             // Why this mapping was chosen
+  alternatives: Array<{
+    expression: string;
+    confidence: number;
+    reason: string;
+  }>;
   uncertainties: string[];
-  requiresInference: boolean;
-  inferenceReason: string;
-  humanInLoopRequired: boolean;
+  expressionType?: string;
 }
 
-interface BannerReviewState {
+interface CrosstabReviewState {
   pipelineId: string;
   status: 'awaiting_review' | 'approved' | 'cancelled';
   createdAt: string;
-  bannerResult: BannerProcessingResult;
-  flaggedColumns: FlaggedColumn[];
+  crosstabResult: ValidationResultType;  // Full result for context
+  flaggedColumns: FlaggedCrosstabColumn[];
+  bannerResult: BannerProcessingResult;  // Original banner for reference
   agentDataMap: AgentDataMapItem[];
   outputDir: string;
-  pathBStatus: 'running' | 'completed' | 'error';
-  pathBResult?: PathBResult;
-  pathBError?: string;
+  pathBStatus: 'completed';
+  pathBResult: PathBResult;              // Tables ready (completed in parallel)
   decisions?: Array<{
     groupName: string;
     columnName: string;
-    action: 'approve' | 'edit' | 'skip';
-    editedValue?: string;
+    action: 'approve' | 'select_alternative' | 'provide_hint' | 'edit' | 'skip';
+    selectedAlternative?: number;  // Index into alternatives[]
+    hint?: string;                 // For re-run
+    editedExpression?: string;     // Direct edit
   }>;
 }
 
 /**
- * Check BannerAgent output for columns that need human review
- * Returns columns with low confidence, explicit flags, or inference needed
+ * Check CrosstabAgent output for columns that need human review
+ * Returns columns with low confidence, explicit flags, or expression types that always need review
  */
-function getFlaggedColumns(bannerResult: BannerProcessingResult): FlaggedColumn[] {
+function getFlaggedCrosstabColumns(
+  crosstabResult: ValidationResultType,
+  bannerResult: BannerProcessingResult
+): FlaggedCrosstabColumn[] {
+  const flagged: FlaggedCrosstabColumn[] = [];
+
+  // Build a lookup for original expressions from banner
+  const originalLookup = new Map<string, string>();
   const extractedStructure = bannerResult.verbose?.data?.extractedStructure;
-  if (!extractedStructure?.bannerCuts) {
-    return [];
-  }
-
-  const allColumns: FlaggedColumn[] = [];
-
-  for (const group of extractedStructure.bannerCuts) {
-    for (const col of group.columns) {
-      allColumns.push({
-        groupName: group.groupName,
-        columnName: col.name,
-        original: col.original,
-        adjusted: col.adjusted,
-        confidence: col.confidence,
-        uncertainties: (col.uncertainties as string[]) || [],
-        requiresInference: col.requiresInference,
-        inferenceReason: col.inferenceReason || '',
-        humanInLoopRequired: col.humanInLoopRequired
-      });
+  if (extractedStructure?.bannerCuts) {
+    for (const group of extractedStructure.bannerCuts) {
+      for (const col of group.columns) {
+        const key = `${group.groupName}::${col.name}`;
+        originalLookup.set(key, col.original);
+      }
     }
   }
 
-  // Return columns that need review based on any of these conditions
-  return allColumns.filter(col =>
-    col.humanInLoopRequired === true ||
-    col.confidence < 0.85 ||
-    col.requiresInference === true
-  );
+  for (const group of crosstabResult.bannerCuts) {
+    for (const col of group.columns) {
+      // Check if this column needs review based on:
+      // 1. Explicit humanReviewRequired flag
+      // 2. Low confidence (< 0.75)
+      // 3. Expression types that always need review
+      const requiresReviewByType = col.expressionType &&
+        ['placeholder', 'conceptual_filter', 'from_list'].includes(col.expressionType);
+
+      if (col.humanReviewRequired ||
+          col.confidence < 0.75 ||
+          requiresReviewByType) {
+        const lookupKey = `${group.groupName}::${col.name}`;
+        flagged.push({
+          groupName: group.groupName,
+          columnName: col.name,
+          original: originalLookup.get(lookupKey) || col.name,
+          proposed: col.adjusted,
+          confidence: col.confidence,
+          reason: col.reason,
+          alternatives: col.alternatives || [],
+          uncertainties: col.uncertainties || [],
+          expressionType: col.expressionType
+        });
+      }
+    }
+  }
+
+  return flagged;
 }
 
 // -------------------------------------------------------------------------
@@ -260,9 +286,9 @@ function getFlaggedColumns(bannerResult: BannerProcessingResult): FlaggedColumn[
 // -------------------------------------------------------------------------
 
 /**
- * Path A: BannerAgent → [Review Check] → CrosstabAgent
- * Extracts banner structure, checks for review needs, validates R expressions
- * If review is needed, returns early without running CrosstabAgent
+ * Path A: BannerAgent → CrosstabAgent
+ * Extracts banner structure, then validates R expressions
+ * Review check happens AFTER CrosstabAgent completes (based on mapping uncertainty)
  */
 async function executePathA(
   bannerAgent: BannerAgent,
@@ -270,7 +296,6 @@ async function executePathA(
   agentDataMap: AgentDataMapItem[],
   outputDir: string,
   onProgress: (percent: number) => void,
-  skipReviewCheck: boolean = false, // Used when resuming after review
   abortSignal?: AbortSignal
 ): Promise<PathAResult> {
   // Check for cancellation before starting
@@ -297,27 +322,14 @@ async function executePathA(
 
   const agentBanner = bannerResult.agent || [];
 
-  // 2. Check if human review is needed (unless skipped for resume)
-  if (!skipReviewCheck) {
-    const flaggedColumns = getFlaggedColumns(bannerResult);
-    if (flaggedColumns.length > 0) {
-      console.log(`[PathA] Review required: ${flaggedColumns.length} columns flagged for human review`);
-      return {
-        bannerResult,
-        agentBanner,
-        reviewRequired: true,
-        flaggedColumns
-      };
-    }
-  }
-
   // Check for cancellation before CrosstabAgent
   if (abortSignal?.aborted) {
     console.log('[PathA] Aborted before CrosstabAgent');
     throw new DOMException('Path A aborted', 'AbortError');
   }
 
-  // 3. CrosstabAgent (40-100% of path progress) - only if no review needed
+  // 2. CrosstabAgent (40-100% of path progress)
+  // Note: Review check happens AFTER this completes, based on CrosstabAgent's mapping confidence
   console.log('[PathA] Starting CrosstabAgent...');
 
   const crosstabResult = await processCrosstabGroups(
@@ -334,6 +346,7 @@ async function executePathA(
   onProgress(100);
   console.log(`[PathA] CrosstabAgent complete: ${crosstabResult.result.bannerCuts.length} groups validated`);
 
+  // Note: reviewRequired is always false here - actual review check happens after parallel paths complete
   return { bannerResult, crosstabResult, agentBanner, reviewRequired: false };
 }
 
@@ -662,7 +675,7 @@ export async function POST(request: NextRequest) {
         const bannerAgent = new BannerAgent();
 
         const [pathAResult, pathBResult] = await Promise.allSettled([
-          executePathA(bannerAgent, bannerPlanPath, agentDataMap, outputDir, updateParallelProgress, false, abortSignal),
+          executePathA(bannerAgent, bannerPlanPath, agentDataMap, outputDir, updateParallelProgress, abortSignal),
           executePathB(verboseDataMap, surveyPath ?? null, outputDir, updateParallelProgress, abortSignal)
         ]);
 
@@ -758,7 +771,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Both paths succeeded - extract values
-        const { bannerResult, crosstabResult, reviewRequired, flaggedColumns } = pathAResult.value;
+        const { bannerResult, crosstabResult } = pathAResult.value;
         const { tableAgentResults, verifiedTables } = pathBResult.value;
 
         // Log summary from both paths
@@ -767,19 +780,25 @@ export async function POST(request: NextRequest) {
         const columnCount = (extractedStructure?.processingMetadata as { totalColumns?: number })?.totalColumns || 0;
         const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
 
+        console.log(`[API] Path A: ${groupCount} groups, ${columnCount} columns, ${crosstabResult.result.bannerCuts.length} validated`);
+        console.log(`[API] Path B: ${tableAgentTables.length} table definitions, ${verifiedTables.length} verified`);
+
         // -------------------------------------------------------------------------
-        // Handle Human-in-the-Loop Review if needed
+        // Handle Human-in-the-Loop Review for CrosstabAgent mappings
         // -------------------------------------------------------------------------
-        if (reviewRequired && flaggedColumns && flaggedColumns.length > 0) {
-          console.log(`[API] Review required: ${flaggedColumns.length} columns need human review`);
+        const flaggedCrosstabColumns = getFlaggedCrosstabColumns(crosstabResult.result, bannerResult);
+
+        if (flaggedCrosstabColumns.length > 0) {
+          console.log(`[API] Review required: ${flaggedCrosstabColumns.length} columns need human review (CrosstabAgent mapping)`);
 
           // Write review state to disk
-          const reviewState: BannerReviewState = {
+          const reviewState: CrosstabReviewState = {
             pipelineId,
             status: 'awaiting_review',
             createdAt: new Date().toISOString(),
+            crosstabResult: crosstabResult.result,
+            flaggedColumns: flaggedCrosstabColumns,
             bannerResult,
-            flaggedColumns,
             agentDataMap,
             outputDir,
             pathBStatus: 'completed',
@@ -787,45 +806,44 @@ export async function POST(request: NextRequest) {
           };
 
           await fs.writeFile(
-            path.join(outputDir, 'banner-review-state.json'),
+            path.join(outputDir, 'crosstab-review-state.json'),
             JSON.stringify(reviewState, null, 2)
           );
-          console.log('[API] Review state saved to banner-review-state.json');
+          console.log('[API] Review state saved to crosstab-review-state.json');
 
           // Update pipeline summary to pending_review
           const reviewUrl = `/pipelines/${encodeURIComponent(pipelineId)}/review`;
           await updatePipelineSummary(outputDir, {
             status: 'pending_review',
-            currentStage: 'banner_review',
+            currentStage: 'crosstab_review',
             review: {
-              flaggedColumnCount: flaggedColumns.length,
+              flaggedColumnCount: flaggedCrosstabColumns.length,
               reviewUrl
             }
           });
 
           // Update job status for polling
           updateJob(job.jobId, {
-            stage: 'banner_review_required',
-            percent: 35,
-            message: `Review required - ${flaggedColumns.length} columns flagged`,
+            stage: 'crosstab_review_required',
+            percent: 75,
+            message: `Review required - ${flaggedCrosstabColumns.length} columns need mapping verification`,
             sessionId,
             pipelineId,
             dataset: datasetName,
             reviewRequired: true,
             reviewUrl,
-            flaggedColumnCount: flaggedColumns.length
+            flaggedColumnCount: flaggedCrosstabColumns.length
           });
 
-          console.log(`[API] Pipeline paused for human review. Path B completed with ${verifiedTables.length} tables.`);
+          console.log(`[API] Pipeline paused for human review. Tables ready: ${verifiedTables.length}`);
           console.log(`[API] Resume via POST /api/pipelines/${pipelineId}/review`);
 
           // Don't proceed to R script - wait for human approval
           return;
         }
 
-        // No review needed - log and continue
-        console.log(`[API] Path A: ${groupCount} groups, ${columnCount} columns, ${crosstabResult!.result.bannerCuts.length} validated`);
-        console.log(`[API] Path B: ${tableAgentTables.length} table definitions, ${verifiedTables.length} verified`);
+        // No review needed - continue to R script generation
+        console.log('[API] All CrosstabAgent mappings have high confidence - no review needed');
 
         // Sort tables for logical Excel output order
         console.log('[API] Sorting tables...');

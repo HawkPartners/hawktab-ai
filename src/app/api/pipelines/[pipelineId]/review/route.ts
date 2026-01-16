@@ -1,13 +1,13 @@
 /**
- * Review API for Human-in-the-Loop Banner Review
+ * Review API for Human-in-the-Loop CrosstabAgent Review
  *
  * GET /api/pipelines/[pipelineId]/review
- * - Returns banner-review-state.json for the pipeline
- * - Used by review UI to display flagged columns
+ * - Returns crosstab-review-state.json for the pipeline
+ * - Shows flagged columns with mapping details (proposed R, alternatives, etc.)
  *
  * POST /api/pipelines/[pipelineId]/review
- * - Accepts review decisions (approve/edit/skip per column)
- * - Resumes pipeline: runs CrosstabAgent with approved banner
+ * - Accepts review decisions (approve/select_alternative/provide_hint/edit/skip per column)
+ * - Applies decisions to crosstab result
  * - Completes pipeline: generates R script and Excel output
  */
 import { NextRequest, NextResponse } from 'next/server';
@@ -15,7 +15,7 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { processAllGroups as processCrosstabGroups } from '@/agents/CrosstabAgent';
+import { processGroup } from '@/agents/CrosstabAgent';
 import { buildCutsSpec } from '@/lib/tables/CutsSpec';
 import { sortTables, getSortingMetadata } from '@/lib/tables/sortTables';
 import { generateRScriptV2WithValidation } from '@/lib/r/RScriptGeneratorV2';
@@ -23,6 +23,7 @@ import { ExcelFormatter } from '@/lib/excel/ExcelFormatter';
 import type { BannerProcessingResult } from '@/agents/BannerAgent';
 import type { ExtendedTableDefinition } from '@/schemas/verificationAgentSchema';
 import type { TableAgentOutput } from '@/schemas/tableAgentSchema';
+import type { ValidationResultType, ValidatedGroupType } from '@/schemas/agentOutputSchema';
 
 const execAsync = promisify(exec);
 
@@ -30,16 +31,20 @@ const execAsync = promisify(exec);
 // Types
 // -------------------------------------------------------------------------
 
-interface FlaggedColumn {
+interface FlaggedCrosstabColumn {
   groupName: string;
   columnName: string;
   original: string;
-  adjusted: string;
+  proposed: string;
   confidence: number;
+  reason: string;
+  alternatives: Array<{
+    expression: string;
+    confidence: number;
+    reason: string;
+  }>;
   uncertainties: string[];
-  requiresInference: boolean;
-  inferenceReason: string;
-  humanInLoopRequired: boolean;
+  expressionType?: string;
 }
 
 interface AgentDataMapItem {
@@ -53,29 +58,31 @@ interface PathBResult {
   verifiedTables: ExtendedTableDefinition[];
 }
 
-interface BannerReviewState {
+interface CrosstabReviewState {
   pipelineId: string;
   status: 'awaiting_review' | 'approved' | 'cancelled';
   createdAt: string;
+  crosstabResult: ValidationResultType;
+  flaggedColumns: FlaggedCrosstabColumn[];
   bannerResult: BannerProcessingResult;
-  flaggedColumns: FlaggedColumn[];
   agentDataMap: AgentDataMapItem[];
   outputDir: string;
-  pathBStatus: 'running' | 'completed' | 'error';
-  pathBResult?: PathBResult;
-  pathBError?: string;
-  decisions?: ReviewDecision[];
+  pathBStatus: 'completed';
+  pathBResult: PathBResult;
+  decisions?: CrosstabDecision[];
 }
 
-interface ReviewDecision {
+interface CrosstabDecision {
   groupName: string;
   columnName: string;
-  action: 'approve' | 'edit' | 'skip';
-  editedValue?: string;
+  action: 'approve' | 'select_alternative' | 'provide_hint' | 'edit' | 'skip';
+  selectedAlternative?: number;  // Index into alternatives[]
+  hint?: string;                 // For re-run
+  editedExpression?: string;     // Direct edit
 }
 
 interface ReviewRequest {
-  decisions: ReviewDecision[];
+  decisions: CrosstabDecision[];
 }
 
 type PipelineStatus = 'in_progress' | 'pending_review' | 'resuming' | 'success' | 'partial' | 'error' | 'cancelled';
@@ -102,7 +109,7 @@ interface PipelineSummary {
   review?: {
     flaggedColumnCount: number;
     reviewUrl: string;
-    decisions?: ReviewDecision[];
+    decisions?: CrosstabDecision[];
     completedAt?: string;
   };
 }
@@ -163,27 +170,37 @@ async function updatePipelineSummary(
 }
 
 /**
- * Apply review decisions to banner result
- * Returns modified banner groups for CrosstabAgent
+ * Apply review decisions to crosstab result
+ * Returns modified ValidationResultType with user's decisions applied
  */
-function applyDecisions(
-  bannerResult: BannerProcessingResult,
-  decisions: ReviewDecision[]
-): Array<{ groupName: string; columns: Array<{ name: string; original: string }> }> {
-  const decisionMap = new Map<string, ReviewDecision>();
+async function applyDecisions(
+  crosstabResult: ValidationResultType,
+  flaggedColumns: FlaggedCrosstabColumn[],
+  decisions: CrosstabDecision[],
+  agentDataMap: AgentDataMapItem[],
+  outputDir: string
+): Promise<ValidationResultType> {
+  // Build decision lookup
+  const decisionMap = new Map<string, CrosstabDecision>();
   for (const d of decisions) {
-    decisionMap.set(`${d.groupName}/${d.columnName}`, d);
+    decisionMap.set(`${d.groupName}::${d.columnName}`, d);
   }
 
-  const agentBanner = bannerResult.agent || [];
-  const modifiedGroups: Array<{ groupName: string; columns: Array<{ name: string; original: string }> }> = [];
+  // Build flagged column lookup for alternatives
+  const flaggedMap = new Map<string, FlaggedCrosstabColumn>();
+  for (const f of flaggedColumns) {
+    flaggedMap.set(`${f.groupName}::${f.columnName}`, f);
+  }
 
-  for (const group of agentBanner) {
-    const modifiedColumns: Array<{ name: string; original: string }> = [];
+  const modifiedGroups: ValidatedGroupType[] = [];
+
+  for (const group of crosstabResult.bannerCuts) {
+    const modifiedColumns = [];
 
     for (const col of group.columns) {
-      const key = `${group.groupName}/${col.name}`;
+      const key = `${group.groupName}::${col.name}`;
       const decision = decisionMap.get(key);
+      const flagged = flaggedMap.get(key);
 
       if (decision?.action === 'skip') {
         // Skip this column entirely
@@ -191,18 +208,82 @@ function applyDecisions(
         continue;
       }
 
-      if (decision?.action === 'edit' && decision.editedValue) {
-        // Use edited value
-        console.log(`[Review] Edited column: ${key}`);
+      if (decision?.action === 'select_alternative' && decision.selectedAlternative !== undefined && flagged) {
+        // Use selected alternative
+        const alt = flagged.alternatives[decision.selectedAlternative];
+        if (alt) {
+          console.log(`[Review] Using alternative ${decision.selectedAlternative} for: ${key}`);
+          modifiedColumns.push({
+            ...col,
+            adjusted: alt.expression,
+            confidence: 1.0, // User approved
+            reason: `User selected alternative: ${alt.reason}`,
+            humanReviewRequired: false
+          });
+          continue;
+        }
+      }
+
+      if (decision?.action === 'edit' && decision.editedExpression) {
+        // Use user's edited expression
+        console.log(`[Review] Using edited expression for: ${key}`);
         modifiedColumns.push({
-          name: col.name,
-          original: decision.editedValue
+          ...col,
+          adjusted: decision.editedExpression,
+          confidence: 1.0, // User provided
+          reason: 'User edited expression directly',
+          humanReviewRequired: false
         });
-      } else {
-        // Approve as-is (or no decision provided)
+        continue;
+      }
+
+      if (decision?.action === 'provide_hint' && decision.hint && flagged) {
+        // Re-run CrosstabAgent for this column with the hint
+        console.log(`[Review] Re-running with hint for: ${key}`);
+        try {
+          const rerunResult = await processGroup(
+            agentDataMap,
+            {
+              groupName: group.groupName,
+              columns: [{ name: col.name, original: flagged.original }]
+            },
+            { hint: decision.hint, outputDir }
+          );
+
+          if (rerunResult.columns.length > 0) {
+            const rerunCol = rerunResult.columns[0];
+            // Auto-approve if high confidence (> 0.9)
+            if (rerunCol.confidence > 0.9) {
+              console.log(`[Review] Re-run successful with confidence ${rerunCol.confidence} - auto-approving`);
+              modifiedColumns.push({
+                ...rerunCol,
+                confidence: 1.0, // User approved via hint
+                reason: `Re-run with hint "${decision.hint}": ${rerunCol.reason}`,
+                humanReviewRequired: false
+              });
+            } else {
+              // Still uncertain - use the re-run result but note it
+              console.log(`[Review] Re-run had confidence ${rerunCol.confidence} - using anyway`);
+              modifiedColumns.push({
+                ...rerunCol,
+                reason: `Re-run with hint "${decision.hint}": ${rerunCol.reason}`,
+                humanReviewRequired: false
+              });
+            }
+            continue;
+          }
+        } catch (rerunError) {
+          console.error(`[Review] Re-run failed for ${key}:`, rerunError);
+          // Fall through to approve as-is
+        }
+      }
+
+      // Default: approve as-is (or no decision provided for non-flagged columns)
+      if (decision?.action === 'approve' || !decision) {
         modifiedColumns.push({
-          name: col.name,
-          original: col.original
+          ...col,
+          confidence: decision ? 1.0 : col.confidence, // 1.0 if explicitly approved
+          humanReviewRequired: false
         });
       }
     }
@@ -215,7 +296,7 @@ function applyDecisions(
     }
   }
 
-  return modifiedGroups;
+  return { bannerCuts: modifiedGroups };
 }
 
 // -------------------------------------------------------------------------
@@ -244,20 +325,43 @@ export async function GET(
       return NextResponse.json({ error: 'Pipeline not found' }, { status: 404 });
     }
 
-    // Read review state
-    const reviewStatePath = path.join(pipelineInfo.path, 'banner-review-state.json');
+    // Try crosstab review state first (new), then banner review state (legacy)
+    const crosstabReviewStatePath = path.join(pipelineInfo.path, 'crosstab-review-state.json');
+    const bannerReviewStatePath = path.join(pipelineInfo.path, 'banner-review-state.json');
+
+    // Check for crosstab review state (preferred)
     try {
-      const reviewState = JSON.parse(await fs.readFile(reviewStatePath, 'utf-8')) as BannerReviewState;
+      const reviewState = JSON.parse(await fs.readFile(crosstabReviewStatePath, 'utf-8')) as CrosstabReviewState;
       return NextResponse.json({
+        reviewType: 'crosstab',
         pipelineId: reviewState.pipelineId,
         status: reviewState.status,
         createdAt: reviewState.createdAt,
         flaggedColumns: reviewState.flaggedColumns,
         pathBStatus: reviewState.pathBStatus,
-        totalColumns: reviewState.bannerResult.agent?.reduce(
+        totalColumns: reviewState.crosstabResult.bannerCuts.reduce(
           (sum, g) => sum + g.columns.length, 0
-        ) || 0,
+        ),
         decisions: reviewState.decisions || []
+      });
+    } catch {
+      // No crosstab review state, try banner (legacy)
+    }
+
+    // Check for banner review state (legacy)
+    try {
+      const bannerReviewState = JSON.parse(await fs.readFile(bannerReviewStatePath, 'utf-8'));
+      return NextResponse.json({
+        reviewType: 'banner',
+        pipelineId: bannerReviewState.pipelineId,
+        status: bannerReviewState.status,
+        createdAt: bannerReviewState.createdAt,
+        flaggedColumns: bannerReviewState.flaggedColumns,
+        pathBStatus: bannerReviewState.pathBStatus,
+        totalColumns: bannerReviewState.bannerResult?.agent?.reduce(
+          (sum: number, g: { columns: unknown[] }) => sum + g.columns.length, 0
+        ) || 0,
+        decisions: bannerReviewState.decisions || []
       });
     } catch {
       return NextResponse.json(
@@ -313,8 +417,8 @@ export async function POST(
     const outputDir = pipelineInfo.path;
 
     // Read review state
-    const reviewStatePath = path.join(outputDir, 'banner-review-state.json');
-    let reviewState: BannerReviewState;
+    const reviewStatePath = path.join(outputDir, 'crosstab-review-state.json');
+    let reviewState: CrosstabReviewState;
     try {
       reviewState = JSON.parse(await fs.readFile(reviewStatePath, 'utf-8'));
     } catch {
@@ -335,7 +439,7 @@ export async function POST(
     // Update pipeline summary to resuming
     await updatePipelineSummary(outputDir, {
       status: 'resuming',
-      currentStage: 'crosstab_agent'
+      currentStage: 'applying_review'
     });
 
     console.log(`[Review API] Resuming pipeline ${pipelineId} with ${decisions.length} decisions`);
@@ -345,20 +449,17 @@ export async function POST(
     reviewState.decisions = decisions;
     await fs.writeFile(reviewStatePath, JSON.stringify(reviewState, null, 2));
 
-    // Apply decisions to banner and run CrosstabAgent
-    const modifiedBanner = applyDecisions(reviewState.bannerResult, decisions);
-    console.log(`[Review API] Modified banner: ${modifiedBanner.length} groups`);
-
-    const crosstabResult = await processCrosstabGroups(
+    // Apply decisions to crosstab result
+    const modifiedCrosstabResult = await applyDecisions(
+      reviewState.crosstabResult,
+      reviewState.flaggedColumns,
+      decisions,
       reviewState.agentDataMap,
-      { bannerCuts: modifiedBanner },
-      outputDir,
-      (completed, total) => {
-        console.log(`[Review API] CrosstabAgent progress: ${completed}/${total}`);
-      }
+      outputDir
     );
 
-    console.log(`[Review API] CrosstabAgent complete: ${crosstabResult.result.bannerCuts.length} groups validated`);
+    const totalColumns = modifiedCrosstabResult.bannerCuts.reduce((sum, g) => sum + g.columns.length, 0);
+    console.log(`[Review API] Applied decisions: ${modifiedCrosstabResult.bannerCuts.length} groups, ${totalColumns} columns`);
 
     // Get Path B results
     if (!reviewState.pathBResult) {
@@ -376,7 +477,7 @@ export async function POST(
     console.log(`[Review API] Sorted tables: ${sortedTables.length} (screeners: ${sortingMetadata.screenerCount})`);
 
     // Generate R script
-    const cutsSpec = buildCutsSpec(crosstabResult.result);
+    const cutsSpec = buildCutsSpec(modifiedCrosstabResult);
     const rDir = path.join(outputDir, 'r');
     await fs.mkdir(rDir, { recursive: true });
 
@@ -486,7 +587,7 @@ export async function POST(
         verifiedTables: sortedTables.length,
         tables: sortedTables.length,
         cuts: cutsSpec.cuts.length,
-        bannerGroups: crosstabResult.result.bannerCuts.length,
+        bannerGroups: modifiedCrosstabResult.bannerCuts.length,
         sorting: {
           screeners: sortingMetadata.screenerCount,
           main: sortingMetadata.mainCount,
