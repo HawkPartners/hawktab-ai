@@ -119,9 +119,19 @@ const getBannerExtractionPrompt = (): string => {
 
 export class BannerAgent {
   // Main entry point - complete banner processing workflow
-  async processDocument(filePath: string, outputDir?: string): Promise<BannerProcessingResult> {
+  async processDocument(
+    filePath: string,
+    outputDir?: string,
+    abortSignal?: AbortSignal
+  ): Promise<BannerProcessingResult> {
     console.log(`[BannerAgent] Starting document processing: ${path.basename(filePath)}`);
     const startTime = Date.now();
+
+    // Check for cancellation before starting
+    if (abortSignal?.aborted) {
+      console.log('[BannerAgent] Aborted before processing started');
+      throw new DOMException('BannerAgent aborted', 'AbortError');
+    }
 
     // Clear scratchpad from any previous runs
     clearScratchpadEntries();
@@ -131,6 +141,12 @@ export class BannerAgent {
       const pdfPath = await this.ensurePDF(filePath);
       console.log(`[BannerAgent] PDF ready: ${path.basename(pdfPath)}`);
 
+      // Check for cancellation after PDF conversion
+      if (abortSignal?.aborted) {
+        console.log('[BannerAgent] Aborted after PDF conversion');
+        throw new DOMException('BannerAgent aborted', 'AbortError');
+      }
+
       // Step 2: Convert PDF to images
       const images = await this.convertPDFToImages(pdfPath);
       console.log(`[BannerAgent] Generated ${images.length} images for processing`);
@@ -139,8 +155,14 @@ export class BannerAgent {
         return this.createFailureResult('No images could be generated from PDF');
       }
 
+      // Check for cancellation after image conversion
+      if (abortSignal?.aborted) {
+        console.log('[BannerAgent] Aborted after image conversion');
+        throw new DOMException('BannerAgent aborted', 'AbortError');
+      }
+
       // Step 3: Extract banner structure using generateText with vision
-      const extractionResult = await this.extractBannerStructureWithAgent(images);
+      const extractionResult = await this.extractBannerStructureWithAgent(images, abortSignal);
       console.log(`[BannerAgent] Agent extraction completed - Success: ${extractionResult.success}`);
 
       // Step 4: Collect scratchpad entries for debugging
@@ -176,10 +198,19 @@ export class BannerAgent {
   }
 
   // Agent-based extraction using Vercel AI SDK with vision
-  private async extractBannerStructureWithAgent(images: ProcessedImage[]): Promise<BannerExtractionResult> {
+  private async extractBannerStructureWithAgent(
+    images: ProcessedImage[],
+    abortSignal?: AbortSignal
+  ): Promise<BannerExtractionResult> {
     console.log(`[BannerAgent] Starting agent-based extraction with ${images.length} images`);
     console.log(`[BannerAgent] Using model: ${getBannerModelName()}`);
     console.log(`[BannerAgent] Reasoning effort: ${getBannerReasoningEffort()}`);
+
+    // Check for cancellation before AI call
+    if (abortSignal?.aborted) {
+      console.log('[BannerAgent] Aborted before AI extraction');
+      throw new DOMException('BannerAgent aborted', 'AbortError');
+    }
 
     const systemPrompt = `
 ${getBannerExtractionPrompt()}
@@ -236,6 +267,7 @@ Begin analysis now.
           output: Output.object({
             schema: BannerExtractionResultSchema,
           }),
+          abortSignal,  // Pass abort signal to AI SDK
         });
 
         if (!output || !output.extractedStructure) {
@@ -247,6 +279,12 @@ Begin analysis now.
         return output;
 
       } catch (error) {
+        // Check if this is an abort error - propagate immediately
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          console.log('[BannerAgent] Aborted by signal during AI extraction');
+          throw error;
+        }
+
         const errorMessage = error instanceof Error ? error.message : String(error);
         lastError = errorMessage;
 

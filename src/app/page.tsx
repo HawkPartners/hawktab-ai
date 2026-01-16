@@ -31,7 +31,9 @@ export default function Home() {
       fetch(`/api/process-crosstab/status?jobId=${encodeURIComponent(savedJobId)}`)
         .then(res => res.json())
         .then(data => {
-          if (data.stage && data.stage !== 'complete' && data.stage !== 'error') {
+          // Check for terminal states (complete, error, cancelled)
+          const terminalStages = ['complete', 'error', 'cancelled'];
+          if (data.stage && !terminalStages.includes(data.stage)) {
             // Job still running - restore state
             setJobId(savedJobId);
             setIsProcessing(true);
@@ -41,7 +43,7 @@ export default function Home() {
               duration: Infinity,
             });
           } else {
-            // Job finished - clear storage
+            // Job finished or cancelled - clear storage
             localStorage.removeItem(ACTIVE_JOB_KEY);
           }
         })
@@ -116,8 +118,47 @@ export default function Home() {
     }
   };
 
-  const handleCancel = () => {
-    // Clear processing state
+  const handleCancel = async () => {
+    if (!jobId) {
+      // No job to cancel, just clear UI state
+      setIsProcessing(false);
+      toast.dismiss('pipeline-progress');
+      return;
+    }
+
+    // Show cancelling state
+    toast.loading('Cancelling pipeline...', {
+      id: 'pipeline-progress',
+      description: 'Stopping processing...',
+      duration: Infinity,
+    });
+
+    try {
+      // First, get the pipelineId from job status
+      const statusRes = await fetch(`/api/process-crosstab/status?jobId=${encodeURIComponent(jobId)}`);
+      if (statusRes.ok) {
+        const statusData = await statusRes.json();
+        const pipelineId = statusData.pipelineId;
+
+        if (pipelineId) {
+          // Call the cancel API to actually stop the pipeline
+          const cancelRes = await fetch(`/api/pipelines/${encodeURIComponent(pipelineId)}/cancel`, {
+            method: 'POST',
+          });
+
+          if (cancelRes.ok) {
+            const cancelData = await cancelRes.json();
+            console.log('[Cancel] Pipeline cancelled:', cancelData);
+          } else {
+            console.warn('[Cancel] Cancel API returned error:', await cancelRes.text());
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[Cancel] Error cancelling pipeline:', error);
+    }
+
+    // Clear processing state regardless of API success
     setIsProcessing(false);
     setJobId(null);
     setJobError(null);
@@ -125,6 +166,9 @@ export default function Home() {
 
     // Dismiss the toast
     toast.dismiss('pipeline-progress');
+
+    // Refresh pipeline history to show cancelled status
+    refresh();
 
     // Show cancellation confirmation
     toast.info('Pipeline cancelled', {
@@ -142,6 +186,23 @@ export default function Home() {
         if (!res.ok) return;
         const data = await res.json();
         if (cancelled) return;
+
+        // Check if cancelled (either by user or detected from server)
+        if (data.stage === 'cancelled') {
+          clearInterval(interval);
+          setIsProcessing(false);
+          setJobId(null);
+          localStorage.removeItem(ACTIVE_JOB_KEY);
+
+          // Refresh pipeline history
+          refresh();
+
+          toast.info('Pipeline cancelled', {
+            id: 'pipeline-progress',
+            description: 'The processing was stopped.',
+          });
+          return;
+        }
 
         // Check if review is required
         if (data.stage === 'banner_review_required') {

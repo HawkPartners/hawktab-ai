@@ -29,8 +29,18 @@ const getCrosstabValidationInstructions = (): string => {
 };
 
 // Process single banner group using Vercel AI SDK
-export async function processGroup(dataMap: DataMapType, group: BannerGroupType): Promise<ValidatedGroupType> {
+export async function processGroup(
+  dataMap: DataMapType,
+  group: BannerGroupType,
+  abortSignal?: AbortSignal
+): Promise<ValidatedGroupType> {
   console.log(`[CrosstabAgent] Processing group: ${group.groupName} (${group.columns.length} columns)`);
+
+  // Check for cancellation before AI call
+  if (abortSignal?.aborted) {
+    console.log(`[CrosstabAgent] Aborted before processing group ${group.groupName}`);
+    throw new DOMException('CrosstabAgent aborted', 'AbortError');
+  }
 
   // Build system prompt with context injection
   const systemPrompt = `
@@ -75,6 +85,7 @@ Begin validation now.
       output: Output.object({
         schema: ValidatedGroupSchema,
       }),
+      abortSignal,  // Pass abort signal to AI SDK
     });
 
     if (!output || !output.columns) {
@@ -86,6 +97,12 @@ Begin validation now.
     return output;
 
   } catch (error) {
+    // Check if this is an abort error - propagate immediately
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      console.log(`[CrosstabAgent] Aborted by signal during group ${group.groupName}`);
+      throw error;
+    }
+
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(`[CrosstabAgent] Error processing group ${group.groupName}:`, errorMessage);
 
@@ -107,13 +124,20 @@ export async function processAllGroups(
   dataMap: DataMapType,
   bannerPlan: BannerPlanInputType,
   outputDir?: string,
-  onProgress?: (completedGroups: number, totalGroups: number) => void
+  onProgress?: (completedGroups: number, totalGroups: number) => void,
+  abortSignal?: AbortSignal
 ): Promise<{ result: ValidationResultType; processingLog: string[] }> {
   const processingLog: string[] = [];
   const logEntry = (message: string) => {
     console.log(message);
     processingLog.push(`${new Date().toISOString()}: ${message}`);
   };
+
+  // Check for cancellation before starting
+  if (abortSignal?.aborted) {
+    console.log('[CrosstabAgent] Aborted before processing started');
+    throw new DOMException('CrosstabAgent aborted', 'AbortError');
+  }
 
   // Clear scratchpad from any previous runs
   clearScratchpadEntries();
@@ -126,12 +150,18 @@ export async function processAllGroups(
 
   // Process each group individually (group-by-group approach)
   for (let i = 0; i < bannerPlan.bannerCuts.length; i++) {
+    // Check for cancellation between groups
+    if (abortSignal?.aborted) {
+      console.log(`[CrosstabAgent] Aborted after ${i} groups`);
+      throw new DOMException('CrosstabAgent aborted', 'AbortError');
+    }
+
     const group = bannerPlan.bannerCuts[i];
     const groupStartTime = Date.now();
 
     logEntry(`[CrosstabAgent] Processing group ${i + 1}/${bannerPlan.bannerCuts.length}: "${group.groupName}" (${group.columns.length} columns)`);
 
-    const groupResult = await processGroup(dataMap, group);
+    const groupResult = await processGroup(dataMap, group, abortSignal);
     results.push(groupResult);
 
     const groupDuration = Date.now() - groupStartTime;
