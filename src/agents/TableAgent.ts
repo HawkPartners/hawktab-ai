@@ -324,6 +324,103 @@ export async function processDataMap(
   return processAllGroups(groups, outputDir, onProgress, abortSignal);
 }
 
+/**
+ * Process question groups with callback for each table produced.
+ * Used by PathBCoordinator for producer-consumer pipeline.
+ *
+ * This function enables overlapping execution with VerificationAgent:
+ * - Tables are emitted via onTable() as each question group completes
+ * - VerificationAgent can start processing immediately without waiting for all tables
+ *
+ * @param groups - Pre-grouped question inputs from groupDataMapByParent()
+ * @param onTable - Callback invoked for each table produced (for queue push)
+ * @param options - Processing options including outputDir, abortSignal, onProgress
+ * @returns Full results and processing log (same as processAllGroups)
+ */
+export async function processQuestionGroupsWithCallback(
+  groups: TableAgentInput[],
+  onTable: (table: TableDefinition, questionId: string, questionText: string) => void,
+  options: {
+    outputDir?: string;
+    abortSignal?: AbortSignal;
+    onProgress?: (completed: number, total: number) => void;
+  } = {}
+): Promise<{ results: TableAgentOutput[]; processingLog: string[] }> {
+  const { outputDir, abortSignal, onProgress } = options;
+  const processingLog: string[] = [];
+  const logEntry = (message: string) => {
+    console.log(message);
+    processingLog.push(`${new Date().toISOString()}: ${message}`);
+  };
+
+  // Check for cancellation before starting
+  if (abortSignal?.aborted) {
+    console.log('[TableAgent] Aborted before processing started');
+    throw new DOMException('TableAgent aborted', 'AbortError');
+  }
+
+  // Clear scratchpad from any previous runs
+  clearScratchpadEntries();
+
+  logEntry(`[TableAgent] Starting streaming processing: ${groups.length} question groups`);
+  logEntry(`[TableAgent] Using model: ${getTableModelName()}`);
+  logEntry(`[TableAgent] Reasoning effort: ${getTableReasoningEffort()}`);
+
+  const results: TableAgentOutput[] = [];
+  let totalTablesEmitted = 0;
+
+  // Process each group individually
+  for (let i = 0; i < groups.length; i++) {
+    // Check for cancellation between groups
+    if (abortSignal?.aborted) {
+      console.log(`[TableAgent] Aborted after ${i} groups`);
+      throw new DOMException('TableAgent aborted', 'AbortError');
+    }
+
+    const group = groups[i];
+    const startTime = Date.now();
+
+    logEntry(`[TableAgent] Processing group ${i + 1}/${groups.length}: "${group.questionId}" (${group.items.length} items)`);
+
+    const result = await processQuestionGroup(group, abortSignal);
+    results.push(result);
+
+    // Emit each table via callback for producer-consumer queue
+    for (const table of result.tables) {
+      try {
+        onTable(table, result.questionId, result.questionText);
+        totalTablesEmitted++;
+      } catch (err) {
+        // Log but don't fail on callback errors
+        console.error(`[TableAgent] Error in onTable callback for ${table.tableId}:`, err);
+      }
+    }
+
+    const duration = Date.now() - startTime;
+    logEntry(`[TableAgent] Question "${group.questionId}" completed in ${duration}ms - ${result.tables.length} tables emitted, confidence: ${result.confidence.toFixed(2)}`);
+
+    try { onProgress?.(i + 1, groups.length); } catch {}
+  }
+
+  // Collect scratchpad entries
+  const scratchpadEntries = getAndClearScratchpadEntries();
+  logEntry(`[TableAgent] Collected ${scratchpadEntries.length} scratchpad entries`);
+
+  // Calculate summary stats
+  const avgConfidence = results.length > 0
+    ? results.reduce((sum, r) => sum + r.confidence, 0) / results.length
+    : 0;
+
+  logEntry(`[TableAgent] Streaming complete - ${results.length} groups → ${totalTablesEmitted} tables emitted, avg confidence: ${avgConfidence.toFixed(2)}`);
+
+  // Save outputs
+  if (outputDir) {
+    await saveDevelopmentOutputs(groups, results, outputDir, processingLog, scratchpadEntries);
+  }
+
+  return { results, processingLog };
+}
+
 // =============================================================================
 // Output Helpers
 // =============================================================================

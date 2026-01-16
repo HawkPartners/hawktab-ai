@@ -16,8 +16,10 @@ import { logAgentExecution } from '../../../lib/tracing';
 import { validateEnvironment } from '../../../lib/env';
 import { BannerAgent } from '../../../agents/BannerAgent';
 import { processAllGroups as processCrosstabGroups } from '../../../agents/CrosstabAgent';
-import { processDataMap as processTableAgent } from '../../../agents/TableAgent';
-import { verifyAllTables } from '../../../agents/VerificationAgent';
+import { groupDataMapByParent, processQuestionGroupsWithCallback } from '../../../agents/TableAgent';
+import { verifyTable, type VerificationInput } from '../../../agents/VerificationAgent';
+import { createPassthroughOutput, summarizeVerificationResults } from '../../../schemas/verificationAgentSchema';
+import { TableQueue } from '../../../lib/pipeline/TableQueue';
 import { processSurvey } from '../../../lib/processors/SurveyProcessor';
 import { DataMapProcessor } from '../../../lib/processors/DataMapProcessor';
 import { promises as fs } from 'fs';
@@ -351,8 +353,11 @@ async function executePathA(
 }
 
 /**
- * Path B: TableAgent → Survey Processing → VerificationAgent
- * Analyzes table structures and enhances with survey context
+ * Path B: TableAgent → VerificationAgent (Producer-Consumer Pattern)
+ *
+ * TableAgent produces table definitions as each question group completes.
+ * VerificationAgent consumes tables as they become available.
+ * Both run concurrently to minimize total processing time.
  */
 async function executePathB(
   verboseDataMap: VerboseDataMapType[],
@@ -367,25 +372,10 @@ async function executePathB(
     throw new DOMException('Path B aborted', 'AbortError');
   }
 
-  // 1. TableAgent (0-40% of path progress)
-  onProgress(5);
-  console.log('[PathB] Starting TableAgent...');
-  const { results: tableAgentResults } = await processTableAgent(verboseDataMap, outputDir, undefined, abortSignal);
-  const tableCount = tableAgentResults.flatMap(r => r.tables).length;
-  onProgress(40);
-  console.log(`[PathB] TableAgent complete: ${tableCount} table definitions`);
-
-  // Check for cancellation after TableAgent
-  if (abortSignal?.aborted) {
-    console.log('[PathB] Aborted after TableAgent');
-    throw new DOMException('Path B aborted', 'AbortError');
-  }
-
-  // 2. Survey Processing (40-50% of path progress)
+  // 1. Load survey markdown upfront (needed for VerificationAgent from the start)
   let surveyMarkdown: string | null = null;
   if (surveyPath) {
-    onProgress(45);
-    console.log('[PathB] Processing survey document...');
+    console.log('[PathB] Processing survey document first...');
     const surveyResult = await processSurvey(surveyPath, outputDir);
     surveyMarkdown = surveyResult.markdown;
     if (surveyMarkdown) {
@@ -394,59 +384,316 @@ async function executePathB(
       console.warn(`[PathB] Survey processing failed: ${surveyResult.warnings.join(', ')}`);
     }
   }
-  onProgress(50);
 
-  // Check for cancellation before VerificationAgent
+  // Check for cancellation after survey processing
   if (abortSignal?.aborted) {
-    console.log('[PathB] Aborted before VerificationAgent');
+    console.log('[PathB] Aborted after survey processing');
     throw new DOMException('Path B aborted', 'AbortError');
   }
 
-  // 3. VerificationAgent (50-100% of path progress)
-  let verifiedTables: ExtendedTableDefinition[];
-
-  if (surveyMarkdown) {
-    onProgress(55);
-    console.log('[PathB] Starting VerificationAgent...');
-    try {
-      const verificationResult = await verifyAllTables(
-        tableAgentResults as TableAgentOutput[],
-        surveyMarkdown,
-        verboseDataMap,
-        { outputDir, abortSignal }
-      );
-      verifiedTables = verificationResult.tables;
-      console.log(`[PathB] VerificationAgent complete: ${verifiedTables.length} tables (${verificationResult.metadata.tablesModified} modified)`);
-    } catch (verifyError) {
-      // Re-throw abort errors
-      if (verifyError instanceof DOMException && verifyError.name === 'AbortError') {
-        throw verifyError;
-      }
-      console.error('[PathB] VerificationAgent failed:', verifyError);
-      verifiedTables = tableAgentResults.flatMap(group =>
-        group.tables.map(t => toExtendedTable(t, group.questionId))
-      );
-    }
-  } else {
-    console.log('[PathB] No survey - using TableAgent output directly');
-    verifiedTables = tableAgentResults.flatMap(group =>
-      group.tables.map(t => toExtendedTable(t, group.questionId))
-    );
-
-    // Create verification folder with passthrough output
-    const verificationDir = path.join(outputDir, 'verification');
-    await fs.mkdir(verificationDir, { recursive: true });
-    await fs.writeFile(
-      path.join(verificationDir, 'verification-output-raw.json'),
-      JSON.stringify({ tables: verifiedTables }, null, 2),
-      'utf-8'
-    );
+  // If no survey markdown, fall back to sequential passthrough mode
+  if (!surveyMarkdown) {
+    console.log('[PathB] No survey - running TableAgent only (passthrough mode)');
+    return executePathBPassthrough(verboseDataMap, outputDir, onProgress, abortSignal);
   }
 
+  // 2. Set up producer-consumer pipeline
+  const groups = groupDataMapByParent(verboseDataMap);
+  const tableQueue = new TableQueue();
+
+  // Build datamap lookup for VerificationAgent
+  const datamapByColumn = new Map<string, VerboseDataMapType>();
+  for (const entry of verboseDataMap) {
+    datamapByColumn.set(entry.column, entry);
+  }
+
+  // Progress tracking
+  const totalGroups = groups.length;
+  let producerComplete = 0;
+  let consumerComplete = 0;
+  let expectedTables = 0; // We'll update this as we learn how many tables each group produces
+
+  const updateCombinedProgress = () => {
+    // Estimate: producer progress (0-50%) + consumer progress (50-100%)
+    // We use producerComplete/totalGroups for producer since we know groups upfront
+    // Consumer progress is based on completed vs pushed tables
+    const producerPercent = (producerComplete / totalGroups) * 50;
+    const consumerPercent = expectedTables > 0
+      ? (consumerComplete / expectedTables) * 50
+      : 0;
+    const combinedPercent = Math.floor(producerPercent + consumerPercent);
+    onProgress(combinedPercent);
+  };
+
+  console.log(`[PathB] Starting producer-consumer pipeline: ${totalGroups} question groups`);
+  onProgress(5);
+
+  // 3. Start TableAgent producer (pushes tables to queue as each group completes)
+  const producerPromise = (async () => {
+    try {
+      const result = await processQuestionGroupsWithCallback(
+        groups,
+        (table, questionId, questionText) => {
+          tableQueue.push({ table, questionId, questionText });
+          expectedTables++;
+        },
+        {
+          outputDir,
+          abortSignal,
+          onProgress: (completed, _total) => {
+            producerComplete = completed;
+            updateCombinedProgress();
+          }
+        }
+      );
+      console.log(`[PathB] Producer complete: ${tableQueue.pushed} tables pushed`);
+      return result;
+    } finally {
+      // Always mark queue done, even on error
+      tableQueue.markDone();
+    }
+  })();
+
+  // 4. Start VerificationAgent consumer (pulls tables from queue)
+  const consumerPromise = runVerificationConsumer(
+    tableQueue,
+    surveyMarkdown,
+    datamapByColumn,
+    outputDir,
+    () => {
+      consumerComplete++;
+      updateCombinedProgress();
+    },
+    abortSignal
+  );
+
+  // 5. Wait for both producer and consumer to complete
+  const [producerResult, consumerResult] = await Promise.all([
+    producerPromise,
+    consumerPromise
+  ]);
+
   onProgress(100);
-  console.log(`[PathB] Complete: ${verifiedTables.length} verified tables`);
+  console.log(`[PathB] Complete: ${consumerResult.tables.length} verified tables`);
+
+  return {
+    tableAgentResults: producerResult.results,
+    verifiedTables: consumerResult.tables
+  };
+}
+
+/**
+ * Passthrough mode for Path B when no survey document is available.
+ * Tables pass through VerificationAgent without enhancement.
+ */
+async function executePathBPassthrough(
+  verboseDataMap: VerboseDataMapType[],
+  outputDir: string,
+  onProgress: (percent: number) => void,
+  abortSignal?: AbortSignal
+): Promise<PathBResult> {
+  const groups = groupDataMapByParent(verboseDataMap);
+
+  onProgress(5);
+  console.log('[PathB/Passthrough] Starting TableAgent...');
+
+  const { results: tableAgentResults } = await processQuestionGroupsWithCallback(
+    groups,
+    () => {}, // No queue push needed in passthrough mode
+    {
+      outputDir,
+      abortSignal,
+      onProgress: (completed, total) => {
+        const percent = Math.floor((completed / total) * 80);
+        onProgress(percent);
+      }
+    }
+  );
+
+  const tableCount = tableAgentResults.flatMap(r => r.tables).length;
+  console.log(`[PathB/Passthrough] TableAgent complete: ${tableCount} table definitions`);
+
+  // Convert to extended tables (passthrough)
+  const verifiedTables: ExtendedTableDefinition[] = tableAgentResults.flatMap(group =>
+    group.tables.map(t => toExtendedTable(t, group.questionId))
+  );
+
+  // Save passthrough verification output
+  const verificationDir = path.join(outputDir, 'verification');
+  await fs.mkdir(verificationDir, { recursive: true });
+  await fs.writeFile(
+    path.join(verificationDir, 'verification-output-raw.json'),
+    JSON.stringify({ tables: verifiedTables }, null, 2),
+    'utf-8'
+  );
+
+  onProgress(100);
+  console.log(`[PathB/Passthrough] Complete: ${verifiedTables.length} tables (passthrough)`);
 
   return { tableAgentResults, verifiedTables };
+}
+
+/**
+ * Run VerificationAgent as a consumer, pulling tables from the queue.
+ */
+async function runVerificationConsumer(
+  queue: TableQueue,
+  surveyMarkdown: string,
+  datamapByColumn: Map<string, VerboseDataMapType>,
+  outputDir: string,
+  onTableComplete: () => void,
+  abortSignal?: AbortSignal
+): Promise<{ tables: ExtendedTableDefinition[]; metadata: ReturnType<typeof summarizeVerificationResults> }> {
+  const allTables: ExtendedTableDefinition[] = [];
+  const results: Array<{ tableId: string; output: ReturnType<typeof createPassthroughOutput> }> = [];
+  let tablesProcessed = 0;
+
+  console.log('[PathB/Consumer] Starting verification consumer...');
+
+  while (true) {
+    // Check for cancellation
+    if (abortSignal?.aborted) {
+      console.log(`[PathB/Consumer] Aborted after ${tablesProcessed} tables`);
+      throw new DOMException('Verification consumer aborted', 'AbortError');
+    }
+
+    // Pull next table from queue (blocks if empty, returns null when done)
+    const item = await queue.pull();
+    if (item === null) {
+      // Queue empty and producer done
+      break;
+    }
+
+    const { table, questionId, questionText } = item;
+    const startTime = Date.now();
+
+    // Build verification input
+    const datamapContext = getDatamapContextForTable(table, datamapByColumn);
+    const input: VerificationInput = {
+      table,
+      questionId,
+      questionText,
+      surveyMarkdown,
+      datamapContext
+    };
+
+    // Process with retry for rate limiting
+    let output;
+    try {
+      output = await verifyTableWithRetry(input, abortSignal);
+    } catch (error) {
+      // Re-throw abort errors
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw error;
+      }
+      // Non-abort error - use passthrough
+      console.error(`[PathB/Consumer] Error verifying table ${table.tableId}:`, error);
+      output = createPassthroughOutput(table);
+    }
+
+    // Add tables with questionId
+    for (const t of output.tables) {
+      allTables.push({ ...t, questionId } as ExtendedTableDefinition);
+    }
+    results.push({ tableId: table.tableId, output });
+
+    const duration = Date.now() - startTime;
+    tablesProcessed++;
+
+    console.log(
+      `[PathB/Consumer] Table "${table.tableId}" verified in ${duration}ms - ` +
+      `${output.tables.length} outputs, ${output.changes.length} changes`
+    );
+
+    onTableComplete();
+  }
+
+  // Calculate metadata from results
+  const metadata = summarizeVerificationResults(results.map(r => r.output));
+
+  console.log(
+    `[PathB/Consumer] Complete: ${tablesProcessed} tables processed → ${allTables.length} output tables`
+  );
+
+  // Save verification output
+  const verificationDir = path.join(outputDir, 'verification');
+  await fs.mkdir(verificationDir, { recursive: true });
+  await fs.writeFile(
+    path.join(verificationDir, 'verification-output-raw.json'),
+    JSON.stringify({ tables: allTables }, null, 2),
+    'utf-8'
+  );
+
+  return { tables: allTables, metadata };
+}
+
+/**
+ * Get formatted datamap context for variables in a table.
+ * Matches the logic in VerificationAgent.
+ */
+function getDatamapContextForTable(
+  table: { rows: Array<{ variable: string }> },
+  datamapByColumn: Map<string, VerboseDataMapType>
+): string {
+  const variables = new Set<string>();
+  for (const row of table.rows) {
+    variables.add(row.variable);
+  }
+
+  const entries: string[] = [];
+  for (const variable of variables) {
+    const entry = datamapByColumn.get(variable);
+    if (entry) {
+      entries.push(
+        `- ${entry.column}: ${entry.description} [${entry.normalizedType}] ${entry.valueType}`
+      );
+    }
+  }
+
+  return entries.join('\n');
+}
+
+/**
+ * Verify a table with retry logic for rate limiting.
+ */
+async function verifyTableWithRetry(
+  input: VerificationInput,
+  abortSignal?: AbortSignal,
+  maxRetries = 3
+): Promise<ReturnType<typeof createPassthroughOutput>> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await verifyTable(input, abortSignal);
+    } catch (error) {
+      // Always propagate abort errors
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw error;
+      }
+
+      // Check for rate limit error
+      const isRateLimit = error instanceof Error && (
+        error.message.includes('rate limit') ||
+        error.message.includes('429') ||
+        error.message.includes('Too Many Requests')
+      );
+
+      if (isRateLimit && attempt < maxRetries) {
+        const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+        console.log(
+          `[PathB/Consumer] Rate limited on ${input.table.tableId}, ` +
+          `retry ${attempt}/${maxRetries} in ${delay}ms`
+        );
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+
+      // Non-retryable error or max retries exceeded
+      throw error;
+    }
+  }
+
+  // Should not reach here, but TypeScript needs it
+  throw new Error('Max retries exceeded');
 }
 
 /**
