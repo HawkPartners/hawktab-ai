@@ -70,6 +70,8 @@ export interface VerificationProcessingOptions {
   onProgress?: (completed: number, total: number, tableId: string) => void;
   /** Whether to skip verification and pass through (e.g., when no survey available) */
   passthrough?: boolean;
+  /** Abort signal for cancellation support */
+  abortSignal?: AbortSignal;
 }
 
 // =============================================================================
@@ -79,8 +81,17 @@ export interface VerificationProcessingOptions {
 /**
  * Process a single table through VerificationAgent
  */
-export async function verifyTable(input: VerificationInput): Promise<VerificationAgentOutput> {
+export async function verifyTable(
+  input: VerificationInput,
+  abortSignal?: AbortSignal
+): Promise<VerificationAgentOutput> {
   console.log(`[VerificationAgent] Processing table: ${input.table.tableId}`);
+
+  // Check for cancellation before processing
+  if (abortSignal?.aborted) {
+    console.log(`[VerificationAgent] Aborted before processing table ${input.table.tableId}`);
+    throw new DOMException('VerificationAgent aborted', 'AbortError');
+  }
 
   // If no survey markdown, pass through unchanged
   if (!input.surveyMarkdown || input.surveyMarkdown.trim() === '') {
@@ -135,6 +146,7 @@ Analyze the table against the survey document. Fix labels, split if needed, add 
       output: Output.object({
         schema: VerificationAgentOutputSchema,
       }),
+      abortSignal,  // Pass abort signal to AI SDK
     });
 
     if (!output || !output.tables || output.tables.length === 0) {
@@ -151,6 +163,12 @@ Analyze the table against the survey document. Fix labels, split if needed, add 
     return output;
 
   } catch (error) {
+    // Check if this is an abort error - propagate immediately
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      console.log(`[VerificationAgent] Aborted by signal during table ${input.table.tableId}`);
+      throw error;
+    }
+
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(`[VerificationAgent] Error processing table ${input.table.tableId}:`, errorMessage);
 
@@ -172,13 +190,19 @@ export async function verifyAllTables(
   verboseDataMap: VerboseDataMapType[],
   options: VerificationProcessingOptions = {}
 ): Promise<VerificationResults> {
-  const { outputDir, onProgress, passthrough } = options;
+  const { outputDir, onProgress, passthrough, abortSignal } = options;
   const processingLog: string[] = [];
 
   const logEntry = (message: string) => {
     console.log(message);
     processingLog.push(`${new Date().toISOString()}: ${message}`);
   };
+
+  // Check for cancellation before starting
+  if (abortSignal?.aborted) {
+    console.log('[VerificationAgent] Aborted before processing started');
+    throw new DOMException('VerificationAgent aborted', 'AbortError');
+  }
 
   // Clear scratchpad from any previous runs
   clearScratchpadEntries();
@@ -236,6 +260,12 @@ export async function verifyAllTables(
 
   // Process each table
   for (let i = 0; i < allTables.length; i++) {
+    // Check for cancellation between tables
+    if (abortSignal?.aborted) {
+      console.log(`[VerificationAgent] Aborted after ${i} tables`);
+      throw new DOMException('VerificationAgent aborted', 'AbortError');
+    }
+
     const { table, questionId, questionText } = allTables[i];
     const startTime = Date.now();
 
@@ -254,7 +284,7 @@ export async function verifyAllTables(
       datamapContext,
     };
 
-    const result = await verifyTable(input);
+    const result = await verifyTable(input, abortSignal);
     results.push(result);
     questionIdByIndex.push(questionId); // Track questionId for this result
 

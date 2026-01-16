@@ -438,16 +438,18 @@ For the Bob demo:
 
 ## Known Issues & Next Steps
 
-### 🐛 Bug: Cancel Pipeline Not Fully Working
+### ✅ Fixed: Cancel Pipeline Now Works
 
-**Issue:** Cancel pipeline endpoint exists but may not be properly stopping the running processes. The pipeline continues processing in the background even after cancellation.
+**Implemented January 16, 2026**
 
-**Root Cause (suspected):** The cancel endpoint updates `pipeline-summary.json` status to `cancelled`, but the actual Node.js promises executing the agents are not aborted.
+Cancel pipeline now properly stops running processes using AbortController/AbortSignal pattern:
 
-**Fix Required:**
-- Add AbortController pattern to agent execution
-- Check for cancellation between pipeline stages
-- Properly clean up when cancellation is detected
+1. **jobStore.ts** - AbortController created per job, `cancelJobByPipelineId()` triggers abort
+2. **All agents** - Accept `abortSignal` parameter, pass to `generateText()`, check at key points
+3. **process-crosstab route** - Same signal passed to both parallel paths, cancellation checkpoints throughout
+4. **Frontend** - `handleCancel()` calls cancel API, polling detects 'cancelled' stage
+
+Both parallel paths (Path A: Banner→Crosstab, Path B: Table→Verification) receive the same abort signal and stop within seconds when cancelled.
 
 ### 🧪 Testing: Human-in-the-Loop Needs Harder Test Cases
 
@@ -496,6 +498,6 @@ DataMapProcessor
 - [x] Human-in-the-loop UI complete
 - [x] Sidebar shows in-progress pipelines
 - [x] Cancel button updates status
-- [ ] Cancel actually stops processing (bug)
+- [x] Cancel actually stops processing ✅ Fixed Jan 16
 - [ ] Human review flow tested end-to-end
 - [ ] Staggered processing for API optimization

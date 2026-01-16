@@ -1,10 +1,16 @@
 /**
  * POST /api/pipelines/[pipelineId]/cancel
  * Purpose: Cancel a pipeline run and update its status
+ *
+ * This endpoint:
+ * 1. Triggers the AbortController for the in-memory job (actually stops processing)
+ * 2. Updates pipeline-summary.json status to 'cancelled'
+ * 3. Updates banner-review-state.json if it exists
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import { cancelJobByPipelineId } from '@/lib/jobStore';
 
 /**
  * Find a pipeline directory by pipelineId across all datasets
@@ -82,6 +88,14 @@ export async function POST(
       );
     }
 
+    // Trigger the AbortController for this pipeline's job (actually stops the agents)
+    const jobCancelled = cancelJobByPipelineId(pipelineId);
+    if (jobCancelled) {
+      console.log(`[Cancel Pipeline] Aborted in-memory job for pipeline ${pipelineId}`);
+    } else {
+      console.log(`[Cancel Pipeline] No in-memory job found for pipeline ${pipelineId} (may have already finished or been resumed)`);
+    }
+
     // Update pipeline summary to cancelled
     const updatedSummary = {
       ...summary,
@@ -111,6 +125,7 @@ export async function POST(
       pipelineId,
       status: 'cancelled',
       cancelledAt: updatedSummary.cancelledAt,
+      jobAborted: jobCancelled  // True if we actually stopped a running job
     });
   } catch (error) {
     console.error('[Cancel Pipeline] Error:', error);

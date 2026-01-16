@@ -9,7 +9,7 @@
  * Status: Job tracked via /api/process-crosstab/status?jobId=...
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { createJob, updateJob } from '../../../lib/jobStore';
+import { createJob, updateJob, getAbortSignal } from '../../../lib/jobStore';
 import { runAllGuardrails } from '../../../guardrails/inputValidation';
 import { generateSessionId, saveUploadedFile } from '../../../lib/storage';
 import { logAgentExecution } from '../../../lib/tracing';
@@ -93,11 +93,63 @@ async function updatePipelineSummary(
   const summaryPath = path.join(outputDir, 'pipeline-summary.json');
   try {
     const existing = JSON.parse(await fs.readFile(summaryPath, 'utf-8')) as PipelineSummary;
+
+    // Don't overwrite cancelled status (unless we're explicitly setting cancelled)
+    if (existing.status === 'cancelled' && updates.status !== 'cancelled') {
+      console.log('[API] Pipeline was cancelled - not overwriting summary');
+      return;
+    }
+
     const updated = { ...existing, ...updates };
     await fs.writeFile(summaryPath, JSON.stringify(updated, null, 2));
   } catch {
     // If file doesn't exist, ignore - should have been created already
     console.warn('[API] Could not update pipeline summary - file may not exist');
+  }
+}
+
+/**
+ * Helper to check if an error is an AbortError
+ */
+function isAbortError(error: unknown): boolean {
+  if (error instanceof DOMException && error.name === 'AbortError') {
+    return true;
+  }
+  if (error instanceof Error) {
+    return error.message.includes('aborted') || error.message.includes('AbortError');
+  }
+  return false;
+}
+
+/**
+ * Handle pipeline cancellation - update status and clean up
+ */
+async function handleCancellation(
+  outputDir: string,
+  jobId: string,
+  pipelineId: string,
+  datasetName: string,
+  reason: string
+): Promise<void> {
+  console.log(`[API] Pipeline cancelled: ${reason}`);
+
+  // Update job store
+  updateJob(jobId, {
+    stage: 'cancelled',
+    percent: 100,
+    message: 'Pipeline cancelled by user',
+    pipelineId,
+    dataset: datasetName
+  });
+
+  // Update pipeline summary (if it exists)
+  try {
+    await updatePipelineSummary(outputDir, {
+      status: 'cancelled',
+      currentStage: 'cancelled'
+    });
+  } catch {
+    // Summary might not exist yet
   }
 }
 
@@ -218,12 +270,19 @@ async function executePathA(
   agentDataMap: AgentDataMapItem[],
   outputDir: string,
   onProgress: (percent: number) => void,
-  skipReviewCheck: boolean = false // Used when resuming after review
+  skipReviewCheck: boolean = false, // Used when resuming after review
+  abortSignal?: AbortSignal
 ): Promise<PathAResult> {
+  // Check for cancellation before starting
+  if (abortSignal?.aborted) {
+    console.log('[PathA] Aborted before starting');
+    throw new DOMException('Path A aborted', 'AbortError');
+  }
+
   // 1. BannerAgent (0-40% of path progress)
   onProgress(5);
   console.log('[PathA] Starting BannerAgent...');
-  const bannerResult = await bannerAgent.processDocument(bannerPlanPath, outputDir);
+  const bannerResult = await bannerAgent.processDocument(bannerPlanPath, outputDir, abortSignal);
 
   const extractedStructure = bannerResult.verbose?.data?.extractedStructure;
   const groupCount = extractedStructure?.bannerCuts?.length || 0;
@@ -252,6 +311,12 @@ async function executePathA(
     }
   }
 
+  // Check for cancellation before CrosstabAgent
+  if (abortSignal?.aborted) {
+    console.log('[PathA] Aborted before CrosstabAgent');
+    throw new DOMException('Path A aborted', 'AbortError');
+  }
+
   // 3. CrosstabAgent (40-100% of path progress) - only if no review needed
   console.log('[PathA] Starting CrosstabAgent...');
 
@@ -262,7 +327,8 @@ async function executePathA(
     (completed, total) => {
       const percent = 40 + Math.floor((completed / total) * 60);
       onProgress(percent);
-    }
+    },
+    abortSignal
   );
 
   onProgress(100);
@@ -279,15 +345,28 @@ async function executePathB(
   verboseDataMap: VerboseDataMapType[],
   surveyPath: string | null,
   outputDir: string,
-  onProgress: (percent: number) => void
+  onProgress: (percent: number) => void,
+  abortSignal?: AbortSignal
 ): Promise<PathBResult> {
+  // Check for cancellation before starting
+  if (abortSignal?.aborted) {
+    console.log('[PathB] Aborted before starting');
+    throw new DOMException('Path B aborted', 'AbortError');
+  }
+
   // 1. TableAgent (0-40% of path progress)
   onProgress(5);
   console.log('[PathB] Starting TableAgent...');
-  const { results: tableAgentResults } = await processTableAgent(verboseDataMap, outputDir);
+  const { results: tableAgentResults } = await processTableAgent(verboseDataMap, outputDir, undefined, abortSignal);
   const tableCount = tableAgentResults.flatMap(r => r.tables).length;
   onProgress(40);
   console.log(`[PathB] TableAgent complete: ${tableCount} table definitions`);
+
+  // Check for cancellation after TableAgent
+  if (abortSignal?.aborted) {
+    console.log('[PathB] Aborted after TableAgent');
+    throw new DOMException('Path B aborted', 'AbortError');
+  }
 
   // 2. Survey Processing (40-50% of path progress)
   let surveyMarkdown: string | null = null;
@@ -304,6 +383,12 @@ async function executePathB(
   }
   onProgress(50);
 
+  // Check for cancellation before VerificationAgent
+  if (abortSignal?.aborted) {
+    console.log('[PathB] Aborted before VerificationAgent');
+    throw new DOMException('Path B aborted', 'AbortError');
+  }
+
   // 3. VerificationAgent (50-100% of path progress)
   let verifiedTables: ExtendedTableDefinition[];
 
@@ -315,11 +400,15 @@ async function executePathB(
         tableAgentResults as TableAgentOutput[],
         surveyMarkdown,
         verboseDataMap,
-        { outputDir }
+        { outputDir, abortSignal }
       );
       verifiedTables = verificationResult.tables;
       console.log(`[PathB] VerificationAgent complete: ${verifiedTables.length} tables (${verificationResult.metadata.tablesModified} modified)`);
     } catch (verifyError) {
+      // Re-throw abort errors
+      if (verifyError instanceof DOMException && verifyError.name === 'AbortError') {
+        throw verifyError;
+      }
       console.error('[PathB] VerificationAgent failed:', verifyError);
       verifiedTables = tableAgentResults.flatMap(group =>
         group.tables.map(t => toExtendedTable(t, group.questionId))
@@ -363,6 +452,9 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
   const sessionId = generateSessionId();
   const job = createJob();
+
+  // Get the abort signal for this job (used for cancellation support)
+  const abortSignal = getAbortSignal(job.jobId);
 
   try {
     // Validate environment configuration
@@ -560,11 +652,18 @@ export async function POST(request: NextRequest) {
         console.log('[API] Starting parallel paths...');
         const parallelStartTime = Date.now();
 
+        // Check for cancellation before starting parallel paths
+        if (abortSignal?.aborted) {
+          console.log('[API] Pipeline cancelled before parallel paths');
+          await handleCancellation(outputDir, job.jobId, pipelineId, datasetName, 'Cancelled before processing');
+          return;
+        }
+
         const bannerAgent = new BannerAgent();
 
         const [pathAResult, pathBResult] = await Promise.allSettled([
-          executePathA(bannerAgent, bannerPlanPath, agentDataMap, outputDir, updateParallelProgress),
-          executePathB(verboseDataMap, surveyPath ?? null, outputDir, updateParallelProgress)
+          executePathA(bannerAgent, bannerPlanPath, agentDataMap, outputDir, updateParallelProgress, false, abortSignal),
+          executePathB(verboseDataMap, surveyPath ?? null, outputDir, updateParallelProgress, abortSignal)
         ]);
 
         const parallelDuration = Date.now() - parallelStartTime;
@@ -573,6 +672,16 @@ export async function POST(request: NextRequest) {
         // Check results from both paths
         const pathAFailed = pathAResult.status === 'rejected';
         const pathBFailed = pathBResult.status === 'rejected';
+
+        // Check if either path was aborted (cancelled)
+        const pathAAborted = pathAFailed && isAbortError(pathAResult.reason);
+        const pathBAborted = pathBFailed && isAbortError(pathBResult.reason);
+
+        if (pathAAborted || pathBAborted) {
+          console.log('[API] Pipeline was cancelled during parallel execution');
+          await handleCancellation(outputDir, job.jobId, pipelineId, datasetName, 'Cancelled during agent processing');
+          return;
+        }
 
         if (pathAFailed) {
           const errorMsg = pathAResult.reason instanceof Error
@@ -724,6 +833,13 @@ export async function POST(request: NextRequest) {
         const sortedTables = sortTables(verifiedTables);
         console.log(`[API] Screeners: ${sortingMetadata.screenerCount}, Main: ${sortingMetadata.mainCount}, Other: ${sortingMetadata.otherCount}`);
 
+        // Check for cancellation before R script generation
+        if (abortSignal?.aborted) {
+          console.log('[API] Pipeline cancelled before R script generation');
+          await handleCancellation(outputDir, job.jobId, pipelineId, datasetName, 'Cancelled before R script generation');
+          return;
+        }
+
         // -------------------------------------------------------------------------
         // Step 6: R Script Generation
         // -------------------------------------------------------------------------
@@ -865,6 +981,14 @@ export async function POST(request: NextRequest) {
         // -------------------------------------------------------------------------
         // Write pipeline summary and complete
         // -------------------------------------------------------------------------
+
+        // Check for cancellation before writing final summary
+        if (abortSignal?.aborted) {
+          console.log('[API] Pipeline cancelled - not writing final summary');
+          await handleCancellation(outputDir, job.jobId, pipelineId, datasetName, 'Cancelled before completion');
+          return;
+        }
+
         const processingEndTime = Date.now();
         const durationMs = processingEndTime - processingStartTime;
         const durationSec = (durationMs / 1000).toFixed(1);
@@ -900,10 +1024,19 @@ export async function POST(request: NextRequest) {
           }
         };
 
-        await fs.writeFile(
-          path.join(outputDir, 'pipeline-summary.json'),
-          JSON.stringify(pipelineSummary, null, 2)
-        );
+        // Check if already cancelled before writing
+        const summaryPath = path.join(outputDir, 'pipeline-summary.json');
+        try {
+          const existing = JSON.parse(await fs.readFile(summaryPath, 'utf-8'));
+          if (existing.status === 'cancelled') {
+            console.log('[API] Pipeline was cancelled - not overwriting summary');
+            return;
+          }
+        } catch {
+          // File doesn't exist, proceed with write
+        }
+
+        await fs.writeFile(summaryPath, JSON.stringify(pipelineSummary, null, 2));
         console.log(`[API] Pipeline completed in ${durationSec}s - summary saved`);
 
         // Update job status
@@ -940,6 +1073,13 @@ export async function POST(request: NextRequest) {
         }
 
       } catch (processingError) {
+        // Check if this was a cancellation
+        if (isAbortError(processingError)) {
+          console.log('[API] Pipeline processing was cancelled');
+          await handleCancellation(outputDir, job.jobId, pipelineId, datasetName, 'Pipeline cancelled');
+          return;
+        }
+
         console.error('[API] Pipeline error:', processingError);
         updateJob(job.jobId, {
           stage: 'error',

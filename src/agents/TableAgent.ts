@@ -145,8 +145,17 @@ export function groupDataMapByParent(dataMap: VerboseDataMapType[]): TableAgentI
 /**
  * Process single question group using Vercel AI SDK
  */
-export async function processQuestionGroup(input: TableAgentInput): Promise<TableAgentOutput> {
+export async function processQuestionGroup(
+  input: TableAgentInput,
+  abortSignal?: AbortSignal
+): Promise<TableAgentOutput> {
   console.log(`[TableAgent] Processing question: ${input.questionId} (${input.items.length} items)`);
+
+  // Check for cancellation before AI call
+  if (abortSignal?.aborted) {
+    console.log(`[TableAgent] Aborted before processing question ${input.questionId}`);
+    throw new DOMException('TableAgent aborted', 'AbortError');
+  }
 
   // Build system prompt with context injection
   const systemPrompt = `
@@ -186,6 +195,7 @@ Begin analysis now.
       output: Output.object({
         schema: TableAgentOutputSchema,
       }),
+      abortSignal,  // Pass abort signal to AI SDK
     });
 
     if (!output || !output.tables) {
@@ -197,6 +207,12 @@ Begin analysis now.
     return output;
 
   } catch (error) {
+    // Check if this is an abort error - propagate immediately
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      console.log(`[TableAgent] Aborted by signal during question ${input.questionId}`);
+      throw error;
+    }
+
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(`[TableAgent] Error processing question ${input.questionId}:`, errorMessage);
 
@@ -227,13 +243,20 @@ Begin analysis now.
 export async function processAllGroups(
   groups: TableAgentInput[],
   outputDir?: string,
-  onProgress?: (completed: number, total: number) => void
+  onProgress?: (completed: number, total: number) => void,
+  abortSignal?: AbortSignal
 ): Promise<{ results: TableAgentOutput[]; processingLog: string[] }> {
   const processingLog: string[] = [];
   const logEntry = (message: string) => {
     console.log(message);
     processingLog.push(`${new Date().toISOString()}: ${message}`);
   };
+
+  // Check for cancellation before starting
+  if (abortSignal?.aborted) {
+    console.log('[TableAgent] Aborted before processing started');
+    throw new DOMException('TableAgent aborted', 'AbortError');
+  }
 
   // Clear scratchpad from any previous runs
   clearScratchpadEntries();
@@ -246,12 +269,18 @@ export async function processAllGroups(
 
   // Process each group individually
   for (let i = 0; i < groups.length; i++) {
+    // Check for cancellation between groups
+    if (abortSignal?.aborted) {
+      console.log(`[TableAgent] Aborted after ${i} groups`);
+      throw new DOMException('TableAgent aborted', 'AbortError');
+    }
+
     const group = groups[i];
     const startTime = Date.now();
 
     logEntry(`[TableAgent] Processing group ${i + 1}/${groups.length}: "${group.questionId}" (${group.items.length} items)`);
 
-    const result = await processQuestionGroup(group);
+    const result = await processQuestionGroup(group, abortSignal);
     results.push(result);
 
     const duration = Date.now() - startTime;
@@ -287,11 +316,12 @@ export async function processAllGroups(
 export async function processDataMap(
   dataMap: VerboseDataMapType[],
   outputDir?: string,
-  onProgress?: (completed: number, total: number) => void
+  onProgress?: (completed: number, total: number) => void,
+  abortSignal?: AbortSignal
 ): Promise<{ results: TableAgentOutput[]; processingLog: string[] }> {
   const groups = groupDataMapByParent(dataMap);
   console.log(`[TableAgent] Grouped ${dataMap.length} variables into ${groups.length} question groups`);
-  return processAllGroups(groups, outputDir, onProgress);
+  return processAllGroups(groups, outputDir, onProgress, abortSignal);
 }
 
 // =============================================================================
