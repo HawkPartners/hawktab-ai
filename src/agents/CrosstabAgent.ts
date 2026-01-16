@@ -28,13 +28,31 @@ const getCrosstabValidationInstructions = (): string => {
   return getCrosstabPrompt(promptVersions.crosstabPromptVersion);
 };
 
+// Options for processGroup
+interface ProcessGroupOptions {
+  abortSignal?: AbortSignal;
+  hint?: string;  // User-provided hint for re-run (e.g., "use variable Q5")
+  outputDir?: string;  // For saving scratchpad
+}
+
 // Process single banner group using Vercel AI SDK
 export async function processGroup(
   dataMap: DataMapType,
   group: BannerGroupType,
-  abortSignal?: AbortSignal
+  optionsOrAbortSignal?: ProcessGroupOptions | AbortSignal,
+  legacyHint?: string  // Legacy support for direct hint parameter
 ): Promise<ValidatedGroupType> {
-  console.log(`[CrosstabAgent] Processing group: ${group.groupName} (${group.columns.length} columns)`);
+  // Handle both old and new calling conventions
+  let options: ProcessGroupOptions;
+  if (optionsOrAbortSignal instanceof AbortSignal || optionsOrAbortSignal === undefined) {
+    options = { abortSignal: optionsOrAbortSignal, hint: legacyHint };
+  } else {
+    options = optionsOrAbortSignal;
+  }
+
+  const { abortSignal, hint } = options;
+
+  console.log(`[CrosstabAgent] Processing group: ${group.groupName} (${group.columns.length} columns)${hint ? ` [with hint: ${hint}]` : ''}`);
 
   // Check for cancellation before AI call
   if (abortSignal?.aborted) {
@@ -43,9 +61,17 @@ export async function processGroup(
   }
 
   // Build system prompt with context injection
+  const hintSection = hint ? `
+USER-PROVIDED HINT:
+The user has provided additional context to help with this mapping:
+"${hint}"
+Please use this hint to improve your variable mapping. The user knows what variable they want - trust their guidance.
+
+` : '';
+
   const systemPrompt = `
 ${getCrosstabValidationInstructions()}
-
+${hintSection}
 CURRENT CONTEXT DATA:
 
 DATA MAP (${dataMap.length} variables):
@@ -113,7 +139,12 @@ Begin validation now.
         name: col.name,
         adjusted: `# Error: Processing failed for "${col.original}"`,
         confidence: 0.0,
-        reason: `Processing error: ${errorMessage}. Manual review required.`
+        reason: `Processing error: ${errorMessage}. Manual review required.`,
+        // Include required human review fields with appropriate defaults
+        alternatives: [],
+        uncertainties: [`Processing error: ${errorMessage}`],
+        humanReviewRequired: true,
+        expressionType: 'direct_variable' as const
       }))
     };
   }
