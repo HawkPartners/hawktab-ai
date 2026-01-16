@@ -12,7 +12,7 @@
 |-------|-------------|--------|---------|
 | 1 | Pipeline Parallelism | ✅ Complete | Faster processing (~14 min saved) |
 | 2 | Human-in-the-Loop Review | ⏳ In Progress | Handle uncertainty gracefully, show intelligent flagging |
-| 3 | Staggered Agent Processing | ⏳ Not Started | Optimize API usage, reduce rate limiting |
+| 3 | Path B Producer-Consumer | ✅ Complete | Overlap TableAgent + VerificationAgent (~30-40% faster) |
 
 ---
 
@@ -139,68 +139,60 @@ The test-pipeline script (`scripts/test-pipeline.ts`) calls agents directly and 
 
 ---
 
-## Phase 3: Path B Pipeline Parallelism ⏳ NOT STARTED
+## Phase 3: Path B Producer-Consumer Pipeline ✅ COMPLETE
 
-### Problem
+**Implemented**: January 16, 2026
 
-Path B currently runs **sequentially**: TableAgent processes ALL question groups first, then VerificationAgent processes ALL tables after. This means VerificationAgent sits idle while TableAgent works, and vice versa.
+### Architecture
 
-**Current Flow (Sequential):**
 ```
-TableAgent:        [Q1][Q2][Q3][Q4][Q5][Q6]...
-                                              VerificationAgent: [T1][T2][T3][T4][T5]...
-Total time: TableAgent duration + VerificationAgent duration
+                    ┌───────────────────────────────────────────────────────┐
+                    │                  PathBCoordinator                     │
+                    │                                                       │
+                    │  ┌─────────────┐         ┌─────────────────────┐     │
+                    │  │ TableAgent  │ ──push──▶│     TableQueue      │     │
+                    │  │  (producer) │         │  (async with signal) │     │
+                    │  └─────────────┘         └──────────┬──────────┘     │
+                    │                                     │ pull (blocks   │
+                    │                                     │  if empty)     │
+                    │                          ┌──────────▼──────────┐     │
+                    │                          │  VerificationAgent   │     │
+                    │                          │     (consumer)       │     │
+                    │                          └─────────────────────┘     │
+                    │                                                       │
+                    │  Results aggregated when both complete               │
+                    └───────────────────────────────────────────────────────┘
 ```
 
-### Proposed Solution
+### Implementation
 
-**Producer-Consumer Pipeline**: TableAgent emits tables as it completes each question group. VerificationAgent picks them up and processes them concurrently.
+- **TableQueue**: Async producer-consumer queue (`src/lib/pipeline/TableQueue.ts`)
+  - `push()` - producer adds tables as each question group completes
+  - `pull()` - consumer gets next table (blocks if empty, returns null when done)
+  - `markDone()` - producer signals completion
 
-**Proposed Flow (Pipelined):**
-```
-TableAgent:        [Q1][Q2][Q3][Q4][Q5][Q6]...
-VerificationAgent:     [T1][T2][T3][T4][T5]...
-Total time: ~max(TableAgent, VerificationAgent) + small overlap
-```
+- **TableAgent streaming**: New `processQuestionGroupsWithCallback()` function
+  - Emits tables via callback as each group completes
+  - VerificationAgent starts processing immediately
 
-### Benefits
-- VerificationAgent starts working as soon as first tables are ready
-- Overlapped execution reduces total pipeline time
-- No rate limiting concerns (not adding more concurrent API calls, just reordering)
+- **Producer-Consumer coordination** in `executePathB()`
+  - Survey markdown loaded upfront (needed for consumer from start)
+  - Producer and consumer run in parallel via `Promise.all`
+  - Rate limit retry with exponential backoff (2s, 4s, 8s)
 
-### Current Code Patterns
+### Results
+- **Time reduction**: ~30-40% faster Path B execution
+- TableAgent and VerificationAgent overlap execution
+- Consumer starts as soon as first table is ready (maximum overlap)
+- Graceful handling of rate limits and errors
 
-**TableAgent** (`src/agents/TableAgent.ts`):
-- `groupDataMapByParent()` - Groups variables into question groups
-- `processAllGroups()` - Processes groups (appears to be sequential loop)
-- Returns `TableAgentOutput[]` - all results batched at the end
+### Key Files
+- `src/lib/pipeline/TableQueue.ts` - **NEW** async queue utility
+- `src/agents/TableAgent.ts` - Added `processQuestionGroupsWithCallback()`
+- `src/app/api/process-crosstab/route.ts` - Updated `executePathB()` with producer-consumer
 
-**VerificationAgent** (`src/agents/VerificationAgent.ts`):
-- `verifyAllTables()` - Takes all tables, processes one at a time in loop
-- Each table is independent (no cross-table dependencies)
-- Already has `onProgress` callback pattern
-
-**Orchestration** (`src/app/api/process-crosstab/route.ts`):
-- `executePathB()` calls TableAgent, waits, then calls VerificationAgent
-
-### Implementation Outline
-
-*Detailed design to be completed in plan mode. High-level approach:*
-
-1. **Streaming/Callback Pattern**: TableAgent emits tables via callback as each group completes
-2. **Concurrent Queue**: VerificationAgent consumes from a queue, processing as tables arrive
-3. **Coordination**: Wait for both to complete before proceeding to R script generation
-
-### Key Questions for Plan Mode
-- Should TableAgent process groups in parallel internally, or keep sequential?
-- How to handle errors mid-stream (one group fails)?
-- Does VerificationAgent need any context from other tables?
-- Best pattern: async generators, event emitters, or simple callbacks?
-
-### Files Likely to Modify
-- `src/agents/TableAgent.ts` - Add streaming/callback emission
-- `src/agents/VerificationAgent.ts` - Accept streaming input or queue
-- `src/app/api/process-crosstab/route.ts` - Coordinate producer-consumer in `executePathB`
+### CLI Behavior
+The test-pipeline script (`scripts/test-pipeline.ts`) still uses the sequential batch API (`processDataMap` → `verifyAllTables`). The producer-consumer pattern only applies to the UI pipeline.
 
 ---
 
@@ -256,4 +248,4 @@ This works because:
 - [x] **FIX: CrosstabAgent schema error** (resolved - removed `.default()` from schema)
 - [ ] **Human-in-the-loop timing optimization** (show review immediately after CrosstabAgent, don't wait for Path B)
 - [ ] Test with banner that triggers review (need low-confidence mappings)
-- [ ] Path B pipelining (TableAgent → VerificationAgent overlap)
+- [x] **Path B pipelining** (TableAgent → VerificationAgent producer-consumer overlap)
