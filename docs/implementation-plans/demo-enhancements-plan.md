@@ -135,7 +135,7 @@ Fixed duration showing as "Unknown" for pipelines that go through review flow:
 
 ---
 
-## Phase 5: Review UI Redesign 🔲 PLANNED
+## Phase 5: Review UI Redesign ✅ COMPLETE
 
 **Goal**: Streamline the review UI to feel cleaner and more modern. Reduce visual noise, improve user guidance, and group related items.
 
@@ -267,9 +267,9 @@ LibreOffice headless mode failed silently due to profile conflicts. Fixed by add
 - [x] Review submission timeout handling
 - [x] Auto-retry for content policy errors (all agents)
 - [x] Duration tracking for review-flow pipelines
-- [ ] Review UI redesign (Phase 5)
-  - [ ] Simplified card layout (banner → AI suggestion → actions)
-  - [ ] Group columns by banner group
-  - [ ] Remove verbose AI reasoning
-  - [ ] Remove Expression Type badges
-  - [ ] 4-button action bar (Accept, Pick alternative, Give hint, Skip)
+- [x] Review UI redesign (Phase 5)
+  - [x] Simplified card layout (banner → AI suggestion → actions)
+  - [x] Group columns by banner group
+  - [x] Remove verbose AI reasoning
+  - [x] Remove Expression Type badges
+  - [x] 4-button action bar (Accept, Pick alternative, Give hint, Skip)
