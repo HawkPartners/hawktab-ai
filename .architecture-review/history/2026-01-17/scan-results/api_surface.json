@@ -1,0 +1,164 @@
+{
+  "root": "hawktab-ai",
+  "framework": "next.js",
+  "routes": [
+    {
+      "path": "/api/delete-session/[sessionId]",
+      "method": "DELETE",
+      "file": "src/app/api/delete-session/[sessionId]/route.ts",
+      "framework": "next.js",
+      "router": "app"
+    },
+    {
+      "path": "/api/execute-r/[sessionId]",
+      "method": "GET",
+      "file": "src/app/api/execute-r/[sessionId]/route.ts",
+      "framework": "next.js",
+      "router": "app"
+    },
+    {
+      "path": "/api/export-workbook/[sessionId]",
+      "method": "GET",
+      "file": "src/app/api/export-workbook/[sessionId]/route.ts",
+      "framework": "next.js",
+      "router": "app"
+    },
+    {
+      "path": "/api/generate-tables/[sessionId]",
+      "method": "GET",
+      "file": "src/app/api/generate-tables/[sessionId]/route.ts",
+      "framework": "next.js",
+      "router": "app"
+    },
+    {
+      "path": "/api/pipelines",
+      "method": "GET",
+      "file": "src/app/api/pipelines/route.ts",
+      "framework": "next.js",
+      "router": "app"
+    },
+    {
+      "path": "/api/pipelines/[pipelineId]",
+      "method": "GET",
+      "file": "src/app/api/pipelines/[pipelineId]/route.ts",
+      "framework": "next.js",
+      "router": "app"
+    },
+    {
+      "path": "/api/pipelines/[pipelineId]/cancel",
+      "method": "POST",
+      "file": "src/app/api/pipelines/[pipelineId]/cancel/route.ts",
+      "framework": "next.js",
+      "router": "app"
+    },
+    {
+      "path": "/api/pipelines/[pipelineId]/files/[...path]",
+      "method": "GET",
+      "file": "src/app/api/pipelines/[pipelineId]/files/[...path]/route.ts",
+      "framework": "next.js",
+      "router": "app"
+    },
+    {
+      "path": "/api/pipelines/[pipelineId]/review",
+      "method": "GET",
+      "file": "src/app/api/pipelines/[pipelineId]/review/route.ts",
+      "framework": "next.js",
+      "router": "app"
+    },
+    {
+      "path": "/api/pipelines/[pipelineId]/review",
+      "method": "POST",
+      "file": "src/app/api/pipelines/[pipelineId]/review/route.ts",
+      "framework": "next.js",
+      "router": "app"
+    },
+    {
+      "path": "/api/process-crosstab",
+      "method": "GET",
+      "file": "src/app/api/process-crosstab/route.ts",
+      "framework": "next.js",
+      "router": "app"
+    },
+    {
+      "path": "/api/process-crosstab",
+      "method": "POST",
+      "file": "src/app/api/process-crosstab/route.ts",
+      "framework": "next.js",
+      "router": "app"
+    },
+    {
+      "path": "/api/process-crosstab/status",
+      "method": "GET",
+      "file": "src/app/api/process-crosstab/status/route.ts",
+      "framework": "next.js",
+      "router": "app"
+    },
+    {
+      "path": "/api/validation-queue",
+      "method": "GET",
+      "file": "src/app/api/validation-queue/route.ts",
+      "framework": "next.js",
+      "router": "app"
+    },
+    {
+      "path": "/api/validation-queue",
+      "method": "POST",
+      "file": "src/app/api/validation-queue/route.ts",
+      "framework": "next.js",
+      "router": "app"
+    }
+  ],
+  "routes_by_path": {
+    "/api/delete-session/[sessionId]": [
+      "DELETE"
+    ],
+    "/api/execute-r/[sessionId]": [
+      "GET"
+    ],
+    "/api/export-workbook/[sessionId]": [
+      "GET"
+    ],
+    "/api/generate-tables/[sessionId]": [
+      "GET"
+    ],
+    "/api/pipelines": [
+      "GET"
+    ],
+    "/api/pipelines/[pipelineId]": [
+      "GET"
+    ],
+    "/api/pipelines/[pipelineId]/cancel": [
+      "POST"
+    ],
+    "/api/pipelines/[pipelineId]/files/[...path]": [
+      "GET"
+    ],
+    "/api/pipelines/[pipelineId]/review": [
+      "GET",
+      "POST"
+    ],
+    "/api/process-crosstab": [
+      "GET",
+      "POST"
+    ],
+    "/api/process-crosstab/status": [
+      "GET"
+    ],
+    "/api/validation-queue": [
+      "GET",
+      "POST"
+    ]
+  },
+  "middleware_usage": {},
+  "summary": {
+    "total_routes": 15,
+    "total_paths": 12,
+    "methods_used": [
+      "GET",
+      "POST",
+      "DELETE"
+    ],
+    "framework_detected": "next.js",
+    "files_analyzed": 111
+  }
+}

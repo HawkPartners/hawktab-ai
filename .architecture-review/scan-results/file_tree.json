@@ -1,0 +1,3318 @@
+{
+  "root": "hawktab-ai",
+  "root_path": "/Users/jasongraydon01/HawkPartners/hawktab-ai",
+  "total_files": 241,
+  "total_lines": 190841,
+  "total_directories": 132,
+  "tree": [
+    {
+      "path": "postcss.config.mjs",
+      "type": "file",
+      "category": "config",
+      "line_count": 5,
+      "extension": ".mjs"
+    },
+    {
+      "path": "next-env.d.ts",
+      "type": "file",
+      "category": "type",
+      "line_count": 5,
+      "extension": ".ts"
+    },
+    {
+      "path": "README.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 278,
+      "extension": ".md"
+    },
+    {
+      "path": "package-lock.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 9019,
+      "extension": ".json"
+    },
+    {
+      "path": "package.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 58,
+      "extension": ".json"
+    },
+    {
+      "path": "components.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 21,
+      "extension": ".json"
+    },
+    {
+      "path": "tsconfig.json",
+      "type": "file",
+      "category": "config",
+      "line_count": 27,
+      "extension": ".json"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "type": "file",
+      "category": "config",
+      "line_count": 35,
+      "extension": ".mjs"
+    },
+    {
+      "path": "CLAUDE.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 310,
+      "extension": ".md"
+    },
+    {
+      "path": "next.config.ts",
+      "type": "file",
+      "category": "config",
+      "line_count": 7,
+      "extension": ".ts"
+    },
+    {
+      "path": "temp-outputs",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "temp-outputs/leqvio-monotherapy-demand-data",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "temp-outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-10-18-953Z",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "temp-outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-10-18-953Z/bugs-2026-01-13T16-10-18-953Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 89,
+      "extension": ".md"
+    },
+    {
+      "path": "docs",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "docs/implementation-plans",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "docs/implementation-plans/significance-testing-plan.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 205,
+      "extension": ".md"
+    },
+    {
+      "path": "docs/implementation-plans/future-enhancements.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 385,
+      "extension": ".md"
+    },
+    {
+      "path": "docs/implementation-plans/reliability-plan.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 685,
+      "extension": ".md"
+    },
+    {
+      "path": "docs/implementation-plans/logging-implementation-plan.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 836,
+      "extension": ".md"
+    },
+    {
+      "path": "docs/implementation-plans/demo-enhancements-plan.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 275,
+      "extension": ".md"
+    },
+    {
+      "path": "docs/decipher-api",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "docs/decipher-api/decipher-api.yaml",
+      "type": "file",
+      "category": "other",
+      "line_count": "too_large",
+      "extension": ".yaml"
+    },
+    {
+      "path": "docs/decipher-api/decipher-api-exploration.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 501,
+      "extension": ".md"
+    },
+    {
+      "path": "docs/decipher-api/decipher-api-test-commands.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 224,
+      "extension": ".md"
+    },
+    {
+      "path": "scripts",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "scripts/test-r-script-v2.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 241,
+      "extension": ".ts"
+    },
+    {
+      "path": "scripts/extract-data-json.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 201,
+      "extension": ".ts"
+    },
+    {
+      "path": "scripts/test-verification-agent.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 436,
+      "extension": ".ts"
+    },
+    {
+      "path": "scripts/test-table-agent.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 305,
+      "extension": ".ts"
+    },
+    {
+      "path": "scripts/compare-to-golden.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 988,
+      "extension": ".ts"
+    },
+    {
+      "path": "scripts/export-excel.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 68,
+      "extension": ".ts"
+    },
+    {
+      "path": "scripts/calculate-metrics.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 410,
+      "extension": ".ts"
+    },
+    {
+      "path": "scripts/test-r-changes.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 381,
+      "extension": ".ts"
+    },
+    {
+      "path": "scripts/test-pipeline.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 631,
+      "extension": ".ts"
+    },
+    {
+      "path": "data",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/GVHD-Data_12.27.22",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/UCB-Caregiver-ATU-W2-Data_9.1.23",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Leqvio-Segmentation-Data-HCP-W2_2.21.2025",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/CART-Segmentation-Data_7.22.24_v2",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Leqvio-Demand-W2_8.16.24 v2",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Leqvio-Demand-W1_3.13.23",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Meningitis-Vax-Data_10.14.22",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Onc-CE-W4-Data_3.11.22",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/UCB-Caregiver-ATU-W4-Data_8.16.24",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Leqvio-Segmentation-Data-HCP-W1_7.11.23",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Onc-CE-W5-Data_2.7.23",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Onc-CE-W3-Data_5.13.21",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Leqvio-Demand-W3_5.16.25",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/UCB-Caregiver-ATU-W6-Data_1.23.24",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Onc-CE-W6-Data_3.18.24",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Onc-CE-W2-Data_5.10.20",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Cambridge-Savings-Bank-W2_4.1.25",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Spravato_4.23.25",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Cambridge-Savings-Bank-W1_4.9.24",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Iptacopan-Data_2.23.24",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/UCB-Caregiver-ATU-W1-Data_1.11.23",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/UCB-Caregiver-ATU-W5-Data_1.7.25",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/test-data/Leqvio-Segmentation-Patients-Data_7.7.23",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/leqvio-monotherapy-demand-NOV217",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/leqvio-monotherapy-demand-NOV217/tabs",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/leqvio-monotherapy-demand-NOV217/golden-datasets",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "data/leqvio-monotherapy-demand-NOV217/golden-datasets/crosstab-expected.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 152,
+      "extension": ".json"
+    },
+    {
+      "path": "data/leqvio-monotherapy-demand-NOV217/golden-datasets/data-expected.json",
+      "type": "file",
+      "category": "data",
+      "line_count": "too_large",
+      "extension": ".json"
+    },
+    {
+      "path": "data/leqvio-monotherapy-demand-NOV217/golden-datasets/verification-expected.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 4762,
+      "extension": ".json"
+    },
+    {
+      "path": "data/leqvio-monotherapy-demand-NOV217/golden-datasets/banner-expected.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 270,
+      "extension": ".json"
+    },
+    {
+      "path": "data/leqvio-monotherapy-demand-NOV217/inputs",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/path-b-status.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 6,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/crosstab-review-state.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 1947,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/dataMap-crosstab-agent-2026-01-17T13-50-12-876Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 1222,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/dataMap-table-agent-2026-01-17T13-50-12-876Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2652,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/dataMap-verbose-2026-01-17T13-50-12-876Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 3323,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/path-b-result.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 6827,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/pipeline-summary.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 63,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/crosstab",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/crosstab/crosstab-output-2026-01-17T14-08-34-121Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 704,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/crosstab/crosstab-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 358,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/crosstab/scratchpad-crosstab-2026-01-17T14-08-34-121Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 762,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/r",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/banner-images",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/results",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/results/tables.json",
+      "type": "file",
+      "category": "data",
+      "line_count": "too_large",
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/verification",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/verification/verification-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 4284,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/table",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/table/scratchpad-table-2026-01-17T14-12-21-266Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 203,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/table/table-output-2026-01-17T14-12-21-266Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2729,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/table/table-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2545,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/banner",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/banner/banner-bannerPlan-agent-2026-01-17T13-52-46-000Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 114,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/banner/banner-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 304,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/banner/banner-bannerPlan-verbose-2026-01-17T13-52-46-000Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 317,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/banner/scratchpad-banner-2026-01-17T13-52-46-000Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 123,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/inputs",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/dataMap-table-agent-2026-01-15T16-30-17-586Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2652,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/dataMap-verbose-2026-01-15T16-30-17-586Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 3323,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/dataMap-crosstab-agent-2026-01-15T16-30-17-586Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 1222,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/pipeline-summary.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 30,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/crosstab",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/crosstab/crosstab-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 152,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/crosstab/crosstab-output-2026-01-15T16-47-36-558Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 324,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/crosstab/scratchpad-crosstab-2026-01-15T16-47-36-558Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 355,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/r",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/results",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/results/tables.json",
+      "type": "file",
+      "category": "data",
+      "line_count": "too_large",
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/verification",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/verification/verification-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 4323,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/verification/verified-table-output-2026-01-15T17-46-14-355Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 4444,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/table",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/table/table-output-2026-01-15T17-11-51-491Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2837,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/table/table-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2545,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/table/scratchpad-table-2026-01-15T17-11-51-491Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 512,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/banner",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/banner/banner-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 272,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/banner/banner-bannerPlan-agent-2026-01-15T16-33-08-333Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 114,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/banner/banner-bannerPlan-verbose-2026-01-15T16-33-08-333Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 286,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/banner/scratchpad-banner-2026-01-15T16-33-08-333Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 129,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/inputs",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/dataMap-table-agent-2026-01-13T16-31-38-879Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2652,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/dataMap-verbose-2026-01-13T16-31-38-879Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 3323,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/dataMap-crosstab-agent-2026-01-13T16-31-38-879Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 1222,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/pipeline-summary.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 30,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/crosstab",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/crosstab/crosstab-output-2026-01-13T16-46-54-287Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 270,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/crosstab/scratchpad-crosstab-2026-01-13T16-46-54-287Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 178,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/crosstab/crosstab-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 152,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/r",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/results",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/results/tables.json",
+      "type": "file",
+      "category": "data",
+      "line_count": "too_large",
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/verification",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/verification/verification-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 4607,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/verification/verified-table-output-2026-01-13T17-36-25-197Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 4728,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/verification/scratchpad-verification-2026-01-13T17-36-25-197Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 11,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/table",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/table/table-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2545,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/table/scratchpad-table-2026-01-13T17-13-23-406Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 775,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/table/table-output-2026-01-13T17-13-23-406Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2927,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/banner",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/banner/banner-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 293,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/banner/scratchpad-banner-2026-01-13T16-36-31-936Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 65,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/banner/banner-bannerPlan-agent-2026-01-13T16-36-31-936Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 114,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/banner/banner-bannerPlan-verbose-2026-01-13T16-36-31-936Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 306,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/inputs",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/leqvio-monotherapy-demand-datamap-table-agent-2026-01-15T15-13-57-362Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2652,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/pipeline-summary.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 32,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/leqvio-monotherapy-demand-datamap-crosstab-agent-2026-01-15T15-13-57-362Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 1222,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/leqvio-monotherapy-demand-datamap-verbose-2026-01-15T15-13-57-362Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 3323,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/crosstab",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/crosstab/scratchpad-crosstab-2026-01-15T15-28-21-259Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 402,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/crosstab/crosstab-output-2026-01-15T15-28-21-259Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 366,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/crosstab/crosstab-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 152,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/r",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/results",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/results/tables.json",
+      "type": "file",
+      "category": "data",
+      "line_count": "too_large",
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/results/data-streamlined.json",
+      "type": "file",
+      "category": "data",
+      "line_count": "too_large",
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/verification",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/verification/verification-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 4263,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/verification/verified-table-output-2026-01-15T16-16-49-285Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 4384,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/table",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/table/scratchpad-table-2026-01-15T15-47-24-783Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 524,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/table/table-output-2026-01-15T15-47-24-783Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2831,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/table/table-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2545,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/banner",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/banner/banner-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 276,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/banner/banner-leqvio-monotherapy-demand-bannerplan-adjusted-agent-2026-01-15T15-15-42-188Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 114,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/banner/banner-leqvio-monotherapy-demand-bannerplan-adjusted-verbose-2026-01-15T15-15-42-188Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 289,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/banner/scratchpad-banner-2026-01-15T15-15-42-188Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 82,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/leqvio-monotherapy-demand-datamap-table-agent-2026-01-09T16-54-54-211Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2652,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/pipeline-summary.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 32,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/leqvio-monotherapy-demand-datamap-verbose-2026-01-09T16-54-54-211Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 3323,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/leqvio-monotherapy-demand-datamap-crosstab-agent-2026-01-09T16-54-54-211Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 1222,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/crosstab",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/crosstab/scratchpad-crosstab-2026-01-09T17-07-27-949Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 185,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/crosstab/crosstab-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 152,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/crosstab/crosstab-output-2026-01-09T17-07-27-949Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 276,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/r",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/results",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/results/tables.json",
+      "type": "file",
+      "category": "data",
+      "line_count": "too_large",
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/results/data-streamlined.json",
+      "type": "file",
+      "category": "data",
+      "line_count": "too_large",
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/verification",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/verification/verification-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 4247,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/verification/verified-table-output-2026-01-09T17-57-59-117Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 4854,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/table",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/table/table-output-2026-01-09T17-29-42-299Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2903,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/table/table-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2545,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/table/scratchpad-table-2026-01-09T17-29-42-299Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 747,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/banner",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/banner/banner-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 286,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/banner/banner-leqvio-monotherapy-demand-bannerplan-adjusted-verbose-2026-01-09T16-57-56-255Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 325,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/banner/banner-leqvio-monotherapy-demand-bannerplan-adjusted-agent-2026-01-09T16-57-56-255Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 114,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/banner/scratchpad-banner-2026-01-09T16-57-56-255Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 108,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/leqvio-monotherapy-demand-datamap-table-agent-2026-01-09T21-38-19-595Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2652,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/pipeline-summary.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 32,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/leqvio-monotherapy-demand-datamap-crosstab-agent-2026-01-09T21-38-19-595Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 1222,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/leqvio-monotherapy-demand-datamap-verbose-2026-01-09T21-38-19-595Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 3323,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/crosstab",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/crosstab/scratchpad-crosstab-2026-01-09T21-48-33-650Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 170,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/crosstab/crosstab-output-2026-01-09T21-48-33-650Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 252,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/crosstab/crosstab-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 152,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/r",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/results",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/results/tables.json",
+      "type": "file",
+      "category": "data",
+      "line_count": "too_large",
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/results/data-streamlined.json",
+      "type": "file",
+      "category": "data",
+      "line_count": "too_large",
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/verification",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/verification/verification-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 4762,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/verification/verified-table-output-2026-01-09T22-31-49-409Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 4885,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/table",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/table/table-output-2026-01-09T22-09-59-301Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2917,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/table/table-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 2553,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/table/scratchpad-table-2026-01-09T22-09-59-301Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 763,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/banner",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/banner/banner-output-raw.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 310,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/banner/scratchpad-banner-2026-01-09T21-40-25-553Z.md",
+      "type": "file",
+      "category": "documentation",
+      "line_count": 28,
+      "extension": ".md"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/banner/banner-leqvio-monotherapy-demand-bannerplan-adjusted-verbose-2026-01-09T21-40-25-553Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 324,
+      "extension": ".json"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/banner/banner-leqvio-monotherapy-demand-bannerplan-adjusted-agent-2026-01-09T21-40-25-553Z.json",
+      "type": "file",
+      "category": "data",
+      "line_count": 114,
+      "extension": ".json"
+    },
+    {
+      "path": "src",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/guardrails",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/guardrails/outputValidation.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 216,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/guardrails/inputValidation.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 295,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 48,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/page.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 456,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/globals.css",
+      "type": "file",
+      "category": "component",
+      "line_count": 122,
+      "extension": ".css"
+    },
+    {
+      "path": "src/app/validate",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/validate/loading.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 13,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/validate/page.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 317,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/validate/[sessionId]",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/validate/[sessionId]/loading.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 13,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/validate/[sessionId]/page.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 587,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/pipelines",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/pipelines/[pipelineId]",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/pipelines/[pipelineId]/page.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 488,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/pipelines/[pipelineId]/review",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/pipelines/[pipelineId]/review/page.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 735,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/api",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/delete-session",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/delete-session/[sessionId]",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/delete-session/[sessionId]/route.ts",
+      "type": "file",
+      "category": "component",
+      "line_count": 69,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/generate-tables",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/generate-tables/[sessionId]",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/generate-tables/[sessionId]/route.ts",
+      "type": "file",
+      "category": "component",
+      "line_count": 63,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/validation-queue",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/validation-queue/route.ts",
+      "type": "file",
+      "category": "component",
+      "line_count": 190,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/pipelines",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/pipelines/route.ts",
+      "type": "file",
+      "category": "component",
+      "line_count": 153,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/pipelines/[pipelineId]",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/pipelines/[pipelineId]/route.ts",
+      "type": "file",
+      "category": "component",
+      "line_count": 274,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/pipelines/[pipelineId]/cancel",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/pipelines/[pipelineId]/cancel/route.ts",
+      "type": "file",
+      "category": "component",
+      "line_count": 149,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/pipelines/[pipelineId]/review",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/pipelines/[pipelineId]/review/route.ts",
+      "type": "file",
+      "category": "component",
+      "line_count": 757,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/pipelines/[pipelineId]/files",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/pipelines/[pipelineId]/files/[...path]",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/pipelines/[pipelineId]/files/[...path]/route.ts",
+      "type": "file",
+      "category": "component",
+      "line_count": 139,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/process-crosstab",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/process-crosstab/route.ts",
+      "type": "file",
+      "category": "component",
+      "line_count": 1448,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/process-crosstab/status",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/process-crosstab/status/route.ts",
+      "type": "file",
+      "category": "component",
+      "line_count": 23,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/execute-r",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/execute-r/[sessionId]",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/execute-r/[sessionId]/route.ts",
+      "type": "file",
+      "category": "component",
+      "line_count": 143,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/export-workbook",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/export-workbook/[sessionId]",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/app/api/export-workbook/[sessionId]/route.ts",
+      "type": "file",
+      "category": "component",
+      "line_count": 73,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/agents",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/agents/BannerAgent.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 665,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/agents/CrosstabAgent.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 363,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/agents/index.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 33,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/agents/VerificationAgent.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 472,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/agents/TableAgent.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 569,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/agents/tools",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/agents/tools/scratchpad.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 139,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/schemas",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/schemas/verificationAgentSchema.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 269,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/schemas/humanValidationSchema.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 51,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/schemas/agentOutputSchema.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 156,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/schemas/processingSchemas.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 180,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/schemas/index.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 131,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/schemas/dataMapSchema.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 46,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/schemas/tableAgentSchema.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 259,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/schemas/bannerPlanSchema.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 71,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/components",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/components/theme-provider.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 34,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/PageHeader.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 23,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/PipelineListCard.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 136,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/FileUpload.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 173,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/LoadingModal.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 63,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/StatusBadge.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 42,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/PipelineHistory.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 100,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/mode-toggle.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 40,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/components/ui/tabs.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 66,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/card.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 92,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/progress.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 31,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/sheet.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 139,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/label.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 24,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/sonner.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 25,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/switch.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 31,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/radio-group.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 45,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/dialog.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 143,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/badge.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 46,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/table.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 116,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/separator.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 28,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/button.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 59,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/select.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 185,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/textarea.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 18,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/input.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 21,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/ui/form.tsx",
+      "type": "file",
+      "category": "component",
+      "line_count": 167,
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/hooks",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/hooks/useValidationQueue.ts",
+      "type": "file",
+      "category": "hook",
+      "line_count": 55,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/lib/storage.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 222,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 24,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/types.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 93,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/retryWithPolicyHandling.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 179,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/contextBuilder.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 222,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/jobStore.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 148,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/env.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 443,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/tracing.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 61,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/pipeline",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/lib/pipeline/TableQueue.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 175,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/tables",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/lib/tables/CutTable.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 60,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/tables/CutsSpec.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 139,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/tables/sortTables.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 159,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/exporters",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/lib/exporters/csv.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 25,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/excel",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/lib/excel/styles.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 223,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/excel/ExcelFormatter.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 204,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/excel/tableRenderers",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/lib/excel/tableRenderers/frequencyTable.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 321,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/excel/tableRenderers/meanRowsTable.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 459,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/r",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/lib/r/RScriptGeneratorV2.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 1080,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/utils",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/lib/utils/bugTrackerTemplate.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 148,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/utils/formatDuration.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 37,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/processors",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/lib/processors/DataMapProcessor.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 871,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/processors/SurveyProcessor.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 229,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/processors/DataMapValidator.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 254,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/processors/SPSSReader.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 590,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/data",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/lib/data/extractStreamlinedData.ts",
+      "type": "file",
+      "category": "util",
+      "line_count": 136,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/prompts",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/prompts/index.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 5,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/prompts/crosstab",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/prompts/crosstab/production.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 361,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/prompts/crosstab/alternative.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 263,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/prompts/crosstab/index.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 15,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/prompts/verification",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/prompts/verification/production.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 245,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/prompts/verification/alternative.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 398,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/prompts/verification/index.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 17,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/prompts/table",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/prompts/table/production.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 261,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/prompts/table/alternative.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 329,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/prompts/table/index.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 15,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/prompts/banner",
+      "type": "directory",
+      "category": null,
+      "line_count": null
+    },
+    {
+      "path": "src/prompts/banner/production.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 199,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/prompts/banner/alternative.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 241,
+      "extension": ".ts"
+    },
+    {
+      "path": "src/prompts/banner/index.ts",
+      "type": "file",
+      "category": "source",
+      "line_count": 15,
+      "extension": ".ts"
+    }
+  ],
+  "by_extension": {
+    ".mjs": {
+      "count": 2,
+      "lines": 40
+    },
+    ".ts": {
+      "count": 78,
+      "lines": 19990
+    },
+    ".md": {
+      "count": 29,
+      "lines": 9910
+    },
+    ".json": {
+      "count": 87,
+      "lines": 156275
+    },
+    ".tsx": {
+      "count": 33,
+      "lines": 4504
+    },
+    ".css": {
+      "count": 1,
+      "lines": 122
+    }
+  },
+  "by_category": {
+    "config": [
+      "postcss.config.mjs",
+      "tsconfig.json",
+      "eslint.config.mjs",
+      "next.config.ts"
+    ],
+    "type": [
+      "next-env.d.ts"
+    ],
+    "documentation": [
+      "README.md",
+      "CLAUDE.md",
+      "temp-outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-10-18-953Z/bugs-2026-01-13T16-10-18-953Z.md",
+      "docs/implementation-plans/significance-testing-plan.md",
+      "docs/implementation-plans/future-enhancements.md",
+      "docs/implementation-plans/reliability-plan.md",
+      "docs/implementation-plans/logging-implementation-plan.md",
+      "docs/implementation-plans/demo-enhancements-plan.md",
+      "docs/decipher-api/decipher-api-exploration.md",
+      "docs/decipher-api/decipher-api-test-commands.md",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/crosstab/scratchpad-crosstab-2026-01-17T14-08-34-121Z.md",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/table/scratchpad-table-2026-01-17T14-12-21-266Z.md",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/banner/scratchpad-banner-2026-01-17T13-52-46-000Z.md",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/crosstab/scratchpad-crosstab-2026-01-15T16-47-36-558Z.md",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/table/scratchpad-table-2026-01-15T17-11-51-491Z.md",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/banner/scratchpad-banner-2026-01-15T16-33-08-333Z.md",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/crosstab/scratchpad-crosstab-2026-01-13T16-46-54-287Z.md",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/verification/scratchpad-verification-2026-01-13T17-36-25-197Z.md",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/table/scratchpad-table-2026-01-13T17-13-23-406Z.md",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/banner/scratchpad-banner-2026-01-13T16-36-31-936Z.md",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/crosstab/scratchpad-crosstab-2026-01-15T15-28-21-259Z.md",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/table/scratchpad-table-2026-01-15T15-47-24-783Z.md",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/banner/scratchpad-banner-2026-01-15T15-15-42-188Z.md",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/crosstab/scratchpad-crosstab-2026-01-09T17-07-27-949Z.md",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/table/scratchpad-table-2026-01-09T17-29-42-299Z.md",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/banner/scratchpad-banner-2026-01-09T16-57-56-255Z.md",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/crosstab/scratchpad-crosstab-2026-01-09T21-48-33-650Z.md",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/table/scratchpad-table-2026-01-09T22-09-59-301Z.md",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/banner/scratchpad-banner-2026-01-09T21-40-25-553Z.md"
+    ],
+    "data": [
+      "package-lock.json",
+      "package.json",
+      "components.json",
+      "data/leqvio-monotherapy-demand-NOV217/golden-datasets/crosstab-expected.json",
+      "data/leqvio-monotherapy-demand-NOV217/golden-datasets/data-expected.json",
+      "data/leqvio-monotherapy-demand-NOV217/golden-datasets/verification-expected.json",
+      "data/leqvio-monotherapy-demand-NOV217/golden-datasets/banner-expected.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/path-b-status.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/crosstab-review-state.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/dataMap-crosstab-agent-2026-01-17T13-50-12-876Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/dataMap-table-agent-2026-01-17T13-50-12-876Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/dataMap-verbose-2026-01-17T13-50-12-876Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/path-b-result.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/pipeline-summary.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/crosstab/crosstab-output-2026-01-17T14-08-34-121Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/crosstab/crosstab-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/results/tables.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/verification/verification-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/table/table-output-2026-01-17T14-12-21-266Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/table/table-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/banner/banner-bannerPlan-agent-2026-01-17T13-52-46-000Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/banner/banner-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/banner/banner-bannerPlan-verbose-2026-01-17T13-52-46-000Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/dataMap-table-agent-2026-01-15T16-30-17-586Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/dataMap-verbose-2026-01-15T16-30-17-586Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/dataMap-crosstab-agent-2026-01-15T16-30-17-586Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/pipeline-summary.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/crosstab/crosstab-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/crosstab/crosstab-output-2026-01-15T16-47-36-558Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/results/tables.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/verification/verification-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/verification/verified-table-output-2026-01-15T17-46-14-355Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/table/table-output-2026-01-15T17-11-51-491Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/table/table-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/banner/banner-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/banner/banner-bannerPlan-agent-2026-01-15T16-33-08-333Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/banner/banner-bannerPlan-verbose-2026-01-15T16-33-08-333Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/dataMap-table-agent-2026-01-13T16-31-38-879Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/dataMap-verbose-2026-01-13T16-31-38-879Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/dataMap-crosstab-agent-2026-01-13T16-31-38-879Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/pipeline-summary.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/crosstab/crosstab-output-2026-01-13T16-46-54-287Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/crosstab/crosstab-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/results/tables.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/verification/verification-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/verification/verified-table-output-2026-01-13T17-36-25-197Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/table/table-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/table/table-output-2026-01-13T17-13-23-406Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/banner/banner-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/banner/banner-bannerPlan-agent-2026-01-13T16-36-31-936Z.json",
+      "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/banner/banner-bannerPlan-verbose-2026-01-13T16-36-31-936Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/leqvio-monotherapy-demand-datamap-table-agent-2026-01-15T15-13-57-362Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/pipeline-summary.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/leqvio-monotherapy-demand-datamap-crosstab-agent-2026-01-15T15-13-57-362Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/leqvio-monotherapy-demand-datamap-verbose-2026-01-15T15-13-57-362Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/crosstab/crosstab-output-2026-01-15T15-28-21-259Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/crosstab/crosstab-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/results/tables.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/results/data-streamlined.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/verification/verification-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/verification/verified-table-output-2026-01-15T16-16-49-285Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/table/table-output-2026-01-15T15-47-24-783Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/table/table-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/banner/banner-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/banner/banner-leqvio-monotherapy-demand-bannerplan-adjusted-agent-2026-01-15T15-15-42-188Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/banner/banner-leqvio-monotherapy-demand-bannerplan-adjusted-verbose-2026-01-15T15-15-42-188Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/leqvio-monotherapy-demand-datamap-table-agent-2026-01-09T16-54-54-211Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/pipeline-summary.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/leqvio-monotherapy-demand-datamap-verbose-2026-01-09T16-54-54-211Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/leqvio-monotherapy-demand-datamap-crosstab-agent-2026-01-09T16-54-54-211Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/crosstab/crosstab-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/crosstab/crosstab-output-2026-01-09T17-07-27-949Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/results/tables.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/results/data-streamlined.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/verification/verification-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/verification/verified-table-output-2026-01-09T17-57-59-117Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/table/table-output-2026-01-09T17-29-42-299Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/table/table-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/banner/banner-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/banner/banner-leqvio-monotherapy-demand-bannerplan-adjusted-verbose-2026-01-09T16-57-56-255Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/banner/banner-leqvio-monotherapy-demand-bannerplan-adjusted-agent-2026-01-09T16-57-56-255Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/leqvio-monotherapy-demand-datamap-table-agent-2026-01-09T21-38-19-595Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/pipeline-summary.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/leqvio-monotherapy-demand-datamap-crosstab-agent-2026-01-09T21-38-19-595Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/leqvio-monotherapy-demand-datamap-verbose-2026-01-09T21-38-19-595Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/crosstab/crosstab-output-2026-01-09T21-48-33-650Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/crosstab/crosstab-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/results/tables.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/results/data-streamlined.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/verification/verification-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/verification/verified-table-output-2026-01-09T22-31-49-409Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/table/table-output-2026-01-09T22-09-59-301Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/table/table-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/banner/banner-output-raw.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/banner/banner-leqvio-monotherapy-demand-bannerplan-adjusted-verbose-2026-01-09T21-40-25-553Z.json",
+      "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/banner/banner-leqvio-monotherapy-demand-bannerplan-adjusted-agent-2026-01-09T21-40-25-553Z.json"
+    ],
+    "other": [
+      "docs/decipher-api/decipher-api.yaml"
+    ],
+    "source": [
+      "scripts/test-r-script-v2.ts",
+      "scripts/extract-data-json.ts",
+      "scripts/test-verification-agent.ts",
+      "scripts/test-table-agent.ts",
+      "scripts/compare-to-golden.ts",
+      "scripts/export-excel.ts",
+      "scripts/calculate-metrics.ts",
+      "scripts/test-r-changes.ts",
+      "scripts/test-pipeline.ts",
+      "src/guardrails/outputValidation.ts",
+      "src/guardrails/inputValidation.ts",
+      "src/agents/BannerAgent.ts",
+      "src/agents/CrosstabAgent.ts",
+      "src/agents/index.ts",
+      "src/agents/VerificationAgent.ts",
+      "src/agents/TableAgent.ts",
+      "src/agents/tools/scratchpad.ts",
+      "src/schemas/verificationAgentSchema.ts",
+      "src/schemas/humanValidationSchema.ts",
+      "src/schemas/agentOutputSchema.ts",
+      "src/schemas/processingSchemas.ts",
+      "src/schemas/index.ts",
+      "src/schemas/dataMapSchema.ts",
+      "src/schemas/tableAgentSchema.ts",
+      "src/schemas/bannerPlanSchema.ts",
+      "src/prompts/index.ts",
+      "src/prompts/crosstab/production.ts",
+      "src/prompts/crosstab/alternative.ts",
+      "src/prompts/crosstab/index.ts",
+      "src/prompts/verification/production.ts",
+      "src/prompts/verification/alternative.ts",
+      "src/prompts/verification/index.ts",
+      "src/prompts/table/production.ts",
+      "src/prompts/table/alternative.ts",
+      "src/prompts/table/index.ts",
+      "src/prompts/banner/production.ts",
+      "src/prompts/banner/alternative.ts",
+      "src/prompts/banner/index.ts"
+    ],
+    "component": [
+      "src/app/layout.tsx",
+      "src/app/page.tsx",
+      "src/app/globals.css",
+      "src/app/validate/loading.tsx",
+      "src/app/validate/page.tsx",
+      "src/app/validate/[sessionId]/loading.tsx",
+      "src/app/validate/[sessionId]/page.tsx",
+      "src/app/pipelines/[pipelineId]/page.tsx",
+      "src/app/pipelines/[pipelineId]/review/page.tsx",
+      "src/app/api/delete-session/[sessionId]/route.ts",
+      "src/app/api/generate-tables/[sessionId]/route.ts",
+      "src/app/api/validation-queue/route.ts",
+      "src/app/api/pipelines/route.ts",
+      "src/app/api/pipelines/[pipelineId]/route.ts",
+      "src/app/api/pipelines/[pipelineId]/cancel/route.ts",
+      "src/app/api/pipelines/[pipelineId]/review/route.ts",
+      "src/app/api/pipelines/[pipelineId]/files/[...path]/route.ts",
+      "src/app/api/process-crosstab/route.ts",
+      "src/app/api/process-crosstab/status/route.ts",
+      "src/app/api/execute-r/[sessionId]/route.ts",
+      "src/app/api/export-workbook/[sessionId]/route.ts",
+      "src/components/theme-provider.tsx",
+      "src/components/PageHeader.tsx",
+      "src/components/PipelineListCard.tsx",
+      "src/components/FileUpload.tsx",
+      "src/components/LoadingModal.tsx",
+      "src/components/StatusBadge.tsx",
+      "src/components/PipelineHistory.tsx",
+      "src/components/mode-toggle.tsx",
+      "src/components/ui/tabs.tsx",
+      "src/components/ui/card.tsx",
+      "src/components/ui/progress.tsx",
+      "src/components/ui/sheet.tsx",
+      "src/components/ui/label.tsx",
+      "src/components/ui/sonner.tsx",
+      "src/components/ui/switch.tsx",
+      "src/components/ui/radio-group.tsx",
+      "src/components/ui/dialog.tsx",
+      "src/components/ui/badge.tsx",
+      "src/components/ui/table.tsx",
+      "src/components/ui/separator.tsx",
+      "src/components/ui/button.tsx",
+      "src/components/ui/select.tsx",
+      "src/components/ui/textarea.tsx",
+      "src/components/ui/input.tsx",
+      "src/components/ui/form.tsx"
+    ],
+    "hook": [
+      "src/hooks/useValidationQueue.ts"
+    ],
+    "util": [
+      "src/lib/storage.ts",
+      "src/lib/utils.ts",
+      "src/lib/types.ts",
+      "src/lib/retryWithPolicyHandling.ts",
+      "src/lib/contextBuilder.ts",
+      "src/lib/jobStore.ts",
+      "src/lib/env.ts",
+      "src/lib/tracing.ts",
+      "src/lib/pipeline/TableQueue.ts",
+      "src/lib/tables/CutTable.ts",
+      "src/lib/tables/CutsSpec.ts",
+      "src/lib/tables/sortTables.ts",
+      "src/lib/exporters/csv.ts",
+      "src/lib/excel/styles.ts",
+      "src/lib/excel/ExcelFormatter.ts",
+      "src/lib/excel/tableRenderers/frequencyTable.ts",
+      "src/lib/excel/tableRenderers/meanRowsTable.ts",
+      "src/lib/r/RScriptGeneratorV2.ts",
+      "src/lib/utils/bugTrackerTemplate.ts",
+      "src/lib/utils/formatDuration.ts",
+      "src/lib/processors/DataMapProcessor.ts",
+      "src/lib/processors/SurveyProcessor.ts",
+      "src/lib/processors/DataMapValidator.ts",
+      "src/lib/processors/SPSSReader.ts",
+      "src/lib/data/extractStreamlinedData.ts"
+    ]
+  },
+  "largest_files": [
+    {
+      "path": "package-lock.json",
+      "lines": 9019,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/path-b-result.json",
+      "lines": 6827,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/verification/verified-table-output-2026-01-09T22-31-49-409Z.json",
+      "lines": 4885,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/verification/verified-table-output-2026-01-09T17-57-59-117Z.json",
+      "lines": 4854,
+      "category": "data"
+    },
+    {
+      "path": "data/leqvio-monotherapy-demand-NOV217/golden-datasets/verification-expected.json",
+      "lines": 4762,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/verification/verification-output-raw.json",
+      "lines": 4762,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/verification/verified-table-output-2026-01-13T17-36-25-197Z.json",
+      "lines": 4728,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/verification/verification-output-raw.json",
+      "lines": 4607,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/verification/verified-table-output-2026-01-15T17-46-14-355Z.json",
+      "lines": 4444,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/verification/verified-table-output-2026-01-15T16-16-49-285Z.json",
+      "lines": 4384,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/verification/verification-output-raw.json",
+      "lines": 4323,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/verification/verification-output-raw.json",
+      "lines": 4284,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/verification/verification-output-raw.json",
+      "lines": 4263,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/verification/verification-output-raw.json",
+      "lines": 4247,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/dataMap-verbose-2026-01-17T13-50-12-876Z.json",
+      "lines": 3323,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/dataMap-verbose-2026-01-15T16-30-17-586Z.json",
+      "lines": 3323,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/dataMap-verbose-2026-01-13T16-31-38-879Z.json",
+      "lines": 3323,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/leqvio-monotherapy-demand-datamap-verbose-2026-01-15T15-13-57-362Z.json",
+      "lines": 3323,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/leqvio-monotherapy-demand-datamap-verbose-2026-01-09T16-54-54-211Z.json",
+      "lines": 3323,
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/leqvio-monotherapy-demand-datamap-verbose-2026-01-09T21-38-19-595Z.json",
+      "lines": 3323,
+      "category": "data"
+    }
+  ],
+  "empty_files": [
+    {
+      "path": "postcss.config.mjs",
+      "lines": 5,
+      "reason": "nearly_empty"
+    },
+    {
+      "path": "next-env.d.ts",
+      "lines": 5,
+      "reason": "nearly_empty"
+    },
+    {
+      "path": "src/prompts/index.ts",
+      "lines": 5,
+      "reason": "nearly_empty"
+    }
+  ],
+  "flagged_files": [
+    {
+      "path": "package-lock.json",
+      "lines": 9019,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "docs/implementation-plans/reliability-plan.md",
+      "lines": 685,
+      "reason": "large_file",
+      "category": "documentation"
+    },
+    {
+      "path": "docs/implementation-plans/logging-implementation-plan.md",
+      "lines": 836,
+      "reason": "large_file",
+      "category": "documentation"
+    },
+    {
+      "path": "docs/decipher-api/decipher-api-exploration.md",
+      "lines": 501,
+      "reason": "large_file",
+      "category": "documentation"
+    },
+    {
+      "path": "scripts/compare-to-golden.ts",
+      "lines": 988,
+      "reason": "large_file",
+      "category": "source"
+    },
+    {
+      "path": "scripts/test-pipeline.ts",
+      "lines": 631,
+      "reason": "large_file",
+      "category": "source"
+    },
+    {
+      "path": "data/leqvio-monotherapy-demand-NOV217/golden-datasets/verification-expected.json",
+      "lines": 4762,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/crosstab-review-state.json",
+      "lines": 1947,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/dataMap-crosstab-agent-2026-01-17T13-50-12-876Z.json",
+      "lines": 1222,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/dataMap-table-agent-2026-01-17T13-50-12-876Z.json",
+      "lines": 2652,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/dataMap-verbose-2026-01-17T13-50-12-876Z.json",
+      "lines": 3323,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/path-b-result.json",
+      "lines": 6827,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/crosstab/crosstab-output-2026-01-17T14-08-34-121Z.json",
+      "lines": 704,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/crosstab/scratchpad-crosstab-2026-01-17T14-08-34-121Z.md",
+      "lines": 762,
+      "reason": "large_file",
+      "category": "documentation"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/verification/verification-output-raw.json",
+      "lines": 4284,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/table/table-output-2026-01-17T14-12-21-266Z.json",
+      "lines": 2729,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-17T13-50-12-807Z/table/table-output-raw.json",
+      "lines": 2545,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/dataMap-table-agent-2026-01-15T16-30-17-586Z.json",
+      "lines": 2652,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/dataMap-verbose-2026-01-15T16-30-17-586Z.json",
+      "lines": 3323,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/dataMap-crosstab-agent-2026-01-15T16-30-17-586Z.json",
+      "lines": 1222,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/verification/verification-output-raw.json",
+      "lines": 4323,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/verification/verified-table-output-2026-01-15T17-46-14-355Z.json",
+      "lines": 4444,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/table/table-output-2026-01-15T17-11-51-491Z.json",
+      "lines": 2837,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/table/table-output-raw.json",
+      "lines": 2545,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-15T16-30-17-495Z/table/scratchpad-table-2026-01-15T17-11-51-491Z.md",
+      "lines": 512,
+      "reason": "large_file",
+      "category": "documentation"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/dataMap-table-agent-2026-01-13T16-31-38-879Z.json",
+      "lines": 2652,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/dataMap-verbose-2026-01-13T16-31-38-879Z.json",
+      "lines": 3323,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/dataMap-crosstab-agent-2026-01-13T16-31-38-879Z.json",
+      "lines": 1222,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/verification/verification-output-raw.json",
+      "lines": 4607,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/verification/verified-table-output-2026-01-13T17-36-25-197Z.json",
+      "lines": 4728,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/table/table-output-raw.json",
+      "lines": 2545,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/table/scratchpad-table-2026-01-13T17-13-23-406Z.md",
+      "lines": 775,
+      "reason": "large_file",
+      "category": "documentation"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-data/pipeline-2026-01-13T16-31-38-833Z/table/table-output-2026-01-13T17-13-23-406Z.json",
+      "lines": 2927,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/leqvio-monotherapy-demand-datamap-table-agent-2026-01-15T15-13-57-362Z.json",
+      "lines": 2652,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/leqvio-monotherapy-demand-datamap-crosstab-agent-2026-01-15T15-13-57-362Z.json",
+      "lines": 1222,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/leqvio-monotherapy-demand-datamap-verbose-2026-01-15T15-13-57-362Z.json",
+      "lines": 3323,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/verification/verification-output-raw.json",
+      "lines": 4263,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/verification/verified-table-output-2026-01-15T16-16-49-285Z.json",
+      "lines": 4384,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/table/scratchpad-table-2026-01-15T15-47-24-783Z.md",
+      "lines": 524,
+      "reason": "large_file",
+      "category": "documentation"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/table/table-output-2026-01-15T15-47-24-783Z.json",
+      "lines": 2831,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-15T15-13-57-323Z/table/table-output-raw.json",
+      "lines": 2545,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/leqvio-monotherapy-demand-datamap-table-agent-2026-01-09T16-54-54-211Z.json",
+      "lines": 2652,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/leqvio-monotherapy-demand-datamap-verbose-2026-01-09T16-54-54-211Z.json",
+      "lines": 3323,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/leqvio-monotherapy-demand-datamap-crosstab-agent-2026-01-09T16-54-54-211Z.json",
+      "lines": 1222,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/verification/verification-output-raw.json",
+      "lines": 4247,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/verification/verified-table-output-2026-01-09T17-57-59-117Z.json",
+      "lines": 4854,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/table/table-output-2026-01-09T17-29-42-299Z.json",
+      "lines": 2903,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/table/table-output-raw.json",
+      "lines": 2545,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T16-54-54-155Z/table/scratchpad-table-2026-01-09T17-29-42-299Z.md",
+      "lines": 747,
+      "reason": "large_file",
+      "category": "documentation"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/leqvio-monotherapy-demand-datamap-table-agent-2026-01-09T21-38-19-595Z.json",
+      "lines": 2652,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/leqvio-monotherapy-demand-datamap-crosstab-agent-2026-01-09T21-38-19-595Z.json",
+      "lines": 1222,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/leqvio-monotherapy-demand-datamap-verbose-2026-01-09T21-38-19-595Z.json",
+      "lines": 3323,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/verification/verification-output-raw.json",
+      "lines": 4762,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/verification/verified-table-output-2026-01-09T22-31-49-409Z.json",
+      "lines": 4885,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/table/table-output-2026-01-09T22-09-59-301Z.json",
+      "lines": 2917,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/table/table-output-raw.json",
+      "lines": 2553,
+      "reason": "large_file",
+      "category": "data"
+    },
+    {
+      "path": "outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-09T21-38-19-554Z/table/scratchpad-table-2026-01-09T22-09-59-301Z.md",
+      "lines": 763,
+      "reason": "large_file",
+      "category": "documentation"
+    },
+    {
+      "path": "src/app/validate/[sessionId]/page.tsx",
+      "lines": 587,
+      "reason": "large_file",
+      "category": "component"
+    },
+    {
+      "path": "src/app/pipelines/[pipelineId]/review/page.tsx",
+      "lines": 735,
+      "reason": "large_file",
+      "category": "component"
+    },
+    {
+      "path": "src/app/api/pipelines/[pipelineId]/review/route.ts",
+      "lines": 757,
+      "reason": "large_file",
+      "category": "component"
+    },
+    {
+      "path": "src/app/api/process-crosstab/route.ts",
+      "lines": 1448,
+      "reason": "large_file",
+      "category": "component"
+    },
+    {
+      "path": "src/agents/BannerAgent.ts",
+      "lines": 665,
+      "reason": "large_file",
+      "category": "source"
+    },
+    {
+      "path": "src/agents/TableAgent.ts",
+      "lines": 569,
+      "reason": "large_file",
+      "category": "source"
+    },
+    {
+      "path": "src/lib/r/RScriptGeneratorV2.ts",
+      "lines": 1080,
+      "reason": "large_file",
+      "category": "util"
+    },
+    {
+      "path": "src/lib/processors/DataMapProcessor.ts",
+      "lines": 871,
+      "reason": "large_file",
+      "category": "util"
+    },
+    {
+      "path": "src/lib/processors/SPSSReader.ts",
+      "lines": 590,
+      "reason": "large_file",
+      "category": "util"
+    }
+  ],
+  "summary": {
+    "total_files": 241,
+    "total_lines": 190841,
+    "total_directories": 132,
+    "extensions_found": [
+      ".mjs",
+      ".ts",
+      ".md",
+      ".json",
+      ".tsx",
+      ".css"
+    ],
+    "categories_found": [
+      "config",
+      "type",
+      "documentation",
+      "data",
+      "other",
+      "source",
+      "component",
+      "hook",
+      "util"
+    ],
+    "large_files_count": 66,
+    "empty_files_count": 3
+  }
+}

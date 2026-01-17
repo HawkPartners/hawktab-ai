@@ -1,0 +1,3987 @@
+{
+  "root": "hawktab-ai",
+  "is_react_project": true,
+  "components": [
+    {
+      "name": "RootLayout",
+      "file": "src/app/layout.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "children",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "ThemeProvider",
+        "ModeToggle",
+        "Toaster"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "Home",
+      "file": "src/app/page.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [
+          "useState",
+          "useEffect"
+        ],
+        "custom": [
+          "useRouter",
+          "useValidationQueue"
+        ]
+      },
+      "uses_components": [
+        "File",
+        "PageHeader",
+        "PipelineHistory",
+        "Button",
+        "Badge",
+        "FileUpload"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "Loading",
+      "file": "src/app/validate/[sessionId]/loading.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": []
+    },
+    {
+      "name": "ValidationQueue",
+      "file": "src/app/validate/page.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [
+          "useState",
+          "useCallback",
+          "useEffect"
+        ],
+        "custom": [
+          "useRouter"
+        ]
+      },
+      "uses_components": [
+        "ValidationQueueData",
+        "Button",
+        "Upload",
+        "Card",
+        "CardContent",
+        "Tabs",
+        "TabsList",
+        "TabsTrigger",
+        "StatusBadge",
+        "Clock",
+        "Eye",
+        "Trash2",
+        "Dialog",
+        "DialogContent",
+        "DialogHeader",
+        "DialogTitle",
+        "DialogFooter"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "ValidationSession",
+      "file": "src/app/validate/[sessionId]/page.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [
+          "useState",
+          "useEffect",
+          "useCallback"
+        ],
+        "custom": [
+          "useRouter"
+        ]
+      },
+      "uses_components": [
+        "SessionData",
+        "ColumnFeedback",
+        "Card",
+        "CardHeader",
+        "CardTitle",
+        "AlertCircle",
+        "CardDescription",
+        "CardContent",
+        "Button",
+        "ArrowLeft",
+        "Badge",
+        "Clock",
+        "CheckCircle",
+        "Trash2",
+        "Tabs",
+        "TabsList",
+        "TabsTrigger",
+        "BarChart3",
+        "TabsContent",
+        "FileText",
+        "Table",
+        "TableHeader",
+        "TableRow",
+        "TableHead",
+        "TableBody",
+        "TableCell",
+        "Label",
+        "Select",
+        "SelectTrigger",
+        "SelectValue",
+        "SelectContent",
+        "SelectItem",
+        "RadioGroup",
+        "RadioGroupItem",
+        "Input",
+        "Textarea",
+        "Eye",
+        "Dialog",
+        "DialogContent",
+        "DialogHeader",
+        "DialogTitle",
+        "DialogFooter"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "FileIcon",
+      "file": "src/app/pipelines/[pipelineId]/page.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "filename",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [
+          "useState",
+          "useEffect"
+        ],
+        "custom": [
+          "useRouter"
+        ]
+      },
+      "uses_components": [
+        "FileSpreadsheet",
+        "FileText",
+        "File",
+        "Badge",
+        "CheckCircle",
+        "AlertCircle",
+        "Clock",
+        "AlertTriangle",
+        "Card",
+        "CardContent",
+        "FileIcon",
+        "Button",
+        "Download",
+        "PipelineDetails",
+        "Loader2",
+        "ArrowLeft",
+        "StatusBadge",
+        "Play",
+        "XCircle",
+        "CardHeader",
+        "CardTitle",
+        "Table",
+        "BarChart3",
+        "Layers",
+        "FileCard"
+      ],
+      "used_by": [
+        "FileIcon",
+        "FileCard",
+        "PipelineDetailPage"
+      ]
+    },
+    {
+      "name": "StatusBadge",
+      "file": "src/components/StatusBadge.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "status",
+          "optional": false,
+          "type": "StatusValue"
+        },
+        {
+          "name": "variant",
+          "optional": true,
+          "type": "'solid' | 'outline'"
+        },
+        {
+          "name": "className",
+          "optional": true,
+          "type": "string"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "Badge",
+        "Icon"
+      ],
+      "used_by": [
+        "ValidationQueue",
+        "FileIcon",
+        "FileCard",
+        "PipelineDetailPage",
+        "StatusIcon",
+        "PipelineListCard"
+      ]
+    },
+    {
+      "name": "FileCard",
+      "file": "src/app/pipelines/[pipelineId]/page.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "file",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "pipelineId",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [
+          "useState",
+          "useEffect"
+        ],
+        "custom": [
+          "useRouter"
+        ]
+      },
+      "uses_components": [
+        "FileSpreadsheet",
+        "FileText",
+        "File",
+        "Badge",
+        "CheckCircle",
+        "AlertCircle",
+        "Clock",
+        "AlertTriangle",
+        "Card",
+        "CardContent",
+        "FileIcon",
+        "Button",
+        "Download",
+        "PipelineDetails",
+        "Loader2",
+        "ArrowLeft",
+        "StatusBadge",
+        "Play",
+        "XCircle",
+        "CardHeader",
+        "CardTitle",
+        "Table",
+        "BarChart3",
+        "Layers",
+        "FileCard"
+      ],
+      "used_by": [
+        "FileIcon",
+        "FileCard",
+        "PipelineDetailPage"
+      ]
+    },
+    {
+      "name": "PipelineDetailPage",
+      "file": "src/app/pipelines/[pipelineId]/page.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "params",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [
+          "useState",
+          "useEffect"
+        ],
+        "custom": [
+          "useRouter"
+        ]
+      },
+      "uses_components": [
+        "FileSpreadsheet",
+        "FileText",
+        "File",
+        "Badge",
+        "CheckCircle",
+        "AlertCircle",
+        "Clock",
+        "AlertTriangle",
+        "Card",
+        "CardContent",
+        "FileIcon",
+        "Button",
+        "Download",
+        "PipelineDetails",
+        "Loader2",
+        "ArrowLeft",
+        "StatusBadge",
+        "Play",
+        "XCircle",
+        "CardHeader",
+        "CardTitle",
+        "Table",
+        "BarChart3",
+        "Layers",
+        "FileCard"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "ConfidenceBadge",
+      "file": "src/app/pipelines/[pipelineId]/review/page.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "confidence",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [
+          "useState",
+          "useEffect"
+        ],
+        "custom": [
+          "useRouter"
+        ]
+      },
+      "uses_components": [
+        "Badge",
+        "Card",
+        "CardHeader",
+        "CardTitle",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CardContent",
+        "Label",
+        "ListOrdered",
+        "ChevronDown",
+        "ChevronRight",
+        "AlertTriangle",
+        "RadioGroup",
+        "RadioGroupItem",
+        "CheckCircle",
+        "Lightbulb",
+        "Edit3",
+        "SkipForward",
+        "Select",
+        "SelectTrigger",
+        "SelectValue",
+        "SelectContent",
+        "SelectItem",
+        "Input",
+        "CrosstabReviewState",
+        "Map",
+        "Loader2",
+        "PageHeader",
+        "Button",
+        "ArrowLeft",
+        "XCircle",
+        "CrosstabColumnCard",
+        "Play"
+      ],
+      "used_by": [
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage"
+      ]
+    },
+    {
+      "name": "ExpressionTypeBadge",
+      "file": "src/app/pipelines/[pipelineId]/review/page.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "type",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [
+          "useState",
+          "useEffect"
+        ],
+        "custom": [
+          "useRouter"
+        ]
+      },
+      "uses_components": [
+        "Badge",
+        "Card",
+        "CardHeader",
+        "CardTitle",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CardContent",
+        "Label",
+        "ListOrdered",
+        "ChevronDown",
+        "ChevronRight",
+        "AlertTriangle",
+        "RadioGroup",
+        "RadioGroupItem",
+        "CheckCircle",
+        "Lightbulb",
+        "Edit3",
+        "SkipForward",
+        "Select",
+        "SelectTrigger",
+        "SelectValue",
+        "SelectContent",
+        "SelectItem",
+        "Input",
+        "CrosstabReviewState",
+        "Map",
+        "Loader2",
+        "PageHeader",
+        "Button",
+        "ArrowLeft",
+        "XCircle",
+        "CrosstabColumnCard",
+        "Play"
+      ],
+      "used_by": [
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage"
+      ]
+    },
+    {
+      "name": "CrosstabColumnCard",
+      "file": "src/app/pipelines/[pipelineId]/review/page.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "column",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "decision",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "onDecisionChange",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [
+          "useState",
+          "useEffect"
+        ],
+        "custom": [
+          "useRouter"
+        ]
+      },
+      "uses_components": [
+        "Badge",
+        "Card",
+        "CardHeader",
+        "CardTitle",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CardContent",
+        "Label",
+        "ListOrdered",
+        "ChevronDown",
+        "ChevronRight",
+        "AlertTriangle",
+        "RadioGroup",
+        "RadioGroupItem",
+        "CheckCircle",
+        "Lightbulb",
+        "Edit3",
+        "SkipForward",
+        "Select",
+        "SelectTrigger",
+        "SelectValue",
+        "SelectContent",
+        "SelectItem",
+        "Input",
+        "CrosstabReviewState",
+        "Map",
+        "Loader2",
+        "PageHeader",
+        "Button",
+        "ArrowLeft",
+        "XCircle",
+        "CrosstabColumnCard",
+        "Play"
+      ],
+      "used_by": [
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage"
+      ]
+    },
+    {
+      "name": "ReviewPage",
+      "file": "src/app/pipelines/[pipelineId]/review/page.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "params",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [
+          "useState",
+          "useEffect"
+        ],
+        "custom": [
+          "useRouter"
+        ]
+      },
+      "uses_components": [
+        "Badge",
+        "Card",
+        "CardHeader",
+        "CardTitle",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CardContent",
+        "Label",
+        "ListOrdered",
+        "ChevronDown",
+        "ChevronRight",
+        "AlertTriangle",
+        "RadioGroup",
+        "RadioGroupItem",
+        "CheckCircle",
+        "Lightbulb",
+        "Edit3",
+        "SkipForward",
+        "Select",
+        "SelectTrigger",
+        "SelectValue",
+        "SelectContent",
+        "SelectItem",
+        "Input",
+        "CrosstabReviewState",
+        "Map",
+        "Loader2",
+        "PageHeader",
+        "Button",
+        "ArrowLeft",
+        "XCircle",
+        "CrosstabColumnCard",
+        "Play"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "ThemeProvider",
+      "file": "src/components/theme-provider.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "children",
+          "optional": false,
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "attribute",
+          "optional": true,
+          "type": "\"class\" | \"data-theme\""
+        },
+        {
+          "name": "defaultTheme",
+          "optional": true,
+          "type": "\"system\" | \"light\" | \"dark\""
+        },
+        {
+          "name": "enableSystem",
+          "optional": true,
+          "type": "boolean"
+        },
+        {
+          "name": "disableTransitionOnChange",
+          "optional": true,
+          "type": "boolean"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "NextThemesProvider"
+      ],
+      "used_by": [
+        "RootLayout"
+      ]
+    },
+    {
+      "name": "PageHeader",
+      "file": "src/components/PageHeader.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "title",
+          "optional": false,
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "optional": true,
+          "type": "string"
+        },
+        {
+          "name": "actions",
+          "optional": true,
+          "type": "React.ReactNode"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": [
+        "Home",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage"
+      ]
+    },
+    {
+      "name": "StatusIcon",
+      "file": "src/components/PipelineListCard.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "status",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "CheckCircle",
+        "AlertCircle",
+        "Loader2",
+        "AlertTriangle",
+        "XCircle",
+        "Clock",
+        "Badge",
+        "Card",
+        "StatusIcon",
+        "StatusBadge",
+        "Table",
+        "ChevronRight"
+      ],
+      "used_by": [
+        "StatusIcon",
+        "PipelineListCard"
+      ]
+    },
+    {
+      "name": "PipelineListCard",
+      "file": "src/components/PipelineListCard.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "pipeline",
+          "optional": false,
+          "type": "PipelineListItem"
+        },
+        {
+          "name": "onClick",
+          "optional": false,
+          "type": "(pipelineId: string) => void"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "CheckCircle",
+        "AlertCircle",
+        "Loader2",
+        "AlertTriangle",
+        "XCircle",
+        "Clock",
+        "Badge",
+        "Card",
+        "StatusIcon",
+        "StatusBadge",
+        "Table",
+        "ChevronRight"
+      ],
+      "used_by": [
+        "PipelineHistory"
+      ]
+    },
+    {
+      "name": "FileUpload",
+      "file": "src/components/FileUpload.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "title",
+          "optional": false,
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "optional": false,
+          "type": "string"
+        },
+        {
+          "name": "acceptedTypes",
+          "optional": false,
+          "type": "string"
+        },
+        {
+          "name": "fileExtensions",
+          "optional": false,
+          "type": "string[]"
+        },
+        {
+          "name": "onFileSelect",
+          "optional": false,
+          "type": "(file: File | null) => void"
+        },
+        {
+          "name": "selectedFile",
+          "optional": false,
+          "type": "File | null"
+        },
+        {
+          "name": "optional",
+          "optional": true,
+          "type": "boolean"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [
+          "useState"
+        ],
+        "custom": []
+      },
+      "uses_components": [
+        "HTMLInputElement",
+        "Card",
+        "CardHeader",
+        "CardTitle",
+        "Badge",
+        "CardDescription",
+        "CardContent",
+        "CheckCircle",
+        "Button",
+        "X",
+        "Upload"
+      ],
+      "used_by": [
+        "Home"
+      ]
+    },
+    {
+      "name": "LoadingModal",
+      "file": "src/components/LoadingModal.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "isOpen",
+          "optional": false,
+          "type": "boolean"
+        },
+        {
+          "name": "currentStep",
+          "optional": true,
+          "type": "ProcessingStep"
+        },
+        {
+          "name": "jobProgress",
+          "optional": true,
+          "type": "JobProgress"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "Dialog",
+        "DialogContent",
+        "DialogTitle",
+        "Progress"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "PipelineHistory",
+      "file": "src/components/PipelineHistory.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [
+          "useState",
+          "useEffect"
+        ],
+        "custom": [
+          "useRouter"
+        ]
+      },
+      "uses_components": [
+        "PipelineListItem",
+        "Sheet",
+        "SheetTrigger",
+        "Button",
+        "History",
+        "SheetContent",
+        "SheetHeader",
+        "SheetTitle",
+        "Loader2",
+        "PipelineListCard"
+      ],
+      "used_by": [
+        "Home"
+      ]
+    },
+    {
+      "name": "ModeToggle",
+      "file": "src/components/mode-toggle.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [
+          "useState",
+          "useEffect"
+        ],
+        "custom": [
+          "useTheme"
+        ]
+      },
+      "uses_components": [
+        "Button",
+        "SunIcon",
+        "MoonIcon"
+      ],
+      "used_by": [
+        "RootLayout"
+      ]
+    },
+    {
+      "name": "Tabs",
+      "file": "src/components/ui/tabs.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "TabsPrimitive.Root",
+        "TabsPrimitive.List",
+        "TabsPrimitive.Trigger",
+        "TabsPrimitive.Content"
+      ],
+      "used_by": [
+        "ValidationQueue",
+        "ValidationSession"
+      ]
+    },
+    {
+      "name": "TabsList",
+      "file": "src/components/ui/tabs.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "TabsPrimitive.Root",
+        "TabsPrimitive.List",
+        "TabsPrimitive.Trigger",
+        "TabsPrimitive.Content"
+      ],
+      "used_by": [
+        "ValidationQueue",
+        "ValidationSession"
+      ]
+    },
+    {
+      "name": "TabsTrigger",
+      "file": "src/components/ui/tabs.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "TabsPrimitive.Root",
+        "TabsPrimitive.List",
+        "TabsPrimitive.Trigger",
+        "TabsPrimitive.Content"
+      ],
+      "used_by": [
+        "ValidationQueue",
+        "ValidationSession"
+      ]
+    },
+    {
+      "name": "TabsContent",
+      "file": "src/components/ui/tabs.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "TabsPrimitive.Root",
+        "TabsPrimitive.List",
+        "TabsPrimitive.Trigger",
+        "TabsPrimitive.Content"
+      ],
+      "used_by": [
+        "ValidationSession"
+      ]
+    },
+    {
+      "name": "Card",
+      "file": "src/components/ui/card.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": [
+        "ValidationQueue",
+        "ValidationSession",
+        "FileIcon",
+        "FileCard",
+        "PipelineDetailPage",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage",
+        "StatusIcon",
+        "PipelineListCard",
+        "FileUpload"
+      ]
+    },
+    {
+      "name": "CardHeader",
+      "file": "src/components/ui/card.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": [
+        "ValidationSession",
+        "FileIcon",
+        "FileCard",
+        "PipelineDetailPage",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage",
+        "FileUpload"
+      ]
+    },
+    {
+      "name": "CardTitle",
+      "file": "src/components/ui/card.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": [
+        "ValidationSession",
+        "FileIcon",
+        "FileCard",
+        "PipelineDetailPage",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage",
+        "FileUpload"
+      ]
+    },
+    {
+      "name": "CardDescription",
+      "file": "src/components/ui/card.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": [
+        "ValidationSession",
+        "FileUpload"
+      ]
+    },
+    {
+      "name": "CardAction",
+      "file": "src/components/ui/card.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": []
+    },
+    {
+      "name": "CardContent",
+      "file": "src/components/ui/card.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": [
+        "ValidationQueue",
+        "ValidationSession",
+        "FileIcon",
+        "FileCard",
+        "PipelineDetailPage",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage",
+        "FileUpload"
+      ]
+    },
+    {
+      "name": "CardFooter",
+      "file": "src/components/ui/card.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": []
+    },
+    {
+      "name": "Progress",
+      "file": "src/components/ui/progress.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "value",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "ProgressPrimitive.Root",
+        "ProgressPrimitive.Indicator"
+      ],
+      "used_by": [
+        "LoadingModal"
+      ]
+    },
+    {
+      "name": "Sheet",
+      "file": "src/components/ui/sheet.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SheetPrimitive.Root",
+        "SheetPrimitive.Trigger",
+        "SheetPrimitive.Close",
+        "SheetPrimitive.Portal",
+        "SheetPrimitive.Overlay",
+        "SheetPortal",
+        "SheetOverlay",
+        "SheetPrimitive.Content",
+        "XIcon",
+        "SheetPrimitive.Title",
+        "SheetPrimitive.Description"
+      ],
+      "used_by": [
+        "PipelineHistory"
+      ]
+    },
+    {
+      "name": "SheetTrigger",
+      "file": "src/components/ui/sheet.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SheetPrimitive.Root",
+        "SheetPrimitive.Trigger",
+        "SheetPrimitive.Close",
+        "SheetPrimitive.Portal",
+        "SheetPrimitive.Overlay",
+        "SheetPortal",
+        "SheetOverlay",
+        "SheetPrimitive.Content",
+        "XIcon",
+        "SheetPrimitive.Title",
+        "SheetPrimitive.Description"
+      ],
+      "used_by": [
+        "PipelineHistory"
+      ]
+    },
+    {
+      "name": "SheetClose",
+      "file": "src/components/ui/sheet.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SheetPrimitive.Root",
+        "SheetPrimitive.Trigger",
+        "SheetPrimitive.Close",
+        "SheetPrimitive.Portal",
+        "SheetPrimitive.Overlay",
+        "SheetPortal",
+        "SheetOverlay",
+        "SheetPrimitive.Content",
+        "XIcon",
+        "SheetPrimitive.Title",
+        "SheetPrimitive.Description"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "SheetPortal",
+      "file": "src/components/ui/sheet.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SheetPrimitive.Root",
+        "SheetPrimitive.Trigger",
+        "SheetPrimitive.Close",
+        "SheetPrimitive.Portal",
+        "SheetPrimitive.Overlay",
+        "SheetPortal",
+        "SheetOverlay",
+        "SheetPrimitive.Content",
+        "XIcon",
+        "SheetPrimitive.Title",
+        "SheetPrimitive.Description"
+      ],
+      "used_by": [
+        "Sheet",
+        "SheetTrigger",
+        "SheetClose",
+        "SheetPortal",
+        "SheetOverlay",
+        "SheetContent",
+        "SheetHeader",
+        "SheetFooter",
+        "SheetTitle",
+        "SheetDescription"
+      ]
+    },
+    {
+      "name": "SheetOverlay",
+      "file": "src/components/ui/sheet.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SheetPrimitive.Root",
+        "SheetPrimitive.Trigger",
+        "SheetPrimitive.Close",
+        "SheetPrimitive.Portal",
+        "SheetPrimitive.Overlay",
+        "SheetPortal",
+        "SheetOverlay",
+        "SheetPrimitive.Content",
+        "XIcon",
+        "SheetPrimitive.Title",
+        "SheetPrimitive.Description"
+      ],
+      "used_by": [
+        "Sheet",
+        "SheetTrigger",
+        "SheetClose",
+        "SheetPortal",
+        "SheetOverlay",
+        "SheetContent",
+        "SheetHeader",
+        "SheetFooter",
+        "SheetTitle",
+        "SheetDescription"
+      ]
+    },
+    {
+      "name": "SheetContent",
+      "file": "src/components/ui/sheet.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "children",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "side",
+          "optional": true,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SheetPrimitive.Root",
+        "SheetPrimitive.Trigger",
+        "SheetPrimitive.Close",
+        "SheetPrimitive.Portal",
+        "SheetPrimitive.Overlay",
+        "SheetPortal",
+        "SheetOverlay",
+        "SheetPrimitive.Content",
+        "XIcon",
+        "SheetPrimitive.Title",
+        "SheetPrimitive.Description"
+      ],
+      "used_by": [
+        "PipelineHistory"
+      ]
+    },
+    {
+      "name": "SheetHeader",
+      "file": "src/components/ui/sheet.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SheetPrimitive.Root",
+        "SheetPrimitive.Trigger",
+        "SheetPrimitive.Close",
+        "SheetPrimitive.Portal",
+        "SheetPrimitive.Overlay",
+        "SheetPortal",
+        "SheetOverlay",
+        "SheetPrimitive.Content",
+        "XIcon",
+        "SheetPrimitive.Title",
+        "SheetPrimitive.Description"
+      ],
+      "used_by": [
+        "PipelineHistory"
+      ]
+    },
+    {
+      "name": "SheetFooter",
+      "file": "src/components/ui/sheet.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SheetPrimitive.Root",
+        "SheetPrimitive.Trigger",
+        "SheetPrimitive.Close",
+        "SheetPrimitive.Portal",
+        "SheetPrimitive.Overlay",
+        "SheetPortal",
+        "SheetOverlay",
+        "SheetPrimitive.Content",
+        "XIcon",
+        "SheetPrimitive.Title",
+        "SheetPrimitive.Description"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "SheetTitle",
+      "file": "src/components/ui/sheet.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SheetPrimitive.Root",
+        "SheetPrimitive.Trigger",
+        "SheetPrimitive.Close",
+        "SheetPrimitive.Portal",
+        "SheetPrimitive.Overlay",
+        "SheetPortal",
+        "SheetOverlay",
+        "SheetPrimitive.Content",
+        "XIcon",
+        "SheetPrimitive.Title",
+        "SheetPrimitive.Description"
+      ],
+      "used_by": [
+        "PipelineHistory"
+      ]
+    },
+    {
+      "name": "SheetDescription",
+      "file": "src/components/ui/sheet.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SheetPrimitive.Root",
+        "SheetPrimitive.Trigger",
+        "SheetPrimitive.Close",
+        "SheetPrimitive.Portal",
+        "SheetPrimitive.Overlay",
+        "SheetPortal",
+        "SheetOverlay",
+        "SheetPrimitive.Content",
+        "XIcon",
+        "SheetPrimitive.Title",
+        "SheetPrimitive.Description"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "Label",
+      "file": "src/components/ui/label.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "LabelPrimitive.Root"
+      ],
+      "used_by": [
+        "ValidationSession",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage",
+        "FormItem",
+        "FormLabel",
+        "FormControl",
+        "FormDescription",
+        "FormMessage"
+      ]
+    },
+    {
+      "name": "Toaster",
+      "file": "src/components/ui/sonner.tsx",
+      "type": "arrow",
+      "props": [],
+      "hooks_used": {
+        "builtin": [],
+        "custom": [
+          "useTheme"
+        ]
+      },
+      "uses_components": [
+        "Sonner"
+      ],
+      "used_by": [
+        "RootLayout"
+      ]
+    },
+    {
+      "name": "Switch",
+      "file": "src/components/ui/switch.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SwitchPrimitive.Root",
+        "SwitchPrimitive.Thumb"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "RadioGroup",
+      "file": "src/components/ui/radio-group.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "RadioGroupPrimitive.Root",
+        "RadioGroupPrimitive.Item",
+        "RadioGroupPrimitive.Indicator",
+        "CircleIcon"
+      ],
+      "used_by": [
+        "ValidationSession",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage"
+      ]
+    },
+    {
+      "name": "RadioGroupItem",
+      "file": "src/components/ui/radio-group.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "RadioGroupPrimitive.Root",
+        "RadioGroupPrimitive.Item",
+        "RadioGroupPrimitive.Indicator",
+        "CircleIcon"
+      ],
+      "used_by": [
+        "ValidationSession",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage"
+      ]
+    },
+    {
+      "name": "Dialog",
+      "file": "src/components/ui/dialog.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "DialogPrimitive.Root",
+        "DialogPrimitive.Trigger",
+        "DialogPrimitive.Portal",
+        "DialogPrimitive.Close",
+        "DialogPrimitive.Overlay",
+        "DialogPortal",
+        "DialogOverlay",
+        "DialogPrimitive.Content",
+        "XIcon",
+        "DialogPrimitive.Title",
+        "DialogPrimitive.Description"
+      ],
+      "used_by": [
+        "ValidationQueue",
+        "ValidationSession",
+        "LoadingModal"
+      ]
+    },
+    {
+      "name": "DialogTrigger",
+      "file": "src/components/ui/dialog.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "DialogPrimitive.Root",
+        "DialogPrimitive.Trigger",
+        "DialogPrimitive.Portal",
+        "DialogPrimitive.Close",
+        "DialogPrimitive.Overlay",
+        "DialogPortal",
+        "DialogOverlay",
+        "DialogPrimitive.Content",
+        "XIcon",
+        "DialogPrimitive.Title",
+        "DialogPrimitive.Description"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "DialogPortal",
+      "file": "src/components/ui/dialog.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "DialogPrimitive.Root",
+        "DialogPrimitive.Trigger",
+        "DialogPrimitive.Portal",
+        "DialogPrimitive.Close",
+        "DialogPrimitive.Overlay",
+        "DialogPortal",
+        "DialogOverlay",
+        "DialogPrimitive.Content",
+        "XIcon",
+        "DialogPrimitive.Title",
+        "DialogPrimitive.Description"
+      ],
+      "used_by": [
+        "Dialog",
+        "DialogTrigger",
+        "DialogPortal",
+        "DialogClose",
+        "DialogOverlay",
+        "DialogContent",
+        "DialogHeader",
+        "DialogFooter",
+        "DialogTitle",
+        "DialogDescription"
+      ]
+    },
+    {
+      "name": "DialogClose",
+      "file": "src/components/ui/dialog.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "DialogPrimitive.Root",
+        "DialogPrimitive.Trigger",
+        "DialogPrimitive.Portal",
+        "DialogPrimitive.Close",
+        "DialogPrimitive.Overlay",
+        "DialogPortal",
+        "DialogOverlay",
+        "DialogPrimitive.Content",
+        "XIcon",
+        "DialogPrimitive.Title",
+        "DialogPrimitive.Description"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "DialogOverlay",
+      "file": "src/components/ui/dialog.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "DialogPrimitive.Root",
+        "DialogPrimitive.Trigger",
+        "DialogPrimitive.Portal",
+        "DialogPrimitive.Close",
+        "DialogPrimitive.Overlay",
+        "DialogPortal",
+        "DialogOverlay",
+        "DialogPrimitive.Content",
+        "XIcon",
+        "DialogPrimitive.Title",
+        "DialogPrimitive.Description"
+      ],
+      "used_by": [
+        "Dialog",
+        "DialogTrigger",
+        "DialogPortal",
+        "DialogClose",
+        "DialogOverlay",
+        "DialogContent",
+        "DialogHeader",
+        "DialogFooter",
+        "DialogTitle",
+        "DialogDescription"
+      ]
+    },
+    {
+      "name": "DialogContent",
+      "file": "src/components/ui/dialog.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "children",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "showCloseButton",
+          "optional": true,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "DialogPrimitive.Root",
+        "DialogPrimitive.Trigger",
+        "DialogPrimitive.Portal",
+        "DialogPrimitive.Close",
+        "DialogPrimitive.Overlay",
+        "DialogPortal",
+        "DialogOverlay",
+        "DialogPrimitive.Content",
+        "XIcon",
+        "DialogPrimitive.Title",
+        "DialogPrimitive.Description"
+      ],
+      "used_by": [
+        "ValidationQueue",
+        "ValidationSession",
+        "LoadingModal"
+      ]
+    },
+    {
+      "name": "DialogHeader",
+      "file": "src/components/ui/dialog.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "DialogPrimitive.Root",
+        "DialogPrimitive.Trigger",
+        "DialogPrimitive.Portal",
+        "DialogPrimitive.Close",
+        "DialogPrimitive.Overlay",
+        "DialogPortal",
+        "DialogOverlay",
+        "DialogPrimitive.Content",
+        "XIcon",
+        "DialogPrimitive.Title",
+        "DialogPrimitive.Description"
+      ],
+      "used_by": [
+        "ValidationQueue",
+        "ValidationSession"
+      ]
+    },
+    {
+      "name": "DialogFooter",
+      "file": "src/components/ui/dialog.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "DialogPrimitive.Root",
+        "DialogPrimitive.Trigger",
+        "DialogPrimitive.Portal",
+        "DialogPrimitive.Close",
+        "DialogPrimitive.Overlay",
+        "DialogPortal",
+        "DialogOverlay",
+        "DialogPrimitive.Content",
+        "XIcon",
+        "DialogPrimitive.Title",
+        "DialogPrimitive.Description"
+      ],
+      "used_by": [
+        "ValidationQueue",
+        "ValidationSession"
+      ]
+    },
+    {
+      "name": "DialogTitle",
+      "file": "src/components/ui/dialog.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "DialogPrimitive.Root",
+        "DialogPrimitive.Trigger",
+        "DialogPrimitive.Portal",
+        "DialogPrimitive.Close",
+        "DialogPrimitive.Overlay",
+        "DialogPortal",
+        "DialogOverlay",
+        "DialogPrimitive.Content",
+        "XIcon",
+        "DialogPrimitive.Title",
+        "DialogPrimitive.Description"
+      ],
+      "used_by": [
+        "ValidationQueue",
+        "ValidationSession",
+        "LoadingModal"
+      ]
+    },
+    {
+      "name": "DialogDescription",
+      "file": "src/components/ui/dialog.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "DialogPrimitive.Root",
+        "DialogPrimitive.Trigger",
+        "DialogPrimitive.Portal",
+        "DialogPrimitive.Close",
+        "DialogPrimitive.Overlay",
+        "DialogPortal",
+        "DialogOverlay",
+        "DialogPrimitive.Content",
+        "XIcon",
+        "DialogPrimitive.Title",
+        "DialogPrimitive.Description"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "Badge",
+      "file": "src/components/ui/badge.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "variant",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "asChild",
+          "optional": true,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "Comp"
+      ],
+      "used_by": [
+        "Home",
+        "ValidationSession",
+        "FileIcon",
+        "StatusBadge",
+        "FileCard",
+        "PipelineDetailPage",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage",
+        "StatusIcon",
+        "PipelineListCard",
+        "FileUpload"
+      ]
+    },
+    {
+      "name": "Table",
+      "file": "src/components/ui/table.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": [
+        "ValidationSession",
+        "FileIcon",
+        "FileCard",
+        "PipelineDetailPage",
+        "StatusIcon",
+        "PipelineListCard"
+      ]
+    },
+    {
+      "name": "TableHeader",
+      "file": "src/components/ui/table.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": [
+        "ValidationSession"
+      ]
+    },
+    {
+      "name": "TableBody",
+      "file": "src/components/ui/table.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": [
+        "ValidationSession"
+      ]
+    },
+    {
+      "name": "TableFooter",
+      "file": "src/components/ui/table.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": []
+    },
+    {
+      "name": "TableRow",
+      "file": "src/components/ui/table.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": [
+        "ValidationSession"
+      ]
+    },
+    {
+      "name": "TableHead",
+      "file": "src/components/ui/table.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": [
+        "ValidationSession"
+      ]
+    },
+    {
+      "name": "TableCell",
+      "file": "src/components/ui/table.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": [
+        "ValidationSession"
+      ]
+    },
+    {
+      "name": "TableCaption",
+      "file": "src/components/ui/table.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": []
+    },
+    {
+      "name": "Separator",
+      "file": "src/components/ui/separator.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "orientation",
+          "optional": true,
+          "type": "unknown"
+        },
+        {
+          "name": "decorative",
+          "optional": true,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SeparatorPrimitive.Root"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "Button",
+      "file": "src/components/ui/button.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "variant",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "size",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "asChild",
+          "optional": true,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "Comp"
+      ],
+      "used_by": [
+        "Home",
+        "ValidationQueue",
+        "ValidationSession",
+        "FileIcon",
+        "FileCard",
+        "PipelineDetailPage",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage",
+        "FileUpload",
+        "PipelineHistory",
+        "ModeToggle"
+      ]
+    },
+    {
+      "name": "Select",
+      "file": "src/components/ui/select.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SelectPrimitive.Root",
+        "SelectPrimitive.Group",
+        "SelectPrimitive.Value",
+        "SelectPrimitive.Trigger",
+        "SelectPrimitive.Icon",
+        "ChevronDownIcon",
+        "SelectPrimitive.Portal",
+        "SelectPrimitive.Content",
+        "SelectScrollUpButton",
+        "SelectPrimitive.Viewport",
+        "SelectScrollDownButton",
+        "SelectPrimitive.Label",
+        "SelectPrimitive.Item",
+        "SelectPrimitive.ItemIndicator",
+        "CheckIcon",
+        "SelectPrimitive.ItemText",
+        "SelectPrimitive.Separator",
+        "SelectPrimitive.ScrollUpButton",
+        "ChevronUpIcon",
+        "SelectPrimitive.ScrollDownButton"
+      ],
+      "used_by": [
+        "ValidationSession",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage"
+      ]
+    },
+    {
+      "name": "SelectGroup",
+      "file": "src/components/ui/select.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SelectPrimitive.Root",
+        "SelectPrimitive.Group",
+        "SelectPrimitive.Value",
+        "SelectPrimitive.Trigger",
+        "SelectPrimitive.Icon",
+        "ChevronDownIcon",
+        "SelectPrimitive.Portal",
+        "SelectPrimitive.Content",
+        "SelectScrollUpButton",
+        "SelectPrimitive.Viewport",
+        "SelectScrollDownButton",
+        "SelectPrimitive.Label",
+        "SelectPrimitive.Item",
+        "SelectPrimitive.ItemIndicator",
+        "CheckIcon",
+        "SelectPrimitive.ItemText",
+        "SelectPrimitive.Separator",
+        "SelectPrimitive.ScrollUpButton",
+        "ChevronUpIcon",
+        "SelectPrimitive.ScrollDownButton"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "SelectValue",
+      "file": "src/components/ui/select.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SelectPrimitive.Root",
+        "SelectPrimitive.Group",
+        "SelectPrimitive.Value",
+        "SelectPrimitive.Trigger",
+        "SelectPrimitive.Icon",
+        "ChevronDownIcon",
+        "SelectPrimitive.Portal",
+        "SelectPrimitive.Content",
+        "SelectScrollUpButton",
+        "SelectPrimitive.Viewport",
+        "SelectScrollDownButton",
+        "SelectPrimitive.Label",
+        "SelectPrimitive.Item",
+        "SelectPrimitive.ItemIndicator",
+        "CheckIcon",
+        "SelectPrimitive.ItemText",
+        "SelectPrimitive.Separator",
+        "SelectPrimitive.ScrollUpButton",
+        "ChevronUpIcon",
+        "SelectPrimitive.ScrollDownButton"
+      ],
+      "used_by": [
+        "ValidationSession",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage"
+      ]
+    },
+    {
+      "name": "SelectTrigger",
+      "file": "src/components/ui/select.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "size",
+          "optional": true,
+          "type": "unknown"
+        },
+        {
+          "name": "children",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SelectPrimitive.Root",
+        "SelectPrimitive.Group",
+        "SelectPrimitive.Value",
+        "SelectPrimitive.Trigger",
+        "SelectPrimitive.Icon",
+        "ChevronDownIcon",
+        "SelectPrimitive.Portal",
+        "SelectPrimitive.Content",
+        "SelectScrollUpButton",
+        "SelectPrimitive.Viewport",
+        "SelectScrollDownButton",
+        "SelectPrimitive.Label",
+        "SelectPrimitive.Item",
+        "SelectPrimitive.ItemIndicator",
+        "CheckIcon",
+        "SelectPrimitive.ItemText",
+        "SelectPrimitive.Separator",
+        "SelectPrimitive.ScrollUpButton",
+        "ChevronUpIcon",
+        "SelectPrimitive.ScrollDownButton"
+      ],
+      "used_by": [
+        "ValidationSession",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage"
+      ]
+    },
+    {
+      "name": "SelectContent",
+      "file": "src/components/ui/select.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "children",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "position",
+          "optional": true,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SelectPrimitive.Root",
+        "SelectPrimitive.Group",
+        "SelectPrimitive.Value",
+        "SelectPrimitive.Trigger",
+        "SelectPrimitive.Icon",
+        "ChevronDownIcon",
+        "SelectPrimitive.Portal",
+        "SelectPrimitive.Content",
+        "SelectScrollUpButton",
+        "SelectPrimitive.Viewport",
+        "SelectScrollDownButton",
+        "SelectPrimitive.Label",
+        "SelectPrimitive.Item",
+        "SelectPrimitive.ItemIndicator",
+        "CheckIcon",
+        "SelectPrimitive.ItemText",
+        "SelectPrimitive.Separator",
+        "SelectPrimitive.ScrollUpButton",
+        "ChevronUpIcon",
+        "SelectPrimitive.ScrollDownButton"
+      ],
+      "used_by": [
+        "ValidationSession",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage"
+      ]
+    },
+    {
+      "name": "SelectLabel",
+      "file": "src/components/ui/select.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SelectPrimitive.Root",
+        "SelectPrimitive.Group",
+        "SelectPrimitive.Value",
+        "SelectPrimitive.Trigger",
+        "SelectPrimitive.Icon",
+        "ChevronDownIcon",
+        "SelectPrimitive.Portal",
+        "SelectPrimitive.Content",
+        "SelectScrollUpButton",
+        "SelectPrimitive.Viewport",
+        "SelectScrollDownButton",
+        "SelectPrimitive.Label",
+        "SelectPrimitive.Item",
+        "SelectPrimitive.ItemIndicator",
+        "CheckIcon",
+        "SelectPrimitive.ItemText",
+        "SelectPrimitive.Separator",
+        "SelectPrimitive.ScrollUpButton",
+        "ChevronUpIcon",
+        "SelectPrimitive.ScrollDownButton"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "SelectItem",
+      "file": "src/components/ui/select.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "children",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SelectPrimitive.Root",
+        "SelectPrimitive.Group",
+        "SelectPrimitive.Value",
+        "SelectPrimitive.Trigger",
+        "SelectPrimitive.Icon",
+        "ChevronDownIcon",
+        "SelectPrimitive.Portal",
+        "SelectPrimitive.Content",
+        "SelectScrollUpButton",
+        "SelectPrimitive.Viewport",
+        "SelectScrollDownButton",
+        "SelectPrimitive.Label",
+        "SelectPrimitive.Item",
+        "SelectPrimitive.ItemIndicator",
+        "CheckIcon",
+        "SelectPrimitive.ItemText",
+        "SelectPrimitive.Separator",
+        "SelectPrimitive.ScrollUpButton",
+        "ChevronUpIcon",
+        "SelectPrimitive.ScrollDownButton"
+      ],
+      "used_by": [
+        "ValidationSession",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage"
+      ]
+    },
+    {
+      "name": "SelectSeparator",
+      "file": "src/components/ui/select.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SelectPrimitive.Root",
+        "SelectPrimitive.Group",
+        "SelectPrimitive.Value",
+        "SelectPrimitive.Trigger",
+        "SelectPrimitive.Icon",
+        "ChevronDownIcon",
+        "SelectPrimitive.Portal",
+        "SelectPrimitive.Content",
+        "SelectScrollUpButton",
+        "SelectPrimitive.Viewport",
+        "SelectScrollDownButton",
+        "SelectPrimitive.Label",
+        "SelectPrimitive.Item",
+        "SelectPrimitive.ItemIndicator",
+        "CheckIcon",
+        "SelectPrimitive.ItemText",
+        "SelectPrimitive.Separator",
+        "SelectPrimitive.ScrollUpButton",
+        "ChevronUpIcon",
+        "SelectPrimitive.ScrollDownButton"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "SelectScrollUpButton",
+      "file": "src/components/ui/select.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SelectPrimitive.Root",
+        "SelectPrimitive.Group",
+        "SelectPrimitive.Value",
+        "SelectPrimitive.Trigger",
+        "SelectPrimitive.Icon",
+        "ChevronDownIcon",
+        "SelectPrimitive.Portal",
+        "SelectPrimitive.Content",
+        "SelectScrollUpButton",
+        "SelectPrimitive.Viewport",
+        "SelectScrollDownButton",
+        "SelectPrimitive.Label",
+        "SelectPrimitive.Item",
+        "SelectPrimitive.ItemIndicator",
+        "CheckIcon",
+        "SelectPrimitive.ItemText",
+        "SelectPrimitive.Separator",
+        "SelectPrimitive.ScrollUpButton",
+        "ChevronUpIcon",
+        "SelectPrimitive.ScrollDownButton"
+      ],
+      "used_by": [
+        "Select",
+        "SelectGroup",
+        "SelectValue",
+        "SelectTrigger",
+        "SelectContent",
+        "SelectLabel",
+        "SelectItem",
+        "SelectSeparator",
+        "SelectScrollUpButton",
+        "SelectScrollDownButton"
+      ]
+    },
+    {
+      "name": "SelectScrollDownButton",
+      "file": "src/components/ui/select.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [
+        "SelectPrimitive.Root",
+        "SelectPrimitive.Group",
+        "SelectPrimitive.Value",
+        "SelectPrimitive.Trigger",
+        "SelectPrimitive.Icon",
+        "ChevronDownIcon",
+        "SelectPrimitive.Portal",
+        "SelectPrimitive.Content",
+        "SelectScrollUpButton",
+        "SelectPrimitive.Viewport",
+        "SelectScrollDownButton",
+        "SelectPrimitive.Label",
+        "SelectPrimitive.Item",
+        "SelectPrimitive.ItemIndicator",
+        "CheckIcon",
+        "SelectPrimitive.ItemText",
+        "SelectPrimitive.Separator",
+        "SelectPrimitive.ScrollUpButton",
+        "ChevronUpIcon",
+        "SelectPrimitive.ScrollDownButton"
+      ],
+      "used_by": [
+        "Select",
+        "SelectGroup",
+        "SelectValue",
+        "SelectTrigger",
+        "SelectContent",
+        "SelectLabel",
+        "SelectItem",
+        "SelectSeparator",
+        "SelectScrollUpButton",
+        "SelectScrollDownButton"
+      ]
+    },
+    {
+      "name": "Textarea",
+      "file": "src/components/ui/textarea.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": [
+        "ValidationSession"
+      ]
+    },
+    {
+      "name": "Input",
+      "file": "src/components/ui/input.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        },
+        {
+          "name": "type",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [],
+        "custom": []
+      },
+      "uses_components": [],
+      "used_by": [
+        "ValidationSession",
+        "ConfidenceBadge",
+        "ExpressionTypeBadge",
+        "CrosstabColumnCard",
+        "ReviewPage"
+      ]
+    },
+    {
+      "name": "FormItem",
+      "file": "src/components/ui/form.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [
+          "useContext",
+          "useId"
+        ],
+        "custom": [
+          "useFormContext",
+          "useFormState",
+          "useFormField"
+        ]
+      },
+      "uses_components": [
+        "TFieldValues",
+        "FormFieldContextValue",
+        "FormFieldContext.Provider",
+        "Controller",
+        "FormField",
+        "FormItemContextValue",
+        "FormItemContext.Provider",
+        "Label",
+        "Slot"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "FormLabel",
+      "file": "src/components/ui/form.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [
+          "useContext",
+          "useId"
+        ],
+        "custom": [
+          "useFormContext",
+          "useFormState",
+          "useFormField"
+        ]
+      },
+      "uses_components": [
+        "TFieldValues",
+        "FormFieldContextValue",
+        "FormFieldContext.Provider",
+        "Controller",
+        "FormField",
+        "FormItemContextValue",
+        "FormItemContext.Provider",
+        "Label",
+        "Slot"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "FormControl",
+      "file": "src/components/ui/form.tsx",
+      "type": "function",
+      "props": [],
+      "hooks_used": {
+        "builtin": [
+          "useContext",
+          "useId"
+        ],
+        "custom": [
+          "useFormContext",
+          "useFormState",
+          "useFormField"
+        ]
+      },
+      "uses_components": [
+        "TFieldValues",
+        "FormFieldContextValue",
+        "FormFieldContext.Provider",
+        "Controller",
+        "FormField",
+        "FormItemContextValue",
+        "FormItemContext.Provider",
+        "Label",
+        "Slot"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "FormDescription",
+      "file": "src/components/ui/form.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [
+          "useContext",
+          "useId"
+        ],
+        "custom": [
+          "useFormContext",
+          "useFormState",
+          "useFormField"
+        ]
+      },
+      "uses_components": [
+        "TFieldValues",
+        "FormFieldContextValue",
+        "FormFieldContext.Provider",
+        "Controller",
+        "FormField",
+        "FormItemContextValue",
+        "FormItemContext.Provider",
+        "Label",
+        "Slot"
+      ],
+      "used_by": []
+    },
+    {
+      "name": "FormMessage",
+      "file": "src/components/ui/form.tsx",
+      "type": "function",
+      "props": [
+        {
+          "name": "className",
+          "optional": false,
+          "type": "unknown"
+        }
+      ],
+      "hooks_used": {
+        "builtin": [
+          "useContext",
+          "useId"
+        ],
+        "custom": [
+          "useFormContext",
+          "useFormState",
+          "useFormField"
+        ]
+      },
+      "uses_components": [
+        "TFieldValues",
+        "FormFieldContextValue",
+        "FormFieldContext.Provider",
+        "Controller",
+        "FormField",
+        "FormItemContextValue",
+        "FormItemContext.Provider",
+        "Label",
+        "Slot"
+      ],
+      "used_by": []
+    }
+  ],
+  "component_tree": {
+    "RootLayout": [
+      "ThemeProvider",
+      "ModeToggle",
+      "Toaster"
+    ],
+    "Home": [
+      "File",
+      "PageHeader",
+      "PipelineHistory",
+      "Button",
+      "Badge",
+      "FileUpload"
+    ],
+    "Loading": [],
+    "ValidationQueue": [
+      "ValidationQueueData",
+      "Button",
+      "Upload",
+      "Card",
+      "CardContent",
+      "Tabs",
+      "TabsList",
+      "TabsTrigger",
+      "StatusBadge",
+      "Clock",
+      "Eye",
+      "Trash2",
+      "Dialog",
+      "DialogContent",
+      "DialogHeader",
+      "DialogTitle",
+      "DialogFooter"
+    ],
+    "ValidationSession": [
+      "SessionData",
+      "ColumnFeedback",
+      "Card",
+      "CardHeader",
+      "CardTitle",
+      "AlertCircle",
+      "CardDescription",
+      "CardContent",
+      "Button",
+      "ArrowLeft",
+      "Badge",
+      "Clock",
+      "CheckCircle",
+      "Trash2",
+      "Tabs",
+      "TabsList",
+      "TabsTrigger",
+      "BarChart3",
+      "TabsContent",
+      "FileText",
+      "Table",
+      "TableHeader",
+      "TableRow",
+      "TableHead",
+      "TableBody",
+      "TableCell",
+      "Label",
+      "Select",
+      "SelectTrigger",
+      "SelectValue",
+      "SelectContent",
+      "SelectItem",
+      "RadioGroup",
+      "RadioGroupItem",
+      "Input",
+      "Textarea",
+      "Eye",
+      "Dialog",
+      "DialogContent",
+      "DialogHeader",
+      "DialogTitle",
+      "DialogFooter"
+    ],
+    "FileIcon": [
+      "FileSpreadsheet",
+      "FileText",
+      "File",
+      "Badge",
+      "CheckCircle",
+      "AlertCircle",
+      "Clock",
+      "AlertTriangle",
+      "Card",
+      "CardContent",
+      "FileIcon",
+      "Button",
+      "Download",
+      "PipelineDetails",
+      "Loader2",
+      "ArrowLeft",
+      "StatusBadge",
+      "Play",
+      "XCircle",
+      "CardHeader",
+      "CardTitle",
+      "Table",
+      "BarChart3",
+      "Layers",
+      "FileCard"
+    ],
+    "StatusBadge": [
+      "Badge",
+      "Icon"
+    ],
+    "FileCard": [
+      "FileSpreadsheet",
+      "FileText",
+      "File",
+      "Badge",
+      "CheckCircle",
+      "AlertCircle",
+      "Clock",
+      "AlertTriangle",
+      "Card",
+      "CardContent",
+      "FileIcon",
+      "Button",
+      "Download",
+      "PipelineDetails",
+      "Loader2",
+      "ArrowLeft",
+      "StatusBadge",
+      "Play",
+      "XCircle",
+      "CardHeader",
+      "CardTitle",
+      "Table",
+      "BarChart3",
+      "Layers",
+      "FileCard"
+    ],
+    "PipelineDetailPage": [
+      "FileSpreadsheet",
+      "FileText",
+      "File",
+      "Badge",
+      "CheckCircle",
+      "AlertCircle",
+      "Clock",
+      "AlertTriangle",
+      "Card",
+      "CardContent",
+      "FileIcon",
+      "Button",
+      "Download",
+      "PipelineDetails",
+      "Loader2",
+      "ArrowLeft",
+      "StatusBadge",
+      "Play",
+      "XCircle",
+      "CardHeader",
+      "CardTitle",
+      "Table",
+      "BarChart3",
+      "Layers",
+      "FileCard"
+    ],
+    "ConfidenceBadge": [
+      "Badge",
+      "Card",
+      "CardHeader",
+      "CardTitle",
+      "ConfidenceBadge",
+      "ExpressionTypeBadge",
+      "CardContent",
+      "Label",
+      "ListOrdered",
+      "ChevronDown",
+      "ChevronRight",
+      "AlertTriangle",
+      "RadioGroup",
+      "RadioGroupItem",
+      "CheckCircle",
+      "Lightbulb",
+      "Edit3",
+      "SkipForward",
+      "Select",
+      "SelectTrigger",
+      "SelectValue",
+      "SelectContent",
+      "SelectItem",
+      "Input",
+      "CrosstabReviewState",
+      "Map",
+      "Loader2",
+      "PageHeader",
+      "Button",
+      "ArrowLeft",
+      "XCircle",
+      "CrosstabColumnCard",
+      "Play"
+    ],
+    "ExpressionTypeBadge": [
+      "Badge",
+      "Card",
+      "CardHeader",
+      "CardTitle",
+      "ConfidenceBadge",
+      "ExpressionTypeBadge",
+      "CardContent",
+      "Label",
+      "ListOrdered",
+      "ChevronDown",
+      "ChevronRight",
+      "AlertTriangle",
+      "RadioGroup",
+      "RadioGroupItem",
+      "CheckCircle",
+      "Lightbulb",
+      "Edit3",
+      "SkipForward",
+      "Select",
+      "SelectTrigger",
+      "SelectValue",
+      "SelectContent",
+      "SelectItem",
+      "Input",
+      "CrosstabReviewState",
+      "Map",
+      "Loader2",
+      "PageHeader",
+      "Button",
+      "ArrowLeft",
+      "XCircle",
+      "CrosstabColumnCard",
+      "Play"
+    ],
+    "CrosstabColumnCard": [
+      "Badge",
+      "Card",
+      "CardHeader",
+      "CardTitle",
+      "ConfidenceBadge",
+      "ExpressionTypeBadge",
+      "CardContent",
+      "Label",
+      "ListOrdered",
+      "ChevronDown",
+      "ChevronRight",
+      "AlertTriangle",
+      "RadioGroup",
+      "RadioGroupItem",
+      "CheckCircle",
+      "Lightbulb",
+      "Edit3",
+      "SkipForward",
+      "Select",
+      "SelectTrigger",
+      "SelectValue",
+      "SelectContent",
+      "SelectItem",
+      "Input",
+      "CrosstabReviewState",
+      "Map",
+      "Loader2",
+      "PageHeader",
+      "Button",
+      "ArrowLeft",
+      "XCircle",
+      "CrosstabColumnCard",
+      "Play"
+    ],
+    "ReviewPage": [
+      "Badge",
+      "Card",
+      "CardHeader",
+      "CardTitle",
+      "ConfidenceBadge",
+      "ExpressionTypeBadge",
+      "CardContent",
+      "Label",
+      "ListOrdered",
+      "ChevronDown",
+      "ChevronRight",
+      "AlertTriangle",
+      "RadioGroup",
+      "RadioGroupItem",
+      "CheckCircle",
+      "Lightbulb",
+      "Edit3",
+      "SkipForward",
+      "Select",
+      "SelectTrigger",
+      "SelectValue",
+      "SelectContent",
+      "SelectItem",
+      "Input",
+      "CrosstabReviewState",
+      "Map",
+      "Loader2",
+      "PageHeader",
+      "Button",
+      "ArrowLeft",
+      "XCircle",
+      "CrosstabColumnCard",
+      "Play"
+    ],
+    "ThemeProvider": [
+      "NextThemesProvider"
+    ],
+    "PageHeader": [],
+    "StatusIcon": [
+      "CheckCircle",
+      "AlertCircle",
+      "Loader2",
+      "AlertTriangle",
+      "XCircle",
+      "Clock",
+      "Badge",
+      "Card",
+      "StatusIcon",
+      "StatusBadge",
+      "Table",
+      "ChevronRight"
+    ],
+    "PipelineListCard": [
+      "CheckCircle",
+      "AlertCircle",
+      "Loader2",
+      "AlertTriangle",
+      "XCircle",
+      "Clock",
+      "Badge",
+      "Card",
+      "StatusIcon",
+      "StatusBadge",
+      "Table",
+      "ChevronRight"
+    ],
+    "FileUpload": [
+      "HTMLInputElement",
+      "Card",
+      "CardHeader",
+      "CardTitle",
+      "Badge",
+      "CardDescription",
+      "CardContent",
+      "CheckCircle",
+      "Button",
+      "X",
+      "Upload"
+    ],
+    "LoadingModal": [
+      "Dialog",
+      "DialogContent",
+      "DialogTitle",
+      "Progress"
+    ],
+    "PipelineHistory": [
+      "PipelineListItem",
+      "Sheet",
+      "SheetTrigger",
+      "Button",
+      "History",
+      "SheetContent",
+      "SheetHeader",
+      "SheetTitle",
+      "Loader2",
+      "PipelineListCard"
+    ],
+    "ModeToggle": [
+      "Button",
+      "SunIcon",
+      "MoonIcon"
+    ],
+    "Tabs": [
+      "TabsPrimitive.Root",
+      "TabsPrimitive.List",
+      "TabsPrimitive.Trigger",
+      "TabsPrimitive.Content"
+    ],
+    "TabsList": [
+      "TabsPrimitive.Root",
+      "TabsPrimitive.List",
+      "TabsPrimitive.Trigger",
+      "TabsPrimitive.Content"
+    ],
+    "TabsTrigger": [
+      "TabsPrimitive.Root",
+      "TabsPrimitive.List",
+      "TabsPrimitive.Trigger",
+      "TabsPrimitive.Content"
+    ],
+    "TabsContent": [
+      "TabsPrimitive.Root",
+      "TabsPrimitive.List",
+      "TabsPrimitive.Trigger",
+      "TabsPrimitive.Content"
+    ],
+    "Card": [],
+    "CardHeader": [],
+    "CardTitle": [],
+    "CardDescription": [],
+    "CardAction": [],
+    "CardContent": [],
+    "CardFooter": [],
+    "Progress": [
+      "ProgressPrimitive.Root",
+      "ProgressPrimitive.Indicator"
+    ],
+    "Sheet": [
+      "SheetPrimitive.Root",
+      "SheetPrimitive.Trigger",
+      "SheetPrimitive.Close",
+      "SheetPrimitive.Portal",
+      "SheetPrimitive.Overlay",
+      "SheetPortal",
+      "SheetOverlay",
+      "SheetPrimitive.Content",
+      "XIcon",
+      "SheetPrimitive.Title",
+      "SheetPrimitive.Description"
+    ],
+    "SheetTrigger": [
+      "SheetPrimitive.Root",
+      "SheetPrimitive.Trigger",
+      "SheetPrimitive.Close",
+      "SheetPrimitive.Portal",
+      "SheetPrimitive.Overlay",
+      "SheetPortal",
+      "SheetOverlay",
+      "SheetPrimitive.Content",
+      "XIcon",
+      "SheetPrimitive.Title",
+      "SheetPrimitive.Description"
+    ],
+    "SheetClose": [
+      "SheetPrimitive.Root",
+      "SheetPrimitive.Trigger",
+      "SheetPrimitive.Close",
+      "SheetPrimitive.Portal",
+      "SheetPrimitive.Overlay",
+      "SheetPortal",
+      "SheetOverlay",
+      "SheetPrimitive.Content",
+      "XIcon",
+      "SheetPrimitive.Title",
+      "SheetPrimitive.Description"
+    ],
+    "SheetPortal": [
+      "SheetPrimitive.Root",
+      "SheetPrimitive.Trigger",
+      "SheetPrimitive.Close",
+      "SheetPrimitive.Portal",
+      "SheetPrimitive.Overlay",
+      "SheetPortal",
+      "SheetOverlay",
+      "SheetPrimitive.Content",
+      "XIcon",
+      "SheetPrimitive.Title",
+      "SheetPrimitive.Description"
+    ],
+    "SheetOverlay": [
+      "SheetPrimitive.Root",
+      "SheetPrimitive.Trigger",
+      "SheetPrimitive.Close",
+      "SheetPrimitive.Portal",
+      "SheetPrimitive.Overlay",
+      "SheetPortal",
+      "SheetOverlay",
+      "SheetPrimitive.Content",
+      "XIcon",
+      "SheetPrimitive.Title",
+      "SheetPrimitive.Description"
+    ],
+    "SheetContent": [
+      "SheetPrimitive.Root",
+      "SheetPrimitive.Trigger",
+      "SheetPrimitive.Close",
+      "SheetPrimitive.Portal",
+      "SheetPrimitive.Overlay",
+      "SheetPortal",
+      "SheetOverlay",
+      "SheetPrimitive.Content",
+      "XIcon",
+      "SheetPrimitive.Title",
+      "SheetPrimitive.Description"
+    ],
+    "SheetHeader": [
+      "SheetPrimitive.Root",
+      "SheetPrimitive.Trigger",
+      "SheetPrimitive.Close",
+      "SheetPrimitive.Portal",
+      "SheetPrimitive.Overlay",
+      "SheetPortal",
+      "SheetOverlay",
+      "SheetPrimitive.Content",
+      "XIcon",
+      "SheetPrimitive.Title",
+      "SheetPrimitive.Description"
+    ],
+    "SheetFooter": [
+      "SheetPrimitive.Root",
+      "SheetPrimitive.Trigger",
+      "SheetPrimitive.Close",
+      "SheetPrimitive.Portal",
+      "SheetPrimitive.Overlay",
+      "SheetPortal",
+      "SheetOverlay",
+      "SheetPrimitive.Content",
+      "XIcon",
+      "SheetPrimitive.Title",
+      "SheetPrimitive.Description"
+    ],
+    "SheetTitle": [
+      "SheetPrimitive.Root",
+      "SheetPrimitive.Trigger",
+      "SheetPrimitive.Close",
+      "SheetPrimitive.Portal",
+      "SheetPrimitive.Overlay",
+      "SheetPortal",
+      "SheetOverlay",
+      "SheetPrimitive.Content",
+      "XIcon",
+      "SheetPrimitive.Title",
+      "SheetPrimitive.Description"
+    ],
+    "SheetDescription": [
+      "SheetPrimitive.Root",
+      "SheetPrimitive.Trigger",
+      "SheetPrimitive.Close",
+      "SheetPrimitive.Portal",
+      "SheetPrimitive.Overlay",
+      "SheetPortal",
+      "SheetOverlay",
+      "SheetPrimitive.Content",
+      "XIcon",
+      "SheetPrimitive.Title",
+      "SheetPrimitive.Description"
+    ],
+    "Label": [
+      "LabelPrimitive.Root"
+    ],
+    "Toaster": [
+      "Sonner"
+    ],
+    "Switch": [
+      "SwitchPrimitive.Root",
+      "SwitchPrimitive.Thumb"
+    ],
+    "RadioGroup": [
+      "RadioGroupPrimitive.Root",
+      "RadioGroupPrimitive.Item",
+      "RadioGroupPrimitive.Indicator",
+      "CircleIcon"
+    ],
+    "RadioGroupItem": [
+      "RadioGroupPrimitive.Root",
+      "RadioGroupPrimitive.Item",
+      "RadioGroupPrimitive.Indicator",
+      "CircleIcon"
+    ],
+    "Dialog": [
+      "DialogPrimitive.Root",
+      "DialogPrimitive.Trigger",
+      "DialogPrimitive.Portal",
+      "DialogPrimitive.Close",
+      "DialogPrimitive.Overlay",
+      "DialogPortal",
+      "DialogOverlay",
+      "DialogPrimitive.Content",
+      "XIcon",
+      "DialogPrimitive.Title",
+      "DialogPrimitive.Description"
+    ],
+    "DialogTrigger": [
+      "DialogPrimitive.Root",
+      "DialogPrimitive.Trigger",
+      "DialogPrimitive.Portal",
+      "DialogPrimitive.Close",
+      "DialogPrimitive.Overlay",
+      "DialogPortal",
+      "DialogOverlay",
+      "DialogPrimitive.Content",
+      "XIcon",
+      "DialogPrimitive.Title",
+      "DialogPrimitive.Description"
+    ],
+    "DialogPortal": [
+      "DialogPrimitive.Root",
+      "DialogPrimitive.Trigger",
+      "DialogPrimitive.Portal",
+      "DialogPrimitive.Close",
+      "DialogPrimitive.Overlay",
+      "DialogPortal",
+      "DialogOverlay",
+      "DialogPrimitive.Content",
+      "XIcon",
+      "DialogPrimitive.Title",
+      "DialogPrimitive.Description"
+    ],
+    "DialogClose": [
+      "DialogPrimitive.Root",
+      "DialogPrimitive.Trigger",
+      "DialogPrimitive.Portal",
+      "DialogPrimitive.Close",
+      "DialogPrimitive.Overlay",
+      "DialogPortal",
+      "DialogOverlay",
+      "DialogPrimitive.Content",
+      "XIcon",
+      "DialogPrimitive.Title",
+      "DialogPrimitive.Description"
+    ],
+    "DialogOverlay": [
+      "DialogPrimitive.Root",
+      "DialogPrimitive.Trigger",
+      "DialogPrimitive.Portal",
+      "DialogPrimitive.Close",
+      "DialogPrimitive.Overlay",
+      "DialogPortal",
+      "DialogOverlay",
+      "DialogPrimitive.Content",
+      "XIcon",
+      "DialogPrimitive.Title",
+      "DialogPrimitive.Description"
+    ],
+    "DialogContent": [
+      "DialogPrimitive.Root",
+      "DialogPrimitive.Trigger",
+      "DialogPrimitive.Portal",
+      "DialogPrimitive.Close",
+      "DialogPrimitive.Overlay",
+      "DialogPortal",
+      "DialogOverlay",
+      "DialogPrimitive.Content",
+      "XIcon",
+      "DialogPrimitive.Title",
+      "DialogPrimitive.Description"
+    ],
+    "DialogHeader": [
+      "DialogPrimitive.Root",
+      "DialogPrimitive.Trigger",
+      "DialogPrimitive.Portal",
+      "DialogPrimitive.Close",
+      "DialogPrimitive.Overlay",
+      "DialogPortal",
+      "DialogOverlay",
+      "DialogPrimitive.Content",
+      "XIcon",
+      "DialogPrimitive.Title",
+      "DialogPrimitive.Description"
+    ],
+    "DialogFooter": [
+      "DialogPrimitive.Root",
+      "DialogPrimitive.Trigger",
+      "DialogPrimitive.Portal",
+      "DialogPrimitive.Close",
+      "DialogPrimitive.Overlay",
+      "DialogPortal",
+      "DialogOverlay",
+      "DialogPrimitive.Content",
+      "XIcon",
+      "DialogPrimitive.Title",
+      "DialogPrimitive.Description"
+    ],
+    "DialogTitle": [
+      "DialogPrimitive.Root",
+      "DialogPrimitive.Trigger",
+      "DialogPrimitive.Portal",
+      "DialogPrimitive.Close",
+      "DialogPrimitive.Overlay",
+      "DialogPortal",
+      "DialogOverlay",
+      "DialogPrimitive.Content",
+      "XIcon",
+      "DialogPrimitive.Title",
+      "DialogPrimitive.Description"
+    ],
+    "DialogDescription": [
+      "DialogPrimitive.Root",
+      "DialogPrimitive.Trigger",
+      "DialogPrimitive.Portal",
+      "DialogPrimitive.Close",
+      "DialogPrimitive.Overlay",
+      "DialogPortal",
+      "DialogOverlay",
+      "DialogPrimitive.Content",
+      "XIcon",
+      "DialogPrimitive.Title",
+      "DialogPrimitive.Description"
+    ],
+    "Badge": [
+      "Comp"
+    ],
+    "Table": [],
+    "TableHeader": [],
+    "TableBody": [],
+    "TableFooter": [],
+    "TableRow": [],
+    "TableHead": [],
+    "TableCell": [],
+    "TableCaption": [],
+    "Separator": [
+      "SeparatorPrimitive.Root"
+    ],
+    "Button": [
+      "Comp"
+    ],
+    "Select": [
+      "SelectPrimitive.Root",
+      "SelectPrimitive.Group",
+      "SelectPrimitive.Value",
+      "SelectPrimitive.Trigger",
+      "SelectPrimitive.Icon",
+      "ChevronDownIcon",
+      "SelectPrimitive.Portal",
+      "SelectPrimitive.Content",
+      "SelectScrollUpButton",
+      "SelectPrimitive.Viewport",
+      "SelectScrollDownButton",
+      "SelectPrimitive.Label",
+      "SelectPrimitive.Item",
+      "SelectPrimitive.ItemIndicator",
+      "CheckIcon",
+      "SelectPrimitive.ItemText",
+      "SelectPrimitive.Separator",
+      "SelectPrimitive.ScrollUpButton",
+      "ChevronUpIcon",
+      "SelectPrimitive.ScrollDownButton"
+    ],
+    "SelectGroup": [
+      "SelectPrimitive.Root",
+      "SelectPrimitive.Group",
+      "SelectPrimitive.Value",
+      "SelectPrimitive.Trigger",
+      "SelectPrimitive.Icon",
+      "ChevronDownIcon",
+      "SelectPrimitive.Portal",
+      "SelectPrimitive.Content",
+      "SelectScrollUpButton",
+      "SelectPrimitive.Viewport",
+      "SelectScrollDownButton",
+      "SelectPrimitive.Label",
+      "SelectPrimitive.Item",
+      "SelectPrimitive.ItemIndicator",
+      "CheckIcon",
+      "SelectPrimitive.ItemText",
+      "SelectPrimitive.Separator",
+      "SelectPrimitive.ScrollUpButton",
+      "ChevronUpIcon",
+      "SelectPrimitive.ScrollDownButton"
+    ],
+    "SelectValue": [
+      "SelectPrimitive.Root",
+      "SelectPrimitive.Group",
+      "SelectPrimitive.Value",
+      "SelectPrimitive.Trigger",
+      "SelectPrimitive.Icon",
+      "ChevronDownIcon",
+      "SelectPrimitive.Portal",
+      "SelectPrimitive.Content",
+      "SelectScrollUpButton",
+      "SelectPrimitive.Viewport",
+      "SelectScrollDownButton",
+      "SelectPrimitive.Label",
+      "SelectPrimitive.Item",
+      "SelectPrimitive.ItemIndicator",
+      "CheckIcon",
+      "SelectPrimitive.ItemText",
+      "SelectPrimitive.Separator",
+      "SelectPrimitive.ScrollUpButton",
+      "ChevronUpIcon",
+      "SelectPrimitive.ScrollDownButton"
+    ],
+    "SelectTrigger": [
+      "SelectPrimitive.Root",
+      "SelectPrimitive.Group",
+      "SelectPrimitive.Value",
+      "SelectPrimitive.Trigger",
+      "SelectPrimitive.Icon",
+      "ChevronDownIcon",
+      "SelectPrimitive.Portal",
+      "SelectPrimitive.Content",
+      "SelectScrollUpButton",
+      "SelectPrimitive.Viewport",
+      "SelectScrollDownButton",
+      "SelectPrimitive.Label",
+      "SelectPrimitive.Item",
+      "SelectPrimitive.ItemIndicator",
+      "CheckIcon",
+      "SelectPrimitive.ItemText",
+      "SelectPrimitive.Separator",
+      "SelectPrimitive.ScrollUpButton",
+      "ChevronUpIcon",
+      "SelectPrimitive.ScrollDownButton"
+    ],
+    "SelectContent": [
+      "SelectPrimitive.Root",
+      "SelectPrimitive.Group",
+      "SelectPrimitive.Value",
+      "SelectPrimitive.Trigger",
+      "SelectPrimitive.Icon",
+      "ChevronDownIcon",
+      "SelectPrimitive.Portal",
+      "SelectPrimitive.Content",
+      "SelectScrollUpButton",
+      "SelectPrimitive.Viewport",
+      "SelectScrollDownButton",
+      "SelectPrimitive.Label",
+      "SelectPrimitive.Item",
+      "SelectPrimitive.ItemIndicator",
+      "CheckIcon",
+      "SelectPrimitive.ItemText",
+      "SelectPrimitive.Separator",
+      "SelectPrimitive.ScrollUpButton",
+      "ChevronUpIcon",
+      "SelectPrimitive.ScrollDownButton"
+    ],
+    "SelectLabel": [
+      "SelectPrimitive.Root",
+      "SelectPrimitive.Group",
+      "SelectPrimitive.Value",
+      "SelectPrimitive.Trigger",
+      "SelectPrimitive.Icon",
+      "ChevronDownIcon",
+      "SelectPrimitive.Portal",
+      "SelectPrimitive.Content",
+      "SelectScrollUpButton",
+      "SelectPrimitive.Viewport",
+      "SelectScrollDownButton",
+      "SelectPrimitive.Label",
+      "SelectPrimitive.Item",
+      "SelectPrimitive.ItemIndicator",
+      "CheckIcon",
+      "SelectPrimitive.ItemText",
+      "SelectPrimitive.Separator",
+      "SelectPrimitive.ScrollUpButton",
+      "ChevronUpIcon",
+      "SelectPrimitive.ScrollDownButton"
+    ],
+    "SelectItem": [
+      "SelectPrimitive.Root",
+      "SelectPrimitive.Group",
+      "SelectPrimitive.Value",
+      "SelectPrimitive.Trigger",
+      "SelectPrimitive.Icon",
+      "ChevronDownIcon",
+      "SelectPrimitive.Portal",
+      "SelectPrimitive.Content",
+      "SelectScrollUpButton",
+      "SelectPrimitive.Viewport",
+      "SelectScrollDownButton",
+      "SelectPrimitive.Label",
+      "SelectPrimitive.Item",
+      "SelectPrimitive.ItemIndicator",
+      "CheckIcon",
+      "SelectPrimitive.ItemText",
+      "SelectPrimitive.Separator",
+      "SelectPrimitive.ScrollUpButton",
+      "ChevronUpIcon",
+      "SelectPrimitive.ScrollDownButton"
+    ],
+    "SelectSeparator": [
+      "SelectPrimitive.Root",
+      "SelectPrimitive.Group",
+      "SelectPrimitive.Value",
+      "SelectPrimitive.Trigger",
+      "SelectPrimitive.Icon",
+      "ChevronDownIcon",
+      "SelectPrimitive.Portal",
+      "SelectPrimitive.Content",
+      "SelectScrollUpButton",
+      "SelectPrimitive.Viewport",
+      "SelectScrollDownButton",
+      "SelectPrimitive.Label",
+      "SelectPrimitive.Item",
+      "SelectPrimitive.ItemIndicator",
+      "CheckIcon",
+      "SelectPrimitive.ItemText",
+      "SelectPrimitive.Separator",
+      "SelectPrimitive.ScrollUpButton",
+      "ChevronUpIcon",
+      "SelectPrimitive.ScrollDownButton"
+    ],
+    "SelectScrollUpButton": [
+      "SelectPrimitive.Root",
+      "SelectPrimitive.Group",
+      "SelectPrimitive.Value",
+      "SelectPrimitive.Trigger",
+      "SelectPrimitive.Icon",
+      "ChevronDownIcon",
+      "SelectPrimitive.Portal",
+      "SelectPrimitive.Content",
+      "SelectScrollUpButton",
+      "SelectPrimitive.Viewport",
+      "SelectScrollDownButton",
+      "SelectPrimitive.Label",
+      "SelectPrimitive.Item",
+      "SelectPrimitive.ItemIndicator",
+      "CheckIcon",
+      "SelectPrimitive.ItemText",
+      "SelectPrimitive.Separator",
+      "SelectPrimitive.ScrollUpButton",
+      "ChevronUpIcon",
+      "SelectPrimitive.ScrollDownButton"
+    ],
+    "SelectScrollDownButton": [
+      "SelectPrimitive.Root",
+      "SelectPrimitive.Group",
+      "SelectPrimitive.Value",
+      "SelectPrimitive.Trigger",
+      "SelectPrimitive.Icon",
+      "ChevronDownIcon",
+      "SelectPrimitive.Portal",
+      "SelectPrimitive.Content",
+      "SelectScrollUpButton",
+      "SelectPrimitive.Viewport",
+      "SelectScrollDownButton",
+      "SelectPrimitive.Label",
+      "SelectPrimitive.Item",
+      "SelectPrimitive.ItemIndicator",
+      "CheckIcon",
+      "SelectPrimitive.ItemText",
+      "SelectPrimitive.Separator",
+      "SelectPrimitive.ScrollUpButton",
+      "ChevronUpIcon",
+      "SelectPrimitive.ScrollDownButton"
+    ],
+    "Textarea": [],
+    "Input": [],
+    "FormItem": [
+      "TFieldValues",
+      "FormFieldContextValue",
+      "FormFieldContext.Provider",
+      "Controller",
+      "FormField",
+      "FormItemContextValue",
+      "FormItemContext.Provider",
+      "Label",
+      "Slot"
+    ],
+    "FormLabel": [
+      "TFieldValues",
+      "FormFieldContextValue",
+      "FormFieldContext.Provider",
+      "Controller",
+      "FormField",
+      "FormItemContextValue",
+      "FormItemContext.Provider",
+      "Label",
+      "Slot"
+    ],
+    "FormControl": [
+      "TFieldValues",
+      "FormFieldContextValue",
+      "FormFieldContext.Provider",
+      "Controller",
+      "FormField",
+      "FormItemContextValue",
+      "FormItemContext.Provider",
+      "Label",
+      "Slot"
+    ],
+    "FormDescription": [
+      "TFieldValues",
+      "FormFieldContextValue",
+      "FormFieldContext.Provider",
+      "Controller",
+      "FormField",
+      "FormItemContextValue",
+      "FormItemContext.Provider",
+      "Label",
+      "Slot"
+    ],
+    "FormMessage": [
+      "TFieldValues",
+      "FormFieldContextValue",
+      "FormFieldContext.Provider",
+      "Controller",
+      "FormField",
+      "FormItemContextValue",
+      "FormItemContext.Provider",
+      "Label",
+      "Slot"
+    ]
+  },
+  "prop_drilling_paths": [
+    {
+      "prop": "variant",
+      "components": [
+        "StatusBadge",
+        "Badge",
+        "Button"
+      ],
+      "depth": 3
+    }
+  ],
+  "context_providers": {
+    "providers": [
+      {
+        "name": "ThemeProvider",
+        "file": "src/app/layout.tsx"
+      },
+      {
+        "name": "NextThemesProvider",
+        "file": "src/components/theme-provider.tsx"
+      },
+      {
+        "name": "FormFieldContext",
+        "file": "src/components/ui/form.tsx"
+      },
+      {
+        "name": "FormItemContext",
+        "file": "src/components/ui/form.tsx"
+      }
+    ],
+    "contexts_created": [
+      {
+        "name": "FormFieldContext",
+        "file": "src/components/ui/form.tsx"
+      },
+      {
+        "name": "FormItemContext",
+        "file": "src/components/ui/form.tsx"
+      }
+    ]
+  },
+  "hooks_summary": {
+    "builtin": {
+      "useState": 14,
+      "useEffect": 13,
+      "useCallback": 2,
+      "useContext": 5,
+      "useId": 5
+    },
+    "custom": {
+      "useRouter": 12,
+      "useValidationQueue": 1,
+      "useTheme": 2,
+      "useFormContext": 5,
+      "useFormState": 5,
+      "useFormField": 5
+    }
+  },
+  "summary": {
+    "total_components": 86,
+    "total_hooks_usage": 39,
+    "custom_hooks_count": 6,
+    "contexts_count": 2,
+    "potential_prop_drilling": 1,
+    "files_analyzed": 33
+  }
+}

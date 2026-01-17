@@ -1,0 +1,19 @@
+{
+  "project_description": "HawkTab AI is an internal tool for market research consultants that automates crosstab generation from survey data. It uses AI agents to process survey documents, banner plans, and SPSS data files to produce publication-quality Excel crosstabs.",
+  "major_features": [
+    "Banner extraction from PDF/DOCX",
+    "DataMap processing and variable validation", 
+    "AI-powered table structure decisions",
+    "R script generation for statistical calculations",
+    "Excel output with significance testing",
+    "Human-in-the-loop review workflow"
+  ],
+  "known_problem_areas": [
+    "Reliability plan in progress - matching Joe's reference output",
+    "Deprecated legacy functions in env.ts",
+    "Various orphaned UI components"
+  ],
+  "framework": "next.js",
+  "last_review": null,
+  "created": "2026-01-17"
+}
