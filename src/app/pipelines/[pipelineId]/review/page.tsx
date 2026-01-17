@@ -1,20 +1,23 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { PageHeader } from '@/components/PageHeader';
 import {
   ArrowLeft,
   AlertTriangle,
   CheckCircle,
-  Edit3,
   SkipForward,
   Loader2,
   Play,
@@ -29,23 +32,14 @@ import {
  * Strip emoji characters from text for professional display
  */
 function stripEmojis(text: string): string {
-  // Remove emoji characters (Unicode ranges for common emojis)
   return text
-    .replace(/[\u{1F300}-\u{1F9FF}]/gu, '') // Misc symbols, emoticons, dingbats
-    .replace(/[\u{2600}-\u{26FF}]/gu, '')   // Misc symbols
-    .replace(/[\u{2700}-\u{27BF}]/gu, '')   // Dingbats
-    .replace(/[\u{FE00}-\u{FE0F}]/gu, '')   // Variation selectors
-    .replace(/[\u{1F000}-\u{1F02F}]/gu, '') // Mahjong, dominos
-    .replace(/\s{2,}/g, ' ')                // Collapse multiple spaces
+    .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
+    .replace(/[\u{2600}-\u{26FF}]/gu, '')
+    .replace(/[\u{2700}-\u{27BF}]/gu, '')
+    .replace(/[\u{FE00}-\u{FE0F}]/gu, '')
+    .replace(/[\u{1F000}-\u{1F02F}]/gu, '')
+    .replace(/\s{2,}/g, ' ')
     .trim();
-}
-
-/**
- * Truncate text to max length with ellipsis
- */
-function truncateText(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength).trim() + '...';
 }
 
 // Crosstab review interfaces
@@ -58,10 +52,10 @@ interface Alternative {
 interface FlaggedCrosstabColumn {
   groupName: string;
   columnName: string;
-  original: string;        // From banner document
-  proposed: string;        // CrosstabAgent's R expression
+  original: string;
+  proposed: string;
   confidence: number;
-  reason: string;          // Why this mapping was chosen
+  reason: string;
   alternatives: Alternative[];
   uncertainties: string[];
   expressionType?: string;
@@ -79,10 +73,9 @@ interface CrosstabReviewState {
 }
 
 interface CrosstabDecision {
-  action: 'approve' | 'select_alternative' | 'provide_hint' | 'edit' | 'skip';
+  action: 'approve' | 'select_alternative' | 'provide_hint' | 'skip';
   selectedAlternative?: number;
   hint?: string;
-  editedExpression?: string;
 }
 
 function ConfidenceBadge({ confidence }: { confidence: number }) {
@@ -105,27 +98,6 @@ function ConfidenceBadge({ confidence }: { confidence: number }) {
   );
 }
 
-function ExpressionTypeBadge({ type }: { type?: string }) {
-  if (!type) return null;
-
-  const labels: Record<string, { label: string; className: string }> = {
-    direct_variable: { label: 'Direct', className: 'bg-green-100 text-green-800' },
-    comparison: { label: 'Comparison', className: 'bg-blue-100 text-blue-800' },
-    conceptual_filter: { label: 'Conceptual', className: 'bg-orange-100 text-orange-800' },
-    from_list: { label: 'From List', className: 'bg-purple-100 text-purple-800' },
-    placeholder: { label: 'Placeholder', className: 'bg-red-100 text-red-800' },
-    total: { label: 'Total', className: 'bg-gray-100 text-gray-800' },
-  };
-
-  const config = labels[type] || { label: type, className: 'bg-gray-100 text-gray-800' };
-
-  return (
-    <Badge variant="outline" className={config.className}>
-      {config.label}
-    </Badge>
-  );
-}
-
 function CrosstabColumnCard({
   column,
   decision,
@@ -135,40 +107,22 @@ function CrosstabColumnCard({
   decision: CrosstabDecision;
   onDecisionChange: (decision: CrosstabDecision) => void;
 }) {
-  const [editValue, setEditValue] = useState(column.proposed);
   const [hintValue, setHintValue] = useState('');
-  const [selectedAltIndex, setSelectedAltIndex] = useState<string>('0');
   const [showConcerns, setShowConcerns] = useState(false);
-  const [showFullReason, setShowFullReason] = useState(false);
-
-  // Clean and prepare reason text
-  const cleanReason = stripEmojis(column.reason);
-  const shouldTruncateReason = cleanReason.length > 120;
-  const displayReason = showFullReason ? cleanReason : truncateText(cleanReason, 120);
 
   const handleActionChange = (action: CrosstabDecision['action']) => {
     const newDecision: CrosstabDecision = { action };
 
     switch (action) {
-      case 'edit':
-        newDecision.editedExpression = editValue;
-        break;
       case 'provide_hint':
         newDecision.hint = hintValue;
         break;
       case 'select_alternative':
-        newDecision.selectedAlternative = parseInt(selectedAltIndex, 10);
+        newDecision.selectedAlternative = 0;
         break;
     }
 
     onDecisionChange(newDecision);
-  };
-
-  const handleEditValueChange = (value: string) => {
-    setEditValue(value);
-    if (decision.action === 'edit') {
-      onDecisionChange({ action: 'edit', editedExpression: value });
-    }
   };
 
   const handleHintChange = (value: string) => {
@@ -178,102 +132,135 @@ function CrosstabColumnCard({
     }
   };
 
-  const handleAlternativeChange = (value: string) => {
-    setSelectedAltIndex(value);
-    if (decision.action === 'select_alternative') {
-      onDecisionChange({ action: 'select_alternative', selectedAlternative: parseInt(value, 10) });
+  const handleSelectAlternative = (index: number) => {
+    onDecisionChange({ action: 'select_alternative', selectedAlternative: index });
+  };
+
+  // Get the currently selected expression (either proposed or selected alternative)
+  const getSelectedExpression = () => {
+    if (decision.action === 'select_alternative' && decision.selectedAlternative !== undefined) {
+      return column.alternatives[decision.selectedAlternative]?.expression || column.proposed;
     }
+    return column.proposed;
   };
 
   return (
     <Card className="border-yellow-500/50">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="text-base">{column.columnName}</CardTitle>
-            <p className="text-sm text-muted-foreground">{column.groupName}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <ConfidenceBadge confidence={column.confidence} />
-            <ExpressionTypeBadge type={column.expressionType} />
-          </div>
+          <CardTitle className="text-base">{column.columnName}</CardTitle>
+          <ConfidenceBadge confidence={column.confidence} />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Original Expression */}
-        <div className="space-y-1">
-          <Label className="text-xs text-muted-foreground">Original Expression (from banner)</Label>
-          <div className="p-2 bg-muted rounded text-sm font-mono break-all">
-            {column.original || <span className="text-muted-foreground italic">Empty</span>}
-          </div>
-        </div>
-
-        {/* What AI Found */}
-        <div className="space-y-1">
-          <Label className="text-xs text-muted-foreground">What We Found</Label>
-          <p className="text-sm text-muted-foreground">
-            {displayReason}
-            {shouldTruncateReason && (
-              <button
-                onClick={() => setShowFullReason(!showFullReason)}
-                className="ml-1 text-primary hover:underline text-xs"
-              >
-                {showFullReason ? 'Show less' : 'Show more'}
-              </button>
-            )}
-          </p>
-        </div>
-
-        {/* Proposed R Expression */}
-        <div className="space-y-1">
-          <Label className="text-xs text-muted-foreground">Proposed R Expression</Label>
-          <div className="p-2 bg-blue-50 dark:bg-blue-950 rounded text-sm font-mono break-all border border-blue-200 dark:border-blue-800">
-            {column.proposed || <span className="text-muted-foreground italic">NA</span>}
-          </div>
-        </div>
-
-        {/* Alternatives */}
-        {column.alternatives && column.alternatives.length > 0 && (
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground flex items-center gap-1">
-              <ListOrdered className="h-3 w-3" />
-              Alternative Mappings Found ({column.alternatives.length})
-            </Label>
-            <div className="space-y-2">
-              {column.alternatives.map((alt, i) => (
-                <div key={i} className="p-2 bg-muted rounded border text-sm">
-                  <div className="font-mono text-xs break-all">{alt.expression}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {truncateText(stripEmojis(alt.reason), 80)}
-                  </div>
-                  <Badge variant="outline" className="mt-1 text-xs">
-                    {Math.round(alt.confidence * 100)}% confident
-                  </Badge>
-                </div>
-              ))}
+        {/* Banner says vs AI suggests - simplified layout */}
+        <div className="space-y-2">
+          <div className="flex items-baseline gap-3">
+            <Label className="text-xs text-muted-foreground w-24 shrink-0">Banner says:</Label>
+            <div className="p-2 bg-muted rounded text-sm font-mono break-all flex-1">
+              {column.original || <span className="text-muted-foreground italic">Empty</span>}
             </div>
+          </div>
+          <div className="flex items-baseline gap-3">
+            <Label className="text-xs text-muted-foreground w-24 shrink-0">AI suggests:</Label>
+            <div className="p-2 bg-blue-50 dark:bg-blue-950 rounded text-sm font-mono break-all flex-1 border border-blue-200 dark:border-blue-800">
+              {decision.action === 'select_alternative' && decision.selectedAlternative !== undefined ? (
+                <span className="text-purple-700 dark:text-purple-400">
+                  {getSelectedExpression()}
+                </span>
+              ) : (
+                column.proposed || <span className="text-muted-foreground italic">NA</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Action buttons - horizontal layout */}
+        <div className="flex flex-wrap gap-2 pt-2">
+          <Button
+            variant={decision.action === 'approve' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleActionChange('approve')}
+          >
+            Accept
+          </Button>
+
+          {column.alternatives && column.alternatives.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant={decision.action === 'select_alternative' ? 'secondary' : 'outline'}
+                  size="sm"
+                >
+                  Pick alternative <ChevronDown className="ml-1 h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="max-w-md">
+                {column.alternatives.map((alt, i) => (
+                  <DropdownMenuItem
+                    key={i}
+                    onClick={() => handleSelectAlternative(i)}
+                    className="flex flex-col items-start gap-1 py-2"
+                  >
+                    <span className="font-mono text-xs break-all">{alt.expression}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {Math.round(alt.confidence * 100)}% confident
+                    </span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
+          <Button
+            variant={decision.action === 'provide_hint' ? 'secondary' : 'outline'}
+            size="sm"
+            onClick={() => handleActionChange('provide_hint')}
+          >
+            Give hint
+          </Button>
+
+          <Button
+            variant={decision.action === 'skip' ? 'secondary' : 'outline'}
+            size="sm"
+            onClick={() => handleActionChange('skip')}
+          >
+            Skip
+          </Button>
+        </div>
+
+        {/* Hint input - shown when give hint is selected */}
+        {decision.action === 'provide_hint' && (
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Your hint (e.g., &ldquo;use variable Q5&rdquo;)</Label>
+            <Input
+              value={hintValue}
+              onChange={(e) => handleHintChange(e.target.value)}
+              placeholder="e.g., use variable Q5, not S2"
+              className="text-sm"
+            />
           </div>
         )}
 
-        {/* AI Concerns / Uncertainties - Collapsed by default */}
+        {/* AI Concerns - collapsed by default */}
         {column.uncertainties && column.uncertainties.length > 0 && (
-          <div className="p-3 rounded-md border border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950">
+          <div className="pt-2">
             <button
               onClick={() => setShowConcerns(!showConcerns)}
-              className="flex items-center gap-2 w-full text-left"
+              className="flex items-center gap-2 text-left text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               {showConcerns ? (
-                <ChevronDown className="h-4 w-4 text-yellow-600" />
+                <ChevronDown className="h-4 w-4" />
               ) : (
-                <ChevronRight className="h-4 w-4 text-yellow-600" />
+                <ChevronRight className="h-4 w-4" />
               )}
               <AlertTriangle className="h-4 w-4 text-yellow-600" />
-              <span className="font-medium text-sm text-yellow-700 dark:text-yellow-400">
+              <span>
                 {column.uncertainties.length} AI Concern{column.uncertainties.length !== 1 ? 's' : ''}
               </span>
             </button>
             {showConcerns && (
-              <ul className="text-sm text-yellow-700 dark:text-yellow-400 space-y-1 mt-2 ml-6">
+              <ul className="text-sm text-muted-foreground space-y-1 mt-2 ml-6">
                 {column.uncertainties.map((u, i) => (
                   <li key={i} className="flex items-start gap-1">
                     <span className="mt-0.5">•</span>
@@ -284,124 +271,6 @@ function CrosstabColumnCard({
             )}
           </div>
         )}
-
-        {/* Decision */}
-        <div className="space-y-3 pt-2 border-t">
-          <Label className="text-sm font-medium">Your Decision</Label>
-          <RadioGroup
-            value={decision.action}
-            onValueChange={(v) => handleActionChange(v as CrosstabDecision['action'])}
-            className="space-y-2"
-          >
-            {/* Approve */}
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="approve" id={`${column.groupName}-${column.columnName}-approve`} />
-              <Label
-                htmlFor={`${column.groupName}-${column.columnName}-approve`}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                Approve proposed mapping
-              </Label>
-            </div>
-
-            {/* Select Alternative */}
-            {column.alternatives && column.alternatives.length > 0 && (
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="select_alternative" id={`${column.groupName}-${column.columnName}-alt`} />
-                <Label
-                  htmlFor={`${column.groupName}-${column.columnName}-alt`}
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  <ListOrdered className="h-4 w-4 text-purple-500" />
-                  Use alternative
-                </Label>
-              </div>
-            )}
-
-            {/* Provide Hint */}
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="provide_hint" id={`${column.groupName}-${column.columnName}-hint`} />
-              <Label
-                htmlFor={`${column.groupName}-${column.columnName}-hint`}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <Lightbulb className="h-4 w-4 text-yellow-500" />
-                Provide a hint (re-run with context)
-              </Label>
-            </div>
-
-            {/* Edit directly */}
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="edit" id={`${column.groupName}-${column.columnName}-edit`} />
-              <Label
-                htmlFor={`${column.groupName}-${column.columnName}-edit`}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <Edit3 className="h-4 w-4 text-blue-500" />
-                Edit expression directly
-              </Label>
-            </div>
-
-            {/* Skip */}
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="skip" id={`${column.groupName}-${column.columnName}-skip`} />
-              <Label
-                htmlFor={`${column.groupName}-${column.columnName}-skip`}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <SkipForward className="h-4 w-4 text-gray-500" />
-                Skip this cut
-              </Label>
-            </div>
-          </RadioGroup>
-
-          {/* Alternative selector */}
-          {decision.action === 'select_alternative' && column.alternatives && column.alternatives.length > 0 && (
-            <div className="pl-6 space-y-1">
-              <Label className="text-xs text-muted-foreground">Select alternative</Label>
-              <Select value={selectedAltIndex} onValueChange={handleAlternativeChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Choose an alternative" />
-                </SelectTrigger>
-                <SelectContent>
-                  {column.alternatives.map((alt, i) => (
-                    <SelectItem key={i} value={String(i)}>
-                      <span className="font-mono text-xs">{alt.expression}</span>
-                      <span className="text-xs text-muted-foreground ml-2">({Math.round(alt.confidence * 100)}%)</span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {/* Hint input */}
-          {decision.action === 'provide_hint' && (
-            <div className="pl-6 space-y-1">
-              <Label className="text-xs text-muted-foreground">Your hint (e.g., &ldquo;use variable Q5&rdquo;)</Label>
-              <Input
-                value={hintValue}
-                onChange={(e) => handleHintChange(e.target.value)}
-                placeholder="e.g., use variable Q5, not S2"
-                className="text-sm"
-              />
-            </div>
-          )}
-
-          {/* Edit input */}
-          {decision.action === 'edit' && (
-            <div className="pl-6 space-y-1">
-              <Label className="text-xs text-muted-foreground">Your R expression</Label>
-              <Input
-                value={editValue}
-                onChange={(e) => handleEditValueChange(e.target.value)}
-                placeholder="Enter R expression..."
-                className="font-mono text-sm"
-              />
-            </div>
-          )}
-        </div>
       </CardContent>
     </Card>
   );
@@ -419,6 +288,18 @@ export default function ReviewPage({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [decisions, setDecisions] = useState<Map<string, CrosstabDecision>>(new Map());
   const router = useRouter();
+
+  // Group flagged columns by groupName
+  const groupedColumns = useMemo(() => {
+    if (!reviewState) return new Map<string, FlaggedCrosstabColumn[]>();
+    const groups = new Map<string, FlaggedCrosstabColumn[]>();
+    for (const col of reviewState.flaggedColumns) {
+      const existing = groups.get(col.groupName) || [];
+      existing.push(col);
+      groups.set(col.groupName, existing);
+    }
+    return groups;
+  }, [reviewState]);
 
   useEffect(() => {
     const fetchReviewState = async () => {
@@ -461,14 +342,13 @@ export default function ReviewPage({
         if (!res.ok) return;
         const data = await res.json() as CrosstabReviewState;
 
-        // Update only if status changed (avoid unnecessary re-renders)
         if (data.pathBStatus !== pathBStatus) {
           setReviewState(prev => prev ? { ...prev, pathBStatus: data.pathBStatus } : null);
         }
       } catch {
-        // Ignore polling errors - don't disrupt user's review
+        // Ignore polling errors
       }
-    }, 3000); // Poll every 3 seconds
+    }, 3000);
 
     return () => clearInterval(pollInterval);
   }, [pipelineId, pathBStatus]);
@@ -492,7 +372,6 @@ export default function ReviewPage({
           action: decision.action,
           selectedAlternative: decision.selectedAlternative,
           hint: decision.hint,
-          editedExpression: decision.editedExpression,
         };
       });
 
@@ -508,8 +387,6 @@ export default function ReviewPage({
       }
 
       await res.json();
-
-      // Navigate to pipeline detail page
       router.push(`/pipelines/${encodeURIComponent(pipelineId)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -529,7 +406,6 @@ export default function ReviewPage({
         throw new Error(errData.error || 'Failed to cancel pipeline');
       }
 
-      // Navigate to home
       router.push('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -590,19 +466,14 @@ export default function ReviewPage({
   const approveCount = Array.from(decisions.values()).filter(d => d.action === 'approve').length;
   const altCount = Array.from(decisions.values()).filter(d => d.action === 'select_alternative').length;
   const hintCount = Array.from(decisions.values()).filter(d => d.action === 'provide_hint').length;
-  const editCount = Array.from(decisions.values()).filter(d => d.action === 'edit').length;
   const skipCount = Array.from(decisions.values()).filter(d => d.action === 'skip').length;
-
-  const reviewTitle = reviewState.reviewType === 'crosstab'
-    ? 'Mapping Review Required'
-    : 'Banner Review Required';
 
   return (
     <div className="py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <PageHeader
-          title={reviewTitle}
-          description={`${reviewState.flaggedColumns.length} of ${reviewState.totalColumns} columns need your attention`}
+          title="Quick Review Needed"
+          description={`The AI wasn't certain about ${reviewState.flaggedColumns.length} matches. Please confirm or correct.`}
           actions={
             <Button variant="outline" onClick={() => router.push('/')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -637,40 +508,27 @@ export default function ReviewPage({
           </Badge>
         </div>
 
-        {/* Instructions */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">
-              {reviewState.reviewType === 'crosstab' ? (
-                <>
-                  The AI has mapped your banner expressions to R syntax, but some mappings need verification.
-                  For each column, you&apos;ll see what the AI found in the data map and its proposed R expression.
-                  You can approve, select an alternative, provide a hint to re-run, edit directly, or skip.
-                </>
-              ) : (
-                <>
-                  The AI has flagged some banner columns that may need your review. For each column below,
-                  you can approve the AI-generated R expression, edit it, or skip the cut entirely.
-                </>
-              )}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Flagged Columns */}
-        <div className="space-y-4 mb-8">
-          {reviewState.flaggedColumns.map((col) => {
-            const key = `${col.groupName}/${col.columnName}`;
-            const decision = decisions.get(key) || { action: 'approve' };
-            return (
-              <CrosstabColumnCard
-                key={key}
-                column={col}
-                decision={decision}
-                onDecisionChange={(d) => handleDecisionChange(col.groupName, col.columnName, d)}
-              />
-            );
-          })}
+        {/* Flagged Columns - grouped by banner group */}
+        <div className="space-y-6 mb-8">
+          {Array.from(groupedColumns.entries()).map(([groupName, columns]) => (
+            <div key={groupName}>
+              <h3 className="text-lg font-semibold mb-3 px-1">{groupName}</h3>
+              <div className="space-y-3">
+                {columns.map((col) => {
+                  const key = `${col.groupName}/${col.columnName}`;
+                  const decision = decisions.get(key) || { action: 'approve' };
+                  return (
+                    <CrosstabColumnCard
+                      key={key}
+                      column={col}
+                      decision={decision}
+                      onDecisionChange={(d) => handleDecisionChange(col.groupName, col.columnName, d)}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Summary and Actions */}
@@ -692,12 +550,6 @@ export default function ReviewPage({
                   <span className="flex items-center gap-1">
                     <Lightbulb className="h-4 w-4 text-yellow-500" />
                     {hintCount}
-                  </span>
-                )}
-                {editCount > 0 && (
-                  <span className="flex items-center gap-1">
-                    <Edit3 className="h-4 w-4 text-blue-500" />
-                    {editCount}
                   </span>
                 )}
                 {skipCount > 0 && (
