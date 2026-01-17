@@ -1,0 +1,737 @@
+{
+  "root": "hawktab-ai",
+  "environment_variables": {
+    "from_code": [
+      {
+        "name": "NODE_ENV",
+        "used_in": [
+          "src/app/api/delete-session/[sessionId]/route.ts",
+          "src/app/api/validation-queue/route.ts",
+          "src/app/api/process-crosstab/route.ts",
+          "src/app/api/execute-r/[sessionId]/route.ts",
+          "src/app/api/export-workbook/[sessionId]/route.ts"
+        ],
+        "usage_count": 7,
+        "client_exposed": false
+      },
+      {
+        "name": "AZURE_API_KEY",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "AZURE_RESOURCE_NAME",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "AZURE_API_VERSION",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "CROSSTAB_MODEL",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "REASONING_MODEL",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "BANNER_MODEL",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "BASE_MODEL",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "TABLE_MODEL",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "VERIFICATION_MODEL",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "CROSSTAB_REASONING_EFFORT",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "BANNER_REASONING_EFFORT",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "TABLE_REASONING_EFFORT",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "VERIFICATION_REASONING_EFFORT",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "OPENAI_API_KEY",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "TRACING_ENABLED",
+        "used_in": [
+          "src/lib/env.ts",
+          "src/lib/tracing.ts"
+        ],
+        "usage_count": 2,
+        "client_exposed": false
+      },
+      {
+        "name": "TABLE_AGENT_ONLY",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "CROSSTAB_PROMPT_VERSION",
+        "used_in": [
+          "src/lib/env.ts",
+          "src/prompts/crosstab/index.ts"
+        ],
+        "usage_count": 2,
+        "client_exposed": false
+      },
+      {
+        "name": "BANNER_PROMPT_VERSION",
+        "used_in": [
+          "src/lib/env.ts",
+          "src/prompts/banner/index.ts"
+        ],
+        "usage_count": 2,
+        "client_exposed": false
+      },
+      {
+        "name": "TABLE_PROMPT_VERSION",
+        "used_in": [
+          "src/lib/env.ts",
+          "src/prompts/table/index.ts"
+        ],
+        "usage_count": 2,
+        "client_exposed": false
+      },
+      {
+        "name": "VERIFICATION_PROMPT_VERSION",
+        "used_in": [
+          "src/lib/env.ts",
+          "src/prompts/verification/index.ts"
+        ],
+        "usage_count": 2,
+        "client_exposed": false
+      },
+      {
+        "name": "MAX_DATA_MAP_VARIABLES",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "MAX_BANNER_COLUMNS",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "REASONING_MODEL_TOKENS",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "BASE_MODEL_TOKENS",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "CROSSTAB_MODEL_TOKENS",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "BANNER_MODEL_TOKENS",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "TABLE_MODEL_TOKENS",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "VERIFICATION_MODEL_TOKENS",
+        "used_in": [
+          "src/lib/env.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      },
+      {
+        "name": "TRACE_EXTERNAL_PROVIDER",
+        "used_in": [
+          "src/lib/tracing.ts"
+        ],
+        "usage_count": 1,
+        "client_exposed": false
+      }
+    ],
+    "from_env_files": {
+      ".env.local": [
+        {
+          "name": "AZURE_API_KEY",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "AZURE_RESOURCE_NAME",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "AZURE_API_VERSION",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "CROSSTAB_MODEL",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "CROSSTAB_MODEL_TOKENS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "CROSSTAB_REASONING_EFFORT",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "BANNER_MODEL",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "BANNER_MODEL_TOKENS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "BANNER_REASONING_EFFORT",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "TABLE_MODEL",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "TABLE_MODEL_TOKENS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "TABLE_REASONING_EFFORT",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "VERIFICATION_MODEL",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "VERIFICATION_MODEL_TOKENS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "VERIFICATION_REASONING_EFFORT",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "REASONING_MODEL",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "BASE_MODEL",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "REASONING_MODEL_TOKENS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "BASE_MODEL_TOKENS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "CROSSTAB_PROMPT_VERSION",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "BANNER_PROMPT_VERSION",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "TABLE_PROMPT_VERSION",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "VERIFICATION_PROMPT_VERSION",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "MAX_DATA_MAP_VARIABLES",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "MAX_BANNER_COLUMNS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "TRACING_ENABLED",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "NODE_ENV",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "DATAMAP_FORMAT",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "DECIPHER_API_KEY",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "DECIPHER_BASE_URL",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "DECIPHER_SURVEY_PATH",
+          "has_value": true,
+          "client_exposed": false
+        }
+      ],
+      ".env.example": [
+        {
+          "name": "AZURE_API_KEY",
+          "has_value": false,
+          "client_exposed": false
+        },
+        {
+          "name": "AZURE_RESOURCE_NAME",
+          "has_value": false,
+          "client_exposed": false
+        },
+        {
+          "name": "AZURE_API_VERSION",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "CROSSTAB_MODEL",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "CROSSTAB_MODEL_TOKENS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "BANNER_MODEL",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "BANNER_MODEL_TOKENS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "TABLE_MODEL",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "TABLE_MODEL_TOKENS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "REASONING_MODEL",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "BASE_MODEL",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "REASONING_MODEL_TOKENS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "BASE_MODEL_TOKENS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "CROSSTAB_PROMPT_VERSION",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "BANNER_PROMPT_VERSION",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "TABLE_PROMPT_VERSION",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "MAX_DATA_MAP_VARIABLES",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "MAX_BANNER_COLUMNS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "TRACING_ENABLED",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "NODE_ENV",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "TABLE_AGENT_ONLY",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "DATAMAP_FORMAT",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "DECIPHER_API_KEY",
+          "has_value": false,
+          "client_exposed": false
+        },
+        {
+          "name": "DECIPHER_BASE_URL",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "DECIPHER_SURVEY_PATH",
+          "has_value": false,
+          "client_exposed": false
+        }
+      ],
+      ".env.production": [
+        {
+          "name": "AZURE_API_KEY",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "AZURE_RESOURCE_NAME",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "AZURE_API_VERSION",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "REASONING_MODEL",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "BASE_MODEL",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "REASONING_MODEL_TOKENS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "BASE_MODEL_TOKENS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "CROSSTAB_PROMPT_VERSION",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "BANNER_PROMPT_VERSION",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "MAX_DATA_MAP_VARIABLES",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "MAX_BANNER_COLUMNS",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "TRACING_ENABLED",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "NODE_ENV",
+          "has_value": true,
+          "client_exposed": false
+        },
+        {
+          "name": "DATAMAP_FORMAT",
+          "has_value": true,
+          "client_exposed": false
+        }
+      ]
+    },
+    "required": [
+      {
+        "name": "VERIFICATION_MODEL",
+        "reason": "used in code but not in .env.example"
+      },
+      {
+        "name": "CROSSTAB_REASONING_EFFORT",
+        "reason": "used in code but not in .env.example"
+      },
+      {
+        "name": "BANNER_REASONING_EFFORT",
+        "reason": "used in code but not in .env.example"
+      },
+      {
+        "name": "TABLE_REASONING_EFFORT",
+        "reason": "used in code but not in .env.example"
+      },
+      {
+        "name": "VERIFICATION_REASONING_EFFORT",
+        "reason": "used in code but not in .env.example"
+      },
+      {
+        "name": "OPENAI_API_KEY",
+        "reason": "used in code but not in .env.example"
+      },
+      {
+        "name": "VERIFICATION_PROMPT_VERSION",
+        "reason": "used in code but not in .env.example"
+      },
+      {
+        "name": "VERIFICATION_MODEL_TOKENS",
+        "reason": "used in code but not in .env.example"
+      },
+      {
+        "name": "TRACE_EXTERNAL_PROVIDER",
+        "reason": "used in code but not in .env.example"
+      }
+    ],
+    "client_exposed": [],
+    "server_only": [
+      "NODE_ENV",
+      "AZURE_API_KEY",
+      "AZURE_RESOURCE_NAME",
+      "AZURE_API_VERSION",
+      "CROSSTAB_MODEL",
+      "REASONING_MODEL",
+      "BANNER_MODEL",
+      "BASE_MODEL",
+      "TABLE_MODEL",
+      "VERIFICATION_MODEL",
+      "CROSSTAB_REASONING_EFFORT",
+      "BANNER_REASONING_EFFORT",
+      "TABLE_REASONING_EFFORT",
+      "VERIFICATION_REASONING_EFFORT",
+      "OPENAI_API_KEY",
+      "TRACING_ENABLED",
+      "TABLE_AGENT_ONLY",
+      "CROSSTAB_PROMPT_VERSION",
+      "BANNER_PROMPT_VERSION",
+      "TABLE_PROMPT_VERSION",
+      "VERIFICATION_PROMPT_VERSION",
+      "MAX_DATA_MAP_VARIABLES",
+      "MAX_BANNER_COLUMNS",
+      "REASONING_MODEL_TOKENS",
+      "BASE_MODEL_TOKENS",
+      "CROSSTAB_MODEL_TOKENS",
+      "BANNER_MODEL_TOKENS",
+      "TABLE_MODEL_TOKENS",
+      "VERIFICATION_MODEL_TOKENS",
+      "TRACE_EXTERNAL_PROVIDER"
+    ]
+  },
+  "config_files": [
+    {
+      "file": "next.config.ts",
+      "type": "next.js",
+      "keys": []
+    },
+    {
+      "file": "tsconfig.json",
+      "type": "typescript",
+      "keys": []
+    },
+    {
+      "file": "package.json",
+      "type": "npm",
+      "keys": [
+        "scripts.dev",
+        "scripts.build",
+        "scripts.start",
+        "scripts.lint",
+        "scripts.test:table-agent"
+      ]
+    },
+    {
+      "file": ".env.local",
+      "type": "environment",
+      "keys": []
+    },
+    {
+      "file": ".env.example",
+      "type": "environment",
+      "keys": []
+    },
+    {
+      "file": ".env.production",
+      "type": "environment",
+      "keys": []
+    }
+  ],
+  "summary": {
+    "total_env_vars_in_code": 30,
+    "client_exposed_count": 0,
+    "server_only_count": 30,
+    "config_files_count": 6,
+    "config_types": [
+      "npm",
+      "next.js",
+      "typescript",
+      "environment"
+    ],
+    "has_env_example": true,
+    "files_analyzed": 111
+  }
+}
