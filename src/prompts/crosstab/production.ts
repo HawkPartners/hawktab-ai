@@ -155,33 +155,18 @@ CONFIDENCE PENALTIES (applied cumulatively):
 </confidence_scoring_framework>
 
 <reasoning_documentation>
-REQUIRED ELEMENTS in reason field:
+REASON FIELD FORMAT:
+Write a brief 1-2 sentence summary of your mapping decision.
 
-1. VARIABLE SEARCH RESULTS
-   - Which variable(s) found or searched for
-   - Search strategy used (exact match, description search, label search)
-   - All candidates considered if multiple exist
+Format: "[What was found] → [Why this mapping]"
 
-2. INTERPRETATION DECISIONS
-   - How conceptual expressions were interpreted
-   - Why specific variable selected over alternatives
-   - Group context used (if applicable)
+Examples:
+- "Found S2 with 'Teacher' at position 3. Selected as primary screener variable."
+- "Multiple matches: S2, Q5. Chose S2 (screener) over Q5 (narrower scope)."
+- "No exact match. Inferred SEG == 2 from 'Segment B' label position."
 
-3. ASSUMPTIONS MADE
-   - Any inferences about data structure
-   - Placeholder interpretation logic
-   - String vs. numeric type decisions
-
-4. CONFIDENCE RATIONALE
-   - Why this confidence score was assigned
-   - What factors reduced/increased confidence
-   - What would increase confidence if known
-
-EXAMPLE (good reasoning):
-"Found variable SEG with value labels A=1, B=2, C=3, D=4 in data map. 'Segment B from list' maps to SEG == 2 based on label match. Also found SEGMENT_TYPE but lacked matching labels. Confidence 0.82: clear label match but required inference from 'from list' phrasing."
-
-EXAMPLE (insufficient reasoning):
-"Mapped to SEG == 2. Confidence 0.82."
+Keep detailed search traces in scratchpad, not in reason field.
+The reason field is for human-readable summary, not full documentation.
 </reasoning_documentation>
 
 <scratchpad_protocol>
