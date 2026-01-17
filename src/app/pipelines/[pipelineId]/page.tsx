@@ -20,6 +20,7 @@ import {
   Layers,
   AlertTriangle,
   Play,
+  XCircle,
 } from 'lucide-react';
 import type { PipelineDetails, FileInfo } from '@/app/api/pipelines/[pipelineId]/route';
 
@@ -95,8 +96,8 @@ function StatusBadge({ status }: { status: string }) {
     case 'in_progress':
       return (
         <Badge variant="secondary" className="bg-blue-500/20 text-blue-700 dark:text-blue-400">
-          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-          Processing
+          <Clock className="h-3 w-3 mr-1" />
+          In Progress
         </Badge>
       );
     case 'pending_review':
@@ -111,6 +112,13 @@ function StatusBadge({ status }: { status: string }) {
         <Badge variant="secondary" className="bg-gray-500/20 text-gray-700 dark:text-gray-400">
           <AlertCircle className="h-3 w-3 mr-1" />
           Cancelled
+        </Badge>
+      );
+    case 'awaiting_tables':
+      return (
+        <Badge variant="secondary" className="bg-purple-500/20 text-purple-700 dark:text-purple-400">
+          <Clock className="h-3 w-3 mr-1" />
+          Completing...
         </Badge>
       );
     default:
@@ -169,8 +177,30 @@ export default function PipelineDetailPage({
   const [details, setDetails] = useState<PipelineDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
   const router = useRouter();
 
+  const handleCancel = async () => {
+    setIsCancelling(true);
+    try {
+      const res = await fetch(`/api/pipelines/${encodeURIComponent(pipelineId)}/cancel`, {
+        method: 'POST',
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to cancel pipeline');
+      }
+
+      // Navigate to home
+      router.push('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      setIsCancelling(false);
+    }
+  };
+
+  // Initial fetch
   useEffect(() => {
     const fetchDetails = async () => {
       setIsLoading(true);
@@ -192,6 +222,32 @@ export default function PipelineDetailPage({
 
     fetchDetails();
   }, [pipelineId]);
+
+  // Poll for updates when status is active
+  // We intentionally only depend on details?.status to avoid polling restarts on every state update
+  const currentStatus = details?.status;
+  useEffect(() => {
+    const activeStatuses = ['in_progress', 'pending_review', 'awaiting_tables'];
+    if (!currentStatus || !activeStatuses.includes(currentStatus)) {
+      return;
+    }
+
+    const pollDetails = async () => {
+      try {
+        const res = await fetch(`/api/pipelines/${encodeURIComponent(pipelineId)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setDetails(data);
+        }
+      } catch {
+        // Ignore polling errors
+      }
+    };
+
+    const pollInterval = setInterval(pollDetails, 3000); // Poll every 3 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [pipelineId, currentStatus]);
 
   if (isLoading) {
     return (
@@ -229,7 +285,7 @@ export default function PipelineDetailPage({
   const inputFiles = details.files.filter((f) => f.type === 'input');
 
   // Check if pipeline is still active
-  const isActive = details.status === 'in_progress' || details.status === 'pending_review';
+  const isActive = details.status === 'in_progress' || details.status === 'pending_review' || details.status === 'awaiting_tables';
   const hasOutputs = details.outputs.tables > 0 || details.outputs.cuts > 0;
 
   return (
@@ -285,16 +341,35 @@ export default function PipelineDetailPage({
         {details.status === 'in_progress' && (
           <Card className="mb-8 border-blue-500/50 bg-blue-500/5">
             <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />
-                <div>
-                  <p className="font-medium">Processing Crosstabs</p>
-                  <p className="text-sm text-muted-foreground">
-                    {details.currentStage
-                      ? `Currently: ${details.currentStage.replace(/_/g, ' ')}`
-                      : 'Your crosstabs are being generated. This may take several minutes.'}
-                  </p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />
+                  <div>
+                    <p className="font-medium">Processing Crosstabs</p>
+                    <p className="text-sm text-muted-foreground">
+                      {details.currentStage
+                        ? `Currently: ${details.currentStage.replace(/_/g, ' ')}`
+                        : 'Your crosstabs are being generated. This may take several minutes.'}
+                    </p>
+                  </div>
                 </div>
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  disabled={isCancelling}
+                >
+                  {isCancelling ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Cancelling...
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Cancel
+                    </>
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -310,6 +385,23 @@ export default function PipelineDetailPage({
                   <p className="font-medium">Pipeline Cancelled</p>
                   <p className="text-sm text-muted-foreground">
                     This pipeline was cancelled and did not complete processing.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Awaiting Tables Banner */}
+        {details.status === 'awaiting_tables' && (
+          <Card className="mb-8 border-purple-500/50 bg-purple-500/5">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <Loader2 className="h-5 w-5 text-purple-500 animate-spin" />
+                <div>
+                  <p className="font-medium">Completing Pipeline</p>
+                  <p className="text-sm text-muted-foreground">
+                    Your review has been saved. Waiting for table data to finish processing before generating final output.
                   </p>
                 </div>
               </div>

@@ -1,0 +1,179 @@
+/**
+ * Shared retry utility for handling Azure OpenAI content policy errors.
+ *
+ * Content policy errors are transient - retrying the same request often succeeds
+ * because Azure's content moderation can be overly sensitive to certain patterns.
+ */
+
+export interface RetryOptions {
+  /** Maximum number of attempts (default: 3) */
+  maxAttempts?: number;
+  /** Delay between retries in milliseconds (default: 2000) */
+  delayMs?: number;
+  /** Callback invoked on each retry attempt */
+  onRetry?: (attempt: number, error: Error) => void;
+  /** AbortSignal to cancel retries */
+  abortSignal?: AbortSignal;
+}
+
+export interface RetryResult<T> {
+  /** Whether the operation succeeded */
+  success: boolean;
+  /** The result if successful */
+  result?: T;
+  /** Error message if all retries failed */
+  error?: string;
+  /** Number of attempts made */
+  attempts: number;
+  /** Whether the final error was a policy error */
+  wasPolicyError: boolean;
+}
+
+/**
+ * Patterns that indicate a content policy/moderation error from Azure OpenAI.
+ * These errors are often transient and worth retrying.
+ */
+const POLICY_ERROR_PATTERNS = [
+  'usage policy',
+  'content policy',
+  'flagged as potentially violating',
+  'content_filter',
+  'content_policy_violation',
+  'responsibleaipolicy',
+  'content management policy',
+];
+
+/**
+ * Check if an error is a content policy/moderation error.
+ */
+export function isPolicyError(error: unknown): boolean {
+  if (!error) return false;
+
+  const message = error instanceof Error
+    ? error.message.toLowerCase()
+    : String(error).toLowerCase();
+
+  return POLICY_ERROR_PATTERNS.some(pattern => message.includes(pattern));
+}
+
+/**
+ * Sleep for the specified duration, respecting abort signal.
+ */
+async function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new Error('Aborted'));
+      return;
+    }
+
+    const timeout = setTimeout(resolve, ms);
+
+    signal?.addEventListener('abort', () => {
+      clearTimeout(timeout);
+      reject(new Error('Aborted'));
+    }, { once: true });
+  });
+}
+
+/**
+ * Execute an async function with retry logic for content policy errors.
+ *
+ * Only retries on policy errors - other errors are propagated immediately.
+ *
+ * @example
+ * ```typescript
+ * const result = await retryWithPolicyHandling(
+ *   async () => {
+ *     const { output } = await generateText({ ... });
+ *     return output;
+ *   },
+ *   {
+ *     onRetry: (attempt, err) => {
+ *       console.warn(`Retry ${attempt}/3: ${err.message}`);
+ *     }
+ *   }
+ * );
+ *
+ * if (result.success) {
+ *   // Use result.result
+ * } else {
+ *   // Handle failure, result.error contains message
+ * }
+ * ```
+ */
+export async function retryWithPolicyHandling<T>(
+  fn: () => Promise<T>,
+  options?: RetryOptions
+): Promise<RetryResult<T>> {
+  const maxAttempts = options?.maxAttempts ?? 3;
+  const delayMs = options?.delayMs ?? 2000;
+  const onRetry = options?.onRetry;
+  const abortSignal = options?.abortSignal;
+
+  let lastError: Error | undefined;
+  let wasPolicyError = false;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    // Check for abort before each attempt
+    if (abortSignal?.aborted) {
+      return {
+        success: false,
+        error: 'Operation was cancelled',
+        attempts: attempt - 1,
+        wasPolicyError: false,
+      };
+    }
+
+    try {
+      const result = await fn();
+      return {
+        success: true,
+        result,
+        attempts: attempt,
+        wasPolicyError: false,
+      };
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      wasPolicyError = isPolicyError(error);
+
+      // Only retry on policy errors
+      if (!wasPolicyError) {
+        return {
+          success: false,
+          error: lastError.message,
+          attempts: attempt,
+          wasPolicyError: false,
+        };
+      }
+
+      // Don't retry if this was the last attempt
+      if (attempt === maxAttempts) {
+        break;
+      }
+
+      // Notify about retry
+      onRetry?.(attempt, lastError);
+
+      // Wait before retrying
+      try {
+        await sleep(delayMs, abortSignal);
+      } catch {
+        // Aborted during sleep
+        return {
+          success: false,
+          error: 'Operation was cancelled',
+          attempts: attempt,
+          wasPolicyError: true,
+        };
+      }
+    }
+  }
+
+  // All retries exhausted
+  return {
+    success: false,
+    error: lastError?.message ?? 'Unknown error after retries',
+    attempts: maxAttempts,
+    wasPolicyError,
+  };
+}

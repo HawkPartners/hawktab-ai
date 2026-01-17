@@ -31,6 +31,7 @@ import {
   getBannerReasoningEffort,
 } from '../lib/env';
 import { getBannerPrompt } from '../prompts';
+import { retryWithPolicyHandling } from '../lib/retryWithPolicyHandling';
 import { bannerScratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
 
 // Types for internal processing
@@ -228,11 +229,14 @@ PROCESSING REQUIREMENTS:
 Begin analysis now.
 `;
 
-    const MAX_POLICY_RETRIES = 3;
-    let lastError: string = '';
+    // Check if this is an abort error
+    const checkAbortError = (error: unknown): boolean => {
+      return error instanceof DOMException && error.name === 'AbortError';
+    };
 
-    for (let attempt = 1; attempt <= MAX_POLICY_RETRIES; attempt++) {
-      try {
+    // Wrap the AI call with retry logic for policy errors
+    const retryResult = await retryWithPolicyHandling(
+      async () => {
         // CRITICAL: Image format is different in Vercel AI SDK
         // OpenAI Agents SDK: { type: 'input_image', image: 'data:image/png;base64,...' }
         // Vercel AI SDK: { type: 'image', image: Buffer.from(base64, 'base64') }
@@ -274,42 +278,38 @@ Begin analysis now.
           throw new Error('Invalid agent response structure');
         }
 
-        console.log(`[BannerAgent] Agent extracted ${output.extractedStructure.bannerCuts.length} groups`);
-
         return output;
-
-      } catch (error) {
-        // Check if this is an abort error - propagate immediately
-        if (error instanceof DOMException && error.name === 'AbortError') {
-          console.log('[BannerAgent] Aborted by signal during AI extraction');
-          throw error;
-        }
-
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        lastError = errorMessage;
-
-        // Check if this is a content policy violation error (retryable)
-        const isPolicyError = errorMessage.toLowerCase().includes('usage policy') ||
-                              errorMessage.toLowerCase().includes('content policy') ||
-                              errorMessage.toLowerCase().includes('flagged as potentially violating');
-
-        if (isPolicyError && attempt < MAX_POLICY_RETRIES) {
-          console.warn(`[BannerAgent] Content policy error on attempt ${attempt}/${MAX_POLICY_RETRIES}, retrying in 2s...`);
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          continue;
-        }
-
-        // Non-retryable error or max retries reached
-        if (isPolicyError) {
-          console.error(`[BannerAgent] Content policy error persisted after ${MAX_POLICY_RETRIES} attempts`);
-        } else {
-          console.error(`[BannerAgent] Extraction failed:`, errorMessage);
-        }
-        break;
+      },
+      {
+        abortSignal,
+        onRetry: (attempt, err) => {
+          // Check for abort errors and propagate them
+          if (checkAbortError(err)) {
+            throw err;
+          }
+          console.warn(`[BannerAgent] Retry ${attempt}/3 for banner extraction: ${err.message}`);
+        },
       }
+    );
+
+    if (retryResult.success && retryResult.result) {
+      console.log(`[BannerAgent] Agent extracted ${retryResult.result.extractedStructure.bannerCuts.length} groups`);
+      return retryResult.result;
     }
 
-    // Return structured failure result
+    // Handle abort errors
+    if (retryResult.error === 'Operation was cancelled') {
+      console.log('[BannerAgent] Aborted by signal during AI extraction');
+      throw new DOMException('BannerAgent aborted', 'AbortError');
+    }
+
+    // All retries failed - return structured failure result
+    const errorMessage = retryResult.error || 'Unknown error';
+    const retryContext = retryResult.wasPolicyError
+      ? ` (failed after ${retryResult.attempts} retries due to content policy)`
+      : '';
+    console.error(`[BannerAgent] Extraction failed:`, errorMessage + retryContext);
+
     return {
       success: false,
       extractionType: 'banner_extraction',
@@ -324,7 +324,7 @@ Begin analysis now.
           processingTimestamp: new Date().toISOString()
         }
       },
-      errors: [lastError],
+      errors: [errorMessage + retryContext],
       warnings: []
     };
   }
@@ -366,6 +366,13 @@ Begin analysis now.
     console.log(`[BannerAgent] Converting ${path.basename(docPath)} to PDF via LibreOffice`);
 
     try {
+      // Verify input file exists and has content
+      const inputStats = await fs.stat(docPath);
+      console.log(`[BannerAgent] Input file: ${docPath} (${inputStats.size} bytes)`);
+      if (inputStats.size === 0) {
+        throw new Error('Input file is empty (0 bytes)');
+      }
+
       // Use temp directory for PDF output (don't pollute source folder)
       const outputDir = await fs.mkdtemp(path.join(os.tmpdir(), 'banner-pdf-'));
       const baseName = path.basename(docPath).replace(/\.(doc|docx)$/i, '.pdf');
@@ -402,20 +409,36 @@ Begin analysis now.
       }
 
       // Convert DOCX to PDF preserving formatting
-      const { stderr } = await execAsync(
-        `"${libreofficeCommand}" --headless --convert-to pdf --outdir "${outputDir}" "${docPath}"`,
-        { timeout: 30000 }
-      );
+      // Use isolated user installation to avoid profile conflicts in headless mode
+      const userInstallation = `file://${outputDir}/lo-profile`;
+      const loCommand = `"${libreofficeCommand}" "-env:UserInstallation=${userInstallation}" --headless --convert-to pdf --outdir "${outputDir}" "${docPath}"`;
+      console.log(`[BannerAgent] LibreOffice command: ${loCommand}`);
+      const { stdout, stderr } = await execAsync(loCommand, { timeout: 30000 });
 
+      if (stdout) {
+        console.log(`[BannerAgent] LibreOffice stdout: ${stdout}`);
+      }
       if (stderr && !stderr.includes('warn')) {
         console.warn(`[BannerAgent] LibreOffice stderr: ${stderr}`);
       }
 
-      // Verify PDF was created
+      // List what was actually created in the output directory
+      const dirContents = await fs.readdir(outputDir);
+      console.log(`[BannerAgent] Output directory contents: ${dirContents.join(', ') || '(empty)'}`);
+      console.log(`[BannerAgent] Expected PDF path: ${pdfPath}`);
+
+      // Verify PDF was created - if exact name doesn't match, try to find any PDF
       try {
         await fs.access(pdfPath);
       } catch {
-        throw new Error('LibreOffice conversion completed but PDF file not found');
+        // Try to find any PDF in the directory
+        const pdfFiles = dirContents.filter(f => f.endsWith('.pdf'));
+        if (pdfFiles.length > 0) {
+          const actualPdfPath = path.join(outputDir, pdfFiles[0]);
+          console.log(`[BannerAgent] Found PDF with different name: ${pdfFiles[0]}, using it instead`);
+          return actualPdfPath;
+        }
+        throw new Error(`LibreOffice conversion completed but PDF file not found. Expected: ${baseName}, Directory contents: ${dirContents.join(', ') || '(empty)'}`);
       }
 
       console.log(`[BannerAgent] PDF created with formatting preserved: ${path.basename(pdfPath)}`);

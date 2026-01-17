@@ -118,6 +118,18 @@ export async function POST(
       // No review state file, that's fine
     }
 
+    // Also update crosstab-review-state.json if it exists
+    const crosstabReviewStatePath = path.join(pipelineInfo.path, 'crosstab-review-state.json');
+    try {
+      const crosstabReviewStateContent = await fs.readFile(crosstabReviewStatePath, 'utf-8');
+      const crosstabReviewState = JSON.parse(crosstabReviewStateContent);
+      crosstabReviewState.status = 'cancelled';
+      crosstabReviewState.cancelledAt = new Date().toISOString();
+      await fs.writeFile(crosstabReviewStatePath, JSON.stringify(crosstabReviewState, null, 2));
+    } catch {
+      // No crosstab review state file, that's fine
+    }
+
     console.log(`[Cancel Pipeline] Pipeline ${pipelineId} cancelled successfully`);
 
     return NextResponse.json({

@@ -20,6 +20,7 @@ import { buildCutsSpec } from '@/lib/tables/CutsSpec';
 import { sortTables, getSortingMetadata } from '@/lib/tables/sortTables';
 import { generateRScriptV2WithValidation } from '@/lib/r/RScriptGeneratorV2';
 import { ExcelFormatter } from '@/lib/excel/ExcelFormatter';
+import { formatDuration } from '@/lib/utils/formatDuration';
 import type { BannerProcessingResult } from '@/agents/BannerAgent';
 import type { ExtendedTableDefinition } from '@/schemas/verificationAgentSchema';
 import type { TableAgentOutput } from '@/schemas/tableAgentSchema';
@@ -85,7 +86,7 @@ interface ReviewRequest {
   decisions: CrosstabDecision[];
 }
 
-type PipelineStatus = 'in_progress' | 'pending_review' | 'resuming' | 'success' | 'partial' | 'error' | 'cancelled';
+type PipelineStatus = 'in_progress' | 'pending_review' | 'resuming' | 'awaiting_tables' | 'success' | 'partial' | 'error' | 'cancelled';
 
 interface PipelineSummary {
   pipelineId: string;
@@ -299,177 +300,20 @@ async function applyDecisions(
   return { bannerCuts: modifiedGroups };
 }
 
-// -------------------------------------------------------------------------
-// GET Handler - Fetch review state
-// -------------------------------------------------------------------------
-
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ pipelineId: string }> }
-) {
+/**
+ * Complete the pipeline after Path B is ready (fire-and-forget)
+ * This function handles R script generation and Excel output
+ */
+async function completePipeline(
+  outputDir: string,
+  pipelineId: string,
+  modifiedCrosstabResult: ValidationResultType,
+  pathBResult: PathBResult,
+  reviewState: CrosstabReviewState,
+  decisions: CrosstabDecision[]
+): Promise<void> {
   try {
-    const { pipelineId } = await params;
-
-    if (!pipelineId) {
-      return NextResponse.json({ error: 'Pipeline ID is required' }, { status: 400 });
-    }
-
-    // Validate pipelineId format
-    if (!pipelineId.startsWith('pipeline-') || pipelineId.includes('..')) {
-      return NextResponse.json({ error: 'Invalid pipeline ID format' }, { status: 400 });
-    }
-
-    // Find pipeline directory
-    const pipelineInfo = await findPipelineDir(pipelineId);
-    if (!pipelineInfo) {
-      return NextResponse.json({ error: 'Pipeline not found' }, { status: 404 });
-    }
-
-    // Try crosstab review state first (new), then banner review state (legacy)
-    const crosstabReviewStatePath = path.join(pipelineInfo.path, 'crosstab-review-state.json');
-    const bannerReviewStatePath = path.join(pipelineInfo.path, 'banner-review-state.json');
-
-    // Check for crosstab review state (preferred)
-    try {
-      const reviewState = JSON.parse(await fs.readFile(crosstabReviewStatePath, 'utf-8')) as CrosstabReviewState;
-      return NextResponse.json({
-        reviewType: 'crosstab',
-        pipelineId: reviewState.pipelineId,
-        status: reviewState.status,
-        createdAt: reviewState.createdAt,
-        flaggedColumns: reviewState.flaggedColumns,
-        pathBStatus: reviewState.pathBStatus,
-        totalColumns: reviewState.crosstabResult.bannerCuts.reduce(
-          (sum, g) => sum + g.columns.length, 0
-        ),
-        decisions: reviewState.decisions || []
-      });
-    } catch {
-      // No crosstab review state, try banner (legacy)
-    }
-
-    // Check for banner review state (legacy)
-    try {
-      const bannerReviewState = JSON.parse(await fs.readFile(bannerReviewStatePath, 'utf-8'));
-      return NextResponse.json({
-        reviewType: 'banner',
-        pipelineId: bannerReviewState.pipelineId,
-        status: bannerReviewState.status,
-        createdAt: bannerReviewState.createdAt,
-        flaggedColumns: bannerReviewState.flaggedColumns,
-        pathBStatus: bannerReviewState.pathBStatus,
-        totalColumns: bannerReviewState.bannerResult?.agent?.reduce(
-          (sum: number, g: { columns: unknown[] }) => sum + g.columns.length, 0
-        ) || 0,
-        decisions: bannerReviewState.decisions || []
-      });
-    } catch {
-      return NextResponse.json(
-        { error: 'Review state not found - pipeline may not require review' },
-        { status: 404 }
-      );
-    }
-  } catch (error) {
-    console.error('[Review API GET] Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to get review state', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
-  }
-}
-
-// -------------------------------------------------------------------------
-// POST Handler - Submit review decisions and resume pipeline
-// -------------------------------------------------------------------------
-
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ pipelineId: string }> }
-) {
-  const resumeStartTime = Date.now();
-
-  try {
-    const { pipelineId } = await params;
-
-    if (!pipelineId) {
-      return NextResponse.json({ error: 'Pipeline ID is required' }, { status: 400 });
-    }
-
-    // Validate pipelineId format
-    if (!pipelineId.startsWith('pipeline-') || pipelineId.includes('..')) {
-      return NextResponse.json({ error: 'Invalid pipeline ID format' }, { status: 400 });
-    }
-
-    // Parse request body
-    const body = await request.json() as ReviewRequest;
-    const { decisions } = body;
-
-    if (!decisions || !Array.isArray(decisions)) {
-      return NextResponse.json({ error: 'Decisions array is required' }, { status: 400 });
-    }
-
-    // Find pipeline directory
-    const pipelineInfo = await findPipelineDir(pipelineId);
-    if (!pipelineInfo) {
-      return NextResponse.json({ error: 'Pipeline not found' }, { status: 404 });
-    }
-
-    const outputDir = pipelineInfo.path;
-
-    // Read review state
-    const reviewStatePath = path.join(outputDir, 'crosstab-review-state.json');
-    let reviewState: CrosstabReviewState;
-    try {
-      reviewState = JSON.parse(await fs.readFile(reviewStatePath, 'utf-8'));
-    } catch {
-      return NextResponse.json(
-        { error: 'Review state not found - pipeline may not require review' },
-        { status: 404 }
-      );
-    }
-
-    // Check state is awaiting review
-    if (reviewState.status !== 'awaiting_review') {
-      return NextResponse.json(
-        { error: `Cannot submit review - pipeline status is ${reviewState.status}` },
-        { status: 400 }
-      );
-    }
-
-    // Update pipeline summary to resuming
-    await updatePipelineSummary(outputDir, {
-      status: 'resuming',
-      currentStage: 'applying_review'
-    });
-
-    console.log(`[Review API] Resuming pipeline ${pipelineId} with ${decisions.length} decisions`);
-
-    // Save decisions to review state
-    reviewState.status = 'approved';
-    reviewState.decisions = decisions;
-    await fs.writeFile(reviewStatePath, JSON.stringify(reviewState, null, 2));
-
-    // Apply decisions to crosstab result
-    const modifiedCrosstabResult = await applyDecisions(
-      reviewState.crosstabResult,
-      reviewState.flaggedColumns,
-      decisions,
-      reviewState.agentDataMap,
-      outputDir
-    );
-
-    const totalColumns = modifiedCrosstabResult.bannerCuts.reduce((sum, g) => sum + g.columns.length, 0);
-    console.log(`[Review API] Applied decisions: ${modifiedCrosstabResult.bannerCuts.length} groups, ${totalColumns} columns`);
-
-    // Get Path B results
-    if (!reviewState.pathBResult) {
-      return NextResponse.json(
-        { error: 'Path B results not found in review state' },
-        { status: 500 }
-      );
-    }
-
-    const { verifiedTables } = reviewState.pathBResult;
+    const { verifiedTables } = pathBResult;
 
     // Sort tables
     const sortingMetadata = getSortingMetadata(verifiedTables);
@@ -567,23 +411,39 @@ export async function POST(
       await fs.unlink(path.join(outputDir, 'dataFile.sav'));
     } catch { /* May not exist */ }
 
-    // Calculate duration
-    const resumeDuration = Date.now() - resumeStartTime;
+    // Calculate total duration from pipeline start
+    const completionTime = new Date();
+    let totalDurationMs = 0;
+    try {
+      const summaryPath = path.join(outputDir, 'pipeline-summary.json');
+      const existingSummary = JSON.parse(await fs.readFile(summaryPath, 'utf-8')) as PipelineSummary;
+      if (existingSummary.timestamp) {
+        const startTime = new Date(existingSummary.timestamp).getTime();
+        totalDurationMs = completionTime.getTime() - startTime;
+      }
+    } catch {
+      // If we can't read the summary, we can't calculate duration
+      console.warn('[Review API] Could not read summary for duration calculation');
+    }
 
     // Update pipeline summary
     const finalStatus = excelGenerated ? 'success' : (rExecutionSuccess ? 'partial' : 'error');
     await updatePipelineSummary(outputDir, {
       status: finalStatus,
       currentStage: undefined,
+      duration: totalDurationMs > 0 ? {
+        ms: totalDurationMs,
+        formatted: formatDuration(totalDurationMs)
+      } : undefined,
       review: {
         flaggedColumnCount: reviewState.flaggedColumns.length,
         reviewUrl: `/pipelines/${pipelineId}/review`,
         decisions,
-        completedAt: new Date().toISOString()
+        completedAt: completionTime.toISOString()
       },
       outputs: {
-        variables: 0, // Would need to recalculate
-        tableAgentTables: reviewState.pathBResult.tableAgentResults.flatMap(r => r.tables).length,
+        variables: 0,
+        tableAgentTables: reviewState.pathBResult?.tableAgentResults?.flatMap(r => r.tables).length || 0,
         verifiedTables: sortedTables.length,
         tables: sortedTables.length,
         cuts: cutsSpec.cuts.length,
@@ -596,25 +456,296 @@ export async function POST(
       }
     });
 
-    console.log(`[Review API] Pipeline resumed and completed in ${(resumeDuration / 1000).toFixed(1)}s`);
-
-    return NextResponse.json({
-      success: true,
-      pipelineId,
-      status: finalStatus,
-      duration: {
-        ms: resumeDuration,
-        formatted: `${(resumeDuration / 1000).toFixed(1)}s`
-      },
-      outputs: {
-        tables: sortedTables.length,
-        cuts: cutsSpec.cuts.length,
-        excelGenerated,
-        downloadUrl: excelGenerated
-          ? `/api/pipelines/${encodeURIComponent(pipelineId)}/files/results/crosstabs.xlsx`
-          : undefined
-      }
+    console.log(`[Review API] Pipeline completed in ${formatDuration(totalDurationMs)}`);
+  } catch (error) {
+    console.error('[Review API] Background completion failed:', error);
+    await updatePipelineSummary(outputDir, {
+      status: 'error',
+      error: error instanceof Error ? error.message : 'Background completion failed'
     });
+  }
+}
+
+/**
+ * Wait for Path B to complete and then finish the pipeline
+ * This is used when Path B is still running at review submission time
+ */
+async function waitAndCompletePipeline(
+  outputDir: string,
+  pipelineId: string,
+  modifiedCrosstabResult: ValidationResultType,
+  reviewState: CrosstabReviewState,
+  decisions: CrosstabDecision[]
+): Promise<void> {
+  const pathBResultPath = path.join(outputDir, 'path-b-result.json');
+  const pathBStatusPath = path.join(outputDir, 'path-b-status.json');
+
+  const maxWaitMs = 1800000; // 30 minutes
+  const pollIntervalMs = 5000; // 5 seconds
+  const startTime = Date.now();
+
+  console.log(`[Review API] Waiting for Path B to complete (up to 30 min)...`);
+
+  while (Date.now() - startTime < maxWaitMs) {
+    // Check for result file
+    try {
+      const pathBResult = JSON.parse(await fs.readFile(pathBResultPath, 'utf-8'));
+      console.log('[Review API] Path B completed - starting pipeline completion');
+      await completePipeline(outputDir, pipelineId, modifiedCrosstabResult, pathBResult, reviewState, decisions);
+      return;
+    } catch { /* not ready yet */ }
+
+    // Check for error status
+    try {
+      const statusData = JSON.parse(await fs.readFile(pathBStatusPath, 'utf-8'));
+      if (statusData.status === 'error') {
+        console.error('[Review API] Path B failed:', statusData.error);
+        await updatePipelineSummary(outputDir, {
+          status: 'error',
+          error: `Table processing failed: ${statusData.error}`
+        });
+        return;
+      }
+    } catch { /* status file may not exist yet */ }
+
+    // Wait before next poll
+    await new Promise(r => setTimeout(r, pollIntervalMs));
+  }
+
+  // Timed out
+  console.error('[Review API] Timed out waiting for Path B (30 min)');
+  await updatePipelineSummary(outputDir, {
+    status: 'error',
+    error: 'Timed out waiting for table processing to complete'
+  });
+}
+
+// -------------------------------------------------------------------------
+// GET Handler - Fetch review state
+// -------------------------------------------------------------------------
+
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ pipelineId: string }> }
+) {
+  try {
+    const { pipelineId } = await params;
+
+    if (!pipelineId) {
+      return NextResponse.json({ error: 'Pipeline ID is required' }, { status: 400 });
+    }
+
+    // Validate pipelineId format
+    if (!pipelineId.startsWith('pipeline-') || pipelineId.includes('..')) {
+      return NextResponse.json({ error: 'Invalid pipeline ID format' }, { status: 400 });
+    }
+
+    // Find pipeline directory
+    const pipelineInfo = await findPipelineDir(pipelineId);
+    if (!pipelineInfo) {
+      return NextResponse.json({ error: 'Pipeline not found' }, { status: 404 });
+    }
+
+    // Try crosstab review state first (new), then banner review state (legacy)
+    const crosstabReviewStatePath = path.join(pipelineInfo.path, 'crosstab-review-state.json');
+    const bannerReviewStatePath = path.join(pipelineInfo.path, 'banner-review-state.json');
+
+    // Check for crosstab review state (preferred)
+    try {
+      const reviewState = JSON.parse(await fs.readFile(crosstabReviewStatePath, 'utf-8')) as CrosstabReviewState;
+
+      // Read real-time Path B status from disk (may have updated since review state was written)
+      let pathBStatus: 'running' | 'completed' | 'error' = reviewState.pathBStatus;
+      const pathBStatusPath = path.join(pipelineInfo.path, 'path-b-status.json');
+      try {
+        const statusData = JSON.parse(await fs.readFile(pathBStatusPath, 'utf-8'));
+        pathBStatus = statusData.status;
+      } catch {
+        // Status file not found - use value from review state
+      }
+
+      return NextResponse.json({
+        reviewType: 'crosstab',
+        pipelineId: reviewState.pipelineId,
+        status: reviewState.status,
+        createdAt: reviewState.createdAt,
+        flaggedColumns: reviewState.flaggedColumns,
+        pathBStatus, // Real-time status from path-b-status.json
+        totalColumns: reviewState.crosstabResult.bannerCuts.reduce(
+          (sum, g) => sum + g.columns.length, 0
+        ),
+        decisions: reviewState.decisions || []
+      });
+    } catch {
+      // No crosstab review state, try banner (legacy)
+    }
+
+    // Check for banner review state (legacy)
+    try {
+      const bannerReviewState = JSON.parse(await fs.readFile(bannerReviewStatePath, 'utf-8'));
+      return NextResponse.json({
+        reviewType: 'banner',
+        pipelineId: bannerReviewState.pipelineId,
+        status: bannerReviewState.status,
+        createdAt: bannerReviewState.createdAt,
+        flaggedColumns: bannerReviewState.flaggedColumns,
+        pathBStatus: bannerReviewState.pathBStatus,
+        totalColumns: bannerReviewState.bannerResult?.agent?.reduce(
+          (sum: number, g: { columns: unknown[] }) => sum + g.columns.length, 0
+        ) || 0,
+        decisions: bannerReviewState.decisions || []
+      });
+    } catch {
+      return NextResponse.json(
+        { error: 'Review state not found - pipeline may not require review' },
+        { status: 404 }
+      );
+    }
+  } catch (error) {
+    console.error('[Review API GET] Error:', error);
+    return NextResponse.json(
+      { error: 'Failed to get review state', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}
+
+// -------------------------------------------------------------------------
+// POST Handler - Submit review decisions and resume pipeline
+// -------------------------------------------------------------------------
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ pipelineId: string }> }
+) {
+  try {
+    const { pipelineId } = await params;
+
+    if (!pipelineId) {
+      return NextResponse.json({ error: 'Pipeline ID is required' }, { status: 400 });
+    }
+
+    // Validate pipelineId format
+    if (!pipelineId.startsWith('pipeline-') || pipelineId.includes('..')) {
+      return NextResponse.json({ error: 'Invalid pipeline ID format' }, { status: 400 });
+    }
+
+    // Parse request body
+    const body = await request.json() as ReviewRequest;
+    const { decisions } = body;
+
+    if (!decisions || !Array.isArray(decisions)) {
+      return NextResponse.json({ error: 'Decisions array is required' }, { status: 400 });
+    }
+
+    // Find pipeline directory
+    const pipelineInfo = await findPipelineDir(pipelineId);
+    if (!pipelineInfo) {
+      return NextResponse.json({ error: 'Pipeline not found' }, { status: 404 });
+    }
+
+    const outputDir = pipelineInfo.path;
+
+    // Read review state
+    const reviewStatePath = path.join(outputDir, 'crosstab-review-state.json');
+    let reviewState: CrosstabReviewState;
+    try {
+      reviewState = JSON.parse(await fs.readFile(reviewStatePath, 'utf-8'));
+    } catch {
+      return NextResponse.json(
+        { error: 'Review state not found - pipeline may not require review' },
+        { status: 404 }
+      );
+    }
+
+    // Check state is awaiting review
+    if (reviewState.status !== 'awaiting_review') {
+      return NextResponse.json(
+        { error: `Cannot submit review - pipeline status is ${reviewState.status}` },
+        { status: 400 }
+      );
+    }
+
+    console.log(`[Review API] Processing review for ${pipelineId} with ${decisions.length} decisions`);
+
+    // Save decisions to review state immediately
+    reviewState.status = 'approved';
+    reviewState.decisions = decisions;
+    await fs.writeFile(reviewStatePath, JSON.stringify(reviewState, null, 2));
+
+    // Apply decisions to crosstab result
+    const modifiedCrosstabResult = await applyDecisions(
+      reviewState.crosstabResult,
+      reviewState.flaggedColumns,
+      decisions,
+      reviewState.agentDataMap,
+      outputDir
+    );
+
+    const totalColumns = modifiedCrosstabResult.bannerCuts.reduce((sum, g) => sum + g.columns.length, 0);
+    console.log(`[Review API] Applied decisions: ${modifiedCrosstabResult.bannerCuts.length} groups, ${totalColumns} columns`);
+
+    // Check if Path B is complete
+    const pathBResultPath = path.join(outputDir, 'path-b-result.json');
+    let pathBResult: PathBResult | null = reviewState.pathBResult;
+
+    if (!pathBResult) {
+      // Try to load from disk
+      try {
+        pathBResult = JSON.parse(await fs.readFile(pathBResultPath, 'utf-8'));
+        console.log('[Review API] Path B result loaded from disk');
+      } catch {
+        // Path B still running
+        pathBResult = null;
+      }
+    }
+
+    if (pathBResult) {
+      // Path B is complete - finish pipeline synchronously
+      await updatePipelineSummary(outputDir, {
+        status: 'resuming',
+        currentStage: 'generating_output'
+      });
+
+      await completePipeline(outputDir, pipelineId, modifiedCrosstabResult, pathBResult, reviewState, decisions);
+
+      // Read final status
+      const summaryPath = path.join(outputDir, 'pipeline-summary.json');
+      const summary = JSON.parse(await fs.readFile(summaryPath, 'utf-8'));
+
+      return NextResponse.json({
+        success: true,
+        pipelineId,
+        status: summary.status,
+        message: 'Pipeline completed successfully'
+      });
+    } else {
+      // Path B still running - return immediately and complete in background
+      console.log('[Review API] Path B still running - returning immediately, will complete in background');
+
+      await updatePipelineSummary(outputDir, {
+        status: 'awaiting_tables',
+        currentStage: 'waiting_for_tables',
+        review: {
+          flaggedColumnCount: reviewState.flaggedColumns.length,
+          reviewUrl: `/pipelines/${pipelineId}/review`,
+          decisions
+        }
+      });
+
+      // Fire-and-forget: Start background completion
+      // Note: In serverless environments, this may be terminated after response is sent
+      // But for local/long-running servers, it will continue
+      waitAndCompletePipeline(outputDir, pipelineId, modifiedCrosstabResult, reviewState, decisions)
+        .catch(err => console.error('[Review API] Background completion error:', err));
+
+      return NextResponse.json({
+        success: true,
+        pipelineId,
+        status: 'awaiting_tables',
+        message: 'Review saved. Pipeline will complete when table processing finishes.'
+      });
+    }
 
   } catch (error) {
     console.error('[Review API POST] Error:', error);

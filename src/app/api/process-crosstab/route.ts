@@ -209,6 +209,13 @@ interface FlaggedCrosstabColumn {
   expressionType?: string;
 }
 
+interface PathBStatus {
+  status: 'running' | 'completed' | 'error';
+  startedAt: string;
+  completedAt: string | null;
+  error: string | null;
+}
+
 interface CrosstabReviewState {
   pipelineId: string;
   status: 'awaiting_review' | 'approved' | 'cancelled';
@@ -218,8 +225,8 @@ interface CrosstabReviewState {
   bannerResult: BannerProcessingResult;  // Original banner for reference
   agentDataMap: AgentDataMapItem[];
   outputDir: string;
-  pathBStatus: 'completed';
-  pathBResult: PathBResult;              // Tables ready (completed in parallel)
+  pathBStatus: 'running' | 'completed' | 'error';  // Path B may still be running when review starts
+  pathBResult: PathBResult | null;       // Null when Path B still running
   decisions?: Array<{
     groupName: string;
     columnName: string;
@@ -921,32 +928,65 @@ export async function POST(request: NextRequest) {
 
         const bannerAgent = new BannerAgent();
 
-        const [pathAResult, pathBResult] = await Promise.allSettled([
-          executePathA(bannerAgent, bannerPlanPath, agentDataMap, outputDir, updateParallelProgress, abortSignal),
-          executePathB(verboseDataMap, surveyPath ?? null, outputDir, updateParallelProgress, abortSignal)
-        ]);
+        // Write initial Path B status (will be running)
+        const pathBStatusPath = path.join(outputDir, 'path-b-status.json');
+        const pathBResultPath = path.join(outputDir, 'path-b-result.json');
+        const pathBStartedAt = new Date().toISOString();
+        const initialPathBStatus: PathBStatus = {
+          status: 'running',
+          startedAt: pathBStartedAt,
+          completedAt: null,
+          error: null
+        };
+        await fs.writeFile(pathBStatusPath, JSON.stringify(initialPathBStatus, null, 2));
+        console.log('[API] Path B status initialized: running');
 
-        const parallelDuration = Date.now() - parallelStartTime;
-        console.log(`[API] Parallel paths completed in ${(parallelDuration / 1000).toFixed(1)}s`);
+        // Start Path B as fire-and-forget (writes result to disk when complete)
+        // This promise is NOT awaited here - it runs in background
+        const pathBPromise = executePathB(verboseDataMap, surveyPath ?? null, outputDir, updateParallelProgress, abortSignal)
+          .then(async (result) => {
+            // Write result to disk
+            await fs.writeFile(pathBResultPath, JSON.stringify(result, null, 2));
+            // Update status to completed
+            const completedStatus: PathBStatus = {
+              status: 'completed',
+              startedAt: pathBStartedAt,
+              completedAt: new Date().toISOString(),
+              error: null
+            };
+            await fs.writeFile(pathBStatusPath, JSON.stringify(completedStatus, null, 2));
+            console.log('[API] Path B completed and result saved to disk');
+            return result;
+          })
+          .catch(async (error) => {
+            // Handle Path B failure - write error status but don't crash pipeline
+            const errorMsg = error instanceof Error ? error.message : String(error);
+            const isAborted = isAbortError(error);
+            const errorStatus: PathBStatus = {
+              status: 'error',
+              startedAt: pathBStartedAt,
+              completedAt: new Date().toISOString(),
+              error: isAborted ? 'Cancelled' : errorMsg
+            };
+            await fs.writeFile(pathBStatusPath, JSON.stringify(errorStatus, null, 2));
+            console.error(`[API] Path B failed: ${errorMsg}`);
+            throw error; // Re-throw so we can catch it later if needed
+          });
 
-        // Check results from both paths
-        const pathAFailed = pathAResult.status === 'rejected';
-        const pathBFailed = pathBResult.status === 'rejected';
+        // Await ONLY Path A - this is what we need for review check
+        console.log('[API] Awaiting Path A (Banner → Crosstab)...');
+        let pathAResult: Awaited<ReturnType<typeof executePathA>>;
+        try {
+          pathAResult = await executePathA(bannerAgent, bannerPlanPath, agentDataMap, outputDir, updateParallelProgress, abortSignal);
+        } catch (pathAError) {
+          // Check if Path A was aborted (cancelled)
+          if (isAbortError(pathAError)) {
+            console.log('[API] Pipeline was cancelled during Path A');
+            await handleCancellation(outputDir, job.jobId, pipelineId, datasetName, 'Cancelled during agent processing');
+            return;
+          }
 
-        // Check if either path was aborted (cancelled)
-        const pathAAborted = pathAFailed && isAbortError(pathAResult.reason);
-        const pathBAborted = pathBFailed && isAbortError(pathBResult.reason);
-
-        if (pathAAborted || pathBAborted) {
-          console.log('[API] Pipeline was cancelled during parallel execution');
-          await handleCancellation(outputDir, job.jobId, pipelineId, datasetName, 'Cancelled during agent processing');
-          return;
-        }
-
-        if (pathAFailed) {
-          const errorMsg = pathAResult.reason instanceof Error
-            ? pathAResult.reason.message
-            : String(pathAResult.reason);
+          const errorMsg = pathAError instanceof Error ? pathAError.message : String(pathAError);
           console.error(`[API] Path A failed: ${errorMsg}`);
 
           // Write a partial summary for debugging
@@ -980,10 +1020,98 @@ export async function POST(request: NextRequest) {
           return; // Stop pipeline - Path A is required
         }
 
-        if (pathBFailed) {
-          const errorMsg = pathBResult.reason instanceof Error
-            ? pathBResult.reason.message
-            : String(pathBResult.reason);
+        const pathADuration = Date.now() - parallelStartTime;
+        console.log(`[API] Path A completed in ${(pathADuration / 1000).toFixed(1)}s (Path B still running in background)`);
+
+        // Path A succeeded - extract values (Path B is still running)
+        const { bannerResult, crosstabResult } = pathAResult;
+
+        // Log Path A summary
+        const extractedStructure = bannerResult.verbose?.data?.extractedStructure;
+        const groupCount = extractedStructure?.bannerCuts?.length || 0;
+        const columnCount = (extractedStructure?.processingMetadata as { totalColumns?: number })?.totalColumns || 0;
+
+        console.log(`[API] Path A: ${groupCount} groups, ${columnCount} columns, ${crosstabResult.result.bannerCuts.length} validated`);
+
+        // -------------------------------------------------------------------------
+        // Handle Human-in-the-Loop Review for CrosstabAgent mappings
+        // Check IMMEDIATELY after Path A - don't wait for Path B
+        // -------------------------------------------------------------------------
+        const flaggedCrosstabColumns = getFlaggedCrosstabColumns(crosstabResult.result, bannerResult);
+
+        if (flaggedCrosstabColumns.length > 0) {
+          console.log(`[API] Review required: ${flaggedCrosstabColumns.length} columns need human review (CrosstabAgent mapping)`);
+          console.log('[API] Showing review UI immediately - Path B continues in background');
+
+          // Write review state to disk - Path B still running, no result yet
+          const reviewState: CrosstabReviewState = {
+            pipelineId,
+            status: 'awaiting_review',
+            createdAt: new Date().toISOString(),
+            crosstabResult: crosstabResult.result,
+            flaggedColumns: flaggedCrosstabColumns,
+            bannerResult,
+            agentDataMap,
+            outputDir,
+            pathBStatus: 'running',  // Path B is still running in background
+            pathBResult: null        // Result not available yet - will be in path-b-result.json
+          };
+
+          await fs.writeFile(
+            path.join(outputDir, 'crosstab-review-state.json'),
+            JSON.stringify(reviewState, null, 2)
+          );
+          console.log('[API] Review state saved to crosstab-review-state.json');
+
+          // Update pipeline summary to pending_review
+          const reviewUrl = `/pipelines/${encodeURIComponent(pipelineId)}/review`;
+          await updatePipelineSummary(outputDir, {
+            status: 'pending_review',
+            currentStage: 'crosstab_review',
+            review: {
+              flaggedColumnCount: flaggedCrosstabColumns.length,
+              reviewUrl
+            }
+          });
+
+          // Update job status for polling
+          updateJob(job.jobId, {
+            stage: 'crosstab_review_required',
+            percent: 50,  // Lower percent since Path B not done
+            message: `Review required - ${flaggedCrosstabColumns.length} columns need mapping verification`,
+            sessionId,
+            pipelineId,
+            dataset: datasetName,
+            reviewRequired: true,
+            reviewUrl,
+            flaggedColumnCount: flaggedCrosstabColumns.length
+          });
+
+          console.log('[API] Pipeline paused for human review. Path B continues in background.');
+          console.log(`[API] Resume via POST /api/pipelines/${pipelineId}/review`);
+
+          // Don't proceed to R script - wait for human approval
+          // Path B promise continues running in background (fire-and-forget)
+          // Its result will be written to path-b-result.json when complete
+          return;
+        }
+
+        // No review needed - wait for Path B now, then continue to R script generation
+        console.log('[API] All CrosstabAgent mappings have high confidence - no review needed');
+        console.log('[API] Waiting for Path B to complete...');
+
+        let pathBResultData: Awaited<ReturnType<typeof executePathB>>;
+        try {
+          pathBResultData = await pathBPromise;
+        } catch (pathBError) {
+          // Check if Path B was aborted (cancelled)
+          if (isAbortError(pathBError)) {
+            console.log('[API] Pipeline was cancelled during Path B');
+            await handleCancellation(outputDir, job.jobId, pipelineId, datasetName, 'Cancelled during agent processing');
+            return;
+          }
+
+          const errorMsg = pathBError instanceof Error ? pathBError.message : String(pathBError);
           console.error(`[API] Path B failed: ${errorMsg}`);
 
           // Write a partial summary for debugging
@@ -1017,80 +1145,11 @@ export async function POST(request: NextRequest) {
           return; // Stop pipeline - Path B is required
         }
 
-        // Both paths succeeded - extract values
-        const { bannerResult, crosstabResult } = pathAResult.value;
-        const { tableAgentResults, verifiedTables } = pathBResult.value;
-
-        // Log summary from both paths
-        const extractedStructure = bannerResult.verbose?.data?.extractedStructure;
-        const groupCount = extractedStructure?.bannerCuts?.length || 0;
-        const columnCount = (extractedStructure?.processingMetadata as { totalColumns?: number })?.totalColumns || 0;
+        const { tableAgentResults, verifiedTables } = pathBResultData;
         const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
-
-        console.log(`[API] Path A: ${groupCount} groups, ${columnCount} columns, ${crosstabResult.result.bannerCuts.length} validated`);
+        const parallelDuration = Date.now() - parallelStartTime;
+        console.log(`[API] Both paths completed in ${(parallelDuration / 1000).toFixed(1)}s`);
         console.log(`[API] Path B: ${tableAgentTables.length} table definitions, ${verifiedTables.length} verified`);
-
-        // -------------------------------------------------------------------------
-        // Handle Human-in-the-Loop Review for CrosstabAgent mappings
-        // -------------------------------------------------------------------------
-        const flaggedCrosstabColumns = getFlaggedCrosstabColumns(crosstabResult.result, bannerResult);
-
-        if (flaggedCrosstabColumns.length > 0) {
-          console.log(`[API] Review required: ${flaggedCrosstabColumns.length} columns need human review (CrosstabAgent mapping)`);
-
-          // Write review state to disk
-          const reviewState: CrosstabReviewState = {
-            pipelineId,
-            status: 'awaiting_review',
-            createdAt: new Date().toISOString(),
-            crosstabResult: crosstabResult.result,
-            flaggedColumns: flaggedCrosstabColumns,
-            bannerResult,
-            agentDataMap,
-            outputDir,
-            pathBStatus: 'completed',
-            pathBResult: { tableAgentResults, verifiedTables }
-          };
-
-          await fs.writeFile(
-            path.join(outputDir, 'crosstab-review-state.json'),
-            JSON.stringify(reviewState, null, 2)
-          );
-          console.log('[API] Review state saved to crosstab-review-state.json');
-
-          // Update pipeline summary to pending_review
-          const reviewUrl = `/pipelines/${encodeURIComponent(pipelineId)}/review`;
-          await updatePipelineSummary(outputDir, {
-            status: 'pending_review',
-            currentStage: 'crosstab_review',
-            review: {
-              flaggedColumnCount: flaggedCrosstabColumns.length,
-              reviewUrl
-            }
-          });
-
-          // Update job status for polling
-          updateJob(job.jobId, {
-            stage: 'crosstab_review_required',
-            percent: 75,
-            message: `Review required - ${flaggedCrosstabColumns.length} columns need mapping verification`,
-            sessionId,
-            pipelineId,
-            dataset: datasetName,
-            reviewRequired: true,
-            reviewUrl,
-            flaggedColumnCount: flaggedCrosstabColumns.length
-          });
-
-          console.log(`[API] Pipeline paused for human review. Tables ready: ${verifiedTables.length}`);
-          console.log(`[API] Resume via POST /api/pipelines/${pipelineId}/review`);
-
-          // Don't proceed to R script - wait for human approval
-          return;
-        }
-
-        // No review needed - continue to R script generation
-        console.log('[API] All CrosstabAgent mappings have high confidence - no review needed');
 
         // Sort tables for logical Excel output order
         console.log('[API] Sorting tables...');

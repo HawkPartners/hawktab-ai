@@ -25,7 +25,7 @@ export interface PipelineDetails {
     ms: number;
     formatted: string;
   };
-  status: 'success' | 'partial' | 'error' | 'in_progress' | 'pending_review' | 'cancelled';
+  status: 'success' | 'partial' | 'error' | 'in_progress' | 'pending_review' | 'cancelled' | 'awaiting_tables';
   currentStage?: string;
   inputs: {
     datamap: string;
@@ -209,17 +209,17 @@ export async function GET(
 
     // Map internal status to display status
     const rawStatus: string = summary.status || 'success';
-    let displayStatus: 'success' | 'partial' | 'error' | 'in_progress' | 'pending_review' | 'cancelled';
+    let displayStatus: 'success' | 'partial' | 'error' | 'in_progress' | 'pending_review' | 'cancelled' | 'awaiting_tables';
     if (rawStatus === 'resuming') {
       displayStatus = 'in_progress';
-    } else if (rawStatus === 'success' || rawStatus === 'partial' || rawStatus === 'error' || rawStatus === 'in_progress' || rawStatus === 'pending_review' || rawStatus === 'cancelled') {
+    } else if (rawStatus === 'success' || rawStatus === 'partial' || rawStatus === 'error' || rawStatus === 'in_progress' || rawStatus === 'pending_review' || rawStatus === 'cancelled' || rawStatus === 'awaiting_tables') {
       displayStatus = rawStatus;
     } else {
       displayStatus = 'success';
     }
 
     // Determine duration display
-    const isActive = displayStatus === 'in_progress' || displayStatus === 'pending_review';
+    const isActive = displayStatus === 'in_progress' || displayStatus === 'pending_review' || displayStatus === 'awaiting_tables';
     const isCancelled = displayStatus === 'cancelled';
     let durationFormatted: string;
     if (isActive) {
