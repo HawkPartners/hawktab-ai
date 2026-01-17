@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { PipelineHistory } from '@/components/PipelineHistory';
 
 const ACTIVE_JOB_KEY = 'crosstab-active-job';
+const ACTIVE_PIPELINE_KEY = 'crosstab-active-pipeline';
 
 export default function Home() {
   const [dataMapFile, setDataMapFile] = useState<File | null>(null);
@@ -26,15 +27,75 @@ export default function Home() {
   // Restore active job from localStorage on mount
   useEffect(() => {
     const savedJobId = localStorage.getItem(ACTIVE_JOB_KEY);
+    const savedPipelineId = localStorage.getItem(ACTIVE_PIPELINE_KEY);
+
+    const recoverFromDiskState = async (pipelineId: string) => {
+      try {
+        const res = await fetch(`/api/pipelines/${encodeURIComponent(pipelineId)}`);
+        if (!res.ok) {
+          // Pipeline not found - clear storage
+          localStorage.removeItem(ACTIVE_JOB_KEY);
+          localStorage.removeItem(ACTIVE_PIPELINE_KEY);
+          return;
+        }
+
+        const data = await res.json();
+        const terminalStatuses = ['success', 'error', 'cancelled', 'partial'];
+
+        if (terminalStatuses.includes(data.status)) {
+          // Pipeline finished - clear storage
+          localStorage.removeItem(ACTIVE_JOB_KEY);
+          localStorage.removeItem(ACTIVE_PIPELINE_KEY);
+          return;
+        }
+
+        if (data.status === 'pending_review' && data.review?.reviewUrl) {
+          // Redirect to review page
+          localStorage.removeItem(ACTIVE_JOB_KEY);
+          localStorage.removeItem(ACTIVE_PIPELINE_KEY);
+          toast.warning('Review Required', {
+            description: `${data.review.flaggedColumnCount || 'Some'} columns need your attention`,
+            action: {
+              label: 'Review Now',
+              onClick: () => router.push(data.review.reviewUrl),
+            },
+            duration: 30000,
+          });
+          return;
+        }
+
+        if (data.status === 'in_progress' || data.status === 'awaiting_tables') {
+          // Pipeline still running - show processing state
+          setIsProcessing(true);
+          toast.loading('Processing pipeline...', {
+            id: 'pipeline-progress',
+            description: data.status === 'awaiting_tables'
+              ? 'Completing pipeline...'
+              : 'Processing crosstabs...',
+            duration: Infinity,
+          });
+          return;
+        }
+
+        // Unknown status - clear storage
+        localStorage.removeItem(ACTIVE_JOB_KEY);
+        localStorage.removeItem(ACTIVE_PIPELINE_KEY);
+      } catch {
+        // Error checking disk state - clear storage
+        localStorage.removeItem(ACTIVE_JOB_KEY);
+        localStorage.removeItem(ACTIVE_PIPELINE_KEY);
+      }
+    };
+
     if (savedJobId) {
-      // Check if job is still active
+      // Check if job is still active in memory
       fetch(`/api/process-crosstab/status?jobId=${encodeURIComponent(savedJobId)}`)
         .then(res => res.json())
         .then(data => {
           // Check for terminal states (complete, error, cancelled)
           const terminalStages = ['complete', 'error', 'cancelled'];
           if (data.stage && !terminalStages.includes(data.stage)) {
-            // Job still running - restore state
+            // Job still running in memory - restore state
             setJobId(savedJobId);
             setIsProcessing(true);
             toast.loading('Processing pipeline...', {
@@ -45,14 +106,22 @@ export default function Home() {
           } else {
             // Job finished or cancelled - clear storage
             localStorage.removeItem(ACTIVE_JOB_KEY);
+            localStorage.removeItem(ACTIVE_PIPELINE_KEY);
           }
         })
         .catch(() => {
-          // Error checking - clear storage
-          localStorage.removeItem(ACTIVE_JOB_KEY);
+          // Job not in memory - try to recover from disk state
+          if (savedPipelineId) {
+            recoverFromDiskState(savedPipelineId);
+          } else {
+            localStorage.removeItem(ACTIVE_JOB_KEY);
+          }
         });
+    } else if (savedPipelineId) {
+      // No jobId but have pipelineId - check disk state
+      recoverFromDiskState(savedPipelineId);
     }
-  }, []);
+  }, [router]);
 
   // Required files check (survey is optional)
   const requiredFilesUploaded = dataMapFile && bannerPlanFile && dataFile;
@@ -106,6 +175,9 @@ export default function Home() {
       if (result.jobId) {
         setJobId(result.jobId);
         localStorage.setItem(ACTIVE_JOB_KEY, result.jobId);
+      }
+      if (result.pipelineId) {
+        localStorage.setItem(ACTIVE_PIPELINE_KEY, result.pipelineId);
       }
 
     } catch (error) {
@@ -163,6 +235,7 @@ export default function Home() {
     setJobId(null);
     setJobError(null);
     localStorage.removeItem(ACTIVE_JOB_KEY);
+    localStorage.removeItem(ACTIVE_PIPELINE_KEY);
 
     // Dismiss the toast
     toast.dismiss('pipeline-progress');
@@ -193,6 +266,7 @@ export default function Home() {
           setIsProcessing(false);
           setJobId(null);
           localStorage.removeItem(ACTIVE_JOB_KEY);
+          localStorage.removeItem(ACTIVE_PIPELINE_KEY);
 
           // Refresh pipeline history
           refresh();
@@ -210,6 +284,7 @@ export default function Home() {
           setIsProcessing(false);
           setJobId(null);
           localStorage.removeItem(ACTIVE_JOB_KEY);
+          localStorage.removeItem(ACTIVE_PIPELINE_KEY);
 
           // Refresh pipeline history
           refresh();
@@ -243,6 +318,7 @@ export default function Home() {
           setIsProcessing(false);
           setJobId(null);
           localStorage.removeItem(ACTIVE_JOB_KEY);
+          localStorage.removeItem(ACTIVE_PIPELINE_KEY);
 
           const doneOk = data.stage === 'complete' && !data.error;
           if (doneOk) {

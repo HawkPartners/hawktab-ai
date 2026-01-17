@@ -38,6 +38,7 @@ import {
   formatScratchpadAsMarkdown,
 } from './tools/scratchpad';
 import { getVerificationPrompt } from '../prompts';
+import { retryWithPolicyHandling } from '../lib/retryWithPolicyHandling';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -125,56 +126,75 @@ ${JSON.stringify(input.table, null, 2)}
 Analyze the table against the survey document. Fix labels, split if needed, add NETs if appropriate, create T2B if it's a scale, or flag for exclusion if low value. Output the tables array representing the desired end state.
 `;
 
-  try {
-    // Use generateText with structured output
-    const { output } = await generateText({
-      model: getVerificationModel(),
-      system: systemPrompt,
-      maxRetries: 3,  // SDK handles transient/network errors
-      prompt: userPrompt,
-      tools: {
-        scratchpad: verificationScratchpadTool,
-      },
-      stopWhen: stepCountIs(15),
-      maxOutputTokens: Math.min(getVerificationModelTokenLimit(), 100000),
-      // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
-      providerOptions: {
-        openai: {
-          reasoningEffort: getVerificationReasoningEffort(),
+  // Check if this is an abort error
+  const checkAbortError = (error: unknown): boolean => {
+    return error instanceof DOMException && error.name === 'AbortError';
+  };
+
+  // Wrap the AI call with retry logic for policy errors
+  const retryResult = await retryWithPolicyHandling(
+    async () => {
+      const { output } = await generateText({
+        model: getVerificationModel(),
+        system: systemPrompt,
+        maxRetries: 3,  // SDK handles transient/network errors
+        prompt: userPrompt,
+        tools: {
+          scratchpad: verificationScratchpadTool,
         },
+        stopWhen: stepCountIs(15),
+        maxOutputTokens: Math.min(getVerificationModelTokenLimit(), 100000),
+        // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+        providerOptions: {
+          openai: {
+            reasoningEffort: getVerificationReasoningEffort(),
+          },
+        },
+        output: Output.object({
+          schema: VerificationAgentOutputSchema,
+        }),
+        abortSignal,  // Pass abort signal to AI SDK
+      });
+
+      if (!output || !output.tables || output.tables.length === 0) {
+        throw new Error(`Invalid output for table ${input.table.tableId}`);
+      }
+
+      return output;
+    },
+    {
+      abortSignal,
+      onRetry: (attempt, err) => {
+        // Check for abort errors and propagate them
+        if (checkAbortError(err)) {
+          throw err;
+        }
+        console.warn(`[VerificationAgent] Retry ${attempt}/3 for table "${input.table.tableId}": ${err.message}`);
       },
-      output: Output.object({
-        schema: VerificationAgentOutputSchema,
-      }),
-      abortSignal,  // Pass abort signal to AI SDK
-    });
-
-    if (!output || !output.tables || output.tables.length === 0) {
-      console.warn(
-        `[VerificationAgent] Invalid output for table ${input.table.tableId} - passing through`
-      );
-      return createPassthroughOutput(input.table);
     }
+  );
 
+  if (retryResult.success && retryResult.result) {
     console.log(
-      `[VerificationAgent] Table ${input.table.tableId} processed - ${output.tables.length} tables, ${output.changes.length} changes, confidence: ${output.confidence.toFixed(2)}`
+      `[VerificationAgent] Table ${input.table.tableId} processed - ${retryResult.result.tables.length} tables, ${retryResult.result.changes.length} changes, confidence: ${retryResult.result.confidence.toFixed(2)}`
     );
-
-    return output;
-
-  } catch (error) {
-    // Check if this is an abort error - propagate immediately
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      console.log(`[VerificationAgent] Aborted by signal during table ${input.table.tableId}`);
-      throw error;
-    }
-
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`[VerificationAgent] Error processing table ${input.table.tableId}:`, errorMessage);
-
-    // Return passthrough on error
-    return createPassthroughOutput(input.table);
+    return retryResult.result;
   }
+
+  // Handle abort errors
+  if (retryResult.error === 'Operation was cancelled') {
+    console.log(`[VerificationAgent] Aborted by signal during table ${input.table.tableId}`);
+    throw new DOMException('VerificationAgent aborted', 'AbortError');
+  }
+
+  // All retries failed - return passthrough on error
+  const errorMessage = retryResult.error || 'Unknown error';
+  const retryContext = retryResult.wasPolicyError
+    ? ` (failed after ${retryResult.attempts} retries due to content policy)`
+    : '';
+  console.error(`[VerificationAgent] Error processing table ${input.table.tableId}:`, errorMessage + retryContext);
+
+  return createPassthroughOutput(input.table);
 }
 
 // =============================================================================

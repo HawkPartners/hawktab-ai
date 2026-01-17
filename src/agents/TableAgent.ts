@@ -24,6 +24,7 @@ import {
 } from '../lib/env';
 import { tableScratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
 import { getTablePrompt } from '../prompts';
+import { retryWithPolicyHandling } from '../lib/retryWithPolicyHandling';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -174,67 +175,89 @@ PROCESSING REQUIREMENTS:
 Begin analysis now.
 `;
 
-  try {
-    // Use generateText with structured output
-    const { output } = await generateText({
-      model: getTableModel(),  // Task-based: table model for display decisions
-      system: systemPrompt,
-      maxRetries: 3,  // SDK handles transient/network errors
-      prompt: `Analyze question "${input.questionId}" with ${input.items.length} items and decide how to display as crosstab table(s).`,
-      tools: {
-        scratchpad: tableScratchpadTool,
-      },
-      stopWhen: stepCountIs(15),  // Fewer steps needed than CrosstabAgent
-      maxOutputTokens: Math.min(getTableModelTokenLimit(), 100000),
-      // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
-      providerOptions: {
-        openai: {
-          reasoningEffort: getTableReasoningEffort(),
+  // Check if this is an abort error
+  const checkAbortError = (error: unknown): boolean => {
+    return error instanceof DOMException && error.name === 'AbortError';
+  };
+
+  // Wrap the AI call with retry logic for policy errors
+  const retryResult = await retryWithPolicyHandling(
+    async () => {
+      const { output } = await generateText({
+        model: getTableModel(),  // Task-based: table model for display decisions
+        system: systemPrompt,
+        maxRetries: 3,  // SDK handles transient/network errors
+        prompt: `Analyze question "${input.questionId}" with ${input.items.length} items and decide how to display as crosstab table(s).`,
+        tools: {
+          scratchpad: tableScratchpadTool,
         },
+        stopWhen: stepCountIs(15),  // Fewer steps needed than CrosstabAgent
+        maxOutputTokens: Math.min(getTableModelTokenLimit(), 100000),
+        // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+        providerOptions: {
+          openai: {
+            reasoningEffort: getTableReasoningEffort(),
+          },
+        },
+        output: Output.object({
+          schema: TableAgentOutputSchema,
+        }),
+        abortSignal,  // Pass abort signal to AI SDK
+      });
+
+      if (!output || !output.tables) {
+        throw new Error(`Invalid agent response for question ${input.questionId}`);
+      }
+
+      return output;
+    },
+    {
+      abortSignal,
+      onRetry: (attempt, err) => {
+        // Check for abort errors and propagate them
+        if (checkAbortError(err)) {
+          throw err;
+        }
+        console.warn(`[TableAgent] Retry ${attempt}/3 for question "${input.questionId}": ${err.message}`);
       },
-      output: Output.object({
-        schema: TableAgentOutputSchema,
-      }),
-      abortSignal,  // Pass abort signal to AI SDK
-    });
-
-    if (!output || !output.tables) {
-      throw new Error(`Invalid agent response for question ${input.questionId}`);
     }
+  );
 
-    console.log(`[TableAgent] Question ${input.questionId} processed - ${output.tables.length} tables generated, confidence: ${output.confidence.toFixed(2)}`);
-
-    return output;
-
-  } catch (error) {
-    // Check if this is an abort error - propagate immediately
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      console.log(`[TableAgent] Aborted by signal during question ${input.questionId}`);
-      throw error;
-    }
-
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`[TableAgent] Error processing question ${input.questionId}:`, errorMessage);
-
-    // Return fallback result with low confidence
-    return {
-      questionId: input.questionId,
-      questionText: input.questionText,
-      tables: [{
-        tableId: input.questionId.toLowerCase(),
-        title: `Error: ${input.questionId}`,
-        tableType: 'frequency',  // Safe default
-        rows: input.items.map(item => ({
-          variable: item.column,
-          label: item.label,
-          filterValue: '',  // Required field for Azure compatibility
-        })),
-        hints: [],  // No hints for fallback
-      }],
-      confidence: 0.0,
-      reasoning: `Error processing question: ${errorMessage}. Manual review required.`,
-    };
+  if (retryResult.success && retryResult.result) {
+    console.log(`[TableAgent] Question ${input.questionId} processed - ${retryResult.result.tables.length} tables generated, confidence: ${retryResult.result.confidence.toFixed(2)}`);
+    return retryResult.result;
   }
+
+  // Handle abort errors
+  if (retryResult.error === 'Operation was cancelled') {
+    console.log(`[TableAgent] Aborted by signal during question ${input.questionId}`);
+    throw new DOMException('TableAgent aborted', 'AbortError');
+  }
+
+  // All retries failed - return fallback result with low confidence
+  const errorMessage = retryResult.error || 'Unknown error';
+  const retryContext = retryResult.wasPolicyError
+    ? ` (failed after ${retryResult.attempts} retries due to content policy)`
+    : '';
+  console.error(`[TableAgent] Error processing question ${input.questionId}:`, errorMessage + retryContext);
+
+  return {
+    questionId: input.questionId,
+    questionText: input.questionText,
+    tables: [{
+      tableId: input.questionId.toLowerCase(),
+      title: `Error: ${input.questionId}`,
+      tableType: 'frequency',  // Safe default
+      rows: input.items.map(item => ({
+        variable: item.column,
+        label: item.label,
+        filterValue: '',  // Required field for Azure compatibility
+      })),
+      hints: [],  // No hints for fallback
+    }],
+    confidence: 0.0,
+    reasoning: `Error processing question: ${errorMessage}${retryContext}. Manual review required.`,
+  };
 }
 
 /**

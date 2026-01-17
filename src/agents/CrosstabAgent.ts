@@ -19,6 +19,7 @@ import {
 } from '../lib/env';
 import { crosstabScratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
 import { getCrosstabPrompt } from '../prompts';
+import { retryWithPolicyHandling } from '../lib/retryWithPolicyHandling';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -90,64 +91,86 @@ PROCESSING REQUIREMENTS:
 Begin validation now.
 `;
 
-  try {
-    // Use generateText with structured output and multi-step tool calling
-    const { output } = await generateText({
-      model: getCrosstabModel(),  // Task-based: crosstab model for complex validation
-      system: systemPrompt,
-      maxRetries: 3,  // SDK handles transient/network errors
-      prompt: `Validate banner group "${group.groupName}" with ${group.columns.length} columns against the data map.`,
-      tools: {
-        scratchpad: crosstabScratchpadTool,
-      },
-      stopWhen: stepCountIs(25),  // AI SDK 5+: replaces maxTurns/maxSteps
-      maxOutputTokens: Math.min(getCrosstabModelTokenLimit(), 100000),
-      // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
-      providerOptions: {
-        openai: {
-          reasoningEffort: getCrosstabReasoningEffort(),
+  // Check if this is an abort error before the AI call
+  const checkAbortError = (error: unknown): boolean => {
+    return error instanceof DOMException && error.name === 'AbortError';
+  };
+
+  // Wrap the AI call with retry logic for policy errors
+  const retryResult = await retryWithPolicyHandling(
+    async () => {
+      const { output } = await generateText({
+        model: getCrosstabModel(),  // Task-based: crosstab model for complex validation
+        system: systemPrompt,
+        maxRetries: 3,  // SDK handles transient/network errors
+        prompt: `Validate banner group "${group.groupName}" with ${group.columns.length} columns against the data map.`,
+        tools: {
+          scratchpad: crosstabScratchpadTool,
         },
+        stopWhen: stepCountIs(25),  // AI SDK 5+: replaces maxTurns/maxSteps
+        maxOutputTokens: Math.min(getCrosstabModelTokenLimit(), 100000),
+        // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
+        providerOptions: {
+          openai: {
+            reasoningEffort: getCrosstabReasoningEffort(),
+          },
+        },
+        output: Output.object({
+          schema: ValidatedGroupSchema,
+        }),
+        abortSignal,  // Pass abort signal to AI SDK
+      });
+
+      if (!output || !output.columns) {
+        throw new Error(`Invalid agent response for group ${group.groupName}`);
+      }
+
+      return output;
+    },
+    {
+      abortSignal,
+      onRetry: (attempt, err) => {
+        // Check for abort errors and propagate them
+        if (checkAbortError(err)) {
+          throw err;
+        }
+        console.warn(`[CrosstabAgent] Retry ${attempt}/3 for group "${group.groupName}": ${err.message}`);
       },
-      output: Output.object({
-        schema: ValidatedGroupSchema,
-      }),
-      abortSignal,  // Pass abort signal to AI SDK
-    });
-
-    if (!output || !output.columns) {
-      throw new Error(`Invalid agent response for group ${group.groupName}`);
     }
+  );
 
-    console.log(`[CrosstabAgent] Group ${group.groupName} processed successfully - ${output.columns.length} columns validated`);
-
-    return output;
-
-  } catch (error) {
-    // Check if this is an abort error - propagate immediately
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      console.log(`[CrosstabAgent] Aborted by signal during group ${group.groupName}`);
-      throw error;
-    }
-
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`[CrosstabAgent] Error processing group ${group.groupName}:`, errorMessage);
-
-    // Return fallback result with zero confidence (will be skipped by R generator)
-    return {
-      groupName: group.groupName,
-      columns: group.columns.map(col => ({
-        name: col.name,
-        adjusted: `# Error: Processing failed for "${col.original}"`,
-        confidence: 0.0,
-        reason: `Processing error: ${errorMessage}. Manual review required.`,
-        // Include required human review fields with appropriate defaults
-        alternatives: [],
-        uncertainties: [`Processing error: ${errorMessage}`],
-        humanReviewRequired: true,
-        expressionType: 'direct_variable' as const
-      }))
-    };
+  if (retryResult.success && retryResult.result) {
+    console.log(`[CrosstabAgent] Group ${group.groupName} processed successfully - ${retryResult.result.columns.length} columns validated`);
+    return retryResult.result;
   }
+
+  // Handle abort errors
+  if (retryResult.error === 'Operation was cancelled') {
+    console.log(`[CrosstabAgent] Aborted by signal during group ${group.groupName}`);
+    throw new DOMException('CrosstabAgent aborted', 'AbortError');
+  }
+
+  // All retries failed - return fallback result with zero confidence
+  const errorMessage = retryResult.error || 'Unknown error';
+  const retryContext = retryResult.wasPolicyError
+    ? ` (failed after ${retryResult.attempts} retries due to content policy)`
+    : '';
+  console.error(`[CrosstabAgent] Error processing group ${group.groupName}:`, errorMessage + retryContext);
+
+  return {
+    groupName: group.groupName,
+    columns: group.columns.map(col => ({
+      name: col.name,
+      adjusted: `# Error: Processing failed for "${col.original}"`,
+      confidence: 0.0,
+      reason: `Processing error: ${errorMessage}${retryContext}. Manual review required.`,
+      // Include required human review fields with appropriate defaults
+      alternatives: [],
+      uncertainties: [`Processing error: ${errorMessage}${retryContext}`],
+      humanReviewRequired: true,
+      expressionType: 'direct_variable' as const
+    }))
+  };
 }
 
 // Process all banner groups using group-by-group strategy

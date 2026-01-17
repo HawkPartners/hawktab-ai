@@ -21,7 +21,32 @@ import {
   XCircle,
   Lightbulb,
   ListOrdered,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
+
+/**
+ * Strip emoji characters from text for professional display
+ */
+function stripEmojis(text: string): string {
+  // Remove emoji characters (Unicode ranges for common emojis)
+  return text
+    .replace(/[\u{1F300}-\u{1F9FF}]/gu, '') // Misc symbols, emoticons, dingbats
+    .replace(/[\u{2600}-\u{26FF}]/gu, '')   // Misc symbols
+    .replace(/[\u{2700}-\u{27BF}]/gu, '')   // Dingbats
+    .replace(/[\u{FE00}-\u{FE0F}]/gu, '')   // Variation selectors
+    .replace(/[\u{1F000}-\u{1F02F}]/gu, '') // Mahjong, dominos
+    .replace(/\s{2,}/g, ' ')                // Collapse multiple spaces
+    .trim();
+}
+
+/**
+ * Truncate text to max length with ellipsis
+ */
+function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength).trim() + '...';
+}
 
 // Crosstab review interfaces
 interface Alternative {
@@ -113,6 +138,13 @@ function CrosstabColumnCard({
   const [editValue, setEditValue] = useState(column.proposed);
   const [hintValue, setHintValue] = useState('');
   const [selectedAltIndex, setSelectedAltIndex] = useState<string>('0');
+  const [showConcerns, setShowConcerns] = useState(false);
+  const [showFullReason, setShowFullReason] = useState(false);
+
+  // Clean and prepare reason text
+  const cleanReason = stripEmojis(column.reason);
+  const shouldTruncateReason = cleanReason.length > 120;
+  const displayReason = showFullReason ? cleanReason : truncateText(cleanReason, 120);
 
   const handleActionChange = (action: CrosstabDecision['action']) => {
     const newDecision: CrosstabDecision = { action };
@@ -179,7 +211,17 @@ function CrosstabColumnCard({
         {/* What AI Found */}
         <div className="space-y-1">
           <Label className="text-xs text-muted-foreground">What We Found</Label>
-          <p className="text-sm text-muted-foreground">{column.reason}</p>
+          <p className="text-sm text-muted-foreground">
+            {displayReason}
+            {shouldTruncateReason && (
+              <button
+                onClick={() => setShowFullReason(!showFullReason)}
+                className="ml-1 text-primary hover:underline text-xs"
+              >
+                {showFullReason ? 'Show less' : 'Show more'}
+              </button>
+            )}
+          </p>
         </div>
 
         {/* Proposed R Expression */}
@@ -201,7 +243,9 @@ function CrosstabColumnCard({
               {column.alternatives.map((alt, i) => (
                 <div key={i} className="p-2 bg-muted rounded border text-sm">
                   <div className="font-mono text-xs break-all">{alt.expression}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{alt.reason}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {truncateText(stripEmojis(alt.reason), 80)}
+                  </div>
                   <Badge variant="outline" className="mt-1 text-xs">
                     {Math.round(alt.confidence * 100)}% confident
                   </Badge>
@@ -211,21 +255,33 @@ function CrosstabColumnCard({
           </div>
         )}
 
-        {/* AI Concerns / Uncertainties */}
+        {/* AI Concerns / Uncertainties - Collapsed by default */}
         {column.uncertainties && column.uncertainties.length > 0 && (
           <div className="p-3 rounded-md border border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950">
-            <div className="flex items-center gap-2 mb-2">
+            <button
+              onClick={() => setShowConcerns(!showConcerns)}
+              className="flex items-center gap-2 w-full text-left"
+            >
+              {showConcerns ? (
+                <ChevronDown className="h-4 w-4 text-yellow-600" />
+              ) : (
+                <ChevronRight className="h-4 w-4 text-yellow-600" />
+              )}
               <AlertTriangle className="h-4 w-4 text-yellow-600" />
-              <span className="font-medium text-sm text-yellow-700 dark:text-yellow-400">AI Concerns</span>
-            </div>
-            <ul className="text-sm text-yellow-700 dark:text-yellow-400 space-y-1">
-              {column.uncertainties.map((u, i) => (
-                <li key={i} className="flex items-start gap-1">
-                  <span className="mt-0.5">•</span>
-                  <span>{u}</span>
-                </li>
-              ))}
-            </ul>
+              <span className="font-medium text-sm text-yellow-700 dark:text-yellow-400">
+                {column.uncertainties.length} AI Concern{column.uncertainties.length !== 1 ? 's' : ''}
+              </span>
+            </button>
+            {showConcerns && (
+              <ul className="text-sm text-yellow-700 dark:text-yellow-400 space-y-1 mt-2 ml-6">
+                {column.uncertainties.map((u, i) => (
+                  <li key={i} className="flex items-start gap-1">
+                    <span className="mt-0.5">•</span>
+                    <span>{stripEmojis(u)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 
@@ -394,6 +450,29 @@ export default function ReviewPage({
     fetchReviewState();
   }, [pipelineId]);
 
+  // Poll for Path B status updates while it's still running
+  const pathBStatus = reviewState?.pathBStatus;
+  useEffect(() => {
+    if (!pathBStatus || pathBStatus !== 'running') return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/pipelines/${encodeURIComponent(pipelineId)}/review`);
+        if (!res.ok) return;
+        const data = await res.json() as CrosstabReviewState;
+
+        // Update only if status changed (avoid unnecessary re-renders)
+        if (data.pathBStatus !== pathBStatus) {
+          setReviewState(prev => prev ? { ...prev, pathBStatus: data.pathBStatus } : null);
+        }
+      } catch {
+        // Ignore polling errors - don't disrupt user's review
+      }
+    }, 3000); // Poll every 3 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [pipelineId, pathBStatus]);
+
   const handleDecisionChange = (groupName: string, columnName: string, decision: CrosstabDecision) => {
     const key = `${groupName}/${columnName}`;
     setDecisions(new Map(decisions.set(key, decision)));
@@ -544,6 +623,11 @@ export default function ReviewPage({
                 <CheckCircle className="h-3 w-3 mr-1 text-green-500" />
                 Tables Ready
               </>
+            ) : reviewState.pathBStatus === 'error' ? (
+              <>
+                <XCircle className="h-3 w-3 mr-1 text-red-500" />
+                Table Processing Failed
+              </>
             ) : (
               <>
                 <Loader2 className="h-3 w-3 mr-1 animate-spin" />
@@ -632,7 +716,7 @@ export default function ReviewPage({
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Processing...
+                      {reviewState.pathBStatus === 'running' ? 'Waiting for tables...' : 'Processing...'}
                     </>
                   ) : (
                     <>

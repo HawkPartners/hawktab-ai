@@ -11,8 +11,12 @@
 | Phase | Enhancement | Status | Purpose |
 |-------|-------------|--------|---------|
 | 1 | Pipeline Parallelism | ✅ Complete | Faster processing (~14 min saved) |
-| 2 | Human-in-the-Loop Review | ⏳ In Progress | Handle uncertainty gracefully, show intelligent flagging |
+| 2 | Human-in-the-Loop Review | ✅ Complete | Handle uncertainty gracefully, show intelligent flagging |
 | 3 | Path B Producer-Consumer | ✅ Complete | Overlap TableAgent + VerificationAgent (~30-40% faster) |
+| 4 | Reliability & Polish | ✅ Complete | UI polish, refresh resilience, timeout handling |
+| 4.5 | Content Policy Retry | ✅ Complete | Auto-retry on Azure content moderation errors |
+| 4.6 | Duration Tracking Fix | ✅ Complete | Show actual duration for review-flow pipelines |
+| 5 | Review UI Redesign | 🔲 Planned | Cleaner, modern review experience |
 
 ---
 
@@ -20,232 +24,252 @@
 
 **Implemented**: January 15, 2026
 
-### Architecture
+Path A (Banner → Crosstab) and Path B (Table → Verify) execute simultaneously, saving ~14 minutes per run.
+
 ```
                     ┌─→ BannerAgent → CrosstabAgent ─────────────┐
 DataMapProcessor ───┤                                            ├─→ R → Excel
                     └─→ TableAgent → Survey → VerificationAgent ─┘
 ```
 
-### Results
-- **Time saved**: ~14 minutes per pipeline run
-- Path A and Path B execute simultaneously via `Promise.allSettled`
-- Progress tracking shows combined percentage (20-80% during parallel phase)
-
-### Key Files
-- `src/lib/jobStore.ts` - `'parallel_processing'` stage
-- `src/app/api/process-crosstab/route.ts` - `executePathA`/`executePathB` helpers
-- `scripts/test-pipeline.ts` - Mirrored parallel pattern for CLI
-
 ---
 
-## Phase 2: Human-in-the-Loop Review ⏳ IN PROGRESS
-
-**Status**: Core review UI and logic complete. Needs timing optimization (see below).
-
-### What Triggers Review
-
-| Condition | Example |
-|-----------|---------|
-| `confidence < 0.75` | Multiple candidate variables found |
-| `expressionType` is `placeholder` | "TBD", "Joe to define" |
-| `expressionType` is `conceptual_filter` | "IF TEACHER", "HIGH VOLUME" |
-| `expressionType` is `from_list` | "Segment A from list" |
-| `humanReviewRequired: true` | Agent explicitly flagged uncertainty |
-
-### User Actions
-
-| Action | Result |
-|--------|--------|
-| **Approve** | Use proposed R expression |
-| **Select Alternative** | Use a different candidate mapping |
-| **Provide Hint** | Re-run agent for that column with user context |
-| **Edit Directly** | User provides exact R expression |
-| **Skip** | Exclude cut from final output |
-
-### Current Flow (Suboptimal)
-
-```
-DataMapProcessor
-    │
-    ├─→ Path A: Banner → Crosstab ──┐
-    │                               ├──→ WAIT for both ──→ Review? ──→ PAUSE
-    └─→ Path B: Table → Verify ─────┘
-                                          ↑
-                                          │
-                                User waits here doing nothing
-                                while Path B runs (~10+ min)
-```
-
-**Problem**: The current implementation waits for BOTH paths to complete before checking if review is needed. This wastes user time - they could be reviewing flagged columns while Path B runs.
-
-### Target Flow (To Implement)
-
-```
-DataMapProcessor
-    │
-    ├─→ Path A: Banner → Crosstab ──→ Review needed? ──YES──→ Review UI immediately
-    │                                       │                        │
-    │                                       NO                 User reviews
-    │                                       │                  (Path B continues)
-    └─→ Path B: Table → Verify ─────────────┴────────────────────────┘
-                                            │
-                                            ▼
-                                       R Script → Excel
-```
-
-**Goal**: Show review UI immediately when CrosstabAgent finishes. User reviews while Path B runs in parallel. When user submits, Path B is likely already done → fast generation.
-
-### Implementation Requirements
-
-1. **Decouple review check from Path B completion**
-   - Start Path B without blocking on it
-   - Await Path A completion
-   - Check for flagged columns immediately after Path A
-   - If review needed: show UI now, Path B continues in background
-
-2. **Track Path B status independently**
-   - Path B writes result to disk when complete (e.g., `path-b-result.json`)
-   - Review state tracks `pathBStatus: 'running' | 'completed'`
-   - Review handler waits for Path B only if still running when user submits
-
-3. **Handle edge cases**
-   - Path B fails while user is reviewing
-   - User submits review before Path B completes
-   - User provides hint (re-runs CrosstabAgent) - should not block on Path B
-
-4. **Preserve existing behavior**
-   - If no review needed, wait for Path B then continue to R script
-   - Review UI functionality unchanged
-   - CLI test script unaffected
-
-### Key Files
-
-**Backend:**
-- `src/app/api/process-crosstab/route.ts` - Review gate after CrosstabAgent, writes `crosstab-review-state.json`
-- `src/app/api/pipelines/[pipelineId]/review/route.ts` - GET/POST for review state and decisions
-- `src/app/api/pipelines/[pipelineId]/cancel/route.ts` - Cancel with AbortController
-- `src/lib/jobStore.ts` - `crosstab_review_required` stage
-- `src/schemas/agentOutputSchema.ts` - `alternatives`, `uncertainties`, `humanReviewRequired`, `expressionType` fields
-- `src/prompts/crosstab/production.ts` - `<human_review_support>` section
-
-**Frontend:**
-- `src/app/pipelines/[pipelineId]/review/page.tsx` - Review UI with all 5 actions
-- `src/app/page.tsx` - Toast notification with "Review Now" action
-
-### CLI Behavior
-
-The test-pipeline script (`scripts/test-pipeline.ts`) calls agents directly and bypasses the review gate. It always runs to completion - the new fields are output but not acted upon.
-
----
-
-## Phase 3: Path B Producer-Consumer Pipeline ✅ COMPLETE
+## Phase 2: Human-in-the-Loop Review ✅ COMPLETE
 
 **Implemented**: January 16, 2026
 
+### What It Does
+- Flags columns needing human review (low confidence, placeholders, conceptual filters)
+- Shows review UI **immediately** after CrosstabAgent finishes (doesn't wait for Path B)
+- User can approve, select alternative, provide hint to re-run, edit directly, or skip
+- Path B continues in background while user reviews
+- "Waiting for tables..." indicator shown until Path B completes
+
 ### Architecture
-
 ```
-                    ┌───────────────────────────────────────────────────────┐
-                    │                  PathBCoordinator                     │
-                    │                                                       │
-                    │  ┌─────────────┐         ┌─────────────────────┐     │
-                    │  │ TableAgent  │ ──push──▶│     TableQueue      │     │
-                    │  │  (producer) │         │  (async with signal) │     │
-                    │  └─────────────┘         └──────────┬──────────┘     │
-                    │                                     │ pull (blocks   │
-                    │                                     │  if empty)     │
-                    │                          ┌──────────▼──────────┐     │
-                    │                          │  VerificationAgent   │     │
-                    │                          │     (consumer)       │     │
-                    │                          └─────────────────────┘     │
-                    │                                                       │
-                    │  Results aggregated when both complete               │
-                    └───────────────────────────────────────────────────────┘
+Path A ─→ CrosstabAgent ─→ Review needed? ─YES─→ Review UI (immediate)
+                                │                      │
+                                NO               User reviews
+                                │            (Path B continues)
+Path B ─→ (fire-and-forget) ────┴──────────────────────┘
+                                │
+                                ▼
+                           R Script → Excel
 ```
-
-### Implementation
-
-- **TableQueue**: Async producer-consumer queue (`src/lib/pipeline/TableQueue.ts`)
-  - `push()` - producer adds tables as each question group completes
-  - `pull()` - consumer gets next table (blocks if empty, returns null when done)
-  - `markDone()` - producer signals completion
-
-- **TableAgent streaming**: New `processQuestionGroupsWithCallback()` function
-  - Emits tables via callback as each group completes
-  - VerificationAgent starts processing immediately
-
-- **Producer-Consumer coordination** in `executePathB()`
-  - Survey markdown loaded upfront (needed for consumer from start)
-  - Producer and consumer run in parallel via `Promise.all`
-  - Rate limit retry with exponential backoff (2s, 4s, 8s)
-
-### Results
-- **Time reduction**: ~30-40% faster Path B execution
-- TableAgent and VerificationAgent overlap execution
-- Consumer starts as soon as first table is ready (maximum overlap)
-- Graceful handling of rate limits and errors
 
 ### Key Files
-- `src/lib/pipeline/TableQueue.ts` - **NEW** async queue utility
-- `src/agents/TableAgent.ts` - Added `processQuestionGroupsWithCallback()`
-- `src/app/api/process-crosstab/route.ts` - Updated `executePathB()` with producer-consumer
-
-### CLI Behavior
-The test-pipeline script (`scripts/test-pipeline.ts`) still uses the sequential batch API (`processDataMap` → `verifyAllTables`). The producer-consumer pattern only applies to the UI pipeline.
+- `src/app/api/process-crosstab/route.ts` - Fire-and-forget Path B, immediate review check
+- `src/app/api/pipelines/[pipelineId]/review/route.ts` - Waits for Path B on submit if needed
+- `src/app/pipelines/[pipelineId]/review/page.tsx` - Polls Path B status, shows progress
+- `path-b-status.json` / `path-b-result.json` - Track Path B completion on disk
 
 ---
 
-## Known Issues
+## Phase 3: Path B Producer-Consumer ✅ COMPLETE
 
-### ✅ CrosstabAgent Schema Error (RESOLVED)
+**Implemented**: January 16, 2026
 
-**Status**: Fixed - January 16, 2026
+TableAgent emits tables as each question group completes; VerificationAgent processes them immediately without waiting for all tables. ~30-40% faster Path B execution.
 
-**Original Error**:
 ```
-Invalid schema for response_format 'response': In context=('properties', 'columns', 'items'),
-'required' is required to be supplied and to be an array including every key in properties.
-Missing 'alternatives'.
+TableAgent (producer) ──push──▶ TableQueue ──pull──▶ VerificationAgent (consumer)
 ```
 
-**Root Cause**:
-Azure OpenAI has stricter JSON Schema requirements than OpenAI - it requires ALL properties to be in the `required` array. When the Vercel AI SDK converts Zod to JSON Schema, fields with `.optional()` or `.default()` are NOT included in `required`.
+### Key Files
+- `src/lib/pipeline/TableQueue.ts` - Async producer-consumer queue
+- `src/agents/TableAgent.ts` - `processQuestionGroupsWithCallback()`
 
-**The Fix**:
-Removed `.default()` from the human review fields, making them truly required:
+---
 
-```typescript
-// Before (broken - .default() doesn't make fields required in JSON Schema):
-alternatives: z.array(AlternativeSchema).default([])
-uncertainties: z.array(z.string()).default([])
-humanReviewRequired: z.boolean().default(false)
-expressionType: ExpressionTypeSchema.default('direct_variable')
+## Phase 4: Reliability & Polish ✅ COMPLETE
 
-// After (works - fields are truly required):
-alternatives: z.array(AlternativeSchema)
-uncertainties: z.array(z.string())
-humanReviewRequired: z.boolean()
-expressionType: ExpressionTypeSchema
+**Implemented**: January 17, 2026
+
+### What Was Implemented
+
+#### 1. Review UI Polish
+- **Stripped emojis** from AI reasoning display (professional appearance)
+- **Collapsed AI Concerns** by default with expandable toggle ("N AI Concerns")
+- **Truncated long reasoning** with "Show more" button (120 char limit)
+- **Truncated alternative reasons** (80 char limit)
+
+#### 2. Pipeline Page Cleanup
+- **Single processing indicator** - Removed spinner from StatusBadge when `in_progress`
+- **Added cancel button** to processing banner
+- **Added `awaiting_tables` status** with "Completing..." banner
+
+#### 3. Refresh Resilience
+- **Store pipelineId** in localStorage alongside jobId
+- **Disk-based recovery** - When job not in memory, check `/api/pipelines/{id}` for disk state
+- **State recovery** handles `in_progress`, `pending_review`, terminal states
+- **Shows "Processing..."** without percentage when recovering from disk
+
+#### 4. Review Submission Timeout
+- **Async completion** - If Path B still running, save decisions and return immediately
+- **Fire-and-forget background completion** waits for Path B then generates R/Excel
+- **New status**: `awaiting_tables` shows "Review saved. Waiting for tables..."
+- **30 min background timeout** with proper error handling
+
+### Key Files Modified
+- `src/app/pipelines/[pipelineId]/review/page.tsx` - UI polish
+- `src/app/pipelines/[pipelineId]/page.tsx` - Cancel button, new status
+- `src/app/page.tsx` - Refresh resilience
+- `src/app/api/pipelines/[pipelineId]/review/route.ts` - Async completion
+- `src/app/api/pipelines/[pipelineId]/route.ts` - Added `awaiting_tables` status
+
+### Not Implemented (Future)
+- Mobile responsiveness improvements
+
+### Phase 4.5: Content Policy Retry (Added Jan 17)
+Added shared retry utility (`src/lib/retryWithPolicyHandling.ts`) that all 4 agents now use:
+- 3 retries with 2s delay for Azure content policy errors
+- Respects abort signals for cancellation
+- Fallback behavior preserved (zero-confidence for CrosstabAgent/TableAgent, passthrough for VerificationAgent, structured failure for BannerAgent)
+
+### Phase 4.6: Duration Tracking Fix (Added Jan 17)
+Fixed duration showing as "Unknown" for pipelines that go through review flow:
+- `completePipeline()` now reads original `timestamp` from pipeline summary
+- Calculates total duration from pipeline start to completion
+- Includes `duration: { ms, formatted }` in final summary update
+- Pipeline page now shows actual duration like "34m 12s" instead of "Unknown"
+
+---
+
+## Phase 5: Review UI Redesign 🔲 PLANNED
+
+**Goal**: Streamline the review UI to feel cleaner and more modern. Reduce visual noise, improve user guidance, and group related items.
+
+### Design Principles
+
+1. **Reframe from "Here's what AI did" to "Help us confirm"**
+   - Current: Shows AI's internal reasoning process
+   - New: Focus on what the user needs to decide
+
+2. **Reduce visual noise**
+   - Remove colored icons from action buttons
+   - Remove Expression Type badges ("Direct", "From List")
+   - Simplify to essential information only
+
+3. **Group columns by banner group**
+   - Columns from the same banner group should be visually grouped
+   - Makes it easier to review related cuts together
+
+### Card Redesign
+
+**Current card has ~7 sections:**
+- Column name + group name
+- Confidence badge + Expression Type badge
+- Original Expression
+- "What We Found" (verbose AI reasoning)
+- Proposed R Expression
+- Alternatives list
+- AI Concerns (collapsible)
+- 5 radio buttons with colored icons
+
+**Proposed simplified card:**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ APP                                        [Low confidence]     │
+│ ─────────────────────────────────────────────────────────────── │
+│ Banner says: "S2a=1"                                            │
+│ AI suggests: S2b %in% c(2,3)                                    │
+│                                                                 │
+│ [Accept] [Pick alternative ▼] [Give hint] [Skip]                │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-This works because:
-1. The prompt already instructs the AI to output these fields for every column
-2. Empty arrays `[]` and `false` are valid outputs when not applicable
-3. Other agents (TableAgent, VerificationAgent) use the same pattern successfully
+### Actions (4 buttons, all visible)
 
-**Files Changed**:
-- `src/schemas/agentOutputSchema.ts` - Removed `.default()` from human review fields
+| Action | Description |
+|--------|-------------|
+| **Accept** | Approve the AI's proposed mapping |
+| **Pick alternative** | Dropdown to select from alternatives (only shown if alternatives exist) |
+| **Give hint** | Expands to text input for re-run context |
+| **Skip** | Exclude this cut from output |
+
+### Visual Grouping
+
+```
+┌─ Demographics ───────────────────────────────────────────────────┐
+│                                                                  │
+│  ┌─ APP ─────────────────────────────────────────────────────┐  │
+│  │ Banner: "S2a=1"  →  AI: S2b %in% c(2,3)                   │  │
+│  │ [Accept] [Pick alternative ▼] [Give hint] [Skip]          │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  ┌─ Specialty ───────────────────────────────────────────────┐  │
+│  │ Banner: "S2=6,7"  →  AI: S2 %in% c(6,7)                   │  │
+│  │ [Accept] [Pick alternative ▼] [Give hint] [Skip]          │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### What to Remove
+
+- Expression Type badges ("Direct", "From List", etc.)
+- "What We Found" section (verbose AI reasoning)
+- AI Concerns section (or fold into optional "Why?" link)
+- Colored icons next to each action button
+- Multiple badge styles (simplify to just confidence)
+
+### What to Keep
+
+- Confidence indicator (color-coded)
+- Original expression from banner
+- Proposed R expression
+- All 4 actions: Accept, Pick alternative, Give hint, Skip
+- Alternatives dropdown (when available)
+
+### Header Improvement
+
+**Current:**
+> "Mapping Review Required"
+> "5 of 18 columns need your attention"
+
+**Proposed:**
+> "Quick Review Needed"
+> "The AI wasn't certain about 5 matches. Please confirm or correct."
+
+### Key Files to Modify
+- `src/app/pipelines/[pipelineId]/review/page.tsx` - Main review UI
+
+---
+
+## Known Issues (Resolved)
+
+<details>
+<summary>✅ CrosstabAgent Schema Error (Fixed Jan 16)</summary>
+
+Azure OpenAI requires ALL properties in `required` array. Fixed by removing `.default()` from human review fields in `src/schemas/agentOutputSchema.ts`.
+</details>
+
+<details>
+<summary>✅ LibreOffice Headless Conversion (Fixed Jan 16)</summary>
+
+LibreOffice headless mode failed silently due to profile conflicts. Fixed by adding `-env:UserInstallation` flag for isolated profile per conversion in `src/agents/BannerAgent.ts`.
+</details>
 
 ---
 
 ## Demo Readiness Checklist
 
-- [x] Pipeline parallelism working (Path A || Path B)
+- [x] Pipeline parallelism (Path A || Path B)
 - [x] Sidebar shows in-progress pipelines
 - [x] Cancel button properly stops processing
 - [x] Review UI with alternatives, hints, edits
-- [x] **FIX: CrosstabAgent schema error** (resolved - removed `.default()` from schema)
-- [ ] **Human-in-the-loop timing optimization** (show review immediately after CrosstabAgent, don't wait for Path B)
-- [ ] Test with banner that triggers review (need low-confidence mappings)
-- [x] **Path B pipelining** (TableAgent → VerificationAgent producer-consumer overlap)
+- [x] Review timing optimization (immediate after Path A)
+- [x] Path B producer-consumer overlap
+- [x] Tested with banner that triggers review
+- [x] Review UI polish (no emojis, collapsed concerns)
+- [x] Refresh resilience (picks up where you left off)
+- [x] Pipeline page cancel button
+- [x] Review submission timeout handling
+- [x] Auto-retry for content policy errors (all agents)
+- [x] Duration tracking for review-flow pipelines
+- [ ] Review UI redesign (Phase 5)
+  - [ ] Simplified card layout (banner → AI suggestion → actions)
+  - [ ] Group columns by banner group
+  - [ ] Remove verbose AI reasoning
+  - [ ] Remove Expression Type badges
+  - [ ] 4-button action bar (Accept, Pick alternative, Give hint, Skip)
