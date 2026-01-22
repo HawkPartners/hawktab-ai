@@ -49,8 +49,9 @@ We're making HawkTab AI reliably produce publication-quality crosstabs that matc
 | 3 | Significance Testing (unpooled z-test) | Complete |
 | 3b | SPSS Validation Clarity | Complete |
 | 4 | Evaluation Framework (golden dataset) | In Progress |
-| 5 | Iteration on primary dataset | Not started |
-| 6 | Broader Testing (23 datasets) | Not started |
+| 5 | Iteration on primary dataset (leqvio) | Not started |
+| 6 | Loop/Stacked Data Support (Tito's) | Not started |
+| 7 | Strategic Broader Testing (5 datasets by failure mode) | Not started |
 
 **Primary Test Data**: `data/leqvio-monotherapy-demand-NOV217/`
 **Reference Output**: `tabs/leqvio-monotherapy-demand-tabs-joe.xlsx`

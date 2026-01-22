@@ -558,13 +558,142 @@ Three versions of the banner plan exist for each dataset:
 
 ---
 
-## Part 6: Broader Testing
+## Part 6: Loop/Stacked Data Support
 
-**Status**: NOT STARTED (begins after primary dataset is stable)
+**Status**: NOT STARTED (begins after Part 5 primary dataset is stable)
+
+### The Problem
+
+Some surveys use **loops** where the same questions are asked multiple times (e.g., about different drinks, brands, or concepts). These appear in the datamap as variables with suffixes like `A13_1`, `A13_2` (same question for iteration 1 and 2).
+
+**Example** (Tito's Future Growth survey):
+- `A4_1`: "What type of drink did you have?" (for drink 1)
+- `A4_2`: "What type of drink did you have?" (for drink 2)
+- `A13_1`: "What brand did you have?" (for drink 1)
+- `A13_2`: "What brand did you have?" (for drink 2)
+
+The desired output is a table where **banner columns are loop iterations** (Location 1, Location 2), not respondent subgroups. This lets analysts compare responses across iterations.
+
+### Why It's Not a Rewrite
+
+The core pipeline flow is unchanged. We're adding a **second interpretation** of what a "banner column" means:
+
+| Current (filter-based) | Loop (suffix-based) |
+|------------------------|---------------------|
+| Column = respondent subset | Column = variable suffix |
+| `S2 == 1` filters to cardiologists | `_1` uses Location 1 variables |
+| One question runs against multiple filters | Multiple variables (same base) run for one table |
+
+### Implementation Approach
+
+**Step 1: Loop Detection (DataMapProcessor)**
+
+Detect loops deterministically from the datamap:
+- Look for variables with matching question text (~90%+ similarity) but different suffixes (`_1`, `_2`, etc.)
+- Flag detected loop variables in the verbose datamap output
+- Add `isLoop: true` and `loopGroup: "A4"` to loop variables
+
+```typescript
+// In datamap-verbose output
+{
+  "variableName": "A4_1",
+  "questionText": "What type of drink did you have?",
+  "isLoop": true,
+  "loopGroup": "A4",
+  "loopIteration": 1
+}
+```
+
+**Step 2: Banner/Crosstab Handling**
+
+When the banner plan specifies loop iterations (e.g., "Location 1 | Location 2"):
+- BannerAgent recognizes this as a loop banner group
+- CrosstabAgent outputs variable suffix mappings instead of filter expressions
+
+```json
+{
+  "groupName": "Location",
+  "isLoopBanner": true,
+  "columns": [
+    { "name": "Location 1", "loopSuffix": "_1" },
+    { "name": "Location 2", "loopSuffix": "_2" }
+  ]
+}
+```
+
+**Step 3: R Script Generation**
+
+For loop banners, substitute variable suffixes instead of applying filters:
+
+```r
+# Current (filter-based)
+subset <- data[data$S2 == 1, ]
+table(subset$A13)
+
+# Loop (suffix-based)
+# Location 1 column: table(data$A13_1)
+# Location 2 column: table(data$A13_2)
+```
+
+**Step 4: TableAgent Recognition**
+
+Recognize that `A13_1` and `A13_2` are iterations of the same base question. Create one table definition for `A13` with a loop flag, rather than separate tables.
+
+### Test Case
+
+**Primary loop test**: `stacked-data-temp/` (Tito's Future Growth)
+- Consumer survey with drink location loops
+- Variables: `A3_1`/`A3_2`, `A4_1`/`A4_2`, `A13_1`/`A13_2`, etc.
+- Tests: Loop detection, loop banner generation, R script suffix substitution
+
+### Process
+
+1. Run current pipeline on Tito's to identify failure points
+2. Implement loop detection in DataMapProcessor
+3. Update BannerAgent/CrosstabAgent prompts to recognize loop banners
+4. Extend RScriptGeneratorV2 to handle loop suffix substitution
+5. Test until loop tables render correctly
+
+### Success Criteria
+
+- Loop variables automatically detected and flagged in datamap output
+- Loop banner groups correctly produce suffix-based columns
+- Tables comparing loop iterations render with correct data
+- Standard (non-loop) surveys continue to work unchanged
+
+### Future Enhancement: Within-Subject Significance
+
+Current sig testing compares independent groups. Loop comparisons are within-subject (same person's Location 1 vs Location 2). For now, use the same test (valid but conservative). Later, consider McNemar's test for proportions.
+
+---
+
+## Part 7: Strategic Broader Testing
+
+**Status**: NOT STARTED (begins after Part 6 loop support is validated)
+
+### Strategy: Coverage by Failure Mode
+
+Instead of testing all 23 datasets, we select **5 datasets strategically** to cover the major failure modes. If these 5 pass, we can claim coverage of ~80% of workload types.
+
+### Failure Mode Categories
+
+| Category | What It Tests | Dataset Candidate |
+|----------|---------------|-------------------|
+| **Baseline** | Standard HCP survey, filter-based banners | `leqvio-monotherapy-demand-NOV217` ✓ (Part 5) |
+| **Loop/Stacked** | Loop variables, suffix-based banners | `titos-future-growth` ✓ (Part 6) |
+| **Multi-select + NET heavy** | Multi-select questions, many NET/roll-up rows | TBD from test-data |
+| **Numeric-heavy (means)** | Continuous variables, mean calculations | TBD from test-data |
+| **Weights + small bases** | Weighted data, HCP-style small subgroups | TBD from test-data |
+
+### Dataset Selection Process
+
+1. Review test-data datamaps to identify which datasets fit each category
+2. Prefer datasets where we have Joe's tabs for validation
+3. Document why each dataset was selected
 
 ### Test Data Structure
 
-Each dataset folder in `data/test-data/` needs:
+Each selected dataset needs:
 
 | File | Source | Required |
 |------|--------|----------|
@@ -572,42 +701,38 @@ Each dataset folder in `data/test-data/` needs:
 | `*.sav` | Existing | Yes |
 | `*-survey.docx` | Upload | Yes (for VerificationAgent) |
 | `*-bannerplan-original.docx` | Upload | Yes |
-| `*-bannerplan-clean.docx` | Create | Yes |
-| `*-bannerplan-adjusted.docx` | Create | Yes |
+| `*-bannerplan-adjusted.docx` | Create | Yes (maps to Joe's actual output) |
 | `*-tabs-joe.xlsx` | Upload | Yes (reference output) |
 
 ### Testing Workflow
 
-For each dataset:
-1. Prepare files (upload survey, banner original, Joe's tabs; create clean + adjusted)
+For each of the 3 remaining datasets (after baseline + loop):
+
+1. Prepare files (upload survey, banner original, Joe's tabs; create adjusted banner)
 2. Run pipeline with adjusted banner
-3. Compare to Joe's tabs:
-   - **Data accuracy**: Do the numbers match?
-   - **Significance**: Do the letters match?
-4. Log bugs, fix, re-run
-5. Mark dataset as passing only when satisfied
+3. Compare to Joe's tabs (data accuracy + significance)
+4. Log bugs specific to that failure mode
+5. Fix issues, re-run
+6. Quick regression check on previously-passing datasets
 
-### Testing Strategy
+### Track Dataset Status
 
-**Recommended approach** (minimize wasted effort):
+| Dataset | Category | Status | Notes |
+|---------|----------|--------|-------|
+| leqvio-monotherapy-demand-NOV217 | Baseline | Part 5 | Primary dataset |
+| titos-future-growth | Loop/Stacked | Part 6 | Loop test case |
+| TBD | Multi-select + NET | Not Started | |
+| TBD | Numeric-heavy | Not Started | |
+| TBD | Weights + small bases | Not Started | |
 
-1. **Start with 2-3 diverse datasets**: Pick datasets that cover different question types (scales, rankings, multi-select, numeric). Early bugs likely affect multiple datasets.
+### Success Criteria
 
-2. **Fix forward, validate backward**: After fixing bugs on dataset N, quick-check dataset N-1 still passes before moving to N+1.
+- All 5 datasets produce output matching Joe's tabs (data + significance)
+- Each failure mode category has at least one passing dataset
+- Regression: fixes for later datasets don't break earlier ones
+- Documentation: clear record of what was tested and why
 
-3. **Categorize bugs by root cause**: Group similar issues so one fix addresses multiple bugs (e.g., all T2B issues, all label issues).
-
-4. **Track dataset status**:
-   | Status | Meaning |
-   |--------|---------|
-   | Not Started | Files not prepared |
-   | In Progress | Actively testing/fixing |
-   | Passing | Output matches Joe's tabs (data + significance) |
-   | Blocked | Has issue requiring architectural change |
-
-5. **Prioritize by client importance**: If certain datasets are for active clients, prioritize those.
-
-### Datasets (23 total)
+### Available Datasets (for selection)
 
 ```
 data/test-data/
@@ -616,9 +741,9 @@ data/test-data/
 ├── Cambridge-Savings-Bank-W2_4.1.25/
 ├── GVHD-Data_12.27.22/
 ├── Iptacopan-Data_2.23.24/
-├── leqvio-monotherapy-demand-W1_3.13.23/
-├── leqvio-monotherapy-demand-W2_8.16.24 v2/
-├── leqvio-monotherapy-demand-W3_5.16.25/
+├── Leqvio-Demand-W1_3.13.23/
+├── Leqvio-Demand-W2_8.16.24 v2/
+├── Leqvio-Demand-W3_5.16.25/
 ├── Leqvio-Segmentation-Data-HCP-W1_7.11.23/
 ├── Leqvio-Segmentation-Data-HCP-W2_2.21.2025/
 ├── Leqvio-Segmentation-Patients-Data_7.7.23/
@@ -681,5 +806,5 @@ leqvio-monotherapy-demand-NOV217/
 ---
 
 *Created: January 6, 2026*
-*Updated: January 8, 2026*
-*Status: Parts 1-3b complete, Part 4 in progress, Parts 5-6 pending*
+*Updated: January 22, 2026*
+*Status: Parts 1-3b complete, Part 4 in progress, Parts 5-7 pending*
