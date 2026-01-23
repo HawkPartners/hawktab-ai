@@ -249,7 +249,7 @@ Unexpected differences: 0
 
 ---
 
-## Part 4: Evaluation Framework
+## Part 4a: Evaluation Framework
 
 **Status**: IN PROGRESS
 
@@ -533,9 +533,110 @@ The pipeline also outputs `data-streamlined.json` alongside `tables.json` automa
 
 ---
 
+## Part 4b: TableAgent Refactor
+
+**Status**: NOT STARTED (begins after Part 4a golden datasets complete)
+
+### The Insight
+
+During Part 4a golden dataset review, we discovered that the TableAgent's "intelligence" is largely deterministic:
+
+1. `normalizedType` → `tableType` mapping (lookup table)
+2. Creating rows from datamap items (copy operation)
+3. Adding hints like `ranking`, `scale-5` (pattern detection)
+4. Splitting decisions (we're moving this to VerificationAgent anyway)
+
+The datamap already IS the table definition, just in a different shape. Meanwhile, the TableAgent's splitting logic (e.g., creating 4 separate rank tables) prevents VerificationAgent from doing proper expansion (combined ranks, by-item views).
+
+### The Refactor
+
+| Component | Current | After Refactor |
+|-----------|---------|----------------|
+| **TableAgent** | LLM decides structure + splitting | **Removed** |
+| **TableGenerator** | N/A | **New** - Deterministic TypeScript function |
+| **VerificationAgent** | Selective refinement | **Enhanced** - All expansion logic (grids, rankings, NETs, T2B) |
+
+### Benefits
+
+- **Faster** - No LLM call for table generation
+- **Consistent** - Same input → same output, every time
+- **Debuggable** - When something's wrong, we fix code, not prompts
+- **Cheaper** - One fewer API call per question group
+- **Cleaner** - VerificationAgent becomes single point of table intelligence
+
+### Implementation
+
+**1. Build TableGenerator** (`src/lib/tables/TableGenerator.ts`)
+
+Deterministic function that converts datamap → overview tables:
+
+```typescript
+function generateOverviewTables(dataMap: DataMapQuestion[]): TableDefinition[] {
+  return dataMap.map(question => {
+    const tableType = question.items[0].normalizedType === 'numeric_range'
+      ? 'mean_rows'
+      : 'frequency';
+
+    const hints = detectHints(question);  // ranking, scale-5, scale-7
+
+    return {
+      tableId: `${question.questionId.toLowerCase()}_overview`,
+      questionId: question.questionId,
+      title: question.questionText,
+      tableType,
+      rows: generateRows(question.items, tableType),
+      hints
+    };
+  });
+}
+```
+
+Rules:
+- `numeric_range` → `mean_rows`, `filterValue: ""`
+- Everything else → `frequency`, `filterValue` based on values
+- Detect hints: `ranking` (multiple items, categorical with rank values), `scale-5`, `scale-7`
+- One overview table per question (no splitting)
+
+**2. Update VerificationAgent Prompt**
+
+VerificationAgent now handles ALL expansion:
+- Grid expansion (by-row, by-column views)
+- Ranking expansion (by-rank, by-item, combined ranks T1/T2/T3)
+- NETs and T2B for scales
+- Label enhancement from survey
+
+**3. Update Pipeline**
+
+```
+Before: DataMap → TableAgent (LLM) → VerificationAgent (LLM) → R Script
+After:  DataMap → TableGenerator (code) → VerificationAgent (LLM) → R Script
+```
+
+**4. Remove TableAgent**
+
+- Delete `src/agents/TableAgent.ts`
+- Remove from pipeline orchestration
+- Update environment variables (remove TABLE_MODEL, etc.)
+
+### Validation
+
+- Run pipeline on primary dataset
+- Compare output to Part 4a golden datasets
+- Verify TableGenerator output matches expected structure
+- Verify VerificationAgent expansion produces correct derived tables
+
+### Exit Criteria
+
+- TableGenerator produces correct overview tables for all question types
+- VerificationAgent correctly expands grids and rankings
+- Pipeline passes comparison against Part 4a golden datasets
+- No regression in output quality
+
+---
+
 ## Part 5: Iteration (Primary Dataset)
 
-**Status**: NOT STARTED (begins after Part 4 Evaluation Framework complete)
+**Status**: NOT STARTED (begins after Part 4b refactor complete)
 
 ### What We're Validating
 
@@ -804,13 +905,23 @@ data/test-data/
 
 ## Reference
 
-### Current Pipeline
+### Current Pipeline (Pre-Part 4b)
 
 ```
 User Uploads → BannerAgent → CrosstabAgent → TableAgent → VerificationAgent → R Script → ExcelJS
                    ↓              ↓              ↓              ↓
               Banner PDF      DataMap        Questions      Survey Doc
               → Images        → Variables    → Tables       → Optimized Tables
+```
+
+### Target Pipeline (Post-Part 4b)
+
+```
+User Uploads → BannerAgent → CrosstabAgent → TableGenerator → VerificationAgent → R Script → ExcelJS
+                   ↓              ↓              ↓                   ↓
+              Banner PDF      DataMap        DataMap             Survey Doc
+              → Images        → Variables    → Overview Tables   → Expanded Tables
+                                             (deterministic)     (grids, rankings, NETs)
 ```
 
 ### Key Files
@@ -845,5 +956,5 @@ leqvio-monotherapy-demand-NOV217/
 ---
 
 *Created: January 6, 2026*
-*Updated: January 22, 2026*
-*Status: Parts 1-3b complete, Part 4 in progress, Parts 5-7 pending*
+*Updated: January 23, 2026*
+*Status: Parts 1-3b complete, Part 4a in progress, Part 4b pending, Parts 5-7 pending*
