@@ -1200,9 +1200,134 @@
       "excludeReason": ""
     },
     {
+      "tableId": "a4_overview",
+      "questionId": "A4",
+      "title": "A4: Prescribed treatments - LAST 100 vs NEXT 100 (all treatments)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4r1c1",
+          "label": "Statin only - LAST 100",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r1c2",
+          "label": "Statin only - NEXT 100",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r2c1",
+          "label": "Leqvio (inclisiran) - LAST 100",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r2c2",
+          "label": "Leqvio (inclisiran) - NEXT 100",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r3c1",
+          "label": "Praluent (alirocumab) - LAST 100",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r3c2",
+          "label": "Praluent (alirocumab) - NEXT 100",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r4c1",
+          "label": "Repatha (evolocumab) - LAST 100",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r4c2",
+          "label": "Repatha (evolocumab) - NEXT 100",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r5c1",
+          "label": "Zetia (ezetimibe) - LAST 100",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r5c2",
+          "label": "Zetia (ezetimibe) - NEXT 100",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r6c1",
+          "label": "Nexletol / Nexlizet (bempedoic acid) - LAST 100",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r6c2",
+          "label": "Nexletol / Nexlizet (bempedoic acid) - NEXT 100",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r7c1",
+          "label": "Other - LAST 100",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r7c2",
+          "label": "Other - NEXT 100",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "",
+      "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
       "tableId": "a4_last100",
       "questionId": "A4",
-      "title": "A4 - NEXT 100: Prescribed treatments (mean number of patients per 100)",
+      "title": "A4: Prescribed treatments - LAST 100 patients (all treatments)",
       "tableType": "mean_rows",
       "rows": [
         {
@@ -1263,15 +1388,15 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "",
-      "isDerived": false,
+      "sourceTableId": "a4_overview",
+      "isDerived": true,
       "exclude": false,
       "excludeReason": ""
     },
     {
       "tableId": "a4_next100",
       "questionId": "A4",
-      "title": "A4 - NEXT 100: Prescribed treatments (mean number of patients per 100)",
+      "title": "A4: Prescribed treatments - NEXT 100 patients (all treatments)",
       "tableType": "mean_rows",
       "rows": [
         {
@@ -1332,8 +1457,211 @@
         }
       ],
       "hints": [],
-      "sourceTableId": "",
-      "isDerived": false,
+      "sourceTableId": "a4_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4_statin",
+      "questionId": "A4",
+      "title": "A4: Statin only - LAST vs NEXT 100",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4r1c1",
+          "label": "LAST 100 patients",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r1c2",
+          "label": "NEXT 100 patients",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a4_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4_leqvio",
+      "questionId": "A4",
+      "title": "A4: Leqvio (inclisiran) - LAST vs NEXT 100",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4r2c1",
+          "label": "LAST 100 patients",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r2c2",
+          "label": "NEXT 100 patients",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a4_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4_praluent",
+      "questionId": "A4",
+      "title": "A4: Praluent (alirocumab) - LAST vs NEXT 100",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4r3c1",
+          "label": "LAST 100 patients",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r3c2",
+          "label": "NEXT 100 patients",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a4_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4_repatha",
+      "questionId": "A4",
+      "title": "A4: Repatha (evolocumab) - LAST vs NEXT 100",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4r4c1",
+          "label": "LAST 100 patients",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r4c2",
+          "label": "NEXT 100 patients",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a4_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4_zetia",
+      "questionId": "A4",
+      "title": "A4: Zetia (ezetimibe) - LAST vs NEXT 100",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4r5c1",
+          "label": "LAST 100 patients",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r5c2",
+          "label": "NEXT 100 patients",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a4_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4_nexletol",
+      "questionId": "A4",
+      "title": "A4: Nexletol/Nexlizet (bempedoic acid) - LAST vs NEXT 100",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4r6c1",
+          "label": "LAST 100 patients",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r6c2",
+          "label": "NEXT 100 patients",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a4_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4_other",
+      "questionId": "A4",
+      "title": "A4: Other treatments - LAST vs NEXT 100",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4r7c1",
+          "label": "LAST 100 patients",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4r7c2",
+          "label": "NEXT 100 patients",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a4_overview",
+      "isDerived": true,
       "exclude": false,
       "excludeReason": ""
     },
