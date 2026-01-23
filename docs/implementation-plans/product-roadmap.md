@@ -139,7 +139,34 @@ From the Antares conversation:
 
 ---
 
-### 2.6 Banner Inference (Future Enhancement)
+### 2.6 Question Text in Table Outputs
+
+**Current State**: Tables have `questionId` (e.g., "S5") but not the full question text. The question text is available in the DataMap output but isn't being propagated to final table definitions.
+
+**What's Needed**:
+- Add `questionText` field to `ExtendedTableDefinition` schema
+- Ensure question text flows from DataMap → TableAgent → VerificationAgent → final output
+- Display question text when rendering tables (Excel, UI) to provide context
+- This helps users understand what question the table represents
+- May also help VerificationAgent find the right section in the survey document
+
+**Why It Matters**:
+- Users need context when reviewing tables (especially when question IDs are cryptic)
+- Future AI agents (like VerificationAgent) can use question text to better locate relevant sections in survey documents
+- Improves overall output quality and usability
+
+**Implementation**:
+- Question text is already available in DataMapProcessor output (`questionText` field)
+- TableAgent already receives this in context
+- Need to ensure it's included in `ExtendedTableDefinitionSchema` (currently missing)
+- Can likely be deterministically added rather than requiring VerificationAgent to extract it
+- Update ExcelFormatter to display question text above table title
+
+**Level of Effort**: Low (1-2 hours) - mostly schema updates and ensuring data flows through pipeline
+
+---
+
+### 2.7 Banner Inference (Future Enhancement)
 
 Raina's comment: "If they don't have to spec out a banner, they can just say, generally, like, I want to look at specialty, tiers, and whatever, and then it would just do it."
 
@@ -272,10 +299,11 @@ Features for larger deployments:
 
 ### Short-Term (Feature Completeness)
 1. Percents/Frequencies toggle (easy win)
-2. Weighting support (needed for Tito's anyway)
-3. Multi-sheet workbooks
-4. Stat testing configuration
-5. PDF + Excel input support
+2. Question text in table outputs (quick context improvement)
+3. Weighting support (needed for Tito's anyway)
+4. Multi-sheet workbooks
+5. Stat testing configuration
+6. PDF + Excel input support
 
 ### Medium-Term (Productization MVP)
 1. Cloud deployment (API + job queue)

@@ -237,6 +237,212 @@
       "excludeReason": ""
     },
     {
+      "tableId": "a1_indication1",
+      "questionId": "A1",
+      "title": "A1: Current indication - Adjunct to diet, alone or in combination with other therapies",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A1r1",
+          "label": "Leqvio (inclisiran)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r2",
+          "label": "Praluent (alirocumab)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r3",
+          "label": "Repatha (evolocumab)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r4",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a1_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a1_indication2",
+      "questionId": "A1",
+      "title": "A1: Current indication - Adjunct to diet and statin therapy",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A1r1",
+          "label": "Leqvio (inclisiran)",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r2",
+          "label": "Praluent (alirocumab)",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r3",
+          "label": "Repatha (evolocumab)",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r4",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a1_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a1_leqvio",
+      "questionId": "A1",
+      "title": "A1: Current indication - Leqvio (inclisiran)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A1r1",
+          "label": "As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r1",
+          "label": "As an adjunct to diet and statin therapy for the treatment of adults with primary hyperlipidemia",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a1_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a1_praluent",
+      "questionId": "A1",
+      "title": "A1: Current indication - Praluent (alirocumab)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A1r2",
+          "label": "As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r2",
+          "label": "As an adjunct to diet and statin therapy for the treatment of adults with primary hyperlipidemia",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a1_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a1_repatha",
+      "questionId": "A1",
+      "title": "A1: Current indication - Repatha (evolocumab)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A1r3",
+          "label": "As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r3",
+          "label": "As an adjunct to diet and statin therapy for the treatment of adults with primary hyperlipidemia",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a1_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a1_nexletol",
+      "questionId": "A1",
+      "title": "A1: Current indication - Nexletol/Nexlizet (bempedoic acid)",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A1r4",
+          "label": "As an adjunct to diet, alone or in combination with other LDL-C-lowering therapies, in adults with primary hyperlipidemia",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A1r4",
+          "label": "As an adjunct to diet and statin therapy for the treatment of adults with primary hyperlipidemia",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a1_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
       "tableId": "a3_therapies",
       "questionId": "A3",
       "title": "A3 - Mean number (of last 100 patients) prescribed each therapy",
