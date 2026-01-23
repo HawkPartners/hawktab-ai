@@ -383,111 +383,157 @@ After practice-files success, test against all 23 datasets in `data/test-data/`:
 
 ## Long-Term Vision: Validated Data Foundation
 
-*This section captures strategic thinking about what HawkTab AI could become. None of this is on the current roadmap - our focus remains on reliability and production-readiness for traditional crosstabs. But it's worth documenting where we think the product could go.*
+*This section captures strategic thinking about what HawkTab AI could become. None of this is on the current roadmap—our focus remains on reliability and production-readiness for traditional crosstabs. But it's worth documenting where we think the product could go, and why the current focus isn't a limitation on that future.*
+
+### The Core Insight
+
+We're not building a tab company that might add features later. We're building a validated data foundation, and tabs are the entry point that forces us to solve all the hard problems first.
+
+Every crosstab we produce requires us to:
+- Parse survey structure from unstructured documents
+- Interpret banner plans that may lack formal specs
+- Validate variables against real data
+- Confirm ambiguous cuts with humans (HITL)
+- Execute R code that must succeed against actual data
+
+That infrastructure—not the tabs themselves—is the asset. The tabs are proof that the foundation works.
 
 ### Context: The Antares Conversation (January 2026)
 
 In a discussion with Antares (Bob Hettel, Raina Friedman), we validated that:
 
-1. **Traditional crosstabs aren't going away** - They remain foundational for market research, even as tools evolve
-2. **The pain point is real but bounded** - Tab production takes skilled people and time, but the tools have improved
-3. **No one else is doing what HawkTab does** - AI interpretation of unstructured inputs (banner plans without specs, messy Word docs) is novel
-4. **The industry is shifting toward analysis** - Tools like Displayr and Q are adding AI features for exploration, not just tab production
+1. **Traditional crosstabs aren't going away** — They remain foundational for market research, even as tools evolve
+2. **The pain point is real** — Tab production takes skilled people and time; 8 hours → 30 minutes is significant
+3. **No one else is doing what HawkTab does** — AI interpretation of unstructured inputs (banner plans without specs, messy Word docs) is novel
+4. **The industry is shifting toward analysis** — Tools like Displayr and Q are adding AI features for exploration, not just tab production
 
 Bob's quote: *"I've not seen anybody kind of going down this road... commercially speaking."*
 
-### Two Markets, Two Value Propositions
+Notably, Bob described a company that built "essentially the Q pack with all of the tabs built into Q" offshore, then delivered it to project teams who "could then access those tables in Q and export to PowerPoint... They then also had the ability to start working on any kind of special needs they would have without having to go back to the tab team."
 
-| Market | What They Want | HawkTab Value | Growth Potential |
-|--------|---------------|---------------|------------------|
-| **Field partners** (Antares, Sago, etc.) | Fast, reliable tabs from messy inputs | Speed + handling unstructured specs | Finite - limited number of field partners |
-| **Consultancies** (Hawk Partners, similar firms) | Tabs + ability to answer client questions | Validated data foundation + follow-ups | Larger - many consultancies need this |
+That's the pattern we're building toward: validated foundation → flexible follow-ups.
 
-**Field partners are in the data processing business.** They produce tabs and move to the next project. They won't pay more for exploration features.
+### Two Markets, One Entry Point
 
-**Consultancies are in the insights business.** They need tabs as a starting point, but the real work is interpreting and answering questions. That's where additional capabilities matter.
+| Market | What They Want | HawkTab Value | Where They Stop |
+|--------|---------------|---------------|-----------------|
+| **Field partners** (Antares, Sago, etc.) | Fast, reliable tabs from messy inputs | Speed + handling unstructured specs | Tabs delivered, move to next project |
+| **Consultancies** (Hawk Partners, similar firms) | Tabs + ability to answer client questions | Validated foundation + follow-ups | Keep asking questions from same foundation |
 
-### The Validated Data Foundation Concept
+Both enter through the same door: "Let me handle your tabs."
 
-The crosstab pipeline creates valuable artifacts as a byproduct:
+Field partners are in the data processing business. They produce tabs and move on. That's a real market with real revenue, and serving them forces us to build bulletproof reliability.
+
+Consultancies are in the insights business. They need tabs as a starting point, but the real work is interpreting and answering questions. For them, the validated foundation unlocks ongoing value.
+
+**The field partner market gets us customers and forces rigor. The consultancy market is where the growth lives.**
+
+### What the Validation Layer Creates
+
+The crosstab pipeline produces valuable artifacts as a byproduct:
 
 | Artifact | What It Contains | Why It Matters |
 |----------|------------------|----------------|
-| **Validated datamap** | Variables, types, labels - all verified against real data | AI can only reference what actually exists |
+| **Validated data map** | Variables, types, labels — all verified against real data | AI can only reference what actually exists |
 | **Approved banner** | Cuts that work, human-validated via HITL | Future queries use proven expressions |
 | **Survey context** | Question text, scale meanings, skip logic | AI understands what questions mean |
 | **Proven R expressions** | Code that actually executed successfully | New queries build on working patterns |
 
-This is essentially **RAG (Retrieval-Augmented Generation) for data analysis** - the AI is grounded in verified artifacts, not trying to figure things out cold.
+This is essentially **RAG (Retrieval-Augmented Generation) for data analysis** — the AI is grounded in verified artifacts, not trying to figure things out cold.
 
-### What This Enables (Eventually)
+### The User Experience: Constrained Architecture, Unconstrained Interaction
 
-**Current**: Raw survey data → HawkTab → Static crosstabs (Excel) → Done
+The validation layer is comprehensive. Once we've parsed the survey, validated the data map, and run the crosstabs with human-in-the-loop confirmation, we have a complete, verified representation of the dataset. Every variable, every label, every valid cut — it's all been touched and confirmed.
 
-**Future**: Raw survey data → HawkTab → **Validated data package** → Crosstabs + ability to answer follow-ups
+From that foundation, the user can ask for anything:
+- "Show me Q5 by region"
+- "Break out the top 3 brands by tier"  
+- "Give me a chart of satisfaction over time"
+- "What if we combined Tier 1 and 2?"
+- "Can you also show me that by specialty?"
 
-The follow-up capability isn't full BI exploration. It's narrower:
-- "Can you also show me that by region?" → Uses approved cuts
-- "What if we combined Tier 1 and 2?" → Quick re-cut from validated data
-- "Show me just the top 3 brands" → Subset of existing analysis
+The constraint is invisible to the user. It's architectural, not experiential. The AI is grounded in validated artifacts, so it won't hallucinate variables that don't exist or misinterpret scale directions. But the user just experiences: *I ask questions, I get accurate tables and charts.*
 
-The AI generates R code that MUST execute against real data. The execution IS the validation. If the code runs and produces a table, the result is real - not hallucinated.
+### Why This Is More Reliable Than Alternatives
 
-### Why This Could Be More Reliable Than Alternatives
+The standard failure mode of AI-on-data tools:
 
-| Displayr/Q Approach | HawkTab Approach |
-|---------------------|------------------|
-| AI analyzes data fresh each time | Validation happens ONCE at setup |
-| "Checkable outputs" = human reviews AFTER | AI is CONSTRAINED to validated artifacts |
-| Must infer survey structure | Survey structure already parsed and verified |
-| Must figure out what cuts make sense | Cuts already approved by human (HITL) |
+1. User asks question
+2. AI interprets data structure (often wrong)
+3. AI generates code (often wrong)
+4. Output looks plausible but is subtly incorrect
+5. User doesn't know enough to catch the error
 
-The key insight: **HawkTab's advantage isn't exploration itself - it's the validation layer that precedes it.**
+HawkTab inverts this:
 
-### Strategic Implications
+1. Validation happens once, with human-in-the-loop
+2. AI is constrained to artifacts that already executed successfully
+3. Follow-up queries inherit the validated foundation
+4. Errors fail to execute rather than producing plausible-looking wrong answers
 
-**Phase 1 (current)**: Win crosstabs for field partners. Prove reliability. Get Antares using it successfully.
+**The execution IS the validation.** If the R code runs and produces a table from real data, the result is real — not hallucinated.
 
-**Phase 2 (future)**: Same product, one more capability - follow-up questions from validated data. Now relevant to consultancies who care about insights.
+| | Displayr / Q | HawkTab |
+|---|---|---|
+| User experience | Ask anything, explore freely | Ask anything, explore freely |
+| Reliability mechanism | User validates outputs after | System validates inputs before |
+| Failure mode | Plausible-looking wrong answers | Errors fail to execute |
+| Who catches mistakes | User (hopefully) | System (automatically) |
 
-This is NOT:
-- Building a BI platform (Displayr's turf)
-- Creating interactive dashboards
-- Becoming a full analytics tool
+The pitch isn't "we do less but it's safer." The pitch is **"we do the same things, but you can trust the outputs because of how we built the foundation."**
 
-This IS:
-- Leveraging the validation work already done
-- Enabling "one more question" without starting over
-- Providing AI analysis that's trustworthy because it's constrained
+### What This Covers
 
-### The Growth Question
+Tables and charts cover the vast majority of what consultancies need. We're not building:
+- Statistical modeling platforms
+- Regression or conjoint analysis
+- Complex econometrics
 
-Building for efficiency (faster tabs) has a ceiling. Building for growth means asking: *What would make consultancies choose HawkTab over just using Displayr or Q directly?*
+But for "help me understand what's in this data and show it to clients" — which is the core consultancy workflow — tables and charts are the output. If you can produce any table, you can produce any chart. That's not a limitation; that's the job.
 
-The answer: **"AI analysis you can trust because it's constrained to validated data."**
+### Why Phase 1 Reliability Is the Right Obsession
 
-Consultancies don't want to become data analysts. They want answers they can trust. If HawkTab can provide validated crosstabs PLUS the ability to answer follow-up questions with the same level of reliability, that's a differentiated value proposition.
+If the validation layer isn't rock solid, Phase 2 doesn't work. We can't offer "AI analysis you can trust" if the foundation is shaky.
+
+The relentless focus on traditional tabs isn't a constraint on ambition — it's what makes the larger ambition credible. Every tab we produce successfully:
+- Proves the parsing works
+- Proves the validation works
+- Proves the execution works
+- Leaves behind artifacts that enable future queries
+
+Phase 1 builds the machine. Phase 2 turns it on for more use cases.
+
+### Strategic Sequence
+
+**Phase 1 (current):** Win crosstabs. Prove reliability. Get field partners using it successfully. Build the validated data foundation as a byproduct of doing tabs really well.
+
+**Phase 2 (future):** Expose follow-up capability to consultancies. Same foundation, new interface. "Your tabs are ready — and you can keep asking questions."
+
+### What Needs Validation Before Phase 2
+
+1. **Do consultancies want this, and will they pay for it?** Test in discovery calls: "After you get tabs, how often do you need just one more cut? How do you handle that today?"
+
+2. **Can we build reliable follow-up queries?** The technical feasibility of "use validated artifacts to answer new questions" needs prototyping. Plausible but unproven.
+
+3. **Is the reliability advantage perceptible?** Do users actually trust HawkTab outputs more than Displayr/Q, and does that trust translate to willingness to pay?
 
 ### When to Revisit This
 
 After:
-1. Reliability plan is complete (Parts 4-7)
-2. Antares is using the product successfully
+1. Reliability plan is complete
+2. Field partners are using the product successfully  
 3. Market validation with 5-10 similar firms
 4. Clear product-market fit for crosstabs
 
-Then: Test the hypothesis. Can we build a follow-up query interface that uses validated artifacts? Does it feel meaningfully more reliable? Would consultancies pay for it?
+Then: Prototype the follow-up query interface. Test whether constrained-but-comprehensive feels right to users. Validate that consultancies would pay for it.
 
 ### Reference
 
 - **Antares transcript**: `docs/antares-hawktabai-discussion-transcript-012226.txt`
 - **Competitive analysis**: Displayr, Q, WinCross, Decipher/Forsta
-- **Key differentiator**: AI interpretation of unstructured inputs + validated data foundation
-
-*Added: January 23, 2026*
+- **Key differentiator**: Validated data foundation that enables reliable AI-augmented analysis
 
 ---
 
-*Created: January 6, 2026*
 *Updated: January 23, 2026*
 *Status: Tracking only - none blocking current work*
