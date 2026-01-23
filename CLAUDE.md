@@ -48,7 +48,8 @@ We're making HawkTab AI reliably produce publication-quality crosstabs that matc
 | 2 | VerificationAgent | Complete |
 | 3 | Significance Testing (unpooled z-test) | Complete |
 | 3b | SPSS Validation Clarity | Complete |
-| 4 | Evaluation Framework (golden dataset) | In Progress |
+| 4a | Evaluation Framework (golden dataset) | In Progress |
+| 4b | TableAgent Refactor (deterministic TableGenerator) | Not started |
 | 5 | Iteration on primary dataset (leqvio) | Not started |
 | 6 | Loop/Stacked Data Support (Tito's) | Not started |
 | 7 | Strategic Broader Testing (5 datasets by failure mode) | Not started |
