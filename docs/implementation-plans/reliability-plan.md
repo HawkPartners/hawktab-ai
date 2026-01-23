@@ -263,12 +263,32 @@ Unexpected differences: 0
 - Raw agent outputs now capture complete model output (not filtered subsets)
 
 **Golden Datasets: 🔄 In Progress**
-| File | Status | Notes |
-|------|--------|-------|
-| `banner-expected.json` | ✅ Complete | Removed unused fields (crossRefStatus, aiRecommended). Added inline guidance for remaining fields. |
-| `crosstab-expected.json` | ✅ Complete | Fixed skip logic issues (A3ar1c2, A4ar1c2 filters) discovered during review. |
-| `verification-expected.json` | 🔄 Needs review | Copied from raw output, needs manual verification. |
-| `data-expected.json` | 🔄 Needs review | Copied from raw output, needs manual verification against Joe's tabs. |
+| File | Status | Priority | Notes |
+|------|--------|----------|-------|
+| `banner-expected.json` | ✅ Complete | High | Removed unused fields (crossRefStatus, aiRecommended). Added inline guidance for remaining fields. |
+| `crosstab-expected.json` | ✅ Complete | High | Fixed skip logic issues (A3ar1c2, A4ar1c2 filters) discovered during review. |
+| `verification-expected.json` | 🔄 In Progress | **Critical** | Defines table structure, derived tables, NETs. Manual review in progress. |
+| `data-expected.json` | ⏸️ Deferred | Low | See "Data Validation Strategy" below. |
+
+**Data Validation Strategy (data-expected.json)**
+
+After completing Parts 1-3, the R script generation and significance testing are already validated against WinCross defaults. At this stage, data calculation bugs would be:
+- **Systematic** — If the z-test formula is wrong, it's wrong everywhere (already fixed in Part 3)
+- **Type-based** — A bug in mean calculation affects all mean tables, not just one
+- **Configuration-based** — Filter expression issues (banner/crosstab agent), not calculation issues
+
+**Our approach:**
+1. **Defer exhaustive data-expected.json validation** until after Part 5 iteration is complete
+2. **Use sampling** — Validate ~15-20 representative tables against Joe's tabs covering:
+   - Frequency tables (with and without NETs)
+   - Mean tables
+   - Ranking tables
+   - Scale tables with T2B
+   - Multi-select tables
+3. **Derived tables don't need separate data validation** — They produce the same calculated values as their source tables (just subsets)
+4. **Spot-check bases** — Verify base (n) is consistent across questions for the same banner column
+
+**Why this is sufficient:** If sampled tables match Joe's output, the underlying R calculations are correct. Any remaining differences would be structural (verification-expected.json) not computational.
 
 **Prompt Updates Made:**
 - `src/prompts/banner/alternative.ts` - Clarified field guidance (humanInLoopRequired, requiresInference, uncertainties, inferenceReason)
@@ -276,10 +296,10 @@ Unexpected differences: 0
 - `src/lib/contextBuilder.ts` - Types updated to match schema
 
 **Next Steps:**
-1. Finalize `verification-expected.json` review
-2. Finalize `data-expected.json` review
-3. Run first comparison: `npx tsx scripts/compare-to-golden.ts <pipeline-output>`
-4. Review comparison report and annotate differences
+1. Finalize `verification-expected.json` review (in progress - adding derived tables, reviewing structure)
+2. Run first comparison: `npx tsx scripts/compare-to-golden.ts <pipeline-output>`
+3. Review comparison report and annotate differences
+4. Data sampling validation happens in Part 5 iteration (not blocking Part 4 completion)
 
 ---
 
@@ -505,7 +525,8 @@ The pipeline also outputs `data-streamlined.json` alongside `tables.json` automa
 
 ### Exit Criteria
 
-- All 4 golden datasets exist for primary dataset
+- **Structure golden datasets complete**: banner-expected, crosstab-expected, verification-expected reviewed and finalized
+- **Data golden dataset**: Exists (copied from output), full validation deferred to sampling approach
 - Comparison script produces unified diff report covering all agents
 - At least one full evaluation cycle completed (run → compare → annotate → calculate metrics)
 - Attribution breakdown identifies which agents need prompt iteration
@@ -555,6 +576,24 @@ Three versions of the banner plan exist for each dataset:
 - Significance letters match Joe's tabs
 - Formatting acceptable for partner use
 - No blocking issues for report writing
+
+### Data Sampling Validation (due diligence)
+
+As part of Part 5 iteration, validate ~15-20 tables against Joe's tabs to confirm R calculations are correct:
+
+| Category | Tables to Sample | What to Check |
+|----------|------------------|---------------|
+| Frequency | 3-4 tables | Counts, percentages, significance letters |
+| Mean | 3-4 tables | Mean values, base n |
+| Ranking | 2-3 tables | Rank counts by position |
+| Scale + T2B | 2-3 tables | T2B/B2B roll-ups correct |
+| Multi-select | 1-2 tables | Multiple responses counted correctly |
+
+**Also verify:**
+- Base (n) consistent for same banner column across different questions
+- Total column matches sum/aggregate of subgroups where expected
+
+If sampled tables match, data-expected.json can be considered validated without cell-by-cell review of all 50+ tables.
 
 ---
 
