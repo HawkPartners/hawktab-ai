@@ -2176,8 +2176,8 @@
       "hints": [
         "ranking"
       ],
-      "sourceTableId": "",
-      "isDerived": false,
+      "sourceTableId": "a6_overview",
+      "isDerived": true,
       "exclude": false,
       "excludeReason": ""
     },
@@ -2255,8 +2255,8 @@
       "hints": [
         "ranking"
       ],
-      "sourceTableId": "",
-      "isDerived": false,
+      "sourceTableId": "a6_overview",
+      "isDerived": true,
       "exclude": false,
       "excludeReason": ""
     },
@@ -2334,8 +2334,8 @@
       "hints": [
         "ranking"
       ],
-      "sourceTableId": "",
-      "isDerived": false,
+      "sourceTableId": "a6_overview",
+      "isDerived": true,
       "exclude": false,
       "excludeReason": ""
     },
@@ -2413,8 +2413,621 @@
       "hints": [
         "ranking"
       ],
-      "sourceTableId": "",
-      "isDerived": false,
+      "sourceTableId": "a6_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a6_item1_ranks",
+      "questionId": "A6",
+      "title": "A6 - Rank distribution: Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r1",
+          "label": "Ranked #1 (most likely)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r1",
+          "label": "Ranked #2",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r1",
+          "label": "Ranked #3",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r1",
+          "label": "Ranked #4 (least likely)",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "a6_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a6_item2_ranks",
+      "questionId": "A6",
+      "title": "A6 - Rank distribution: Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r2",
+          "label": "Ranked #1 (most likely)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r2",
+          "label": "Ranked #2",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r2",
+          "label": "Ranked #3",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r2",
+          "label": "Ranked #4 (least likely)",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "a6_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a6_item3_ranks",
+      "questionId": "A6",
+      "title": "A6 - Rank distribution: Start ezetimibe or Nexletol/Nexlizet, no statin",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r3",
+          "label": "Ranked #1 (most likely)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r3",
+          "label": "Ranked #2",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r3",
+          "label": "Ranked #3",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r3",
+          "label": "Ranked #4 (least likely)",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "a6_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a6_item4_ranks",
+      "questionId": "A6",
+      "title": "A6 - Rank distribution: Start statin first, add/switch to PCSK9i if needed",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r4",
+          "label": "Ranked #1 (most likely)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r4",
+          "label": "Ranked #2",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r4",
+          "label": "Ranked #3",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r4",
+          "label": "Ranked #4 (least likely)",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "a6_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a6_item5_ranks",
+      "questionId": "A6",
+      "title": "A6 - Rank distribution: Start statin and PCSK9i at the same time",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r5",
+          "label": "Ranked #1 (most likely)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r5",
+          "label": "Ranked #2",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r5",
+          "label": "Ranked #3",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r5",
+          "label": "Ranked #4 (least likely)",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "a6_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a6_item6_ranks",
+      "questionId": "A6",
+      "title": "A6 - Rank distribution: Start PCSK9i, no statin",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r6",
+          "label": "Ranked #1 (most likely)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r6",
+          "label": "Ranked #2",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r6",
+          "label": "Ranked #3",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r6",
+          "label": "Ranked #4 (least likely)",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "a6_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a6_item7_ranks",
+      "questionId": "A6",
+      "title": "A6 - Rank distribution: Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r7",
+          "label": "Ranked #1 (most likely)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r7",
+          "label": "Ranked #2",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r7",
+          "label": "Ranked #3",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r7",
+          "label": "Ranked #4 (least likely)",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "a6_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a6_item8_ranks",
+      "questionId": "A6",
+      "title": "A6 - Rank distribution: Other",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r8",
+          "label": "Ranked #1 (most likely)",
+          "filterValue": "1",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r8",
+          "label": "Ranked #2",
+          "filterValue": "2",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r8",
+          "label": "Ranked #3",
+          "filterValue": "3",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r8",
+          "label": "Ranked #4 (least likely)",
+          "filterValue": "4",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "a6_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a6_top1",
+      "questionId": "A6",
+      "title": "A6 - Items ranked #1",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r1",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+          "filterValue": "1",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r2",
+          "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+          "filterValue": "1",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r3",
+          "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+          "filterValue": "1",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r4",
+          "label": "Start statin first, add/switch to PCSK9i if needed",
+          "filterValue": "1",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r5",
+          "label": "Start statin and PCSK9i at the same time",
+          "filterValue": "1",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r6",
+          "label": "Start PCSK9i, no statin",
+          "filterValue": "1",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r7",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+          "filterValue": "1",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r8",
+          "label": "Other",
+          "filterValue": "1",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "a6_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a6_top2",
+      "questionId": "A6",
+      "title": "A6 - Items ranked in top 2",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r1",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r2",
+          "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r3",
+          "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r4",
+          "label": "Start statin first, add/switch to PCSK9i if needed",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r5",
+          "label": "Start statin and PCSK9i at the same time",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r6",
+          "label": "Start PCSK9i, no statin",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r7",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r8",
+          "label": "Other",
+          "filterValue": "1,2",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "a6_overview",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a6_top3",
+      "questionId": "A6",
+      "title": "A6 - Items ranked in top 3",
+      "tableType": "frequency",
+      "rows": [
+        {
+          "variable": "A6r1",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed",
+          "filterValue": "1,2,3",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r2",
+          "label": "Start statin and ezetimibe or Nexletol/Nexlizet at the same time",
+          "filterValue": "1,2,3",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r3",
+          "label": "Start ezetimibe or Nexletol/Nexlizet, no statin",
+          "filterValue": "1,2,3",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r4",
+          "label": "Start statin first, add/switch to PCSK9i if needed",
+          "filterValue": "1,2,3",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r5",
+          "label": "Start statin and PCSK9i at the same time",
+          "filterValue": "1,2,3",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r6",
+          "label": "Start PCSK9i, no statin",
+          "filterValue": "1,2,3",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r7",
+          "label": "Start statin first, add/switch to ezetimibe or Nexletol/Nexlizet if needed, add/switch to PCSK9i if needed after that",
+          "filterValue": "1,2,3",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A6r8",
+          "label": "Other",
+          "filterValue": "1,2,3",
+          "isNet": true,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [
+        "ranking"
+      ],
+      "sourceTableId": "a6_overview",
+      "isDerived": true,
       "exclude": false,
       "excludeReason": ""
     },
