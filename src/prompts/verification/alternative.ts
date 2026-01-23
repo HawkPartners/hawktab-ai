@@ -27,9 +27,10 @@ YOUR HIGH-LEVERAGE ACTIONS (in order of frequency):
    Reasoning: "Updated labels from survey Q5: 1=Very satisfied"
 
 3. SPLIT BY DIMENSION (occasional - ~10%)
-   When: Survey structure suggests multiple analytical views
-   Action: Create additional table views, keep original
-   Reasoning: "Survey presents 3 products separately—added product-specific views"
+   When: Table contains a grid/matrix structure (rows × columns = multiple perspectives)
+   Signals: Variable names with rXcY pattern, repeated items with different suffixes
+   Action: Keep original overview + add focused views (by row dimension, by column dimension)
+   Reasoning: "Grid detected (5 brands × 2 scenarios)—added per-brand and per-scenario views"
 
 4. ADD NETS/T2B (occasional - ~10%)
    When: Rollups add clear analytical value for scales/categories
@@ -82,7 +83,12 @@ Example: Survey asks about 3 products separately → Consider product-specific t
 
 DIMENSIONAL ANALYSIS:
 Understand how survey presents information → Match table structure to survey flow
-Example: Grid question with treatments × conditions → May warrant multiple views
+Look for grid/matrix questions where analysts need multiple views:
+- Brand × purchase scenario (where, when, why)
+- Product × attribute rating
+- Treatment × patient segment
+- Service × satisfaction dimension
+When you see these patterns, the overview table is correct but often incomplete—add focused views.
 
 NATURAL ROLLUPS:
 Spot logical groupings analyst will want → Add NET rows
@@ -113,22 +119,54 @@ ACTION 2: SPLIT BY DIMENSION (Multiple Views)
 WHEN: Survey structure suggests multiple analytical perspectives
 HOW: Keep ORIGINAL table + ADD dimension-specific views
 
+RECOGNIZING GRID TABLES:
+Look for variable naming patterns that encode two dimensions:
+- Pattern: [QuestionID]r[RowNum]c[ColNum] (e.g., Q7r1c1, Q7r1c2, Q7r2c1, Q7r2c2)
+- Pattern: [QuestionID][ItemNum][DimensionNum] (e.g., Z3a1, Z3a2, Z3b1, Z3b2)
+
+Common grid structures in surveys:
+- Brand × usage occasion (which brands for which occasions)
+- Product × feature rating (how each product rates on each attribute)
+- Treatment × patient type (which treatments for which patient segments)
+- Service × timing (before vs. after, with vs. without)
+
 DIMENSIONAL SPLIT LOGIC:
-If table has N rows and you identify dimensions (X treatments × Y scenarios = N):
-- Keep original table (N rows showing everything)
-- ADD X tables by treatment (Y rows each)
-- ADD Y tables by scenario (X rows each)
+If table has N rows from a grid (X items × Y dimensions = N):
+- Keep original table (N rows showing everything) — the overview
+- ADD X tables (one per item, showing all Y dimensions for that item)
+- ADD Y tables (one per dimension, showing all X items for that dimension)
+
+EXAMPLE - Q7 with 4 brands × 2 purchase contexts:
+
+INPUT FROM TABLE AGENT: 1 table with 8 rows (4 brands × 2 contexts, flattened)
+Variables: Q7r1c1, Q7r1c2, Q7r2c1, Q7r2c2, Q7r3c1, Q7r3c2, Q7r4c1, Q7r4c2
+
+YOUR OUTPUT: 7 tables (this is correct—expanding grids creates multiple focused views)
+1. q7_overview (original) — all 8 rows
+2. q7_online — all 4 brands, c1 only (labels: just brand names)
+3. q7_instore — all 4 brands, c2 only (labels: just brand names)
+4. q7_brand_a — r1 only, both contexts (labels: "Online", "In-store")
+5. q7_brand_b — r2 only, both contexts
+6. q7_brand_c — r3 only, both contexts
+7. q7_brand_d — r4 only, both contexts
+
+This 1→7 expansion is expected for grid tables. A 5×2 grid becomes 8 tables (1 + 2 + 5).
+
+For derived tables:
+- Set isDerived: true
+- Set sourceTableId to original table ID
+- Simplify labels (remove the dimension that's now constant in the table title)
 
 You're not replacing—you're ADDING analytical views.
 
 SPLIT CRITERIA:
-✓ Survey presents items separately (products, treatments, scenarios)
-✓ Grid where analysts compare by row OR by column
-✓ Multi-dimensional data with different analytical questions
+✓ Variable names encode two dimensions (rXcY pattern or similar)
+✓ Survey presents a matrix/grid question
+✓ Analysts would ask "how does brand X compare across scenarios?" AND "how do brands compare within scenario Y?"
 
 DO NOT SPLIT:
-✗ Single dimension (one variable, many values like states)
-✗ Survey explicitly asks for comparison in one view
+✗ Single dimension (one variable, many values like states or age groups)
+✗ Small grids where splitting adds no value (2×2 = just 4 rows)
 ✗ Splitting creates too many tiny tables (diminishing returns)
 
 Set sourceTableId to original tableId for traceability.

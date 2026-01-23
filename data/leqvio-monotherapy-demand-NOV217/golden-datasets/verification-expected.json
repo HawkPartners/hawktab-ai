@@ -949,6 +949,257 @@
       "excludeReason": ""
     },
     {
+      "tableId": "a3b_before",
+      "questionId": "A3b",
+      "title": "A3b: % without statin - BEFORE any other lipid-lowering therapy (all treatments)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3br1c1",
+          "label": "Leqvio (inclisiran)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br2c1",
+          "label": "Praluent (alirocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br3c1",
+          "label": "Repatha (evolocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br4c1",
+          "label": "Zetia (ezetimibe)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br5c1",
+          "label": "Nexletol / Nexlizet (bempedoic acid)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a3b_mean",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3b_after",
+      "questionId": "A3b",
+      "title": "A3b: % without statin - AFTER trying another lipid-lowering therapy (all treatments)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3br1c2",
+          "label": "Leqvio (inclisiran)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br2c2",
+          "label": "Praluent (alirocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br3c2",
+          "label": "Repatha (evolocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br4c2",
+          "label": "Zetia (ezetimibe)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br5c2",
+          "label": "Nexletol / Nexlizet (bempedoic acid)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a3b_mean",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3b_leqvio",
+      "questionId": "A3b",
+      "title": "A3b: % without statin - Leqvio (inclisiran)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3br1c1",
+          "label": "BEFORE any other lipid-lowering therapy (i.e., first line)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br1c2",
+          "label": "AFTER trying another lipid-lowering therapy",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a3b_mean",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3b_praluent",
+      "questionId": "A3b",
+      "title": "A3b: % without statin - Praluent (alirocumab)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3br2c1",
+          "label": "BEFORE any other lipid-lowering therapy (i.e., first line)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br2c2",
+          "label": "AFTER trying another lipid-lowering therapy",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a3b_mean",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3b_repatha",
+      "questionId": "A3b",
+      "title": "A3b: % without statin - Repatha (evolocumab)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3br3c1",
+          "label": "BEFORE any other lipid-lowering therapy (i.e., first line)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br3c2",
+          "label": "AFTER trying another lipid-lowering therapy",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a3b_mean",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3b_zetia",
+      "questionId": "A3b",
+      "title": "A3b: % without statin - Zetia (ezetimibe)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3br4c1",
+          "label": "BEFORE any other lipid-lowering therapy (i.e., first line)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br4c2",
+          "label": "AFTER trying another lipid-lowering therapy",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a3b_mean",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3b_nexletol",
+      "questionId": "A3b",
+      "title": "A3b: % without statin - Nexletol/Nexlizet (bempedoic acid)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3br5c1",
+          "label": "BEFORE any other lipid-lowering therapy (i.e., first line)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3br5c2",
+          "label": "AFTER trying another lipid-lowering therapy",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a3b_mean",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
       "tableId": "a4_last100",
       "questionId": "A4",
       "title": "A4 - NEXT 100: Prescribed treatments (mean number of patients per 100)",
