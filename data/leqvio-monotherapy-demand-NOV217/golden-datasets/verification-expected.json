@@ -445,7 +445,7 @@
     {
       "tableId": "a3_therapies",
       "questionId": "A3",
-      "title": "A3 - Mean number (of last 100 patients) prescribed each therapy",
+      "title": "A3 - Mean number of Last 100 Uncontrolled LDL-C Patients Prescribed Each Therapy",
       "tableType": "mean_rows",
       "rows": [
         {
@@ -601,6 +601,257 @@
       "hints": [],
       "sourceTableId": "",
       "isDerived": false,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3a_with_statin",
+      "questionId": "A3a",
+      "title": "A3a: % of last 100 patients - In addition to statin (all treatments)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3ar1c1",
+          "label": "Leqvio (inclisiran)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar2c1",
+          "label": "Praluent (alirocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar3c1",
+          "label": "Repatha (evolocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar4c1",
+          "label": "Zetia (ezetimibe)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar5c1",
+          "label": "Nexletol / Nexlizet (bempedoic acid)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a3a_mean_rows",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3a_without_statin",
+      "questionId": "A3a",
+      "title": "A3a: % of last 100 patients - Without a statin (all treatments)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3ar1c2",
+          "label": "Leqvio (inclisiran)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar2c2",
+          "label": "Praluent (alirocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar3c2",
+          "label": "Repatha (evolocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar4c2",
+          "label": "Zetia (ezetimibe)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar5c2",
+          "label": "Nexletol / Nexlizet (bempedoic acid)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a3a_mean_rows",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3a_leqvio",
+      "questionId": "A3a",
+      "title": "A3a: % of last 100 patients - Leqvio (inclisiran)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3ar1c1",
+          "label": "In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar1c2",
+          "label": "Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a3a_mean_rows",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3a_praluent",
+      "questionId": "A3a",
+      "title": "A3a: % of last 100 patients - Praluent (alirocumab)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3ar2c1",
+          "label": "In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar2c2",
+          "label": "Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a3a_mean_rows",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3a_repatha",
+      "questionId": "A3a",
+      "title": "A3a: % of last 100 patients - Repatha (evolocumab)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3ar3c1",
+          "label": "In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar3c2",
+          "label": "Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a3a_mean_rows",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3a_zetia",
+      "questionId": "A3a",
+      "title": "A3a: % of last 100 patients - Zetia (ezetimibe)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3ar4c1",
+          "label": "In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar4c2",
+          "label": "Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a3a_mean_rows",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a3a_nexletol",
+      "questionId": "A3a",
+      "title": "A3a: % of last 100 patients - Nexletol/Nexlizet (bempedoic acid)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A3ar5c1",
+          "label": "In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A3ar5c2",
+          "label": "Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a3a_mean_rows",
+      "isDerived": true,
       "exclude": false,
       "excludeReason": ""
     },
