@@ -249,324 +249,80 @@ Unexpected differences: 0
 
 ---
 
-## Part 4a: Evaluation Framework
+## Part 4: Evaluation Framework + TableAgent Refactor
 
 **Status**: IN PROGRESS
 
-### Current Progress (as of 2026-01-10)
+### Background: How We Got Here
+
+We originally planned Part 4 as two phases:
+- **Part 4a**: Build golden datasets by manually reviewing current pipeline output
+- **Part 4b**: Refactor TableAgent → TableGenerator after golden datasets complete
+
+While building `verification-expected.json`, we discovered repeating failure modes:
+- **Grid questions** (A1, A3a, A3b, A4, A4a): TableAgent pre-splits tables, preventing VerificationAgent from creating proper expansions (by-row, by-column, combined views)
+- **Ranking questions** (A6): TableAgent creates 4 separate rank tables, preventing combined rank views (top 2, top 3) and by-item views
+
+These failures stem from TableAgent doing work that VerificationAgent should do. Continuing to manually build golden datasets for an architecture we're about to replace is inefficient.
+
+**The pivot**: Build TableGenerator first, update VerificationAgent, run the new pipeline, then use *that* output as the golden dataset baseline.
+
+### What We Accomplished (Original Part 4a)
 
 **Infrastructure: ✅ Complete**
 - `scripts/compare-to-golden.ts` - Compares pipeline output to golden datasets
 - `scripts/calculate-metrics.ts` - Calculates accuracy metrics from comparison report
 - `scripts/extract-data-json.ts` - Extracts streamlined data for golden dataset creation
 - Pipeline auto-outputs `data-streamlined.json` alongside `tables.json`
-- Raw agent outputs now capture complete model output (not filtered subsets)
 
-**Golden Datasets: 🔄 In Progress**
-| File | Status | Priority | Notes |
-|------|--------|----------|-------|
-| `banner-expected.json` | ✅ Complete | High | Removed unused fields (crossRefStatus, aiRecommended). Added inline guidance for remaining fields. |
-| `crosstab-expected.json` | ✅ Complete | High | Fixed skip logic issues (A3ar1c2, A4ar1c2 filters) discovered during review. |
-| `verification-expected.json` | 🔄 In Progress | **Critical** | Defines table structure, derived tables, NETs. Manual review in progress. |
-| `data-expected.json` | ⏸️ Deferred | Low | See "Data Validation Strategy" below. |
+**Golden Datasets: Partial**
+| File | Status | Notes |
+|------|--------|-------|
+| `banner-expected.json` | ✅ Complete | Reviewed and finalized |
+| `crosstab-expected.json` | ✅ Complete | Fixed skip logic issues discovered during review |
+| `verification-expected.json` | 🔄 Partial | Started manual review, identified repeating failure modes |
+| `data-expected.json` | ⏸️ Deferred | Will create after pipeline refactor |
 
-**Data Validation Strategy (data-expected.json)**
+**Failure Modes Identified During Review:**
+- A1: 4×2 grid not expanded (7 tables needed, only 1 produced)
+- A3a: 5×2 grid not expanded (8 tables needed)
+- A3b: 5×2 grid not expanded (8 tables needed)
+- A4: 7×2 grid not expanded (10 tables needed)
+- A4a: 5×2 grid not expanded (8 tables needed)
+- A6: Ranking not expanded (15 tables needed: 4 by-rank + 8 by-item + 3 combined)
 
-After completing Parts 1-3, the R script generation and significance testing are already validated against WinCross defaults. At this stage, data calculation bugs would be:
-- **Systematic** — If the z-test formula is wrong, it's wrong everywhere (already fixed in Part 3)
-- **Type-based** — A bug in mean calculation affects all mean tables, not just one
-- **Configuration-based** — Filter expression issues (banner/crosstab agent), not calculation issues
-
-**Our approach:**
-1. **Defer exhaustive data-expected.json validation** until after Part 5 iteration is complete
-2. **Use sampling** — Validate ~15-20 representative tables against Joe's tabs covering:
-   - Frequency tables (with and without NETs)
-   - Mean tables
-   - Ranking tables
-   - Scale tables with T2B
-   - Multi-select tables
-3. **Derived tables don't need separate data validation** — They produce the same calculated values as their source tables (just subsets)
-4. **Spot-check bases** — Verify base (n) is consistent across questions for the same banner column
-
-**Why this is sufficient:** If sampled tables match Joe's output, the underlying R calculations are correct. Any remaining differences would be structural (verification-expected.json) not computational.
-
-**Prompt Updates Made:**
-- `src/prompts/banner/alternative.ts` - Clarified field guidance (humanInLoopRequired, requiresInference, uncertainties, inferenceReason)
-- `src/agents/BannerAgent.ts` - Schema updated to remove unused fields
-- `src/lib/contextBuilder.ts` - Types updated to match schema
-
-**Next Steps:**
-1. Finalize `verification-expected.json` review (in progress - adding derived tables, reviewing structure)
-2. Run first comparison: `npx tsx scripts/compare-to-golden.ts <pipeline-output>`
-3. Review comparison report and annotate differences
-4. Data sampling validation happens in Part 5 iteration (not blocking Part 4 completion)
+These are structural failures in how TableAgent handles multi-dimensional questions.
 
 ---
 
-### The Problem
+### The Core Insight
 
-Our current testing workflow is "run pipeline, eyeball JSON, manually compare." This doesn't scale and makes it hard to:
-- Know if we're improving or regressing
-- Focus review time on actual problems
-- Track patterns in failures for prompt iteration
-
-### The Solution: Golden Dataset + Annotation Workflow
-
-This is the standard approach for human-preference-centered LLM evaluation:
-
-1. **Golden Dataset**: Manually-reviewed "expected output" files for each agent, representing correct behavior
-2. **Strict Comparison**: Automated diff between actual output and golden data (surfaces all differences)
-3. **Human Annotation**: For each difference, mark as "wrong" or "acceptable", with attribution to the responsible component
-4. **Metrics Tracking**: Track both strict accuracy and practical accuracy over time
-
-### Golden Datasets (4 files per dataset)
-
-Each agent produces output that we compare against a golden reference:
-
-| Golden File | Source | What It Tests | Attribution |
-|-------------|--------|---------------|-------------|
-| `banner-expected.json` | `banner-output-raw.json` | Groups, columns, stat letters | banner_agent |
-| `crosstab-expected.json` | `crosstab-output-raw.json` | Cut names, R expressions | crosstab_agent |
-| `verified-tables-expected.json` | `verified-table-output-*.json` | Table structure, labels, NETs, T2B | table_agent, verification_agent |
-| `data-expected.json` | `tables.json` (streamlined) | Calculated values, significance | system, r_script |
-
-**Note**: We skip a separate `table-expected.json` because verification agent output supersedes table agent output (verification enhances the table definitions).
-
-### What Each Golden Dataset Contains
-
-**banner-expected.json** - Banner agent decisions:
-- Banner group names
-- Column names within each group
-- Stat letters (A, B, C, etc.)
-
-**crosstab-expected.json** - Crosstab agent decisions:
-- Cut definitions (name + R expression)
-- Group assignments for stat testing
-
-**verified-tables-expected.json** - Table + Verification agent decisions:
-- tableId, title, tableType
-- rows (variable, label, filterValue)
-- isNet, netComponents, indent
-- isDerived, exclude, excludeReason
-- hints
-
-**data-expected.json** - Calculated data (streamlined):
-```json
-{
-  "s1": {
-    "Total": {
-      "S1_row_1": { "n": 180, "count": 45, "pct": 25, "sig_higher_than": [], "sig_vs_total": null }
-    },
-    "Cards": {
-      "S1_row_1": { "n": 60, "count": 20, "pct": 33, "sig_higher_than": ["B"], "sig_vs_total": "higher" }
-    }
-  }
-}
-```
-
-This strips metadata and table-level fields from `tables.json`, keeping only the actual calculated values.
-
-### Comparison Report Structure
-
-The comparison script generates a unified report covering all golden datasets:
-
-```json
-{
-  "metadata": {
-    "dataset": "leqvio-monotherapy-demand-NOV217",
-    "runTimestamp": "2026-01-09T16:54:54.155Z",
-    "generatedAt": "2026-01-09T17:30:00.000Z",
-    "status": "pending_review"
-  },
-  "summary": {
-    "banner": { "total": 8, "matches": 8, "diffs": 0 },
-    "crosstab": { "total": 19, "matches": 18, "diffs": 1 },
-    "structure": { "total": 52, "matches": 48, "diffs": 4 },
-    "data": { "total": 988, "matches": 970, "diffs": 18 }
-  },
-  "overall": {
-    "totalDiffs": 23,
-    "reviewed": 0,
-    "acceptable": 0,
-    "wrong": 0
-  },
-  "differences": [
-    {
-      "id": "diff_001",
-      "category": "structure",
-      "tableId": "a6_ranking",
-      "diffType": "field_mismatch",
-      "path": "tableType",
-      "expected": "frequency",
-      "actual": "ranking",
-      "annotation": null,
-      "attribution": null,
-      "notes": ""
-    },
-    {
-      "id": "diff_002",
-      "category": "data",
-      "tableId": "s1",
-      "rowKey": "S1_row_1",
-      "cut": "Cards",
-      "diffType": "value_mismatch",
-      "field": "pct",
-      "expected": 33,
-      "actual": 32,
-      "annotation": null,
-      "attribution": null,
-      "notes": ""
-    }
-  ]
-}
-```
-
-### Annotation Fields
-
-For each difference, the reviewer fills in:
-
-**annotation** (required):
-- `null` - Not yet reviewed
-- `"acceptable"` - Different but not wrong (e.g., label case difference)
-- `"wrong"` - Actual error that needs fixing
-
-**attribution** (required when `annotation: "wrong"`):
-- `"banner_agent"` - Banner agent made incorrect decision
-- `"crosstab_agent"` - Crosstab agent made incorrect decision
-- `"table_agent"` - Table agent made incorrect decision
-- `"verification_agent"` - Verification agent made incorrect decision
-- `"r_script"` - R script generator bug
-- `"system"` - Edge case our pipeline doesn't handle yet
-- `"user"` - Bad input (wrong banner plan, datamap issues)
-- `"data"` - Source data issue
-
-**notes** (optional): Free text for context
-
-### Metrics Calculation
-
-After annotation, the script calculates:
-
-```json
-{
-  "strictAccuracy": 0.77,
-  "practicalAccuracy": 0.92,
-  "errorRate": 0.08,
-  "attributionBreakdown": {
-    "table_agent": 2,
-    "verification_agent": 1,
-    "system": 1
-  }
-}
-```
-
-- **Strict Accuracy**: matches / total (before annotation)
-- **Practical Accuracy**: (matches + acceptable) / total
-- **Error Rate**: wrong / total
-
-### Folder Structure
-
-```
-data/leqvio-monotherapy-demand-NOV217/
-├── inputs/                            # Input files
-│   ├── leqvio-monotherapy-demand-datamap.csv
-│   ├── leqvio-monotherapy-demand-data.sav
-│   ├── leqvio-monotherapy-demand-survey.docx
-│   └── leqvio-monotherapy-demand-bannerplan-adjusted.docx
-├── tabs/                              # Reference output
-│   └── leqvio-monotherapy-demand-tabs-joe.xlsx
-└── golden-datasets/                   # Evaluation framework
-    ├── banner-expected.json           # Banner agent golden
-    ├── crosstab-expected.json         # Crosstab agent golden
-    ├── verified-tables-expected.json  # Table + Verification agent golden
-    └── data-expected.json             # Calculated data golden (streamlined)
-```
-
-Pipeline outputs go to `outputs/` folder as usual. Comparison script reads from both locations.
-
-### Scripts
-
-| Script | Purpose |
-|--------|---------|
-| `scripts/extract-data-json.ts` | Extract streamlined data from tables.json (for creating data-expected.json) |
-| `scripts/compare-to-golden.ts` | Generate comparison report from pipeline output vs golden datasets |
-| `scripts/calculate-metrics.ts` | Calculate final metrics from annotated comparison report |
-
-The pipeline also outputs `data-streamlined.json` alongside `tables.json` automatically.
-
-### Workflow
-
-1. **Create Golden Datasets** (one-time per dataset):
-   - Run pipeline to get baseline outputs
-   - Copy `banner-output-raw.json` → `golden-datasets/banner-expected.json`
-   - Copy `crosstab-output-raw.json` → `golden-datasets/crosstab-expected.json`
-   - Copy `verified-table-output-*.json` → `golden-datasets/verified-tables-expected.json`
-   - Run `npx tsx scripts/extract-data-json.ts` → `golden-datasets/data-expected.json`
-   - Review each file, correct any errors manually
-
-2. **Evaluate a Run**:
-   - Run pipeline: `npx tsx scripts/test-pipeline.ts`
-   - Compare: `npx tsx scripts/compare-to-golden.ts <output-folder>`
-   - Review: Open comparison report, annotate each difference
-   - Metrics: `npx tsx scripts/calculate-metrics.ts <comparison-report>`
-
-3. **Iterate**:
-   - Identify patterns in "wrong" annotations
-   - Fix prompts or code
-   - Re-run, compare again
-   - Track metrics over time
-
-### Deliverables
-
-1. **Golden datasets**: 4 files for primary dataset (banner, crosstab, verified-tables, data)
-2. **Extract script**: `scripts/extract-data-json.ts` for creating streamlined data golden
-3. **Comparison script**: `scripts/compare-to-golden.ts` for generating diff reports
-4. **Metrics script**: `scripts/calculate-metrics.ts` for final metrics calculation
-5. **Pipeline update**: Auto-output `data-streamlined.json` alongside `tables.json`
-
-### Exit Criteria
-
-- **Structure golden datasets complete**: banner-expected, crosstab-expected, verification-expected reviewed and finalized
-- **Data golden dataset**: Exists (copied from output), full validation deferred to sampling approach
-- Comparison script produces unified diff report covering all agents
-- At least one full evaluation cycle completed (run → compare → annotate → calculate metrics)
-- Attribution breakdown identifies which agents need prompt iteration
-
----
-
-## Part 4b: TableAgent Refactor
-
-**Status**: NOT STARTED (begins after Part 4a golden datasets complete)
-
-### The Insight
-
-During Part 4a golden dataset review, we discovered that the TableAgent's "intelligence" is largely deterministic:
-
+TableAgent's "intelligence" is largely deterministic:
 1. `normalizedType` → `tableType` mapping (lookup table)
 2. Creating rows from datamap items (copy operation)
 3. Adding hints like `ranking`, `scale-5` (pattern detection)
-4. Splitting decisions (we're moving this to VerificationAgent anyway)
 
-The datamap already IS the table definition, just in a different shape. Meanwhile, the TableAgent's splitting logic (e.g., creating 4 separate rank tables) prevents VerificationAgent from doing proper expansion (combined ranks, by-item views).
+The datamap already IS the table definition, just in a different shape. Meanwhile, TableAgent's splitting logic prevents VerificationAgent from doing proper expansion.
 
-### The Refactor
+**New architecture:**
+```
+Before: DataMap → TableAgent (LLM) → VerificationAgent (LLM) → R Script
+After:  DataMap → TableGenerator (code) → VerificationAgent (LLM) → R Script
+```
 
-| Component | Current | After Refactor |
-|-----------|---------|----------------|
-| **TableAgent** | LLM decides structure + splitting | **Removed** |
-| **TableGenerator** | N/A | **New** - Deterministic TypeScript function |
-| **VerificationAgent** | Selective refinement | **Enhanced** - All expansion logic (grids, rankings, NETs, T2B) |
-
-### Benefits
-
-- **Faster** - No LLM call for table generation
+**Benefits:**
+- **Faster** - No LLM call for table generation; enables parallelization of VerificationAgent calls
 - **Consistent** - Same input → same output, every time
-- **Debuggable** - When something's wrong, we fix code, not prompts
+- **Debuggable** - Fix code, not prompts
 - **Cheaper** - One fewer API call per question group
-- **Cleaner** - VerificationAgent becomes single point of table intelligence
 
-### Implementation
+---
 
-**1. Build TableGenerator** (`src/lib/tables/TableGenerator.ts`)
+### Implementation Phases
+
+#### Phase 1: Build TableGenerator
+
+**Create** `src/lib/tables/TableGenerator.ts`
 
 Deterministic function that converts datamap → overview tables:
 
@@ -577,7 +333,7 @@ function generateOverviewTables(dataMap: DataMapQuestion[]): TableDefinition[] {
       ? 'mean_rows'
       : 'frequency';
 
-    const hints = detectHints(question);  // ranking, scale-5, scale-7
+    const hints = detectHints(question);
 
     return {
       tableId: `${question.questionId.toLowerCase()}_overview`,
@@ -591,85 +347,152 @@ function generateOverviewTables(dataMap: DataMapQuestion[]): TableDefinition[] {
 }
 ```
 
-Rules:
+**Rules:**
 - `numeric_range` → `mean_rows`, `filterValue: ""`
-- Everything else → `frequency`, `filterValue` based on values
-- Detect hints: `ranking` (multiple items, categorical with rank values), `scale-5`, `scale-7`
+- `categorical_select` → `frequency`, one row per value with `filterValue` = value code
+- `binary_flag` → `frequency`, `filterValue: "1"`
+- Detect hints: `ranking`, `scale-5`, `scale-7`
 - One overview table per question (no splitting)
 
-**2. Update VerificationAgent Prompt**
+**Metadata to include** (helpful for VerificationAgent):
+- `itemCount` - Number of items in question
+- `valueRange` - [min, max] for categorical/ranking
+- `pattern` - Detected pattern (`ranking`, `grid`, `simple`)
 
-VerificationAgent now handles ALL expansion:
+#### Phase 2: Deprecate TableAgent
+
+**Do not delete yet** - keep for reference and fallback testing.
+
+**Deprecate:**
+- Mark `src/agents/TableAgent.ts` as deprecated (add comment)
+- Mark `src/prompts/table/` as deprecated
+- Document which env vars are no longer used: `TABLE_MODEL`, `TABLE_REASONING_EFFORT`, `TABLE_PROMPT_VERSION`, `TABLE_MODEL_TOKENS`
+
+#### Phase 3: Test TableGenerator Independently
+
+Before integrating into pipeline:
+1. Run TableGenerator on primary dataset datamap
+2. Compare output structure to what TableAgent currently produces
+3. Verify: same schemas, correct tableType mapping, proper filterValues
+4. Verify: hints are detected correctly (ranking, scale-5, scale-7)
+
+**Test script:** `npx tsx scripts/test-table-generator.ts`
+
+#### Phase 4: Integrate into Pipeline
+
+**Update pipeline orchestration:**
+- Replace TableAgent calls with TableGenerator
+- Maintain queue-based producer pattern for VerificationAgent compatibility
+- Maintain AbortSignal support
+- Maintain progress callback contract
+
+**Files to update:**
+- `scripts/test-pipeline.ts` - Replace TableAgent with TableGenerator
+- `src/app/api/process-crosstab/route.ts` - Replace in `executePathB()` and `executePathBPassthrough()`
+
+**Keep function signatures compatible:**
+The API route uses `processQuestionGroupsWithCallback()`. TableGenerator must provide equivalent:
+```typescript
+// Must maintain this signature for API compatibility
+function processQuestionGroupsWithCallback(
+  groups: TableAgentInput[],
+  onTable: (table: TableDefinition, questionId: string, questionText: string) => void,
+  options: { outputDir?, abortSignal?, onProgress? }
+): Promise<{ results: TableAgentOutput[]; processingLog: string[] }>
+```
+
+#### Phase 5: Update VerificationAgent
+
+VerificationAgent now handles ALL expansion logic.
+
+**Update prompt for new responsibilities:**
 - Grid expansion (by-row, by-column views)
 - Ranking expansion (by-rank, by-item, combined ranks T1/T2/T3)
 - NETs and T2B for scales
 - Label enhancement from survey
 
-**3. Update Pipeline**
+**Handle long tables:**
+- Don't require agent to rewrite large overview tables
+- Agent outputs only NEW derived tables
+- Pipeline merges original overview with derived tables
 
-```
-Before: DataMap → TableAgent (LLM) → VerificationAgent (LLM) → R Script
-After:  DataMap → TableGenerator (code) → VerificationAgent (LLM) → R Script
-```
+**Consider batching:**
+- For large expansions (15+ derived tables), consider multiple tool calls
+- Or: make expansion deterministic code, LLM only for label enhancement
 
-**4. Remove TableAgent**
+#### Phase 6: Run Pipeline + Create Golden Dataset
 
-- Delete `src/agents/TableAgent.ts`
-- Remove from pipeline orchestration
-- Update environment variables (remove TABLE_MODEL, etc.)
+1. Run full pipeline on primary dataset: `npx tsx scripts/test-pipeline.ts`
+2. Review output for correctness
+3. Copy outputs to golden datasets:
+   - `verification-output-raw.json` → `verification-expected.json`
+   - `data-streamlined.json` → `data-expected.json`
+4. Manual review and corrections
+5. Run comparison: `npx tsx scripts/compare-to-golden.ts`
 
-### Considerations for Long Tables
+#### Phase 7: Optimize
 
-With deterministic TableGenerator creating overview tables, some questions (e.g., 8-item ranking × 4 ranks = 32 rows, or 10-item ranking × 5 ranks = 50 rows) will produce large overview tables. This creates challenges for VerificationAgent:
+**Token usage:**
+- Measure token consumption per question
+- Identify opportunities to reduce prompt size
+- Consider caching survey context
 
-**1. Don't require VerificationAgent to rewrite the entire overview table**
+**Parallelization:**
+- With deterministic TableGenerator, can fan out to N VerificationAgent calls
+- Test optimal parallelism (rate limits permitting)
+- Potentially dramatic pipeline speedup
 
-Currently, VerificationAgent outputs all tables including the input table. For large overview tables:
-- The agent might hallucinate or skip rows
-- Token usage increases significantly
-- Processing time increases
+---
 
-Consider: VerificationAgent could output only NEW derived tables, not rewrites of the input overview. The pipeline can merge the original overview (pass-through) with the new derived tables.
+### TableAgent Integration Points (Reference)
 
-**2. Consider batching or multiple tool calls**
+For anyone picking up this work, here's where TableAgent is currently integrated:
 
-For very large expansions (e.g., 15 derived tables from one ranking question), consider:
-- Allow VerificationAgent to output tables in batches
-- Multiple tool calls for different expansion types (by-rank, by-item, combined)
-- Or: make ranking/grid expansion deterministic code, not LLM
+| Category | Files | Impact |
+|----------|-------|--------|
+| **Agent Core** | `src/agents/TableAgent.ts` | Replace with TableGenerator |
+| **Schemas** | `src/schemas/tableAgentSchema.ts` | **KEEP** - downstream tools depend on `TableDefinition`, `TableRow` |
+| **Environment** | `src/lib/env.ts` | Deprecate `getTableModel()`, `getTableReasoningEffort()` |
+| **Prompts** | `src/prompts/table/` | Deprecate (keep for reference) |
+| **API Route** | `src/app/api/process-crosstab/route.ts` | Update `executePathB()`, `executePathBPassthrough()` |
+| **Pipeline** | `scripts/test-pipeline.ts` | Update Path B execution |
+| **Test Scripts** | `scripts/test-table-agent.ts` | Update to test TableGenerator |
+| **Logging** | Output files `table/table-output-*.json` | Maintain same structure for compatibility |
 
-**3. Rethink VerificationAgent scope**
+**Critical constraint:** `TableDefinition` and `TableRow` schemas must NOT change. R script generator and Excel formatter depend on exact structure.
 
-With this new architecture, VerificationAgent's role shifts:
-- **Before**: Selective refinement of TableAgent output
-- **After**: Primary expansion logic + label enhancement + NETs/T2B
+---
 
-May need to restructure the prompt around this expanded responsibility, potentially splitting into:
-- Expansion decisions (which views to create)
-- Label enhancement (from survey context)
-- NET/T2B additions (rollup logic)
+### Golden Dataset Approach (Post-Refactor)
 
-These considerations should be addressed during Part 4b implementation.
+After pipeline refactor, golden datasets are created from the NEW pipeline output:
 
-### Validation
+| Golden File | Source | What It Tests |
+|-------------|--------|---------------|
+| `banner-expected.json` | `banner-output-raw.json` | Banner agent decisions |
+| `crosstab-expected.json` | `crosstab-output-raw.json` | Crosstab agent decisions |
+| `verification-expected.json` | `verification-output-raw.json` | **Now includes all expansions** |
+| `data-expected.json` | `data-streamlined.json` | Calculated values, significance |
 
-- Run pipeline on primary dataset
-- Compare output to Part 4a golden datasets
-- Verify TableGenerator output matches expected structure
-- Verify VerificationAgent expansion produces correct derived tables
+The evaluation framework (scripts, comparison logic, annotation workflow) remains the same.
+
+---
 
 ### Exit Criteria
 
-- TableGenerator produces correct overview tables for all question types
-- VerificationAgent correctly expands grids and rankings
-- Pipeline passes comparison against Part 4a golden datasets
-- No regression in output quality
+- [ ] TableGenerator produces correct overview tables for all question types
+- [ ] TableGenerator maintains API compatibility (function signatures, output schemas)
+- [ ] Pipeline runs end-to-end with TableGenerator replacing TableAgent
+- [ ] VerificationAgent correctly expands grids and rankings
+- [ ] Golden datasets created from new pipeline output
+- [ ] At least one full evaluation cycle completed
+- [ ] No regression in output quality vs Joe's tabs
 
 ---
 
 ## Part 5: Iteration (Primary Dataset)
 
-**Status**: NOT STARTED (begins after Part 4b refactor complete)
+**Status**: NOT STARTED (begins after Part 4 complete)
 
 ### What We're Validating
 
@@ -938,7 +761,7 @@ data/test-data/
 
 ## Reference
 
-### Current Pipeline (Pre-Part 4b)
+### Current Pipeline (Pre-Part 4)
 
 ```
 User Uploads → BannerAgent → CrosstabAgent → TableAgent → VerificationAgent → R Script → ExcelJS
@@ -947,7 +770,7 @@ User Uploads → BannerAgent → CrosstabAgent → TableAgent → VerificationAg
               → Images        → Variables    → Tables       → Optimized Tables
 ```
 
-### Target Pipeline (Post-Part 4b)
+### Target Pipeline (Post-Part 4)
 
 ```
 User Uploads → BannerAgent → CrosstabAgent → TableGenerator → VerificationAgent → R Script → ExcelJS
@@ -961,8 +784,9 @@ User Uploads → BannerAgent → CrosstabAgent → TableGenerator → Verificati
 
 | File | Purpose |
 |------|---------|
-| `src/agents/TableAgent.ts` | Table structure decisions |
-| `src/agents/VerificationAgent.ts` | Survey-aware optimization |
+| `src/lib/tables/TableGenerator.ts` | **NEW** - Deterministic table generation |
+| `src/agents/TableAgent.ts` | **DEPRECATED** - LLM-based table decisions |
+| `src/agents/VerificationAgent.ts` | Survey-aware optimization + expansion |
 | `src/lib/r/RScriptGeneratorV2.ts` | R script generation + significance testing |
 | `src/lib/excel/ExcelFormatter.ts` | Excel output formatting |
 | `scripts/test-pipeline.ts` | End-to-end test script |
@@ -990,4 +814,4 @@ leqvio-monotherapy-demand-NOV217/
 
 *Created: January 6, 2026*
 *Updated: January 23, 2026*
-*Status: Parts 1-3b complete, Part 4a in progress, Part 4b pending, Parts 5-7 pending*
+*Status: Parts 1-3b complete, Part 4 in progress (TableGenerator refactor), Parts 5-7 pending*
