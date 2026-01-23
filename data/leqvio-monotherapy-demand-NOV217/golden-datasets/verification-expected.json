@@ -1759,6 +1759,257 @@
       "excludeReason": ""
     },
     {
+      "tableId": "a4a_mean_rows_statin_with",
+      "questionId": "A4a",
+      "title": "A4a — % of NEXT 100 patients: In addition to statin (by treatment)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4ar1c1",
+          "label": "Leqvio (inclisiran)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar2c1",
+          "label": "Praluent (alirocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar3c1",
+          "label": "Repatha (evolocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar4c1",
+          "label": "Zetia (ezetimibe) or generic ezetimibe",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar5c1",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a4a_mean_rows",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4a_mean_rows_statin_without",
+      "questionId": "A4a",
+      "title": "A4a — % of NEXT 100 patients: Without a statin (by treatment)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4ar1c2",
+          "label": "Leqvio (inclisiran)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar2c2",
+          "label": "Praluent (alirocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar3c2",
+          "label": "Repatha (evolocumab)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar4c2",
+          "label": "Zetia (ezetimibe) or generic ezetimibe",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar5c2",
+          "label": "Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe)",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a4a_mean_rows",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4a_mean_rows_leqvio",
+      "questionId": "A4a",
+      "title": "A4a — % of NEXT 100 patients: Leqvio (inclisiran) (by statin condition)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4ar1c1",
+          "label": "In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar1c2",
+          "label": "Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a4a_mean_rows",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4a_mean_rows_praluent",
+      "questionId": "A4a",
+      "title": "A4a — % of NEXT 100 patients: Praluent (alirocumab) (by statin condition)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4ar2c1",
+          "label": "In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar2c2",
+          "label": "Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a4a_mean_rows",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4a_mean_rows_repatha",
+      "questionId": "A4a",
+      "title": "A4a — % of NEXT 100 patients: Repatha (evolocumab) (by statin condition)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4ar3c1",
+          "label": "In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar3c2",
+          "label": "Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a4a_mean_rows",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4a_mean_rows_zetia",
+      "questionId": "A4a",
+      "title": "A4a — % of NEXT 100 patients: Zetia (ezetimibe) (by statin condition)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4ar4c1",
+          "label": "In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar4c2",
+          "label": "Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a4a_mean_rows",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
+      "tableId": "a4a_mean_rows_nexletol",
+      "questionId": "A4a",
+      "title": "A4a — % of NEXT 100 patients: Nexletol/Nexlizet (by statin condition)",
+      "tableType": "mean_rows",
+      "rows": [
+        {
+          "variable": "A4ar5c1",
+          "label": "In addition to statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        },
+        {
+          "variable": "A4ar5c2",
+          "label": "Without a statin",
+          "filterValue": "",
+          "isNet": false,
+          "netComponents": [],
+          "indent": 0
+        }
+      ],
+      "hints": [],
+      "sourceTableId": "a4a_mean_rows",
+      "isDerived": true,
+      "exclude": false,
+      "excludeReason": ""
+    },
+    {
       "tableId": "a4b_mean_all",
       "questionId": "A4b",
       "title": "A4b — Mean % next treatment allocation (by item)",
