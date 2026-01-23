@@ -618,6 +618,39 @@ After:  DataMap → TableGenerator (code) → VerificationAgent (LLM) → R Scri
 - Remove from pipeline orchestration
 - Update environment variables (remove TABLE_MODEL, etc.)
 
+### Considerations for Long Tables
+
+With deterministic TableGenerator creating overview tables, some questions (e.g., 8-item ranking × 4 ranks = 32 rows, or 10-item ranking × 5 ranks = 50 rows) will produce large overview tables. This creates challenges for VerificationAgent:
+
+**1. Don't require VerificationAgent to rewrite the entire overview table**
+
+Currently, VerificationAgent outputs all tables including the input table. For large overview tables:
+- The agent might hallucinate or skip rows
+- Token usage increases significantly
+- Processing time increases
+
+Consider: VerificationAgent could output only NEW derived tables, not rewrites of the input overview. The pipeline can merge the original overview (pass-through) with the new derived tables.
+
+**2. Consider batching or multiple tool calls**
+
+For very large expansions (e.g., 15 derived tables from one ranking question), consider:
+- Allow VerificationAgent to output tables in batches
+- Multiple tool calls for different expansion types (by-rank, by-item, combined)
+- Or: make ranking/grid expansion deterministic code, not LLM
+
+**3. Rethink VerificationAgent scope**
+
+With this new architecture, VerificationAgent's role shifts:
+- **Before**: Selective refinement of TableAgent output
+- **After**: Primary expansion logic + label enhancement + NETs/T2B
+
+May need to restructure the prompt around this expanded responsibility, potentially splitting into:
+- Expansion decisions (which views to create)
+- Label enhancement (from survey context)
+- NET/T2B additions (rollup logic)
+
+These considerations should be addressed during Part 4b implementation.
+
 ### Validation
 
 - Run pipeline on primary dataset
