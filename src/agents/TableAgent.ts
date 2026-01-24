@@ -259,7 +259,7 @@ Begin analysis now.
     questionText: input.questionText,
     tables: [{
       tableId: input.questionId.toLowerCase(),
-      title: `Error: ${input.questionId}`,
+      questionText: `Error: ${input.questionId}`,
       tableType: 'frequency',  // Safe default
       rows: input.items.map(item => ({
         variable: item.column,

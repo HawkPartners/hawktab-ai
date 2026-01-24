@@ -150,7 +150,7 @@ Each table shows what % of respondents gave that item each rank.
 {
   tableType: "frequency",
   tableId: "q5r1_ranks",
-  title: "Q5r1 - Rank distribution",
+  questionText: "Q5r1 - Rank distribution",
   rows: [
     { variable: "Q5r1", label: "Rank 1 (most preferred)", filterValue: "1" },
     { variable: "Q5r1", label: "Rank 2", filterValue: "2" },
@@ -165,7 +165,7 @@ Each table shows all items that received that rank.
 {
   tableType: "frequency",
   tableId: "q5_rank1",
-  title: "Q5 - Items ranked #1",
+  questionText: "Q5 - Items ranked #1",
   rows: [
     { variable: "Q5r1", label: "Item A", filterValue: "1" },
     { variable: "Q5r2", label: "Item B", filterValue: "1" },
@@ -237,7 +237,7 @@ OUTPUT STRUCTURE:
   questionText: "...",
   tables: [{
     tableId: "q1",
-    title: "Q1 - Description",
+    questionText: "Q1 - Description",
     tableType: "frequency",
     rows: [
       { variable: "Q1", label: "Value 1", filterValue: "1" },

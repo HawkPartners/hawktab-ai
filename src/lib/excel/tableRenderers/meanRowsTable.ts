@@ -39,7 +39,7 @@ export interface MeanCutData {
 
 export interface MeanRowsTableData {
   tableId: string;
-  title: string;
+  questionText: string;
   tableType: 'mean_rows';
   data: Record<string, MeanCutData>;
 }
@@ -116,10 +116,10 @@ export function renderMeanRowsTable(
   const isSingleRow = rowKeys.length === 1;
 
   // -------------------------------------------------------------------------
-  // Row 1: Title
+  // Row 1: Question Text (Title)
   // -------------------------------------------------------------------------
   const titleCell = worksheet.getCell(currentRow, 1);
-  titleCell.value = table.title;
+  titleCell.value = table.questionText;
   titleCell.font = FONTS.title;
   titleCell.fill = FILLS.title;
   titleCell.alignment = ALIGNMENTS.left;
