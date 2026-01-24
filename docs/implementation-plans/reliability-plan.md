@@ -162,6 +162,21 @@ Additional dataset testing deferred to Part 6-7 (strategic broader testing).
 
 This phase combines integration, prompt updates, parallelism, and cost tracking into one cohesive step.
 
+**Summary of what this phase accomplishes:**
+1. Replace TableAgent (LLM) with TableGenerator (deterministic code) in the pipeline
+2. Add parallel processing for VerificationAgent (3 concurrent batches)
+3. Integrate token/cost tracking across all agents
+4. Make minimal, surgical updates to VerificationAgent prompt for new input format
+5. Add `--stop-after-verification` flag for fast iteration
+
+**Key constraints:**
+- Maintain backward compatibility with existing pipeline outputs
+- Keep VerificationAgent prompt changes minimal (~20 lines)
+- Preserve XML-structured prompt framework
+- Ensure logging works correctly for parallel VerificationAgent instances
+
+**Primary test dataset:** `data/leqvio-monotherapy-demand-NOV217/`
+
 **Step A: Wire Up TableGenerator**
 
 Replace TableAgent with DataMapGrouper + TableGenerator in pipeline:
@@ -203,6 +218,12 @@ Implementation approach:
 - Process batches with `Promise.all()` or p-limit
 - Merge results maintaining order
 - Respect abort signal across all batches
+
+**Logging for parallel instances:**
+- Each VerificationAgent call should log with table identifier: `[VerificationAgent:tableId]`
+- Scratchpad entries need tableId association for debugging
+- Metrics recording must be thread-safe (collect per-call, aggregate after)
+- Consider logging batch start/end: `[VerificationAgent] Starting batch 1/3 (14 tables)`
 
 **Step C: Token & Cost Tracking**
 
@@ -251,28 +272,63 @@ console.log(await getPipelineCostSummary());
 
 **Step D: Update VerificationAgent Prompt**
 
-Contextual updates for new input format:
+**CRITICAL: Be surgical with prompt changes.** The current XML-structured prompt framework is working well. Make minimal, targeted changes only for what has actually changed.
 
-1. **Remove TableAgent references**: Input is now from deterministic TableGenerator, not LLM
-2. **Add meta field context**: Document that tables include `meta` with itemCount, rowCount, gridDimensions, valueRange
-3. **Clarify expansion responsibility**: Input is always a flat overview table; agent creates all derived views
+**What has changed:**
+- Input is now a flat overview table from TableGenerator (not pre-split from TableAgent LLM)
+- Tables include optional `meta` field with structural hints
 
-Minimal prompt changes expected:
-```
-// Add to prompt:
-"The input table is a flat overview containing ALL rows for this question.
-If meta.gridDimensions is present, consider creating by-row and by-column views.
-If valueRange is [1,N] where N<=5, this may be a ranking or scale - consider
-appropriate derived tables (by-rank, T2B, combined views)."
-```
+**What stays the same (DO NOT CHANGE):**
+- XML structure (`<task_context>`, `<the_75_25_rule>`, etc.)
+- The 75/25 rule framework
+- All action types (passthrough, fix labels, split, NETs, T2B, exclude)
+- Output schema (ExtendedTableDefinition)
+- Scratchpad protocol
+- Confidence scoring framework
+
+**Specific changes needed (~20 lines out of 430):**
+
+1. **Update context language**: Replace "TableAgent completed 90% of the work" with "TableGenerator created a flat overview table"
+
+2. **Add meta field documentation** (small paragraph):
+   ```
+   Tables may include a `meta` field with structural information:
+   - itemCount: Number of unique variables
+   - rowCount: Total rows in the table
+   - gridDimensions: { rows, cols } if grid pattern detected
+   - valueRange: [min, max] of allowed values
+   Use these hints to inform splitting decisions, but always verify against survey context.
+   ```
+
+3. **Adjust split guidance**: Since input is never pre-split, the agent now has full responsibility for expansion decisions. Clarify that overview tables should be kept AND derived views added.
+
+**Files to update:**
+- `src/prompts/verification/production.ts`
+- `src/prompts/verification/alternative.ts`
+
+Copy the existing XML framework exactly. Only change the specific sections noted above.
 
 **Step E: Run & Iterate**
 
-1. Run pipeline on primary dataset: `npx tsx scripts/test-pipeline.ts`
-2. Review scratchpad traces for VerificationAgent reasoning
+**Add early-stop flag for faster iteration:**
+```bash
+# Full pipeline (Banner → Crosstab → TableGenerator → Verification → R → Excel)
+npx tsx scripts/test-pipeline.ts
+
+# Stop after VerificationAgent (skip R script + Excel generation)
+npx tsx scripts/test-pipeline.ts --stop-after-verification
+```
+
+This allows rapid iteration on TableGenerator → VerificationAgent flow without waiting for R/Excel. Metrics still capture Banner, Crosstab, and Verification costs.
+
+**Iteration process:**
+1. Run pipeline with `--stop-after-verification` flag
+2. Review scratchpad traces in `verification/scratchpad-verification-*.md`
 3. Check output tables for correct expansions (rankings, grids, T2B)
-4. Iterate on prompt based on actual failures, not speculation
-5. Verify token/cost metrics are captured correctly
+4. Review cost summary output
+5. If issues found: make surgical prompt changes, re-run
+6. Once verification output looks good: run full pipeline without flag
+7. Verify R script + Excel generation still works
 
 **Files to Create/Modify:**
 
