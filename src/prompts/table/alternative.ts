@@ -1,3 +1,9 @@
+/**
+ * @deprecated This module is deprecated as of Part 4 refactor.
+ * TableGenerator.ts now handles table generation deterministically.
+ * Kept for reference - will be deleted in future cleanup.
+ */
+
 // Alternative prompt for Table Agent - XML-structured with strict two-type constraint
 // Key changes from production:
 // 1. Only two table types: frequency and mean_rows

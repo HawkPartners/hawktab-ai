@@ -41,7 +41,6 @@ export interface TablesJsonInput {
       title?: string;
       tableType?: string;
       isDerived?: boolean;
-      hints?: string[];
       data: {
         [cutName: string]: {
           stat_letter?: string;

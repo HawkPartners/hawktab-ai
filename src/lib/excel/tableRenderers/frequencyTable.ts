@@ -35,7 +35,6 @@ export interface FrequencyTableData {
   tableId: string;
   title: string;
   tableType: 'frequency';
-  hints: string | string[];
   data: Record<string, FrequencyCutData>;
 }
 

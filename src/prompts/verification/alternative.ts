@@ -301,7 +301,6 @@ STRUCTURE PER TABLE:
       "indent": number           // 0 = top level, 1 = rolls up into NET above
     }
   ],
-  "hints": [],                   // string[] - pass through from input or empty
   "sourceTableId": "string",     // Original table ID or "" if unchanged
   "isDerived": boolean,
   "exclude": boolean,
@@ -324,7 +323,7 @@ COMPLETE OUTPUT:
 
 ALL FIELDS REQUIRED:
 Every row must have: variable, label, filterValue, isNet, netComponents, indent
-Every table must have: tableId, questionId, title, tableType, rows, hints, sourceTableId, isDerived, exclude, excludeReason
+Every table must have: tableId, questionId, title, tableType, rows, sourceTableId, isDerived, exclude, excludeReason
 </output_specifications>
 
 <scratchpad_protocol>

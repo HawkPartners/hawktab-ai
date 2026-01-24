@@ -72,7 +72,6 @@ interface TablesJson {
       title?: string;
       tableType?: string;
       isDerived?: boolean;
-      hints?: string[];
       data: {
         [cutName: string]: {
           stat_letter?: string;

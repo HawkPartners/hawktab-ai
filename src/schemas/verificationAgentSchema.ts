@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { TableTypeSchema, TableDefinitionSchema, TableRowSchema, TableHintSchema } from './tableAgentSchema';
+import { TableTypeSchema, TableDefinitionSchema, TableRowSchema } from './tableAgentSchema';
 
 /**
  * VerificationAgent Schemas
@@ -74,9 +74,6 @@ export const ExtendedTableDefinitionSchema = z.object({
 
   /** Table rows */
   rows: z.array(ExtendedTableRowSchema),
-
-  /** Hints for downstream processing (mostly empty now, kept for compat) */
-  hints: z.array(TableHintSchema),
 
   /** Original table ID if this was split from another table (empty string if not split) */
   sourceTableId: z.string(),
@@ -206,6 +203,8 @@ export function toExtendedRow(row: z.infer<typeof TableRowSchema>): ExtendedTabl
 /**
  * Convert a standard TableDefinition to ExtendedTableDefinition.
  * questionId defaults to empty string - caller should overwrite with correct value.
+ *
+ * Note: As of Part 4 refactor, hints are no longer included in ExtendedTableDefinition.
  */
 export function toExtendedTable(
   table: z.infer<typeof TableDefinitionSchema>,
@@ -217,7 +216,6 @@ export function toExtendedTable(
     title: table.title,
     tableType: table.tableType,
     rows: table.rows.map(toExtendedRow),
-    hints: table.hints,
     sourceTableId: '',
     isDerived: false,
     exclude: false,
