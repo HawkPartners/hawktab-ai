@@ -300,7 +300,10 @@ console.log(await getPipelineCostSummary());
    Use these hints to inform splitting decisions, but always verify against survey context.
    ```
 
-3. **Adjust split guidance**: Since input is never pre-split, the agent now has full responsibility for expansion decisions. Clarify that overview tables should be kept AND derived views added.
+3. **Adjust split guidance**: Since input is never pre-split, the agent now has full responsibility for expansion decisions. Add guidance on when to keep vs drop the overview table:
+   - If overview has ≤16 rows: Keep overview + add derived views
+   - If overview has >16 rows: Derived views are likely sufficient, overview can be dropped
+   - Use judgment based on analytical value (a 40-row overview table is noise, not signal)
 
 **Files to update:**
 - `src/prompts/verification/production.ts`
