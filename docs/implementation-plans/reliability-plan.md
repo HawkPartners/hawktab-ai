@@ -6,7 +6,7 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 
 **Philosophy**: We're replacing Joe's usefulness (the manual work of generating crosstabs), not necessarily replicating his exact format. Antares-style output is our MVP target - functional, readable crosstabs that the team can write reports from.
 
-**Current State**: Part 4 complete. Pipeline running end-to-end with TableGenerator, parallel VerificationAgent, and cost tracking. Ready for polish before Part 5.
+**Current State**: Part 4 complete. VerificationAgent prompt refactored (Jan 24) - now using scratchpad properly. Schema updated (`title` → `questionText`). Ready for Excel formatting polish before Part 5.
 
 ---
 
@@ -120,7 +120,7 @@ Test script validated on primary dataset.
 | `src/prompts/verification/alternative.ts` | Same prompt updates |
 | `package.json` | Added p-limit dependency |
 
-**Performance Results (primary dataset):**
+**Performance Results (primary dataset, initial run):**
 - 42 tables processed by VerificationAgent in parallel (concurrency: 3)
 - 105 tables output (splits, T2B, per-item views)
 - Total pipeline: ~13 minutes
@@ -128,6 +128,29 @@ Test script validated on primary dataset.
   - BannerAgent: $0.02 (1 call, 15K tokens)
   - CrosstabAgent: $0.08 (8 calls, 130K tokens)
   - VerificationAgent: $0.50 (42 calls, 660K tokens)
+
+### Phase 5: Prompt Refactor + Schema Update (Jan 24, 2026)
+
+**Problem**: VerificationAgent was not using scratchpad at all. The prompt framed the task as "selective refinement" with an "80/20 rule" that taught the model to pass through most tables unchanged.
+
+**Changes Made:**
+
+| Change | Description |
+|--------|-------------|
+| Schema: `title` → `questionText` | Renamed across all schemas, R script, Excel renderers. Agent can now clean/improve questionText. |
+| Prompt: Reframed objective | From "selective refinement" to "analyze and optimize every table" |
+| Prompt: Removed 75/25 rule | No longer telling model most tables need no changes |
+| Prompt: Mandatory scratchpad | Made scratchpad MANDATORY (like BannerAgent) not "efficient" |
+| Prompt: Analysis checklist | 5-step checklist: Locate → Labels → Type → Exclusion → Document |
+| Prompt: Ranking guidance | Added comprehensive per-item/per-rank/top-N rollup guidance |
+| Prompt: Flexible box scores | Added guidance by scale size (5pt, 7pt, 10pt, 11pt) |
+
+**Result**: Model now uses scratchpad for every table. Quality of derived tables significantly improved.
+
+**Post-Refactor Performance** (Jan 24, 2026):
+- 127 tables output
+- Total pipeline: ~17 minutes
+- Total cost: ~$0.52
 
 ### Exit Criteria
 
@@ -138,9 +161,6 @@ Test script validated on primary dataset.
 - [x] VerificationAgent processes tables in parallel (3 concurrent)
 - [x] Token consumption and cost estimates tracked for all agents
 - [x] VerificationAgent correctly expands grids and rankings
-- [ ] Golden datasets created from new pipeline output (deferred to Part 5)
-- [ ] At least one full evaluation cycle completed (deferred to Part 5)
-- [ ] No regression in output quality vs Joe's tabs (needs validation)
 
 </details>
 
@@ -150,33 +170,45 @@ Test script validated on primary dataset.
 
 **Status**: IN PROGRESS
 
-Before creating golden datasets and starting formal Part 5 iteration, address minor issues discovered in first full pipeline run.
+Before creating golden datasets and starting formal Part 5 iteration, address formatting and consistency issues discovered in pipeline runs.
+
+**Latest Run Stats** (2026-01-24): 17 minutes, 127 tables, $0.52
 
 ### Known Issues to Investigate
 
 | Issue | Category | Notes |
 |-------|----------|-------|
 | Base sizing issues | Data | Some bases don't sum to 100 (allocation questions?) |
-| ExcelJS formatting | Presentation | Column widths, cell alignment, readability |
-| Table sorting | Structure | Some tables appear in unexpected order |
-| Missing question text | Data | Not all tables have question text populated |
-| Model decisions | Verification | Review scratchpad for questionable splits/NETs |
+| ExcelJS formatting | Presentation | Significance letters not color-coded, text input causes green flags, readability |
+| Table sorting/grouping | Structure | QuestionId not always present, tables for same question scattered |
+| QuestionText consistency | Presentation | Should keep original question text + subtext for table variations (like Joe) |
+| Summary table missing | Presentation | Joe includes summary table at top with sample sizes and key metrics |
 
 ### Tasks
 
 - [ ] Investigate base sizing issues (allocation vs percentage questions)
-- [ ] Review ExcelJS formatting - column widths, headers, readability
-- [ ] Check table sorting logic - verify screener/main/other ordering
-- [ ] Add question text to tables deterministically (from datamap context)
-- [ ] Review VerificationAgent scratchpad traces for edge cases
-- [ ] Make targeted prompt adjustments if needed
+- [ ] Review ExcelJS formatting improvements:
+  - [ ] Color code significance letters (make them noticeable)
+  - [ ] Use merged rows/columns where appropriate
+  - [ ] Switch from text input to numerical input (remove green flag warnings)
+  - [ ] General readability improvements
+- [ ] Check table sorting logic:
+  - [ ] Ensure questionId is ALWAYS populated on every table
+  - [ ] Ensure questionText is ALWAYS populated
+  - [ ] Group related tables (all A1 variants together, findable by question ID)
+  - [ ] Keep original question text as main title, add subtext for table variations (e.g., "A1 — Current Indication" then subtext "Leqvio only" or "Allocation view")
+- [x] Review VerificationAgent scratchpad traces - **NOW PRODUCING RESULTS** after prompt reframe
+- [ ] Add summary table at top of Excel file (like Joe does):
+  - Sample sizes across different cuts
+  - High-level percentages of key questions
+- [ ] Make targeted prompt adjustments if needed (questionText consistency)
 
 ### Exit Criteria
 
 - [ ] All tables have appropriate base rows
-- [ ] Excel output is readable without manual adjustments
-- [ ] Tables sorted in logical order
-- [ ] All tables have question text
+- [ ] Excel output is readable without manual adjustments (no green flags, sig letters visible)
+- [ ] Tables sorted in logical order with consistent questionId/questionText
+- [ ] Summary table at top of output
 - [ ] No obviously wrong model decisions in output
 
 ---
