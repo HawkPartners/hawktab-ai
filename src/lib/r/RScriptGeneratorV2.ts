@@ -583,11 +583,11 @@ function generateHelperFunctions(lines: string[]): void {
 
 function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition): void {
   const tableId = escapeRString(table.tableId);
-  const title = escapeRString(table.title);
+  const questionText = escapeRString(table.questionText);
 
   lines.push(`# -----------------------------------------------------------------------------`);
   lines.push(`# Table: ${table.tableId} (frequency)${table.isDerived ? ' [DERIVED]' : ''}`);
-  lines.push(`# Title: ${table.title}`);
+  lines.push(`# Question: ${table.questionText}`);
   lines.push(`# Rows: ${table.rows.length}`);
   if (table.sourceTableId) {
     lines.push(`# Source: ${table.sourceTableId}`);
@@ -597,7 +597,7 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
 
   lines.push(`table_${sanitizeVarName(table.tableId)} <- list(`);
   lines.push(`  tableId = "${tableId}",`);
-  lines.push(`  title = "${title}",`);
+  lines.push(`  questionText = "${questionText}",`);
   lines.push(`  tableType = "frequency",`);
   lines.push(`  isDerived = ${table.isDerived ? 'TRUE' : 'FALSE'},`);
   lines.push('  data = list()');
@@ -703,11 +703,11 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
 
 function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition): void {
   const tableId = escapeRString(table.tableId);
-  const title = escapeRString(table.title);
+  const questionText = escapeRString(table.questionText);
 
   lines.push(`# -----------------------------------------------------------------------------`);
   lines.push(`# Table: ${table.tableId} (mean_rows)${table.isDerived ? ' [DERIVED]' : ''}`);
-  lines.push(`# Title: ${table.title}`);
+  lines.push(`# Question: ${table.questionText}`);
   lines.push(`# Rows: ${table.rows.length}`);
   if (table.sourceTableId) {
     lines.push(`# Source: ${table.sourceTableId}`);
@@ -717,7 +717,7 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
 
   lines.push(`table_${sanitizeVarName(table.tableId)} <- list(`);
   lines.push(`  tableId = "${tableId}",`);
-  lines.push(`  title = "${title}",`);
+  lines.push(`  questionText = "${questionText}",`);
   lines.push(`  tableType = "mean_rows",`);
   lines.push(`  isDerived = ${table.isDerived ? 'TRUE' : 'FALSE'},`);
   lines.push('  data = list()');

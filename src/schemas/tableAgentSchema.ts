@@ -173,7 +173,7 @@ export type TableMeta = z.infer<typeof TableMetaSchema>;
  */
 export const TableDefinitionSchema = z.object({
   tableId: z.string(),          // Unique ID: "s8", "a1_indication_a"
-  title: z.string(),            // Display title for the table
+  questionText: z.string(),     // Question text (used as table title)
   tableType: TableTypeSchema,   // ONLY "frequency" or "mean_rows" - nothing else
 
   // Rows in the table

@@ -120,7 +120,7 @@ function generateTableForGroup(group: QuestionGroup): TableDefinitionWithMeta {
 
   return {
     tableId,
-    title: questionText || questionId,
+    questionText: questionText || questionId,
     tableType,
     rows,
     meta,
@@ -390,7 +390,7 @@ export function toTableDefinition(
 ): Omit<TableDefinition, 'hints'> & { hints: never[] } {
   return {
     tableId: table.tableId,
-    title: table.title,
+    questionText: table.questionText,
     tableType: table.tableType,
     rows: table.rows,
     hints: [], // Empty array for compatibility

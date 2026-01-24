@@ -33,7 +33,7 @@ export interface FrequencyCutData {
 
 export interface FrequencyTableData {
   tableId: string;
-  title: string;
+  questionText: string;
   tableType: 'frequency';
   data: Record<string, FrequencyCutData>;
 }
@@ -102,10 +102,10 @@ export function renderFrequencyTable(
   const totalCols = cutOrder.length;
 
   // -------------------------------------------------------------------------
-  // Row 1: Title
+  // Row 1: Question Text (Title)
   // -------------------------------------------------------------------------
   const titleCell = worksheet.getCell(currentRow, 1);
-  titleCell.value = table.title;
+  titleCell.value = table.questionText;
   titleCell.font = FONTS.title;
   titleCell.fill = FILLS.title;
   titleCell.alignment = ALIGNMENTS.left;

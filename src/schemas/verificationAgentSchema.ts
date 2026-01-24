@@ -66,8 +66,8 @@ export const ExtendedTableDefinitionSchema = z.object({
   /** Question ID (e.g., "S1", "A3", "B2") - agent outputs empty string, we overwrite after */
   questionId: z.string(),
 
-  /** Display title */
-  title: z.string(),
+  /** Question text - the cleaned/improved question text from survey (used as table title) */
+  questionText: z.string(),
 
   /** Table type - ONLY "frequency" or "mean_rows" allowed */
   tableType: TableTypeSchema,
@@ -208,12 +208,13 @@ export function toExtendedRow(row: z.infer<typeof TableRowSchema>): ExtendedTabl
  */
 export function toExtendedTable(
   table: z.infer<typeof TableDefinitionSchema>,
-  questionId: string = ''
+  questionId: string = '',
+  questionText: string = ''
 ): ExtendedTableDefinition {
   return {
     tableId: table.tableId,
     questionId,
-    title: table.title,
+    questionText: questionText || table.questionText, // Use provided questionText or fall back to table.questionText
     tableType: table.tableType,
     rows: table.rows.map(toExtendedRow),
     sourceTableId: '',
