@@ -18,7 +18,7 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 | 2 | VerificationAgent | COMPLETE |
 | 3 | Significance Testing (unpooled z-test) | COMPLETE |
 | 3b | SPSS Validation Clarity | COMPLETE |
-| 4 | TableAgent Refactor + Evaluation Framework | Phase 1-2 COMPLETE, Phase 3-7 pending |
+| 4 | TableAgent Refactor + Evaluation Framework | Phase 1-3 COMPLETE, Phase 4-7 pending |
 | 5 | Iteration on primary dataset (leqvio) | Not started |
 | 6 | Loop/Stacked Data Support (Tito's) | Not started |
 | 7 | Strategic Broader Testing (5 datasets) | Not started |
@@ -144,17 +144,17 @@ After:  DataMap → DataMapGrouper → TableGenerator → VerificationAgent → 
 **Key Insight:** Old TableAgent pre-split tables (e.g., A6 ranking into 4 separate tables), which *prevented* VerificationAgent from creating combined views (Top 3 Box, per-item distribution). New approach gives VerificationAgent the full overview table so it can make informed expansion decisions.
 </details>
 
-### Pending: Phase 3-7
+### Completed: Phase 3
 
 #### Phase 3: Test TableGenerator Independently
 
-**Status**: Ready to proceed
+**Status**: COMPLETE
 
-Test script created (`scripts/test-table-generator.ts`). Already validated on primary dataset.
+Test script created (`scripts/test-table-generator.ts`). Validated on primary dataset.
 
-**Remaining work:**
-- [ ] Test on 2-3 additional datasets from `data/test-data/` to verify generalizability
-- [ ] Document any edge cases found
+Additional dataset testing deferred to Part 6-7 (strategic broader testing).
+
+### Pending: Phase 4-7
 
 #### Phase 4: Integrate into Pipeline
 
@@ -286,4 +286,4 @@ User Uploads → BannerAgent → CrosstabAgent → DataMapGrouper → TableGener
 
 *Created: January 6, 2026*
 *Updated: January 24, 2026*
-*Status: Parts 1-3b complete, Part 4 Phase 1-2 complete (TableGenerator), Parts 4 Phase 3-7 + Parts 5-7 pending*
+*Status: Parts 1-3b complete, Part 4 Phase 1-3 complete (TableGenerator tested), Parts 4 Phase 4-7 + Parts 5-7 pending*
