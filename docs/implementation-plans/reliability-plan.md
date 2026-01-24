@@ -18,7 +18,7 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 | 2 | VerificationAgent | COMPLETE |
 | 3 | Significance Testing (unpooled z-test) | COMPLETE |
 | 3b | SPSS Validation Clarity | COMPLETE |
-| 4 | TableAgent Refactor + Evaluation Framework | Phase 1-3 COMPLETE, Phase 4-7 pending |
+| 4 | TableAgent Refactor + Evaluation Framework | Phase 1-3 COMPLETE, Phase 4-5 pending |
 | 5 | Iteration on primary dataset (leqvio) | Not started |
 | 6 | Loop/Stacked Data Support (Tito's) | Not started |
 | 7 | Strategic Broader Testing (5 datasets) | Not started |
@@ -154,53 +154,144 @@ Test script created (`scripts/test-table-generator.ts`). Validated on primary da
 
 Additional dataset testing deferred to Part 6-7 (strategic broader testing).
 
-### Pending: Phase 4-7
+### Pending: Phase 4-5
 
-#### Phase 4: Integrate into Pipeline
+#### Phase 4: Pipeline Integration + Parallelism + Observability
 
-Replace TableAgent calls in pipeline orchestration:
+**Status**: NOT STARTED
+
+This phase combines integration, prompt updates, parallelism, and cost tracking into one cohesive step.
+
+**Step A: Wire Up TableGenerator**
+
+Replace TableAgent with DataMapGrouper + TableGenerator in pipeline:
 
 | File | Change |
 |------|--------|
-| `scripts/test-pipeline.ts` | Replace TableAgent with DataMapGrouper + TableGenerator |
+| `scripts/test-pipeline.ts` | Replace TableAgent import/calls with new modules |
 | `src/app/api/process-crosstab/route.ts` | Update `executePathB()` and `executePathBPassthrough()` |
 
-**New flow:**
 ```typescript
-const groups = groupDataMap(verboseDataMap, { includeOpenEnds: false });
-const tableOutput = generateTables(groups);
-const verifiedTables = await verifyAllTablesParallel(tableOutput, surveyMarkdown, {
-  concurrency: 3,
-  abortSignal
-});
+// Replace this:
+const tableOutput = await runTableAgent(groups);
+
+// With this:
+import { groupDataMap } from '@/lib/tables/DataMapGrouper';
+import { generateTables, convertToLegacyFormat } from '@/lib/tables/TableGenerator';
+
+const groups = groupDataMap(verboseDataMap);
+const tableOutput = convertToLegacyFormat(generateTables(groups));
+// tableOutput is now compatible with existing verifyAllTables()
 ```
 
-#### Phase 5: Update VerificationAgent Prompt
+**Step B: Add Parallel VerificationAgent**
 
-VerificationAgent now handles ALL expansion logic. Update prompt to:
-- Reference `meta` fields (itemCount, rowCount, gridDimensions)
-- Guide splitting decisions based on survey context
-- Handle rankings → by-rank, by-item, combined views
-- Handle grids → by-row, by-column views
+Currently VerificationAgent processes tables sequentially. Add parallel processing:
 
-#### Phase 6: Run Pipeline + Create Golden Dataset
+```typescript
+async function verifyAllTablesParallel(
+  tableOutput: TableAgentOutput[],
+  surveyMarkdown: string,
+  verboseDataMap: VerboseDataMapType[],
+  options: { concurrency?: number; abortSignal?: AbortSignal }
+): Promise<VerificationResults>
+```
 
-1. Run full pipeline on primary dataset
-2. Review output for correctness
-3. Copy outputs to golden datasets
+Implementation approach:
+- Collect all tables into array
+- Split into N batches (default: 3 concurrent)
+- Process batches with `Promise.all()` or p-limit
+- Merge results maintaining order
+- Respect abort signal across all batches
+
+**Step C: Token & Cost Tracking**
+
+Add observability across ALL agents (Banner, Crosstab, Verification):
+
+```typescript
+interface AgentUsageMetrics {
+  agentName: string;
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  estimatedCostUsd: number;
+  durationMs: number;
+}
+```
+
+Implementation:
+- Capture token usage from AI SDK response (`response.usage`)
+- Add cost estimation based on model pricing (configurable)
+- Aggregate per-agent and total pipeline metrics
+- Include in pipeline summary output
+
+Cost estimation constants (update as pricing changes):
+```typescript
+const MODEL_PRICING = {
+  'gpt-4o': { input: 2.50, output: 10.00 },      // per 1M tokens
+  'gpt-4o-mini': { input: 0.15, output: 0.60 },
+  'o1': { input: 15.00, output: 60.00 },
+  'o3-mini': { input: 1.10, output: 4.40 },
+};
+```
+
+**Step D: Update VerificationAgent Prompt**
+
+Contextual updates for new input format:
+
+1. **Remove TableAgent references**: Input is now from deterministic TableGenerator, not LLM
+2. **Add meta field context**: Document that tables include `meta` with itemCount, rowCount, gridDimensions, valueRange
+3. **Clarify expansion responsibility**: Input is always a flat overview table; agent creates all derived views
+
+Minimal prompt changes expected:
+```
+// Add to prompt:
+"The input table is a flat overview containing ALL rows for this question.
+If meta.gridDimensions is present, consider creating by-row and by-column views.
+If valueRange is [1,N] where N<=5, this may be a ranking or scale - consider
+appropriate derived tables (by-rank, T2B, combined views)."
+```
+
+**Step E: Run & Iterate**
+
+1. Run pipeline on primary dataset: `npx tsx scripts/test-pipeline.ts`
+2. Review scratchpad traces for VerificationAgent reasoning
+3. Check output tables for correct expansions (rankings, grids, T2B)
+4. Iterate on prompt based on actual failures, not speculation
+5. Verify token/cost metrics are captured correctly
+
+**Files to Create/Modify:**
+
+| File | Action |
+|------|--------|
+| `src/lib/observability/AgentMetrics.ts` | CREATE - Token/cost tracking utilities |
+| `src/agents/VerificationAgent.ts` | UPDATE - Add parallel processing, metrics capture |
+| `src/agents/BannerAgent.ts` | UPDATE - Add metrics capture |
+| `src/agents/CrosstabAgent.ts` | UPDATE - Add metrics capture |
+| `scripts/test-pipeline.ts` | UPDATE - Use TableGenerator, display metrics |
+| `src/prompts/verification/*.ts` | UPDATE - Contextual changes for new input format |
+
+#### Phase 5: Golden Dataset Creation
+
+**Status**: NOT STARTED (begins after Phase 4 verified working)
+
+1. Run full pipeline on primary dataset with new architecture
+2. Manual review of output for correctness
+3. Copy outputs to golden datasets:
+   - `verification-output-raw.json` → `verification-expected.json`
+   - `data-streamlined.json` → `data-expected.json`
 4. Run comparison: `npx tsx scripts/compare-to-golden.ts`
-
-#### Phase 7: Optimize
-
-- Measure token consumption
-- Test optimal parallelism for VerificationAgent
-- Consider caching survey context
+5. Document any acceptable differences vs strict matches
 
 ### Exit Criteria (Part 4)
 
 - [x] TableGenerator produces correct overview tables for all question types
 - [x] TableGenerator maintains API compatibility
+- [x] TableGenerator tested on primary dataset
 - [ ] Pipeline runs end-to-end with TableGenerator replacing TableAgent
+- [ ] VerificationAgent processes tables in parallel (3 concurrent)
+- [ ] Token consumption and cost estimates tracked for all agents
 - [ ] VerificationAgent correctly expands grids and rankings
 - [ ] Golden datasets created from new pipeline output
 - [ ] At least one full evaluation cycle completed
@@ -286,4 +377,4 @@ User Uploads → BannerAgent → CrosstabAgent → DataMapGrouper → TableGener
 
 *Created: January 6, 2026*
 *Updated: January 24, 2026*
-*Status: Parts 1-3b complete, Part 4 Phase 1-3 complete (TableGenerator tested), Parts 4 Phase 4-7 + Parts 5-7 pending*
+*Status: Parts 1-3b complete, Part 4 Phase 1-3 complete (TableGenerator tested), Part 4 Phase 4-5 + Parts 5-7 pending*
