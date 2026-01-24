@@ -320,96 +320,251 @@ After:  DataMap → TableGenerator (code) → VerificationAgent (LLM) → R Scri
 
 ### Implementation Phases
 
-#### Phase 1: Build TableGenerator
+#### Phase 1: DataMap Grouper + TableGenerator
 
-**Create** `src/lib/tables/TableGenerator.ts`
+Two components that replace TableAgent's functionality:
 
-Deterministic function that converts datamap → overview tables:
+**Step A: DataMap Grouper** (`src/lib/tables/DataMapGrouper.ts`)
+
+Extracts the grouping/filtering logic from TableAgent into its own module. This runs BEFORE TableGenerator.
 
 ```typescript
-function generateOverviewTables(dataMap: DataMapQuestion[]): TableDefinition[] {
-  return dataMap.map(question => {
-    const tableType = question.items[0].normalizedType === 'numeric_range'
-      ? 'mean_rows'
-      : 'frequency';
-
-    const hints = detectHints(question);
-
-    return {
-      tableId: `${question.questionId.toLowerCase()}_overview`,
-      questionId: question.questionId,
-      title: question.questionText,
-      tableType,
-      rows: generateRows(question.items, tableType),
-      hints
-    };
-  });
+interface DataMapGrouperOptions {
+  includeOpenEnds?: boolean;   // env: INCLUDE_OPEN_ENDS, default false
+  includeAdmin?: boolean;      // env: INCLUDE_ADMIN, default false
 }
+
+interface QuestionGroup {
+  questionId: string;
+  questionText: string;
+  items: Array<{
+    column: string;
+    label: string;
+    normalizedType: string;
+    valueType: string;
+    rangeMin?: number;
+    rangeMax?: number;
+    allowedValues?: number[];
+    scaleLabels?: Array<{value: number, label: string}>;
+  }>;
+}
+
+function groupDataMap(
+  verboseDataMap: VerboseDataMapType[],
+  options?: DataMapGrouperOptions
+): QuestionGroup[]
 ```
 
-**Rules:**
-- `numeric_range` → `mean_rows`, `filterValue: ""`
-- `categorical_select` → `frequency`, one row per value with `filterValue` = value code
-- `binary_flag` → `frequency`, `filterValue: "1"`
-- Detect hints: `ranking`, `scale-5`, `scale-7`
-- One overview table per question (no splitting)
+**Responsibilities:**
+- Filter out `admin` and `text_open` types (unless env vars override)
+- Group variables by parent question
+- Enrich with context from parent question text
+- Output: The exact structure currently in `dataMap-table-agent-*.json`
 
-**Metadata to include** (helpful for VerificationAgent):
-- `itemCount` - Number of items in question
-- `valueRange` - [min, max] for categorical/ranking
-- `pattern` - Detected pattern (`ranking`, `grid`, `simple`)
+**Step B: TableGenerator** (`src/lib/tables/TableGenerator.ts`)
 
-#### Phase 2: Deprecate TableAgent
+Pure function that converts grouped datamap → table definitions. No LLM, no external calls.
 
-**Do not delete yet** - keep for reference and fallback testing.
+```typescript
+interface TableGeneratorOutput {
+  questionId: string;
+  questionText: string;
+  tables: TableDefinition[];  // One "overview" table per group
+}
 
-**Deprecate:**
-- Mark `src/agents/TableAgent.ts` as deprecated (add comment)
-- Mark `src/prompts/table/` as deprecated
-- Document which env vars are no longer used: `TABLE_MODEL`, `TABLE_REASONING_EFFORT`, `TABLE_PROMPT_VERSION`, `TABLE_MODEL_TOKENS`
+interface TableDefinition {
+  tableId: string;
+  title: string;
+  tableType: 'frequency' | 'mean_rows';
+  rows: TableRow[];
+  meta: TableMeta;  // Structural metadata to help VerificationAgent
+}
+
+interface TableRow {
+  variable: string;
+  label: string;
+  filterValue: string;
+}
+
+// Structural metadata - facts the agent shouldn't have to count/infer
+interface TableMeta {
+  itemCount: number;           // Number of unique items (variables) in the group
+  rowCount: number;            // Total rows in the overview table
+  valueRange?: [number, number]; // [min, max] of allowedValues (e.g., [1, 5])
+  uniqueValues?: number;       // Count of unique allowedValues per item
+  gridDimensions?: {           // If row/column pattern detected in variable names
+    rows: number;              // e.g., 5 treatments
+    cols: number;              // e.g., 2 conditions (with/without statin)
+  };
+}
+
+function generateTables(groups: QuestionGroup[]): TableGeneratorOutput[]
+```
+
+**Why metadata matters:**
+- Reduces cognitive load on VerificationAgent
+- Agent doesn't need to count items (prone to hallucination)
+- Agent can focus on semantic understanding (is this a ranking? what derived tables make sense?)
+- Prompt can give specific guidance: "For tables with gridDimensions, consider by-row and by-column views"
+
+**Metadata detection rules:**
+- `itemCount`: Count unique `column` values in the group
+- `rowCount`: Length of `rows` array
+- `valueRange`: `[Math.min(allowedValues), Math.max(allowedValues)]`
+- `uniqueValues`: Length of `allowedValues` array
+- `gridDimensions`: Attempt to detect row/column pattern in variable names (e.g., `A3ar1c1` → r1, c1)
+  - If pattern found, calculate dimensions
+  - If naming is inconsistent, omit (let agent figure it out from context)
+
+**Mapping Rules:**
+| normalizedType | tableType | filterValue | rows |
+|----------------|-----------|-------------|------|
+| `numeric_range` | `mean_rows` | `""` (empty) | One row per item |
+| `binary_flag` | `frequency` | `"1"` | One row per item (checked state) |
+| `categorical_select` | `frequency` | value code | One row per allowedValue per item |
+
+**Row label strategy:**
+- Use `scaleLabels[].label` when available
+- Otherwise use `item.label` + value (e.g., "Leqvio - 1")
+- VerificationAgent will improve labels using survey document
+
+**What we're NOT doing:**
+- No semantic hints (e.g., "this is a ranking") - let agent infer from context
+- No `confidence` field (deterministic = always confident)
+- No `reasoning` field (no LLM reasoning to capture)
+- No table splitting (VerificationAgent's job based on semantic understanding)
+- No producer/consumer pattern (generate all, then parallelize verification)
+
+#### Phase 2: Schema Updates + Deprecation
+
+**Schema Simplification:**
+
+The simplified schemas from Phase 1 cascade through the codebase. Update these files:
+
+| File | Changes |
+|------|---------|
+| `src/schemas/tableAgentSchema.ts` | Remove `hints` from `TableDefinition`, remove `confidence`/`reasoning` from output |
+| `src/schemas/verificationAgentSchema.ts` | Remove `hints` from `ExtendedTableDefinition` |
+| `src/lib/r/RScriptGeneratorV2.ts` | Remove `hints` from R script metadata |
+| `src/lib/excel/ExcelFormatter.ts` | Remove `hints` from type definitions |
+| `src/lib/excel/tableRenderers/*.ts` | Remove `hints` from table data interfaces |
+
+**Deprecate TableAgent:**
+
+Add deprecation header to these files (do NOT delete yet):
+
+```typescript
+/**
+ * @deprecated This module is deprecated as of Part 4 refactor.
+ * TableGenerator.ts now handles table generation deterministically.
+ * Kept for reference - will be deleted in future cleanup.
+ */
+```
+
+Files to deprecate:
+- `src/agents/TableAgent.ts`
+- `src/prompts/table/index.ts`
+- `src/prompts/table/production.ts`
+- `src/prompts/table/alternative.ts`
+
+**Environment Variables:**
+
+Document as deprecated (but don't remove yet):
+- `TABLE_MODEL`
+- `TABLE_REASONING_EFFORT`
+- `TABLE_PROMPT_VERSION`
+- `TABLE_MODEL_TOKENS`
+
+Add new env vars:
+- `INCLUDE_OPEN_ENDS` (boolean, default false)
+- `INCLUDE_ADMIN` (boolean, default false)
 
 #### Phase 3: Test TableGenerator Independently
 
 Before integrating into pipeline:
-1. Run TableGenerator on primary dataset datamap
-2. Compare output structure to what TableAgent currently produces
-3. Verify: same schemas, correct tableType mapping, proper filterValues
-4. Verify: hints are detected correctly (ranking, scale-5, scale-7)
 
-**Test script:** `npx tsx scripts/test-table-generator.ts`
+1. Create test script: `npx tsx scripts/test-table-generator.ts`
+2. Run on primary dataset's verbose datamap
+3. Verify output structure:
+   - Correct `tableType` for each `normalizedType`
+   - Proper `filterValue` patterns (empty for mean_rows, value codes for frequency)
+   - Labels populated from datamap
+4. Compare row counts to current TableAgent output (should be similar)
+5. Save output to `temp-outputs/` for manual review
+
+**Test criteria:**
+- Every question group produces exactly one table
+- `numeric_range` items → `mean_rows` table
+- `binary_flag` items → `frequency` table with `filterValue: "1"`
+- `categorical_select` items → `frequency` table with one row per allowed value
+- `meta.itemCount` matches actual item count
+- `meta.rowCount` matches actual row count
+- `meta.valueRange` correctly captures [min, max] of allowedValues
+- `meta.gridDimensions` detected for obvious patterns (e.g., `A3ar1c1` style naming)
 
 #### Phase 4: Integrate into Pipeline
 
-**Update pipeline orchestration:**
-- Replace TableAgent calls with TableGenerator
-- Maintain queue-based producer pattern for VerificationAgent compatibility
-- Maintain AbortSignal support
-- Maintain progress callback contract
+**New pipeline flow:**
+
+```
+VerboseDataMap
+  → DataMapGrouper (filter + group)
+  → TableGenerator (convert to tables)
+  → [All tables generated]
+  → VerificationAgent (parallel, 3 concurrent calls)
+  → R Script → Excel
+```
 
 **Files to update:**
-- `scripts/test-pipeline.ts` - Replace TableAgent with TableGenerator
-- `src/app/api/process-crosstab/route.ts` - Replace in `executePathB()` and `executePathBPassthrough()`
 
-**Keep function signatures compatible:**
-The API route uses `processQuestionGroupsWithCallback()`. TableGenerator must provide equivalent:
+| File | Change |
+|------|--------|
+| `scripts/test-pipeline.ts` | Replace TableAgent import/calls with DataMapGrouper + TableGenerator |
+| `src/app/api/process-crosstab/route.ts` | Replace in `executePathB()` and `executePathBPassthrough()` |
+
+**Simplified orchestration:**
+
 ```typescript
-// Must maintain this signature for API compatibility
-function processQuestionGroupsWithCallback(
-  groups: TableAgentInput[],
-  onTable: (table: TableDefinition, questionId: string, questionText: string) => void,
-  options: { outputDir?, abortSignal?, onProgress? }
-): Promise<{ results: TableAgentOutput[]; processingLog: string[] }>
+// OLD: Producer-consumer with callbacks
+const tableQueue = new TableQueue();
+await processQuestionGroupsWithCallback(groups, (table) => tableQueue.push(table));
+
+// NEW: Generate all, then parallelize verification
+const groups = groupDataMap(verboseDataMap, { includeOpenEnds: false });
+const tableOutput = generateTables(groups);
+const verifiedTables = await verifyAllTablesParallel(tableOutput, surveyMarkdown, {
+  concurrency: 3,  // or configurable
+  abortSignal
+});
 ```
+
+**What to maintain:**
+- AbortSignal support for cancellation
+- Progress callbacks for UI updates
+- Output file saving for debugging (`table-output-raw.json`, etc.)
 
 #### Phase 5: Update VerificationAgent
 
-VerificationAgent now handles ALL expansion logic.
+VerificationAgent now handles ALL expansion logic, guided by structural metadata from TableGenerator.
+
+**How metadata helps the agent:**
+- `itemCount` / `rowCount` → Agent knows scale without counting
+- `valueRange` → Helps identify scales ([1,5] likely 5-point scale, [1,4] could be ranking)
+- `gridDimensions` → If present, agent knows row/column structure for splitting
+- Agent focuses on **semantic understanding** (reading context to determine what this question IS)
+
+**What the agent decides (based on context + metadata):**
+- Is this a ranking? → Create by-rank and by-item views
+- Is this a scale? → Create T2B/B2B rows
+- Is this a grid? → Create by-row and by-column views
+- Should this be excluded? → Mark with `exclude: true`
+- What are the proper labels? → Match to survey text
 
 **Update prompt for new responsibilities:**
-- Grid expansion (by-row, by-column views)
-- Ranking expansion (by-rank, by-item, combined ranks T1/T2/T3)
-- NETs and T2B for scales
-- Label enhancement from survey
+- Reference `meta` fields in prompt guidance
+- Example: "When `gridDimensions` is present and `rowCount > 6`, consider creating split views"
+- Example: "When `valueRange` is [1,5] and context mentions 'likely/unlikely', add T2B row"
+- Keep semantic judgment with the agent - don't over-specify rules
 
 **Handle long tables:**
 - Don't require agent to rewrite large overview tables
@@ -444,19 +599,27 @@ VerificationAgent now handles ALL expansion logic.
 
 ---
 
-### TableAgent Integration Points (Reference)
+### Integration Points Reference
 
-For anyone picking up this work, here's where TableAgent is currently integrated:
+Files affected by this refactor:
 
-| Category | Files | Impact |
+| Category | Files | Action |
 |----------|-------|--------|
-| **Agent Core** | `src/agents/TableAgent.ts` | Replace with TableGenerator |
-| **Schemas** | `src/schemas/tableAgentSchema.ts` | **KEEP** - downstream tools depend on `TableDefinition`, `TableRow` |
-| **Environment** | `src/lib/env.ts` | Deprecate `getTableModel()`, `getTableReasoningEffort()` |
-| **Prompts** | `src/prompts/table/` | Deprecate (keep for reference) |
-| **API Route** | `src/app/api/process-crosstab/route.ts` | Update `executePathB()`, `executePathBPassthrough()` |
-| **Pipeline** | `scripts/test-pipeline.ts` | Update Path B execution |
-| **Test Scripts** | `scripts/test-table-agent.ts` | Update to test TableGenerator |
+| **New Files** | `src/lib/tables/DataMapGrouper.ts` | CREATE - filtering + grouping logic |
+| **New Files** | `src/lib/tables/TableGenerator.ts` | CREATE - deterministic table generation |
+| **Schemas** | `src/schemas/tableAgentSchema.ts` | UPDATE - remove `hints`, simplify output types |
+| **Schemas** | `src/schemas/verificationAgentSchema.ts` | UPDATE - remove `hints` from ExtendedTableDefinition |
+| **R Script** | `src/lib/r/RScriptGeneratorV2.ts` | UPDATE - remove `hints` from metadata |
+| **Excel** | `src/lib/excel/*.ts` | UPDATE - remove `hints` from type definitions |
+| **Pipeline** | `scripts/test-pipeline.ts` | UPDATE - use new modules |
+| **API Route** | `src/app/api/process-crosstab/route.ts` | UPDATE - use new modules |
+| **Deprecated** | `src/agents/TableAgent.ts` | DEPRECATE - add header comment |
+| **Deprecated** | `src/prompts/table/*.ts` | DEPRECATE - add header comment |
+| **Environment** | `src/lib/env.ts` | DEPRECATE - TableAgent env getters |
+
+**New environment variables:**
+- `INCLUDE_OPEN_ENDS` - Include text_open questions (default: false)
+- `INCLUDE_ADMIN` - Include admin variables (default: false)
 | **Logging** | Output files `table/table-output-*.json` | Maintain same structure for compatibility |
 
 **Critical constraint:** `TableDefinition` and `TableRow` schemas must NOT change. R script generator and Excel formatter depend on exact structure.
@@ -764,21 +927,31 @@ data/test-data/
 ### Current Pipeline (Pre-Part 4)
 
 ```
-User Uploads → BannerAgent → CrosstabAgent → TableAgent → VerificationAgent → R Script → ExcelJS
-                   ↓              ↓              ↓              ↓
-              Banner PDF      DataMap        Questions      Survey Doc
-              → Images        → Variables    → Tables       → Optimized Tables
+User Uploads → BannerAgent → CrosstabAgent → TableAgent (LLM) → VerificationAgent → R Script → ExcelJS
+                   ↓              ↓              ↓                    ↓
+              Banner PDF      DataMap        Questions            Survey Doc
+              → Images        → Variables    → Tables              → Enhanced Tables
 ```
 
 ### Target Pipeline (Post-Part 4)
 
 ```
-User Uploads → BannerAgent → CrosstabAgent → TableGenerator → VerificationAgent → R Script → ExcelJS
-                   ↓              ↓              ↓                   ↓
-              Banner PDF      DataMap        DataMap             Survey Doc
-              → Images        → Variables    → Overview Tables   → Expanded Tables
-                                             (deterministic)     (grids, rankings, NETs)
+                                              ┌─────────────────────────────────────┐
+                                              │ Path B (deterministic + parallel)   │
+User Uploads → BannerAgent → CrosstabAgent → │ DataMapGrouper → TableGenerator     │ → R Script → ExcelJS
+                   ↓              ↓           │        ↓                            │
+              Banner PDF      DataMap        │ Filtered/Grouped    Overview Tables │
+              → Cuts          → Variables    │        ↓                            │
+                                              │ VerificationAgent ×3 (parallel)    │
+                                              │        ↓                            │
+                                              │ Expanded Tables (NETs, T2B, splits)│
+                                              └─────────────────────────────────────┘
 ```
+
+**Key changes:**
+- TableAgent (LLM) → DataMapGrouper + TableGenerator (code)
+- Sequential table generation → All tables generated first
+- Producer-consumer → Parallel VerificationAgent calls
 
 ### Key Files
 
@@ -814,4 +987,4 @@ leqvio-monotherapy-demand-NOV217/
 
 *Created: January 6, 2026*
 *Updated: January 23, 2026*
-*Status: Parts 1-3b complete, Part 4 in progress (TableGenerator refactor), Parts 5-7 pending*
+*Status: Parts 1-3b complete, Part 4 in progress (Phase 1-2: DataMapGrouper + TableGenerator), Parts 5-7 pending*
