@@ -37,7 +37,6 @@ export interface TableData {
   tableId: string;
   title: string;
   tableType: 'frequency' | 'mean_rows';
-  hints: string | string[];
   data: Record<string, unknown>;
 }
 

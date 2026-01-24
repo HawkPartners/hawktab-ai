@@ -599,7 +599,6 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
   lines.push(`  tableId = "${tableId}",`);
   lines.push(`  title = "${title}",`);
   lines.push(`  tableType = "frequency",`);
-  lines.push(`  hints = c(${table.hints.map(h => `"${h}"`).join(', ')}),`);
   lines.push(`  isDerived = ${table.isDerived ? 'TRUE' : 'FALSE'},`);
   lines.push('  data = list()');
   lines.push(')');
@@ -720,7 +719,6 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
   lines.push(`  tableId = "${tableId}",`);
   lines.push(`  title = "${title}",`);
   lines.push(`  tableType = "mean_rows",`);
-  lines.push(`  hints = c(${table.hints.map(h => `"${h}"`).join(', ')}),`);
   lines.push(`  isDerived = ${table.isDerived ? 'TRUE' : 'FALSE'},`);
   lines.push('  data = list()');
   lines.push(')');

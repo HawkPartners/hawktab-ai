@@ -468,7 +468,6 @@ interface TableDefinition {
   title: string;
   tableType: string;
   rows: TableRow[];
-  hints?: string[];
   sourceTableId?: string;
   isDerived?: boolean;
   exclude?: boolean;

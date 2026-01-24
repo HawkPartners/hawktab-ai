@@ -41,7 +41,6 @@ export interface MeanRowsTableData {
   tableId: string;
   title: string;
   tableType: 'mean_rows';
-  hints: string | string[];
   data: Record<string, MeanCutData>;
 }
 

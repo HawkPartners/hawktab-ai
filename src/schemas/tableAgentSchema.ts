@@ -129,8 +129,9 @@ export const TableRowSchema = z.object({
 export type TableRow = z.infer<typeof TableRowSchema>;
 
 /**
- * Hints for downstream processing
- * These help deterministic code generate additional derived tables (T2B, combined ranks, etc.)
+ * @deprecated Hints are no longer used as of Part 4 refactor.
+ * TableGenerator now produces deterministic output without hints.
+ * VerificationAgent handles T2B/B2B/NETs using survey document context.
  */
 export const TableHintSchema = z.enum([
   'ranking',   // Ranking question - downstream may add combined rank tables
@@ -141,8 +142,34 @@ export const TableHintSchema = z.enum([
 export type TableHint = z.infer<typeof TableHintSchema>;
 
 /**
+ * Structural metadata about a table
+ * Added in Part 4 refactor to provide structural information about table generation
+ */
+export const TableMetaSchema = z.object({
+  /** Number of unique variables/columns in the table */
+  itemCount: z.number(),
+  /** Number of rows in the table */
+  rowCount: z.number(),
+  /** Value range for numeric tables [min, max] */
+  valueRange: z.tuple([z.number(), z.number()]).optional(),
+  /** Count of unique values for categorical tables */
+  uniqueValues: z.number().optional(),
+  /** Grid dimensions if detected from variable naming pattern */
+  gridDimensions: z.object({
+    rows: z.number(),
+    cols: z.number(),
+  }).optional(),
+});
+
+export type TableMeta = z.infer<typeof TableMetaSchema>;
+
+/**
  * Single table definition (one question may produce multiple tables)
  * Note: stats are NOT included - they are inferred deterministically from tableType downstream
+ *
+ * As of Part 4 refactor:
+ * - hints field is deprecated (kept for backward compatibility, should be empty array)
+ * - meta field added for structural metadata
  */
 export const TableDefinitionSchema = z.object({
   tableId: z.string(),          // Unique ID: "s8", "a1_indication_a"
@@ -152,9 +179,12 @@ export const TableDefinitionSchema = z.object({
   // Rows in the table
   rows: z.array(TableRowSchema),
 
-  // Hints for downstream processing (empty array if none apply)
-  // Helps deterministic code generate derived tables (T2B for scales, combined ranks, etc.)
-  hints: z.array(TableHintSchema),
+  // @deprecated - hints are no longer used, kept for backward compatibility
+  // Always pass empty array [] for new tables
+  hints: z.array(TableHintSchema).optional().default([]),
+
+  // Structural metadata (added in Part 4 refactor)
+  meta: TableMetaSchema.optional(),
 });
 
 export type TableDefinition = z.infer<typeof TableDefinitionSchema>;

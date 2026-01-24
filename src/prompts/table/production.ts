@@ -1,3 +1,9 @@
+/**
+ * @deprecated This module is deprecated as of Part 4 refactor.
+ * TableGenerator.ts now handles table generation deterministically.
+ * Kept for reference - will be deleted in future cleanup.
+ */
+
 // Production prompt for Table Agent
 export const TABLE_AGENT_INSTRUCTIONS_PRODUCTION = `
 You are a market research analyst creating crosstab table definitions. Your output tells R what calculations to run.

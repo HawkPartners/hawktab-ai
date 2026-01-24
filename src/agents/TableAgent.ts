@@ -1,4 +1,17 @@
 /**
+ * @deprecated This module is deprecated as of Part 4 refactor.
+ *
+ * TableGenerator.ts now handles table generation deterministically:
+ *   VerboseDataMap → DataMapGrouper → TableGenerator → VerificationAgent
+ *
+ * This LLM-based approach is kept for reference but will be deleted in future cleanup.
+ *
+ * New files to use instead:
+ * - src/lib/tables/DataMapGrouper.ts - Groups datamap by parent question
+ * - src/lib/tables/TableGenerator.ts - Deterministic table generation
+ *
+ * ---
+ * Original description:
  * TableAgent
  * Purpose: Decide how survey data should be displayed as crosstab tables
  * Reads: Grouped datamap variables (VerboseDataMapType[])

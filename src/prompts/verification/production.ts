@@ -210,7 +210,6 @@ Every table must have ALL fields:
 - title: string
 - tableType: "frequency" or "mean_rows" only (do not invent new types)
 - rows: ExtendedTableRow[]
-- hints: string[] (pass through from input, or empty [] for new tables)
 - sourceTableId: string (original table ID, or "" if unchanged)
 - isDerived: boolean
 - exclude: boolean
