@@ -206,35 +206,48 @@ Implementation approach:
 
 **Step C: Token & Cost Tracking**
 
-Add observability across ALL agents (Banner, Crosstab, Verification):
+**Status**: Infrastructure created, integration pending
 
+Observability utilities created in `src/lib/observability/`:
+
+| File | Purpose |
+|------|---------|
+| `CostCalculator.ts` | Fetches LiteLLM pricing database, calculates costs |
+| `AgentMetrics.ts` | Collects metrics across agents, formats summaries |
+| `index.ts` | Clean exports |
+
+**Usage pattern for each agent:**
 ```typescript
-interface AgentUsageMetrics {
-  agentName: string;
-  model: string;
-  inputTokens: number;
-  outputTokens: number;
-  totalTokens: number;
-  estimatedCostUsd: number;
-  durationMs: number;
-}
+import { recordAgentMetrics } from '@/lib/observability';
+
+const startTime = Date.now();
+const { output, usage } = await generateText({ ... });
+
+recordAgentMetrics(
+  'VerificationAgent',
+  getVerificationModelName(),
+  { input: usage.promptTokens, output: usage.completionTokens },
+  Date.now() - startTime
+);
 ```
 
-Implementation:
-- Capture token usage from AI SDK response (`response.usage`)
-- Add cost estimation based on model pricing (configurable)
-- Aggregate per-agent and total pipeline metrics
-- Include in pipeline summary output
-
-Cost estimation constants (update as pricing changes):
+**At end of pipeline:**
 ```typescript
-const MODEL_PRICING = {
-  'gpt-4o': { input: 2.50, output: 10.00 },      // per 1M tokens
-  'gpt-4o-mini': { input: 0.15, output: 0.60 },
-  'o1': { input: 15.00, output: 60.00 },
-  'o3-mini': { input: 1.10, output: 4.40 },
-};
+import { getPipelineCostSummary } from '@/lib/observability';
+console.log(await getPipelineCostSummary());
 ```
+
+**Features:**
+- Auto-fetches LiteLLM pricing database (6000+ models, regularly updated)
+- Falls back to hardcoded pricing if fetch fails
+- Handles model name normalization (azure/gpt-4o, deployment names, etc.)
+- Aggregates per-agent and total pipeline metrics
+
+**Remaining work:**
+- [ ] Add `recordAgentMetrics()` calls to BannerAgent
+- [ ] Add `recordAgentMetrics()` calls to CrosstabAgent
+- [ ] Add `recordAgentMetrics()` calls to VerificationAgent
+- [ ] Add summary output to test-pipeline.ts
 
 **Step D: Update VerificationAgent Prompt**
 
@@ -263,14 +276,16 @@ appropriate derived tables (by-rank, T2B, combined views)."
 
 **Files to Create/Modify:**
 
-| File | Action |
-|------|--------|
-| `src/lib/observability/AgentMetrics.ts` | CREATE - Token/cost tracking utilities |
-| `src/agents/VerificationAgent.ts` | UPDATE - Add parallel processing, metrics capture |
-| `src/agents/BannerAgent.ts` | UPDATE - Add metrics capture |
-| `src/agents/CrosstabAgent.ts` | UPDATE - Add metrics capture |
-| `scripts/test-pipeline.ts` | UPDATE - Use TableGenerator, display metrics |
-| `src/prompts/verification/*.ts` | UPDATE - Contextual changes for new input format |
+| File | Action | Status |
+|------|--------|--------|
+| `src/lib/observability/CostCalculator.ts` | CREATE - LiteLLM pricing + cost calculation | DONE |
+| `src/lib/observability/AgentMetrics.ts` | CREATE - Token/cost tracking utilities | DONE |
+| `src/lib/observability/index.ts` | CREATE - Clean exports | DONE |
+| `src/agents/VerificationAgent.ts` | UPDATE - Add parallel processing, metrics capture | Pending |
+| `src/agents/BannerAgent.ts` | UPDATE - Add metrics capture | Pending |
+| `src/agents/CrosstabAgent.ts` | UPDATE - Add metrics capture | Pending |
+| `scripts/test-pipeline.ts` | UPDATE - Use TableGenerator, display metrics | Pending |
+| `src/prompts/verification/*.ts` | UPDATE - Contextual changes for new input format | Pending |
 
 #### Phase 5: Golden Dataset Creation
 
