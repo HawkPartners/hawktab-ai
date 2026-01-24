@@ -14,6 +14,7 @@
  */
 
 import { generateText, Output, stepCountIs } from 'ai';
+import pLimit from 'p-limit';
 import {
   VerificationAgentOutputSchema,
   type VerificationAgentOutput,
@@ -36,9 +37,13 @@ import {
   clearScratchpadEntries,
   getAndClearScratchpadEntries,
   formatScratchpadAsMarkdown,
+  createContextScratchpadTool,
+  getAllContextScratchpadEntries,
+  clearAllContextScratchpads,
 } from './tools/scratchpad';
 import { getVerificationPrompt } from '../prompts';
 import { retryWithPolicyHandling } from '../lib/retryWithPolicyHandling';
+import { recordAgentMetrics } from '../lib/observability';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -84,9 +89,11 @@ export interface VerificationProcessingOptions {
  */
 export async function verifyTable(
   input: VerificationInput,
-  abortSignal?: AbortSignal
+  abortSignal?: AbortSignal,
+  contextScratchpad?: ReturnType<typeof createContextScratchpadTool>
 ): Promise<VerificationAgentOutput> {
   console.log(`[VerificationAgent] Processing table: ${input.table.tableId}`);
+  const startTime = Date.now();
 
   // Check for cancellation before processing
   if (abortSignal?.aborted) {
@@ -131,16 +138,19 @@ Analyze the table against the survey document. Fix labels, split if needed, add 
     return error instanceof DOMException && error.name === 'AbortError';
   };
 
+  // Use context scratchpad if provided (for parallel execution), else use global
+  const scratchpad = contextScratchpad || verificationScratchpadTool;
+
   // Wrap the AI call with retry logic for policy errors
   const retryResult = await retryWithPolicyHandling(
     async () => {
-      const { output } = await generateText({
+      const { output, usage } = await generateText({
         model: getVerificationModel(),
         system: systemPrompt,
         maxRetries: 3,  // SDK handles transient/network errors
         prompt: userPrompt,
         tools: {
-          scratchpad: verificationScratchpadTool,
+          scratchpad,
         },
         stopWhen: stepCountIs(15),
         maxOutputTokens: Math.min(getVerificationModelTokenLimit(), 100000),
@@ -159,6 +169,15 @@ Analyze the table against the survey document. Fix labels, split if needed, add 
       if (!output || !output.tables || output.tables.length === 0) {
         throw new Error(`Invalid output for table ${input.table.tableId}`);
       }
+
+      // Record metrics
+      const durationMs = Date.now() - startTime;
+      recordAgentMetrics(
+        'VerificationAgent',
+        getVerificationModelName(),
+        { input: usage?.inputTokens || 0, output: usage?.outputTokens || 0 },
+        durationMs
+      );
 
       return output;
     },
@@ -355,6 +374,187 @@ export async function verifyAllTables(
 
   // Save outputs
   if (outputDir) {
+    await saveDevelopmentOutputs(
+      verificationResults,
+      outputDir,
+      processingLog,
+      scratchpadEntries
+    );
+  }
+
+  return verificationResults;
+}
+
+// =============================================================================
+// Parallel Processing
+// =============================================================================
+
+/**
+ * Process all tables in parallel with configurable concurrency
+ */
+export async function verifyAllTablesParallel(
+  tableAgentOutput: TableAgentOutput[],
+  surveyMarkdown: string,
+  verboseDataMap: VerboseDataMapType[],
+  options: VerificationProcessingOptions & { concurrency?: number } = {}
+): Promise<VerificationResults> {
+  const { outputDir, onProgress, passthrough, abortSignal, concurrency = 3 } = options;
+  const processingLog: string[] = [];
+
+  const logEntry = (message: string) => {
+    console.log(message);
+    processingLog.push(`${new Date().toISOString()}: ${message}`);
+  };
+
+  // Check for cancellation before starting
+  if (abortSignal?.aborted) {
+    console.log('[VerificationAgent] Aborted before processing started');
+    throw new DOMException('VerificationAgent aborted', 'AbortError');
+  }
+
+  // Clear both global and context scratchpads from any previous runs
+  clearScratchpadEntries();
+  clearAllContextScratchpads();
+
+  // Build lookup table once (shared, immutable)
+  const datamapByColumn = new Map<string, VerboseDataMapType>();
+  for (const entry of verboseDataMap) {
+    datamapByColumn.set(entry.column, entry);
+  }
+
+  // Flatten all tables with their context
+  const allTables: Array<{
+    table: TableDefinition;
+    questionId: string;
+    questionText: string;
+    index: number;
+  }> = [];
+
+  for (const questionGroup of tableAgentOutput) {
+    for (const table of questionGroup.tables) {
+      allTables.push({
+        table,
+        questionId: questionGroup.questionId,
+        questionText: questionGroup.questionText,
+        index: allTables.length,
+      });
+    }
+  }
+
+  logEntry(`[VerificationAgent] Starting parallel processing: ${allTables.length} tables (concurrency: ${concurrency})`);
+  logEntry(`[VerificationAgent] Using model: ${getVerificationModelName()}`);
+  logEntry(`[VerificationAgent] Reasoning effort: ${getVerificationReasoningEffort()}`);
+  logEntry(`[VerificationAgent] Survey markdown: ${surveyMarkdown.length} characters`);
+
+  // If passthrough mode or no survey, return all tables unchanged
+  if (passthrough || !surveyMarkdown || surveyMarkdown.trim() === '') {
+    logEntry(`[VerificationAgent] Passthrough mode - returning tables unchanged`);
+    const { toExtendedTable } = await import('../schemas/verificationAgentSchema');
+    const passthroughTables = allTables.map(({ table, questionId }) =>
+      toExtendedTable(table, questionId)
+    );
+
+    return {
+      tables: passthroughTables,
+      metadata: {
+        totalInputTables: allTables.length,
+        totalOutputTables: passthroughTables.length,
+        tablesModified: 0,
+        tablesSplit: 0,
+        tablesExcluded: 0,
+        averageConfidence: 1.0,
+      },
+      allChanges: [],
+    };
+  }
+
+  // Create limiter for concurrency control
+  const limit = pLimit(concurrency);
+  let completed = 0;
+
+  // Process in parallel with limit
+  const resultPromises = allTables.map(({ table, questionId, questionText, index }) =>
+    limit(async () => {
+      if (abortSignal?.aborted) {
+        throw new DOMException('VerificationAgent aborted', 'AbortError');
+      }
+
+      const datamapContext = getDatamapContextForTable(table, datamapByColumn);
+      const input: VerificationInput = {
+        table,
+        questionId,
+        questionText,
+        surveyMarkdown,
+        datamapContext,
+      };
+
+      // Use context-specific scratchpad
+      const contextScratchpad = createContextScratchpadTool('VerificationAgent', table.tableId);
+      const result = await verifyTable(input, abortSignal, contextScratchpad);
+
+      completed++;
+      try {
+        onProgress?.(completed, allTables.length, table.tableId);
+      } catch { /* ignore progress errors */ }
+
+      return { result, questionId, index };
+    })
+  );
+
+  const resolvedResults = await Promise.all(resultPromises);
+
+  // Sort by original index to maintain order
+  resolvedResults.sort((a, b) => a.index - b.index);
+
+  // Aggregate results
+  const results = resolvedResults.map((r) => r.result);
+  const questionIdByIndex = resolvedResults.map((r) => r.questionId);
+
+  // Aggregate scratchpad entries from all contexts
+  const contextEntries = getAllContextScratchpadEntries();
+  const allScratchpadEntries = contextEntries.flatMap((ctx) =>
+    ctx.entries.map((e) => ({ ...e, contextId: ctx.contextId }))
+  );
+  logEntry(`[VerificationAgent] Collected ${allScratchpadEntries.length} scratchpad entries from ${contextEntries.length} contexts`);
+
+  // Combine all verified tables, attaching questionId from the tracked array
+  const allVerifiedTables: ExtendedTableDefinition[] = results.flatMap((r, i) =>
+    r.tables.map((t) => ({ ...t, questionId: questionIdByIndex[i] }))
+  );
+
+  // Collect all changes
+  const allChanges = results
+    .map((r, i) => ({
+      tableId: allTables[i].table.tableId,
+      changes: r.changes,
+    }))
+    .filter((c) => c.changes.length > 0);
+
+  // Calculate metadata
+  const metadata = summarizeVerificationResults(results);
+
+  logEntry(
+    `[VerificationAgent] Parallel processing complete - ${allTables.length} input → ${allVerifiedTables.length} output tables`
+  );
+  logEntry(
+    `[VerificationAgent] Modified: ${metadata.tablesModified}, Split: ${metadata.tablesSplit}, Excluded: ${metadata.tablesExcluded}`
+  );
+
+  const verificationResults: VerificationResults = {
+    tables: allVerifiedTables,
+    metadata,
+    allChanges,
+  };
+
+  // Save outputs
+  if (outputDir) {
+    // Map context entries to the expected format for saveDevelopmentOutputs
+    const scratchpadEntries = allScratchpadEntries.map((e) => ({
+      timestamp: e.timestamp,
+      agentName: e.agentName,
+      action: e.action,
+      content: `[${e.contextId}] ${e.content}`,
+    }));
     await saveDevelopmentOutputs(
       verificationResults,
       outputDir,

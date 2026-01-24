@@ -52,8 +52,9 @@ import { promisify } from 'util';
 import { DataMapProcessor } from '../src/lib/processors/DataMapProcessor';
 import { BannerAgent } from '../src/agents/BannerAgent';
 import { processAllGroups as processCrosstabGroups } from '../src/agents/CrosstabAgent';
-import { processDataMap as processTableAgent } from '../src/agents/TableAgent';
-import { verifyAllTables } from '../src/agents/VerificationAgent';
+import { groupDataMap } from '../src/lib/tables/DataMapGrouper';
+import { generateTables, convertToLegacyFormat, getGeneratorStats } from '../src/lib/tables/TableGenerator';
+import { verifyAllTablesParallel } from '../src/agents/VerificationAgent';
 import { processSurvey } from '../src/lib/processors/SurveyProcessor';
 import { generateRScriptV2WithValidation, type ValidationReport } from '../src/lib/r/RScriptGeneratorV2';
 import { buildCutsSpec } from '../src/lib/tables/CutsSpec';
@@ -61,8 +62,12 @@ import { sortTables, getSortingMetadata } from '../src/lib/tables/sortTables';
 import { ExcelFormatter } from '../src/lib/excel/ExcelFormatter';
 import { extractStreamlinedData } from '../src/lib/data/extractStreamlinedData';
 import { getPromptVersions } from '../src/lib/env';
+import { resetMetricsCollector, getPipelineCostSummary, getMetricsCollector } from '../src/lib/observability';
 import type { VerboseDataMapType } from '../src/schemas/processingSchemas';
 import type { ExtendedTableDefinition } from '../src/schemas/verificationAgentSchema';
+
+// Parse command line flags
+const stopAfterVerification = process.argv.includes('--stop-after-verification');
 
 const execAsync = promisify(exec);
 
@@ -189,7 +194,10 @@ async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
 
 async function runPipeline(datasetFolder: string) {
   const startTime = Date.now();
-  const totalSteps = 8;  // Added VerificationAgent step
+  const totalSteps = stopAfterVerification ? 5 : 8;  // Fewer steps if stopping early
+
+  // Reset metrics collector for this pipeline run
+  resetMetricsCollector();
 
   log('', 'reset');
   log('='.repeat(70), 'magenta');
@@ -296,14 +304,18 @@ async function runPipeline(datasetFolder: string) {
     return { bannerResult, crosstabResult, agentBanner, groupCount, columnCount };
   })();
 
-  // Path B: TableAgent → Survey → VerificationAgent
+  // Path B: TableGenerator → Survey → VerificationAgent (Parallel)
   const pathBPromise = (async () => {
     const pathBStart = Date.now();
-    log(`  [Path B] Starting TableAgent...`, 'cyan');
+    log(`  [Path B] Starting TableGenerator...`, 'cyan');
 
-    const { results: tableAgentResults } = await processTableAgent(verboseDataMap, outputDir);
+    // Replace TableAgent (LLM) with TableGenerator (deterministic)
+    const groups = groupDataMap(verboseDataMap);
+    const generatedOutputs = generateTables(groups);
+    const tableAgentResults = convertToLegacyFormat(generatedOutputs);
     const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
-    log(`  [Path B] TableAgent: ${tableAgentTables.length} table definitions`, 'green');
+    const stats = getGeneratorStats(generatedOutputs);
+    log(`  [Path B] TableGenerator: ${tableAgentTables.length} tables (${stats.tableTypeDistribution['frequency'] || 0} freq, ${stats.tableTypeDistribution['mean_rows'] || 0} mean) in ${stats.totalRows} rows`, 'green');
 
     // Survey processing
     let surveyMarkdown: string | null = null;
@@ -318,18 +330,18 @@ async function runPipeline(datasetFolder: string) {
       }
     }
 
-    // VerificationAgent
+    // VerificationAgent (Parallel)
     let verifiedTables: ExtendedTableDefinition[];
     const { toExtendedTable } = await import('../src/schemas/verificationAgentSchema');
 
     if (surveyMarkdown) {
-      log(`  [Path B] Starting VerificationAgent...`, 'cyan');
+      log(`  [Path B] Starting VerificationAgent (parallel, concurrency: 3)...`, 'cyan');
       try {
-        const verificationResult = await verifyAllTables(
+        const verificationResult = await verifyAllTablesParallel(
           tableAgentResults,
           surveyMarkdown,
           verboseDataMap,
-          { outputDir }
+          { outputDir, concurrency: 3 }
         );
         verifiedTables = verificationResult.tables;
         log(`  [Path B] VerificationAgent: ${verifiedTables.length} tables (${verificationResult.metadata.tablesModified} modified)`, 'green');
@@ -340,7 +352,7 @@ async function runPipeline(datasetFolder: string) {
         );
       }
     } else {
-      log(`  [Path B] No survey - using TableAgent output directly`, 'yellow');
+      log(`  [Path B] No survey - using TableGenerator output directly`, 'yellow');
       verifiedTables = tableAgentResults.flatMap(group =>
         group.tables.map(t => toExtendedTable(t, group.questionId))
       );
@@ -385,6 +397,83 @@ async function runPipeline(datasetFolder: string) {
   log(`  Path A: ${groupCount} groups, ${columnCount} columns, ${crosstabResult.result.bannerCuts.length} validated`, 'dim');
   log(`  Path B: ${tableAgentTables.length} table definitions, ${verifiedTables.length} verified`, 'dim');
   log('', 'reset');
+
+  // -------------------------------------------------------------------------
+  // Early exit if --stop-after-verification flag
+  // -------------------------------------------------------------------------
+  if (stopAfterVerification) {
+    log('', 'reset');
+    log('--stop-after-verification flag set, skipping R script and Excel generation', 'yellow');
+    log('', 'reset');
+
+    // Print cost summary
+    const costSummary = await getPipelineCostSummary();
+    log(costSummary, 'magenta');
+
+    // Still output some summary info
+    const totalDuration = Date.now() - startTime;
+    log('='.repeat(70), 'magenta');
+    log('  Pipeline Complete (Verification Only)', 'bright');
+    log('='.repeat(70), 'magenta');
+    log(`  Dataset:     ${files.name}`, 'reset');
+    log(`  Variables:   ${verboseDataMap.length}`, 'reset');
+    log(`  Tables:      ${verifiedTables.length} (${tableAgentTables.length} from TableGenerator)`, 'reset');
+    log(`  Duration:    ${(totalDuration / 1000).toFixed(1)}s`, 'reset');
+    log(`  Output:      outputs/${files.name}/${outputFolder}/`, 'reset');
+    log('', 'reset');
+
+    // Save summary with costs (verification-only mode)
+    const earlyExitCostMetrics = await getMetricsCollector().getSummary();
+    const earlyExitSummary = {
+      dataset: files.name,
+      timestamp: new Date().toISOString(),
+      duration: { ms: totalDuration, formatted: `${(totalDuration / 1000).toFixed(1)}s` },
+      mode: 'verification-only',
+      promptVersions: {
+        banner: promptVersions.bannerPromptVersion,
+        crosstab: promptVersions.crosstabPromptVersion,
+        table: promptVersions.tablePromptVersion,
+        verification: promptVersions.verificationPromptVersion,
+      },
+      inputs: {
+        datamap: path.basename(files.datamap),
+        banner: path.basename(files.banner),
+        spss: path.basename(files.spss),
+        survey: files.survey ? path.basename(files.survey) : null,
+      },
+      outputs: {
+        variables: verboseDataMap.length,
+        tableGeneratorTables: tableAgentTables.length,
+        verifiedTables: verifiedTables.length,
+        bannerGroups: groupCount,
+      },
+      costs: {
+        byAgent: earlyExitCostMetrics.byAgent.map(a => ({
+          agent: a.agentName,
+          model: a.model,
+          calls: a.calls,
+          inputTokens: a.totalInputTokens,
+          outputTokens: a.totalOutputTokens,
+          durationMs: a.totalDurationMs,
+          estimatedCostUsd: a.estimatedCostUsd,
+        })),
+        totals: {
+          calls: earlyExitCostMetrics.totals.calls,
+          inputTokens: earlyExitCostMetrics.totals.inputTokens,
+          outputTokens: earlyExitCostMetrics.totals.outputTokens,
+          totalTokens: earlyExitCostMetrics.totals.totalTokens,
+          durationMs: earlyExitCostMetrics.totals.durationMs,
+          estimatedCostUsd: earlyExitCostMetrics.totals.estimatedCostUsd,
+        },
+      },
+    };
+    await fs.writeFile(
+      path.join(outputDir, 'pipeline-summary.json'),
+      JSON.stringify(earlyExitSummary, null, 2)
+    );
+
+    return;
+  }
 
   // -------------------------------------------------------------------------
   // Sort tables for logical Excel output order
@@ -517,17 +606,24 @@ async function runPipeline(datasetFolder: string) {
   // -------------------------------------------------------------------------
   const totalDuration = Date.now() - startTime;
 
+  // Print cost summary
+  const costSummary = await getPipelineCostSummary();
+  log(costSummary, 'magenta');
+
   log('', 'reset');
   log('='.repeat(70), 'magenta');
   log('  Pipeline Complete', 'bright');
   log('='.repeat(70), 'magenta');
   log(`  Dataset:     ${files.name}`, 'reset');
   log(`  Variables:   ${verboseDataMap.length}`, 'reset');
-  log(`  Tables:      ${sortedTables.length} (${tableAgentTables.length} from TableAgent)`, 'reset');
+  log(`  Tables:      ${sortedTables.length} (${tableAgentTables.length} from TableGenerator)`, 'reset');
   log(`  Cuts:        ${cutsSpec.cuts.length + 1} (including Total)`, 'reset');
   log(`  Duration:    ${(totalDuration / 1000).toFixed(1)}s`, 'reset');
   log(`  Output:      outputs/${files.name}/${outputFolder}/`, 'reset');
   log('', 'reset');
+
+  // Get cost metrics for summary
+  const costMetrics = await getMetricsCollector().getSummary();
 
   // Write summary file
   const summary = {
@@ -548,7 +644,7 @@ async function runPipeline(datasetFolder: string) {
     },
     outputs: {
       variables: verboseDataMap.length,
-      tableAgentTables: tableAgentTables.length,
+      tableGeneratorTables: tableAgentTables.length,
       verifiedTables: sortedTables.length,
       cuts: cutsSpec.cuts.length + 1,
       bannerGroups: groupCount,
@@ -556,6 +652,25 @@ async function runPipeline(datasetFolder: string) {
         screeners: sortingMetadata.screenerCount,
         main: sortingMetadata.mainCount,
         other: sortingMetadata.otherCount,
+      },
+    },
+    costs: {
+      byAgent: costMetrics.byAgent.map(a => ({
+        agent: a.agentName,
+        model: a.model,
+        calls: a.calls,
+        inputTokens: a.totalInputTokens,
+        outputTokens: a.totalOutputTokens,
+        durationMs: a.totalDurationMs,
+        estimatedCostUsd: a.estimatedCostUsd,
+      })),
+      totals: {
+        calls: costMetrics.totals.calls,
+        inputTokens: costMetrics.totals.inputTokens,
+        outputTokens: costMetrics.totals.outputTokens,
+        totalTokens: costMetrics.totals.totalTokens,
+        durationMs: costMetrics.totals.durationMs,
+        estimatedCostUsd: costMetrics.totals.estimatedCostUsd,
       },
     },
   };

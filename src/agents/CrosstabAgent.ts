@@ -20,6 +20,7 @@ import {
 import { crosstabScratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
 import { getCrosstabPrompt } from '../prompts';
 import { retryWithPolicyHandling } from '../lib/retryWithPolicyHandling';
+import { recordAgentMetrics } from '../lib/observability';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -52,6 +53,7 @@ export async function processGroup(
   }
 
   const { abortSignal, hint } = options;
+  const startTime = Date.now();
 
   console.log(`[CrosstabAgent] Processing group: ${group.groupName} (${group.columns.length} columns)${hint ? ` [with hint: ${hint}]` : ''}`);
 
@@ -99,7 +101,7 @@ Begin validation now.
   // Wrap the AI call with retry logic for policy errors
   const retryResult = await retryWithPolicyHandling(
     async () => {
-      const { output } = await generateText({
+      const { output, usage } = await generateText({
         model: getCrosstabModel(),  // Task-based: crosstab model for complex validation
         system: systemPrompt,
         maxRetries: 3,  // SDK handles transient/network errors
@@ -124,6 +126,15 @@ Begin validation now.
       if (!output || !output.columns) {
         throw new Error(`Invalid agent response for group ${group.groupName}`);
       }
+
+      // Record metrics
+      const durationMs = Date.now() - startTime;
+      recordAgentMetrics(
+        'CrosstabAgent',
+        getCrosstabModelName(),
+        { input: usage?.inputTokens || 0, output: usage?.outputTokens || 0 },
+        durationMs
+      );
 
       return output;
     },

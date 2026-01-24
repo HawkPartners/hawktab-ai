@@ -32,6 +32,7 @@ import {
 } from '../lib/env';
 import { getBannerPrompt } from '../prompts';
 import { retryWithPolicyHandling } from '../lib/retryWithPolicyHandling';
+import { recordAgentMetrics } from '../lib/observability';
 import { bannerScratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
 
 // Types for internal processing
@@ -206,6 +207,7 @@ export class BannerAgent {
     console.log(`[BannerAgent] Starting agent-based extraction with ${images.length} images`);
     console.log(`[BannerAgent] Using model: ${getBannerModelName()}`);
     console.log(`[BannerAgent] Reasoning effort: ${getBannerReasoningEffort()}`);
+    const startTime = Date.now();
 
     // Check for cancellation before AI call
     if (abortSignal?.aborted) {
@@ -240,7 +242,7 @@ Begin analysis now.
         // CRITICAL: Image format is different in Vercel AI SDK
         // OpenAI Agents SDK: { type: 'input_image', image: 'data:image/png;base64,...' }
         // Vercel AI SDK: { type: 'image', image: Buffer.from(base64, 'base64') }
-        const { output } = await generateText({
+        const { output, usage } = await generateText({
           model: getBannerModel(),  // Task-based: banner model for vision/extraction tasks
           system: systemPrompt,
           maxRetries: 3,  // SDK handles transient/network errors
@@ -277,6 +279,15 @@ Begin analysis now.
         if (!output || !output.extractedStructure) {
           throw new Error('Invalid agent response structure');
         }
+
+        // Record metrics
+        const durationMs = Date.now() - startTime;
+        recordAgentMetrics(
+          'BannerAgent',
+          getBannerModelName(),
+          { input: usage?.inputTokens || 0, output: usage?.outputTokens || 0 },
+          durationMs
+        );
 
         return output;
       },
