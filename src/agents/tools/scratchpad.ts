@@ -94,6 +94,94 @@ export function clearScratchpadEntries(): void {
 // Type export for use in agent definitions
 export type ScratchpadTool = ReturnType<typeof createScratchpadTool>;
 
+// =============================================================================
+// Context-Isolated Scratchpad (for parallel execution)
+// =============================================================================
+
+/**
+ * Context-isolated scratchpad storage
+ * Allows parallel agent calls to have independent scratchpad entries
+ */
+const contextScratchpads = new Map<string, Array<{
+  timestamp: string;
+  agentName: string;
+  action: string;
+  content: string;
+}>>();
+
+/**
+ * Create a scratchpad tool for a specific context (e.g., tableId)
+ * Returns entries in isolation from other contexts
+ */
+export function createContextScratchpadTool(agentName: string, contextId: string) {
+  return tool({
+    description: 'Enhanced thinking space for reasoning models to show validation steps and reasoning. Use this to document your analysis process.',
+    inputSchema: z.object({
+      action: z.enum(['add', 'review']).describe('Action to perform: add new thoughts or review current analysis'),
+      content: z.string().describe('Content to add or review in the thinking space')
+    }),
+    execute: async ({ action, content }) => {
+      const timestamp = new Date().toISOString();
+
+      // Get or create context-specific array
+      if (!contextScratchpads.has(contextId)) {
+        contextScratchpads.set(contextId, []);
+      }
+      contextScratchpads.get(contextId)!.push({ timestamp, agentName, action, content });
+
+      // Log for real-time debugging with context
+      console.log(`[${agentName}:${contextId}] ${action}: ${content}`);
+
+      switch (action) {
+        case 'add':
+          return `[Thinking] Added: ${content}`;
+        case 'review':
+          return `[Review] ${content}`;
+        default:
+          return `[Scratchpad] Unknown action: ${action}`;
+      }
+    }
+  });
+}
+
+/**
+ * Get entries for a specific context and clear them
+ */
+export function getContextScratchpadEntries(contextId: string): Array<{
+  timestamp: string;
+  agentName: string;
+  action: string;
+  content: string;
+}> {
+  const entries = contextScratchpads.get(contextId) || [];
+  contextScratchpads.delete(contextId);
+  return entries;
+}
+
+/**
+ * Get all context entries (for aggregation after parallel execution)
+ */
+export function getAllContextScratchpadEntries(): Array<{
+  contextId: string;
+  entries: Array<{ timestamp: string; agentName: string; action: string; content: string }>;
+}> {
+  const all: Array<{
+    contextId: string;
+    entries: Array<{ timestamp: string; agentName: string; action: string; content: string }>;
+  }> = [];
+  for (const [contextId, entries] of contextScratchpads) {
+    all.push({ contextId, entries: [...entries] });
+  }
+  return all;
+}
+
+/**
+ * Clear all context scratchpads
+ */
+export function clearAllContextScratchpads(): void {
+  contextScratchpads.clear();
+}
+
 /**
  * Format scratchpad entries as markdown for human-readable output
  */
