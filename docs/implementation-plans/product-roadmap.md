@@ -184,6 +184,33 @@ Raina's comment: "If they don't have to spec out a banner, they can just say, ge
 
 ---
 
+### 2.8 Sample Size Review (HITL Enhancement)
+
+After R calculates base sizes, show sample counts to user before final output:
+- Display base n per cut across all banner groups
+- Flag zero-count (n=0) and low-count (n<30) cuts
+- User can mark cuts to exclude from final output or acknowledge warnings
+
+**Why It Matters**: Catches data issues before they appear in final deliverables. Users see exactly what sample sizes they're working with.
+
+**Level of Effort**: Medium (integrate with existing HITL flow)
+
+---
+
+### 2.9 Demo Table at Top
+
+Joe's tabs include a summary "demo table" at the very top:
+- Takes all banner cuts and displays them as ROWS instead of columns
+- Shows distribution/breakdown for each cut
+- Gives quick high-level overview of sample composition
+- Appears before all other tables
+
+**Implementation**: Derived table generated in R using bannerGroups metadata. Similar pattern to T2B/B2B derived tables.
+
+**Level of Effort**: Medium (new table type, but follows existing patterns)
+
+---
+
 ## Phase 3: Productization
 
 What's needed to run as a service others can use.
@@ -274,6 +301,72 @@ Running AI models costs money. For external users:
 
 ---
 
+### 3.5 Marketing Site Architecture
+
+**Current Approach (Monorepo)**:
+Keep everything in one Next.js repo, organized with route groups:
+
+```
+/app
+├── (marketing)/           # Marketing pages
+│   ├── page.tsx           # Landing page at /
+│   ├── pricing/page.tsx   # /pricing
+│   └── layout.tsx         # Marketing layout (no auth)
+│
+├── (product)/             # The actual app
+│   ├── dashboard/         # /dashboard
+│   ├── projects/          # /projects
+│   └── layout.tsx         # Product layout (auth, sidebar)
+```
+
+This keeps things simple while we're iterating on reliability and core features.
+
+**Future Approach (Split When Commercializing)**:
+
+When ready for external users (Antares, etc.), split into separate projects:
+
+| Domain | What It Serves | Where It Lives |
+|--------|----------------|----------------|
+| `hawktab.ai` | Marketing site (landing, pricing, docs) | Separate repo or Webflow/Framer |
+| `app.hawktab.ai` | The product | This repo |
+
+**Why Split Eventually**:
+- **Deployment risk**: Marketing changes shouldn't risk breaking the production app
+- **Change velocity**: Marketing iterates fast (copy, pricing, testimonials); app needs stability
+- **Who edits**: Marketing person can update landing page without touching code
+- **Blast radius**: Bug in marketing doesn't take down the product
+
+**Migration Workflow**:
+1. Create new marketing site (new repo, or Webflow/Framer)
+2. Migrate content from `(marketing)` folder
+3. Configure DNS: `hawktab.ai` → marketing, `app.hawktab.ai` → product
+4. Delete `(marketing)` folder from this repo
+5. Cross-link between sites (marketing "Get Started" → app, app "Home" → marketing)
+
+**Level of Effort**: Low now (just folder organization), Medium later (migration + DNS)
+
+---
+
+### 3.6 Logging and Observability
+
+Replace scattered `console.*` calls with structured, context-rich logging.
+
+**What's Needed**:
+- Wide events for pipeline operations (each agent call, R execution, etc.)
+- Environment-aware log levels (verbose in dev, errors only in prod)
+- Correlation IDs to trace a job through all stages
+- Error monitoring integration (Sentry)
+
+**Implementation**:
+- Use structured logging library (pino or similar)
+- Add context to each log (jobId, userId, stage)
+- Sentry for error alerting and stack traces
+- PostHog for usage analytics (minimal)
+
+**Level of Effort**: Medium (2-3 days for full implementation)
+
+---
+
 ## Phase 4: Enterprise Features (Future)
 
 Features for larger deployments:
@@ -286,6 +379,70 @@ Features for larger deployments:
 - **Batch processing**: Run multiple projects in parallel
 - **Template management**: Save and reuse banner/table configurations
 - **Version history**: Track changes to outputs over time
+
+---
+
+## Long-term Vision: Beyond Tabs
+
+### The Market Reality
+
+From the Antares conversation (January 2026):
+
+> **Bob**: "I think the industry will never go away from full tables just because that's who and what we are."
+
+Traditional crosstabs aren't going anywhere. But tools like Displayr and Q are adding AI features for exploration—not just tab production. The industry is shifting toward wanting both: reliable tabs AND the ability to ask follow-up questions.
+
+### The Opportunity
+
+Once the pipeline is rock-solid reliable, we have something valuable: a **validated data foundation**.
+
+Every crosstab run produces artifacts:
+- Validated data map (variables verified against real data)
+- Approved banner (cuts that work, human-validated via HITL)
+- Survey context (question text, scale meanings)
+- Proven R expressions (code that actually executed)
+
+These artifacts aren't just byproducts—they're the foundation for follow-up queries.
+
+### The Vision: Constrained but Conversational
+
+After tabs are delivered, users could interact via chat:
+
+> "Show me Q5 by region"
+> "Break out the top 3 brands by tier"
+> "What if we combined Tier 1 and 2?"
+
+The agent doesn't start from scratch. It uses the validated artifacts:
+- Already knows the table formats from the initial run
+- Already has working R expressions for each cut
+- Just needs to recombine existing pieces or add new variables
+- Calls the existing pipeline tools (R script generator, significance testing)
+- Surfaces base sizes via HITL before finalizing
+
+**The constraint is invisible to the user.** They experience "I ask questions, I get accurate tables." But architecturally, the AI is grounded in artifacts that already executed successfully—it can't hallucinate variables that don't exist.
+
+### Why This Is More Reliable Than Alternatives
+
+Standard AI-on-data failure mode:
+1. User asks question
+2. AI interprets data structure (often wrong)
+3. AI generates code (often wrong)
+4. Output looks plausible but is subtly incorrect
+
+HawkTab inverts this:
+1. Validation happens once, with human-in-the-loop
+2. AI is constrained to artifacts that already worked
+3. Follow-up queries inherit the validated foundation
+4. Errors fail to execute rather than producing plausible-looking wrong answers
+
+### When to Build This
+
+After:
+1. Reliability plan is complete
+2. External users (Antares, others) are using the product successfully
+3. Clear product-market fit for crosstabs
+
+Then prototype the conversational interface. Test whether "constrained but comprehensive" feels right to users.
 
 ---
 
@@ -304,30 +461,56 @@ Features for larger deployments:
 4. Multi-sheet workbooks
 5. Stat testing configuration
 6. PDF + Excel input support
+7. Demo table at top (sample composition overview)
+8. Sample size review in HITL flow
 
 ### Medium-Term (Productization MVP)
 1. Cloud deployment (API + job queue)
-2. Basic authentication
+2. Basic authentication (WorkOS AuthKit)
 3. Simple web UI for upload/download
 4. HITL review interface (polish existing)
+5. Marketing site architecture (route groups now, prepare for split)
+6. Logging and observability (Sentry + structured logs)
 
 ### Longer-Term (Production Ready)
 1. Multi-tenant support
 2. Usage tracking and billing
 3. Full self-service UI
-4. Enterprise features as needed
+4. Split marketing site to separate project (Webflow/Framer or dedicated repo)
+5. Banner inference (AI-generated cuts from survey + datamap)
+6. Enterprise features as needed
+
+### Future (Post Product-Market Fit)
+1. Conversational interface for follow-up queries
+2. Chat-based agent using validated artifacts from initial tabs
 
 ---
 
-## Key Decisions to Make
+## Technology Stack (Decided)
 
-| Decision | Options | Recommendation |
-|----------|---------|----------------|
-| **Hosting platform** | Vercel, AWS, Railway, Self-hosted | Start with Vercel + AWS Lambda |
-| **Auth provider** | Clerk, Auth0, NextAuth, Custom | Clerk (fastest to integrate) |
-| **Database** | Postgres, PlanetScale, Supabase | Supabase (Postgres + auth + storage) |
-| **Job queue** | AWS SQS, Redis/BullMQ, Inngest | Inngest (serverless-friendly) |
-| **File storage** | S3, Cloudflare R2, Supabase Storage | S3 (most mature) |
+Based on research and account setup, the following stack is planned:
+
+| Component | Technology | Why |
+|-----------|------------|-----|
+| **Authentication** | WorkOS AuthKit | Free for 1M MAUs, SSO/SAML available for enterprise later |
+| **Database** | Convex | Real-time subscriptions, TypeScript-native, serverless |
+| **File Storage** | Cloudflare R2 | S3-compatible, no egress fees |
+| **R Execution** | Railway Docker | Vercel serverless doesn't have R; Railway supports long processes |
+| **Error Monitoring** | Sentry | Know when things break, stack traces |
+| **Analytics** | PostHog | Usage tracking (minimal) |
+| **Hosting** | Vercel | Easy Next.js deployment for UI layer |
+
+**Key Architectural Decisions**:
+- **Real-time updates**: Convex provides subscriptions - when job status changes, all clients update automatically (no polling)
+- **Project-based isolation**: Each crosstab job is a distinct project with its own files and outputs
+- **Remote R execution**: Railway Docker container exposes HTTP endpoint for R scripts
+
+**Accounts Created**:
+- Convex: hawktab-ai
+- Cloudflare R2: hawktab-ai bucket
+- Railway: account ready
+- Sentry: javascript-nextjs project
+- PostHog: hawktab-ai
 
 ---
 
@@ -373,4 +556,5 @@ This validates that the approach is novel and worth pursuing.
 ---
 
 *Created: January 22, 2026*
+*Updated: January 24, 2026 (consolidated from future-enhancements.md)*
 *Status: Planning*
