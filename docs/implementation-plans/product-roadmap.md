@@ -6,9 +6,22 @@ This document outlines the path from HawkTab AI's current state (reliable local 
 
 **Current State**: Pipeline working end-to-end locally. Reliability validation in progress.
 
-**Target State**: Cloud-hosted service with multi-tenant support, configurable output options, and self-service UI.
+**Target State**: Cloud-hosted service with multi-tenant support, configurable output options, and self-service UI—plus AI-powered data exploration.
 
 **Philosophy**: Ship incrementally. Each phase delivers usable value while building toward the full vision.
+
+---
+
+### Market Positioning
+
+| Phase | What We Are | Who We Serve | Value Proposition |
+|-------|-------------|--------------|-------------------|
+| **MVP** | Best automated crosstab product | Fielding partners, Hawk Partners internal | "Create crosstabs faster than anyone" |
+| **Growth** | Trusted data exploration platform | Consultancies, insights firms, strategists, marketers | "Non-technical people can analyze data trustworthily" |
+
+**Crosstabs are the foot in the door.** It's a valuable market—80 people at Hawk Partners plus external partners like Antares. Becoming the best automated crosstab product is a strong position.
+
+**Exploration is the bigger play.** The real unlock is letting non-technical users explore data in a way that's trustworthy because it's validated on crosstabs they already trust. This captures the rest of the market: people who don't want to create tabs themselves but do want insights from the data.
 
 ---
 
@@ -166,25 +179,70 @@ From the Antares conversation:
 
 ---
 
-### 2.7 Banner Inference (Future Enhancement)
+### 2.7 Minimal Banner Plan Support
 
-Raina's comment: "If they don't have to spec out a banner, they can just say, generally, like, I want to look at specialty, tiers, and whatever, and then it would just do it."
+From the Antares conversation: "Sometimes they get banner plans with no filter—just 'by specialty and by gender'—and the analyst has to find the right variable."
 
-**Concept**: Generate suggested banner from survey + datamap without explicit banner plan.
+**The Problem**: Current system requires banner plans with explicit filter expressions. But real-world banner plans often just say "by Specialty" without specifying which variable or how to filter.
 
-**Implementation Sketch**:
-1. Analyze datamap for common cut variables (demographics, segments, tiers)
-2. Rank by likely usefulness (sample distribution, typical cut patterns)
-3. Generate suggested banner groups
-4. Present to user for approval/modification via HITL
+**What's Needed**:
+- Support banner plans with just column names (no expressions)
+- AI infers the correct datamap variable from context
+- CrosstabAgent generates the R expression
+- HITL confirms the inference before proceeding
 
-**Level of Effort**: High (this is a significant feature, defer to later phase)
+**Implementation**:
+1. BannerAgent detects "expression-less" columns
+2. Pass column labels + datamap to CrosstabAgent
+3. CrosstabAgent matches labels to variables (e.g., "Specialty" → `S2` or `specialty_var`)
+4. Generate expressions and flag confidence levels
+5. HITL review for uncertain matches
 
-**Note**: This is a differentiator but not required for initial production use.
+**Level of Effort**: Medium (3-4 hours) - CrosstabAgent already does fuzzy matching; this extends it
+
+**Note**: This is a prerequisite for AI-Recommended Banner Cuts (2.8) since both require expression generation from intent.
 
 ---
 
-### 2.8 Sample Size Review (HITL Enhancement)
+### 2.8 AI-Recommended Banner Cuts (Future Enhancement)
+
+**The Vision**: Alongside the user's primary banner, generate a second AI-recommended banner with strategically interesting cuts.
+
+**Why This Matters**:
+- Human banner plans typically stick to demographics (age, gender, region)
+- Real insights often come from cutting by attitudinal or behavioral variables
+- Example: "What if we cut by those who selected X on question A3?"
+- AI can analyze the full survey and suggest cuts humans wouldn't think of
+
+**How It Works**:
+1. User uploads banner plan → becomes Banner 1 (primary)
+2. Post-CrosstabAgent, pass parsed banner structure to RecommendedCutsAgent
+3. Agent analyzes: datamap, survey questions, existing cuts
+4. Agent asks: "What cuts would be unique and strategically interesting?"
+5. Generates Banner 2 (AI-recommended) with novel expressions
+6. HITL review: user can accept, modify, or reject suggestions
+7. Both banners run through pipeline
+
+**What Makes a Cut "Interesting"**:
+- Attitudinal/behavioral rather than demographic
+- Creates meaningful segments (not just random splits)
+- Reveals differences that matter for the research question
+- Sample sizes are sufficient for analysis
+
+**Implementation**:
+1. New agent: `RecommendedCutsAgent`
+2. Input: datamap variables, CrosstabAgent output (existing cuts), survey document
+3. Output: suggested banner groups with expressions + rationale
+4. Can reuse CrosstabAgent for expression validation
+5. Multi-sheet output: primary banner + AI recommendations
+
+**Level of Effort**: High (this is a significant feature, defer to post-MVP)
+
+**Note**: This is a differentiator that moves us from "tabs tool" to "insights tool."
+
+---
+
+### 2.9 Sample Size Review (HITL Enhancement)
 
 After R calculates base sizes, show sample counts to user before final output:
 - Display base n per cut across all banner groups
@@ -197,7 +255,7 @@ After R calculates base sizes, show sample counts to user before final output:
 
 ---
 
-### 2.9 Demo Table at Top
+### 2.10 Demo Table at Top
 
 Joe's tabs include a summary "demo table" at the very top:
 - Takes all banner cuts and displays them as ROWS instead of columns
@@ -382,58 +440,167 @@ Features for larger deployments:
 
 ---
 
-## Long-term Vision: Beyond Tabs
+## Long-term Vision: AI-Powered Data Exploration
 
-### The Market Reality
+### The Strategic Position
+
+**Creating crosstabs is how we get our foot in the door.** It's valuable—80 people at Hawk Partners will use this, plus fielding partners like Antares. Becoming the best automated crosstab product is a strong market position.
+
+**But the bigger play is exploration.** The real value is letting non-technical people—consultants, strategists, marketers—analyze data in a way that's trustworthy because it's validated on crosstabs they already trust.
 
 From the Antares conversation (January 2026):
-
 > **Bob**: "I think the industry will never go away from full tables just because that's who and what we are."
 
-Traditional crosstabs aren't going anywhere. But tools like Displayr and Q are adding AI features for exploration—not just tab production. The industry is shifting toward wanting both: reliable tabs AND the ability to ask follow-up questions.
+Traditional crosstabs aren't going anywhere. But the industry is shifting toward wanting both: reliable tabs AND the ability to ask follow-up questions.
 
-### The Opportunity
+---
 
-Once the pipeline is rock-solid reliable, we have something valuable: a **validated data foundation**.
+### The "Lego Pieces" Architecture
 
-Every crosstab run produces artifacts:
-- Validated data map (variables verified against real data)
-- Approved banner (cuts that work, human-validated via HITL)
-- Survey context (question text, scale meanings)
-- Proven R expressions (code that actually executed)
+Our separation of concerns creates **composable building blocks** that AI agents can work with:
 
-These artifacts aren't just byproducts—they're the foundation for follow-up queries.
+| Artifact | What It Contains | How Agents Use It |
+|----------|------------------|-------------------|
+| **Banner Cuts** | Groups, columns, R expressions | View existing cuts, create new ones |
+| **Table Definitions** | Structure, rows, NET logic | View tables, modify structure, derive new tables |
+| **DataMap** | Variables, labels, types | Find relevant questions, validate expressions |
+| **Survey Document** | Question text, scales, context | Understand meaning, find related questions |
+| **tables.json** | Calculated results | Show answers, verify hypotheses |
 
-### The Vision: Constrained but Conversational
+**Key Insight**: Every artifact we create should be viewable/readable via tool calls. Agents should be able to:
+- `view_current_tables()` - See what tables exist
+- `view_current_cuts()` - See what banner cuts are defined
+- `view_datamap_variables()` - Browse available variables
+- `create_table()` - Add a new table (reusing existing agents)
+- `create_cut()` - Add a new banner cut (with HITL validation)
+- `modify_table()` - Adjust an existing table's structure
 
-After tabs are delivered, users could interact via chat:
+This "Lego" approach means exploration isn't a separate system—it's the same pipeline with a conversational interface on top.
 
-> "Show me Q5 by region"
-> "Break out the top 3 brands by tier"
-> "What if we combined Tier 1 and 2?"
+---
 
-The agent doesn't start from scratch. It uses the validated artifacts:
-- Already knows the table formats from the initial run
-- Already has working R expressions for each cut
-- Just needs to recombine existing pieces or add new variables
-- Calls the existing pipeline tools (R script generator, significance testing)
-- Surfaces base sizes via HITL before finalizing
+### Agent Architecture for Exploration
 
-**The constraint is invisible to the user.** They experience "I ask questions, I get accurate tables." But architecturally, the AI is grounded in artifacts that already executed successfully—it can't hallucinate variables that don't exist.
+**Orchestrator Pattern**: Main interface agent speaks to user, delegates to specialized sub-agents.
 
-### Why This Is More Reliable Than Alternatives
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     ORCHESTRATOR AGENT                           │
+│   - Speaks to user in natural language                          │
+│   - Interprets questions and decides which sub-agent to invoke  │
+│   - Synthesizes responses into human-readable answers           │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+         ┌────────────────────┼────────────────────┐
+         │                    │                    │
+         ▼                    ▼                    ▼
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│ DATA ANALYST    │  │ BANNER CUT      │  │ TABLE BUILDER   │
+│ AGENT           │  │ AGENT           │  │ AGENT           │
+├─────────────────┤  ├─────────────────┤  ├─────────────────┤
+│ - Find relevant │  │ - Generate new  │  │ - Create new    │
+│   tables        │  │   cuts from     │  │   table defs    │
+│ - "Q about X    │  │   datamap       │  │ - Modify        │
+│   relates to    │  │ - HITL for base │  │   existing      │
+│   table A3"     │  │   size confirm  │  │   tables        │
+│ - Surface       │  │ - Validate      │  │ - Rerun agents  │
+│   existing data │  │   expressions   │  │   with specs    │
+└─────────────────┘  └─────────────────┘  └─────────────────┘
+```
 
-Standard AI-on-data failure mode:
+**Data Analyst Agent**:
+- User asks: "What do people think about brand X?"
+- Agent searches tables, finds A3 has brand perception data
+- Returns existing table or suggests relevant cut
+
+**Banner Cut Agent**:
+- User asks: "Can I see this by people who selected 'very interested'?"
+- Agent finds the variable, generates R expression
+- HITL: "This cut would have n=47. Proceed?"
+- Adds cut to banner, reruns pipeline for that table
+
+**Table Builder Agent**:
+- User wants a custom table combining questions
+- Agent takes existing table as base, modifies via VerificationAgent
+- Inherits all validated logic (NETs, T2B, etc.)
+
+---
+
+### The Validated Environment Advantage
+
+The system doesn't need much user input to understand the project:
+- **Survey document** → what questions were asked
+- **Banner plan** → how the client thinks about segments
+- **DataMap** → what variables exist
+- **Prior runs** → what analysis has already been done
+
+**Standard AI-on-data failure mode**:
 1. User asks question
 2. AI interprets data structure (often wrong)
 3. AI generates code (often wrong)
 4. Output looks plausible but is subtly incorrect
 
-HawkTab inverts this:
+**HawkTab approach**:
 1. Validation happens once, with human-in-the-loop
 2. AI is constrained to artifacts that already worked
 3. Follow-up queries inherit the validated foundation
 4. Errors fail to execute rather than producing plausible-looking wrong answers
+
+**The constraint is invisible to the user.** They experience "I ask questions, I get accurate tables." Architecturally, the AI is grounded in artifacts that already executed successfully—it can't hallucinate variables that don't exist.
+
+---
+
+### Example Interaction Flow
+
+```
+User: "Show me Q5 by region"
+
+Orchestrator: Routes to Data Analyst Agent
+Data Analyst: Finds table Q5, checks if "region" cut exists
+→ If exists: Returns table with region banner
+→ If not: Routes to Banner Cut Agent
+
+Banner Cut Agent:
+- Searches datamap for region variable
+- Finds S4 (region) with options: Northeast, Southeast, etc.
+- Generates R expression
+- HITL: "Region cut would have base sizes: NE=89, SE=112, MW=97, W=134. Add this cut?"
+
+User: "Yes"
+
+Table Builder:
+- Adds region to banner for Q5
+- Reruns R script (just Q5 × region)
+- Returns: Table Q5 with region columns, significance letters
+
+User: "What if we combined Northeast and Southeast?"
+
+Banner Cut Agent:
+- Creates combined expression: S4 %in% c(1, 2)
+- HITL: "Combined East region would have n=201. Proceed?"
+- Reruns with new cut
+```
+
+---
+
+### Implementation Notes
+
+**Reuse Existing Agents**: The exploration agents don't need to reinvent the wheel:
+- Banner Cut Agent → Calls CrosstabAgent with specific instructions
+- Table Builder Agent → Calls TableAgent + VerificationAgent
+- All expressions validated through existing pipelines
+
+**Human-in-the-Loop Throughout**:
+- Base sizes confirmed before running expensive operations
+- Uncertain variable matches flagged for review
+- Users can modify AI suggestions before execution
+
+**Incremental Execution**:
+- Don't rerun entire pipeline for one new cut
+- Cache validated artifacts, only recalculate what changed
+- Fast feedback loop for exploration
+
+---
 
 ### When to Build This
 
@@ -442,7 +609,13 @@ After:
 2. External users (Antares, others) are using the product successfully
 3. Clear product-market fit for crosstabs
 
-Then prototype the conversational interface. Test whether "constrained but comprehensive" feels right to users.
+Then prototype the exploration interface:
+1. Start with Data Analyst Agent (read-only, surface existing tables)
+2. Add Banner Cut Agent (create new cuts with HITL)
+3. Add Table Builder Agent (modify table structures)
+4. Build conversational UI on top
+
+Test whether "constrained but comprehensive" feels right to users.
 
 ---
 
@@ -463,6 +636,7 @@ Then prototype the conversational interface. Test whether "constrained but compr
 6. PDF + Excel input support
 7. Demo table at top (sample composition overview)
 8. Sample size review in HITL flow
+9. **Minimal banner plan support** (prerequisite for recommended cuts)
 
 ### Medium-Term (Productization MVP)
 1. Cloud deployment (API + job queue)
@@ -477,12 +651,21 @@ Then prototype the conversational interface. Test whether "constrained but compr
 2. Usage tracking and billing
 3. Full self-service UI
 4. Split marketing site to separate project (Webflow/Framer or dedicated repo)
-5. Banner inference (AI-generated cuts from survey + datamap)
+5. **AI-Recommended Banner Cuts** (Banner 2 with strategic suggestions)
 6. Enterprise features as needed
 
-### Future (Post Product-Market Fit)
-1. Conversational interface for follow-up queries
-2. Chat-based agent using validated artifacts from initial tabs
+### Future (Post Product-Market Fit: AI Exploration)
+
+**The Progression**:
+- Crosstabs → foot in the door, best automated crosstab product
+- Exploration → capture the rest of the market, serve non-technical users
+
+1. **Tool-callable artifacts** - Make all pipeline outputs (tables, cuts, datamap) readable via function calls
+2. **Data Analyst Agent** - Read-only agent that surfaces existing tables based on user questions
+3. **Banner Cut Agent** - Creates new cuts with HITL for base size confirmation
+4. **Table Builder Agent** - Modifies table structures, derives new tables
+5. **Orchestrator Agent** - Conversational interface that routes to sub-agents
+6. **Exploration UI** - Chat interface for follow-up queries on validated data
 
 ---
 
@@ -556,5 +739,5 @@ This validates that the approach is novel and worth pursuing.
 ---
 
 *Created: January 22, 2026*
-*Updated: January 24, 2026 (consolidated from future-enhancements.md)*
+*Updated: January 25, 2026 (expanded AI exploration vision, added Lego pieces architecture, recommended cuts feature)*
 *Status: Planning*
