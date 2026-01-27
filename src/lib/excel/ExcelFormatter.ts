@@ -35,8 +35,11 @@ export interface TablesJsonMetadata {
 
 export interface TableData {
   tableId: string;
+  questionId: string;
   questionText: string;
   tableType: 'frequency' | 'mean_rows';
+  isDerived: boolean;
+  sourceTableId: string;
   data: Record<string, unknown>;
 }
 

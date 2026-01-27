@@ -39,8 +39,11 @@ export interface MeanCutData {
 
 export interface MeanRowsTableData {
   tableId: string;
+  questionId: string;
   questionText: string;
   tableType: 'mean_rows';
+  isDerived: boolean;
+  sourceTableId: string;
   data: Record<string, MeanCutData>;
 }
 
@@ -118,8 +121,22 @@ export function renderMeanRowsTable(
   // -------------------------------------------------------------------------
   // Row 1: Question Text (Title)
   // -------------------------------------------------------------------------
+  // Build title: "QuestionId: QuestionText" if questionId exists
+  // Add derived indicator if applicable
+  let titleText = table.questionText;
+  if (table.questionId) {
+    // Check if questionText already starts with questionId (e.g., "A1: ...")
+    const startsWithId = table.questionText.toUpperCase().startsWith(table.questionId.toUpperCase());
+    if (!startsWithId) {
+      titleText = `${table.questionId}: ${table.questionText}`;
+    }
+  }
+  if (table.isDerived && table.sourceTableId) {
+    titleText += ` [Derived from ${table.sourceTableId}]`;
+  }
+
   const titleCell = worksheet.getCell(currentRow, 1);
-  titleCell.value = table.questionText;
+  titleCell.value = titleText;
   titleCell.font = FONTS.title;
   titleCell.fill = FILLS.title;
   titleCell.alignment = ALIGNMENTS.left;

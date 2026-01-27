@@ -170,7 +170,7 @@ Test script validated on primary dataset.
 
 **Status**: IN PROGRESS
 
-Before creating golden datasets and starting formal Part 5 iteration, address formatting and consistency issues discovered in pipeline runs.
+Before creating golden datasets and starting formal Part 5 iteration, address formatting and consistency issues discovered in pipeline runs. Realizing we need to match closer to Joe's output because it is more readable and easier to understand.. Additionally, ask for GPT-5 access because I'm anticipating more power needed from VerificationAgent.. Need to find where the following goes (sorting answer  options within a table, currently if many scale questions in one quesiton model might not create a separate table per answer option for the full scale., the spravato hcp messaging survey I'm doing is a good test case for this., test this next after stacked data support is implemented. also mean rows for scales. joes output is also just better for reporting.)
 
 **Latest Run Stats** (2026-01-24): 17 minutes, 127 tables, $0.52
 

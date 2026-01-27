@@ -595,11 +595,16 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
   lines.push(`# -----------------------------------------------------------------------------`);
   lines.push('');
 
+  const questionId = escapeRString(table.questionId || '');
+  const sourceTableId = escapeRString(table.sourceTableId || '');
+
   lines.push(`table_${sanitizeVarName(table.tableId)} <- list(`);
   lines.push(`  tableId = "${tableId}",`);
+  lines.push(`  questionId = "${questionId}",`);
   lines.push(`  questionText = "${questionText}",`);
   lines.push(`  tableType = "frequency",`);
   lines.push(`  isDerived = ${table.isDerived ? 'TRUE' : 'FALSE'},`);
+  lines.push(`  sourceTableId = "${sourceTableId}",`);
   lines.push('  data = list()');
   lines.push(')');
   lines.push('');
@@ -715,11 +720,16 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
   lines.push(`# -----------------------------------------------------------------------------`);
   lines.push('');
 
+  const questionId = escapeRString(table.questionId || '');
+  const sourceTableId = escapeRString(table.sourceTableId || '');
+
   lines.push(`table_${sanitizeVarName(table.tableId)} <- list(`);
   lines.push(`  tableId = "${tableId}",`);
+  lines.push(`  questionId = "${questionId}",`);
   lines.push(`  questionText = "${questionText}",`);
   lines.push(`  tableType = "mean_rows",`);
   lines.push(`  isDerived = ${table.isDerived ? 'TRUE' : 'FALSE'},`);
+  lines.push(`  sourceTableId = "${sourceTableId}",`);
   lines.push('  data = list()');
   lines.push(')');
   lines.push('');
