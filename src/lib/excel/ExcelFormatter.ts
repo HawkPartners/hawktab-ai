@@ -175,28 +175,19 @@ export class ExcelFormatter {
     tables: Record<string, TableData>,
     tableIds: string[],
     context: RenderContext,
-    cutCount: number,
+    _cutCount: number,
     valueType: ValueType
   ): void {
-    // Set column widths
-    setJoeColumnWidths(worksheet, cutCount);
-
-    // Render headers (once at top)
+    // Render headers (once at top) - this builds the column layout
     const headerInfo = renderJoeHeaders(worksheet, context.bannerGroups, TABLE_SPACING.startRow);
     let currentRow = TABLE_SPACING.startRow + headerInfo.headerRowCount;
 
-    // Track previous questionId for gap logic
-    let prevQuestionId: string | null = null;
+    // Set column widths (needs headerInfo for spacer columns)
+    setJoeColumnWidths(worksheet, headerInfo);
 
-    // Render each table
+    // Render each table - NO gaps between tables (Joe style = continuous flow)
     for (const tableId of tableIds) {
       const table = tables[tableId];
-
-      // Add gap between different questions (but not between base + derived)
-      if (prevQuestionId !== null && prevQuestionId !== table.questionId) {
-        currentRow += 1; // Gap between questions
-      }
-      prevQuestionId = table.questionId;
 
       if (table.tableType === 'frequency') {
         const result = renderJoeStyleFrequencyTable(

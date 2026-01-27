@@ -10,7 +10,7 @@
  */
 
 import type { Worksheet, Cell, Borders } from 'exceljs';
-import { FILLS, BORDERS, FONTS, ALIGNMENTS } from '../styles';
+import { FILLS, FONTS, ALIGNMENTS, getGroupFill } from '../styles';
 import type { JoeHeaderInfo } from './joeStyleFrequency';
 
 // =============================================================================
@@ -55,14 +55,6 @@ export interface MeanRowsTableData {
 const CONTEXT_COL = 1;
 const LABEL_COL = 2;
 
-function valueColOffset(cutIndex: number): number {
-  return 3 + (cutIndex * 2);
-}
-
-function sigColOffset(cutIndex: number): number {
-  return 4 + (cutIndex * 2);
-}
-
 // =============================================================================
 // Helper Functions
 // =============================================================================
@@ -71,22 +63,54 @@ function formatSignificance(sig: string[] | string | undefined): string {
   if (!sig) return '';
   if (typeof sig === 'string') return sig || '';
   if (Array.isArray(sig) && sig.length > 0) {
-    return sig.join(',');
+    // No commas - just concatenate letters (e.g., "AB" not "A,B")
+    return sig.join('');
   }
   return '';
 }
 
-function applyBorderForColumn(
+/**
+ * Apply Joe-style border based on position
+ * Joe format uses minimal borders - thick only at structural boundaries
+ * Double-line border goes UNDER group names, NOT between columns
+ */
+function applyJoeBorder(
   cell: Cell,
-  colIndex: number,
-  groupBoundaries: number[],
-  isLastCol: boolean
-): void {
-  if (groupBoundaries.includes(colIndex) || isLastCol) {
-    cell.border = BORDERS.groupSeparatorRight as Partial<Borders>;
-  } else {
-    cell.border = BORDERS.thin as Partial<Borders>;
+  options: {
+    isContextCol?: boolean;  // Context column (thick left AND right)
+    isLastCol?: boolean;
+    isFirstRow?: boolean;
+    isLastRow?: boolean;
+    isAfterLabel?: boolean;
+    isBaseRow?: boolean;     // Base row (thick bottom for separation)
   }
+): void {
+  const { isContextCol, isLastCol, isFirstRow, isLastRow, isAfterLabel, isBaseRow } = options;
+
+  const border: Partial<Borders> = {};
+
+  if (isContextCol) {
+    border.left = { style: 'medium', color: { argb: 'FF000000' } };
+    border.right = { style: 'medium', color: { argb: 'FF000000' } };
+  }
+  if (isLastCol) {
+    border.right = { style: 'medium', color: { argb: 'FF000000' } };
+  }
+  if (isFirstRow) {
+    border.top = { style: 'medium', color: { argb: 'FF000000' } };
+  }
+  if (isLastRow) {
+    border.bottom = { style: 'medium', color: { argb: 'FF000000' } };
+  }
+  if (isBaseRow) {
+    // Base row gets thick bottom border to separate from data
+    border.bottom = { style: 'medium', color: { argb: 'FF000000' } };
+  }
+  if (isAfterLabel) {
+    border.left = { style: 'medium', color: { argb: 'FF000000' } };
+  }
+
+  cell.border = border;
 }
 
 /**
@@ -113,7 +137,15 @@ export interface JoeMeanRowsRenderResult {
 
 /**
  * Render a single mean_rows table in Joe format
- * Returns the end row for chaining
+ *
+ * Joe format:
+ * - Purple context column (merged per table)
+ * - Purple + bold+italic base row
+ * - Yellow label column
+ * - Color-coded data cells per banner group
+ * - Spacer columns between banner groups
+ * - Minimal borders (thick at structural boundaries only)
+ * - Bold red significance letters (no commas)
  */
 export function renderJoeStyleMeanRowsTable(
   worksheet: Worksheet,
@@ -121,66 +153,90 @@ export function renderJoeStyleMeanRowsTable(
   startRow: number,
   headerInfo: JoeHeaderInfo
 ): JoeMeanRowsRenderResult {
-  const { cutOrder, groupBoundaries } = headerInfo;
+  const { cuts, groupSpacerCols, bannerGroups } = headerInfo;
   let currentRow = startRow;
   const contextMergeStart = currentRow;
 
   // Get row keys from Total cut
   const totalCutData = table.data['Total'];
   const rowKeys = Object.keys(totalCutData || {}).filter(k => k !== 'stat_letter');
+  const totalDataRows = rowKeys.length;
+  const numGroups = bannerGroups.length;
 
   // -------------------------------------------------------------------------
-  // Base (n) row
+  // Base (n) row - Purple background, bold+italic text, thick bottom border
+  // NO merge - value col gets n, sig col empty
   // -------------------------------------------------------------------------
   const firstRowKey = rowKeys[0];
 
-  // Context column (will be merged later)
+  // Context column - purple, thick left+right + top + bottom border
   const baseContextCell = worksheet.getCell(currentRow, CONTEXT_COL);
   baseContextCell.value = '';
-  baseContextCell.fill = FILLS.labelColumn;
-  baseContextCell.border = BORDERS.thin as Partial<Borders>;
+  baseContextCell.fill = FILLS.joeContext;
+  applyJoeBorder(baseContextCell, { isContextCol: true, isFirstRow: true, isBaseRow: true });
 
-  // Label column
+  // Label column - purple, bold+italic, thick bottom border
   const baseLabelCell = worksheet.getCell(currentRow, LABEL_COL);
-  baseLabelCell.value = 'Base (n)';
-  baseLabelCell.font = FONTS.label;
-  baseLabelCell.fill = FILLS.baseRow;
+  const baseText = table.questionText
+    ? `Base: ${table.questionText.substring(0, 50)}${table.questionText.length > 50 ? '...' : ''}`
+    : 'Base (n)';
+  baseLabelCell.value = baseText;
+  baseLabelCell.font = FONTS.joeBaseBold;
+  baseLabelCell.fill = FILLS.joeBase;
   baseLabelCell.alignment = ALIGNMENTS.left;
-  baseLabelCell.border = BORDERS.thin as Partial<Borders>;
+  applyJoeBorder(baseLabelCell, { isFirstRow: true, isBaseRow: true });
 
-  // Base n for each cut
-  for (let i = 0; i < cutOrder.length; i++) {
-    const cutName = cutOrder[i].name;
-    const cutData = table.data[cutName];
+  // Base n for each cut - purple background, bold+italic, NO merge
+  for (const cut of cuts) {
+    const cutData = table.data[cut.name];
     const rowData = cutData?.[firstRowKey] as MeanRowData | undefined;
     const n = rowData?.n || 0;
 
-    const valCol = valueColOffset(i);
-    const sigCol = sigColOffset(i);
-
-    // Value column (n)
-    const valCell = worksheet.getCell(currentRow, valCol);
+    // Value column gets the n value (NO merge)
+    const valCell = worksheet.getCell(currentRow, cut.valueCol);
     valCell.value = n;
-    valCell.font = FONTS.data;
-    valCell.fill = FILLS.baseRow;
+    valCell.font = FONTS.joeBaseBold;
+    valCell.fill = FILLS.joeBase;
     valCell.alignment = ALIGNMENTS.center;
-    valCell.border = BORDERS.thin as Partial<Borders>;
+    applyJoeBorder(valCell, {
+      isAfterLabel: cut.isFirstInGroup && cut.groupIndex === 0,
+      isFirstRow: true,
+      isBaseRow: true,
+    });
 
-    // Sig column (empty for base row)
-    const sigCell = worksheet.getCell(currentRow, sigCol);
+    // Sig column is empty but styled
+    const sigCell = worksheet.getCell(currentRow, cut.sigCol);
     sigCell.value = '';
-    sigCell.fill = FILLS.baseRow;
-    applyBorderForColumn(sigCell, sigCol, groupBoundaries, i === cutOrder.length - 1);
+    sigCell.fill = FILLS.joeBase;
+    applyJoeBorder(sigCell, {
+      isLastCol: cut.isLastInGroup && cut.groupIndex === numGroups - 1,
+      isFirstRow: true,
+      isBaseRow: true,
+    });
+  }
+
+  // Spacer columns in base row - purple, WITH borders (continuous border across base row)
+  for (const spacerCol of groupSpacerCols) {
+    const spacerCell = worksheet.getCell(currentRow, spacerCol);
+    spacerCell.value = '';
+    spacerCell.fill = FILLS.joeBase;
+    // Base row spacers get top and bottom borders for continuity
+    spacerCell.border = {
+      top: { style: 'medium', color: { argb: 'FF000000' } },
+      bottom: { style: 'medium', color: { argb: 'FF000000' } },
+    };
   }
   currentRow++;
 
   // -------------------------------------------------------------------------
-  // Data rows: 1 row per item
+  // Data rows: 1 row per item, alternating colors within table
   // -------------------------------------------------------------------------
-  for (const rowKey of rowKeys) {
+  for (let rowIdx = 0; rowIdx < rowKeys.length; rowIdx++) {
+    const rowKey = rowKeys[rowIdx];
     const totalRowData = totalCutData?.[rowKey] as MeanRowData | undefined;
     const isNet = totalRowData?.isNet || false;
     const indent = totalRowData?.indent || 0;
+    const isLastDataRow = rowIdx === totalDataRows - 1;
 
     // Build label with indentation
     let rowLabel = totalRowData?.label || rowKey;
@@ -188,45 +244,59 @@ export function renderJoeStyleMeanRowsTable(
       rowLabel = '  '.repeat(indent) + rowLabel;
     }
 
-    // Context column (will be merged later)
+    // Context column - purple
     const contextCell = worksheet.getCell(currentRow, CONTEXT_COL);
     contextCell.value = '';
-    contextCell.fill = FILLS.labelColumn;
-    contextCell.border = BORDERS.thin as Partial<Borders>;
+    contextCell.fill = FILLS.joeContext;
+    applyJoeBorder(contextCell, { isContextCol: true, isLastRow: isLastDataRow });
 
-    // Label column
+    // Label column - yellow
     const labelCell = worksheet.getCell(currentRow, LABEL_COL);
     labelCell.value = rowLabel;
     labelCell.font = isNet ? FONTS.labelNet : FONTS.label;
-    labelCell.fill = FILLS.labelColumn;
+    labelCell.fill = FILLS.joeLabel;
     labelCell.alignment = ALIGNMENTS.wrapText;
-    labelCell.border = BORDERS.thin as Partial<Borders>;
+    applyJoeBorder(labelCell, { isLastRow: isLastDataRow });
 
-    // Value + Sig for each cut
-    for (let i = 0; i < cutOrder.length; i++) {
-      const cutName = cutOrder[i].name;
-      const cutData = table.data[cutName];
+    // Value + Sig for each cut - color per banner group, alternating by row
+    for (const cut of cuts) {
+      const cutData = table.data[cut.name];
       const rowData = cutData?.[rowKey] as MeanRowData | undefined;
-
-      const valCol = valueColOffset(i);
-      const sigCol = sigColOffset(i);
+      // Pass rowIdx for alternating colors within the table
+      const groupFill = getGroupFill(cut.groupIndex, rowIdx);
 
       // Value column (mean)
-      const valCell = worksheet.getCell(currentRow, valCol);
+      const valCell = worksheet.getCell(currentRow, cut.valueCol);
       setCellNumber(valCell, rowData?.mean, 2);
       valCell.font = FONTS.data;
-      valCell.fill = FILLS.data;
+      valCell.fill = groupFill;
       valCell.alignment = ALIGNMENTS.center;
-      valCell.border = BORDERS.thin as Partial<Borders>;
+      applyJoeBorder(valCell, {
+        isAfterLabel: cut.isFirstInGroup && cut.groupIndex === 0,
+        isLastRow: isLastDataRow,
+      });
 
-      // Sig column (red letters)
-      const sigCell = worksheet.getCell(currentRow, sigCol);
+      // Sig column (bold red letters)
+      const sigCell = worksheet.getCell(currentRow, cut.sigCol);
       const sigValue = formatSignificance(rowData?.sig_higher_than);
       sigCell.value = sigValue || '';
       sigCell.font = sigValue ? FONTS.significanceLetterRed : FONTS.data;
-      sigCell.fill = FILLS.data;
+      sigCell.fill = groupFill;
       sigCell.alignment = ALIGNMENTS.center;
-      applyBorderForColumn(sigCell, sigCol, groupBoundaries, i === cutOrder.length - 1);
+      applyJoeBorder(sigCell, {
+        isLastCol: cut.isLastInGroup && cut.groupIndex === numGroups - 1,
+        isLastRow: isLastDataRow,
+      });
+    }
+
+    // Spacer columns in data rows - inherit color from left group (with row alternation), NO border
+    for (let i = 0; i < groupSpacerCols.length; i++) {
+      const spacerCol = groupSpacerCols[i];
+      const spacerCell = worksheet.getCell(currentRow, spacerCol);
+      spacerCell.value = '';
+      // Inherit color from the group to the left (group index i), with row alternation
+      spacerCell.fill = getGroupFill(i, rowIdx);
+      // No border on spacer - the gap is the visual separation
     }
 
     currentRow++;
@@ -255,12 +325,11 @@ export function renderJoeStyleMeanRowsTable(
     const mergedContextCell = worksheet.getCell(contextMergeStart, CONTEXT_COL);
     mergedContextCell.value = contextText;
     mergedContextCell.font = FONTS.context;
-    mergedContextCell.fill = FILLS.labelColumn;
+    mergedContextCell.fill = FILLS.joeContext;
     mergedContextCell.alignment = {
       ...ALIGNMENTS.wrapText,
       vertical: 'top',
     };
-    mergedContextCell.border = BORDERS.thin as Partial<Borders>;
   }
 
   return {
