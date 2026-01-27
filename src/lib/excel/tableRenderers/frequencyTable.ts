@@ -262,7 +262,12 @@ export function renderFrequencyTable(
       const rowData = cutData?.[rowKey] as FrequencyRowData | undefined;
 
       const cell = worksheet.getCell(currentRow, i + 2);
-      cell.value = rowData?.count ?? '-';
+      const count = rowData?.count;
+      if (count !== undefined && count !== null) {
+        cell.value = count;  // Store as number
+      } else {
+        cell.value = '-';
+      }
       cell.font = FONTS.data;
       cell.fill = FILLS.data;
       cell.alignment = ALIGNMENTS.center;
@@ -283,7 +288,12 @@ export function renderFrequencyTable(
 
       const cell = worksheet.getCell(currentRow, i + 2);
       const pct = rowData?.pct;
-      cell.value = pct !== undefined && pct !== null ? `${pct}%` : '-';
+      if (pct !== undefined && pct !== null) {
+        cell.value = pct / 100;  // Store as decimal (0.25 for 25%)
+        cell.numFmt = '0%';       // Display as "25%"
+      } else {
+        cell.value = '-';
+      }
       cell.font = FONTS.data;
       cell.fill = FILLS.data;
       cell.alignment = ALIGNMENTS.center;

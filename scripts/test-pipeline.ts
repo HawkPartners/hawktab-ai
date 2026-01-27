@@ -6,11 +6,22 @@
  * without requiring the UI.
  *
  * Usage:
- *   npx tsx scripts/test-pipeline.ts [dataset-folder]
+ *   npx tsx scripts/test-pipeline.ts [dataset-folder] [options]
+ *
+ * Options:
+ *   --format=joe|antares     Excel format (default: joe)
+ *   --display=frequency|counts|both   Display mode (default: frequency)
+ *   --stop-after-verification   Stop before R/Excel generation
  *
  * Examples:
  *   npx tsx scripts/test-pipeline.ts
- *   # Uses default: data/leqvio-monotherapy-demand-NOV217/
+ *   # Uses default: data/leqvio-monotherapy-demand-NOV217/, format=joe, display=frequency
+ *
+ *   npx tsx scripts/test-pipeline.ts --format=joe --display=both
+ *   # Joe format with both Percentages and Counts sheets
+ *
+ *   npx tsx scripts/test-pipeline.ts --format=antares
+ *   # Legacy Antares format (3 rows per answer)
  *
  *   npx tsx scripts/test-pipeline.ts data/test-data/some-dataset
  *   # Explicit path to dataset folder
@@ -59,7 +70,7 @@ import { processSurvey } from '../src/lib/processors/SurveyProcessor';
 import { generateRScriptV2WithValidation, type ValidationReport } from '../src/lib/r/RScriptGeneratorV2';
 import { buildCutsSpec } from '../src/lib/tables/CutsSpec';
 import { sortTables, getSortingMetadata } from '../src/lib/tables/sortTables';
-import { ExcelFormatter } from '../src/lib/excel/ExcelFormatter';
+import { ExcelFormatter, type ExcelFormat, type DisplayMode } from '../src/lib/excel/ExcelFormatter';
 import { extractStreamlinedData } from '../src/lib/data/extractStreamlinedData';
 import { getPromptVersions } from '../src/lib/env';
 import { resetMetricsCollector, getPipelineCostSummary, getMetricsCollector } from '../src/lib/observability';
@@ -68,6 +79,30 @@ import type { ExtendedTableDefinition } from '../src/schemas/verificationAgentSc
 
 // Parse command line flags
 const stopAfterVerification = process.argv.includes('--stop-after-verification');
+
+// Parse --format flag (joe or antares, default: joe)
+function parseFormatFlag(): ExcelFormat {
+  const formatArg = process.argv.find(arg => arg.startsWith('--format='));
+  if (formatArg) {
+    const value = formatArg.split('=')[1]?.toLowerCase();
+    if (value === 'antares') return 'antares';
+  }
+  return 'joe';
+}
+
+// Parse --display flag (frequency, counts, or both, default: frequency)
+function parseDisplayFlag(): DisplayMode {
+  const displayArg = process.argv.find(arg => arg.startsWith('--display='));
+  if (displayArg) {
+    const value = displayArg.split('=')[1]?.toLowerCase();
+    if (value === 'counts') return 'counts';
+    if (value === 'both') return 'both';
+  }
+  return 'frequency';
+}
+
+const excelFormat = parseFormatFlag();
+const displayMode = parseDisplayFlag();
 
 const execAsync = promisify(exec);
 
@@ -579,11 +614,14 @@ async function runPipeline(datasetFolder: string) {
     const excelPath = path.join(resultsDir, 'crosstabs.xlsx');
 
     try {
-      const formatter = new ExcelFormatter();
+      const formatter = new ExcelFormatter({
+        format: excelFormat,
+        displayMode: displayMode,
+      });
       await formatter.formatFromFile(tablesJsonPath);
       await formatter.saveToFile(excelPath);
 
-      log(`  Generated crosstabs.xlsx`, 'green');
+      log(`  Generated crosstabs.xlsx (format: ${excelFormat}, display: ${displayMode})`, 'green');
       log(`  Duration: ${Date.now() - stepStart8}ms`, 'dim');
     } catch (excelError) {
       log(`  Excel generation failed: ${excelError instanceof Error ? excelError.message : String(excelError)}`, 'red');
@@ -732,7 +770,8 @@ async function runPipeline(datasetFolder: string) {
 // =============================================================================
 
 async function main() {
-  const datasetFolder = process.argv[2] || DEFAULT_DATASET;
+  // Find first argument that doesn't start with '--' (that's the dataset folder)
+  const datasetFolder = process.argv.slice(2).find(arg => !arg.startsWith('--')) || DEFAULT_DATASET;
 
   try {
     await runPipeline(datasetFolder);

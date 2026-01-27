@@ -80,9 +80,17 @@ function formatSignificance(sig: string[] | string | undefined): string {
   return '-';
 }
 
-function formatNumber(val: number | null | undefined): string {
-  if (val === null || val === undefined || isNaN(val)) return '-';
-  return val.toString();
+/**
+ * Set cell value as number or dash if null/undefined
+ */
+function setCellNumber(cell: Cell, val: number | null | undefined, decimalPlaces: number = 2): void {
+  if (val === null || val === undefined || isNaN(val)) {
+    cell.value = '-';
+  } else {
+    cell.value = val;
+    // Format with specified decimal places
+    cell.numFmt = decimalPlaces === 0 ? '0' : `0.${'0'.repeat(decimalPlaces)}`;
+  }
 }
 
 // =============================================================================
@@ -340,7 +348,7 @@ function renderSingleRowMeanTable(
     const rowData = cutData?.[rowKey] as MeanRowData | undefined;
 
     const cell = worksheet.getCell(currentRow, i + 2);
-    cell.value = formatNumber(rowData?.mean);
+    setCellNumber(cell, rowData?.mean, 2);  // Store as number with 2 decimal places
     cell.font = FONTS.data;
     cell.fill = FILLS.data;
     cell.alignment = ALIGNMENTS.center;
@@ -361,7 +369,7 @@ function renderSingleRowMeanTable(
     const rowData = cutData?.[rowKey] as MeanRowData | undefined;
 
     const cell = worksheet.getCell(currentRow, i + 2);
-    cell.value = formatNumber(rowData?.median);
+    setCellNumber(cell, rowData?.median, 2);  // Store as number with 2 decimal places
     cell.font = FONTS.data;
     cell.fill = FILLS.data;
     cell.alignment = ALIGNMENTS.center;
@@ -382,7 +390,7 @@ function renderSingleRowMeanTable(
     const rowData = cutData?.[rowKey] as MeanRowData | undefined;
 
     const cell = worksheet.getCell(currentRow, i + 2);
-    cell.value = formatNumber(rowData?.sd);
+    setCellNumber(cell, rowData?.sd, 2);  // Store as number with 2 decimal places
     cell.font = FONTS.data;
     cell.fill = FILLS.data;
     cell.alignment = ALIGNMENTS.center;
@@ -443,7 +451,7 @@ function renderMultiRowMeanItem(
     const rowData = cutData?.[rowKey] as MeanRowData | undefined;
 
     const cell = worksheet.getCell(currentRow, i + 2);
-    cell.value = formatNumber(rowData?.mean);
+    setCellNumber(cell, rowData?.mean, 2);  // Store as number with 2 decimal places
     cell.font = FONTS.data;
     cell.fill = FILLS.data;
     cell.alignment = ALIGNMENTS.center;

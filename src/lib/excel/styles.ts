@@ -28,6 +28,9 @@ export const COLORS = {
   // Text colors
   textPrimary: 'FF000000',          // Black
   textSecondary: 'FF666666',        // Gray for secondary text
+
+  // Joe format colors
+  sigLetterRed: 'FFCC0000',         // Red for significance letters in Joe format
 } as const;
 
 // =============================================================================
@@ -162,6 +165,17 @@ export const FONTS: Record<string, Partial<Font>> = {
     italic: true,
     color: { argb: COLORS.textSecondary },
   },
+  // Joe format fonts
+  significanceLetterRed: {
+    bold: false,
+    size: 10,
+    color: { argb: COLORS.sigLetterRed },
+  },
+  context: {
+    bold: false,
+    size: 10,
+    color: { argb: COLORS.textPrimary },
+  },
 };
 
 // =============================================================================
@@ -198,6 +212,14 @@ export const COLUMN_WIDTHS = {
   statLetter: 6,    // Stat letter column width
   min: 8,           // Minimum column width
   max: 50,          // Maximum column width
+} as const;
+
+// Joe format column widths
+export const COLUMN_WIDTHS_JOE = {
+  context: 25,      // Context/question column (merged per table)
+  label: 35,        // Answer label column
+  value: 8,         // Value columns (percent or count)
+  significance: 5,  // Significance letter columns
 } as const;
 
 // =============================================================================
