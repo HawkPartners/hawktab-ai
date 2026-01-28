@@ -24,7 +24,8 @@ const COL_WIDTHS = {
   number: 6,
   questionId: 15,
   questionText: 60,
-  section: 20,
+  sectionMin: 20,
+  sectionMax: 40,
 };
 
 // =============================================================================
@@ -65,11 +66,22 @@ export function renderTableOfContents(
     properties: { tabColor: { argb: 'FF92D050' } }  // Green tab color
   });
 
+  // Calculate section column width based on actual section names
+  const sectionNames = tables
+    .filter(t => !t.excluded && t.surveySection)
+    .map(t => t.surveySection!);
+  const maxSectionLength = sectionNames.reduce((max, name) => Math.max(max, name.length), 0);
+  // Approximate: 1 character ≈ 1.2 width units, with min/max bounds
+  const sectionWidth = Math.min(
+    COL_WIDTHS.sectionMax,
+    Math.max(COL_WIDTHS.sectionMin, Math.ceil(maxSectionLength * 1.1))
+  );
+
   // Set column widths
   worksheet.getColumn(TOC_COLUMNS.number).width = COL_WIDTHS.number;
   worksheet.getColumn(TOC_COLUMNS.questionId).width = COL_WIDTHS.questionId;
   worksheet.getColumn(TOC_COLUMNS.questionText).width = COL_WIDTHS.questionText;
-  worksheet.getColumn(TOC_COLUMNS.section).width = COL_WIDTHS.section;
+  worksheet.getColumn(TOC_COLUMNS.section).width = sectionWidth;
 
   // Header row
   const headerRow = worksheet.getRow(1);
@@ -115,7 +127,7 @@ export function renderTableOfContents(
     // Section
     const sectionCell = row.getCell(TOC_COLUMNS.section);
     sectionCell.value = table.surveySection || '';
-    sectionCell.alignment = ALIGNMENTS.left;
+    sectionCell.alignment = { ...ALIGNMENTS.left, wrapText: true };
 
     // Alternating row colors for readability
     if (i % 2 === 1) {

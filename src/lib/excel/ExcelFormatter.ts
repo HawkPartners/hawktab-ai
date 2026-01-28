@@ -204,7 +204,8 @@ export class ExcelFormatter {
         this.workbook,
         excludedTables,
         headerInfo,
-        context.totalRespondents
+        context.totalRespondents,
+        context.bannerGroups
       );
       console.log(`[ExcelFormatter] Excluded sheet rendered with ${excludedResult.excludedCount} tables`);
     }

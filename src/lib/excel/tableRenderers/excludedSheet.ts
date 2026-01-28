@@ -2,16 +2,23 @@
  * Excluded Tables Sheet Renderer
  *
  * Renders tables marked as excluded: true on a separate sheet.
- * Each excluded table shows its reason and full data.
+ * Format matches the main Crosstabs sheet exactly - same headers,
+ * column widths, and table rendering. Exclusion reason is shown
+ * in the context column of each table.
  */
 
 import type { Workbook, Worksheet } from 'exceljs';
-import { FONTS, ALIGNMENTS } from '../styles';
 import type { TableData } from '../ExcelFormatter';
 import type { JoeHeaderInfo, FrequencyTableData } from './joeStyleFrequency';
 import type { MeanRowsTableData } from './joeStyleMeanRows';
-import { renderJoeStyleFrequencyTable } from './joeStyleFrequency';
+import {
+  renderJoeHeaders,
+  renderJoeStyleFrequencyTable,
+  setJoeColumnWidths,
+} from './joeStyleFrequency';
 import { renderJoeStyleMeanRowsTable } from './joeStyleMeanRows';
+import { TABLE_SPACING } from '../styles';
+import type { BannerGroup } from '../../r/RScriptGeneratorV2';
 
 // =============================================================================
 // Types
@@ -23,22 +30,19 @@ export interface ExcludedSheetRenderResult {
 }
 
 // =============================================================================
-// Constants
-// =============================================================================
-
-const REASON_ROW_HEIGHT = 25;
-const GAP_BETWEEN_TABLES = 2;
-
-// =============================================================================
 // Main Renderer
 // =============================================================================
 
 /**
  * Render Excluded Tables sheet
  *
- * For each excluded table:
- * 1. Render a reason header row
- * 2. Render the full table data (reusing existing renderers)
+ * Renders excluded tables with the same format as the main Crosstabs sheet:
+ * - Same banner headers (group names, column names, stat letters)
+ * - Same column widths
+ * - Same table rendering
+ * - Freeze panes on headers and context/label columns
+ *
+ * Exclusion reason is shown in each table's context column.
  *
  * Returns null worksheet if no excluded tables exist.
  */
@@ -46,7 +50,8 @@ export function renderExcludedSheet(
   workbook: Workbook,
   excludedTables: TableData[],
   headerInfo: JoeHeaderInfo,
-  totalRespondents: number
+  totalRespondents: number,
+  bannerGroups?: BannerGroup[]
 ): ExcludedSheetRenderResult {
   if (excludedTables.length === 0) {
     return {
@@ -59,68 +64,32 @@ export function renderExcludedSheet(
     properties: { tabColor: { argb: 'FFFF6B6B' } }  // Red tab color
   });
 
-  // Copy column widths from main sheet structure
-  const { cuts, groupSpacerCols } = headerInfo;
+  // Render headers (same as main sheet) if bannerGroups provided
+  let currentRow: number = TABLE_SPACING.startRow;
+  let effectiveHeaderInfo = headerInfo;
 
-  // Context column
-  worksheet.getColumn(1).width = 25;
-  // Label column
-  worksheet.getColumn(2).width = 35;
-
-  // Value and sig columns
-  for (const cut of cuts) {
-    worksheet.getColumn(cut.valueCol).width = 15;
-    worksheet.getColumn(cut.sigCol).width = 5;
+  if (bannerGroups) {
+    effectiveHeaderInfo = renderJoeHeaders(worksheet, bannerGroups, TABLE_SPACING.startRow);
+    currentRow = TABLE_SPACING.startRow + effectiveHeaderInfo.headerRowCount;
+  } else {
+    // Use passed headerInfo's row count to determine where tables start
+    currentRow = TABLE_SPACING.startRow + headerInfo.headerRowCount;
+    // Re-render headers on this sheet
+    // Since we don't have bannerGroups, we'll render without headers
+    // and just use the column layout from headerInfo
   }
 
-  // Spacer columns
-  for (const spacerCol of groupSpacerCols) {
-    worksheet.getColumn(spacerCol).width = 2;
-  }
+  // Set column widths (same as main sheet)
+  setJoeColumnWidths(worksheet, effectiveHeaderInfo);
 
-  let currentRow = 1;
-
-  // Add sheet header
-  const sheetHeader = worksheet.getCell(currentRow, 1);
-  sheetHeader.value = 'EXCLUDED TABLES';
-  sheetHeader.font = { ...FONTS.title, size: 14 };
-  sheetHeader.alignment = ALIGNMENTS.left;
-  currentRow += 2;
-
-  // Render each excluded table
+  // Render each excluded table (continuous flow, no gaps - matches main sheet)
   for (const table of excludedTables) {
-    // Reason header row
-    const reasonCell = worksheet.getCell(currentRow, 1);
-    reasonCell.value = `${table.tableId}: ${table.questionText}`;
-    reasonCell.font = FONTS.header;
-    reasonCell.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FFFCE4D6' },  // Light peach
-    };
-    reasonCell.alignment = { ...ALIGNMENTS.left, wrapText: true };
-
-    // Exclude reason in next cell
-    const excludeReasonCell = worksheet.getCell(currentRow, 2);
-    excludeReasonCell.value = `Reason: ${table.excludeReason || 'Not specified'}`;
-    excludeReasonCell.font = { ...FONTS.data, italic: true };
-    excludeReasonCell.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FFFCE4D6' },  // Light peach
-    };
-    excludeReasonCell.alignment = ALIGNMENTS.left;
-
-    worksheet.getRow(currentRow).height = REASON_ROW_HEIGHT;
-    currentRow++;
-
-    // Render the table data (reusing existing renderers)
     if (table.tableType === 'frequency') {
       const result = renderJoeStyleFrequencyTable(
         worksheet,
         table as unknown as FrequencyTableData,
         currentRow,
-        headerInfo,
+        effectiveHeaderInfo,
         'percent',
         false,
         totalRespondents
@@ -131,15 +100,22 @@ export function renderExcludedSheet(
         worksheet,
         table as unknown as MeanRowsTableData,
         currentRow,
-        headerInfo,
+        effectiveHeaderInfo,
         totalRespondents
       );
       currentRow = result.endRow;
     }
-
-    // Add gap between tables
-    currentRow += GAP_BETWEEN_TABLES;
   }
+
+  // Apply freeze panes (same as main sheet)
+  const frozenCols = 2; // Context + Label columns
+  worksheet.views = [{
+    state: 'frozen',
+    ySplit: effectiveHeaderInfo.headerRowCount,
+    xSplit: frozenCols,
+    topLeftCell: `C${effectiveHeaderInfo.headerRowCount + 1}`,
+    activeCell: 'A1',
+  }];
 
   return {
     worksheet,

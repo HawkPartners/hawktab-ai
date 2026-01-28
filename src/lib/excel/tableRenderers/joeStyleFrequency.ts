@@ -45,6 +45,9 @@ export interface FrequencyTableData {
   surveySection?: string;
   baseText?: string;
   userNote?: string;
+  // Phase 5: Excluded tables support
+  excluded?: boolean;
+  excludeReason?: string;
 }
 
 export interface RenderContext {
@@ -616,6 +619,11 @@ export function renderJoeStyleFrequencyTable(
     // 4. User note (if present - already in parenthetical format from agent)
     if (table.userNote) {
       contextLines.push(table.userNote);
+    }
+
+    // 5. Exclude reason (for tables on Excluded sheet)
+    if (table.excludeReason) {
+      contextLines.push(`[Excluded: ${table.excludeReason}]`);
     }
 
     const contextText = contextLines.join('\n');
