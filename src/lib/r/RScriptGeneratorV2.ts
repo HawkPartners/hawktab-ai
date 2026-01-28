@@ -583,7 +583,7 @@ function generateDemoTable(
       const rowKey = `row_${rowIndex}_${cut.statLetter}`;
 
       lines.push(`  # Row: ${cut.name} (${group.groupName})`);
-      lines.push(`  row_cut_mask <- cuts[[\`${safeCutName}\`]]`);
+      lines.push(`  row_cut_mask <- cuts[["${safeCutName}"]]`);
       lines.push('  if (!is.null(row_cut_mask)) {');
       lines.push('    # Count respondents in this column who also match this banner cut');
       lines.push('    combined_mask <- cuts[[cut_name]] & row_cut_mask');
@@ -739,9 +739,12 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
   const tableId = escapeRString(table.tableId);
   const questionText = escapeRString(table.questionText);
 
+  // Sanitize questionText for R comments (replace newlines with spaces)
+  const commentSafeQuestion = table.questionText.replace(/[\r\n]+/g, ' ').trim();
+
   lines.push(`# -----------------------------------------------------------------------------`);
   lines.push(`# Table: ${table.tableId} (frequency)${table.isDerived ? ' [DERIVED]' : ''}`);
-  lines.push(`# Question: ${table.questionText}`);
+  lines.push(`# Question: ${commentSafeQuestion}`);
   lines.push(`# Rows: ${table.rows.length}`);
   if (table.sourceTableId) {
     lines.push(`# Source: ${table.sourceTableId}`);
@@ -885,10 +888,12 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
 function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition): void {
   const tableId = escapeRString(table.tableId);
   const questionText = escapeRString(table.questionText);
+  // Sanitize questionText for R comments (replace newlines with spaces)
+  const commentSafeQuestion = table.questionText.replace(/[\r\n]+/g, ' ').trim();
 
   lines.push(`# -----------------------------------------------------------------------------`);
   lines.push(`# Table: ${table.tableId} (mean_rows)${table.isDerived ? ' [DERIVED]' : ''}`);
-  lines.push(`# Question: ${table.questionText}`);
+  lines.push(`# Question: ${commentSafeQuestion}`);
   lines.push(`# Rows: ${table.rows.length}`);
   if (table.sourceTableId) {
     lines.push(`# Source: ${table.sourceTableId}`);

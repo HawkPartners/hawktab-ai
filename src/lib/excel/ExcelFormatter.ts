@@ -29,6 +29,8 @@ import {
   type ValueType,
 } from './tableRenderers/joeStyleFrequency';
 import { renderJoeStyleMeanRowsTable } from './tableRenderers/joeStyleMeanRows';
+import { renderTableOfContents } from './tableRenderers/tableOfContents';
+import { renderExcludedSheet } from './tableRenderers/excludedSheet';
 import { COLUMN_WIDTHS, TABLE_SPACING } from './styles';
 import type { BannerGroup } from '../r/RScriptGeneratorV2';
 
@@ -58,6 +60,9 @@ export interface TableData {
   surveySection?: string;  // Section name from survey (e.g., "SCREENER")
   baseText?: string;       // Who was asked (e.g., "Total interventional radiologists")
   userNote?: string;       // Context note (e.g., "(Multiple answers accepted)")
+  // Phase 5: Excluded tables support
+  excluded?: boolean;      // True if table should go to Excluded sheet
+  excludeReason?: string;  // Why it was excluded
 }
 
 export interface TablesJson {
@@ -145,8 +150,31 @@ export class ExcelFormatter {
   ): void {
     const { displayMode } = this.options;
 
+    // Convert tables to array for filtering
+    const tableArray = tableIds.map(id => tables[id]);
+
+    // Separate included and excluded tables
+    const includedTables = tableArray.filter(t => !t.excluded);
+    const excludedTables = tableArray.filter(t => t.excluded);
+    const includedTableIds = includedTables.map(t => t.tableId);
+
+    console.log(`[ExcelFormatter] Included tables: ${includedTables.length}, Excluded tables: ${excludedTables.length}`);
+
+    // Create tables record for included only
+    const includedTablesRecord: Record<string, TableData> = {};
+    for (const table of includedTables) {
+      includedTablesRecord[table.tableId] = table;
+    }
+
+    // 1. Render Table of Contents sheet first
+    const tocResult = renderTableOfContents(this.workbook, tableArray);
+    console.log(`[ExcelFormatter] ToC rendered with ${tocResult.tableCount} tables`);
+
     // Calculate total cuts for column widths
     const cutCount = context.bannerGroups.reduce((sum, g) => sum + g.columns.length, 0);
+
+    // 2. Render main crosstabs sheet(s)
+    let headerInfo: JoeHeaderInfo | null = null;
 
     if (displayMode === 'both') {
       // Two sheets: Percentages and Counts
@@ -157,8 +185,8 @@ export class ExcelFormatter {
         properties: { tabColor: { argb: 'FF4472C4' } }
       });
 
-      this.renderJoeSheet(pctSheet, tables, tableIds, context, cutCount, 'percent');
-      this.renderJoeSheet(countSheet, tables, tableIds, context, cutCount, 'count');
+      headerInfo = this.renderJoeSheet(pctSheet, includedTablesRecord, includedTableIds, context, cutCount, 'percent');
+      this.renderJoeSheet(countSheet, includedTablesRecord, includedTableIds, context, cutCount, 'count');
     } else {
       // Single sheet
       const valueType: ValueType = displayMode === 'counts' ? 'count' : 'percent';
@@ -167,12 +195,24 @@ export class ExcelFormatter {
         properties: { tabColor: { argb: 'FF006BB3' } }
       });
 
-      this.renderJoeSheet(worksheet, tables, tableIds, context, cutCount, valueType);
+      headerInfo = this.renderJoeSheet(worksheet, includedTablesRecord, includedTableIds, context, cutCount, valueType);
+    }
+
+    // 3. Render Excluded Tables sheet (if any)
+    if (excludedTables.length > 0 && headerInfo) {
+      const excludedResult = renderExcludedSheet(
+        this.workbook,
+        excludedTables,
+        headerInfo,
+        context.totalRespondents
+      );
+      console.log(`[ExcelFormatter] Excluded sheet rendered with ${excludedResult.excludedCount} tables`);
     }
   }
 
   /**
    * Render a single Joe-style worksheet
+   * Returns headerInfo for use by excluded sheet renderer
    */
   private renderJoeSheet(
     worksheet: ExcelJS.Worksheet,
@@ -181,7 +221,7 @@ export class ExcelFormatter {
     context: RenderContext,
     _cutCount: number,
     valueType: ValueType
-  ): void {
+  ): JoeHeaderInfo {
     // Render headers (once at top) - this builds the column layout
     const headerInfo = renderJoeHeaders(worksheet, context.bannerGroups, TABLE_SPACING.startRow);
     let currentRow = TABLE_SPACING.startRow + headerInfo.headerRowCount;
@@ -221,6 +261,8 @@ export class ExcelFormatter {
 
     // Freeze panes: headers (top) and context+label columns (left)
     this.applyJoeFreezePanes(worksheet, headerInfo);
+
+    return headerInfo;
   }
 
   /**

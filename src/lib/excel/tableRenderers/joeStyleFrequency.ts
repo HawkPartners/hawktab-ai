@@ -586,17 +586,39 @@ export function renderJoeStyleFrequencyTable(
   if (contextMergeEnd >= contextMergeStart) {
     worksheet.mergeCells(contextMergeStart, CONTEXT_COL, contextMergeEnd, CONTEXT_COL);
 
-    // Build context text
-    let contextText = table.questionText;
+    // Build context text with new multi-line structure:
+    // Line 1: Survey section (ALL CAPS, if present)
+    // Line 2: "Derived table" marker (if isDerived)
+    // Line 3: Question ID + text
+    // Line 4: User note (if present)
+    const contextLines: string[] = [];
+
+    // 1. Survey section
+    if (table.surveySection) {
+      contextLines.push(table.surveySection);  // Already ALL CAPS from agent
+    }
+
+    // 2. Derived table marker (simplified)
+    if (table.isDerived) {
+      contextLines.push('Derived table');
+    }
+
+    // 3. Question text with ID prefix if needed
+    let questionLine = table.questionText;
     if (table.questionId) {
       const startsWithId = table.questionText.toUpperCase().startsWith(table.questionId.toUpperCase());
       if (!startsWithId) {
-        contextText = `${table.questionId}: ${table.questionText}`;
+        questionLine = `${table.questionId}: ${table.questionText}`;
       }
     }
-    if (table.isDerived && table.sourceTableId) {
-      contextText += ` [Derived from ${table.sourceTableId}]`;
+    contextLines.push(questionLine);
+
+    // 4. User note (if present - already in parenthetical format from agent)
+    if (table.userNote) {
+      contextLines.push(table.userNote);
     }
+
+    const contextText = contextLines.join('\n');
 
     const mergedContextCell = worksheet.getCell(contextMergeStart, CONTEXT_COL);
     mergedContextCell.value = contextText;

@@ -406,6 +406,19 @@ CRITICAL INVARIANTS - NEVER VIOLATE:
 4. ADD views, don't REPLACE
    - Keep original tables when creating splits or T2B views
    - Derived tables supplement, not replace
+
+5. NO DUPLICATE variable/filterValue COMBINATIONS
+   - Each row in a table must have a UNIQUE (variable, filterValue) pair
+   - NETs must combine values: if components are "1" and "2", NET filterValue is "1,2"
+   - WRONG: NET with filterValue "1" + component with filterValue "1" (duplicate!)
+   - RIGHT: NET with filterValue "1,2" + components with "1" and "2" separately
+   - If a NET has only ONE component value, DON'T create the NET (it's redundant)
+
+6. mean_rows tables: filterValue is IGNORED
+   - mean_rows tables compute means from variables, NOT from filterValue
+   - For NETs in mean_rows: use netComponents array with variable names
+   - WRONG: mean_rows NET with filterValue "A3r2,A3r3" (filterValue ignored!)
+   - RIGHT: mean_rows NET with netComponents: ["A3r2", "A3r3"] and filterValue: ""
 </constraints>
 
 <output_specifications>

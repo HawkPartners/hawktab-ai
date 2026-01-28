@@ -575,11 +575,34 @@ async function runPipeline(datasetFolder: string) {
     }
   }
 
+  // Helper to save R execution log
+  const saveRLog = async (stdout: string, stderr: string, success: boolean) => {
+    const rLogPath = path.join(rDir, 'execution.log');
+    const logContent = [
+      `R Execution Log`,
+      `===============`,
+      `Timestamp: ${new Date().toISOString()}`,
+      `Status: ${success ? 'SUCCESS' : 'FAILED'}`,
+      ``,
+      `--- STDOUT ---`,
+      stdout || '(empty)',
+      ``,
+      `--- STDERR ---`,
+      stderr || '(empty)',
+    ].join('\n');
+    await fs.writeFile(rLogPath, logContent, 'utf-8');
+    return rLogPath;
+  };
+
   try {
-    await execAsync(
+    const { stdout, stderr } = await execAsync(
       `cd "${outputDir}" && ${rCommand} "${masterPath}"`,
       { maxBuffer: 10 * 1024 * 1024, timeout: 120000 }
     );
+
+    // Save successful execution log
+    const logPath = await saveRLog(stdout, stderr, true);
+    log(`  R log saved to: ${path.relative(outputDir, logPath)}`, 'dim');
 
     // Check for JSON output
     const resultFiles = await fs.readdir(resultsDir);
@@ -628,13 +651,34 @@ async function runPipeline(datasetFolder: string) {
     }
 
   } catch (rError) {
-    const errorMsg = rError instanceof Error ? rError.message : String(rError);
+    // Extract stdout/stderr from exec error (they're attached to the error object)
+    const execError = rError as { stdout?: string; stderr?: string; message?: string };
+    const stdout = execError.stdout || '';
+    const stderr = execError.stderr || '';
+    const errorMsg = execError.message || String(rError);
+
+    // Save failed execution log
+    try {
+      const logPath = await saveRLog(stdout, stderr, false);
+      log(`  R log saved to: ${path.relative(outputDir, logPath)}`, 'dim');
+    } catch {
+      // Ignore log save errors
+    }
+
     // Only "R not installed" if command literally not found (not just any error with "Rscript" in path)
     if (errorMsg.includes('command not found') && !errorMsg.includes('Error in')) {
       log(`  R not installed - script saved for manual execution`, 'yellow');
     } else {
       log(`  R execution failed:`, 'red');
-      log(`  ${errorMsg.substring(0, 200)}`, 'dim');
+      // Show more context - stderr often has the actual R error
+      if (stderr) {
+        // Show last 500 chars of stderr (usually contains the error)
+        const stderrTail = stderr.length > 500 ? '...' + stderr.slice(-500) : stderr;
+        log(`  ${stderrTail}`, 'dim');
+      } else {
+        // Fall back to error message (show more than before)
+        log(`  ${errorMsg.substring(0, 500)}`, 'dim');
+      }
     }
   }
   log('', 'reset');

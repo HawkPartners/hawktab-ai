@@ -404,6 +404,9 @@ Every crosstab run produces artifacts:
 
 These artifacts aren't just byproducts—they're the foundation for follow-up queries.
 
+### First: Feedback-Driven Regeneration
+Before adding exploration, add a feedback capability where a user can flag a table as unhelpful and specify a replacement. The system regenerates the output with those updates, within constrained rules. This provides an entry-level workflow toward exploration while still grounded in validated artifacts.
+
 ### The Vision: Constrained but Conversational
 
 After tabs are delivered, users could interact via chat:
