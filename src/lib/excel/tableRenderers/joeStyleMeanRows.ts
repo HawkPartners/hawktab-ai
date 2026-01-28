@@ -46,6 +46,10 @@ export interface MeanRowsTableData {
   isDerived: boolean;
   sourceTableId: string;
   data: Record<string, MeanCutData>;
+  // Phase 2: Additional table metadata
+  surveySection?: string;
+  baseText?: string;
+  userNote?: string;
 }
 
 // =============================================================================
@@ -151,7 +155,8 @@ export function renderJoeStyleMeanRowsTable(
   worksheet: Worksheet,
   table: MeanRowsTableData,
   startRow: number,
-  headerInfo: JoeHeaderInfo
+  headerInfo: JoeHeaderInfo,
+  totalRespondents: number = 0
 ): JoeMeanRowsRenderResult {
   const { cuts, groupSpacerCols, bannerGroups } = headerInfo;
   let currentRow = startRow;
@@ -177,10 +182,19 @@ export function renderJoeStyleMeanRowsTable(
 
   // Label column - purple, bold+italic, thick bottom border
   const baseLabelCell = worksheet.getCell(currentRow, LABEL_COL);
-  const baseText = table.questionText
-    ? `Base: ${table.questionText.substring(0, 50)}${table.questionText.length > 50 ? '...' : ''}`
-    : 'Base (n)';
-  baseLabelCell.value = baseText;
+  // Get base n from first row of Total cut
+  const firstRowData = totalCutData?.[firstRowKey] as MeanRowData | undefined;
+  const baseN = firstRowData?.n || 0;
+  // Base text logic: use provided baseText, or fall back to count-based default
+  let baseTextValue: string;
+  if (table.baseText) {
+    baseTextValue = `Base: ${table.baseText}`;
+  } else if (totalRespondents > 0 && baseN === totalRespondents) {
+    baseTextValue = 'Base: All respondents';
+  } else {
+    baseTextValue = 'Base: Shown this question';
+  }
+  baseLabelCell.value = baseTextValue;
   baseLabelCell.font = FONTS.joeBaseBold;
   baseLabelCell.fill = FILLS.joeBase;
   baseLabelCell.alignment = ALIGNMENTS.left;

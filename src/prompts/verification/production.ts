@@ -78,6 +78,31 @@ OVERVIEW TABLE THRESHOLD:
 - Use judgment based on analytical value (a 40-row overview table is noise, not signal)
 </table_metadata>
 
+<additional_metadata>
+FOR EACH TABLE, POPULATE THESE CONTEXT FIELDS:
+
+1. SURVEY SECTION (surveySection)
+   Extract the section name VERBATIM from the survey document.
+   - Copy exactly as written, in ALL CAPS
+   - Strip the "SECTION X:" prefix—just the name
+   - Examples: "SCREENER", "DEMOGRAPHICS", "AWARENESS", "USAGE", "ATTITUDES"
+   - If section unclear, use empty string ""
+
+2. BASE TEXT (baseText)
+   Describe WHO was asked this question, only when it's NOT all respondents.
+   - Most questions are asked of all respondents—use empty string "" for these
+   - Only populate when skip logic or filtering means a subset was asked
+   - Good: "Current brand users", "Those aware of Brand X", "Physicians only"
+   - Bad: "What is your specialty?" (this is question text, not base)
+   - If uncertain, use empty string "" (Excel defaults to "All respondents")
+
+3. USER NOTE (userNote)
+   Add helpful context SPARINGLY. Use parenthetical format.
+   - "(Multiple answers accepted)" — for multi-select questions
+   - "(Select up to 3)" — for constrained selections
+   - Leave empty "" if no note adds value
+</additional_metadata>
+
 <survey_alignment>
 The TableGenerator worked from data structure alone. You have the survey document.
 
@@ -122,10 +147,11 @@ BEFORE: { "label": "Q5 - Value 1", "filterValue": "1" }
 AFTER:  { "label": "Very satisfied", "filterValue": "1" }
 
 QUESTION TEXT:
-- Use the clean question text from the survey document
-- Remove piping codes like [PIPE_Q3] or {INSERT_BRAND}
-- Fix formatting artifacts from datamap extraction
-- Keep it concise but complete
+- Use EXACT VERBATIM text from the survey document—do NOT paraphrase
+- Only modification allowed: remove piping codes like [PIPE_Q3] or {INSERT_BRAND}
+  - If removable without replacement, just delete them
+  - If context needed, use generic placeholder: "[BRAND]" or "[PRODUCT]"
+- Fix obvious formatting artifacts (extra spaces, broken lines) but preserve wording
 
 CONSTRAINT: NEVER change variable names or filterValue—only label and questionText fields.
 
@@ -403,7 +429,10 @@ STRUCTURE PER TABLE:
   "sourceTableId": "string",     // Original table ID or "" if unchanged
   "isDerived": boolean,
   "exclude": boolean,
-  "excludeReason": ""            // "" if not excluded
+  "excludeReason": "",           // "" if not excluded
+  "surveySection": "string",     // Section name from survey, ALL CAPS (or "")
+  "baseText": "string",          // Who was asked - not the question (or "")
+  "userNote": "string"           // Helpful context in parentheses (or "")
 }
 
 COMPLETE OUTPUT:
@@ -422,7 +451,7 @@ COMPLETE OUTPUT:
 
 ALL FIELDS REQUIRED:
 Every row must have: variable, label, filterValue, isNet, netComponents, indent
-Every table must have: tableId, questionId, title, tableType, rows, sourceTableId, isDerived, exclude, excludeReason
+Every table must have: tableId, questionId, questionText, tableType, rows, sourceTableId, isDerived, exclude, excludeReason, surveySection, baseText, userNote
 </output_specifications>
 
 <scratchpad_protocol>

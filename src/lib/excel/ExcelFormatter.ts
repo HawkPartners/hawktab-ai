@@ -54,6 +54,10 @@ export interface TableData {
   isDerived: boolean;
   sourceTableId: string;
   data: Record<string, unknown>;
+  // Phase 2: Additional table metadata
+  surveySection?: string;  // Section name from survey (e.g., "SCREENER")
+  baseText?: string;       // Who was asked (e.g., "Total interventional radiologists")
+  userNote?: string;       // Context note (e.g., "(Multiple answers accepted)")
 }
 
 export interface TablesJson {
@@ -195,7 +199,9 @@ export class ExcelFormatter {
           table as unknown as FrequencyTableData,
           currentRow,
           headerInfo,
-          valueType
+          valueType,
+          false,
+          context.totalRespondents
         );
         currentRow = result.endRow;
       } else if (table.tableType === 'mean_rows') {
@@ -203,7 +209,8 @@ export class ExcelFormatter {
           worksheet,
           table as unknown as MeanRowsTableData,
           currentRow,
-          headerInfo
+          headerInfo,
+          context.totalRespondents
         );
         currentRow = result.endRow;
       } else {

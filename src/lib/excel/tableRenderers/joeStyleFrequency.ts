@@ -41,6 +41,10 @@ export interface FrequencyTableData {
   isDerived: boolean;
   sourceTableId: string;
   data: Record<string, FrequencyCutData>;
+  // Phase 2: Additional table metadata
+  surveySection?: string;
+  baseText?: string;
+  userNote?: string;
 }
 
 export interface RenderContext {
@@ -398,7 +402,8 @@ export function renderJoeStyleFrequencyTable(
   startRow: number,
   headerInfo: JoeHeaderInfo,
   valueType: ValueType = 'percent',
-  _isFirstTable: boolean = false
+  _isFirstTable: boolean = false,
+  totalRespondents: number = 0
 ): JoeFrequencyRenderResult {
   const { cuts, groupSpacerCols, bannerGroups } = headerInfo;
   let currentRow = startRow;
@@ -424,10 +429,19 @@ export function renderJoeStyleFrequencyTable(
 
   // Label column - purple, bold+italic "Base: ...", thick bottom border
   const baseLabelCell = worksheet.getCell(currentRow, LABEL_COL);
-  const baseText = table.questionText
-    ? `Base: ${table.questionText.substring(0, 50)}${table.questionText.length > 50 ? '...' : ''}`
-    : 'Base (n)';
-  baseLabelCell.value = baseText;
+  // Get base n from first row of Total cut
+  const firstRowData = totalCutData?.[firstRowKey] as FrequencyRowData | undefined;
+  const baseN = firstRowData?.n || 0;
+  // Base text logic: use provided baseText, or fall back to count-based default
+  let baseTextValue: string;
+  if (table.baseText) {
+    baseTextValue = `Base: ${table.baseText}`;
+  } else if (totalRespondents > 0 && baseN === totalRespondents) {
+    baseTextValue = 'Base: All respondents';
+  } else {
+    baseTextValue = 'Base: Shown this question';
+  }
+  baseLabelCell.value = baseTextValue;
   baseLabelCell.font = FONTS.joeBaseBold;
   baseLabelCell.fill = FILLS.joeBase;
   baseLabelCell.alignment = ALIGNMENTS.left;

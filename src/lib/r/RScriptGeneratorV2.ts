@@ -597,6 +597,9 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
 
   const questionId = escapeRString(table.questionId || '');
   const sourceTableId = escapeRString(table.sourceTableId || '');
+  const surveySection = escapeRString(table.surveySection || '');
+  const baseText = escapeRString(table.baseText || '');
+  const userNote = escapeRString(table.userNote || '');
 
   lines.push(`table_${sanitizeVarName(table.tableId)} <- list(`);
   lines.push(`  tableId = "${tableId}",`);
@@ -605,6 +608,9 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
   lines.push(`  tableType = "frequency",`);
   lines.push(`  isDerived = ${table.isDerived ? 'TRUE' : 'FALSE'},`);
   lines.push(`  sourceTableId = "${sourceTableId}",`);
+  lines.push(`  surveySection = "${surveySection}",`);
+  lines.push(`  baseText = "${baseText}",`);
+  lines.push(`  userNote = "${userNote}",`);
   lines.push('  data = list()');
   lines.push(')');
   lines.push('');
@@ -734,6 +740,9 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
 
   const questionId = escapeRString(table.questionId || '');
   const sourceTableId = escapeRString(table.sourceTableId || '');
+  const surveySection = escapeRString(table.surveySection || '');
+  const baseText = escapeRString(table.baseText || '');
+  const userNote = escapeRString(table.userNote || '');
 
   lines.push(`table_${sanitizeVarName(table.tableId)} <- list(`);
   lines.push(`  tableId = "${tableId}",`);
@@ -742,6 +751,9 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
   lines.push(`  tableType = "mean_rows",`);
   lines.push(`  isDerived = ${table.isDerived ? 'TRUE' : 'FALSE'},`);
   lines.push(`  sourceTableId = "${sourceTableId}",`);
+  lines.push(`  surveySection = "${surveySection}",`);
+  lines.push(`  baseText = "${baseText}",`);
+  lines.push(`  userNote = "${userNote}",`);
   lines.push('  data = list()');
   lines.push(')');
   lines.push('');

@@ -86,6 +86,31 @@ export const ExtendedTableDefinitionSchema = z.object({
 
   /** Reason for exclusion (empty string if not excluded) */
   excludeReason: z.string(),
+
+  // =========================================================================
+  // Phase 2: Additional Table Metadata
+  // =========================================================================
+
+  /**
+   * Survey section name (verbatim from survey document, ALL CAPS)
+   * Example: "SCREENER", "INDICATION AWARENESS, ALLOCATIONS & MONOTHERAPY PERCEPTIONS"
+   * Empty string if section cannot be determined.
+   */
+  surveySection: z.string(),
+
+  /**
+   * Base text describing WHO was asked this question (not the question text itself)
+   * Example: "Total interventional radiologists", "Those who manage primary liver cancers"
+   * Empty string defaults to "All respondents" in Excel output.
+   */
+  baseText: z.string(),
+
+  /**
+   * Agent-generated note for additional context (use sparingly)
+   * Example: "(Multiple answers accepted)", "(Asked if S2 = 1 or 2)", "(Responses sorted descending)"
+   * Empty string if no note needed.
+   */
+  userNote: z.string(),
 });
 
 export type ExtendedTableDefinition = z.infer<typeof ExtendedTableDefinitionSchema>;
@@ -221,6 +246,10 @@ export function toExtendedTable(
     isDerived: false,
     exclude: false,
     excludeReason: '',
+    // Phase 2: Additional table metadata (defaults)
+    surveySection: '',
+    baseText: '',
+    userNote: '',
   };
 }
 

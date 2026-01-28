@@ -43,104 +43,94 @@ filterValue: "10-35" → sum(as.numeric(var_col) >= 10 & as.numeric(var_col) <= 
 
 ---
 
-## Phase 2: Schema Enhancements
+## Phase 2: Schema Enhancements ✅ COMPLETED
+
+<details>
+<summary>Click to expand Phase 2 details</summary>
 
 **Goal:** Add new fields to support richer table metadata
 
-### Changes Required
+### Changes Made
 
 **File: `src/schemas/verificationAgentSchema.ts`**
+- Added `surveySection: z.string()` - Section name from survey (verbatim, ALL CAPS)
+- Added `baseText: z.string()` - Who was asked (not the question text)
+- Added `userNote: z.string()` - Agent-generated context note
+- Updated `toExtendedTable()` helper with default empty strings
 
-Add to `ExtendedTableDefinitionSchema`:
-```typescript
-// Survey section (e.g., "SCREENING SECTION", "AWARENESS")
-surveySection: z.string(),
+**Note:** `tableCategory` was NOT added. Use existing `isDerived` boolean instead.
 
-// Table category beyond frequency/mean_rows
-// blank = only table for question, otherwise: overview | summary | derived
-tableCategory: z.enum(['', 'overview', 'summary', 'derived']),
+**File: `src/prompts/verification/production.ts`**
+- Added `<additional_metadata>` section with instructions for:
+  - surveySection: Extract verbatim from survey, strip "SECTION X:" prefix
+  - baseText: Describe WHO was asked, infer from skip logic/context
+  - userNote: Sparingly add helpful context in parentheses
+- Updated `<output_specifications>` with new fields
+- Updated "ALL FIELDS REQUIRED" list
 
-// Base text - WHO was asked (not the question text)
-baseText: z.string(),
-
-// Optional user-facing note for additional context
-userNote: z.string(),
-```
-
-**File: `src/schemas/tableAgentSchema.ts`**
-- Review if any fields need to flow through from TableAgent
+**File: `src/lib/r/RScriptGeneratorV2.ts`**
+- Updated `generateFrequencyTable()` to pass through surveySection, baseText, userNote
+- Updated `generateMeanRowsTable()` to pass through surveySection, baseText, userNote
 
 **File: `src/lib/excel/ExcelFormatter.ts`**
-- Update `TableData` interface to include new fields
+- Updated `TableData` interface with optional surveySection, baseText, userNote fields
 
 ### Acceptance Criteria
-- [ ] Schema validates with new fields
-- [ ] TypeScript types updated throughout pipeline
-- [ ] No breaking changes to existing flow
+- [x] Schema validates with new fields
+- [x] TypeScript types updated throughout pipeline
+- [x] No breaking changes to existing flow
+- [x] R script passes new fields through to JSON output
+- [x] Verification agent prompt includes instructions for new fields
+
+*Completed: 2026-01-27*
+
+</details>
 
 ---
 
-## Phase 3: Verification Agent Improvements
+## Phase 3: Verification Agent Improvements ✅ COMPLETED
+
+<details>
+<summary>Click to expand Phase 3 details</summary>
 
 **Goal:** Better metadata extraction and consistency
 
-### 3.1 Question Text Accuracy
+### Changes Made
 
 **File: `src/prompts/verification/production.ts`**
 
-Update prompt to enforce:
-- Use EXACT question text from survey (no paraphrasing)
-- Format: Period separator, not colon (`S1.` not `S1:`)
-- Copy verbatim - preserve original punctuation
+**3.1 Question Text Accuracy**
+- Updated ACTION 1 to emphasize EXACT VERBATIM text from survey
+- Only allowed modification: remove piping codes (or use generic placeholders like "[BRAND]")
+- Explicitly states "do NOT paraphrase"
 
-### 3.2 Survey Section Extraction
+**3.2 Survey Section Extraction** (Done in Phase 2)
+- Added `<additional_metadata>` section with surveySection instructions
+- Extract verbatim from survey, ALL CAPS, strip "SECTION X:" prefix
 
-**File: `src/prompts/verification/production.ts`**
+**3.3 Table Category Classification** - SKIPPED
+- Not needed as separate field
+- Use existing `isDerived` boolean instead
 
-Add instruction to:
-- Identify survey section for each question
-- Populate `surveySection` field
-- Common sections: "SCREENING", "AWARENESS", "USAGE", "ATTITUDES", etc.
+**3.4 Base Text Determination** (Done in Phase 2)
+- Added baseText instructions in `<additional_metadata>` section
+- Only populate when NOT all respondents (skip logic/filtering)
+- Empty string "" triggers count-based fallback in Excel
 
-### 3.3 Table Category Classification
-
-**File: `src/prompts/verification/production.ts`**
-
-Add instruction for `tableCategory`:
-- Leave blank if only one table for the question
-- `overview` - main/full table when multiple exist
-- `summary` - rolled-up/aggregated view
-- `derived` - calculated from another table (T2B, binned, etc.)
-
-### 3.4 Base Text Determination
-
-**File: `src/prompts/verification/production.ts`**
-
-Add instruction for `baseText`:
-- Describe WHO was asked, not WHAT was asked
-- Good: "Total interventional radiologists/oncologists"
-- Good: "Those who manage/treat any other primary & secondary liver cancers"
-- Bad: "What is your primary specialty/role?" (this is question text, not base)
-
-**Fallback approach (if skip logic too complex):**
-- "All respondents" - for questions everyone saw
-- "Filtered respondents" - for questions with skip logic
-
-### 3.5 User-Facing Notes
-
-**File: `src/prompts/verification/production.ts`**
-
-Add instruction for `userNote`:
-- Use sparingly for helpful context
-- Examples: "(Asked if S2 = 1 or 2)", "Multiple answers accepted", "Responses sorted descending"
+**3.5 User-Facing Notes** (Done in Phase 2)
+- Added userNote instructions in `<additional_metadata>` section
+- Use sparingly, parenthetical format
 
 ### Acceptance Criteria
-- [ ] Question text matches survey exactly
-- [ ] Period separator used consistently
-- [ ] Survey sections populated
-- [ ] Table categories assigned correctly
-- [ ] Base text describes population, not question
-- [ ] User notes added where helpful
+- [x] Question text matches survey exactly (verbatim, no paraphrasing)
+- [x] Survey sections populated via surveySection field
+- [x] Table categories: using isDerived instead (no new field needed)
+- [x] Base text describes population, not question
+- [x] User notes added where helpful
+
+*Completed: 2026-01-27*
+
+</details>
 
 ---
 
@@ -220,6 +210,19 @@ Include in `tables.json` metadata:
 
 **Goal:** New sheets, better display of metadata
 
+### Prerequisites from Phase 2
+
+Phase 2 added these fields to `ExtendedTableDefinition` (now flowing through to `tables.json`):
+- `surveySection` - Section name from survey (e.g., "SCREENER", "INDICATION AWARENESS")
+- `baseText` - Description of who was asked (e.g., "Total interventional radiologists")
+- `userNote` - Agent-generated context (e.g., "(Multiple answers accepted)")
+
+Phase 5 must render these fields appropriately.
+
+**Note on tableCategory:** We do NOT have a separate `tableCategory` field. Use the existing `isDerived` boolean instead:
+- `isDerived: true` → Show "[Derived from {sourceTableId}]" annotation
+- `isDerived: false` → No category annotation needed
+
 ### 5.1 Table of Contents Sheet
 
 **File: `src/lib/excel/ExcelFormatter.ts`**
@@ -265,38 +268,41 @@ Handle uppercase/lowercase sig letters:
 **File: `src/lib/excel/tableRenderers/joeStyleFrequency.ts`**
 **File: `src/lib/excel/tableRenderers/joeStyleMeanRows.ts`**
 
-Display survey section:
-- Show above or alongside question text
-- Format: "SCREENING SECTION" (all caps, or styled differently)
+Display `surveySection` field (from Phase 2):
+- Show above or alongside question text in context column
+- Format: ALL CAPS (agent already outputs it this way)
+- Example: "SCREENER" or "INDICATION AWARENESS, ALLOCATIONS & MONOTHERAPY PERCEPTIONS"
 
 ### 5.6 Base Text Display
 
 **File: `src/lib/excel/tableRenderers/joeStyleFrequency.ts`**
 **File: `src/lib/excel/tableRenderers/joeStyleMeanRows.ts`**
 
-Update base row:
-- Use `baseText` field (not question text)
-- Format: "Base: [baseText]"
-- Falls back to "Base: All respondents" if empty
+Update base row to use `baseText` field (from Phase 2):
+- Currently hardcoded as "Base: {questionText.substring(0, 50)}..."
+- Change to: "Base: {baseText}" when `baseText` is non-empty
+- Falls back to "Base: All respondents" if `baseText` is empty string
 
-### 5.7 Table Category Display
+### 5.7 Derived Table Display
 
 **File: `src/lib/excel/tableRenderers/joeStyleFrequency.ts`**
 **File: `src/lib/excel/tableRenderers/joeStyleMeanRows.ts`**
 
-Show table category in context/title:
-- Derived tables: "[Derived from {sourceTableId}]"
-- Summary tables: "Summary Table" or similar
-- Overview tables: "Overview" when multiple tables exist
+Use existing `isDerived` and `sourceTableId` fields:
+- If `isDerived: true` AND `sourceTableId` is non-empty: Show "[Derived from {sourceTableId}]"
+- This already partially exists in the code—verify it's working correctly
+
+**No separate `tableCategory` field needed.**
 
 ### 5.8 User Note Display
 
 **File: `src/lib/excel/tableRenderers/joeStyleFrequency.ts`**
 **File: `src/lib/excel/tableRenderers/joeStyleMeanRows.ts`**
 
-Display `userNote` field:
-- Show below question text or in context column
-- Parenthetical format: "(Asked if S2 = 1 or 2)"
+Display `userNote` field (from Phase 2):
+- Show below question text in context column (or as a separate line)
+- Already in parenthetical format from agent: "(Multiple answers accepted)"
+- Only display if non-empty string
 
 ### Acceptance Criteria
 - [ ] ToC sheet generated with all tables listed
@@ -370,10 +376,10 @@ This phase depends on having multi-banner support in the pipeline. Current syste
 ## Execution Order Recommendation
 
 1. ~~**Phase 1** - Bug fix first (range filterValue) - unblocks binning feature~~ ✅ COMPLETED
-2. **Phase 2** - Schema changes - foundation for everything else ← NEXT
-3. **Phase 3** - Verification agent - populates new fields
-4. **Phase 4** - R script - calculates everything correctly
-5. **Phase 5** - Excel formatter - displays everything correctly
+2. ~~**Phase 2** - Schema changes - foundation for everything else~~ ✅ COMPLETED
+3. ~~**Phase 3** - Verification agent prompt improvements~~ ✅ COMPLETED
+4. **Phase 4** - R script enhancements (excluded tables, demo table, multi-threshold) ← NEXT
+5. **Phase 5** - Excel formatter - displays new metadata fields
 6. **Phase 6** - Multi-banner - future enhancement
 
 Each phase builds on the previous. Complete phases in order.
