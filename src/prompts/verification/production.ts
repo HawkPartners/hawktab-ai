@@ -177,7 +177,45 @@ LABELING: Use survey language for labels. "Likely (T2B)" or "Satisfied (T2B)" is
 Set isDerived: true and sourceTableId when creating box score views.
 
 
-ACTION 3: ADD NET ROWS
+ACTION 3: ADD BINNED DISTRIBUTION FOR NUMERIC VARIABLES
+
+WHEN: A numeric/continuous variable (mean_rows table) would benefit from a distribution view
+WHY: Mean/median alone doesn't show the spread; analysts often want to see "how many are 0-5 years vs 10-15 years"
+
+HOW:
+1. Keep the original mean_rows table (shows mean, median, etc.)
+2. ADD a frequency table with binned ranges
+
+RANGE FORMAT: Use "min-max" syntax (inclusive on both ends)
+- "0-4" means values 0, 1, 2, 3, 4
+- "10-14" means values 10, 11, 12, 13, 14
+
+EXAMPLE - S6 "Years in practice" (numeric 0-35):
+
+Original table (mean_rows):
+{ "tableId": "s6", "tableType": "mean_rows", "rows": [
+  { "variable": "S6", "label": "Years in practice", "filterValue": "" }
+]}
+
+Added distribution table (frequency):
+{ "tableId": "s6_distribution", "tableType": "frequency", "isDerived": true, "sourceTableId": "s6", "rows": [
+  { "variable": "S6", "label": "Less than 5 years", "filterValue": "0-4" },
+  { "variable": "S6", "label": "5-9 years", "filterValue": "5-9" },
+  { "variable": "S6", "label": "10-14 years", "filterValue": "10-14" },
+  { "variable": "S6", "label": "15-19 years", "filterValue": "15-19" },
+  { "variable": "S6", "label": "20+ years", "filterValue": "20-99" },
+  { "variable": "S6", "label": "10+ years (NET)", "filterValue": "10-99", "isNet": true }
+]}
+
+BIN SIZE GUIDANCE:
+- Use logical groupings (5-year increments for tenure, decade increments for age)
+- Consider the data range from meta.valueRange if available
+- Add NET rows for common analytical cuts (e.g., "10+ years experience")
+
+Set isDerived: true and sourceTableId to the original mean_rows table.
+
+
+ACTION 4: ADD NET ROWS
 
 WHEN: Survey or analysis context suggests logical groupings
 HOW: Identify detail rows → Create summary row → Indent details under NET
@@ -200,7 +238,7 @@ Use netComponents array instead of filterValue
 { "variable": "Q5_BrandA", "label": "Brand A", "filterValue": "1", "isNet": false, "netComponents": [], "indent": 1 }
 
 
-ACTION 4: EXPAND RANKING QUESTIONS
+ACTION 5: EXPAND RANKING QUESTIONS
 
 WHEN: Survey asks respondents to rank items (e.g., "Rank these brands 1st to 4th")
 INPUT: You receive a flat table with one row per item-rank combination
@@ -262,7 +300,7 @@ This expansion from 1→11 tables is expected for ranking questions.
 Set isDerived: true and sourceTableId for all derived views.
 
 
-ACTION 5: SPLIT GRID TABLES BY DIMENSION
+ACTION 6: SPLIT GRID TABLES BY DIMENSION
 
 WHEN: Table contains a grid/matrix structure (rows × columns = multiple perspectives)
 SIGNALS: Variable names with rXcY pattern, repeated items with different suffixes
@@ -304,7 +342,7 @@ DO NOT SPLIT when:
 - Small grids where splitting adds no value (2×2 = just 4 rows)
 
 
-ACTION 6: FLAG FOR EXCLUSION
+ACTION 7: FLAG FOR EXCLUSION
 
 WHEN: Table has no analytical value for the main report
 HOW: Set exclude: true + provide excludeReason
@@ -337,6 +375,7 @@ CRITICAL INVARIANTS - NEVER VIOLATE:
 3. filterValue must match actual data values
    - Check datamap context if uncertain
    - Use comma-separated for merged values: "4,5"
+   - Use range syntax for binned distributions: "0-4" means >= 0 AND <= 4 (inclusive)
 
 4. ADD views, don't REPLACE
    - Keep original tables when creating splits or T2B views

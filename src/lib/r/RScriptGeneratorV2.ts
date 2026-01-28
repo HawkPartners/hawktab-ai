@@ -629,6 +629,9 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
     const filterValues = filterValue.split(',').map(v => v.trim()).filter(v => v);
     const hasMultipleValues = filterValues.length > 1;
 
+    // Check for range pattern (e.g., "0-4", "10-35" for binned distributions)
+    const rangeMatch = filterValue.match(/^(\d+)-(\d+)$/);
+
     if (isNet && row.netComponents && row.netComponents.length > 0) {
       // NET row: aggregate counts from multiple variables
       lines.push(`  # Row ${i + 1}: NET - ${row.label} (components: ${row.netComponents.join(', ')})`);
@@ -646,6 +649,15 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
       lines.push('  base_n <- sum(!is.na(safe_get_var(cut_data, net_vars[1])))');
       lines.push('  count <- sum(net_respondents, na.rm = TRUE)');
       lines.push('  pct <- if (base_n > 0) round_half_up(count / base_n * 100) else 0');
+    } else if (rangeMatch) {
+      // Range filter value (e.g., "0-4" for binned distributions)
+      const [, minVal, maxVal] = rangeMatch;
+      lines.push(`  # Row ${i + 1}: ${row.variable} in range [${minVal}-${maxVal}]`);
+      lines.push(`  var_col <- safe_get_var(cut_data, "${varName}")`);
+      lines.push('  if (!is.null(var_col)) {');
+      lines.push('    base_n <- sum(!is.na(var_col))');
+      lines.push(`    count <- sum(as.numeric(var_col) >= ${minVal} & as.numeric(var_col) <= ${maxVal}, na.rm = TRUE)`);
+      lines.push('    pct <- if (base_n > 0) round_half_up(count / base_n * 100) else 0');
     } else if (hasMultipleValues) {
       // Multiple filter values (e.g., T2B "4,5")
       lines.push(`  # Row ${i + 1}: ${row.variable} IN (${filterValues.join(', ')})`);

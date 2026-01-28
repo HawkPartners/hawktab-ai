@@ -4,30 +4,42 @@ A phased plan to bring HawkTab crosstab output to production quality, matching i
 
 ---
 
-## Phase 1: Critical Bug Fix - Range FilterValue Support
+## Phase 1: Critical Bug Fix - Range FilterValue Support ✅ COMPLETED
+
+<details>
+<summary>Click to expand Phase 1 details</summary>
 
 **Priority:** HIGH - Currently breaking useful feature (binned distributions)
 
 ### Problem
 VerificationAgent creates binned distribution tables with range syntax (`filterValue: "0-4"`), but R script only handles single values and comma-separated lists. Result: 0% for all binned rows.
 
-### Changes Required
+### Changes Made
 
 **File: `src/lib/r/RScriptGeneratorV2.ts`**
-- Detect range syntax in filterValue (pattern: `/^\d+-\d+$/`)
-- Generate appropriate R filter: `VAR >= X & VAR <= Y`
-- Handle in `generateFilterExpression()` or equivalent
+- Added range pattern detection: `/^(\d+)-(\d+)$/`
+- Generates R filter: `as.numeric(var_col) >= X & as.numeric(var_col) <= Y`
+- Handles ranges where min value may not exist in data (safe filtering)
+
+**File: `src/prompts/verification/production.ts`**
+- Added ACTION 3: ADD BINNED DISTRIBUTION FOR NUMERIC VARIABLES
+- Documented range format: `"0-4"` means >= 0 AND <= 4 (inclusive)
+- Renumbered subsequent actions (3→4, 4→5, 5→6, 6→7)
 
 **Example transformation:**
 ```
-filterValue: "0-4"   → data$S6 >= 0 & data$S6 <= 4
-filterValue: "10-35" → data$S6 >= 10 & data$S6 <= 35
+filterValue: "0-4"   → sum(as.numeric(var_col) >= 0 & as.numeric(var_col) <= 4, na.rm = TRUE)
+filterValue: "10-35" → sum(as.numeric(var_col) >= 10 & as.numeric(var_col) <= 35, na.rm = TRUE)
 ```
 
 ### Acceptance Criteria
-- [ ] Range filterValues produce correct percentages
-- [ ] Existing single-value and comma-separated filterValues still work
-- [ ] S6 distribution table shows correct data (not 0%)
+- [x] Range filterValues produce correct percentages
+- [x] Existing single-value and comma-separated filterValues still work
+- [x] S6 distribution table shows correct data (not 0%)
+
+*Completed: 2026-01-27*
+
+</details>
 
 ---
 
@@ -357,8 +369,8 @@ This phase depends on having multi-banner support in the pipeline. Current syste
 
 ## Execution Order Recommendation
 
-1. **Phase 1** - Bug fix first (range filterValue) - unblocks binning feature
-2. **Phase 2** - Schema changes - foundation for everything else
+1. ~~**Phase 1** - Bug fix first (range filterValue) - unblocks binning feature~~ ✅ COMPLETED
+2. **Phase 2** - Schema changes - foundation for everything else ← NEXT
 3. **Phase 3** - Verification agent - populates new fields
 4. **Phase 4** - R script - calculates everything correctly
 5. **Phase 5** - Excel formatter - displays everything correctly
