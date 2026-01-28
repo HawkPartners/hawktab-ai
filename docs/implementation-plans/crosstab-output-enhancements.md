@@ -134,75 +134,54 @@ filterValue: "10-35" → sum(as.numeric(var_col) >= 10 & as.numeric(var_col) <= 
 
 ---
 
-## Phase 4: R Script Enhancements
+## Phase 4: R Script Enhancements ✅ COMPLETED
+
+<details>
+<summary>Click to expand Phase 4 details</summary>
 
 **Goal:** Calculate all tables, generate demo table, support multiple significance thresholds
 
-### 4.1 Calculate Excluded Tables
+### Changes Made
 
 **File: `src/lib/r/RScriptGeneratorV2.ts`**
 
-Current behavior: Excluded tables are skipped entirely
-New behavior: Calculate them but flag as excluded
+**4.1 Calculate Excluded Tables**
+- Removed skip logic for excluded tables - they now flow through to generators
+- Added `excluded` and `excludeReason` fields to both `generateFrequencyTable()` and `generateMeanRowsTable()`
+- Excluded tables appear in `tables.json` with `excluded: true` and calculated data
 
-- Remove the skip logic for excluded tables
-- Generate R code for all tables
-- Add `excluded: true` flag in output JSON
-- Add `excludeReason` in output
+**4.2 Demo Table Generation (Banner x Banner)**
+- Added new `generateDemoTable()` function
+- Auto-generates profile table from banner structure (no AI needed)
+- Each banner cut becomes a row with count/pct
+- tableId: `_demo_banner_x_banner`, surveySection: `DEMO`
+- Called before main table loop, always appears first in output
 
-### 4.2 Demo Table Generation (Banner x Banner)
+**4.3 Multiple Significance Thresholds**
+- Added `significanceThresholds?: number[]` to `RScriptV2Input` interface
+- Updated threshold handling to support dual thresholds (e.g., `[0.05, 0.10]`)
+- Modified significance testing to use p-value comparison at both levels:
+  - p < threshold_high → uppercase letter (e.g., "A")
+  - p < threshold_low (but not high) → lowercase letter (e.g., "a")
+- Backward compatible: single threshold still works
 
-**File: `src/lib/r/RScriptGeneratorV2.ts`**
-
-Add function to generate demo table:
-- Auto-generated from banner structure (no AI)
-- Rows = all banner groups and their cuts (with hierarchy)
-- Columns = same cuts as all other tables
-- Always generated, always first in output
-
-```
-tableId: "_demo_banner_x_banner"
-questionText: "Banner Profile"
-surveySection: "DEMO"
-```
-
-### 4.3 Multiple Significance Thresholds
-
-**File: `src/lib/r/RScriptGeneratorV2.ts`**
-
-Support up to 2 significance thresholds:
-- Run significance tests at both levels (e.g., 95% and 90%)
-- Output separate sig letters for each threshold
-- Higher threshold = uppercase (A, B, C)
-- Lower threshold = lowercase (a, b, c)
-
-**Configuration:**
-```typescript
-significanceThresholds: [0.95, 0.90]  // or just [0.95]
-```
-
-### 4.4 Metadata in Output
-
-**File: `src/lib/r/RScriptGeneratorV2.ts`**
-
-Include in `tables.json` metadata:
-```json
-{
-  "metadata": {
-    "significanceTest": "unpooled z-test for column proportions",
-    "significanceThresholds": [0.95, 0.90],
-    "generatedAt": "...",
-    "totalRespondents": 168
-  }
-}
-```
+**4.4 Metadata Enhancements**
+- Added `significanceTest: "unpooled z-test for column proportions"` to metadata
+- Added `meanSignificanceTest: "two-sample t-test"` to metadata
+- Added `significanceThresholds` array to metadata
+- Added `significanceNotation` object with high/low threshold details when dual mode
+- Kept `significanceLevel` for backward compatibility
 
 ### Acceptance Criteria
-- [ ] Excluded tables calculated and in output
-- [ ] Demo table generated and appears first
-- [ ] Multiple significance thresholds working
-- [ ] Uppercase/lowercase letters correct
-- [ ] Metadata includes significance info
+- [x] Excluded tables calculated and in output
+- [x] Demo table generated and appears first
+- [x] Multiple significance thresholds working
+- [x] Uppercase/lowercase letters correct
+- [x] Metadata includes significance info
+
+*Completed: 2026-01-28*
+
+</details>
 
 ---
 
@@ -378,8 +357,8 @@ This phase depends on having multi-banner support in the pipeline. Current syste
 1. ~~**Phase 1** - Bug fix first (range filterValue) - unblocks binning feature~~ ✅ COMPLETED
 2. ~~**Phase 2** - Schema changes - foundation for everything else~~ ✅ COMPLETED
 3. ~~**Phase 3** - Verification agent prompt improvements~~ ✅ COMPLETED
-4. **Phase 4** - R script enhancements (excluded tables, demo table, multi-threshold) ← NEXT
-5. **Phase 5** - Excel formatter - displays new metadata fields
+4. ~~**Phase 4** - R script enhancements (excluded tables, demo table, multi-threshold)~~ ✅ COMPLETED
+5. **Phase 5** - Excel formatter - displays new metadata fields ← NEXT
 6. **Phase 6** - Multi-banner - future enhancement
 
 Each phase builds on the previous. Complete phases in order.

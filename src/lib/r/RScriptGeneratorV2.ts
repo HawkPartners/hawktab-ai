@@ -41,7 +41,8 @@ export interface RScriptV2Input {
   cutGroups?: CutGroup[];           // Group structure for within-group stat testing
   totalStatLetter?: string | null;  // Letter for Total column (usually "T")
   dataFilePath?: string;            // Default: "dataFile.sav"
-  significanceLevel?: number;       // Default: 0.10 (90% confidence)
+  significanceLevel?: number;       // Default: 0.10 (90% confidence) - kept for backward compat
+  significanceThresholds?: number[];  // NEW: [0.05, 0.10] for 95%/90% dual thresholds
   totalRespondents?: number;        // Total qualified respondents (for base description)
   bannerGroups?: BannerGroup[];     // Banner structure for Excel formatter
 }
@@ -238,10 +239,17 @@ export function generateRScriptV2WithValidation(
     totalStatLetter = 'T',
     dataFilePath = 'dataFile.sav',
     significanceLevel = 0.10,
+    significanceThresholds,
     totalRespondents,
     bannerGroups = []
   } = input;
   const { sessionId = 'unknown', outputDir = 'results' } = options;
+
+  // Compute effective thresholds: use significanceThresholds if provided, else fall back to significanceLevel
+  const effectiveThresholds = significanceThresholds
+    ?? (significanceLevel ? [significanceLevel] : [0.10]);
+  const hasMultipleThresholds = effectiveThresholds.length >= 2
+    && effectiveThresholds[0] !== effectiveThresholds[1];  // Same values = treat as single
 
   // Validate all tables first
   const { validTables, report } = validateAllTables(tables);
@@ -269,7 +277,11 @@ export function generateRScriptV2WithValidation(
   lines.push(`# Generated: ${new Date().toISOString()}`);
   lines.push(`# Tables: ${report.validTables} (${report.invalidTables} skipped due to validation errors)`);
   lines.push(`# Cuts: ${cuts.length + 1}`);  // +1 for Total
-  lines.push(`# Significance Level: ${significanceLevel} (${Math.round((1 - significanceLevel) * 100)}% confidence)`);
+  if (hasMultipleThresholds) {
+    lines.push(`# Significance: p<${effectiveThresholds[0]} (uppercase) / p<${effectiveThresholds[1]} (lowercase)`);
+  } else {
+    lines.push(`# Significance Level: ${effectiveThresholds[0]} (${Math.round((1 - effectiveThresholds[0]) * 100)}% confidence)`);
+  }
   if (report.invalidTables > 0) {
     lines.push('#');
     lines.push('# WARNING: Some tables were skipped due to validation errors.');
@@ -295,10 +307,16 @@ export function generateRScriptV2WithValidation(
   lines.push('');
 
   // -------------------------------------------------------------------------
-  // Significance Level
+  // Significance Thresholds
   // -------------------------------------------------------------------------
-  lines.push('# Significance testing threshold');
-  lines.push(`p_threshold <- ${significanceLevel}`);
+  lines.push('# Significance testing threshold(s)');
+  if (hasMultipleThresholds) {
+    lines.push(`p_threshold_high <- ${effectiveThresholds[0]}  # High confidence (uppercase letters)`);
+    lines.push(`p_threshold_low <- ${effectiveThresholds[1]}   # Low confidence (lowercase letters)`);
+    lines.push('p_threshold <- p_threshold_high  # Default for backward compat');
+  } else {
+    lines.push(`p_threshold <- ${effectiveThresholds[0]}`);
+  }
   lines.push('');
 
   // -------------------------------------------------------------------------
@@ -321,6 +339,11 @@ export function generateRScriptV2WithValidation(
   lines.push('all_tables <- list()');
   lines.push('');
 
+  // Generate demo table first (banner profile - always first in output)
+  if (cuts.length > 0) {
+    generateDemoTable(lines, cuts, cutGroups, totalStatLetter);
+  }
+
   // Add comments for skipped invalid tables
   if (report.skippedTables.length > 0) {
     lines.push('# -----------------------------------------------------------------------------');
@@ -332,13 +355,12 @@ export function generateRScriptV2WithValidation(
     lines.push('');
   }
 
-  // Generate code only for valid tables
+  // Generate code for all valid tables (including excluded ones - they get flagged in output)
   for (const table of validTables) {
-    // Skip excluded tables (moved to reference sheet by VerificationAgent)
+    // Note: Excluded tables are still calculated but flagged with excluded=true in output
     if (table.exclude) {
-      lines.push(`# Skipping excluded table: ${table.tableId} (${table.excludeReason})`);
+      lines.push(`# Table: ${table.tableId} (excluded: ${table.excludeReason}) - still calculating for reference`);
       lines.push('');
-      continue;
     }
 
     // Since we validated upfront, tableType should always be valid
@@ -362,6 +384,7 @@ export function generateRScriptV2WithValidation(
     totalRespondents,
     bannerGroups: effectiveBannerGroups,
     comparisonGroups,
+    significanceThresholds: effectiveThresholds,
   });
 
   return {
@@ -458,6 +481,137 @@ function generateCutsDefinition(
   lines.push(')');
   lines.push('');
   lines.push('print(paste("Defined", length(cuts), "cuts in", length(cut_groups), "groups"))');
+  lines.push('');
+}
+
+// =============================================================================
+// Demo Table Generator (Banner Profile)
+// =============================================================================
+
+/**
+ * Generate a demo table showing respondent distribution across all banner cuts.
+ * This creates a "banner x banner" profile table showing how respondents are distributed.
+ */
+function generateDemoTable(
+  lines: string[],
+  cuts: CutDefinition[],
+  cutGroups: CutGroup[],
+  totalStatLetter: string | null
+): void {
+  lines.push('# -----------------------------------------------------------------------------');
+  lines.push('# Demo Table: Banner Profile (respondent distribution across cuts)');
+  lines.push('# -----------------------------------------------------------------------------');
+  lines.push('');
+
+  lines.push('table__demo_banner_x_banner <- list(');
+  lines.push('  tableId = "_demo_banner_x_banner",');
+  lines.push('  questionId = "",');
+  lines.push('  questionText = "Banner Profile",');
+  lines.push('  tableType = "frequency",');
+  lines.push('  isDerived = FALSE,');
+  lines.push('  sourceTableId = "",');
+  lines.push('  surveySection = "DEMO",');
+  lines.push('  baseText = "All qualified respondents",');
+  lines.push('  userNote = "Auto-generated banner profile showing respondent distribution",');
+  lines.push('  excluded = FALSE,');
+  lines.push('  excludeReason = "",');
+  lines.push('  data = list()');
+  lines.push(')');
+  lines.push('');
+
+  // For each banner column, calculate how many respondents match each banner cut (row)
+  lines.push('for (cut_name in names(cuts)) {');
+  lines.push('  cut_data <- apply_cut(data, cuts[[cut_name]])');
+  lines.push('  table__demo_banner_x_banner$data[[cut_name]] <- list()');
+  lines.push('  table__demo_banner_x_banner$data[[cut_name]]$stat_letter <- cut_stat_letters[[cut_name]]');
+  lines.push('');
+
+  // Build the group structure for row organization
+  // Derive effective cut groups from cutGroups or from cuts
+  const effectiveCutGroups: Array<{ groupName: string; cuts: Array<{ name: string; statLetter: string }> }> = [];
+
+  if (cutGroups.length > 0) {
+    for (const group of cutGroups) {
+      effectiveCutGroups.push({
+        groupName: group.groupName,
+        cuts: group.cuts.map(c => ({ name: c.name, statLetter: c.statLetter }))
+      });
+    }
+  } else {
+    // Derive from cuts
+    const groupMap = new Map<string, Array<{ name: string; statLetter: string }>>();
+    for (const cut of cuts) {
+      if (!groupMap.has(cut.groupName)) {
+        groupMap.set(cut.groupName, []);
+      }
+      groupMap.get(cut.groupName)!.push({ name: cut.name, statLetter: cut.statLetter });
+    }
+    for (const [groupName, cutList] of groupMap) {
+      effectiveCutGroups.push({ groupName, cuts: cutList });
+    }
+  }
+
+  // Generate a row for each banner cut
+  let rowIndex = 0;
+
+  // First add Total as a row (totalStatLetter used for consistency but Total always labeled "Total")
+  const _totalLetter = totalStatLetter || 'T';  // Unused but kept for potential future use
+  lines.push(`  # Row: Total`);
+  lines.push('  total_count <- nrow(cut_data)');
+  lines.push('  base_n <- nrow(cut_data)');
+  lines.push('  pct <- if (base_n > 0) round_half_up(total_count / base_n * 100) else 0');
+  lines.push('');
+  lines.push(`  table__demo_banner_x_banner$data[[cut_name]][["row_${rowIndex}_Total"]] <- list(`);
+  lines.push('    label = "Total",');
+  lines.push(`    groupName = "Total",`);
+  lines.push('    n = base_n,');
+  lines.push('    count = total_count,');
+  lines.push('    pct = pct,');
+  lines.push('    isNet = FALSE,');
+  lines.push('    indent = 0,');
+  lines.push('    sig_higher_than = c(),');
+  lines.push('    sig_vs_total = NULL');
+  lines.push('  )');
+  lines.push('');
+  rowIndex++;
+
+  // Then add each group and its cuts
+  for (const group of effectiveCutGroups) {
+    for (const cut of group.cuts) {
+      const safeCutName = cut.name.replace(/`/g, "'").replace(/"/g, '\\"');
+      const safeGroupName = group.groupName.replace(/"/g, '\\"');
+      const rowKey = `row_${rowIndex}_${cut.statLetter}`;
+
+      lines.push(`  # Row: ${cut.name} (${group.groupName})`);
+      lines.push(`  row_cut_mask <- cuts[[\`${safeCutName}\`]]`);
+      lines.push('  if (!is.null(row_cut_mask)) {');
+      lines.push('    # Count respondents in this column who also match this banner cut');
+      lines.push('    combined_mask <- cuts[[cut_name]] & row_cut_mask');
+      lines.push('    combined_mask[is.na(combined_mask)] <- FALSE');
+      lines.push('    row_count <- sum(combined_mask)');
+      lines.push('    row_pct <- if (base_n > 0) round_half_up(row_count / base_n * 100) else 0');
+      lines.push('');
+      lines.push(`    table__demo_banner_x_banner$data[[cut_name]][["${rowKey}"]] <- list(`);
+      lines.push(`      label = "${safeCutName}",`);
+      lines.push(`      groupName = "${safeGroupName}",`);
+      lines.push('      n = base_n,');
+      lines.push('      count = row_count,');
+      lines.push('      pct = row_pct,');
+      lines.push('      isNet = FALSE,');
+      lines.push('      indent = 0,');
+      lines.push('      sig_higher_than = c(),');
+      lines.push('      sig_vs_total = NULL');
+      lines.push('    )');
+      lines.push('  }');
+      lines.push('');
+      rowIndex++;
+    }
+  }
+
+  lines.push('}');
+  lines.push('');
+  lines.push('all_tables[["_demo_banner_x_banner"]] <- table__demo_banner_x_banner');
+  lines.push('print("Generated demo table: _demo_banner_x_banner")');
   lines.push('');
 }
 
@@ -601,6 +755,8 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
   const baseText = escapeRString(table.baseText || '');
   const userNote = escapeRString(table.userNote || '');
 
+  const excludeReason = escapeRString(table.excludeReason || '');
+
   lines.push(`table_${sanitizeVarName(table.tableId)} <- list(`);
   lines.push(`  tableId = "${tableId}",`);
   lines.push(`  questionId = "${questionId}",`);
@@ -611,6 +767,8 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
   lines.push(`  surveySection = "${surveySection}",`);
   lines.push(`  baseText = "${baseText}",`);
   lines.push(`  userNote = "${userNote}",`);
+  lines.push(`  excluded = ${table.exclude ? 'TRUE' : 'FALSE'},`);
+  lines.push(`  excludeReason = "${excludeReason}",`);
   lines.push('  data = list()');
   lines.push(')');
   lines.push('');
@@ -743,6 +901,7 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
   const surveySection = escapeRString(table.surveySection || '');
   const baseText = escapeRString(table.baseText || '');
   const userNote = escapeRString(table.userNote || '');
+  const excludeReason = escapeRString(table.excludeReason || '');
 
   lines.push(`table_${sanitizeVarName(table.tableId)} <- list(`);
   lines.push(`  tableId = "${tableId}",`);
@@ -754,6 +913,8 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
   lines.push(`  surveySection = "${surveySection}",`);
   lines.push(`  baseText = "${baseText}",`);
   lines.push(`  userNote = "${userNote}",`);
+  lines.push(`  excluded = ${table.exclude ? 'TRUE' : 'FALSE'},`);
+  lines.push(`  excludeReason = "${excludeReason}",`);
   lines.push('  data = list()');
   lines.push(')');
   lines.push('');
@@ -835,6 +996,11 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('print("Running significance testing...")');
   lines.push('');
 
+  // Check if we have dual thresholds
+  lines.push('# Check for dual threshold mode (uppercase = high conf, lowercase = low conf)');
+  lines.push('has_dual_thresholds <- exists("p_threshold_high") && exists("p_threshold_low")');
+  lines.push('');
+
   lines.push('for (table_id in names(all_tables)) {');
   lines.push('  tbl <- all_tables[[table_id]]');
   lines.push('  table_type <- tbl$tableType');
@@ -864,13 +1030,40 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('        other_data <- tbl$data[[other_cut]][[row_key]]');
   lines.push('        if (is.null(other_data) || !is.null(other_data$error)) next');
   lines.push('');
+  lines.push('        other_letter <- cut_stat_letters[[other_cut]]');
+  lines.push('');
   lines.push('        if (table_type == "frequency") {');
-  lines.push('          result <- sig_test_proportion(');
-  lines.push('            row_data$count, row_data$n,');
-  lines.push('            other_data$count, other_data$n');
-  lines.push('          )');
-  lines.push('          if (is.list(result) && !is.na(result$significant) && result$significant && result$higher) {');
-  lines.push('            sig_higher <- c(sig_higher, cut_stat_letters[[other_cut]])');
+  lines.push('          # Calculate p-value directly for dual threshold support');
+  lines.push('          p1 <- row_data$count / row_data$n');
+  lines.push('          p2 <- other_data$count / other_data$n');
+  lines.push('          n1 <- row_data$n');
+  lines.push('          n2 <- other_data$n');
+  lines.push('');
+  lines.push('          # Skip if both proportions are same or undefined');
+  lines.push('          if (is.na(p1) || is.na(p2)) next');
+  lines.push('          if ((p1 == 0 && p2 == 0) || (p1 == 1 && p2 == 1)) next');
+  lines.push('');
+  lines.push('          # Calculate p-value (unpooled z-test)');
+  lines.push('          se <- sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2)');
+  lines.push('          if (is.na(se) || se == 0) next');
+  lines.push('          z <- (p1 - p2) / se');
+  lines.push('          p_value <- 2 * (1 - pnorm(abs(z)))');
+  lines.push('');
+  lines.push('          # Only add letter if this column is higher');
+  lines.push('          if (p1 > p2) {');
+  lines.push('            if (has_dual_thresholds) {');
+  lines.push('              # Dual mode: uppercase for high confidence, lowercase for low-only');
+  lines.push('              if (p_value < p_threshold_high) {');
+  lines.push('                sig_higher <- c(sig_higher, toupper(other_letter))');
+  lines.push('              } else if (p_value < p_threshold_low) {');
+  lines.push('                sig_higher <- c(sig_higher, tolower(other_letter))');
+  lines.push('              }');
+  lines.push('            } else {');
+  lines.push('              # Single threshold mode');
+  lines.push('              if (p_value < p_threshold) {');
+  lines.push('                sig_higher <- c(sig_higher, other_letter)');
+  lines.push('              }');
+  lines.push('            }');
   lines.push('          }');
   lines.push('        } else if (table_type == "mean_rows") {');
   lines.push('          # For means, we need the raw values - use count/pct as proxy');
@@ -878,7 +1071,8 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('          if (!is.na(row_data$mean) && !is.na(other_data$mean)) {');
   lines.push('            if (row_data$mean > other_data$mean) {');
   lines.push('              # Simplified: flag if mean is higher (proper t-test needs raw data)');
-  lines.push('              sig_higher <- c(sig_higher, cut_stat_letters[[other_cut]])');
+  lines.push('              # For dual mode, always use uppercase (can\'t calc p-value without raw data)');
+  lines.push('              sig_higher <- c(sig_higher, toupper(other_letter))');
   lines.push('            }');
   lines.push('          }');
   lines.push('        }');
@@ -891,12 +1085,21 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('          sig_vs_total <- NULL');
   lines.push('');
   lines.push('          if (table_type == "frequency") {');
-  lines.push('            result <- sig_test_proportion(');
-  lines.push('              row_data$count, row_data$n,');
-  lines.push('              total_data$count, total_data$n');
-  lines.push('            )');
-  lines.push('            if (is.list(result) && !is.na(result$significant) && result$significant) {');
-  lines.push('              sig_vs_total <- if (result$higher) "higher" else "lower"');
+  lines.push('            p1 <- row_data$count / row_data$n');
+  lines.push('            p2 <- total_data$count / total_data$n');
+  lines.push('            n1 <- row_data$n');
+  lines.push('            n2 <- total_data$n');
+  lines.push('');
+  lines.push('            if (!is.na(p1) && !is.na(p2) && !((p1 == 0 && p2 == 0) || (p1 == 1 && p2 == 1))) {');
+  lines.push('              se <- sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2)');
+  lines.push('              if (!is.na(se) && se > 0) {');
+  lines.push('                z <- (p1 - p2) / se');
+  lines.push('                p_value <- 2 * (1 - pnorm(abs(z)))');
+  lines.push('                threshold_to_use <- if (has_dual_thresholds) p_threshold_high else p_threshold');
+  lines.push('                if (p_value < threshold_to_use) {');
+  lines.push('                  sig_vs_total <- if (p1 > p2) "higher" else "lower"');
+  lines.push('                }');
+  lines.push('              }');
   lines.push('            }');
   lines.push('          } else if (table_type == "mean_rows") {');
   lines.push('            if (!is.na(row_data$mean) && !is.na(total_data$mean)) {');
@@ -928,6 +1131,7 @@ interface JsonOutputMetadata {
   totalRespondents?: number;
   bannerGroups: BannerGroup[];
   comparisonGroups: string[];
+  significanceThresholds: number[];  // e.g., [0.05, 0.10] or [0.10]
 }
 
 function generateJsonOutput(
@@ -950,6 +1154,8 @@ function generateJsonOutput(
   // Build banner groups JSON for R
   const bannerGroupsJson = JSON.stringify(metadata.bannerGroups);
   const comparisonGroupsJson = JSON.stringify(metadata.comparisonGroups);
+  const thresholds = metadata.significanceThresholds;
+  const hasMultipleThresholds = thresholds.length >= 2 && thresholds[0] !== thresholds[1];
 
   lines.push('# Build final output structure');
   lines.push('output <- list(');
@@ -957,7 +1163,25 @@ function generateJsonOutput(
   lines.push(`    generatedAt = "${new Date().toISOString()}",`);
   lines.push(`    tableCount = ${tables.length},`);
   lines.push(`    cutCount = ${cuts.length + 1},`);  // +1 for Total
-  lines.push('    significanceLevel = p_threshold,');
+
+  // Significance testing methodology documentation
+  lines.push('    significanceTest = "unpooled z-test for column proportions",');
+  lines.push('    meanSignificanceTest = "two-sample t-test",');
+
+  // Thresholds as array
+  if (hasMultipleThresholds) {
+    lines.push(`    significanceThresholds = c(${thresholds[0]}, ${thresholds[1]}),`);
+    lines.push('    significanceNotation = list(');
+    lines.push(`      high = list(pValue = ${thresholds[0]}, confidence = ${Math.round((1 - thresholds[0]) * 100)}, case = "uppercase"),`);
+    lines.push(`      low = list(pValue = ${thresholds[1]}, confidence = ${Math.round((1 - thresholds[1]) * 100)}, case = "lowercase")`);
+    lines.push('    ),');
+  } else {
+    lines.push(`    significanceThresholds = c(${thresholds[0]}),`);
+  }
+
+  // Keep significanceLevel for backward compatibility (uses first/primary threshold)
+  lines.push(`    significanceLevel = ${thresholds[0]},`);
+
   // Add totalRespondents (use nrow(data) if not provided)
   if (metadata.totalRespondents !== undefined) {
     lines.push(`    totalRespondents = ${metadata.totalRespondents},`);
@@ -1099,6 +1323,7 @@ function buildComparisonGroups(bannerGroups: BannerGroup[]): string[] {
 export {
   // Internal generators (for testing)
   generateCutsDefinition,
+  generateDemoTable,
   generateHelperFunctions,
   generateFrequencyTable,
   generateMeanRowsTable,
