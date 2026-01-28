@@ -195,7 +195,7 @@ export class AgentMetricsCollector {
     lines.push(
       `    Tokens: ${summary.totals.inputTokens.toLocaleString()} in / ${summary.totals.outputTokens.toLocaleString()} out (${summary.totals.totalTokens.toLocaleString()} total)`
     );
-    lines.push(`    Duration: ${(summary.totals.durationMs / 1000).toFixed(1)}s`);
+    lines.push(`    Agent Time: ${(summary.totals.durationMs / 1000).toFixed(1)}s (cumulative, may exceed wall-clock due to parallelism)`);
     lines.push(`    Estimated Cost: ${formatCost(summary.totals.estimatedCostUsd)}`);
     lines.push('═'.repeat(70));
     lines.push('');
