@@ -177,12 +177,8 @@ export function validateAllTables(
   const tablesWithWarnings: TableValidationResult[] = [];
 
   for (const table of tables) {
-    // Skip excluded tables (they're intentionally excluded by VerificationAgent)
-    if (table.exclude) {
-      validTables.push(table); // Keep them for the skip comment in R
-      continue;
-    }
-
+    // Validate ALL tables, including excluded ones
+    // Exclusion only affects rendering, not validation - we want to catch errors everywhere
     const validation = validateTable(table);
 
     if (validation.valid) {
@@ -936,49 +932,92 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
     const varName = escapeRString(row.variable);
     const label = escapeRString(row.label);
     const rowKey = row.variable;  // For mean_rows, use variable name as key
+    const isNet = row.isNet || false;
+    const indent = row.indent || 0;
 
-    lines.push(`  # Row ${i + 1}: ${row.variable} (numeric summary)`);
-    lines.push(`  var_col <- safe_get_var(cut_data, "${varName}")`);
-    lines.push('  if (!is.null(var_col)) {');
-    lines.push('    # Get valid (non-NA) values');
-    lines.push('    valid_vals <- var_col[!is.na(var_col)]');
-    lines.push('    n <- length(valid_vals)');
-    lines.push('');
-    lines.push('    # Calculate summary statistics (all rounded to 1 decimal)');
-    lines.push('    mean_val <- if (n > 0) round_half_up(mean(valid_vals), 1) else NA');
-    lines.push('    median_val <- if (n > 0) round_half_up(median(valid_vals), 1) else NA');
-    lines.push('    sd_val <- if (n > 1) round_half_up(sd(valid_vals), 1) else NA');
-    lines.push('    mean_no_out <- if (n > 3) round_half_up(mean_no_outliers(valid_vals), 1) else NA');
-    lines.push('');
-    lines.push(`    table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
-    lines.push(`      label = "${label}",`);
-    lines.push('      n = n,');
-    lines.push('      mean = mean_val,');
-    lines.push('      mean_label = "Mean (overall)",');
-    lines.push('      median = median_val,');
-    lines.push('      median_label = "Median (overall)",');
-    lines.push('      sd = sd_val,');
-    lines.push('      mean_no_outliers = mean_no_out,');
-    lines.push('      mean_no_outliers_label = "Mean (minus outliers)",');
-    lines.push('      sig_higher_than = c(),');
-    lines.push('      sig_vs_total = NULL');
-    lines.push('    )');
-    lines.push('  } else {');
-    lines.push(`    table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
-    lines.push(`      label = "${label}",`);
-    lines.push('      n = 0,');
-    lines.push('      mean = NA,');
-    lines.push('      mean_label = "Mean (overall)",');
-    lines.push('      median = NA,');
-    lines.push('      median_label = "Median (overall)",');
-    lines.push('      sd = NA,');
-    lines.push('      mean_no_outliers = NA,');
-    lines.push('      mean_no_outliers_label = "Mean (minus outliers)",');
-    lines.push('      sig_higher_than = c(),');
-    lines.push('      sig_vs_total = NULL,');
-    lines.push(`      error = "Variable ${varName} not found"`);
-    lines.push('    )');
-    lines.push('  }');
+    // Check if this is a NET with components
+    const isNetWithComponents = isNet && row.netComponents && row.netComponents.length > 0;
+
+    if (isNetWithComponents) {
+      // NET row: sum the means of component variables
+      // This is valid for allocation questions where percentages can be summed
+      lines.push(`  # Row ${i + 1}: NET - ${row.label} (sum of component means)`);
+      const componentVars = row.netComponents.map(v => `"${escapeRString(v)}"`).join(', ');
+      lines.push(`  net_vars <- c(${componentVars})`);
+      lines.push('  component_means <- sapply(net_vars, function(v) {');
+      lines.push('    col <- safe_get_var(cut_data, v)');
+      lines.push('    if (!is.null(col)) mean(col, na.rm = TRUE) else NA');
+      lines.push('  })');
+      lines.push('  # Sum component means (valid for allocation/share questions)');
+      lines.push('  net_mean <- if (all(is.na(component_means))) NA else round_half_up(sum(component_means, na.rm = TRUE), 1)');
+      lines.push('  # Use n from first component as representative base');
+      lines.push('  first_col <- safe_get_var(cut_data, net_vars[1])');
+      lines.push('  n <- if (!is.null(first_col)) sum(!is.na(first_col)) else 0');
+      lines.push('');
+      lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
+      lines.push(`    label = "${label}",`);
+      lines.push('    n = n,');
+      lines.push('    mean = net_mean,');
+      lines.push('    mean_label = "Mean (sum of components)",');
+      lines.push('    median = NA,');
+      lines.push('    median_label = "",');
+      lines.push('    sd = NA,');
+      lines.push('    mean_no_outliers = NA,');
+      lines.push('    mean_no_outliers_label = "",');
+      lines.push(`    isNet = TRUE,`);
+      lines.push(`    indent = ${indent},`);
+      lines.push('    sig_higher_than = c(),');
+      lines.push('    sig_vs_total = NULL');
+      lines.push('  )');
+    } else {
+      // Standard row: calculate mean from variable directly
+      lines.push(`  # Row ${i + 1}: ${row.variable} (numeric summary)`);
+      lines.push(`  var_col <- safe_get_var(cut_data, "${varName}")`);
+      lines.push('  if (!is.null(var_col)) {');
+      lines.push('    # Get valid (non-NA) values');
+      lines.push('    valid_vals <- var_col[!is.na(var_col)]');
+      lines.push('    n <- length(valid_vals)');
+      lines.push('');
+      lines.push('    # Calculate summary statistics (all rounded to 1 decimal)');
+      lines.push('    mean_val <- if (n > 0) round_half_up(mean(valid_vals), 1) else NA');
+      lines.push('    median_val <- if (n > 0) round_half_up(median(valid_vals), 1) else NA');
+      lines.push('    sd_val <- if (n > 1) round_half_up(sd(valid_vals), 1) else NA');
+      lines.push('    mean_no_out <- if (n > 3) round_half_up(mean_no_outliers(valid_vals), 1) else NA');
+      lines.push('');
+      lines.push(`    table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
+      lines.push(`      label = "${label}",`);
+      lines.push('      n = n,');
+      lines.push('      mean = mean_val,');
+      lines.push('      mean_label = "Mean (overall)",');
+      lines.push('      median = median_val,');
+      lines.push('      median_label = "Median (overall)",');
+      lines.push('      sd = sd_val,');
+      lines.push('      mean_no_outliers = mean_no_out,');
+      lines.push('      mean_no_outliers_label = "Mean (minus outliers)",');
+      lines.push(`      isNet = FALSE,`);
+      lines.push(`      indent = ${indent},`);
+      lines.push('      sig_higher_than = c(),');
+      lines.push('      sig_vs_total = NULL');
+      lines.push('    )');
+      lines.push('  } else {');
+      lines.push(`    table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
+      lines.push(`      label = "${label}",`);
+      lines.push('      n = 0,');
+      lines.push('      mean = NA,');
+      lines.push('      mean_label = "Mean (overall)",');
+      lines.push('      median = NA,');
+      lines.push('      median_label = "Median (overall)",');
+      lines.push('      sd = NA,');
+      lines.push('      mean_no_outliers = NA,');
+      lines.push('      mean_no_outliers_label = "Mean (minus outliers)",');
+      lines.push(`      isNet = FALSE,`);
+      lines.push(`      indent = ${indent},`);
+      lines.push('      sig_higher_than = c(),');
+      lines.push('      sig_vs_total = NULL,');
+      lines.push(`      error = "Variable ${varName} not found"`);
+      lines.push('    )');
+      lines.push('  }');
+    }
     lines.push('');
   }
 

@@ -19,13 +19,13 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 - [x] **Per-table R validation** — Validate each table's R code individually before running the full script, so one bad table doesn't crash the entire run
 - [x] **Confirm output is usable** — Run pipeline, review Excel output, confirm it's meaningful enough to judge (not broken/incomplete)
 - [x] **Fix R script generation bugs** — Address any remaining issues that cause R failures (hallucinated variables, syntax errors, etc.)
-- [ ] **Investigate mean_rows NET failures** — Understand and resolve the pattern causing R validation failures (see details below)
-- [ ] **Update VerificationAgent prompt** — Adjust guidance for mean_rows NETs based on investigation findings
-- [ ] **Update RScriptGeneratorV2** — Add support for mean_rows NETs (sum component means for allocation questions)
+- [x] **Investigate mean_rows NET failures** — Understand and resolve the pattern causing R validation failures (see details below)
+- [x] **Update RScriptGeneratorV2** — Add support for mean_rows NETs (sum component means for allocation questions)
+- [x] **Update RValidationGenerator** — Validate component variables for mean_rows NETs instead of synthetic variable name
 - [ ] **Improve retry error message** — Rewrite the R validation error context to match the production prompt style and provide clearer guidance
 - [ ] **Re-run full pipeline** — Validate fixes with fresh pipeline run
 
-### Investigation: mean_rows NET Failures
+### Investigation: mean_rows NET Failures (RESOLVED)
 
 The following tables failed R validation with "Variable not found" errors:
 
@@ -43,13 +43,15 @@ All are **allocation questions** (mean_rows) where VerificationAgent correctly t
 - Synthetic variable name: `_NET_PCSK9_InAddition`
 - Real components in `netComponents`: `["A3ar1c1", "A3ar2c1", "A3ar3c1"]`
 
-This pattern works for **frequency** tables (R generator handles `netComponents`), but for **mean_rows** tables the R generator just looks up the synthetic variable name directly — which doesn't exist in the data.
+This pattern works for **frequency** tables (R generator handles `netComponents`), but for **mean_rows** tables the R generator just looked up the synthetic variable name directly — which doesn't exist in the data.
 
-**The Fix**: For mean_rows NETs, R should sum the component means (e.g., "Any PCSK9i" = Leqvio % + Praluent % + Repatha %). This is valid for allocation questions where percentages can be summed.
+**Resolution**: Updated both R generators to handle mean_rows NETs:
+1. `RScriptGeneratorV2.ts` — For NET rows, sum component means instead of looking up synthetic variable
+2. `RValidationGenerator.ts` — Validate component variables instead of synthetic variable name
 
-**Questions to resolve**:
-1. Is summing always correct for mean_rows NETs, or are there cases where it's not appropriate?
-2. Should we add prompt guidance about when mean_rows NETs make sense vs. don't?
+Summing is correct for allocation questions because the values represent mutually exclusive percentages that sum to a meaningful total (e.g., "Any PCSK9i" = Leqvio % + Praluent % + Repatha %).
+
+No prompt changes needed — the agent was already doing the right thing; we just needed the infrastructure to support it.
 
 ---
 
@@ -257,4 +259,4 @@ Same as Part 2: Run each dataset 3x, compare runs, make small prompt tweaks as n
 
 *Created: January 6, 2026*
 *Updated: January 28, 2026*
-*Status: Part 1 in progress (mean_rows NET issue identified), Parts 2-4 defined*
+*Status: Part 1 nearly complete (mean_rows NET issue resolved), Parts 2-4 defined*
