@@ -57,6 +57,15 @@ const getVerificationAgentInstructions = (): string => {
 // Types
 // =============================================================================
 
+export interface RValidationError {
+  /** Error message from R execution */
+  errorMessage: string;
+  /** Which retry attempt this is (1-based) */
+  failedAttempt: number;
+  /** Maximum retry attempts allowed */
+  maxAttempts: number;
+}
+
 export interface VerificationInput {
   /** Table definition from TableAgent */
   table: TableDefinition;
@@ -67,6 +76,8 @@ export interface VerificationInput {
   surveyMarkdown: string;
   /** Verbose datamap entries for variables in this table (as formatted string) */
   datamapContext: string;
+  /** R validation error context for retry attempts (optional) */
+  rValidationError?: RValidationError;
 }
 
 export interface VerificationProcessingOptions {
@@ -122,8 +133,8 @@ ${input.datamapContext}
 </datamap>
 `;
 
-  const userPrompt = `
-Review this table and output the desired end state:
+  // Build user prompt
+  let userPrompt = `Review this table and output the desired end state:
 
 Question: ${input.questionId} - ${input.questionText}
 
@@ -132,6 +143,27 @@ ${JSON.stringify(input.table, null, 2)}
 
 Analyze the table against the survey document. Fix labels, split if needed, add NETs if appropriate, create T2B if it's a scale, or flag for exclusion if low value. Output the tables array representing the desired end state.
 `;
+
+  // Append retry error context at the bottom if this is a retry attempt
+  if (input.rValidationError) {
+    const { errorMessage, failedAttempt, maxAttempts } = input.rValidationError;
+    userPrompt += `
+<r_validation_retry>
+RETRY ATTEMPT ${failedAttempt}/${maxAttempts}
+
+Your previous output for this table failed R validation with the following error:
+"${errorMessage}"
+
+<common_fixes>
+- "object 'X' not found" → Variable name doesn't exist in datamap. Check exact spelling and case.
+- "Variable 'X' not found" → Variable name is hallucinated. Use ONLY variables from the datamap.
+- "non-numeric argument" → filterValue or variable type mismatch. Check datamap for correct types.
+</common_fixes>
+
+Please carefully review the error message and the datamap context above, then retry your output for this table. Follow all system prompt instructions as normal.
+</r_validation_retry>
+`;
+  }
 
   // Check if this is an abort error
   const checkAbortError = (error: unknown): boolean => {

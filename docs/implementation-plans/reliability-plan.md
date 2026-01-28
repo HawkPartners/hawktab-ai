@@ -22,7 +22,7 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 - [x] **Investigate mean_rows NET failures** — Understand and resolve the pattern causing R validation failures (see details below)
 - [x] **Update RScriptGeneratorV2** — Add support for mean_rows NETs (sum component means for allocation questions)
 - [x] **Update RValidationGenerator** — Validate component variables for mean_rows NETs instead of synthetic variable name
-- [ ] **Improve retry error message** — Rewrite the R validation error context to match the production prompt style and provide clearer guidance
+- [x] **Improve retry error message** — Rewrite the R validation error context to match the production prompt style and provide clearer guidance
 - [ ] **Re-run full pipeline** — Validate fixes with fresh pipeline run
 
 ### Investigation: mean_rows NET Failures (RESOLVED)
