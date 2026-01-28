@@ -186,13 +186,13 @@ Before creating golden datasets and starting formal Part 5 iteration, address fo
 
 ### Tasks
 
-- [ ] Investigate base sizing issues (allocation vs percentage questions)
-- [ ] Review ExcelJS formatting improvements:
-  - [ ] Color code significance letters (make them noticeable)
-  - [ ] Use merged rows/columns where appropriate
-  - [ ] Switch from text input to numerical input (remove green flag warnings)
-  - [ ] General readability improvements
-- [ ] Check table sorting logic:
+- [x] Investigate base sizing issues (allocation vs percentage questions)
+- [x] Review ExcelJS formatting improvements:
+  - [x] Color code significance letters (make them noticeable)
+  - [x] Use merged rows/columns where appropriate
+  - [x] Switch from text input to numerical input (remove green flag warnings)
+  - [x] General readability improvements
+- [x] Check table sorting logic:
   - [ ] Ensure questionId is ALWAYS populated on every table
   - [ ] Ensure questionText is ALWAYS populated
   - [ ] Group related tables (all A1 variants together, findable by question ID)
