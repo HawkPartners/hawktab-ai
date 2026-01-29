@@ -543,12 +543,19 @@ async function runPipeline(datasetFolder: string) {
     }
   );
 
+  // Calculate pre-excluded vs failed-validation counts
+  const preExcludedCount = sortedTables.filter(t => t.exclude).length;
+  const failedValidationCount = rValidationReport.excluded - preExcludedCount;
+
   log(`  Passed first time: ${rValidationReport.passedFirstTime}`, 'green');
   if (rValidationReport.fixedAfterRetry > 0) {
     log(`  Fixed after retry: ${rValidationReport.fixedAfterRetry}`, 'yellow');
   }
-  if (newlyExcluded.length > 0) {
-    log(`  Excluded (R validation failed): ${newlyExcluded.length}`, 'red');
+  if (preExcludedCount > 0) {
+    log(`  Pre-excluded (by VerificationAgent): ${preExcludedCount}`, 'dim');
+  }
+  if (failedValidationCount > 0) {
+    log(`  Failed R validation: ${failedValidationCount}`, 'red');
   }
   log(`  Duration: ${Date.now() - stepStart6}ms`, 'dim');
   log('', 'reset');
