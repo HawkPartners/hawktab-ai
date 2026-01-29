@@ -246,77 +246,149 @@ export function renderJoeStyleMeanRowsTable(
   currentRow++;
 
   // -------------------------------------------------------------------------
-  // Data rows: 1 row per item, alternating colors within table
+  // Data rows: Handle single-row tables specially (show Mean, Median, SD)
   // -------------------------------------------------------------------------
-  for (let rowIdx = 0; rowIdx < rowKeys.length; rowIdx++) {
-    const rowKey = rowKeys[rowIdx];
-    const totalRowData = totalCutData?.[rowKey] as MeanRowData | undefined;
-    const isNet = totalRowData?.isNet || false;
-    const indent = totalRowData?.indent || 0;
-    const isLastDataRow = rowIdx === totalDataRows - 1;
+  const isSingleRowTable = rowKeys.length === 1;
 
-    // Build label with indentation
-    let rowLabel = totalRowData?.label || rowKey;
-    if (indent > 0) {
-      rowLabel = '  '.repeat(indent) + rowLabel;
+  if (isSingleRowTable) {
+    // Single-row table: expand to show Mean, Median, SD as separate rows
+    const rowKey = rowKeys[0];
+    const statRows = [
+      { label: 'Mean', getValue: (rd: MeanRowData) => rd?.mean },
+      { label: 'Median', getValue: (rd: MeanRowData) => rd?.median },
+      { label: 'Standard Deviation', getValue: (rd: MeanRowData) => rd?.sd },
+    ];
+
+    for (let statIdx = 0; statIdx < statRows.length; statIdx++) {
+      const stat = statRows[statIdx];
+      const isLastDataRow = statIdx === statRows.length - 1;
+
+      // Context column - purple
+      const contextCell = worksheet.getCell(currentRow, CONTEXT_COL);
+      contextCell.value = '';
+      contextCell.fill = FILLS.joeContext;
+      applyJoeBorder(contextCell, { isContextCol: true, isLastRow: isLastDataRow });
+
+      // Label column - yellow
+      const labelCell = worksheet.getCell(currentRow, LABEL_COL);
+      labelCell.value = stat.label;
+      labelCell.font = FONTS.label;
+      labelCell.fill = FILLS.joeLabel;
+      labelCell.alignment = ALIGNMENTS.wrapText;
+      applyJoeBorder(labelCell, { isLastRow: isLastDataRow });
+
+      // Value + Sig for each cut
+      for (const cut of cuts) {
+        const cutData = table.data[cut.name];
+        const rowData = cutData?.[rowKey] as MeanRowData | undefined;
+        const groupFill = getGroupFill(cut.groupIndex, statIdx);
+
+        // Value column
+        const valCell = worksheet.getCell(currentRow, cut.valueCol);
+        setCellNumber(valCell, rowData ? stat.getValue(rowData) : null, 2);
+        valCell.font = FONTS.data;
+        valCell.fill = groupFill;
+        valCell.alignment = ALIGNMENTS.center;
+        applyJoeBorder(valCell, {
+          isAfterLabel: cut.isFirstInGroup && cut.groupIndex === 0,
+          isLastRow: isLastDataRow,
+        });
+
+        // Sig column (only show for Mean row)
+        const sigCell = worksheet.getCell(currentRow, cut.sigCol);
+        const sigValue = statIdx === 0 ? formatSignificance(rowData?.sig_higher_than) : '';
+        sigCell.value = sigValue || '';
+        sigCell.font = sigValue ? FONTS.significanceLetterRed : FONTS.data;
+        sigCell.fill = groupFill;
+        sigCell.alignment = ALIGNMENTS.center;
+        applyJoeBorder(sigCell, {
+          isLastCol: cut.isLastInGroup && cut.groupIndex === numGroups - 1,
+          isLastRow: isLastDataRow,
+        });
+      }
+
+      // Spacer columns
+      for (let i = 0; i < groupSpacerCols.length; i++) {
+        const spacerCol = groupSpacerCols[i];
+        const spacerCell = worksheet.getCell(currentRow, spacerCol);
+        spacerCell.value = '';
+        spacerCell.fill = getGroupFill(i, statIdx);
+      }
+
+      currentRow++;
     }
+  } else {
+    // Multi-row table: show mean per row (original behavior)
+    for (let rowIdx = 0; rowIdx < rowKeys.length; rowIdx++) {
+      const rowKey = rowKeys[rowIdx];
+      const totalRowData = totalCutData?.[rowKey] as MeanRowData | undefined;
+      const isNet = totalRowData?.isNet || false;
+      const indent = totalRowData?.indent || 0;
+      const isLastDataRow = rowIdx === totalDataRows - 1;
 
-    // Context column - purple
-    const contextCell = worksheet.getCell(currentRow, CONTEXT_COL);
-    contextCell.value = '';
-    contextCell.fill = FILLS.joeContext;
-    applyJoeBorder(contextCell, { isContextCol: true, isLastRow: isLastDataRow });
+      // Build label with indentation
+      let rowLabel = totalRowData?.label || rowKey;
+      if (indent > 0) {
+        rowLabel = '  '.repeat(indent) + rowLabel;
+      }
 
-    // Label column - yellow
-    const labelCell = worksheet.getCell(currentRow, LABEL_COL);
-    labelCell.value = rowLabel;
-    labelCell.font = isNet ? FONTS.labelNet : FONTS.label;
-    labelCell.fill = FILLS.joeLabel;
-    labelCell.alignment = ALIGNMENTS.wrapText;
-    applyJoeBorder(labelCell, { isLastRow: isLastDataRow });
+      // Context column - purple
+      const contextCell = worksheet.getCell(currentRow, CONTEXT_COL);
+      contextCell.value = '';
+      contextCell.fill = FILLS.joeContext;
+      applyJoeBorder(contextCell, { isContextCol: true, isLastRow: isLastDataRow });
 
-    // Value + Sig for each cut - color per banner group, alternating by row
-    for (const cut of cuts) {
-      const cutData = table.data[cut.name];
-      const rowData = cutData?.[rowKey] as MeanRowData | undefined;
-      // Pass rowIdx for alternating colors within the table
-      const groupFill = getGroupFill(cut.groupIndex, rowIdx);
+      // Label column - yellow
+      const labelCell = worksheet.getCell(currentRow, LABEL_COL);
+      labelCell.value = rowLabel;
+      labelCell.font = isNet ? FONTS.labelNet : FONTS.label;
+      labelCell.fill = FILLS.joeLabel;
+      labelCell.alignment = ALIGNMENTS.wrapText;
+      applyJoeBorder(labelCell, { isLastRow: isLastDataRow });
 
-      // Value column (mean)
-      const valCell = worksheet.getCell(currentRow, cut.valueCol);
-      setCellNumber(valCell, rowData?.mean, 2);
-      valCell.font = FONTS.data;
-      valCell.fill = groupFill;
-      valCell.alignment = ALIGNMENTS.center;
-      applyJoeBorder(valCell, {
-        isAfterLabel: cut.isFirstInGroup && cut.groupIndex === 0,
-        isLastRow: isLastDataRow,
-      });
+      // Value + Sig for each cut - color per banner group, alternating by row
+      for (const cut of cuts) {
+        const cutData = table.data[cut.name];
+        const rowData = cutData?.[rowKey] as MeanRowData | undefined;
+        // Pass rowIdx for alternating colors within the table
+        const groupFill = getGroupFill(cut.groupIndex, rowIdx);
 
-      // Sig column (bold red letters)
-      const sigCell = worksheet.getCell(currentRow, cut.sigCol);
-      const sigValue = formatSignificance(rowData?.sig_higher_than);
-      sigCell.value = sigValue || '';
-      sigCell.font = sigValue ? FONTS.significanceLetterRed : FONTS.data;
-      sigCell.fill = groupFill;
-      sigCell.alignment = ALIGNMENTS.center;
-      applyJoeBorder(sigCell, {
-        isLastCol: cut.isLastInGroup && cut.groupIndex === numGroups - 1,
-        isLastRow: isLastDataRow,
-      });
+        // Value column (mean)
+        const valCell = worksheet.getCell(currentRow, cut.valueCol);
+        setCellNumber(valCell, rowData?.mean, 2);
+        valCell.font = FONTS.data;
+        valCell.fill = groupFill;
+        valCell.alignment = ALIGNMENTS.center;
+        applyJoeBorder(valCell, {
+          isAfterLabel: cut.isFirstInGroup && cut.groupIndex === 0,
+          isLastRow: isLastDataRow,
+        });
+
+        // Sig column (bold red letters)
+        const sigCell = worksheet.getCell(currentRow, cut.sigCol);
+        const sigValue = formatSignificance(rowData?.sig_higher_than);
+        sigCell.value = sigValue || '';
+        sigCell.font = sigValue ? FONTS.significanceLetterRed : FONTS.data;
+        sigCell.fill = groupFill;
+        sigCell.alignment = ALIGNMENTS.center;
+        applyJoeBorder(sigCell, {
+          isLastCol: cut.isLastInGroup && cut.groupIndex === numGroups - 1,
+          isLastRow: isLastDataRow,
+        });
+      }
+
+      // Spacer columns in data rows - inherit color from left group (with row alternation), NO border
+      for (let i = 0; i < groupSpacerCols.length; i++) {
+        const spacerCol = groupSpacerCols[i];
+        const spacerCell = worksheet.getCell(currentRow, spacerCol);
+        spacerCell.value = '';
+        // Inherit color from the group to the left (group index i), with row alternation
+        spacerCell.fill = getGroupFill(i, rowIdx);
+        // No border on spacer - the gap is the visual separation
+      }
+
+      currentRow++;
     }
-
-    // Spacer columns in data rows - inherit color from left group (with row alternation), NO border
-    for (let i = 0; i < groupSpacerCols.length; i++) {
-      const spacerCol = groupSpacerCols[i];
-      const spacerCell = worksheet.getCell(currentRow, spacerCol);
-      spacerCell.value = '';
-      // Inherit color from the group to the left (group index i), with row alternation
-      spacerCell.fill = getGroupFill(i, rowIdx);
-      // No border on spacer - the gap is the visual separation
-    }
-
-    currentRow++;
   }
 
   const contextMergeEnd = currentRow - 1;
