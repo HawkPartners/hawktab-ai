@@ -110,11 +110,13 @@ Normalize inputs before they hit the pipeline agents.
 
 ---
 
-### 2.5b AI-Generated Banner from Research Objectives
+### 2.5b AI-Generated Banner from Research Objectives (defer to after MVP delivery)
 
 When no banner plan is provided—or user explicitly chooses "AI generate cuts"—the system generates a suggested banner.
 
 **Why It Matters**: Antares mentioned clients who send banner plans with "just words" or no spec at all. This feature handles that case and could be a differentiator.
+
+> **Note**: This feature isn't blocking for initial Antares access. The core value is reliable tabs from their existing workflow (banner plan provided). We can tell them: "We heard this in our conversation and have a plan to implement it, but we wanted to get this in your hands as soon as possible." Ship it as a fast-follow after MVP delivery.
 
 **Flow**:
 1. **Prompt for research objectives** (optional but recommended):
