@@ -449,103 +449,38 @@ Redis is likely overkill for MVP—Convex handles real-time well. Consider Redis
 
 ---
 
-### 3.4 Cost Management (Internal)
+### 3.4 Cost Tracking
 
-**Goal**: Understand our cost structure so we can price the product appropriately. This is for us, not exposed to users.
+**Goal**: Track AI costs so we can price the product appropriately. This is for us, not exposed to users.
 
-**Part 1: AI Cost Tracking**
+**What to Track**:
+- Token usage per agent call (BannerAgent, CrosstabAgent, TableAgent, VerificationAgent)
+- Token usage for regenerations (2.10)
+- Store in Convex: `aiUsage` table with `jobId`, `orgId`, `operation`, `tokens`, `timestamp`
 
-Track token usage for every AI operation:
+**Pricing**: After Antares trial period (2-4 weeks), review actual usage and set pricing. Ballpark: ~$300/project or ~$3,000/month. Revisit once we have real data.
 
-| Operation | When It Happens | Track |
-|-----------|-----------------|-------|
-| BannerAgent | Every job | tokens, model, duration |
-| CrosstabAgent | Every job | tokens, model, duration |
-| TableAgent | Every job | tokens, model, duration |
-| VerificationAgent | Every job | tokens, model, duration |
-| AI-Generated Banner (2.5b) | When no banner provided | tokens, model |
-| Table Regeneration (2.10) | User feedback | tokens per regeneration |
+**No dashboard for MVP**. Query Convex directly or export to spreadsheet. Build a dashboard later if needed.
 
-Store in Convex: `aiUsage` table with `jobId`, `orgId`, `operation`, `tokens`, `cost`, `timestamp`
-
-**Part 2: Service Cost Tracking**
-
-| Service | Current Tier | Paid Tier Threshold | Projected Cost |
-|---------|--------------|---------------------|----------------|
-| Vercel | Free/Pro | Bandwidth, functions | ~$20/mo |
-| Convex | Free | 1M function calls | ~$25/mo |
-| Cloudflare R2 | Free | 10GB storage, 10M reads | ~$5/mo |
-| Railway | Free tier | Compute hours | ~$20/mo |
-| WorkOS | Free (1M MAU) | Enterprise SSO | $0 for now |
-| Sentry | Free | 5K errors/mo | $0 for now |
-| OpenAI/Azure | Pay-per-token | N/A | Variable |
-
-**Part 3: Pricing Model**
-
-Based on cost analysis, define pricing (ballpark):
-- **Per-project pricing**: ~$300/project (covers AI + infrastructure)
-- **Monthly subscription**: ~$3,000/month unlimited (for heavy users)
-- **Enterprise**: Custom pricing with SLA
-
-Revisit after tracking real usage patterns.
-
-**Part 4: Internal Dashboard**
-
-Simple admin page showing:
-- Total AI spend this month (by operation type)
-- Service costs (from billing APIs where available)
-- Cost per job (average, min, max)
-- Projected monthly burn rate
-
-**Level of Effort**: Medium (tracking infrastructure + simple dashboard)
+**Level of Effort**: Low (just log the data)
 
 ---
 
 ### 3.5 Logging and Observability
 
-**Detailed Plan**: See `logging-implementation-plan.md` for full technical specification.
+**Goal**: When something breaks for Antares, we can debug it.
 
-**Part 1: Structured Logging**
+**Structured Logging** (see `logging-implementation-plan.md` for details):
+- Centralized logger with log levels (error, warn, info, debug)
+- Correlation IDs to trace a job through all stages
+- Sentry for error alerting
 
-Replace 134 scattered `console.*` calls with structured, context-rich logging:
-
-- **Logger foundation**: Centralized `src/lib/logger.ts` with log levels (error, warn, info, debug, trace)
-- **Wide events**: Single rich event per pipeline run capturing all context
-- **Correlation IDs**: Trace any job through all agents/phases via `sessionId`
-- **Environment-aware**: Verbose in dev, structured JSON in production
-
-**Implementation Order** (from logging plan):
-1. Create logger foundation
-2. Migrate console.* calls (start with main API route, then agents)
-3. Implement wide event pattern
-4. Integrate Sentry for error alerting
-
-**Part 2: Product Analytics (PostHog)**
-
-Track user behavior to understand how the product is used:
-
-| Event | What It Tells Us |
-|-------|------------------|
-| `project_created` | How often are users creating projects? |
-| `hitl_decision_made` | Are users overriding AI suggestions? Which ones? |
-| `table_excluded` | Which tables do users not want? |
-| `table_regenerated` | How often is feedback needed? What kind? |
-| `banner_auto_generated` | Is the no-spec feature being used? |
-| `download_completed` | Are users getting to the end of the flow? |
-| `job_failed` | Where are failures happening? |
-
-**Key Questions to Answer**:
-- What % of HITL suggestions do users accept vs override?
-- What's the average number of regenerations per project?
-- Which tables are most commonly excluded?
-- What's the drop-off rate at each pipeline stage?
-
-**Implementation**:
+**Product Analytics** (lightweight for MVP):
+- Track key events: `project_created`, `job_completed`, `job_failed`, `download_completed`
 - PostHog JS SDK in frontend
-- Server-side events for pipeline operations
-- Dashboard with key metrics
+- Enough to understand usage patterns; expand later based on what questions we have
 
-**Level of Effort**: Medium (logging migration 2-3 days, analytics 1-2 days)
+**Level of Effort**: Low-Medium (logging foundation + basic event tracking)
 
 ---
 
