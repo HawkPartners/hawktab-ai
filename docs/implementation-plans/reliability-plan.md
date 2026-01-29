@@ -247,7 +247,7 @@ Same as Part 2: Run each dataset 3x, compare runs, make small prompt tweaks as n
 | 2 | `titos-future-growth` | Loop/Stacked + Weights (Part 3) |
 | 3 | `spravato-hcp-maxdiff` | **MaxDiff survey** — Tests handling of MaxDiff research methodology, which has unique table structures and scoring. Also has multiple scale questions per question block that may need per-answer-option tables. |
 | 4 | `therasphere-demand-conjoint` | **Conjoint survey** — Another complex methodology with choice-based tasks and derived utility scores. |
-| 5 | TBD | Fill based on gaps discovered in earlier testing |
+| 5 | TBD (Potentially something that has strikethrough question numbers, blanks questions, and other draft-like features to see how the system handles them) | Fill based on gaps discovered in earlier testing |
 
 ### Exit Criteria
 
