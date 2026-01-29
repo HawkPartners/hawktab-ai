@@ -57,7 +57,7 @@ No prompt changes needed — the agent was already doing the right thing; we jus
 
 ## Part 2: Finalize Leqvio Monotherapy Demand Testing
 
-**Status**: NOT STARTED
+**Status**: IN PROGRESS
 
 **Goal**: Establish a reliable baseline for our primary dataset. Iterate on prompts until output is consistent and meets quality expectations.
 

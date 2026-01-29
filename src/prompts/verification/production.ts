@@ -82,7 +82,7 @@ OVERVIEW TABLE THRESHOLD:
 FOR EACH TABLE, POPULATE THESE CONTEXT FIELDS:
 
 1. SURVEY SECTION (surveySection)
-   Extract the section name VERBATIM from the survey document.
+   Extract ONLYthe section name VERBATIM from the survey document.
    - Copy exactly as written, in ALL CAPS
    - Strip the "SECTION X:" prefix—just the name
    - Examples: "SCREENER", "DEMOGRAPHICS", "AWARENESS", "USAGE", "ATTITUDES"
