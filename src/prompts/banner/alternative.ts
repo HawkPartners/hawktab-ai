@@ -91,13 +91,7 @@ Preserve typos, ambiguities, and uncertainties—interpretation happens downstre
 STATISTICAL LETTERS:
 - Assign sequentially: A, B, C...Z, AA, AB, AC...
 - Follow document order (left-to-right, top-to-bottom)
-- Reserve 'T' for Total if present
 - Each column gets unique letter
-
-TOTAL COLUMN HANDLING:
-- If explicit Total exists → extract as separate group
-- If no Total shown → create one with filter "qualified respondents"
-- Ensures downstream processing has comparison base
 </extraction_specifications>
 
 <output_requirements>
@@ -114,7 +108,7 @@ REQUIRED STRUCTURE:
           "adjusted": "string",  // Same as original (no interpretation)
           "statLetter": "string",
           "confidence": 0.0-1.0,
-          "requiresInference": boolean,  // True only if this cut came from outside the banner plan (e.g., you created a Total column)
+          "requiresInference": boolean,  // True only if this cut came from outside the banner plan
           "inferenceReason": "string",   // If requiresInference is true, explain what you inferred and why
           "humanInLoopRequired": boolean, // Always true if confidence < 0.85
           "uncertainties": ["string"]    // If humanInLoopRequired is true, explain what you're uncertain about and what the human should verify

@@ -253,6 +253,7 @@ Taking the reliable, feature-rich CLI and bringing it to a self-service UI that 
 2. **Product Pages** (`(product)/` route group):
    - **Dashboard**: Project list with columns (Project Name, Private/Public, Team, Date Created, Your Role, Status)
    - **New Project Flow**: File upload (SPSS, datamap, survey, banner plan), configuration options
+     - *Note*: Data file upload should include helper text or tooltip clarifying "qualified respondents only"—the system assumes terminated/disqualified respondents are already filtered out.
    - **HITL Review**: Uncertain variable mappings with base sizes (from 2.8)
    - **Job Progress**: Real-time status updates
    - **Results**: Download Excel, view table list, include/exclude toggles (from 2.9), feedback per table (from 2.10)

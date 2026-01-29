@@ -134,17 +134,7 @@ STATISTICAL LETTERS:
 Assign letters sequentially to each column:
 - A, B, C... Z, then AA, AB, AC...
 - Follow document order (left-to-right, top-to-bottom)
-- Reserve 'T' for Total column if present
 - Each column gets a unique letter
-
----
-
-TOTAL COLUMN:
-
-Most banner plans include a "Total" representing all qualified respondents.
-- If you see a Total column, extract it as its own group
-- If none is explicitly shown, create one with filter expression "qualified respondents"
-- This ensures downstream processing always has a base for comparison
 
 ---
 
