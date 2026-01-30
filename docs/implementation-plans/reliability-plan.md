@@ -59,27 +59,26 @@ No prompt changes needed — the agent was already doing the right thing; we jus
 
 **Status**: IN PROGRESS
 
-**Goal**: Establish a reliable baseline for our primary dataset. Iterate on prompts until output is consistent and meets quality expectations.
+**Goal**: Confirm output quality and consistency for our primary dataset through practical testing.
 
 ### Process
 
-1. **Run baseline pipeline** — Generate fresh output with stable system from Part 1
-2. **Create golden datasets** — Review and clean up raw outputs to create expected files:
-   - `banner-expected.json` (from `banner/banner-output-raw.json`)
-   - `crosstab-expected.json` (from `crosstab/crosstab-output-raw.json`)
-   - `verification-expected.json` (from `verification/verification-output-raw.json`)
-3. **Run consistency check** — Run pipeline 3x on same dataset, compare each run to golden using `npx tsx scripts/compare-to-golden.ts`
-4. **Iterate** — For each difference:
-   - Is this a prompt issue? → Tweak VerificationAgent prompt
-   - Is this a table we don't want? → Adjust exclusion logic
-   - Is this variance we need to accept? → Note as acceptable
-5. **Repeat steps 3-4** until output is consistent across runs
+1. **Run the pipeline** — Generate output with the stable system from Part 1
+2. **Review the output** — Open the Excel, look at the tables. Does it have what you need? Are the labels right? Are there tables you'd remove or add?
+3. **Run it again** — Second run. Compare to first. Notice any differences between runs - anything missing or inconsistent?
+4. **Adjust if needed** — If there's unreliability (e.g., a table appears in one run but not another), adjust the prompt to fix it
+5. **Third run** — Confirm the fix worked and output is stable
+6. **Move on** — When it feels right, you're done. You're the judge.
+
+### Philosophy
+
+No golden datasets at this stage. You've seen Joe's output, you know what good looks like. Trust your judgment and maintain a high standard, but don't over-engineer the evaluation. The goal is breadth across different projects, not perfection on one.
 
 ### Exit Criteria
 
-- [ ] Pipeline produces consistent output across 3 runs (minimal variance)
+- [ ] Ran pipeline 3x, reviewed each output
 - [ ] Output quality meets expectations (tables we want, labels we like)
-- [ ] Golden datasets finalized and checked in
+- [ ] No major inconsistencies between runs (or prompts adjusted to fix them)
 
 ---
 
@@ -89,9 +88,17 @@ No prompt changes needed — the agent was already doing the right thing; we jus
 
 **Goal**: Detect whether a survey has loops or weighted data, handle both correctly, and ensure outputs reflect this (weighted/unweighted base rows, proper sheet organization).
 
-> **Confirmation needed**: How does this fit in the UI flow? Is this a pipeline-only feature or does the UI need to surface loop/weight detection for user confirmation?
-
 **Test Case**: `stacked-data-example/` (Tito's Future Growth)
+
+### Testing Process
+
+Same practical approach as Part 2:
+1. Run the pipeline on Tito's dataset
+2. Look at the output - does it handle the stacked data correctly? Are weights applied?
+3. Run 2-3x to check consistency
+4. Adjust as needed, then move on
+
+> **Confirmation needed**: How does this fit in the UI flow? Is this a pipeline-only feature or does the UI need to surface loop/weight detection for user confirmation?
 
 ### Understanding Stacked Data
 
@@ -233,11 +240,19 @@ When weights are detected and applied:
 
 **Status**: NOT STARTED
 
-**Goal**: Validate reliability across different survey types. Each dataset tests different patterns and edge cases.
+**Goal**: Validate reliability across different survey types. Learn what different projects throw at the system and discover failure modes.
 
 ### Process
 
-Same as Part 2: Run each dataset 3x, compare runs, make small prompt tweaks as needed until output is consistent.
+For each dataset:
+1. Run the pipeline
+2. Look at the output - does it work? What's wrong?
+3. Run it 2-3x if needed to check consistency
+4. Note what works and what doesn't
+5. Make small prompt tweaks if needed
+6. Move on to the next dataset
+
+The goal is breadth - expose the system to different patterns so we learn where it breaks. Don't get stuck perfecting one dataset.
 
 ### Test Datasets
 
@@ -247,7 +262,20 @@ Same as Part 2: Run each dataset 3x, compare runs, make small prompt tweaks as n
 | 2 | `titos-future-growth` | Loop/Stacked + Weights (Part 3) |
 | 3 | `spravato-hcp-maxdiff` | **MaxDiff survey** — Tests handling of MaxDiff research methodology, which has unique table structures and scoring. Also has multiple scale questions per question block that may need per-answer-option tables. |
 | 4 | `therasphere-demand-conjoint` | **Conjoint survey** — Another complex methodology with choice-based tasks and derived utility scores. |
-| 5 | TBD (Potentially something that has strikethrough question numbers, blanks questions, and other draft-like features to see how the system handles them) | Fill based on gaps discovered in earlier testing |
+| 5 | `caplidar-maxdiff` | **Second MaxDiff** — HawkPartners does a lot of MaxDiff work, so testing another one is important. |
+| 6 | TBD | Fill based on gaps discovered in earlier testing (e.g., surveys with strikethrough question numbers, blank questions, draft-like features) |
+
+### Note: Upfront Context Capture
+
+As we test broader datasets, we'll likely discover that we need more information upfront. Currently the system just accepts file uploads and treats everything the same - but different project types need different context.
+
+**Examples of missing context:**
+- **Project type** — Is this MaxDiff? ATU? Conjoint? Knowing this changes what we expect.
+- **MaxDiff messages** — The datamap often just says "Message 1, Message 2" but the VerificationAgent needs the actual message text to make useful tables. Either the user provides a message list, or we need a way to link to it.
+- **Research objective** — What is this study trying to answer? Helps prioritize which tables matter.
+- **Stacked/looped data** — User confirmation (addressed in Part 3)
+
+**Higher-level question:** What information are we NOT capturing that's necessary for reliability? This will become clearer as we test different project types. The UI may need to ask qualifying questions based on what the user uploads.
 
 ### Exit Criteria
 
@@ -258,5 +286,5 @@ Same as Part 2: Run each dataset 3x, compare runs, make small prompt tweaks as n
 ---
 
 *Created: January 6, 2026*
-*Updated: January 28, 2026*
-*Status: Part 1 complete, Parts 2-4 ready to begin*
+*Updated: January 30, 2026*
+*Status: Part 1 complete, Part 2 in progress*
