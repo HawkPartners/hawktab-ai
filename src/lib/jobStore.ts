@@ -18,8 +18,9 @@ export type JobStage =
   | 'parallel_processing'
   | 'banner_review_required'
   | 'banner_review_complete'
-  | 'crosstab_review_required'   // NEW: Waiting for crosstab mapping review
-  | 'crosstab_review_complete'   // NEW: Crosstab review submitted
+  | 'crosstab_review_required'   // Waiting for crosstab mapping review
+  | 'crosstab_review_complete'   // Crosstab review submitted
+  | 'validating_r'               // Per-table R validation with retry loop
   | 'generating_r'
   | 'executing_r'
   | 'writing_outputs'

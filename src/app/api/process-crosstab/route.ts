@@ -16,10 +16,9 @@ import { logAgentExecution } from '../../../lib/tracing';
 import { validateEnvironment } from '../../../lib/env';
 import { BannerAgent } from '../../../agents/BannerAgent';
 import { processAllGroups as processCrosstabGroups } from '../../../agents/CrosstabAgent';
-import { groupDataMapByParent, processQuestionGroupsWithCallback } from '../../../agents/TableAgent';
-import { verifyTable, type VerificationInput } from '../../../agents/VerificationAgent';
-import { createPassthroughOutput, summarizeVerificationResults } from '../../../schemas/verificationAgentSchema';
-import { TableQueue } from '../../../lib/pipeline/TableQueue';
+import { verifyAllTablesParallel } from '../../../agents/VerificationAgent';
+import { groupDataMap } from '../../../lib/tables/DataMapGrouper';
+import { generateTables, convertToLegacyFormat } from '../../../lib/tables/TableGenerator';
 import { processSurvey } from '../../../lib/processors/SurveyProcessor';
 import { DataMapProcessor } from '../../../lib/processors/DataMapProcessor';
 import { promises as fs } from 'fs';
@@ -29,10 +28,13 @@ import { promisify } from 'util';
 import { buildCutsSpec } from '../../../lib/tables/CutsSpec';
 import { sortTables, getSortingMetadata } from '../../../lib/tables/sortTables';
 import { generateRScriptV2WithValidation } from '../../../lib/r/RScriptGeneratorV2';
+import { validateAndFixTables } from '../../../lib/r/ValidationOrchestrator';
+import { extractStreamlinedData } from '../../../lib/data/extractStreamlinedData';
+import { resetMetricsCollector, getMetricsCollector, getPipelineCostSummary } from '../../../lib/observability';
 import { ExcelFormatter } from '../../../lib/excel/ExcelFormatter';
 import { toExtendedTable, type ExtendedTableDefinition } from '../../../schemas/verificationAgentSchema';
-import type { VerboseDataMapType } from '../../../schemas/processingSchemas';
 import type { TableAgentOutput } from '../../../schemas/tableAgentSchema';
+import type { VerboseDataMapType } from '../../../schemas/processingSchemas';
 import type { BannerProcessingResult } from '../../../agents/BannerAgent';
 import type { ValidationResultType } from '../../../schemas/agentOutputSchema';
 
@@ -183,6 +185,7 @@ interface PathAResult {
 interface PathBResult {
   tableAgentResults: TableAgentOutput[];
   verifiedTables: ExtendedTableDefinition[];
+  surveyMarkdown: string | null;
 }
 
 // -------------------------------------------------------------------------
@@ -360,11 +363,10 @@ async function executePathA(
 }
 
 /**
- * Path B: TableAgent → VerificationAgent (Producer-Consumer Pattern)
+ * Path B: TableGenerator → VerificationAgent
  *
- * TableAgent produces table definitions as each question group completes.
- * VerificationAgent consumes tables as they become available.
- * Both run concurrently to minimize total processing time.
+ * Uses deterministic TableGenerator (replaces LLM-based TableAgent) followed by
+ * parallel VerificationAgent processing.
  */
 async function executePathB(
   verboseDataMap: VerboseDataMapType[],
@@ -379,10 +381,10 @@ async function executePathB(
     throw new DOMException('Path B aborted', 'AbortError');
   }
 
-  // 1. Load survey markdown upfront (needed for VerificationAgent from the start)
+  // 1. Process survey document (needed for VerificationAgent)
   let surveyMarkdown: string | null = null;
   if (surveyPath) {
-    console.log('[PathB] Processing survey document first...');
+    console.log('[PathB] Processing survey document...');
     const surveyResult = await processSurvey(surveyPath, outputDir);
     surveyMarkdown = surveyResult.markdown;
     if (surveyMarkdown) {
@@ -398,309 +400,60 @@ async function executePathB(
     throw new DOMException('Path B aborted', 'AbortError');
   }
 
-  // If no survey markdown, fall back to sequential passthrough mode
-  if (!surveyMarkdown) {
-    console.log('[PathB] No survey - running TableAgent only (passthrough mode)');
-    return executePathBPassthrough(verboseDataMap, outputDir, onProgress, abortSignal);
-  }
-
-  // 2. Set up producer-consumer pipeline
-  const groups = groupDataMapByParent(verboseDataMap);
-  const tableQueue = new TableQueue();
-
-  // Build datamap lookup for VerificationAgent
-  const datamapByColumn = new Map<string, VerboseDataMapType>();
-  for (const entry of verboseDataMap) {
-    datamapByColumn.set(entry.column, entry);
-  }
-
-  // Progress tracking
-  const totalGroups = groups.length;
-  let producerComplete = 0;
-  let consumerComplete = 0;
-  let expectedTables = 0; // We'll update this as we learn how many tables each group produces
-
-  const updateCombinedProgress = () => {
-    // Estimate: producer progress (0-50%) + consumer progress (50-100%)
-    // We use producerComplete/totalGroups for producer since we know groups upfront
-    // Consumer progress is based on completed vs pushed tables
-    const producerPercent = (producerComplete / totalGroups) * 50;
-    const consumerPercent = expectedTables > 0
-      ? (consumerComplete / expectedTables) * 50
-      : 0;
-    const combinedPercent = Math.floor(producerPercent + consumerPercent);
-    onProgress(combinedPercent);
-  };
-
-  console.log(`[PathB] Starting producer-consumer pipeline: ${totalGroups} question groups`);
-  onProgress(5);
-
-  // 3. Start TableAgent producer (pushes tables to queue as each group completes)
-  const producerPromise = (async () => {
-    try {
-      const result = await processQuestionGroupsWithCallback(
-        groups,
-        (table, questionId, questionText) => {
-          tableQueue.push({ table, questionId, questionText });
-          expectedTables++;
-        },
-        {
-          outputDir,
-          abortSignal,
-          onProgress: (completed, _total) => {
-            producerComplete = completed;
-            updateCombinedProgress();
-          }
-        }
-      );
-      console.log(`[PathB] Producer complete: ${tableQueue.pushed} tables pushed`);
-      return result;
-    } finally {
-      // Always mark queue done, even on error
-      tableQueue.markDone();
-    }
-  })();
-
-  // 4. Start VerificationAgent consumer (pulls tables from queue)
-  const consumerPromise = runVerificationConsumer(
-    tableQueue,
-    surveyMarkdown,
-    datamapByColumn,
-    outputDir,
-    () => {
-      consumerComplete++;
-      updateCombinedProgress();
-    },
-    abortSignal
-  );
-
-  // 5. Wait for both producer and consumer to complete
-  const [producerResult, consumerResult] = await Promise.all([
-    producerPromise,
-    consumerPromise
-  ]);
-
-  onProgress(100);
-  console.log(`[PathB] Complete: ${consumerResult.tables.length} verified tables`);
-
-  return {
-    tableAgentResults: producerResult.results,
-    verifiedTables: consumerResult.tables
-  };
-}
-
-/**
- * Passthrough mode for Path B when no survey document is available.
- * Tables pass through VerificationAgent without enhancement.
- */
-async function executePathBPassthrough(
-  verboseDataMap: VerboseDataMapType[],
-  outputDir: string,
-  onProgress: (percent: number) => void,
-  abortSignal?: AbortSignal
-): Promise<PathBResult> {
-  const groups = groupDataMapByParent(verboseDataMap);
-
-  onProgress(5);
-  console.log('[PathB/Passthrough] Starting TableAgent...');
-
-  const { results: tableAgentResults } = await processQuestionGroupsWithCallback(
-    groups,
-    () => {}, // No queue push needed in passthrough mode
-    {
-      outputDir,
-      abortSignal,
-      onProgress: (completed, total) => {
-        const percent = Math.floor((completed / total) * 80);
-        onProgress(percent);
-      }
-    }
-  );
-
+  // 2. Generate tables deterministically (instant, no LLM)
+  console.log('[PathB] Running TableGenerator...');
+  const groups = groupDataMap(verboseDataMap);
+  const generatorOutputs = generateTables(groups);
+  const tableAgentResults: TableAgentOutput[] = convertToLegacyFormat(generatorOutputs);
   const tableCount = tableAgentResults.flatMap(r => r.tables).length;
-  console.log(`[PathB/Passthrough] TableAgent complete: ${tableCount} table definitions`);
+  console.log(`[PathB] TableGenerator: ${tableCount} tables generated`);
+  onProgress(30);
 
-  // Convert to extended tables (passthrough)
-  const verifiedTables: ExtendedTableDefinition[] = tableAgentResults.flatMap(group =>
-    group.tables.map(t => toExtendedTable(t, group.questionId))
-  );
+  // Check for cancellation after table generation
+  if (abortSignal?.aborted) {
+    console.log('[PathB] Aborted after table generation');
+    throw new DOMException('Path B aborted', 'AbortError');
+  }
 
-  // Save passthrough verification output
-  const verificationDir = path.join(outputDir, 'verification');
-  await fs.mkdir(verificationDir, { recursive: true });
-  await fs.writeFile(
-    path.join(verificationDir, 'verification-output-raw.json'),
-    JSON.stringify({ tables: verifiedTables }, null, 2),
-    'utf-8'
-  );
-
-  onProgress(100);
-  console.log(`[PathB/Passthrough] Complete: ${verifiedTables.length} tables (passthrough)`);
-
-  return { tableAgentResults, verifiedTables };
-}
-
-/**
- * Run VerificationAgent as a consumer, pulling tables from the queue.
- */
-async function runVerificationConsumer(
-  queue: TableQueue,
-  surveyMarkdown: string,
-  datamapByColumn: Map<string, VerboseDataMapType>,
-  outputDir: string,
-  onTableComplete: () => void,
-  abortSignal?: AbortSignal
-): Promise<{ tables: ExtendedTableDefinition[]; metadata: ReturnType<typeof summarizeVerificationResults> }> {
-  const allTables: ExtendedTableDefinition[] = [];
-  const results: Array<{ tableId: string; output: ReturnType<typeof createPassthroughOutput> }> = [];
-  let tablesProcessed = 0;
-
-  console.log('[PathB/Consumer] Starting verification consumer...');
-
-  while (true) {
-    // Check for cancellation
-    if (abortSignal?.aborted) {
-      console.log(`[PathB/Consumer] Aborted after ${tablesProcessed} tables`);
-      throw new DOMException('Verification consumer aborted', 'AbortError');
-    }
-
-    // Pull next table from queue (blocks if empty, returns null when done)
-    const item = await queue.pull();
-    if (item === null) {
-      // Queue empty and producer done
-      break;
-    }
-
-    const { table, questionId, questionText } = item;
-    const startTime = Date.now();
-
-    // Build verification input
-    const datamapContext = getDatamapContextForTable(table, datamapByColumn);
-    const input: VerificationInput = {
-      table,
-      questionId,
-      questionText,
-      surveyMarkdown,
-      datamapContext
-    };
-
-    // Process with retry for rate limiting
-    let output;
-    try {
-      output = await verifyTableWithRetry(input, abortSignal);
-    } catch (error) {
-      // Re-throw abort errors
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        throw error;
-      }
-      // Non-abort error - use passthrough
-      console.error(`[PathB/Consumer] Error verifying table ${table.tableId}:`, error);
-      output = createPassthroughOutput(table);
-    }
-
-    // Add tables with questionId
-    for (const t of output.tables) {
-      allTables.push({ ...t, questionId } as ExtendedTableDefinition);
-    }
-    results.push({ tableId: table.tableId, output });
-
-    const duration = Date.now() - startTime;
-    tablesProcessed++;
-
-    console.log(
-      `[PathB/Consumer] Table "${table.tableId}" verified in ${duration}ms - ` +
-      `${output.tables.length} outputs, ${output.changes.length} changes`
+  // 3. Run VerificationAgent
+  if (!surveyMarkdown) {
+    // Passthrough mode - no enhancement
+    console.log('[PathB] No survey - using passthrough mode');
+    const verifiedTables: ExtendedTableDefinition[] = tableAgentResults.flatMap(group =>
+      group.tables.map(t => toExtendedTable(t, group.questionId))
     );
 
-    onTableComplete();
+    // Save passthrough verification output
+    const verificationDir = path.join(outputDir, 'verification');
+    await fs.mkdir(verificationDir, { recursive: true });
+    await fs.writeFile(
+      path.join(verificationDir, 'verification-output-raw.json'),
+      JSON.stringify({ tables: verifiedTables }, null, 2),
+      'utf-8'
+    );
+
+    onProgress(100);
+    console.log(`[PathB] Complete (passthrough): ${verifiedTables.length} tables`);
+    return { tableAgentResults, verifiedTables, surveyMarkdown };
   }
 
-  // Calculate metadata from results
-  const metadata = summarizeVerificationResults(results.map(r => r.output));
-
-  console.log(
-    `[PathB/Consumer] Complete: ${tablesProcessed} tables processed → ${allTables.length} output tables`
+  // Run VerificationAgent in parallel
+  console.log('[PathB] Starting VerificationAgent (parallel, concurrency: 3)...');
+  const verificationResult = await verifyAllTablesParallel(
+    tableAgentResults,
+    surveyMarkdown,
+    verboseDataMap,
+    { outputDir, concurrency: 3, abortSignal }
   );
 
-  // Save verification output
-  const verificationDir = path.join(outputDir, 'verification');
-  await fs.mkdir(verificationDir, { recursive: true });
-  await fs.writeFile(
-    path.join(verificationDir, 'verification-output-raw.json'),
-    JSON.stringify({ tables: allTables }, null, 2),
-    'utf-8'
-  );
+  onProgress(100);
+  console.log(`[PathB] Complete: ${verificationResult.tables.length} verified tables`);
 
-  return { tables: allTables, metadata };
-}
-
-/**
- * Get formatted datamap context for variables in a table.
- * Matches the logic in VerificationAgent.
- */
-function getDatamapContextForTable(
-  table: { rows: Array<{ variable: string }> },
-  datamapByColumn: Map<string, VerboseDataMapType>
-): string {
-  const variables = new Set<string>();
-  for (const row of table.rows) {
-    variables.add(row.variable);
-  }
-
-  const entries: string[] = [];
-  for (const variable of variables) {
-    const entry = datamapByColumn.get(variable);
-    if (entry) {
-      entries.push(
-        `- ${entry.column}: ${entry.description} [${entry.normalizedType}] ${entry.valueType}`
-      );
-    }
-  }
-
-  return entries.join('\n');
-}
-
-/**
- * Verify a table with retry logic for rate limiting.
- */
-async function verifyTableWithRetry(
-  input: VerificationInput,
-  abortSignal?: AbortSignal,
-  maxRetries = 3
-): Promise<ReturnType<typeof createPassthroughOutput>> {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      return await verifyTable(input, abortSignal);
-    } catch (error) {
-      // Always propagate abort errors
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        throw error;
-      }
-
-      // Check for rate limit error
-      const isRateLimit = error instanceof Error && (
-        error.message.includes('rate limit') ||
-        error.message.includes('429') ||
-        error.message.includes('Too Many Requests')
-      );
-
-      if (isRateLimit && attempt < maxRetries) {
-        const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
-        console.log(
-          `[PathB/Consumer] Rate limited on ${input.table.tableId}, ` +
-          `retry ${attempt}/${maxRetries} in ${delay}ms`
-        );
-        await new Promise(r => setTimeout(r, delay));
-        continue;
-      }
-
-      // Non-retryable error or max retries exceeded
-      throw error;
-    }
-  }
-
-  // Should not reach here, but TypeScript needs it
-  throw new Error('Max retries exceeded');
+  return {
+    tableAgentResults,
+    verifiedTables: verificationResult.tables,
+    surveyMarkdown
+  };
 }
 
 /**
@@ -817,6 +570,9 @@ export async function POST(request: NextRequest) {
       const outputDir = path.join(process.cwd(), 'outputs', datasetName, pipelineId);
 
       try {
+        // Reset metrics collector for this pipeline run
+        resetMetricsCollector();
+
         console.log(`[API] Starting full pipeline processing for session: ${sessionId}`);
         console.log(`[API] Output directory: ${outputDir}`);
 
@@ -1145,7 +901,7 @@ export async function POST(request: NextRequest) {
           return; // Stop pipeline - Path B is required
         }
 
-        const { tableAgentResults, verifiedTables } = pathBResultData;
+        const { tableAgentResults, verifiedTables, surveyMarkdown } = pathBResultData;
         const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
         const parallelDuration = Date.now() - parallelStartTime;
         console.log(`[API] Both paths completed in ${(parallelDuration / 1000).toFixed(1)}s`);
@@ -1157,6 +913,47 @@ export async function POST(request: NextRequest) {
         const sortedTables = sortTables(verifiedTables);
         console.log(`[API] Screeners: ${sortingMetadata.screenerCount}, Main: ${sortingMetadata.mainCount}, Other: ${sortingMetadata.otherCount}`);
 
+        // Check for cancellation before R validation
+        if (abortSignal?.aborted) {
+          console.log('[API] Pipeline cancelled before R validation');
+          await handleCancellation(outputDir, job.jobId, pipelineId, datasetName, 'Cancelled before R validation');
+          return;
+        }
+
+        // -------------------------------------------------------------------------
+        // Step 6: R Validation with Retry Loop
+        // -------------------------------------------------------------------------
+        updateJob(job.jobId, {
+          stage: 'validating_r',
+          percent: 75,
+          message: 'Validating R code per table...',
+          pipelineId,
+          dataset: datasetName
+        });
+        console.log('[API] Step 6: Validating R code per table...');
+
+        const cutsSpec = buildCutsSpec(crosstabResult!.result);
+
+        // Run per-table R validation with retry loop
+        const { validTables, excludedTables: newlyExcluded, validationReport: rValidationReport } = await validateAndFixTables(
+          sortedTables,
+          cutsSpec.cuts,
+          surveyMarkdown || '',
+          verboseDataMap,
+          {
+            outputDir,
+            maxRetries: 3,
+            dataFilePath: 'dataFile.sav',
+            verbose: true,
+          }
+        );
+
+        console.log(`[API] R Validation: ${rValidationReport.passedFirstTime} passed, ${rValidationReport.fixedAfterRetry} fixed, ${rValidationReport.excluded} excluded`);
+
+        // Combine valid + excluded tables for R script generation
+        // Excluded tables are still calculated but flagged - they appear in the Excluded sheet
+        const allTablesForR = [...validTables, ...newlyExcluded];
+
         // Check for cancellation before R script generation
         if (abortSignal?.aborted) {
           console.log('[API] Pipeline cancelled before R script generation');
@@ -1165,7 +962,7 @@ export async function POST(request: NextRequest) {
         }
 
         // -------------------------------------------------------------------------
-        // Step 6: R Script Generation
+        // Step 7: R Script Generation
         // -------------------------------------------------------------------------
         updateJob(job.jobId, {
           stage: 'generating_r',
@@ -1174,32 +971,31 @@ export async function POST(request: NextRequest) {
           pipelineId,
           dataset: datasetName
         });
-        console.log('[API] Step 6: Generating R script...');
+        console.log('[API] Step 7: Generating R script...');
 
-        const cutsSpec = buildCutsSpec(crosstabResult!.result);
         const rDir = path.join(outputDir, 'r');
         await fs.mkdir(rDir, { recursive: true });
 
-        const { script: masterScript, validation: validationReport } = generateRScriptV2WithValidation(
-          { tables: sortedTables, cuts: cutsSpec.cuts },
+        const { script: masterScript, validation: staticValidationReport } = generateRScriptV2WithValidation(
+          { tables: allTablesForR, cuts: cutsSpec.cuts },
           { sessionId: pipelineId, outputDir: 'results' }
         );
 
         const masterPath = path.join(rDir, 'master.R');
         await fs.writeFile(masterPath, masterScript, 'utf-8');
 
-        // Save validation report if there were any issues
-        if (validationReport.invalidTables > 0 || validationReport.warnings.length > 0) {
-          const validationPath = path.join(rDir, 'validation-report.json');
-          await fs.writeFile(validationPath, JSON.stringify(validationReport, null, 2), 'utf-8');
-          console.log(`[API] Validation issues: ${validationReport.invalidTables} invalid, ${validationReport.warnings.length} warnings`);
+        // Save static validation report if there were any issues (schema-level issues)
+        if (staticValidationReport.invalidTables > 0 || staticValidationReport.warnings.length > 0) {
+          const staticValidationPath = path.join(rDir, 'static-validation-report.json');
+          await fs.writeFile(staticValidationPath, JSON.stringify(staticValidationReport, null, 2), 'utf-8');
+          console.log(`[API] Static validation issues: ${staticValidationReport.invalidTables} invalid, ${staticValidationReport.warnings.length} warnings`);
         }
 
         console.log(`[API] Generated R script (${Math.round(masterScript.length / 1024)} KB)`);
-        console.log(`[API] Valid tables: ${validationReport.validTables}/${validationReport.totalTables}`);
+        console.log(`[API] Tables in script: ${allTablesForR.length} (${validTables.length} valid, ${newlyExcluded.length} excluded)`);
 
         // -------------------------------------------------------------------------
-        // Step 7: R Execution
+        // Step 8: R Execution
         // -------------------------------------------------------------------------
         updateJob(job.jobId, {
           stage: 'executing_r',
@@ -1208,7 +1004,7 @@ export async function POST(request: NextRequest) {
           pipelineId,
           dataset: datasetName
         });
-        console.log('[API] Step 7: Executing R script...');
+        console.log('[API] Step 8: Executing R script...');
 
         // Create results directory
         const resultsDir = path.join(outputDir, 'results');
@@ -1243,8 +1039,22 @@ export async function POST(request: NextRequest) {
             console.log(`[API] Successfully generated tables.json`);
             rExecutionSuccess = true;
 
+            const tablesJsonPath = path.join(resultsDir, 'tables.json');
+
+            // Extract streamlined data for golden dataset evaluation
+            try {
+              const tablesJsonContent = await fs.readFile(tablesJsonPath, 'utf-8');
+              const tablesJsonData = JSON.parse(tablesJsonContent);
+              const streamlinedData = extractStreamlinedData(tablesJsonData);
+              const streamlinedPath = path.join(resultsDir, 'data-streamlined.json');
+              await fs.writeFile(streamlinedPath, JSON.stringify(streamlinedData, null, 2), 'utf-8');
+              console.log(`[API] Generated data-streamlined.json`);
+            } catch (err) {
+              console.warn('[API] Could not generate streamlined data:', err);
+            }
+
             // -------------------------------------------------------------------------
-            // Step 8: Excel Export
+            // Step 9: Excel Export
             // -------------------------------------------------------------------------
             updateJob(job.jobId, {
               stage: 'writing_outputs',
@@ -1253,9 +1063,8 @@ export async function POST(request: NextRequest) {
               pipelineId,
               dataset: datasetName
             });
-            console.log('[API] Step 8: Generating Excel workbook...');
+            console.log('[API] Step 9: Generating Excel workbook...');
 
-            const tablesJsonPath = path.join(resultsDir, 'tables.json');
             const excelPath = path.join(resultsDir, 'crosstabs.xlsx');
 
             try {
@@ -1317,6 +1126,9 @@ export async function POST(request: NextRequest) {
         const durationMs = processingEndTime - processingStartTime;
         const durationSec = (durationMs / 1000).toFixed(1);
 
+        // Get cost metrics for summary
+        const costMetrics = await getMetricsCollector().getSummary();
+
         const pipelineSummary = {
           pipelineId,
           dataset: datasetName,
@@ -1335,16 +1147,43 @@ export async function POST(request: NextRequest) {
           },
           outputs: {
             variables: verboseDataMap.length,
-            tableAgentTables: tableAgentTables.length,
+            tableGeneratorTables: tableAgentTables.length,
             verifiedTables: sortedTables.length,
-            tables: sortedTables.length,
-            cuts: cutsSpec.cuts.length,
+            validatedTables: validTables.length,
+            excludedTables: newlyExcluded.length,
+            totalTablesInR: allTablesForR.length,
+            cuts: cutsSpec.cuts.length + 1,  // +1 for Total column
             bannerGroups: groupCount,
             sorting: {
               screeners: sortingMetadata.screenerCount,
               main: sortingMetadata.mainCount,
               other: sortingMetadata.otherCount
+            },
+            rValidation: {
+              passedFirstTime: rValidationReport.passedFirstTime,
+              fixedAfterRetry: rValidationReport.fixedAfterRetry,
+              excluded: rValidationReport.excluded,
+              durationMs: rValidationReport.durationMs
             }
+          },
+          costs: {
+            byAgent: costMetrics.byAgent.map(a => ({
+              agent: a.agentName,
+              model: a.model,
+              calls: a.calls,
+              inputTokens: a.totalInputTokens,
+              outputTokens: a.totalOutputTokens,
+              durationMs: a.totalDurationMs,
+              estimatedCostUsd: a.estimatedCostUsd,
+            })),
+            totals: {
+              calls: costMetrics.totals.calls,
+              inputTokens: costMetrics.totals.inputTokens,
+              outputTokens: costMetrics.totals.outputTokens,
+              totalTokens: costMetrics.totals.totalTokens,
+              durationMs: costMetrics.totals.durationMs,
+              estimatedCostUsd: costMetrics.totals.estimatedCostUsd,
+            },
           }
         };
 
@@ -1363,12 +1202,16 @@ export async function POST(request: NextRequest) {
         await fs.writeFile(summaryPath, JSON.stringify(pipelineSummary, null, 2));
         console.log(`[API] Pipeline completed in ${durationSec}s - summary saved`);
 
+        // Log cost summary
+        const costSummaryText = await getPipelineCostSummary();
+        console.log(costSummaryText);
+
         // Update job status
         if (excelGenerated) {
           updateJob(job.jobId, {
             stage: 'complete',
             percent: 100,
-            message: `Complete! Generated ${sortedTables.length} crosstab tables in ${durationSec}s`,
+            message: `Complete! Generated ${allTablesForR.length} crosstab tables in ${durationSec}s`,
             sessionId,
             pipelineId,
             dataset: datasetName,
