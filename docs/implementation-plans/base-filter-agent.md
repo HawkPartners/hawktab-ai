@@ -10,11 +10,12 @@
 
 Our pipeline calculates table bases using `cut filter + non-NA values`. This works for most questions, but fails when questions have **row-level skip logic** that creates different bases for different rows.
 
-**Example (A3a):**
-- Survey says: "ONLY SHOW THERAPY WHERE A3>0"
-- Leqvio row should only include respondents where `A3r2 > 0` (n=135)
-- Praluent row should only include respondents where `A3r3 > 0` (n=126)
-- Repatha row should only include respondents where `A3r4 > 0` (n=177)
+**Example pattern:**
+- Survey has a grid question: "For each product you use, rate X"
+- Show logic: "ONLY SHOW PRODUCT WHERE [usage count] > 0"
+- Product A row should only include respondents where usage_A > 0 (n=135)
+- Product B row should only include respondents where usage_B > 0 (n=126)
+- Product C row should only include respondents where usage_C > 0 (n=177)
 - We currently include everyone shown the question (n=141 for all)
 - Result: Incorrect base sizes and meaningless data included
 
@@ -137,6 +138,60 @@ This is a simple AND operation—respondents must pass both the cut filter AND t
 
 ---
 
+## Validation Retry Flow
+
+**Important edge case**: The R validation retry loop must preserve BaseFilterAgent's work.
+
+### Current Flow (without BaseFilterAgent)
+
+```
+VerificationAgent → R Validation → if error → retry VerificationAgent → validate again
+```
+
+### New Flow (with BaseFilterAgent)
+
+```
+VerificationAgent → BaseFilterAgent → R Validation
+                                        ↓ (if error)
+                         retry VerificationAgent (NOT BaseFilterAgent)
+                                        ↓
+                         re-apply additionalFilter from BaseFilterAgent
+                                        ↓
+                         validate again
+```
+
+### Why This Matters
+
+When a table fails R validation:
+1. `ValidationOrchestrator` converts the table back to `TableDefinition` and re-runs VerificationAgent
+2. VerificationAgent outputs a fresh `ExtendedTableDefinition`
+3. **Problem**: The `additionalFilter` from BaseFilterAgent would be lost
+
+### Solution
+
+The validation retry loop must:
+1. Store the `additionalFilter` and `baseText` before retrying
+2. After VerificationAgent returns the fixed table, re-apply the stored filter metadata
+3. Only then validate the table again
+
+**Implementation approach**: In `ValidationOrchestrator.ts`, when retrying a table:
+```typescript
+// Before retry: preserve BaseFilterAgent's work
+const preservedFilter = originalTable.additionalFilter;
+const preservedBaseText = originalTable.baseText;
+const preservedSplitFromTableId = originalTable.splitFromTableId;
+
+// After VerificationAgent retry returns:
+const fixedTable = result.tables[0];
+fixedTable.additionalFilter = preservedFilter;
+fixedTable.baseText = preservedBaseText;
+fixedTable.splitFromTableId = preservedSplitFromTableId;
+```
+
+**Key principle**: BaseFilterAgent's decisions are correctness-based and should persist. The retry loop only fixes R script errors (labels, variable names, etc.), not base filter logic.
+
+---
+
 ## VerificationAgent Prompt Update
 
 Add guidance to VerificationAgent to be aware of row-level skip logic:
@@ -193,6 +248,7 @@ export const BaseFilterResultSchema = z.object({
 |------|--------|
 | `src/schemas/verificationAgentSchema.ts` | Add filter fields, note baseText change |
 | `src/lib/r/RScriptGeneratorV2.ts` | Apply additionalFilter after cut |
+| `src/lib/r/ValidationOrchestrator.ts` | Preserve additionalFilter during retry loop |
 | `scripts/test-pipeline.ts` | Add BaseFilterAgent step |
 | `src/prompts/verification/alternative.ts` | Add skip logic awareness guidance |
 
@@ -212,30 +268,50 @@ Before passing to R Script Generator:
 
 ## Example Scenarios
 
+These examples are illustrative patterns. The actual prompts should use abstract examples appropriate to the domain.
+
 ### Pass (No Additional Filter)
 
-**Input**: S5 (practice setting), no skip logic
+**Pattern**: Question asked to all qualified respondents, no skip logic
+**Input**: Demographics question (e.g., years of experience)
 **Output**: Same table, `additionalFilter: ""`, `baseText: "All respondents"`
 
 ### Filter (Same Base, Additional Constraint)
 
-**Input**: A4 (Leqvio satisfaction), survey says "ASK IF A3r2 > 0"
-**Output**: Same table, `additionalFilter: "A3r2 > 0"`, `baseText: "Those who prescribed Leqvio"`
+**Pattern**: Follow-up question that requires a prior answer
+**Input**: Satisfaction with Product X, survey says "ASK IF Q3 = 1" (users of Product X)
+**Output**: Same table, `additionalFilter: "Q3 == 1"`, `baseText: "Users of Product X"`
 
 ### Split (Different Bases Per Row)
 
-**Input**: A3a with Leqvio/Praluent/Repatha rows
-**Output**: 3 tables:
-- `a3a_leqvio`: Leqvio rows, `additionalFilter: "A3r2 > 0"`, `baseText: "Those who prescribed Leqvio"`
-- `a3a_praluent`: Praluent rows, `additionalFilter: "A3r3 > 0"`, `baseText: "Those who prescribed Praluent"`
-- `a3a_repatha`: Repatha rows, `additionalFilter: "A3r4 > 0"`, `baseText: "Those who prescribed Repatha"`
+**Pattern**: Grid question where each row has different show logic based on prior responses
+**Input**: "For each product you use, rate satisfaction" where row visibility depends on usage (Q2r1 > 0 for row 1, Q2r2 > 0 for row 2, etc.)
+**Output**: N tables (one per product), each with:
+- Subset of rows for that product
+- `additionalFilter: "Q2rN > 0"` (the relevant usage variable)
+- `baseText: "Those who use [Product Name]"`
 
 ---
 
 ## Success Criteria
 
-1. **A3a base sizes match Joe's** — 135, 126, 177 for each brand
-2. **No false positives** — Don't add unnecessary filters
+1. **Base sizes match reference output** — Tables with skip logic have correct base counts
+2. **No false positives** — Don't add unnecessary filters to tables without skip logic
 3. **baseText is accurate** — Reflects who is actually in the table
 4. **Pipeline completes** — No R script errors from filter expressions
 5. **Graceful uncertainty** — Ambiguous cases flagged for human review
+
+---
+
+## Prompt Guidelines
+
+The BaseFilterAgent prompt should:
+
+1. **Be abstract, not example-specific** — Use generic patterns (product grids, follow-up questions) rather than specific survey scenarios
+2. **Focus on pattern recognition** — Teach the agent to recognize skip logic patterns ("ASK IF", "ONLY SHOW WHERE", "IF [X] > 0")
+3. **Emphasize the mission** — Base accuracy, not analytical decisions
+4. **Keep it concise** — ~100-150 lines; this is a focused task
+
+Similarly, the VerificationAgent prompt update should:
+1. Use abstract examples when explaining skip logic awareness
+2. Not reference specific survey questions or variable names from any particular dataset
