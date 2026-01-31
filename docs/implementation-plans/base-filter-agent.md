@@ -1,107 +1,149 @@
 # BaseFilterAgent Implementation Plan
 
-**Status**: Design complete, not started
+**Status**: Ready for implementation
 **Created**: 2026-01-31
-**Related**: `docs/implementation-plans/verification-agent-improvements.md` (System 4)
+**Updated**: 2026-01-31
 
 ---
 
-## Why This Agent Exists
+## The Problem
 
-### The Problem
-
-Our current pipeline calculates table bases using `cut filter + non-NA values`. This works for most questions, but fails when questions have **row-level skip logic** that creates more restrictive filters.
+Our pipeline calculates table bases using `cut filter + non-NA values`. This works for most questions, but fails when questions have **row-level skip logic** that creates different bases for different rows.
 
 **Example (A3a):**
 - Survey says: "ONLY SHOW THERAPY WHERE A3>0"
 - Leqvio row should only include respondents where `A3r2 > 0` (n=135)
-- We include everyone shown the question (n=141)
-- Result: 6 respondents with meaningless data pollute the base
+- Praluent row should only include respondents where `A3r3 > 0` (n=126)
+- Repatha row should only include respondents where `A3r4 > 0` (n=177)
+- We currently include everyone shown the question (n=141 for all)
+- Result: Incorrect base sizes and meaningless data included
 
-### Why a Dedicated Agent
-
-1. **VerificationAgent is overloaded** - Already handles table design, NETs, labels, exclusions
-2. **Survey conventions vary** - Can't rely on parsing "ONLY SHOW X WHERE Y" patterns
-3. **Requires intelligence** - Need to reason about survey context, variable relationships
-4. **Focused scope = better results** - Single responsibility, can optimize independently
-
-### Trade-offs Acknowledged
-
-- **Adds time**: Another agent call in the pipeline
-- **Adds cost**: More API calls (mitigated by low reasoning effort + parallelization)
-- **Worth it**: This is table-stakes for production quality; any human analyst does this intuitively
+**Key insight:** When rows have different bases, they cannot coexist in the same table—our system shows one base per table. These must be split.
 
 ---
 
-## Mission
+## The Solution: BaseFilterAgent
 
-> Determine if each table requires additional base filtering beyond the standard cut + non-NA logic. Output a filter expression that gets ANDed with existing cuts. Flag uncertain cases for human review.
+A dedicated agent that runs after VerificationAgent to ensure every table has an accurate base.
 
-**What it does:**
-- Reviews each table's survey context and skip logic
-- Identifies when additional filtering is needed
-- Outputs R expressions to tighten the base filter
+### What It Does
 
-**What it does NOT do:**
-- Restructure tables (VerificationAgent's job)
-- Validate R expressions (separate validation step)
-- Make table design decisions
+1. **Reviews each table** for skip/show logic in the survey context
+2. **Determines the correct base** for the table (or each row if they differ)
+3. **Outputs corrected tables** with:
+   - `additionalFilter`: R expression to AND with the cut filter
+   - `baseText`: Plain English description of who is included
+4. **Splits tables** when different rows have different bases
+
+### What It Does NOT Do
+
+- Make analytical decisions (that's VerificationAgent's job)
+- Change labels, NETs, or enrichments
+- Decide what's "interesting"—only what's accurate
 
 ---
 
 ## Pipeline Position
 
 ```
-DataMap → Banner → Crosstab → Table → Verification → BaseFilter → R Script → Excel
-                                              │              │
-                                              │              ↓
-                                              │      Adds additionalFilter
-                                              │      to each table
-                                              │              │
-                                              ↓              ↓
-                                        Table design    R script uses
-                                        is finalized    filter in calc
+VerificationAgent → BaseFilterAgent → R Script Generator → Excel
+       ↓                   ↓
+  Table design       Base accuracy
+  (analytical)       (correctness)
 ```
 
-**Runs after**: VerificationAgent (tables are finalized)
+**Runs after**: VerificationAgent (tables are finalized analytically)
 **Runs before**: R Script Generator (needs filter expressions)
-**Could also run after**: R Script validation (to have even more context)
+
+**Note**: Table count may change after BaseFilterAgent (splits). Downstream uses BaseFilterAgent's output.
 
 ---
 
-## How It Works
+## Agent Output
 
-### Input (per table)
+For each input table, BaseFilterAgent outputs one or more tables:
 
-```typescript
-interface BaseFilterAgentInput {
-  table: ExtendedTableDefinition;     // The finalized table
-  datamapContext: DatamapVariable[];  // All variables BEFORE this questionId
-  surveyExcerpt: string;              // Question text + skip logic instructions
-}
-```
+| Scenario | Input | Output |
+|----------|-------|--------|
+| No filter needed | 1 table | Same table with `additionalFilter: ""`, `baseText` set |
+| Filter needed | 1 table | Same table with `additionalFilter: "A3r2 > 0"`, `baseText` set |
+| Split needed | 1 table | N tables, each with appropriate filter and baseText |
 
-**Why "variables before"**: Skip logic inherently references prior questions. This is conservative and mirrors how surveys work.
+The agent outputs **complete `ExtendedTableDefinition` objects**—not hints or mappings. This keeps the architecture simple and consistent with how VerificationAgent works.
 
-### Output (per table)
+### Output Schema
 
 ```typescript
 interface BaseFilterAgentOutput {
-  tableId: string;
-  additionalFilter: string | null;    // R expression, e.g., "A3r2 > 0"
-  filterReason: string;               // Plain English, e.g., "Only those who prescribed Leqvio"
-  confidence: number;                 // 0.0 - 1.0
+  tables: ExtendedTableDefinition[];  // 1 if pass/filter, N if split
+  originalTableId: string;
+  action: 'pass' | 'filter' | 'split';
+  confidence: number;
   humanReviewRequired: boolean;
-  reasoning: string;                  // Brief explanation of decision
+  reasoning: string;
 }
 ```
 
-### Execution Strategy
+### Split Mechanics
 
-- **Model**: gpt-5-mini (same as other agents)
-- **Reasoning effort**: Low or medium (focused task)
-- **Parallelization**: 3 agents, each handles ~1/3 of tables
-- **Batching**: Could batch multiple tables per call to reduce overhead
+When splitting, the agent:
+1. Copies the original table structure (inherits all VerificationAgent work)
+2. Subsets rows for each split
+3. Sets `tableId`, `tableSubtitle`, `additionalFilter`, `baseText` appropriately
+4. Sets `splitFromTableId` to reference the original
+
+This is mechanical, not analytical—the agent isn't reconsidering the table design, just ensuring base accuracy.
+
+---
+
+## baseText Ownership Change
+
+**Before**: VerificationAgent was responsible for `baseText`
+**After**: BaseFilterAgent owns `baseText` entirely
+
+**Rationale**: BaseFilterAgent is reasoning about "who should be in this table's base"—that's exactly what baseText describes. Consolidating this responsibility makes both agents' jobs cleaner.
+
+**VerificationAgent change**: Remove `baseText` from its output requirements. It can output empty string; BaseFilterAgent will set the correct value.
+
+---
+
+## R Script Generator Integration
+
+The integration is straightforward. Currently at line 780:
+
+```r
+cut_data <- apply_cut(data, cuts[[cut_name]])
+# ... calculations use cut_data
+```
+
+With `additionalFilter`, insert after the cut application:
+
+```r
+cut_data <- apply_cut(data, cuts[[cut_name]])
+
+# Apply additional table-level filter if specified
+if (!is.null(table$additionalFilter) && nchar(table$additionalFilter) > 0) {
+  additional_mask <- with(cut_data, eval(parse(text = table$additionalFilter)))
+  additional_mask[is.na(additional_mask)] <- FALSE
+  cut_data <- cut_data[additional_mask, ]
+}
+
+# ... rest of calculations use filtered cut_data
+```
+
+This is a simple AND operation—respondents must pass both the cut filter AND the additional filter.
+
+**Confirmation needed during implementation**: Verify this pattern works correctly with significance testing (the comparison groups should also use the filtered data).
+
+---
+
+## VerificationAgent Prompt Update
+
+Add guidance to VerificationAgent to be aware of row-level skip logic:
+
+> When you see skip/show logic suggesting different rows might have different bases (e.g., "ONLY SHOW BRAND WHERE [prior question] > 0"), consider splitting those rows into separate tables. Each table should have a consistent base. If you're uncertain, downstream processing will handle it, but proactive splitting is preferred when the pattern is clear.
+
+This helps the two agents work together—VerificationAgent can catch obvious cases, BaseFilterAgent ensures nothing slips through.
 
 ---
 
@@ -109,41 +151,33 @@ interface BaseFilterAgentOutput {
 
 ### ExtendedTableDefinition (verificationAgentSchema.ts)
 
-Add new fields:
+Add fields:
 
 ```typescript
-// Base filter fields (populated by BaseFilterAgent)
-additionalFilter?: string;      // R expression to AND with cuts
-filterReason?: string;          // Plain English explanation
-filterConfidence?: number;      // 0.0 - 1.0
-filterReviewRequired?: boolean; // Flag for human review
+additionalFilter: z.string(),      // R expression, empty if none
+filterConfidence: z.number().optional(),
+filterReviewRequired: z.boolean().optional(),
+splitFromTableId: z.string(),      // Original tableId if split, empty otherwise
 ```
+
+**Change**: `baseText` remains in schema but VerificationAgent outputs empty string. BaseFilterAgent populates it.
 
 ### New Schema File (baseFilterAgentSchema.ts)
 
 ```typescript
-import { z } from 'zod';
-
 export const BaseFilterResultSchema = z.object({
-  tableId: z.string(),
-  additionalFilter: z.string().nullable(),
-  filterReason: z.string(),
+  tables: z.array(ExtendedTableDefinitionSchema),
+  originalTableId: z.string(),
+  action: z.enum(['pass', 'filter', 'split']),
   confidence: z.number().min(0).max(1),
   humanReviewRequired: z.boolean(),
   reasoning: z.string(),
 });
-
-export const BaseFilterAgentOutputSchema = z.object({
-  results: z.array(BaseFilterResultSchema),
-});
-
-export type BaseFilterResult = z.infer<typeof BaseFilterResultSchema>;
-export type BaseFilterAgentOutput = z.infer<typeof BaseFilterAgentOutputSchema>;
 ```
 
 ---
 
-## Code Changes Required
+## Files to Create/Modify
 
 ### New Files
 
@@ -157,201 +191,51 @@ export type BaseFilterAgentOutput = z.infer<typeof BaseFilterAgentOutputSchema>;
 
 | File | Change |
 |------|--------|
-| `src/schemas/verificationAgentSchema.ts` | Add filter fields to ExtendedTableDefinition |
-| `src/lib/r/RScriptGeneratorV2.ts` | Apply additionalFilter when calculating tables |
+| `src/schemas/verificationAgentSchema.ts` | Add filter fields, note baseText change |
+| `src/lib/r/RScriptGeneratorV2.ts` | Apply additionalFilter after cut |
 | `scripts/test-pipeline.ts` | Add BaseFilterAgent step |
-| `src/lib/excel/ExcelFormatter.ts` | Optionally render filterReason in base text |
+| `src/prompts/verification/alternative.ts` | Add skip logic awareness guidance |
 
 ---
 
-## R Script Integration
+## Validation
 
-When a table has `additionalFilter`, the R script applies it:
+Before passing to R Script Generator:
 
-```r
-for (cut_name in names(cuts)) {
-  cut_data <- apply_cut(data, cuts[[cut_name]])
-
-  # NEW: Apply table-specific additional filter
-  if (!is.null(table$additionalFilter) && nchar(table$additionalFilter) > 0) {
-    additional_mask <- with(cut_data, eval(parse(text = table$additionalFilter)))
-    additional_mask[is.na(additional_mask)] <- FALSE
-    table_data <- cut_data[additional_mask, ]
-  } else {
-    table_data <- cut_data
-  }
-
-  # Calculate statistics on table_data (not cut_data)
-  base_n <- nrow(table_data)
-  # ... rest of calculation
-}
-```
-
-**Key principle**: The filter is ANDed with the cut. Respondents must:
-1. Pass the cut filter (e.g., Total, or Email Channel)
-2. AND pass the additional filter (e.g., A3r2 > 0)
-
----
-
-## Human Review Integration
-
-Similar to banner cuts, uncertain cases should be flagged:
-
-```typescript
-if (result.confidence < 0.7 || result.humanReviewRequired) {
-  // Add to review queue
-  reviewItems.push({
-    type: 'base_filter',
-    tableId: result.tableId,
-    proposedFilter: result.additionalFilter,
-    reason: result.filterReason,
-    confidence: result.confidence,
-    agentReasoning: result.reasoning,
-  });
-}
-```
-
-**Review UI considerations:**
-- Show the table context
-- Show the proposed filter and reasoning
-- Allow approve / reject / modify
-- Store decisions for future learning
-
----
-
-## Open Questions for Implementation
-
-### Pipeline Questions
-
-1. **Exact timing**: After VerificationAgent or after R validation?
-   - After verification: Has table definitions, can run sooner
-   - After R validation: Has validated data, knows what variables exist
-
-2. **Batching strategy**: How many tables per agent call?
-   - Too few = many API calls = slow
-   - Too many = large context = potential quality issues
-   - Suggestion: 10-15 tables per batch
-
-3. **Parallel execution**: How to orchestrate 3 parallel agents?
-   - Split tables into 3 groups
-   - Run concurrently
-   - Merge results
-
-### Schema Questions
-
-4. **Where to store results?**
-   - Option A: Add fields to ExtendedTableDefinition (inline)
-   - Option B: Separate file (base-filters.json)
-   - Recommendation: Inline for simplicity
-
-5. **How to handle "no filter needed"?**
-   - `additionalFilter: null` or `additionalFilter: ""`
-   - Recommendation: `null` for clarity
-
-### Rendering Questions
-
-6. **Should filterReason appear in Excel?**
-   - Could append to baseText: "Total (Those who prescribed Leqvio)"
-   - Or keep separate for debugging
-   - Recommendation: Enhance baseText for user clarity
-
-7. **How to surface low-confidence filters?**
-   - Visual indicator in Excel?
-   - Separate review report?
-   - Recommendation: Review report, don't clutter Excel
-
-### Validation Questions
-
-8. **How to validate filter expressions?**
-   - Check variable names exist in datamap
-   - Test expression doesn't error in R
-   - Warn if filter excludes all respondents
-
-9. **What if filter creates empty base?**
-   - Could happen if filter is wrong or data is sparse
-   - Need graceful handling (warning, not crash)
+1. **Filter syntax valid** — additionalFilter parses as R expression
+2. **Variables exist** — All variables in filter exist in datamap
+3. **Filter not too restrictive** — Warn if >90% excluded (likely error)
+4. **Split coverage** — Sum of split table rows = original row count
+5. **No empty tables** — Each split has at least one row
 
 ---
 
 ## Example Scenarios
 
-### Scenario 1: A3a Leqvio (Clear Skip Logic)
+### Pass (No Additional Filter)
 
-**Survey excerpt:**
-> A3a. For each treatment, approximately what % received therapy in addition to a statin vs. without a statin?
-> ONLY SHOW THERAPY WHERE A3>0
+**Input**: S5 (practice setting), no skip logic
+**Output**: Same table, `additionalFilter: ""`, `baseText: "All respondents"`
 
-**Datamap context:**
-- A3r2: Leqvio patient count (0-100)
-- A3ar1c1: Leqvio % in addition to statin
-- A3ar1c2: Leqvio % without statin
+### Filter (Same Base, Additional Constraint)
 
-**Agent output:**
-```json
-{
-  "tableId": "a3a_leqvio",
-  "additionalFilter": "A3r2 > 0",
-  "filterReason": "Only those who prescribed Leqvio (A3>0 per survey skip logic)",
-  "confidence": 0.95,
-  "humanReviewRequired": false,
-  "reasoning": "Survey explicitly states 'ONLY SHOW THERAPY WHERE A3>0'. A3r2 is the Leqvio patient count variable. Filter to respondents with at least one Leqvio patient."
-}
-```
+**Input**: A4 (Leqvio satisfaction), survey says "ASK IF A3r2 > 0"
+**Output**: Same table, `additionalFilter: "A3r2 > 0"`, `baseText: "Those who prescribed Leqvio"`
 
-### Scenario 2: Standard Question (No Additional Filter)
+### Split (Different Bases Per Row)
 
-**Survey excerpt:**
-> S5. What is your primary practice setting?
-
-**Agent output:**
-```json
-{
-  "tableId": "s5",
-  "additionalFilter": null,
-  "filterReason": "Asked to all respondents",
-  "confidence": 0.99,
-  "humanReviewRequired": false,
-  "reasoning": "No skip logic indicated. Question appears to be asked to all qualified respondents."
-}
-```
-
-### Scenario 3: Ambiguous Case (Low Confidence)
-
-**Survey excerpt:**
-> B7. How satisfied are you with [BRAND]?
-> (No explicit skip logic visible)
-
-**Datamap context:**
-- B1r1-B1r5: Brand awareness (Yes/No)
-- B7r1-B7r5: Brand satisfaction (1-5 scale)
-
-**Agent output:**
-```json
-{
-  "tableId": "b7_brand_a",
-  "additionalFilter": "B1r1 == 1",
-  "filterReason": "Likely only asked to those aware of Brand A",
-  "confidence": 0.6,
-  "humanReviewRequired": true,
-  "reasoning": "No explicit skip logic, but satisfaction questions typically filter to those aware of the brand. B1r1 appears to be Brand A awareness. Flagging for human review due to uncertainty."
-}
-```
+**Input**: A3a with Leqvio/Praluent/Repatha rows
+**Output**: 3 tables:
+- `a3a_leqvio`: Leqvio rows, `additionalFilter: "A3r2 > 0"`, `baseText: "Those who prescribed Leqvio"`
+- `a3a_praluent`: Praluent rows, `additionalFilter: "A3r3 > 0"`, `baseText: "Those who prescribed Praluent"`
+- `a3a_repatha`: Repatha rows, `additionalFilter: "A3r4 > 0"`, `baseText: "Those who prescribed Repatha"`
 
 ---
 
 ## Success Criteria
 
-1. **A3a base sizes match Joe's** - 135, 126, 177 for Leqvio, Praluent, Repatha
-2. **No false positives** - Don't add filters where none are needed
-3. **High confidence on clear cases** - >0.9 when skip logic is explicit
-4. **Appropriate flagging** - Uncertain cases go to human review
-5. **Pipeline time acceptable** - <30 seconds added for typical survey
-
----
-
-## Future Enhancements
-
-1. **Learning from corrections** - Store human review decisions, use for few-shot examples
-2. **Pre-computation validation** - Run R to verify base sizes match expectations
-3. **Cross-survey patterns** - Identify common skip logic patterns across projects
-4. **Automatic VerificationAgent feedback** - If BaseFilterAgent sees row-level skip logic on a combined table, flag that VerificationAgent should have split it
+1. **A3a base sizes match Joe's** — 135, 126, 177 for each brand
+2. **No false positives** — Don't add unnecessary filters
+3. **baseText is accurate** — Reflects who is actually in the table
+4. **Pipeline completes** — No R script errors from filter expressions
+5. **Graceful uncertainty** — Ambiguous cases flagged for human review

@@ -286,10 +286,14 @@ Excel formatter should auto-size row heights so wrapped text displays properly.
 
 ### System 4: Per-Row Base Filters (A3a Issue)
 
-**Status**: Investigated, solution needed
-**Type**: Prompt guidance + Schema change + R script change
+**Status**: ✅ Solution designed → See `base-filter-agent.md`
+**Type**: New agent (BaseFilterAgent)
 
-#### The Problem
+The solution is documented in the dedicated implementation plan: `docs/implementation-plans/base-filter-agent.md`
+
+**Summary**: A new BaseFilterAgent runs after VerificationAgent to ensure every table has an accurate base. It adds `additionalFilter` expressions and owns `baseText` responsibility.
+
+#### Original Problem (for reference)
 
 A3a brands show different base sizes between Joe's tabs and ours:
 
