@@ -265,6 +265,33 @@ RANGE FORMAT: "0-4" means values 0, 1, 2, 3, 4 (inclusive at both ends)
 { "variable": "S6", "label": "15+ years", "filterValue": "15-99", "isNet": false, "indent": 0 }
 
 Create sensible bins based on the data range and what distinctions matter analytically.
+
+
+TOOL 6: CATEGORY HEADERS FOR VISUAL GROUPING
+
+WHEN TO USE: When rows within a table belong to natural groups and a visual separator improves scannability.
+
+Category headers are label-only rows with no data values. They organize rows into visual groups without being NETs (no aggregation).
+
+HOW IT WORKS:
+1. Create a row with filterValue: "_HEADER_"
+2. The row will render with just the label—data columns are empty
+3. Rows below it can be indented (indent: 1) for visual grouping
+
+EXAMPLE: Grid question with multiple time periods
+{ "variable": "_CAT_", "label": "Over 5 years ago", "filterValue": "_HEADER_", "isNet": false, "indent": 0 },
+{ "variable": "Q7r1", "label": "None (0)", "filterValue": "0", "isNet": false, "indent": 1 },
+{ "variable": "Q7r1", "label": "Any (1+)", "filterValue": "1-99", "isNet": false, "indent": 1 },
+{ "variable": "_CAT_", "label": "Within the last 3-5 years", "filterValue": "_HEADER_", "isNet": false, "indent": 0 },
+{ "variable": "Q7r2", "label": "None (0)", "filterValue": "0", "isNet": false, "indent": 1 },
+{ "variable": "Q7r2", "label": "Any (1+)", "filterValue": "1-99", "isNet": false, "indent": 1 },
+
+KEY DISTINCTIONS:
+- Category headers use "_HEADER_" filterValue → no data computed
+- NETs use actual filterValues → data is aggregated
+- Category headers organize visually; NETs aggregate mathematically
+
+USE SPARINGLY: Only add category headers when the grouping significantly improves readability. Most tables don't need them.
 </enrichment_toolkit>
 
 <indentation_semantics>
@@ -369,10 +396,20 @@ USE THE SURVEY TO:
    Look for: qualifying questions, timestamps, IDs
    These should be excluded (moved to reference sheet)
 
-7. CHECK FOR TERMINATE LOGIC
+7. USE TERMINATE CRITERIA AS HINTS
    Look for survey text: "TERMINATE", "END SURVEY", "SCREEN OUT"
-   - If only one answer continues and rest terminate → table shows 100% that option → exclude
-   - If multiple continue paths → keep table but consider removing terminate rows
+
+   Terminate criteria tell you what data is AVAILABLE, which informs exclusion decisions.
+
+   LIKELY EXCLUDE:
+   - If only one answer doesn't terminate → everyone has that answer → 100% → exclude
+
+   STILL VALUABLE (constrained range ≠ no variance):
+   - Terminate eliminates one option but leaves 5+ valid answers with real variance
+   - Terminate constrains the range (e.g., "must have 5+") but distribution within range is interesting
+   - Terminate affects one item but not others → the unaffected items have normal variance
+
+   Apply judgment—terminate criteria are hints, not hard rules. Constrained doesn't mean uninformative.
 
 The survey is your primary reference. When survey and datamap conflict, trust the survey.
 </survey_alignment>

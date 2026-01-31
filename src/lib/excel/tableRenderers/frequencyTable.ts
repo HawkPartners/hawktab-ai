@@ -17,13 +17,14 @@ import type { BannerGroup } from '../../r/RScriptGeneratorV2';
 
 export interface FrequencyRowData {
   label: string;
-  n: number;
-  count: number;
-  pct: number;
+  n: number | null;
+  count: number | null;
+  pct: number | null;
   sig_higher_than?: string[] | string;
   sig_vs_total?: string | null;
   isNet?: boolean;    // NET/roll-up row (should be bold)
   indent?: number;    // Indentation level (0 = normal, 1+ = indented under NET)
+  isCategoryHeader?: boolean;  // Visual grouping row with no data
 }
 
 export interface FrequencyCutData {

@@ -19,13 +19,14 @@ import type { BannerGroup } from '../../r/RScriptGeneratorV2';
 
 export interface FrequencyRowData {
   label: string;
-  n: number;
-  count: number;
-  pct: number;
+  n: number | null;
+  count: number | null;
+  pct: number | null;
   sig_higher_than?: string[] | string;
   sig_vs_total?: string | null;
   isNet?: boolean;
   indent?: number;
+  isCategoryHeader?: boolean;
 }
 
 export interface FrequencyCutData {
@@ -501,6 +502,7 @@ export function renderJoeStyleFrequencyTable(
     const totalRowData = totalCutData?.[rowKey] as FrequencyRowData | undefined;
     const isNet = totalRowData?.isNet || false;
     const indent = totalRowData?.indent || 0;
+    const isCategoryHeader = totalRowData?.isCategoryHeader || false;
     const isLastDataRow = rowIdx === totalDataRows - 1;
 
     // Build label with indentation
@@ -515,10 +517,10 @@ export function renderJoeStyleFrequencyTable(
     contextCell.fill = FILLS.joeContext;
     applyJoeBorder(contextCell, { isContextCol: true, isLastRow: isLastDataRow });
 
-    // Label column - yellow
+    // Label column - yellow (bold for category headers)
     const labelCell = worksheet.getCell(currentRow, LABEL_COL);
     labelCell.value = rowLabel;
-    labelCell.font = isNet ? FONTS.labelNet : FONTS.label;
+    labelCell.font = isCategoryHeader ? FONTS.labelNet : (isNet ? FONTS.labelNet : FONTS.label);
     labelCell.fill = FILLS.joeLabel;
     labelCell.alignment = ALIGNMENTS.wrapText;
     applyJoeBorder(labelCell, { isLastRow: isLastDataRow });
@@ -532,7 +534,10 @@ export function renderJoeStyleFrequencyTable(
 
       // Value column (percent or count)
       const valCell = worksheet.getCell(currentRow, cut.valueCol);
-      if (valueType === 'percent') {
+      if (isCategoryHeader) {
+        // Category header: empty cell, no data
+        valCell.value = '';
+      } else if (valueType === 'percent') {
         const pct = rowData?.pct;
         if (pct !== undefined && pct !== null) {
           valCell.value = pct / 100;
@@ -556,9 +561,9 @@ export function renderJoeStyleFrequencyTable(
         isLastRow: isLastDataRow,
       });
 
-      // Sig column (bold red letters)
+      // Sig column (bold red letters, empty for category headers)
       const sigCell = worksheet.getCell(currentRow, cut.sigCol);
-      const sigValue = formatSignificance(rowData?.sig_higher_than);
+      const sigValue = isCategoryHeader ? '' : formatSignificance(rowData?.sig_higher_than);
       sigCell.value = sigValue || '';
       sigCell.font = sigValue ? FONTS.significanceLetterRed : FONTS.data;
       sigCell.fill = groupFill;

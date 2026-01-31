@@ -152,8 +152,8 @@ The prompt covers this through multiple mechanisms:
 
 ### Gap 9: Logical Row Ordering Within Tables
 
-**Status**: Decision made, not implemented
-**Type**: Prompt guidance
+**Status**: ✅ Complete (category headers implemented)
+**Type**: Prompt guidance + System change
 
 **Problem**: Row ordering from the flat table sometimes creates confusing output, especially for grid patterns.
 
@@ -179,9 +179,7 @@ r2c2 - Brand B, Situation 2
 ```
 Now all Situation 1 items are together, then all Situation 2.
 
-**Prompt change**: Add guidance that the model CAN reorder rows in a constrained manner. Default is to preserve flat table order, but for grids, group by one dimension so related items appear together.
-
-**Future consideration - Category headers for visual grouping**:
+**Category headers for visual grouping** - IMPLEMENTED:
 
 Joe's output shows indentation used for visual grouping, not just NETs:
 ```
@@ -195,9 +193,18 @@ Within the last 3-5 years ← another category header
   25 or more      55%
 ```
 
-"Over 5 years ago" isn't a NET—it's a visual category label that groups the rows below it. This is different from our current system where `indent: 1` means "component of the NET above."
+**Implementation**:
+- Use `filterValue: "_HEADER_"` for category header rows
+- R generator: Detects `_HEADER_`, outputs row with null values (no computation)
+- Excel renderer: Renders label only with empty data cells (not dashes)
+- Prompt: TOOL 6 explains when/how to use category headers
 
-**Note**: Need to verify if our system supports category header rows (indent: 0, no filterValue, purely for visual organization). If not, this capability should be added, then prompt updated to allow the model to create category headers for visual grouping when it improves readability.
+**Files changed**:
+- `src/lib/r/RScriptGeneratorV2.ts` - Validation + generation logic for `_HEADER_`
+- `src/lib/excel/tableRenderers/joeStyleFrequency.ts` - Interface + rendering
+- `src/lib/excel/tableRenderers/joeStyleMeanRows.ts` - Interface update
+- `src/lib/excel/tableRenderers/frequencyTable.ts` - Interface update
+- `src/prompts/verification/alternative.ts` - TOOL 6: Category Headers
 
 ---
 
@@ -211,7 +218,7 @@ The prompt's emphasis on judicious thinking and "does this add value?" covers th
 
 ### Gap 11: More Aggressive Exclusion (Terminate Criteria)
 
-**Status**: Decision made, not implemented
+**Status**: ✅ Complete
 **Type**: Prompt guidance
 
 **Problem**: Model isn't recognizing when terminate criteria make a table uninformative.

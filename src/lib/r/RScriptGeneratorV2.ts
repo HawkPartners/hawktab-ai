@@ -117,9 +117,10 @@ export function validateTable(table: ExtendedTableDefinition): TableValidationRe
     for (let i = 0; i < table.rows.length; i++) {
       const row = table.rows[i];
 
-      // For frequency tables, filterValue must not be empty (unless it's a NET with netComponents)
+      // For frequency tables, filterValue must not be empty (unless it's a NET with netComponents or a category header)
       const isNetWithComponents = row.isNet && row.netComponents && row.netComponents.length > 0;
-      if (!row.filterValue && !isNetWithComponents) {
+      const isCategoryHeader = row.filterValue === '_HEADER_';
+      if (!row.filterValue && !isNetWithComponents && !isCategoryHeader) {
         errors.push(`Row ${i + 1} (${row.variable}): Empty filterValue on frequency table. This will generate invalid R code.`);
       }
 
@@ -790,6 +791,27 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
     const rowKey = `${row.variable}_row_${i + 1}`;
     const isNet = row.isNet || false;
     const indent = row.indent || 0;
+
+    // Check for category header (visual grouping row with no data)
+    const isCategoryHeader = filterValue === '_HEADER_';
+
+    if (isCategoryHeader) {
+      // Category header: output row with null values, no computation
+      lines.push(`  # Row ${i + 1}: Category header - ${row.label}`);
+      lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
+      lines.push(`    label = "${label}",`);
+      lines.push('    n = NULL,');
+      lines.push('    count = NULL,');
+      lines.push('    pct = NULL,');
+      lines.push('    isNet = FALSE,');
+      lines.push(`    indent = ${indent},`);
+      lines.push('    isCategoryHeader = TRUE,');
+      lines.push('    sig_higher_than = c(),');
+      lines.push('    sig_vs_total = NULL');
+      lines.push('  )');
+      lines.push('');
+      continue; // Skip to next row
+    }
 
     // Check if filterValue contains multiple values (comma-separated, e.g., "4,5" for T2B)
     const filterValues = filterValue.split(',').map(v => v.trim()).filter(v => v);

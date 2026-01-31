@@ -19,7 +19,7 @@ import type { JoeHeaderInfo } from './joeStyleFrequency';
 
 export interface MeanRowData {
   label: string;
-  n: number;
+  n: number | null;
   mean: number | null;
   mean_label?: string;
   median: number | null;
@@ -31,6 +31,7 @@ export interface MeanRowData {
   sig_vs_total?: string | null;
   isNet?: boolean;
   indent?: number;
+  isCategoryHeader?: boolean;
 }
 
 export interface MeanCutData {
