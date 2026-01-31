@@ -1,226 +1,271 @@
 # Verification Agent Improvements
 
-**Status**: Discovery
-**Last Updated**: 2026-01-30
+**Status**: In Progress
+**Last Updated**: 2026-01-31
 **Context**: Review of `outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-01-30T23-51-44-742Z/`
 
 ---
 
-## The Core Problem
+## Summary
 
-The VerificationAgent is treating its job as "enrich every table with every possible analytical view" when it should be "produce the tables an analyst would actually use to write a report."
-
-It's optimizing for **completeness** when it should optimize for **usefulness**.
-
-### Important Context
-
-The agent is actually pretty good — almost there. It learned the *mechanics* of table generation (T2B, NETs, splits, etc.) and does them correctly. What's missing is the *judgment* layer: knowing when to apply these techniques and when to hold back.
-
-The original prompt was written to teach mechanics. Now that the agent has those down, we need to go back and add purpose, context, and judicious thinking.
+The alternative prompt (`src/prompts/verification/alternative.ts`) has been restructured with mission framing, rendering mindset, and anti-patterns. What remains are specific behavioral gaps and system changes needed to complete the improvements.
 
 ---
 
-## Root Cause Analysis
+## Remaining Gaps
 
-### 1. The Agent Doesn't Understand the Output Medium
+### Gap 1: tableSubtitle Field (Schema + Prompt + Excel)
 
-The agent has no mental model of what the final Excel workbook looks like or how analysts navigate it. It's generating tables in isolation without considering:
+**Status**: Not started
+**Type**: Schema change + Prompt guidance + Excel formatter
 
-- **Visual density**: A 75-row table with Brand × Situation × Scale is technically complete but practically unusable
-- **Cognitive load**: Analysts scan tables quickly — they need clear story per table, not everything in one place
-- **Navigation**: More tables means more scrolling/clicking — each table should earn its place
+**Problem**: When the agent creates multiple tables from the same question (e.g., A1 for Leqvio vs A1 for Repatha), there's no way to clearly differentiate them. The agent tries to cram this into `questionText` which doesn't work well.
 
-**Why this happens**: The prompt describes the *mechanics* of creating tables (T2B, NETs, splits) but not the *purpose* (supporting analyst workflow). The agent knows HOW to create derived views but not WHEN they add value.
+**What Joe does**: In the context column, Joe uses a subtitle line that describes WHAT this specific table is showing:
+- S8 Table 1: "Mean Percentage of Professional Time on Activities" (summary view)
+- S8 Table 2: "Professional Time Treating/Managing Patients" (detail view for one activity)
+- S11 Table #1: "Number of Patients with Elevated LDL-C" (raw count distribution)
+- S11 Table #2: "Special Calculated Percent of Patients with Elevated LDL-C Among Total Patients Treated at Practice" (derived metric)
 
-### 2. The Agent Treats All Enrichments as Equally Valuable
+**For brand splits**: Instead of labeling every row as "Leqvio - Highly Likely", the table has `tableSubtitle: "Leqvio"` with clean row labels "Highly Likely", "Somewhat Likely", etc.
 
-Current behavior: "I found a scale → add T2B. I found a grid → add splits. I found mean_rows → add frequency distribution."
+**Implementation**:
+1. Add `tableSubtitle` field to ExtendedTableDefinition schema
+2. Add prompt guidance on when/how to use it (derived tables, brand splits, different analytical views)
+3. Update Excel formatter to render subtitle in context column between section and question text
 
-This is mechanical application of rules without judgment. The prompt says "ADD T2B FOR SCALES" but doesn't say "...only when the T2B is the primary analytical output, not when you're creating 50 of them."
-
-**Why this happens**: The prompt's action list reads like a checklist to complete, not a toolkit to use judiciously. There's no concept of diminishing returns or table economy.
-
-### 3. Confusion About What "Table" Means to an Analyst
-
-The agent thinks a "table" is a data structure. To an analyst, a "table" is a **story** — it answers one question clearly.
-
-Examples of good table stories:
-- "How likely are physicians to prescribe Leqvio without a statin?" (one brand, full scale)
-- "Which brand has the highest likelihood of prescribing without a statin?" (all brands, T2B only)
-
-Examples of bad table stories:
-- "Here's everything about A8" (75 rows of everything)
-- "Here's T2B, B2B, MB, and full scale for all brands in one situation" (what's the question?)
-
-**Why this happens**: The prompt focuses on data completeness, not analytical clarity. It doesn't ask "what question does this table answer?"
-
-### 4. Indentation Semantics Are Misunderstood
-
-The agent uses `indent: 1` to mean "visually related to the row above" when it actually means "this row is a component of the NET above and its values sum into that NET."
-
-This leads to structural errors like indenting "No issues" under "Experienced issues (NET)" when "No issues" is explicitly NOT part of that NET.
-
-**Why this happens**: The prompt explains indentation in terms of visual hierarchy, not data hierarchy. The agent sees it as formatting, not semantics.
-
-### 5. No Concept of "Earned" Tables
-
-Every derived table has a cost (clutter, navigation, analyst time) and a benefit (analytical insight). The agent creates tables without weighing this tradeoff.
-
-Examples:
-- A "Medicare (NET)" table when the overview already has Medicare as a row — does the separate table add insight?
-- Frequency distributions for every numeric variable — are analysts actually segmenting by these bins?
-- "Any of the above (NET)" at 100% — this is pure noise
-
-**Why this happens**: The prompt rewards creation ("add T2B", "add splits") without ever discussing deletion or restraint.
+**Why this matters**: Cleaner row labels + clear table differentiation in the context column.
 
 ---
 
-## Observed Symptoms
+### Gap 2: Question Text Consistency
 
-These are the specific issues we saw, mapped to root causes:
+**Status**: Not started
+**Type**: Prompt guidance
 
-| Symptom | Root Cause |
-|---------|------------|
-| A8 has 75-row flat table + derived tables still showing all scale values | #1, #2, #3 |
-| A9 has "No issues" indented under "Experienced issues (NET)" | #4 |
-| B1 creates 10 tables for one question (mean + 8 distributions + NET) | #2, #5 |
-| "Any of the above" NET created when it's 100% | #5 |
-| Multiple A1 tables but unclear which is which | #3 |
-| Question text paraphrased instead of verbatim | Prompt says verbatim but not enforced |
-| Tables don't tell unique stories — repeat same info differently | #3 |
-| Grid scales shown as flat Brand × Scale × Value | #1, #3 |
+**Problem**: Model sometimes includes the question number (Q8, S11), sometimes doesn't. Inconsistent.
+
+**Options**:
+- A) Always include: "S8. Approximately what percentage of your professional time..."
+- B) Never include: "Approximately what percentage of your professional time..." (system prepends Q# systematically)
+
+**Decision needed**: Which approach?
 
 ---
 
-## Questions to Explore
+### Gap 3: Plain English baseText
 
-Before writing prompt fixes, we should think through:
+**Status**: Not started
+**Type**: Prompt guidance
 
-1. **What does a "good" table set look like for A8?**
-   - Should there be an overview at all, or just derived views?
-   - How many tables is "right" for a 3-brand × 3-situation × 5-scale grid?
-   - What's the ideal comparison table structure?
+**Problem**: baseText field sometimes uses variable codes like "S2=1" instead of human-readable text like "Current Leqvio users".
 
-2. **When should the agent NOT create a derived table?**
-   - What's the threshold for "this adds value"?
-   - Can we articulate rules, or is it judgment?
-
-3. **How do we teach "table as story"?**
-   - Should the agent articulate what question each table answers?
-   - Would a "table purpose" field help?
-
-4. **Should we add a subtitle/focus field to the schema?**
-   - This would let the agent differentiate "A8 - Leqvio" vs "A8 - Repatha"
-   - Currently it tries to cram this into questionText, which doesn't work
-
-5. **Is there a simpler mental model we can give the agent?**
-   - Current prompt is very long with many rules
-   - Maybe fewer rules, but better conceptual framing?
+**Fix**: Strengthen prompt guidance - baseText must ALWAYS be plain English that a reader would understand without seeing the datamap.
 
 ---
 
-## Potential Directions
+### Gap 4: Flat Table Anti-Pattern (A8 Issue)
 
-Not solutions yet, just directions to consider:
+**Status**: Not started
+**Type**: Prompt guidance (strengthen existing)
 
-### Direction A: Add "Table Economy" Principles
-Teach the agent that tables have costs. Introduce concepts like:
-- Every table should answer ONE clear question
-- Prefer fewer, clearer tables over more, cluttered ones
-- If a derived table doesn't add insight beyond the overview, don't create it
+**Problem**: A8 shows all scale values × all brands in one flat table (75 rows). The prompt mentions the "EVERYTHING TABLE" anti-pattern but it's not landing.
 
-### Direction B: Prescriptive Patterns for Common Cases
-Instead of general rules, give specific patterns:
-- "For a Brand × Situation × Scale grid, create: (1) T2B comparison per situation, (2) full scale per brand, (3) skip the massive overview"
-- This is less flexible but more reliable
+**The rule**: You should NEVER have a table that shows each scale value for each brand in a flat structure. This is the canonical example of what NOT to do.
 
-### Direction C: Add a "Table Purpose" Requirement
-Force the agent to articulate what question each table answers before creating it. If it can't state the question clearly, don't create the table.
+**Correct approach for Brand × Scale grids**:
+- Comparison tables: Pick ONE metric (T2B, B2B, or MB), show all brands
+- Detail tables: Pick ONE brand, show full scale with rollups
+- Never: All brands × all scale values in one table
 
-### Direction D: Restructure the Prompt
-Current prompt is action-oriented ("here's how to add T2B"). Maybe restructure around outcomes:
-- "What makes a table useful?"
-- "When should you create vs. skip a derived view?"
-- "How should an analyst navigate your output?"
-
-### Direction E: Add Negative Examples
-The prompt has lots of "do this" but few "don't do this" examples. Showing anti-patterns might help.
+**Fix**: Add much stronger, more specific guidance with explicit examples of wrong vs right.
 
 ---
 
-## Key Realization
+### Gap 5: Comparison Tables = ONE Metric
 
-The agent isn't bad — it's actually impressive what it can do. The original prompt was focused on getting it to generate tables *correctly* (mechanics). Now that it can do that, we need to add the *judgment* layer.
+**Status**: Not started
+**Type**: Prompt guidance
 
-The prompt doesn't tell the agent:
-- What its purpose is at a higher level
-- That it should think judiciously
-- That there are trade-offs to consider
+**Problem**: Agent creates tables with Leqvio-T2B, Leqvio-MB, Leqvio-B2B, Repatha-T2B, Repatha-MB, Repatha-B2B all as rows in the same table. This misses the point of a comparison table.
 
-It reads like a technical spec, not a mission brief.
+**The rule**: A comparison table answers "How do items compare on a SPECIFIC metric?" It should show ONE metric (e.g., T2B) across all items. If you want to show multiple metrics, create separate comparison tables for each.
 
----
-
-## The Restructure
-
-The prompt needs to be reorganized around:
-
-1. **Here's what you're doing** — Taking basic tables and enriching them
-2. **Here's why you're doing it** — Analysts use these to write reports; they need to see the story quickly
-3. **Here's how your output will be used** — Navigated in Excel, scanned for insights, compared across cuts
-4. **Here are the trade-offs** — More tables = more clutter; every table has a cost
-5. **Here are your constraints** — Be judicious, be efficient, earn each table
-6. **Here's your mandate** — Enrich thoughtfully, not mechanically
-
-### The Efficiency Mindset
-
-> "You can make 5 tables worth of content in 3 tables — not by making them longer, but by getting to the essence of what needs to be shown."
-
-This is the key insight. The agent should ask:
-- Are all of these tables really needed, or only some?
-- Are these unique from one another?
-- Is there overlapping insight? (There shouldn't be)
-- The data is the same — am I cutting it in meaningfully different ways?
-
-### Scratchpad Enhancement
-
-After generating all tables for a question, add a reflection step:
-
-> "Review: I created N tables for [question]. Let me check:
-> - Does each tell a unique story?
-> - Is any insight duplicated?
-> - Could I show this more efficiently with fewer tables?
-> - Would an analyst actually use each of these?"
-
-This creates a checkpoint before moving on.
+**Fix**: Add explicit rule to prompt.
 
 ---
 
-## Next Steps
+### Gap 6: Indentation Semantics Still Broken (A9 Issue)
 
-1. ~~Pick one or two problematic tables (A8, A9) and manually design what "good" output looks like~~
-   - Actually: Start by drafting the "mission brief" framing for the prompt
-   - Then use A8/A9 to test whether the new framing produces better judgment
+**Status**: Not started
+**Type**: Prompt guidance (strengthen existing)
 
-2. Restructure prompt with the new framing (purpose → usage → trade-offs → constraints → actions)
+**Problem**: A9 has "No issues" indented under "Experienced issues (NET)" when "No issues" (value 1) is explicitly NOT part of that NET (values 2,3).
 
-3. Add scratchpad reflection checkpoint
+**Current state**: The prompt has an `<indentation_semantics>` section that explains this, but it's not working.
 
-4. Test on same dataset, compare outputs
+**Possible fixes**:
+- Add a validation example showing the A9 error specifically
+- Make the rule even more explicit: "BEFORE indenting a row, CHECK: is this row's filterValue contained in the NET's filterValue? If not, DO NOT indent."
+- Add to anti-patterns section
 
 ---
 
-## Appendix: Raw Feedback Notes
+### Gap 7: Don't Over-Convert mean_rows to Frequency
 
-From `formatting-fixes.md`:
+**Status**: Not started
+**Type**: Prompt guidance
 
-- Model needs consistent question numbering approach
-- Need subtitle field for table differentiation
-- Exclude tables more aggressively (TERMINATE criteria = 0% variance)
-- Use plain English, not variable codes like "S2=1"
-- Verbatim question text, not paraphrased
-- Tables should tell unique stories, not repeat same info
-- Grid + scale should never be flattened into one table
-- Mean_rows → frequency isn't always needed
-- NET indentation logic is wrong (A9)
-- A8 is the canonical example of what NOT to do
+**Problem**: Too many mean_rows tables get converted to frequency distributions when it's not analytically useful.
+
+**When frequency distributions ARE useful**:
+- When the distribution shape is analytically interesting (bimodal, skewed, etc.)
+- When specific thresholds matter ("What % have 10+ years experience?")
+- When the analyst needs to segment by ranges
+
+**When they're NOT useful**:
+- When the mean is the primary insight and distribution adds noise
+- When creating them mechanically for every numeric variable
+
+**Fix**: Add guidance on when to create binned distributions vs when to leave as mean_rows.
+
+---
+
+### Gap 8: Each Table Tells a Unique Story
+
+**Status**: Not started
+**Type**: Prompt guidance
+
+**Problem**: Tables repeat similar information in slightly different ways. Multiple tables from the same question don't each add unique insight.
+
+**The principle**: Every table should answer ONE clear question. Before creating a derived table, ask: "What question does this table answer that the other tables don't?"
+
+**Fix**: Add explicit "unique story" principle + scratchpad reflection step.
+
+---
+
+### Gap 9: Logical Row Ordering Within Tables
+
+**Status**: Not started
+**Type**: Prompt guidance
+
+**Problem**: If showing "in addition to statin" vs "without statin" options, they should be grouped together logically, not interleaved.
+
+**The principle**: Row ordering should follow logical groupings. Related items together.
+
+**Fix**: Add brief guidance on row ordering.
+
+---
+
+### Gap 10: Judgment on Splits vs NETs
+
+**Status**: Not started
+**Type**: Prompt guidance
+
+**Problem**: B1 - Is a separate "Medicare" table useful when an overview table with a Medicare NET would work?
+
+**The question**: When does splitting into separate tables add value vs just using NETs in the overview?
+
+**Guidance needed**: Don't split just because you can. Ask: "Does this split provide insight the overview with NETs doesn't provide?" If not, keep it in the overview.
+
+---
+
+### Gap 11: More Aggressive Exclusion (Terminate Criteria)
+
+**Status**: Not started
+**Type**: Prompt guidance (strengthen existing)
+
+**Problem**: Tables where TERMINATE criteria mean most answer options have 0% aren't being excluded. If only one answer continues and the rest terminate, the table shows 100% for that option = no variance = exclude.
+
+**Current state**: The prompt mentions this but it's not emphasized enough.
+
+**Fix**: Strengthen guidance on recognizing terminate patterns → exclude.
+
+---
+
+### Gap 12: 100% NET Tables
+
+**Status**: Not started
+**Type**: Prompt guidance (strengthen existing)
+
+**Problem**: "Any of the above (NET)" tables created when they're 100%. No variance = no insight = don't create.
+
+**Current state**: Already in prompt but still happening.
+
+**Fix**: Reinforce with specific example in anti-patterns.
+
+---
+
+## System Changes Needed
+
+### System 1: tableSubtitle Schema Field
+
+**Status**: Not started
+
+Add `tableSubtitle?: string` to ExtendedTableDefinition schema. This field holds the descriptive subtitle that differentiates tables from the same question.
+
+---
+
+### System 2: Full Table ID in Excel Context Column
+
+**Status**: Not started
+
+Add the full tableId at the bottom of the context column in Excel output for reference/debugging.
+
+---
+
+### System 3: Auto-Size Row Height in Excel
+
+**Status**: Not started
+
+Excel formatter should auto-size row heights so wrapped text displays properly.
+
+---
+
+### System 4: Investigate A3a R Script Issue
+
+**Status**: Not started
+
+A3a brands don't add up to 100% - possible R script calculation error. Needs investigation.
+
+---
+
+## Priority Order
+
+1. **Gap 1 (tableSubtitle)** - Enables proper table differentiation, blocks other improvements
+2. **Gap 4 (Flat table anti-pattern)** - A8 is the canonical bad example
+3. **Gap 5 (Comparison = ONE metric)** - Related to Gap 4
+4. **Gap 6 (Indentation)** - Structural correctness issue
+5. **Gap 3 (Plain English baseText)** - Quick win
+6. **Gap 2 (Question text consistency)** - Needs decision on approach
+7. Gaps 7-12 - Judgment refinements
+
+---
+
+## Appendix: Example Tables from Joe
+
+### S8 - Two views of same question
+
+**Table 1** (Summary):
+- Section: SCREENING SECTION
+- Subtitle: "Mean Percentage of Professional Time on Activities"
+- Question: S8. Approximately what percentage of your professional time is spent performing each of these activities?
+- Rows: Each activity with mean %
+
+**Table 2** (Detail):
+- Section: SCREENING SECTION
+- Subtitle: "Professional Time Treating/Managing Patients"
+- Question: S8. Approximately what percentage of your professional time is spent performing each of these activities?
+- Rows: Binned distribution for one specific activity
+
+### S11 - Two analytical cuts
+
+**Table #1**:
+- Subtitle: "Number of Patients with Elevated LDL-C"
+- Rows: Count bins (20-74, 75-149, 150-249, etc.)
+
+**Table #2**:
+- Subtitle: "Special Calculated Percent of Patients with Elevated LDL-C Among Total Patients Treated at Practice"
+- Rows: Percentage bins (Less than 25%, 25%-49%, etc.)
+
+Same question, different analytical lens, clearly differentiated by subtitle.
