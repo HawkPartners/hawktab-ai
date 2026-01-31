@@ -40,159 +40,204 @@ The alternative prompt (`src/prompts/verification/alternative.ts`) has been rest
 
 ### Gap 2: Question Text Consistency
 
-**Status**: Not started
-**Type**: Prompt guidance
+**Status**: Decision made, not implemented
+**Type**: Prompt guidance + System rendering
 
 **Problem**: Model sometimes includes the question number (Q8, S11), sometimes doesn't. Inconsistent.
 
-**Options**:
-- A) Always include: "S8. Approximately what percentage of your professional time..."
-- B) Never include: "Approximately what percentage of your professional time..." (system prepends Q# systematically)
+**Decision**: Option B - Model outputs ONLY the question text, stripped of any question number prefix.
 
-**Decision needed**: Which approach?
+**Prompt change**: Tell the model to always strip the question number and output only the verbatim question text. Example: "Approximately what percentage of your professional time..." (not "S8. Approximately what percentage...")
+
+**System change**: Excel formatter prepends `questionId + ". "` to questionText when rendering. This ensures consistent formatting like "S8. Approximately what percentage..." in the final output.
 
 ---
 
-### Gap 3: Plain English baseText
+### Gap 3: Plain English for User-Facing Fields
 
-**Status**: Not started
+**Status**: Decision made, not implemented
 **Type**: Prompt guidance
 
-**Problem**: baseText field sometimes uses variable codes like "S2=1" instead of human-readable text like "Current Leqvio users".
+**Problem**: baseText and userNote fields sometimes use variable codes like "S2=1" instead of human-readable text.
 
-**Fix**: Strengthen prompt guidance - baseText must ALWAYS be plain English that a reader would understand without seeing the datamap.
+**The rule**: The reader doesn't know what "S2=1" means. The model must translate variable codes into what they represent in the survey context: "Gen Z", "Women", "NP/PAs", "Current Leqvio users", etc.
+
+**Affected fields**:
+- `baseText` - Who was asked this question
+- `userNote` - Additional context for the analyst
+
+**Prompt change**: Emphasize that ALL user-facing text fields must be plain English. No variable codes, no filter expressions. If you're describing a filter condition, translate it to what it means in human terms.
+
+**System note**: Same rule applies to any user-facing output we render.
 
 ---
 
 ### Gap 4: Flat Table Anti-Pattern (A8 Issue)
 
-**Status**: Not started
-**Type**: Prompt guidance (strengthen existing)
+**Status**: ✅ Already addressed in prompt
 
-**Problem**: A8 shows all scale values × all brands in one flat table (75 rows). The prompt mentions the "EVERYTHING TABLE" anti-pattern but it's not landing.
+The alternative prompt already covers this with:
+- "THE EVERYTHING TABLE" anti-pattern (lines 313-315)
+- "One 60-row table showing all brands × all scale values? That's where you've lost the analyst." (line 42)
+- Comparison vs Detail view framework (lines 207-240)
 
-**The rule**: You should NEVER have a table that shows each scale value for each brand in a flat structure. This is the canonical example of what NOT to do.
-
-**Correct approach for Brand × Scale grids**:
-- Comparison tables: Pick ONE metric (T2B, B2B, or MB), show all brands
-- Detail tables: Pick ONE brand, show full scale with rollups
-- Never: All brands × all scale values in one table
-
-**Fix**: Add much stronger, more specific guidance with explicit examples of wrong vs right.
+The remaining issue is Gap 5 (ONE metric per comparison table).
 
 ---
 
 ### Gap 5: Comparison Tables = ONE Metric
 
-**Status**: Not started
+**Status**: Decision made, not implemented
 **Type**: Prompt guidance
 
-**Problem**: Agent creates tables with Leqvio-T2B, Leqvio-MB, Leqvio-B2B, Repatha-T2B, Repatha-MB, Repatha-B2B all as rows in the same table. This misses the point of a comparison table.
+**Problem**: Agent creates tables with Leqvio-T2B, Leqvio-MB, Leqvio-B2B, Repatha-T2B, Repatha-MB, Repatha-B2B all as rows in the same table. This crowds the table and defeats the purpose of a comparison view.
 
-**The rule**: A comparison table answers "How do items compare on a SPECIFIC metric?" It should show ONE metric (e.g., T2B) across all items. If you want to show multiple metrics, create separate comparison tables for each.
+**The rule**: A comparison table shows ONE metric/rollup across all items. This keeps it scannable.
 
-**Fix**: Add explicit rule to prompt.
+**Wrong**:
+```
+Leqvio - T2B      45%
+Leqvio - MB       30%
+Leqvio - B2B      25%
+Repatha - T2B     42%
+Repatha - MB      28%
+Repatha - B2B     30%
+```
+
+**Right** (three separate tables):
+```
+Table: "T2B Comparison"     Table: "MB Comparison"      Table: "B2B Comparison"
+Leqvio    45%               Leqvio    30%               Leqvio    25%
+Repatha   42%               Repatha   28%               Repatha   30%
+Praluent  38%               Praluent  35%               Praluent  27%
+```
+
+**Prompt change**: Add explicit rule to the COMPARISON VIEWS section - one metric per comparison table.
 
 ---
 
-### Gap 6: Indentation Semantics Still Broken (A9 Issue)
+### Gap 6: Indentation Semantics (A9 Issue)
 
-**Status**: Not started
-**Type**: Prompt guidance (strengthen existing)
+**Status**: ✅ Already addressed in prompt
 
-**Problem**: A9 has "No issues" indented under "Experienced issues (NET)" when "No issues" (value 1) is explicitly NOT part of that NET (values 2,3).
-
-**Current state**: The prompt has an `<indentation_semantics>` section that explains this, but it's not working.
-
-**Possible fixes**:
-- Add a validation example showing the A9 error specifically
-- Make the rule even more explicit: "BEFORE indenting a row, CHECK: is this row's filterValue contained in the NET's filterValue? If not, DO NOT indent."
-- Add to anti-patterns section
+The alternative prompt covers this thoroughly:
+- Clear rule: "A row with indent: 1 must have its filterValue INCLUDED in the NET row above it" (line 284)
+- Wrong example showing exactly the A9 pattern (lines 295-301)
+- Corrected version showing proper structure (lines 303-307)
+- Listed as anti-pattern #3: "INVERTED INDENTATION" (line 321)
 
 ---
 
 ### Gap 7: Don't Over-Convert mean_rows to Frequency
 
-**Status**: Not started
-**Type**: Prompt guidance
+**Status**: ✅ Already addressed in prompt
 
-**Problem**: Too many mean_rows tables get converted to frequency distributions when it's not analytically useful.
-
-**When frequency distributions ARE useful**:
-- When the distribution shape is analytically interesting (bimodal, skewed, etc.)
-- When specific thresholds matter ("What % have 10+ years experience?")
-- When the analyst needs to segment by ranges
-
-**When they're NOT useful**:
-- When the mean is the primary insight and distribution adds noise
-- When creating them mechanically for every numeric variable
-
-**Fix**: Add guidance on when to create binned distributions vs when to leave as mean_rows.
+The prompt uses judgment language, not "always convert":
+- "Consider binned distribution **if spread is analytically interesting**" (line 115)
+- "WHEN TO USE: mean_rows questions where **the distribution shape is analytically interesting**" (line 266)
 
 ---
 
 ### Gap 8: Each Table Tells a Unique Story
 
-**Status**: Not started
-**Type**: Prompt guidance
+**Status**: ✅ Already addressed in prompt
 
-**Problem**: Tables repeat similar information in slightly different ways. Multiple tables from the same question don't each add unique insight.
-
-**The principle**: Every table should answer ONE clear question. Before creating a derived table, ask: "What question does this table answer that the other tables don't?"
-
-**Fix**: Add explicit "unique story" principle + scratchpad reflection step.
+The prompt covers this through multiple mechanisms:
+- "Each table should tell a clear story and be immediately understandable" (line 10)
+- "You don't need every possible view. Consider what questions the analyst will actually ask." (line 261)
+- Anti-pattern #5: "REDUNDANT NETS" (line 329)
+- "does this enrichment really add value?" (line 338)
 
 ---
 
 ### Gap 9: Logical Row Ordering Within Tables
 
-**Status**: Not started
+**Status**: Decision made, not implemented
 **Type**: Prompt guidance
 
-**Problem**: If showing "in addition to statin" vs "without statin" options, they should be grouped together logically, not interleaved.
+**Problem**: Row ordering from the flat table sometimes creates confusing output, especially for grid patterns.
 
-**The principle**: Row ordering should follow logical groupings. Related items together.
+**The nuance**:
+- **Default**: Keep the order from the flat table—it usually makes sense
+- **Exception**: Grid patterns (rXcY) may need reordering when the flat order jumps between dimensions
 
-**Fix**: Add brief guidance on row ordering.
+**Example of confusing flat order**:
+```
+r1c1 - Brand A, Situation 1
+r1c2 - Brand A, Situation 2
+r2c1 - Brand B, Situation 1
+r2c2 - Brand B, Situation 2
+```
+This interleaves situations, making it hard to compare brands within a situation.
+
+**Better grouping** (group by one dimension):
+```
+r1c1 - Brand A, Situation 1
+r2c1 - Brand B, Situation 1
+r1c2 - Brand A, Situation 2
+r2c2 - Brand B, Situation 2
+```
+Now all Situation 1 items are together, then all Situation 2.
+
+**Prompt change**: Add guidance that the model CAN reorder rows in a constrained manner. Default is to preserve flat table order, but for grids, group by one dimension so related items appear together.
+
+**Future consideration - Category headers for visual grouping**:
+
+Joe's output shows indentation used for visual grouping, not just NETs:
+```
+Over 5 years ago          ← category header (no data value)
+  None (0)         1%     ← indented for visual grouping
+  Any (1+)        99%
+  25 or more      68%
+Within the last 3-5 years ← another category header
+  None (0)         -
+  Any (1+)       100%
+  25 or more      55%
+```
+
+"Over 5 years ago" isn't a NET—it's a visual category label that groups the rows below it. This is different from our current system where `indent: 1` means "component of the NET above."
+
+**Note**: Need to verify if our system supports category header rows (indent: 0, no filterValue, purely for visual organization). If not, this capability should be added, then prompt updated to allow the model to create category headers for visual grouping when it improves readability.
 
 ---
 
 ### Gap 10: Judgment on Splits vs NETs
 
-**Status**: Not started
-**Type**: Prompt guidance
+**Status**: ✅ Addressed implicitly
 
-**Problem**: B1 - Is a separate "Medicare" table useful when an overview table with a Medicare NET would work?
-
-**The question**: When does splitting into separate tables add value vs just using NETs in the overview?
-
-**Guidance needed**: Don't split just because you can. Ask: "Does this split provide insight the overview with NETs doesn't provide?" If not, keep it in the overview.
+The prompt's emphasis on judicious thinking and "does this add value?" covers this. The model is taught to ask whether each derived table earns its place, which applies to split vs NET decisions.
 
 ---
 
 ### Gap 11: More Aggressive Exclusion (Terminate Criteria)
 
-**Status**: Not started
-**Type**: Prompt guidance (strengthen existing)
+**Status**: Decision made, not implemented
+**Type**: Prompt guidance
 
-**Problem**: Tables where TERMINATE criteria mean most answer options have 0% aren't being excluded. If only one answer continues and the rest terminate, the table shows 100% for that option = no variance = exclude.
+**Problem**: Model isn't recognizing when terminate criteria make a table uninformative.
 
-**Current state**: The prompt mentions this but it's not emphasized enough.
+**The logic to teach**:
+- If terminate criteria mean only ONE answer is possible → table shows 100% for that option → likely exclude
+- But apply judgment—it's not a hard rule
 
-**Fix**: Strengthen guidance on recognizing terminate patterns → exclude.
+**Nuances**:
+- Terminate might constrain the RANGE but still leave meaningful variation (e.g., "must be 5+" but distribution of 5-20 is still interesting)
+- Terminate might affect one brand but not others
+- Terminate might eliminate one answer but leave 5 valid options with real variance
+
+**Prompt change**: Add guidance that the model should be mindful of terminate criteria when assessing whether a table adds value. If terminate logic means effectively one answer, consider excluding. But recognize the nuance—constrained range ≠ no variance.
 
 ---
 
 ### Gap 12: 100% NET Tables
 
-**Status**: Not started
-**Type**: Prompt guidance (strengthen existing)
+**Status**: ✅ Already addressed in prompt
 
-**Problem**: "Any of the above (NET)" tables created when they're 100%. No variance = no insight = don't create.
-
-**Current state**: Already in prompt but still happening.
-
-**Fix**: Reinforce with specific example in anti-patterns.
+Covered in multiple places:
+- "Screener where everyone qualified (100% one answer)? → Exclude" (line 123)
+- Anti-pattern #5 "REDUNDANT NETS" + "100% = no variance = no insight" (lines 329-331)
+- Terminate logic → 100% → exclude (line 370)
+- "Screeners with 100% pass rate → Exclude" (line 596)
 
 ---
 
@@ -227,18 +272,6 @@ Excel formatter should auto-size row heights so wrapped text displays properly.
 **Status**: Not started
 
 A3a brands don't add up to 100% - possible R script calculation error. Needs investigation.
-
----
-
-## Priority Order
-
-1. **Gap 1 (tableSubtitle)** - Enables proper table differentiation, blocks other improvements
-2. **Gap 4 (Flat table anti-pattern)** - A8 is the canonical bad example
-3. **Gap 5 (Comparison = ONE metric)** - Related to Gap 4
-4. **Gap 6 (Indentation)** - Structural correctness issue
-5. **Gap 3 (Plain English baseText)** - Quick win
-6. **Gap 2 (Question text consistency)** - Needs decision on approach
-7. Gaps 7-12 - Judgment refinements
 
 ---
 
