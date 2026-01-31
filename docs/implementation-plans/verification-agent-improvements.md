@@ -353,71 +353,54 @@ This is because our system shows ONE base size per table (in the column header).
 
 **We don't**: We create one combined A3a table with a single base (141), which is wrong for all brands.
 
-#### Solution Approach
+#### Solution: BaseFilterAgent (New Agent)
 
-**Layer 1: Prompt Guidance (Verification Agent)**
+**Status**: Design complete, implementation plan created
+**See**: `docs/implementation-plans/base-filter-agent.md`
 
-Add rule to verification agent prompt:
-> "If a question has per-row skip logic (e.g., 'ONLY SHOW THERAPY WHERE A3>0'), each row will have a DIFFERENT base size. These MUST be separate tables, not one combined table. Look for survey instructions like 'ONLY SHOW [item] WHERE [condition]' to identify this pattern."
+After evaluating options, we've decided on a **new dedicated agent** that runs after VerificationAgent. This approach:
 
-The agent should:
-1. Recognize row-level skip logic in survey instructions
-2. Split into separate tables (one per item/brand)
-3. Specify the base filter for each table
+1. **Doesn't overload existing agents** - VerificationAgent stays focused on table design
+2. **Uses intelligence over parsing** - Survey conventions vary; LLM reasoning handles this gracefully
+3. **Additive, not replacement** - ANDs to existing cut logic; can't break what works
+4. **Has full context** - Runs late in pipeline with finalized table definitions
+5. **Graceful degradation** - Confidence field + human review flag for uncertain cases
 
-**Layer 2: Schema Change**
+**How it works:**
+- Runs after VerificationAgent (possibly after R validation)
+- Input: Table definition + all datamap variables BEFORE this question + survey excerpt
+- Output: Additional filter expression (to AND with cuts) + confidence + review flag
+- Execution: Low reasoning effort, parallel batches (3 agents)
 
-Add to ExtendedTableDefinition:
-```typescript
-tableBaseFilter?: string;  // e.g., "A3r2 > 0" for Leqvio table
-```
+**Trade-offs acknowledged:**
+- Adds pipeline time and cost
+- But this is table-stakes functionality for a production tool
+- Any human analyst handles this intuitively; we must match that
 
-This tells the R script what filter to apply when calculating this table's base and statistics.
+**VerificationAgent's responsibility (unchanged):**
+The rule "different row bases = separate tables" still applies. If a question has per-row skip logic (like A3a), VerificationAgent should split into separate tables. BaseFilterAgent then adds the appropriate filter to each table. If VerificationAgent fails to split, that's a prompt issue to fix at the source.
 
-**Layer 3: R Script Generation**
+#### Previously Considered Alternatives
 
-When a table has `tableBaseFilter`:
-1. Apply the filter to the data before calculating statistics
-2. Use the filtered count as the base size
-3. Only include respondents who pass the filter
-
-#### Open Questions
-
-1. **How does the verification agent know the variable mapping?** (A3ar1 depends on A3r2, not A3r1)
-   - The survey doc says "ONLY SHOW THERAPY WHERE A3>0" but doesn't specify the exact variable
-   - Agent needs to understand that A3a row 1 (Leqvio) maps to A3 row 2 (Leqvio) because A3 row 1 is "Statin only"
-   - This requires reading the actual row labels to match them
-
-2. **Is this too much for the verification agent?**
-   - The agent already has a lot of responsibilities
-   - Could this be handled upstream (DataMap processor) or as a separate pre-processing step?
-
-3. **How common is this pattern?**
-   - Need to audit other surveys to see if this is frequent
-   - May need a more systematic solution if it's pervasive
-
-#### Alternative Approaches
-
-**Option A: Verification Agent (Current Thinking)**
-- Pro: Agent has survey context and can reason about it
-- Con: Adds significant complexity to an already complex prompt
+**Option A: Verification Agent handles it**
+- Pro: Agent has survey context
+- Con: Already overloaded with table design responsibilities
+- **Rejected**: Too much complexity in one agent
 
 **Option B: DataMap Processor Enhancement**
-- Pro: Catches it early, before agent runs
-- Con: Would need to parse survey doc for skip logic, complex
+- Pro: Catches it early
+- Con: Would need to parse survey doc for skip logic patterns
+- **Rejected**: Parsing-based approach too brittle for varied survey conventions
 
 **Option C: Pre-computation Pass**
-- Run R script to compute base sizes for all variables with potential parent filters
-- Pass this data to verification agent: "A3ar1c1 with filter A3r2>0 has n=135"
-- Agent can see the discrepancy and make informed decisions
-- Pro: Agent gets concrete data, not just instructions
-- Con: Adds a pipeline step
+- Pro: Agent gets concrete base size data
+- Con: Adds complexity, still needs agent reasoning
+- **Partially adopted**: Could complement BaseFilterAgent in future
 
-**Option D: Human-in-the-loop for Complex Cases**
-- Flag tables where base discrepancies are detected
-- Human reviewer confirms the correct filter
+**Option D: Human-in-the-loop Only**
 - Pro: Accurate
 - Con: Doesn't scale
+- **Partially adopted**: BaseFilterAgent has confidence + human review flag for uncertain cases
 
 ---
 
