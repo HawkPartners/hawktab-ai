@@ -60,6 +60,7 @@ export interface TableData {
   surveySection?: string;  // Section name from survey (e.g., "SCREENER")
   baseText?: string;       // Who was asked (e.g., "Total interventional radiologists")
   userNote?: string;       // Context note (e.g., "(Multiple answers accepted)")
+  tableSubtitle?: string;  // Differentiator for derived tables (e.g., "Brand A", "T2B Comparison")
   // Phase 5: Excluded tables support
   excluded?: boolean;      // True if table should go to Excluded sheet
   excludeReason?: string;  // Why it was excluded

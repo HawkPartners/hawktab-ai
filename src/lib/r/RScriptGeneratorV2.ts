@@ -509,6 +509,7 @@ function generateDemoTable(
   lines.push('  surveySection = "DEMO",');
   lines.push('  baseText = "All qualified respondents",');
   lines.push('  userNote = "Auto-generated banner profile showing respondent distribution",');
+  lines.push('  tableSubtitle = "",');
   lines.push('  excluded = FALSE,');
   lines.push('  excludeReason = "",');
   lines.push('  data = list()');
@@ -753,6 +754,7 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
   const surveySection = escapeRString(table.surveySection || '');
   const baseText = escapeRString(table.baseText || '');
   const userNote = escapeRString(table.userNote || '');
+  const tableSubtitle = escapeRString(table.tableSubtitle || '');
 
   const excludeReason = escapeRString(table.excludeReason || '');
 
@@ -766,6 +768,7 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
   lines.push(`  surveySection = "${surveySection}",`);
   lines.push(`  baseText = "${baseText}",`);
   lines.push(`  userNote = "${userNote}",`);
+  lines.push(`  tableSubtitle = "${tableSubtitle}",`);
   lines.push(`  excluded = ${table.exclude ? 'TRUE' : 'FALSE'},`);
   lines.push(`  excludeReason = "${excludeReason}",`);
   lines.push('  data = list()');
@@ -902,6 +905,7 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
   const surveySection = escapeRString(table.surveySection || '');
   const baseText = escapeRString(table.baseText || '');
   const userNote = escapeRString(table.userNote || '');
+  const tableSubtitle = escapeRString(table.tableSubtitle || '');
   const excludeReason = escapeRString(table.excludeReason || '');
 
   lines.push(`table_${sanitizeVarName(table.tableId)} <- list(`);
@@ -914,6 +918,7 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
   lines.push(`  surveySection = "${surveySection}",`);
   lines.push(`  baseText = "${baseText}",`);
   lines.push(`  userNote = "${userNote}",`);
+  lines.push(`  tableSubtitle = "${tableSubtitle}",`);
   lines.push(`  excluded = ${table.exclude ? 'TRUE' : 'FALSE'},`);
   lines.push(`  excludeReason = "${excludeReason}",`);
   lines.push('  data = list()');

@@ -16,7 +16,7 @@ The alternative prompt (`src/prompts/verification/alternative.ts`) has been rest
 
 ### Gap 1: tableSubtitle Field (Schema + Prompt + Excel)
 
-**Status**: Not started
+**Status**: ✅ Complete
 **Type**: Schema change + Prompt guidance + Excel formatter
 
 **Problem**: When the agent creates multiple tables from the same question (e.g., A1 for Leqvio vs A1 for Repatha), there's no way to clearly differentiate them. The agent tries to cram this into `questionText` which doesn't work well.
@@ -40,7 +40,7 @@ The alternative prompt (`src/prompts/verification/alternative.ts`) has been rest
 
 ### Gap 2: Question Text Consistency
 
-**Status**: Decision made, not implemented
+**Status**: ✅ Complete
 **Type**: Prompt guidance + System rendering
 
 **Problem**: Model sometimes includes the question number (Q8, S11), sometimes doesn't. Inconsistent.
@@ -55,7 +55,7 @@ The alternative prompt (`src/prompts/verification/alternative.ts`) has been rest
 
 ### Gap 3: Plain English for User-Facing Fields
 
-**Status**: Decision made, not implemented
+**Status**: ✅ Complete
 **Type**: Prompt guidance
 
 **Problem**: baseText and userNote fields sometimes use variable codes like "S2=1" instead of human-readable text.
@@ -87,7 +87,7 @@ The remaining issue is Gap 5 (ONE metric per comparison table).
 
 ### Gap 5: Comparison Tables = ONE Metric
 
-**Status**: Decision made, not implemented
+**Status**: ✅ Complete
 **Type**: Prompt guidance
 
 **Problem**: Agent creates tables with Leqvio-T2B, Leqvio-MB, Leqvio-B2B, Repatha-T2B, Repatha-MB, Repatha-B2B all as rows in the same table. This crowds the table and defeats the purpose of a comparison view.
@@ -245,9 +245,15 @@ Covered in multiple places:
 
 ### System 1: tableSubtitle Schema Field
 
-**Status**: Not started
+**Status**: ✅ Complete
 
-Add `tableSubtitle?: string` to ExtendedTableDefinition schema. This field holds the descriptive subtitle that differentiates tables from the same question.
+Added `tableSubtitle: z.string()` to ExtendedTableDefinition schema. Updated all related files:
+- `src/schemas/verificationAgentSchema.ts` - Schema definition + `toExtendedTable()` helper
+- `src/lib/excel/ExcelFormatter.ts` - TableData interface
+- `src/lib/excel/tableRenderers/joeStyleFrequency.ts` - FrequencyTableData interface + rendering
+- `src/lib/excel/tableRenderers/joeStyleMeanRows.ts` - MeanRowsTableData interface + rendering
+- `src/lib/r/RScriptGeneratorV2.ts` - R output metadata (3 locations)
+- `src/prompts/verification/alternative.ts` - Agent guidance for when/how to use
 
 ---
 

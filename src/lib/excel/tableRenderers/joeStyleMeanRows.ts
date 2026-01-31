@@ -50,6 +50,7 @@ export interface MeanRowsTableData {
   surveySection?: string;
   baseText?: string;
   userNote?: string;
+  tableSubtitle?: string;
   // Phase 5: Excluded tables support
   excluded?: boolean;
   excludeReason?: string;
@@ -399,11 +400,12 @@ export function renderJoeStyleMeanRowsTable(
   if (contextMergeEnd >= contextMergeStart) {
     worksheet.mergeCells(contextMergeStart, CONTEXT_COL, contextMergeEnd, CONTEXT_COL);
 
-    // Build context text with new multi-line structure:
+    // Build context text with multi-line structure:
     // Line 1: Survey section (ALL CAPS, if present)
-    // Line 2: "Derived table" marker (if isDerived)
+    // Line 2: Table subtitle (if present) - differentiates derived tables from same question
     // Line 3: Question ID + text
     // Line 4: User note (if present)
+    // Line 5: Exclude reason (if on Excluded sheet)
     const contextLines: string[] = [];
 
     // 1. Survey section
@@ -411,19 +413,17 @@ export function renderJoeStyleMeanRowsTable(
       contextLines.push(table.surveySection);  // Already ALL CAPS from agent
     }
 
-    // 2. Derived table marker (simplified)
-    if (table.isDerived) {
-      contextLines.push('Derived table');
+    // 2. Table subtitle (differentiates derived tables from same question)
+    // This replaces the generic "Derived table" marker with specific context
+    if (table.tableSubtitle) {
+      contextLines.push(table.tableSubtitle);
     }
 
-    // 3. Question text with ID prefix if needed
-    let questionLine = table.questionText;
-    if (table.questionId) {
-      const startsWithId = table.questionText.toUpperCase().startsWith(table.questionId.toUpperCase());
-      if (!startsWithId) {
-        questionLine = `${table.questionId}: ${table.questionText}`;
-      }
-    }
+    // 3. Question text with ID prefix (system always prepends for consistency)
+    // Agent outputs verbatim question text without the question number prefix
+    const questionLine = table.questionId
+      ? `${table.questionId}. ${table.questionText}`
+      : table.questionText;
     contextLines.push(questionLine);
 
     // 4. User note (if present - already in parenthetical format from agent)

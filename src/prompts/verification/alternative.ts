@@ -177,7 +177,6 @@ IMPLEMENTATION EXAMPLE (5-point likelihood scale):
 
 WATCH FOR REVERSE SCALES: If 1 = Strongly agree and 5 = Strongly disagree, then T2B is 1,2 (not 4,5). Always check the survey for scale direction.
 
-
 TOOL 2: NET ROWS
 
 WHEN TO USE: Categorical questions where logical groupings add analytical value
@@ -203,42 +202,35 @@ CRITICAL: Synthetic variable names (like _NET_AnyTeacher) MUST have:
 - isNet: true (REQUIRED)
 - netComponents: array of exact variable names from datamap (REQUIRED)
 
-
 TOOL 3: DIMENSIONAL SPLITS FOR GRIDS
 
-WHEN TO USE: Grid/matrix questions where the flat overview becomes unwieldy
+WHEN TO USE: Grid/matrix questions where the flat overview becomes unwieldy (e.g., 5 brands × 7-point scale = 35 rows)
 
-THE FRAMEWORK: COMPARISON VIEWS vs. DETAIL VIEWS
+THE CORE PRINCIPLE:
+Analysts ask two different questions, and each needs its own table type:
 
-When you have items (brands, attributes, statements) crossed with a scale, think about what the analyst needs:
+1. "How do brands compare?" → COMPARISON TABLE (one metric, all items)
+2. "What's the full picture for Brand A?" → DETAIL TABLE (one item, full scale)
 
-COMPARISON VIEWS answer: "How do items compare on a specific metric?"
-- Show the same metric (e.g., T2B) across all items
-- Analyst can scan across and see which items score highest/lowest
-- These are typically compact—one row per item
+COMPARISON TABLES show ONE metric across all items:
+- T2B for all brands (one row per brand)
+- Or B2B for all brands
+- Or Mean for all brands
+Keep it to one metric per table—mixing T2B, MB, and B2B in the same table defeats the purpose. Create separate comparison tables for each metric.
 
-DETAIL VIEWS answer: "What's the full distribution for a specific item?"
-- Show the complete scale for one item at a time
-- Analyst can see the full picture for that item, including NETs
-- These give depth on individual items
+DETAIL TABLES show the full scale for ONE item:
+- All scale values for Brand A (with T2B/B2B rollups)
+- Then a separate table for Brand B, etc.
 
-For a grid with multiple items and a scale response:
-- Create comparison views: T2B across all items, B2B across all items, Middle across all items
-- Create detail views: One table per item showing the full scale with rollups
-- The comparison views let analysts scan across; the detail views let them dive deep
+EXAMPLE: 4 brands × 5-point satisfaction scale
+Instead of one 20-row table, create:
+- 3 comparison tables: T2B Comparison, Middle Comparison, B2B Comparison (4 rows each)
+- 4 detail tables: Brand A Detail, Brand B Detail, etc. (7 rows each with rollups)
 
-This approach works because:
-- Comparison tables stay compact (one row per item)
-- Detail tables stay focused (one item, full scale)
-- No single table tries to show everything at once
-
-GRID PATTERN RECOGNITION:
-Variable names like Q7r1c1, Q7r1c2, Q7r2c1 indicate a grid structure.
-- r1, r2, r3... = rows (often items/brands)
-- c1, c2, c3... = columns (often scale values or attributes)
-
-You can also identify grids from the survey: look for matrix questions, brand × attribute ratings, or repeated scales across items.
-
+HOW TO IDENTIFY GRIDS:
+- Variable names like Q7r1c1, Q7r1c2, Q7r2c1 (r = row/item, c = column/scale)
+- Matrix questions in survey with rows of items and columns of scale values
+- Brand × attribute ratings, before/after comparisons
 
 TOOL 4: RANKING EXPANSIONS
 
@@ -324,7 +316,19 @@ See <indentation_semantics> above.
 
 4. PARAPHRASED QUESTION TEXT
 Changing "How satisfied are you with your experience?" to "Satisfaction with experience".
-Use verbatim survey text. Only remove piping codes.
+Use verbatim survey text. Only remove piping codes and question number prefixes.
+
+QUESTION TEXT FORMATTING RULE:
+Always strip the question number prefix from questionText. Output ONLY the verbatim question text.
+The system will automatically prepend the questionId when rendering for consistency.
+
+WRONG: "S8. Approximately what percentage of your professional time..."
+RIGHT: "Approximately what percentage of your professional time..."
+
+WRONG: "Q5: How satisfied are you with your experience?"
+RIGHT: "How satisfied are you with your experience?"
+
+This ensures consistent formatting across all tables (the system always adds "S8. " or "Q5. " prefix).
 
 5. REDUNDANT NETS
 Creating "Any of the above (NET)" when everyone selected at least one option.
@@ -387,15 +391,90 @@ FOR EACH TABLE, POPULATE THESE CONTEXT FIELDS:
    Describe WHO was asked this question, only when it's NOT all respondents.
    - Most questions are asked of all respondents—use empty string "" for these
    - Only populate when skip logic or filtering means a subset was asked
-   - Good: "Current brand users", "Those aware of Brand X", "Physicians only"
-   - Bad: "What is your specialty?" (this is question text, not base)
    - If uncertain, use empty string "" (Excel defaults to "All respondents")
 
+   PLAIN ENGLISH REQUIRED:
+   The reader doesn't know what "S2=1" means. Translate variable codes into what they represent.
+   - WRONG: "S2=1 or S2=2"
+   - RIGHT: "Cardiologists or Endocrinologists"
+   - WRONG: "Those where Q3r2 > 0"
+   - RIGHT: "Those who prescribed Brand X to at least one patient"
+
 3. USER NOTE (userNote)
-   Add helpful context SPARINGLY. Use parenthetical format.
-   - "(Multiple answers accepted)" — for multi-select questions
-   - "(Select up to 3)" — for constrained selections
-   - Leave empty "" if no note adds value
+   Add helpful context that helps the analyst interpret the table correctly. Use parenthetical format.
+
+   WHEN TO USE:
+   - Response format clarification (how respondents answered)
+   - Data handling notes (how the data is processed/displayed)
+
+   PLAIN ENGLISH REQUIRED (same rule as baseText):
+   - WRONG: "(S8r1 ≥70% was qualification criterion)"
+   - RIGHT: "(70%+ time treating patients was a qualification criterion)"
+
+   RESPONSE FORMAT NOTES:
+   - "(Select all that apply)" — multi-select, no limit
+   - "(Multiple answers accepted)" — same as above, alternative wording
+   - "(Select up to 3)" — multi-select with limit
+   - "(Check one box per row)" — grid/matrix with single selection per item
+   - "(Rank in order of preference)" — ranking question
+
+   DATA HANDLING NOTES:
+   - "(Responses sorted by frequency)" — when rows ordered by % not by survey order
+   - "(Responses sum to 100%)" — allocation questions where total is constrained
+   - "(Can exceed 100%)" — multi-select where totals don't sum to 100%
+   - "(Open-ended responses categorized)" — coded verbatims
+
+   LEAVE EMPTY when no note adds value. Most simple frequency tables don't need notes.
+
+4. TABLE SUBTITLE (tableSubtitle)
+   When you create multiple tables from ONE source question, use tableSubtitle to tell the analyst what makes THIS table different from the others.
+
+   THE PROBLEM IT SOLVES:
+   When you split Q7 into q7_brand_a, q7_brand_b, and q7_t2b_comparison, all three have the same questionText. The analyst sees three identical-looking tables. tableSubtitle is the differentiator—it appears in the context column and tells them "this one shows Brand A" or "this one compares T2B across all brands."
+
+   WHEN TO USE:
+   - Derived tables (isDerived: true) — almost always need a subtitle
+   - Brand/item splits — subtitle = the item name
+   - Metric comparisons — subtitle = the metric being compared
+   - Binned distributions — subtitle = what's being distributed
+   - Original/overview tables — leave empty "" (they don't need differentiation)
+
+   WHAT TO WRITE:
+   The subtitle answers: "What specific slice or view does THIS table show?"
+   - Keep it brief (typically 3-15 words)
+   - Use plain English, not variable codes
+   - Make each subtitle unique within the question's tables
+
+   EXAMPLES BY SPLIT TYPE:
+
+   Brand/item splits (one table per item):
+   - "Brand A (generic name)" — identifies the specific brand
+   - "Product X" — identifies the specific product
+   - "Activity: Teaching" — identifies the specific activity from a list
+
+   Answer/value splits (one table per answer option):
+   - "Selected 'Strongly agree'" — when filtering to one response
+   - "Chose Option A: [option text]" — when the option text is short enough
+   - "Patients with high severity" — descriptive version of the filter
+
+   Comparison views (comparing items on one metric):
+   - "T2B Comparison" — Top 2 Box across all items
+   - "Mean Score Comparison" — means across all items
+   - "% Selected 'Yes' by Item" — specific metric across items
+
+   Detail views (full distribution for one item):
+   - "Brand A: Full Distribution" — complete scale for one item
+   - "Product X: Satisfaction Detail" — all scale points for one product
+
+   Binned distributions (numeric → frequency):
+   - "Years of Experience: Distribution" — binned version of a numeric
+   - "Patient Count: 0-10, 11-25, 26+" — describes the bins
+
+   ORIGINAL TABLES:
+   Leave tableSubtitle as "" for:
+   - The original/overview table (it's the default view)
+   - Single tables that weren't split (no disambiguation needed)
+   - Tables where isDerived: false and no siblings exist
 </additional_metadata>
 
 <constraints>
@@ -447,7 +526,7 @@ STRUCTURE PER TABLE:
 {
   "tableId": "string",
   "questionId": "string",        // Output "" - system fills this in
-  "questionText": "string",      // Clean question text from survey (used as table title)
+  "questionText": "string",      // VERBATIM question text WITHOUT the question number prefix (see below)
   "tableType": "frequency" | "mean_rows",  // Do not invent new types
   "rows": [
     {
@@ -465,7 +544,8 @@ STRUCTURE PER TABLE:
   "excludeReason": "",           // "" if not excluded
   "surveySection": "string",     // Section name from survey, ALL CAPS (or "")
   "baseText": "string",          // Who was asked - not the question (or "")
-  "userNote": "string"           // Helpful context in parentheses (or "")
+  "userNote": "string",          // Helpful context in parentheses (or "")
+  "tableSubtitle": "string"      // What makes this table different from siblings (or "")
 }
 
 COMPLETE OUTPUT:
@@ -484,7 +564,7 @@ COMPLETE OUTPUT:
 
 ALL FIELDS REQUIRED:
 Every row must have: variable, label, filterValue, isNet, netComponents, indent
-Every table must have: tableId, questionId, questionText, tableType, rows, sourceTableId, isDerived, exclude, excludeReason, surveySection, baseText, userNote
+Every table must have: tableId, questionId, questionText, tableType, rows, sourceTableId, isDerived, exclude, excludeReason, surveySection, baseText, userNote, tableSubtitle
 </output_specifications>
 
 <scratchpad_protocol>

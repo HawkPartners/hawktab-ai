@@ -111,6 +111,14 @@ export const ExtendedTableDefinitionSchema = z.object({
    * Empty string if no note needed.
    */
   userNote: z.string(),
+
+  /**
+   * Subtitle differentiating this table from siblings derived from the same question.
+   * Used when multiple tables are created from one source question (brand splits, comparison views, etc.)
+   * Example: "Brand A (generic name)", "T2B Comparison", "Distribution: Years of Experience"
+   * Empty string for original/overview tables or tables with no siblings.
+   */
+  tableSubtitle: z.string(),
 });
 
 export type ExtendedTableDefinition = z.infer<typeof ExtendedTableDefinitionSchema>;
@@ -250,6 +258,7 @@ export function toExtendedTable(
     surveySection: '',
     baseText: '',
     userNote: '',
+    tableSubtitle: '',
   };
 }
 

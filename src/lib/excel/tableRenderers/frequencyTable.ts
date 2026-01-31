@@ -107,16 +107,11 @@ export function renderFrequencyTable(
   // -------------------------------------------------------------------------
   // Row 1: Question Text (Title)
   // -------------------------------------------------------------------------
-  // Build title: "QuestionId: QuestionText" if questionId exists
-  // Add derived indicator if applicable
-  let titleText = table.questionText;
-  if (table.questionId) {
-    // Check if questionText already starts with questionId (e.g., "A1: ...")
-    const startsWithId = table.questionText.toUpperCase().startsWith(table.questionId.toUpperCase());
-    if (!startsWithId) {
-      titleText = `${table.questionId}: ${table.questionText}`;
-    }
-  }
+  // Build title: "QuestionId. QuestionText" (system always prepends for consistency)
+  // Agent outputs verbatim question text without the question number prefix
+  let titleText = table.questionId
+    ? `${table.questionId}. ${table.questionText}`
+    : table.questionText;
   if (table.isDerived && table.sourceTableId) {
     titleText += ` [Derived from ${table.sourceTableId}]`;
   }
