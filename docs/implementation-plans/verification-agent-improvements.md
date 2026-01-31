@@ -267,11 +267,157 @@ Excel formatter should auto-size row heights so wrapped text displays properly.
 
 ---
 
-### System 4: Investigate A3a R Script Issue
+### System 4: Per-Row Base Filters (A3a Issue)
 
-**Status**: Not started
+**Status**: Investigated, solution needed
+**Type**: Prompt guidance + Schema change + R script change
 
-A3a brands don't add up to 100% - possible R script calculation error. Needs investigation.
+#### The Problem
+
+A3a brands show different base sizes between Joe's tabs and ours:
+
+| Brand | Joe's Base | Our Base | Difference |
+|-------|-----------|----------|------------|
+| Leqvio | 135 | 141 | 6 |
+| Praluent | 126 | 141 | 15 |
+| Repatha | 177 | 141 | -36 |
+
+Joe's base text: "Those who have any of their last 100 patients on this therapy"
+Our base text: "Shown this question"
+
+#### Root Cause
+
+This is a **row-level skip logic** issue, not a question-level skip issue.
+
+The survey document explicitly states for A3a:
+> "ONLY SHOW THERAPY WHERE A3>0"
+
+This means:
+- A3a (the question) is shown to everyone who prescribed at least one therapy
+- But each ROW within A3a is only shown if the respondent has patients on that specific therapy
+- Leqvio row should only include respondents where A3r2 > 0
+- Praluent row should only include respondents where A3r3 > 0
+- etc.
+
+#### Data Verification
+
+Analysis of the SPSS data confirms this:
+
+```
+Cross-tab: A3r2 > 0 vs A3ar1c1 has value
+                    has_value  is_NA
+A3r2 > 0 (TRUE)        135       0
+A3r2 = 0 (FALSE)         6      39
+```
+
+- **135** respondents have Leqvio patients (A3r2 > 0) AND have A3ar1c1 values → Joe's correct base
+- **6** respondents have NO Leqvio patients (A3r2 = 0) BUT still have A3ar1c1 values → data anomaly
+- **39** respondents have NO Leqvio patients AND have NA values → correctly filtered by skip logic
+
+**Key insight**: NA filtering catches most cases (39 of 45), but not all. 6 respondents have values they logically shouldn't have (perhaps typed before the row was hidden). The authoritative filter is the parent variable condition `A3r2 > 0`.
+
+#### Why This Matters
+
+1. **Incorrect base sizes** affect percentage calculations and significance testing
+2. **Meaningless data** is included (what % of your 0 patients got therapy with statin?)
+3. **This pattern recurs** in any follow-up question with per-item detail (A3a, A3b, and likely others)
+
+#### The Cascade Pattern
+
+```
+A3:  "How many of your last 100 patients got each therapy?" (0-100 per brand)
+     └─ A3r2 = Leqvio patient count
+     └─ A3r3 = Praluent patient count
+     └─ A3r4 = Repatha patient count
+
+A3a: "What % got therapy with/without statin?"
+     └─ A3ar1 (Leqvio) → filter: A3r2 > 0
+     └─ A3ar2 (Praluent) → filter: A3r3 > 0
+     └─ A3ar3 (Repatha) → filter: A3r4 > 0
+
+A3b: "Of those without statin, what % BEFORE vs AFTER other therapy?"
+     └─ A3br1 (Leqvio) → filter: A3ar1c2 > 0 (prescribed Leqvio WITHOUT statin)
+     └─ A3br2 (Praluent) → filter: A3ar2c2 > 0
+     └─ etc.
+```
+
+Each level has increasingly restrictive per-row filters based on prior answers.
+
+#### Critical Insight: Different Bases = Separate Tables
+
+**If each row in a table has a different base size, they CANNOT be in the same table.**
+
+This is because our system shows ONE base size per table (in the column header). If Leqvio has base 135, Praluent has base 126, and Repatha has base 177, they must be three separate tables.
+
+**Joe does this**: A3a appears as separate tables per brand in Joe's output, each with its own base.
+
+**We don't**: We create one combined A3a table with a single base (141), which is wrong for all brands.
+
+#### Solution Approach
+
+**Layer 1: Prompt Guidance (Verification Agent)**
+
+Add rule to verification agent prompt:
+> "If a question has per-row skip logic (e.g., 'ONLY SHOW THERAPY WHERE A3>0'), each row will have a DIFFERENT base size. These MUST be separate tables, not one combined table. Look for survey instructions like 'ONLY SHOW [item] WHERE [condition]' to identify this pattern."
+
+The agent should:
+1. Recognize row-level skip logic in survey instructions
+2. Split into separate tables (one per item/brand)
+3. Specify the base filter for each table
+
+**Layer 2: Schema Change**
+
+Add to ExtendedTableDefinition:
+```typescript
+tableBaseFilter?: string;  // e.g., "A3r2 > 0" for Leqvio table
+```
+
+This tells the R script what filter to apply when calculating this table's base and statistics.
+
+**Layer 3: R Script Generation**
+
+When a table has `tableBaseFilter`:
+1. Apply the filter to the data before calculating statistics
+2. Use the filtered count as the base size
+3. Only include respondents who pass the filter
+
+#### Open Questions
+
+1. **How does the verification agent know the variable mapping?** (A3ar1 depends on A3r2, not A3r1)
+   - The survey doc says "ONLY SHOW THERAPY WHERE A3>0" but doesn't specify the exact variable
+   - Agent needs to understand that A3a row 1 (Leqvio) maps to A3 row 2 (Leqvio) because A3 row 1 is "Statin only"
+   - This requires reading the actual row labels to match them
+
+2. **Is this too much for the verification agent?**
+   - The agent already has a lot of responsibilities
+   - Could this be handled upstream (DataMap processor) or as a separate pre-processing step?
+
+3. **How common is this pattern?**
+   - Need to audit other surveys to see if this is frequent
+   - May need a more systematic solution if it's pervasive
+
+#### Alternative Approaches
+
+**Option A: Verification Agent (Current Thinking)**
+- Pro: Agent has survey context and can reason about it
+- Con: Adds significant complexity to an already complex prompt
+
+**Option B: DataMap Processor Enhancement**
+- Pro: Catches it early, before agent runs
+- Con: Would need to parse survey doc for skip logic, complex
+
+**Option C: Pre-computation Pass**
+- Run R script to compute base sizes for all variables with potential parent filters
+- Pass this data to verification agent: "A3ar1c1 with filter A3r2>0 has n=135"
+- Agent can see the discrepancy and make informed decisions
+- Pro: Agent gets concrete data, not just instructions
+- Con: Adds a pipeline step
+
+**Option D: Human-in-the-loop for Complex Cases**
+- Flag tables where base discrepancies are detected
+- Human reviewer confirms the correct filter
+- Pro: Accurate
+- Con: Doesn't scale
 
 ---
 
