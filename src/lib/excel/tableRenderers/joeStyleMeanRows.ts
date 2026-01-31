@@ -437,7 +437,30 @@ export function renderJoeStyleMeanRowsTable(
       contextLines.push(`[Excluded: ${table.excludeReason}]`);
     }
 
+    // 6. Table ID (for reference/debugging)
+    contextLines.push(`[${table.tableId}]`);
+
     const contextText = contextLines.join('\n');
+
+    // Auto-size row heights if context text needs more space
+    // ExcelJS doesn't auto-fit, so we estimate based on text length
+    const charsPerLine = 30;  // rough estimate for 25-char column width at 10pt font
+    const lineHeight = 14;    // ~14pt per line
+    const explicitNewlines = (contextText.match(/\n/g) || []).length;
+    const estimatedWrapLines = Math.ceil(contextText.length / charsPerLine);
+    const totalLines = explicitNewlines + estimatedWrapLines;
+    const requiredHeight = totalLines * lineHeight;
+
+    const numRows = contextMergeEnd - contextMergeStart + 1;
+    const defaultRowHeight = 16;
+    const availableHeight = numRows * defaultRowHeight;
+
+    if (requiredHeight > availableHeight && numRows > 0) {
+      const heightPerRow = Math.ceil(requiredHeight / numRows);
+      for (let r = contextMergeStart; r <= contextMergeEnd; r++) {
+        worksheet.getRow(r).height = heightPerRow;
+      }
+    }
 
     const mergedContextCell = worksheet.getCell(contextMergeStart, CONTEXT_COL);
     mergedContextCell.value = contextText;

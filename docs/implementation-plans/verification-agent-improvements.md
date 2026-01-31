@@ -266,17 +266,21 @@ Added `tableSubtitle: z.string()` to ExtendedTableDefinition schema. Updated all
 
 ### System 2: Full Table ID in Excel Context Column
 
-**Status**: Not started
+**Status**: ✅ Complete
 
 Add the full tableId at the bottom of the context column in Excel output for reference/debugging.
+
+**Implementation**: Added `[${table.tableId}]` as the last line in the context column for both frequency and mean_rows renderers.
 
 ---
 
 ### System 3: Auto-Size Row Height in Excel
 
-**Status**: Not started
+**Status**: ✅ Complete
 
 Excel formatter should auto-size row heights so wrapped text displays properly.
+
+**Implementation**: Added heuristic height calculation after setting context text. Estimates required height based on text length and newlines, then expands row heights proportionally if the merged context cell needs more space than the default rows provide.
 
 ---
 
