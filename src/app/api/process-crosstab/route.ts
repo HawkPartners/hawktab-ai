@@ -977,7 +977,7 @@ export async function POST(request: NextRequest) {
         await fs.mkdir(rDir, { recursive: true });
 
         const { script: masterScript, validation: staticValidationReport } = generateRScriptV2WithValidation(
-          { tables: allTablesForR, cuts: cutsSpec.cuts },
+          { tables: allTablesForR, cuts: cutsSpec.cuts, cutGroups: cutsSpec.groups },
           { sessionId: pipelineId, outputDir: 'results' }
         );
 
@@ -1152,7 +1152,7 @@ export async function POST(request: NextRequest) {
             validatedTables: validTables.length,
             excludedTables: newlyExcluded.length,
             totalTablesInR: allTablesForR.length,
-            cuts: cutsSpec.cuts.length + 1,  // +1 for Total column
+            cuts: cutsSpec.cuts.length,  // Total is now included in cuts
             bannerGroups: groupCount,
             sorting: {
               screeners: sortingMetadata.screenerCount,

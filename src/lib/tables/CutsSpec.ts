@@ -58,9 +58,20 @@ function getStatLetter(index: number): string {
 export function buildCutsSpec(validation: ValidationResultType): CutsSpec {
   const cuts: CutDefinition[] = [];
   const groups: CutGroup[] = [];
-  let totalCut: CutDefinition | null = null;
   let letterIndex = 0;
   let skippedCount = 0;
+
+  // Always add Total as first cut (hardcoded - doesn't depend on banner agent)
+  const totalCut: CutDefinition = {
+    id: 'total.total',
+    name: 'Total',
+    rExpression: 'rep(TRUE, nrow(data))',  // All respondents
+    statLetter: 'T',
+    groupName: 'Total',
+    groupIndex: 0,
+  };
+  cuts.push(totalCut);
+  groups.push({ groupName: 'Total', cuts: [totalCut] });
 
   for (const group of validation.bannerCuts) {
     const groupCuts: CutDefinition[] = [];
@@ -77,13 +88,14 @@ export function buildCutsSpec(validation: ValidationResultType): CutsSpec {
 
       const id = `${slugify(group.groupName)}.${slugify(col.name)}`;
 
-      // Use 'T' for Total column, otherwise sequential letters
+      // Skip Total from banner agent output (we already added it above)
       const isTotal = col.name === 'Total' || group.groupName === 'Total';
-      const statLetter = isTotal ? 'T' : getStatLetter(letterIndex);
-
-      if (!isTotal) {
-        letterIndex++;
+      if (isTotal) {
+        continue;
       }
+
+      const statLetter = getStatLetter(letterIndex);
+      letterIndex++;
 
       const cut: CutDefinition = {
         id,
@@ -96,11 +108,6 @@ export function buildCutsSpec(validation: ValidationResultType): CutsSpec {
 
       cuts.push(cut);
       groupCuts.push(cut);
-
-      // Track Total column separately
-      if (isTotal) {
-        totalCut = cut;
-      }
     }
 
     // Only add group if it has valid cuts

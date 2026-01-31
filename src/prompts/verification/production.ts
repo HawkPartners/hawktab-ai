@@ -414,7 +414,15 @@ CRITICAL INVARIANTS - NEVER VIOLATE:
    - RIGHT: NET with filterValue "1,2" + components with "1" and "2" separately
    - If a NET has only ONE component value, DON'T create the NET (it's redundant)
 
-6. mean_rows tables: filterValue is IGNORED
+6. SYNTHETIC VARIABLE NAMES (e.g., _NET_*) REQUIRE isNet AND netComponents
+   - If you create a variable name that doesn't exist in the datamap (like "_NET_AnyTeacher"), you MUST:
+     a) Set isNet: true (REQUIRED - system uses this to know it's a NET)
+     b) Populate netComponents with EXACT variable names from the datamap (REQUIRED - system sums these)
+   - The system validates netComponents variables exist - use exact spelling/case from datamap
+   - WRONG: { "variable": "_NET_AnyTeacher", "isNet": false, "netComponents": [] } → WILL CRASH
+   - RIGHT: { "variable": "_NET_AnyTeacher", "isNet": true, "netComponents": ["Q3_Teacher1", "Q3_Teacher2", "Q3_SubTeacher"] }
+
+7. mean_rows tables: filterValue is IGNORED
    - mean_rows tables compute means from variables, NOT from filterValue
    - For NETs in mean_rows: use netComponents array with variable names
    - WRONG: mean_rows NET with filterValue "A3r2,A3r3" (filterValue ignored!)

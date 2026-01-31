@@ -201,6 +201,7 @@ export async function validateAndFixTables(
         const datamapContext = getDatamapContextForTable(originalTable, datamapByColumn);
 
         // Convert ExtendedTableDefinition back to TableDefinition for VerificationAgent
+        // IMPORTANT: Preserve isNet and netComponents so agent knows which rows are NETs
         const tableDefForAgent = {
           tableId: originalTable.tableId,
           questionText: originalTable.questionText,
@@ -209,6 +210,9 @@ export async function validateAndFixTables(
             variable: r.variable,
             label: r.label,
             filterValue: r.filterValue,
+            // Preserve NET metadata so agent can fix component variables
+            isNet: r.isNet,
+            netComponents: r.netComponents,
           })),
           hints: [],
         };

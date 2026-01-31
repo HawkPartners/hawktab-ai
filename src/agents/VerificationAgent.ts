@@ -157,6 +157,9 @@ Your previous output for this table failed R validation with the following error
 <common_fixes>
 - "object 'X' not found" → Variable name doesn't exist in datamap. Check exact spelling and case.
 - "Variable 'X' not found" → Variable name is hallucinated. Use ONLY variables from the datamap.
+- "Variable '_NET_*' not found" → You created a NET but forgot isNet: true and/or netComponents.
+  For synthetic NET variables, you MUST set isNet: true AND populate netComponents with exact variable names from the datamap.
+- "NET component variable 'X' not found" → A variable in netComponents doesn't exist. Check exact spelling/case against datamap.
 - "non-numeric argument" → filterValue or variable type mismatch. Check datamap for correct types.
 </common_fixes>
 

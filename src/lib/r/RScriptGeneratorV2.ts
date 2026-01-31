@@ -272,7 +272,7 @@ export function generateRScriptV2WithValidation(
   lines.push(`# Session: ${sessionId}`);
   lines.push(`# Generated: ${new Date().toISOString()}`);
   lines.push(`# Tables: ${report.validTables} (${report.invalidTables} skipped due to validation errors)`);
-  lines.push(`# Cuts: ${cuts.length + 1}`);  // +1 for Total
+  lines.push(`# Cuts: ${cuts.length}`);  // Total is now included in cuts
   if (hasMultipleThresholds) {
     lines.push(`# Significance: p<${effectiveThresholds[0]} (uppercase) / p<${effectiveThresholds[1]} (lowercase)`);
   } else {
@@ -1206,7 +1206,7 @@ function generateJsonOutput(
   lines.push('  metadata = list(');
   lines.push(`    generatedAt = "${new Date().toISOString()}",`);
   lines.push(`    tableCount = ${tables.length},`);
-  lines.push(`    cutCount = ${cuts.length + 1},`);  // +1 for Total
+  lines.push(`    cutCount = ${cuts.length},`);  // Total is now included in cuts
 
   // Significance testing methodology documentation
   lines.push('    significanceTest = "unpooled z-test for column proportions",');
@@ -1296,14 +1296,11 @@ function buildBannerGroupsFromCuts(
 ): BannerGroup[] {
   const groups: BannerGroup[] = [];
 
-  // First, add Total group
-  const totalCut = cuts.find(c => c.statLetter === totalStatLetter || c.name === 'Total');
-  if (totalCut) {
-    groups.push({
-      groupName: 'Total',
-      columns: [{ name: 'Total', statLetter: totalStatLetter || 'T' }]
-    });
-  }
+  // First, add Total group (always - Total is hardcoded in R script)
+  groups.push({
+    groupName: 'Total',
+    columns: [{ name: 'Total', statLetter: totalStatLetter || 'T' }]
+  });
 
   // Then add other groups in order (excluding Total)
   if (cutGroups.length > 0) {

@@ -743,7 +743,7 @@ async function runPipeline(datasetFolder: string) {
   log(`  Dataset:     ${files.name}`, 'reset');
   log(`  Variables:   ${verboseDataMap.length}`, 'reset');
   log(`  Tables:      ${allTablesForR.length} total (${validTables.length} valid, ${newlyExcluded.length} excluded)`, 'reset');
-  log(`  Cuts:        ${cutsSpec.cuts.length + 1} (including Total)`, 'reset');
+  log(`  Cuts:        ${cutsSpec.cuts.length} (including Total)`, 'reset');
   log(`  Duration:    ${(totalDuration / 1000).toFixed(1)}s`, 'reset');
   log(`  Output:      outputs/${files.name}/${outputFolder}/`, 'reset');
   log('', 'reset');

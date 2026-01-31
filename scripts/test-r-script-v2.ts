@@ -227,7 +227,7 @@ async function main() {
   log('  Summary', 'bright');
   log('='.repeat(60), 'green');
   log(`  Tables: ${tables.length}`, 'reset');
-  log(`  Cuts: ${cuts.length + 1} (including Total)`, 'reset');
+  log(`  Cuts: ${cuts.length} (including Total)`, 'reset');
   log(`  Script size: ${Math.round(script.length / 1024)} KB`, 'reset');
   log(`  Script lines: ${script.split('\n').length}`, 'reset');
   log('', 'reset');
