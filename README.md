@@ -62,6 +62,8 @@ An AI-powered system that:
 | **CrossTab Agent** | Production | Expression validation with confidence scoring |
 | **Table Agent** | Production | AI-based table structure decisions (frequency vs mean) |
 | **Verification Agent** | Production | Survey-aware label cleanup, NET rows, T2B, table splitting |
+| **BaseFilter Agent** | Production | Skip/show logic detection, base filters, table splits |
+| **R Validation** | Production | Per-table validation, retry with error context |
 | **R Script V2** | Production | JSON output with NET rows, derived tables, significance testing |
 | **Excel Formatter** | Production | Antares-style output with NET row styling and indentation |
 | **SPSS Integration** | Production | 99% variable match rate via `haven` package |
@@ -70,12 +72,14 @@ An AI-powered system that:
 ### Key Achievements
 - **TableAgent**: AI decides table structure based on `normalizedType` (replaces regex)
 - **VerificationAgent**: Uses survey document to fix labels, add NETs, create T2B/B2B tables
+- **BaseFilterAgent**: Detects skip/show logic, applies base filters, splits tables when rows need different bases
 - **RScriptGeneratorV2**: JSON output with `ExtendedTableDefinition` support (NET rows, indentation)
 - **ExcelFormatter**: Bold NET rows, indented component rows, full banner group styling
-- **Per-Agent Configuration**: Each agent has independent model, tokens, and reasoning effort settings
+- **Provenance Tracking**: `lastModifiedBy` field shows which agent created each table
+- **R Validation**: Per-table validation catches errors before full script run
 - Successfully processes complex banner plans (19 columns, 6 groups)
 - Handles sophisticated expressions like "IF HCP" with contextual inference
-- Generates graduated confidence scores for human review prioritization
+- Numbers match Joe's output on complex surveys with skip/show logic
 
 ---
 
@@ -87,13 +91,14 @@ Working through the reliability plan to ensure consistent, publication-quality o
 
 | Part | Description | Status |
 |------|-------------|--------|
-| 1 | Bug Capture (compare to Joe's tabs) | Complete |
-| 2 | VerificationAgent Implementation | Complete |
-| 3 | Significance Testing (unpooled z-test) | Complete |
-| 3b | SPSS Validation Clarity | Complete |
-| 4 | Evaluation Framework (golden dataset) | Not started |
-| 5 | Iteration on practice-files | Not started |
-| 6 | Broader Testing (23 datasets) | Not started |
+| 1 | Stable System for Testing | Complete |
+| 2 | Leqvio Testing (iteration loop) | In Progress |
+| 3 | Loop/Stacked Data Support | Not started |
+| 4 | Broader Testing | Not started |
+
+**Recent**: Built BaseFilterAgent to handle skip/show logic. Tables now have correct bases that match Joe's output.
+
+**Deadline**: Send updated version to Antares by February 16th.
 
 See `docs/implementation-plans/reliability-plan.md`
 
@@ -195,15 +200,17 @@ npx tsx scripts/export-excel.ts [sessionId]        # Uses specific session
 - `results/crosstabs.xlsx` - Formatted Excel workbook (Antares-style)
 - `pipeline-summary.json` - Run metadata and timing
 
-The pipeline runs 8 steps:
+The pipeline runs 10 steps:
 1. **DataMapProcessor** - Parse datamap CSV with SPSS metadata
 2. **BannerAgent** - Extract banner structure from PDF/DOCX
 3. **CrosstabAgent** - Validate and generate R expressions for cuts
 4. **TableAgent** - Analyze variables and generate table definitions
 5. **VerificationAgent** - Enhance tables using survey document (fix labels, add NETs, T2B)
-6. **RScriptGeneratorV2** - Generate R script with derived tables
-7. **R Execution** - Run R script to calculate tables with significance testing
-8. **ExcelFormatter** - Format tables.json into Antares-style Excel workbook
+6. **BaseFilterAgent** - Detect skip/show logic, apply base filters, split tables as needed
+7. **R Validation** - Validate each table's R code before full script run
+8. **RScriptGeneratorV2** - Generate R script with derived tables
+9. **R Execution** - Run R script to calculate tables with significance testing
+10. **ExcelFormatter** - Format tables.json into Antares-style Excel workbook
 
 ### Testing (UI)
 

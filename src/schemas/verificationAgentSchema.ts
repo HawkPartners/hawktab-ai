@@ -144,6 +144,17 @@ export const ExtendedTableDefinitionSchema = z.object({
    * Empty string if not split from another table.
    */
   splitFromTableId: z.string(),
+
+  // =========================================================================
+  // Provenance Tracking
+  // =========================================================================
+
+  /**
+   * Which agent last modified this table in a meaningful way.
+   * Set by infrastructure code, not by agents themselves.
+   * Used for debugging and review to trace responsibility.
+   */
+  lastModifiedBy: z.enum(['VerificationAgent', 'BaseFilterAgent']),
 });
 
 export type ExtendedTableDefinition = z.infer<typeof ExtendedTableDefinitionSchema>;
@@ -288,6 +299,8 @@ export function toExtendedTable(
     additionalFilter: '',
     filterReviewRequired: false,
     splitFromTableId: '',
+    // Provenance tracking (set by infrastructure, not agents)
+    lastModifiedBy: 'VerificationAgent',
   };
 }
 

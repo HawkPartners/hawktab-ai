@@ -51,9 +51,7 @@ During Part 2 review, we discovered tables with incorrect bases due to skip/show
 - Validates filter variables against datamap (catches hallucinations)
 - Removes analytically invalid NETs when component rows have different bases
 
-**Result**: Tables now have correct bases. A3a splits by therapy, each with accurate base (135, 126, 177). Percentages sum to 100%. Numbers match Joe's output exactly.
-
-This was a quick pivot — the system now handles complex show logic without survey-specific hacks.
+**Result**: Tables now have correct bases. A3a splits by therapy, each with accurate base (135, 126, 177). Percentages sum to 100%. Numbers match Joe's output exactly. This was a quick pivot — the system now handles complex show logic without survey-specific hacks.
 
 ### Process
 
@@ -63,16 +61,6 @@ This was a quick pivot — the system now handles complex show logic without sur
 4. **Adjust if needed** — If there's unreliability (e.g., a table appears in one run but not another), adjust the prompt to fix it
 5. **Third run** — Confirm the fix worked and output is stable
 6. **Move on** — When it feels right, you're done. You're the judge.
-
-### Philosophy
-
-No golden datasets at this stage. You've seen Joe's output, you know what good looks like. Trust your judgment and maintain a high standard, but don't over-engineer the evaluation. The goal is breadth across different projects, not perfection on one.
-
-### Exit Criteria
-
-- [ ] Ran pipeline 3x, reviewed each output
-- [ ] Output quality meets expectations (tables we want, labels we like)
-- [ ] No major inconsistencies between runs (or prompts adjusted to fix them)
 
 ---
 

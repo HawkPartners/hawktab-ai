@@ -210,6 +210,13 @@ Analyze the survey document for any skip logic that affects who should be counte
     // Validate filter variables against datamap (catch hallucinations)
     const validatedResult = validateAndFixAgentOutput(initialResult, input.validVariables);
 
+    // Set provenance tracking: if BaseFilterAgent made meaningful changes, mark it as the last modifier
+    if (validatedResult.action !== 'pass') {
+      for (const table of validatedResult.tables) {
+        table.lastModifiedBy = 'BaseFilterAgent';
+      }
+    }
+
     console.log(
       `[BaseFilterAgent] Table ${input.table.tableId} processed - action: ${validatedResult.action}, ${validatedResult.tables.length} tables, confidence: ${validatedResult.confidence.toFixed(2)}`
     );

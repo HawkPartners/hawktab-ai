@@ -12,7 +12,19 @@ Claude is my pair programmer. I'm a market research consultant, not super techni
 
 - **We're replacing Joe's usefulness, not replicating his exact format.** Antares-style output is our MVP target—functional, readable crosstabs that the team can write reports from.
 - **Production quality for internal tools**: 80 people will use this with real client data. Type-safe, validated, observable.
-- **Iterate based on evidence**: Use the evaluation framework to track improvements, not gut feelings.
+- **Iterate based on evidence**: Review outputs, compare to Joe's tabs, make targeted fixes.
+
+---
+
+## Context: Antares Partnership Opportunity
+
+We recently spoke with Antares (our fielding partner). Key quote from Bob:
+
+> "This is actually very intriguing. I've not seen anybody kind of going down this road... commercially speaking. I haven't seen any of the normal players out there working on this technology or approach."
+
+**Deadline**: We need to send Antares an updated version by **February 16th** (Monday). This means finishing the reliability plan and product roadmap by February 15th. This could be our big break—build quickly, but reliably and accurately.
+
+See `docs/antares-hawktabai-discussion-transcript-012226.txt` for the full conversation.
 
 ---
 
@@ -44,30 +56,28 @@ We're making HawkTab AI reliably produce publication-quality crosstabs that matc
 
 | Part | Description | Status |
 |------|-------------|--------|
-| 1 | Bug Capture | Complete |
-| 2 | VerificationAgent | Complete |
-| 3 | Significance Testing (unpooled z-test) | Complete |
-| 3b | SPSS Validation Clarity | Complete |
-| 4 | Evaluation Framework + TableAgent Refactor | In Progress |
-| 5 | Iteration on primary dataset (leqvio) | Not started |
-| 6 | Loop/Stacked Data Support (Tito's) | Not started |
-| 7 | Strategic Broader Testing (5 datasets by failure mode) | Not started |
+| 1 | Stable System for Testing | Complete |
+| 2 | Leqvio Testing (iteration loop) | In Progress - Iteration 1 |
+| 3 | Loop/Stacked Data Support (Tito's) | Not started |
+| 4 | Strategic Broader Testing | Not started |
 
 **Primary Test Data**: `data/leqvio-monotherapy-demand-NOV217/`
 **Reference Output**: `tabs/leqvio-monotherapy-demand-tabs-joe.xlsx`
+
+**Recent Win**: Built BaseFilterAgent to handle skip/show logic. Tables now have correct bases (different brands get different bases when show logic applies per-row). Numbers match Joe's output exactly.
 
 ---
 
 ## Pipeline Architecture
 
 ```
-User Uploads → BannerAgent → CrosstabAgent → TableAgent → VerificationAgent → R Script → Excel
-                   ↓              ↓              ↓              ↓                ↓          ↓
-              Banner PDF      DataMap        Questions      Survey Doc       tables.json  .xlsx
-              → Cuts          → Variables    → Tables       → Enhanced        (calculated)
+User Uploads → BannerAgent → CrosstabAgent → TableAgent → VerificationAgent → BaseFilterAgent → R Validation → R Script → Excel
+                   ↓              ↓              ↓              ↓                    ↓               ↓             ↓          ↓
+              Banner PDF      DataMap        Questions      Survey Doc          Survey Doc      Catch errors   tables.json  .xlsx
+              → Cuts          → Variables    → Tables       → Enhanced          → Base filters   before R run   (calculated)
 ```
 
-### The Four Agents
+### The Five Agents
 
 | Agent | Purpose | Key Outputs |
 |-------|---------|-------------|
@@ -75,6 +85,14 @@ User Uploads → BannerAgent → CrosstabAgent → TableAgent → VerificationAg
 | **CrosstabAgent** | Validate expressions, generate R syntax | CutDefinitions with R expressions |
 | **TableAgent** | Decide table structure per variable | TableDefinitions (frequency/mean_rows) |
 | **VerificationAgent** | Enhance tables using survey document | ExtendedTableDefinitions (NETs, T2B, labels) |
+| **BaseFilterAgent** | Detect skip/show logic, apply base filters | additionalFilter, table splits for different bases |
+
+### Provenance Tracking
+
+Each table tracks who last modified it:
+- `sourceTableId` — Points back to TableAgent's tableId (VerificationAgent sets when splitting)
+- `splitFromTableId` — Points back to VerificationAgent's tableId (BaseFilterAgent sets when splitting)
+- `lastModifiedBy` — Which agent last made meaningful changes ('VerificationAgent' or 'BaseFilterAgent')
 
 ### Per-Agent Configuration
 
@@ -103,7 +121,7 @@ Getters in `src/lib/env.ts`: `getCrosstabModel()`, `getTableModel()`, `getVerifi
 All scripts use `data/leqvio-monotherapy-demand-NOV217/` by default (with nested `inputs/` subfolder support).
 
 ```bash
-# Full pipeline (8 steps: DataMap → Banner → Crosstab → Table → Verification → R → Excel)
+# Full pipeline (10 steps: DataMap → Banner → Crosstab → Table → Verification → BaseFilter → R Validation → R Script → Excel)
 npx tsx scripts/test-pipeline.ts
 
 # Individual components
@@ -113,12 +131,16 @@ npx tsx scripts/test-r-script-v2.ts           # R script from existing output
 npx tsx scripts/export-excel.ts               # Excel from existing tables.json
 ```
 
-**Output Location**: `temp-outputs/test-pipeline-<dataset>-<timestamp>/`
+**IMPORTANT**: The full pipeline takes 45-60 minutes to run. **Do not run it yourself**—let the user run it. Other scripts are quick and fine to run.
+
+**Output Location**: `outputs/leqvio-monotherapy-demand-NOV217/pipeline-<timestamp>/`
 - `r/master.R` - Generated R script
 - `results/tables.json` - Calculated tables with significance
 - `results/crosstabs.xlsx` - Formatted Excel workbook
-- `scratchpad-*.md` - Agent reasoning traces
-- `pipeline-summary.json` - Timing and metadata
+- `scratchpad-*.md` - Agent reasoning traces (check these to understand agent decisions)
+- `basefilter/` - BaseFilterAgent outputs and scratchpad
+- `verification/` - VerificationAgent outputs
+- `pipeline-summary.json` - Timing, cost, and metadata
 
 ---
 
@@ -131,27 +153,32 @@ hawktab-ai/
 │   │   ├── BannerAgent.ts
 │   │   ├── CrosstabAgent.ts
 │   │   ├── TableAgent.ts
-│   │   └── VerificationAgent.ts
+│   │   ├── VerificationAgent.ts
+│   │   └── BaseFilterAgent.ts     # NEW: Skip/show logic handling
 │   ├── schemas/                   # Zod type definitions
 │   │   ├── tableAgentSchema.ts        # TableDefinition
-│   │   └── verificationAgentSchema.ts # ExtendedTableDefinition
+│   │   ├── verificationAgentSchema.ts # ExtendedTableDefinition
+│   │   └── baseFilterAgentSchema.ts   # NEW: BaseFilterAgent I/O
 │   ├── lib/
 │   │   ├── env.ts                 # Per-agent model getters
 │   │   ├── processors/            # DataMapProcessor, SurveyProcessor
 │   │   ├── r/RScriptGeneratorV2.ts
+│   │   ├── r/ValidationOrchestrator.ts # R validation + retry
 │   │   ├── excel/                 # ExcelFormatter, table renderers
 │   │   └── tables/CutsSpec.ts
 │   └── prompts/                   # Agent prompt templates
+│       └── basefilter/            # NEW: BaseFilterAgent prompts
 ├── scripts/                       # CLI test scripts
 ├── data/
 │   ├── leqvio-monotherapy-demand-NOV217/  # Primary test dataset
 │   │   ├── inputs/                # Input files (datamap, data.sav, etc.)
-│   │   ├── tabs/                  # Reference output (Joe's tabs)
-│   │   └── golden-datasets/       # Golden datasets for evaluation
-│   └── test-data/                 # 23 additional test datasets
-├── docs/implementation-plans/
-│   ├── reliability-plan.md        # CURRENT WORK
-│   └── significance-testing-plan.md
+│   │   └── tabs/                  # Reference output (Joe's tabs)
+│   └── test-data/                 # Additional test datasets
+├── outputs/                       # Pipeline outputs (persisted)
+├── docs/
+│   ├── implementation-plans/
+│   │   └── reliability-plan.md    # CURRENT WORK
+│   └── antares-hawktabai-discussion-transcript-012226.txt
 └── temp-outputs/                  # Dev outputs (git-ignored)
 ```
 
@@ -164,8 +191,10 @@ hawktab-ai/
 - Fields: `tableId`, `title`, `tableType`, `rows[]`, `hints[]`
 
 **ExtendedTableDefinition** (`verificationAgentSchema.ts`):
-- Enhanced table from VerificationAgent
-- Adds: `isNet`, `netComponents`, `indent`, `isDerived`, `exclude`, `excludeReason`, `sourceTableId`
+- Enhanced table from VerificationAgent and BaseFilterAgent
+- Key fields: `isNet`, `netComponents`, `indent`, `isDerived`, `exclude`, `sourceTableId`
+- BaseFilterAgent fields: `additionalFilter`, `filterReviewRequired`, `splitFromTableId`
+- Provenance: `lastModifiedBy` ('VerificationAgent' | 'BaseFilterAgent')
 
 **Conversion**: `toExtendedTable(table)` converts TableDefinition → ExtendedTableDefinition
 
@@ -194,40 +223,20 @@ When tuning agent prompts:
 
 ---
 
-## Evaluation Framework (Part 4)
+## Review Process
 
-When we build the evaluation framework:
+We review outputs manually by comparing to Joe's tabs. No automated golden dataset comparison—human judgment is the standard.
 
-### Golden Dataset Structure
-```
-data/leqvio-monotherapy-demand-NOV217/
-├── inputs/                            # Input files
-│   ├── leqvio-monotherapy-demand-datamap.csv
-│   ├── leqvio-monotherapy-demand-data.sav
-│   ├── leqvio-monotherapy-demand-survey.docx
-│   └── leqvio-monotherapy-demand-bannerplan-clean.docx
-├── tabs/                              # Reference output
-│   └── leqvio-monotherapy-demand-tabs-joe.xlsx
-├── golden-datasets/                   # For evaluation framework
-│   ├── tables-expected.json           # What TableAgent should produce
-│   ├── verified-tables-expected.json  # What VerificationAgent should produce
-│   └── annotations.json               # Human verdicts on differences
-└── runs/                              # Pipeline run history
-    └── YYYY-MM-DD/
-        ├── comparison-report.json     # Auto-generated diff
-        └── human-review.json          # Annotations for this run
-```
+**When reviewing pipeline output:**
+1. Open `results/crosstabs.xlsx`
+2. Go through tables top-to-bottom
+3. For weird tables, note the `[tableId]` from the context column
+4. Check `basefilter/scratchpad-*.md` and `verification/scratchpad-*.md` to see agent reasoning
+5. Use `lastModifiedBy` field in JSON to know which agent to adjust
 
-### Evaluation Workflow
-1. **Run pipeline** → Produces actual output
-2. **Compare to golden** → Generates diff report (strict comparison)
-3. **Human annotation** → Mark each difference as "wrong" or "acceptable"
-4. **Track metrics** → Strict accuracy vs practical accuracy over time
-
-### Metrics
-- **Strict accuracy**: Exact match to golden dataset
-- **Practical accuracy**: Excludes "acceptable" differences
-- **Truly wrong rate**: Differences marked as actual bugs
+**Tracking issues:**
+- Create `feedback.md` in the pipeline output folder
+- Reference specific tableIds for traceability
 
 ---
 
@@ -292,13 +301,14 @@ type MyOutput = z.infer<typeof MyOutputSchema>;
 
 | Task | Command/Location |
 |------|------------------|
-| Run full pipeline | `npx tsx scripts/test-pipeline.ts` |
-| Check agent reasoning | `temp-outputs/*/scratchpad-*.md` |
+| Run full pipeline | `npx tsx scripts/test-pipeline.ts` (let user run this - takes 45-60 min) |
+| Check agent reasoning | `outputs/*/scratchpad-*.md`, `outputs/*/basefilter/scratchpad-*.md` |
 | Compare to Joe's output | `data/leqvio-monotherapy-demand-NOV217/tabs/leqvio-monotherapy-demand-tabs-joe.xlsx` |
-| Tune agent prompt | `src/prompts/*AgentPrompt.ts` |
+| Tune VerificationAgent | `src/prompts/verification/alternative.ts` |
+| Tune BaseFilterAgent | `src/prompts/basefilter/production.ts` |
 | Adjust reasoning effort | `.env.local` → `*_REASONING_EFFORT` |
 | Current work | `docs/implementation-plans/reliability-plan.md` |
-| Report bugs | `temp-outputs/*/bugs.md` |
+| Antares context | `docs/antares-hawktabai-discussion-transcript-012226.txt` |
 
 ---
 
