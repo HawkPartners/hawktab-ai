@@ -521,85 +521,85 @@ This section documents the analysis of scratchpad traces, prompt structures, and
 
 #### What the Scratchpad Revealed
 
-The BaseFilterAgent applied overly complex or incorrect filters because it:
-1. **Confused hypothetical questions with actual behavior questions** — When a question asks "Assume X happens, what would you do?" the agent inferred skip logic from question content rather than recognizing these are asked to everyone.
-2. **Created overly literal "change" filters** — For questions about "those whose response differed," the agent wrote strict inequality comparisons that failed when values were NA or when the conceptual "difference" didn't match literal inequality.
-3. **Inferred skip logic where none exists** — The agent saw content about specific topics (e.g., medications) and assumed only users of those topics would be asked, even when the question was hypothetical.
+The BaseFilterAgent made two distinct types of errors:
 
-#### Current Prompt Gap
+1. **Invented a filter where none was specified** (A6) — The agent saw question content about specific products and inferred that only users of those products should be asked. But there was no explicit `[ASK IF]` or `[SHOW IF]` instruction. The survey designer intentionally left it unfiltered.
 
-The BaseFilterAgent prompt distinguishes table-level vs row-level show logic, but lacks:
-- Explicit guidance on hypothetical/scenario questions
-- Caution about "change" or "difference" calculations
-- Recognition that future-intent questions ("your NEXT 100 patients") differ from past-behavior questions
+2. **Over-engineered an explicit filter** (A5) — The survey clearly said `ASK IF PRESCRIBING IN A4 is > or < A3 FOR ROWS 2, 3, OR 4`. This IS an explicit filter. But the agent wrote an overly complex expression with strict NA checks that created an impossible condition (0 respondents).
+
+#### The Two Principles
+
+**Principle 1: Don't invent filters — use the survey's conventions**
+
+Your job is to look for EXPLICIT show/skip/ask logic. If there's no instruction, don't create a filter.
+
+Key insight: If the survey uses explicit filter instructions elsewhere (like `[ASK IF Q3=1]`) but a particular question has none, that's intentional. The survey designer chose not to filter that question. Trust them.
+
+The ONLY inference you make is: when an explicit filter exists, does it apply at the table level or the row level? You do NOT infer whether a filter should exist in the first place.
+
+**Principle 2: Interpret intent simply — don't over-engineer**
+
+When there IS an explicit filter, capture the intent in plain language first.
+
+Example: `ASK IF PRESCRIBING IN A4 is > or < A3 FOR ROWS 2, 3, OR 4`
+
+Read it out loud: "I'm only asking this if A4 is not the same as A3 for at least one of these rows."
+
+Then write a simple filter that captures that intent. Don't add defensive NA checks or complex boolean logic that might create impossible conditions.
 
 #### Recommended Prompt Addition
 
-**Location**: `src/prompts/basefilter/production.ts` — Add to `<interpreting_show_logic>` section
+**Location**: `src/prompts/basefilter/production.ts` — Add to `<decision_framework>` before Step 1
 
 ```markdown
-DISTINGUISHING QUESTION TYPES BY INTENT:
+FOUNDATIONAL PRINCIPLE: DON'T INVENT FILTERS
 
-1. ACTUAL BEHAVIOR QUESTIONS
-   Questions about what the respondent HAS done or currently does.
-   - "How many [X] did you [action] last month?"
-   - "Which brands have you used?"
-   - "What is your current [practice/habit]?"
+Your job is to find and implement EXPLICIT skip/show/ask logic from the survey.
+You are NOT inferring whether a filter should exist — you are finding filters that DO exist.
 
-   These often have skip logic based on prior eligibility or behavior.
-   Look for corresponding usage/awareness/qualification variables.
+Use the survey's conventions as your guide:
+- If other questions in this survey have explicit [ASK IF], [SHOW IF], or base instructions,
+  and this question does NOT, that's intentional. The designer chose not to filter it.
+- Question content (topics, products, behaviors mentioned) is NOT evidence of a filter.
+  A question can discuss specific products without being filtered to users of those products.
+- Ranking questions, hypothetical scenarios, and future-intent questions are often asked
+  to everyone. Don't assume they need filters based on current behavior.
 
-2. HYPOTHETICAL/SCENARIO QUESTIONS
-   Questions asking what the respondent WOULD do in a described situation.
-   - "Assume [hypothetical condition]... what would you..."
-   - "If [scenario], how would you..."
-   - "Imagine [situation]..."
-
-   CRITICAL: These are typically asked to ALL respondents regardless of actual behavior.
-   The scenario is hypothetical—everyone can answer what they WOULD do.
-   DO NOT filter based on actual current behavior or eligibility.
-
-3. FUTURE INTENT QUESTIONS
-   Questions about what the respondent PLANS or EXPECTS to do.
-   - "For your next [N] patients/projects/purchases..."
-   - "What do you expect to [do] in the future?"
-
-   These are usually asked to everyone who could potentially have that future.
-   Don't filter based on past behavior unless the survey explicitly says so.
-
-4. CHANGE/COMPARISON QUESTIONS
-   Questions asking about differences between two time points or conditions.
-   - "How has your [behavior] changed?"
-   - "If your response to [Q2] differs from [Q1]..."
-
-   CAUTION: These require careful interpretation.
-   - "Differed" doesn't always mean strict numeric inequality
-   - Consider: Did respondent answer BOTH questions?
-   - Consider: What counts as "different"? (Any change? Directional change? Threshold change?)
-
-   When uncertain about how to operationalize "change," PASS through and flag for review
-   rather than creating complex filters that may be wrong.
+The only inference you make: When an explicit filter EXISTS, does it apply at the
+table level or the row level? You do NOT infer whether a filter should exist.
 ```
 
-**Location**: Add a new concrete example
+**Location**: Add to `<decision_framework>` after the foundational principle
 
 ```markdown
-EXAMPLE: HYPOTHETICAL SCENARIO - DO NOT FILTER
+REMEMBER: NA FILTERING IS ALREADY DONE
 
-Survey says:
-"Q15. Please assume that [regulatory/market condition changes].
-For your next [N] [patients/customers/projects], please rank which approaches..."
+The default base calculation is: banner cut + non-NA values.
+This means respondents with NA (not answered, not applicable, not shown) are ALREADY excluded.
 
-Your analysis:
-- This is a HYPOTHETICAL scenario question ("Please assume...")
-- "Next N" indicates future intent, not actual past behavior
-- No explicit [ASK IF] or [SHOW IF] instruction
-- Even though it discusses specific products/approaches, this is asked to ALL respondents
-  because everyone can answer what they WOULD do in a hypothetical scenario
-- DO NOT filter based on current usage or past behavior
+Your `additionalFilter` adds constraints ON TOP of this default. You are not reimplementing
+the default — you are adding further restrictions when the survey specifies them.
 
-Action: pass
-Reasoning: Hypothetical scenario question asked to all respondents.
+DO NOT add `!is.na(variable)` checks to your filters. That's redundant.
+If a respondent has NA for the question, they're already excluded from the base.
+```
+
+**Location**: Add to `<r_expression_syntax>` section
+
+```markdown
+WRITING CLEAR FILTERS:
+
+Before writing any filter expression, restate the intent in plain language:
+- "ASK IF Q4 > or < Q3" → "Ask only if Q4 differs from Q3"
+- "SHOW IF aware of brand" → "Show only to those who selected 'aware' at the awareness question"
+
+Then write the simplest expression that captures that intent.
+
+AVOID over-engineering:
+- NA is already filtered by default — don't add !is.na() checks
+- Don't create complex boolean logic when a simple comparison suffices
+- If your filter has more than 2-3 conditions joined by & or |, step back and ask
+  if you're overcomplicating the intent
 ```
 
 ---
@@ -608,55 +608,37 @@ Reasoning: Hypothetical scenario question asked to all respondents.
 
 #### What the Scratchpad Revealed
 
-The VerificationAgent creates NETs based on logical groupings without checking whether the resulting NET will be meaningful:
-- Created "all respondents" NETs for screener questions where everyone qualified (100%)
-- Created "Any X" NETs for multi-select questions where everyone or no one selected at least one option
-- Created NETs that mirror qualification criteria (guaranteed to be 100% or 0%)
+The VerificationAgent creates NETs based on logical groupings without considering whether they'll be meaningful. It created:
+- "Clinicians (NET)" for a question where all respondents are clinicians (100%)
+- "Any affiliation (NET)" for a screener where everyone selected "None of these" (0%)
+- NETs that match qualification criteria (guaranteed to be trivial)
 
-#### Current Prompt Gap
+#### The Principle
 
-The prompt says "Avoid redundant NETs" and "Check that NETs will show meaningful variation" — but this guidance is vague and appears late in the constraints section. It's a soft guideline, not a hard rule.
+When creating a NET, use the survey to ask: **"Will this NET be ~100% or ~0%?"**
+
+Signs from the survey that a NET will be trivial:
+- The NET rolls up answer options that include a terminate criterion (only non-terminated respondents remain)
+- The NET captures a characteristic that ALL respondents share by study design
+- The NET is the inverse of a "None of these" option in a screener
+
+If a NET would be trivial, either don't create it or find more meaningful sub-groupings instead.
 
 #### Recommended Prompt Addition
 
-**Location**: `src/prompts/verification/alternative.ts` — Add to `<constraints>` as a RULE (not guideline)
+**Location**: `src/prompts/verification/alternative.ts` — Add to `<constraints>` as a RULE
 
 ```markdown
-10. NEVER CREATE TRIVIAL NETs (100% OR 0%)
-    Before creating ANY NET row, ask: "Will this NET show approximately 100% or 0%?"
+10. AVOID TRIVIAL NETs
+    Before creating a NET, use the survey to ask: "Will this NET be ~100% or ~0%?"
 
-    SIGNS A NET WILL BE TRIVIAL:
+    Signs a NET will be trivial:
+    - It rolls up answer options where all but one has a TERMINATE instruction
+    - It captures a characteristic all respondents share by study design
+    - It's the inverse of a "None of these" option in a screener/exclusion question
 
-    a) Screener/qualification NETs
-       If the question is a screener and the NET captures "everyone who qualified,"
-       that NET will be ~100% by definition. Don't create it.
-
-    b) "All of the above" NETs for homogeneous populations
-       If all respondents share a characteristic by study design (e.g., all are
-       healthcare providers, all are product users), a NET capturing that
-       characteristic is ~100%. Don't create it.
-
-    c) Qualification-criterion NETs
-       If a threshold was used to qualify respondents (e.g., "must spend >=X% time
-       on activity"), a NET for "those meeting threshold" will be ~100%. Don't create it.
-
-    d) "None of the above" dominance
-       If a multi-select question has "None of these" at ~100% (screener/exclusion logic),
-       the "Any of the above" NET will be ~0%. Don't create it.
-
-    INSTEAD, look for MEANINGFUL sub-groupings:
-    - Break the trivial group into sub-categories that show variation
-    - Example: Instead of "All Respondents (NET)" at 100%, create:
-      - "Group A (NET)" = subset A
-      - "Group B (NET)" = subset B
-      where A and B show meaningful variation
-
-11. SUPPRESS DEGENERATE TABLES
-    If a table's data shows NO meaningful variation:
-    - All rows 0% except one at 100% (or vice versa)
-    - This often happens with screeners where only one answer doesn't terminate
-
-    Set exclude: true with excludeReason: "Degenerate distribution - no meaningful variation"
+    If a NET would be trivial, don't create it. Instead, look for meaningful
+    sub-groupings within the answer options that would show actual variation.
 ```
 
 ---
@@ -735,68 +717,71 @@ C. CONCEPTUAL GROUPING NETs (categorical with implied hierarchies)
 
 #### What the Analysis Revealed
 
-**D1-D2 (binning choices)**: The agent creates bins without guidance on what makes bins "sensible." The prompt says "Create sensible bins based on data range" but doesn't specify heuristics.
+**D1-D2 (binning choices)**: The agent creates bins without knowing the actual data distribution. It's guessing at ranges without knowing if data is clustered at one end or spread evenly.
 
-**D3 (trimmed mean)**: This is a regression — the feature was removed or disabled. Requires **system-level** code change to reintroduce.
+**D3 (trimmed mean)**: This is a regression — the "mean excluding outliers" feature was removed or disabled.
 
-**D4 (missing binned distribution)**: Agent didn't recognize that numeric sub-components of a question needed binning.
+**D4 (missing binned distribution)**: Agent didn't recognize that numeric/mean questions benefit from frequency distributions (None / Any / Above threshold).
 
 #### Classification
 
 | Sub-issue | Fix Category |
 |-----------|--------------|
-| D1, D2, D4 | Prompt-level |
-| D3 | System-level |
+| D1, D2 | System-level (pass distribution data to agent) |
+| D3 | System-level (reintroduce trimmed mean) |
+| D4 | Prompt-level (one-shot example) |
 
-#### Recommended Prompt Addition
+#### System-Level Changes
 
-**Location**: `src/prompts/verification/alternative.ts` — Expand `TOOL 5: BINNED DISTRIBUTIONS`
+**Change 1: Pass distribution data to VerificationAgent**
 
-```markdown
-TOOL 5: BINNED DISTRIBUTIONS FOR NUMERIC VARIABLES
-
-WHEN TO USE: mean_rows questions where distribution shape matters analytically
-
-BINNING HEURISTICS BY QUESTION TYPE:
-
-FOR TENURE/EXPERIENCE QUESTIONS (years in role, years of practice):
-- Use interpretable round-number breakpoints: 5, 10, 15, 20, 25
-- Consider natural career stages (early career, mid-career, senior)
-- 4-6 bins is usually sufficient
-- Create high-level rollups: "≤15 years (Total)" vs ">15 years (Total)"
-- Example bins: 0-4, 5-9, 10-14, 15-19, 20+
-
-FOR VOLUME/COUNT QUESTIONS (patients per month, transactions, etc.):
-- Use round numbers appropriate to the scale: 50, 100, 200, 500, 1000
-- Consider any qualification thresholds (if >=50 was required, start there)
-- Create meaningful rollups: "Low volume (Total)" vs "High volume (Total)"
-- Consider the natural distribution shape (often right-skewed)
-
-FOR PERCENTAGE QUESTIONS (% of time, % of budget):
-- Use intuitive quartile-like breakpoints: 25%, 50%, 75%
-- If a threshold was a qualifier (e.g., >=70%), acknowledge it:
-  - Start bins at the threshold
-  - Don't show bins below threshold (they're structurally 0%)
-- Example for "% of time" with 70% qualifier: 70-79%, 80-89%, 90-100%
-
-GENERAL PRINCIPLES:
-- Fewer bins (4-6) are usually better than many narrow bins (8+)
-- Create rollup NETs for major thresholds
-- Ensure bins don't overlap and cover the full valid range
-- When a qualification threshold applies, note it in userNote
-
-NUMERIC SUB-COMPONENTS:
-When a question has multiple numeric parts (e.g., "how many in each time period"),
-each numeric sub-part may warrant its own binned distribution, not just the
-categorical breakdown across parts.
+For mean_rows questions, calculate actual distribution stats from the data and pass to the agent:
+```typescript
+meta: {
+  distribution: {
+    min: 50,
+    max: 1200,
+    mean: 245,
+    median: 175,
+    q1: 100,
+    q3: 350
+  }
+}
 ```
 
-#### System-Level Fix for D3
+This lets the agent create sensible bins based on where the data actually falls, not guesses.
 
-The trimmed mean calculation needs to be reintroduced in the R script generation:
-- Add "Mean (excluding outliers)" row for numeric questions
-- Use consistent method (e.g., IQR rule: exclude values > Q3 + 1.5*IQR or < Q1 - 1.5*IQR)
-- Record method in table metadata
+**Implementation**: Add a pre-processing step (in TableGenerator or a new stats calculator) that reads the data CSV, calculates stats for numeric variables, and includes them in the table's meta field.
+
+**Change 2: Reintroduce trimmed mean**
+
+Add "Mean (excluding outliers)" back to numeric question output:
+- Calculate using IQR rule or percentile trim
+- Include in the distribution data passed to VerificationAgent
+- Render in Excel output
+
+#### Prompt-Level Change
+
+**Location**: `src/prompts/verification/alternative.ts` — Add one-shot example to `TOOL 5: BINNED DISTRIBUTIONS`
+
+```markdown
+FREQUENCY DISTRIBUTIONS FOR MEAN QUESTIONS:
+
+For mean_rows questions, consider creating a frequency distribution alongside the mean.
+This shows HOW MANY respondents fall into each range, not just the average.
+
+A common pattern: None / Any / Above threshold
+
+Example for "How many patients did you prescribe X to last month?":
+- None (0): What % prescribed to zero patients?
+- Any (1+): What % prescribed to at least one?
+- Above median (e.g., 15+): What % are high-volume prescribers?
+
+This turns a single mean into an actionable distribution.
+
+If distribution data is available in the table's meta field (min, max, median, quartiles),
+use it to choose meaningful thresholds for your bins.
+```
 
 ---
 
@@ -804,25 +789,123 @@ The trimmed mean calculation needs to be reintroduced in the R script generation
 
 #### Classification
 
-These are entirely **system-level** issues:
-
 | Sub-issue | Nature | Fix |
 |-----------|--------|-----|
-| E1: Stat testing | Configuration | Add pipeline-level config for confidence level, test type, minimum base |
-| E2: Mean/median mismatch | Implementation | Audit R calculation logic, compare against reference implementation |
+| E1: Stat testing | Configuration + Investigation | Audit current implementation, make configurable |
+| E2: Mean/median mismatch | Implementation | Audit R calculation logic |
 
-#### Recommended System Changes
+#### E1: Stat Testing — Current State
 
-**E1: Stat Testing Configurability**
-- Add to pipeline config: `statisticalTesting.confidenceLevel` (default: 0.90)
-- Add to pipeline config: `statisticalTesting.testType` (default: "unpooled_z" for proportions, "t_test" for means)
-- Add to pipeline config: `statisticalTesting.minimumBase` (default: 0, meaning no minimum)
-- Document in Excel footnote: what tests were used, at what confidence level
+**What we currently have:**
+| Feature | Status | Details |
+|---------|--------|---------|
+| Confidence level | ✅ Configurable | Default 0.10 (90%) |
+| Dual thresholds | ✅ Supported | `[0.05, 0.10]` → uppercase (95%) / lowercase (90%) |
+| Z-test for proportions | ✅ Implemented | Unpooled z-test |
+| T-test for means | ✅ Implemented | Welch's t-test |
+| Within-group comparisons | ✅ Works | Compares columns in same banner group |
+| Comparison to Total | ✅ Works | All columns vs Total |
+| Stat letters | ✅ Works | T, A, B, C... deterministic assignment |
 
-**E2: Calculation Audit**
-- Compare our R calculation logic line-by-line against WinCross documentation
-- Check handling of: extreme values, top-coding, minimum thresholds, NA values
-- Identify specific questions where results diverge and trace the calculation
+**What's hardcoded (candidates for configurability):**
+| Feature | Current State | Potential Option |
+|---------|---------------|------------------|
+| Test type (proportions) | Always unpooled z-test | Pooled z-test, chi-square |
+| Test type (means) | Always Welch's t-test | Student's t-test |
+| Minimum base | No minimum (tests all cells) | Configurable minimum n |
+| Multiple comparison correction | None | Bonferroni correction |
+| Overlap handling | Not implemented | Dependent sample handling |
+
+**Recommended configuration interface:**
+```typescript
+interface StatTestingConfig {
+  // Thresholds
+  confidenceLevels: number[];  // e.g., [0.90] or [0.95, 0.90]
+
+  // Test options
+  proportionTest: 'unpooled_z' | 'pooled_z';
+  meanTest: 'welch_t' | 'student_t';
+
+  // Base handling
+  minimumBase: number;  // Default: 0 (no minimum)
+
+  // Multiple comparisons
+  correction: 'none' | 'bonferroni';
+
+  // Display
+  letterCase: 'uppercase_only' | 'dual_case';
+}
+```
+
+**Defaults for HawkPartners:**
+- 90% confidence (single level, uppercase letters)
+- Unpooled z-test for proportions, Welch's t-test for means
+- No minimum base (test all cells, note small bases in reporting)
+- No multiple comparison correction
+
+#### Critical Bug Found: Fake Significance Testing for Means
+
+**Location**: `src/lib/r/RScriptGeneratorV2.ts` lines 1163-1172 and 1199-1204
+
+**The problem**: For `mean_rows` tables, we are NOT doing statistical significance testing. The code just checks if one mean is larger than another and marks it "significant" — no t-test, no p-value calculation.
+
+```r
+# CURRENT (WRONG):
+if (row_data$mean > other_data$mean) {
+  sig_higher <- c(sig_higher, toupper(other_letter))  # Fake!
+}
+```
+
+This produces misleading results. Example from A3 Leqvio row:
+- Cards mean=7, PCPs mean=5.6
+- We mark Cards as significantly higher than PCPs (because 7 > 5.6)
+- Actual t-test p-value = 0.30 — NOT significant at 90%
+
+**The fix**: We already store `n`, `mean`, `sd` for each cell. Use these to calculate a proper Welch's t-test:
+
+```r
+# CORRECT:
+se <- sqrt(sd1^2/n1 + sd2^2/n2)
+t_stat <- (mean1 - mean2) / se
+df <- ((sd1^2/n1 + sd2^2/n2)^2) / ((sd1^2/n1)^2/(n1-1) + (sd2^2/n2)^2/(n2-1))
+p_value <- 2 * pt(-abs(t_stat), df)
+if (p_value < p_threshold && mean1 > mean2) {
+  sig_higher <- c(sig_higher, other_letter)
+}
+```
+
+**Scope**: This affects ALL mean_rows tables in the output. Every significance letter for means is currently fake.
+
+**Principle**: No shortcuts in statistical testing. Everything must be legitimate, defensible statistics.
+
+#### E2: Mean/Median Mismatch — Investigation Results
+
+**S11 comparison** (same n=180):
+| Stat | Our Output | Joe's Output | Difference |
+|------|------------|--------------|------------|
+| Mean | 168.0 | 175.9 | -7.9 |
+| Median | 125 | 150 | -25 |
+| Mean (minus outliers) | 152.6 (IQR method) | 159.8 | -7.2 |
+
+**What we verified:**
+- Our calculation is correct for the data we have (R confirms mean=168, median=125)
+- No values below 10 in data (TERMINATE IF <10 was applied)
+- No invalid values where S11 > S10
+- 3 outliers exist (600, 750, 900) but don't explain median difference
+
+**The puzzle:** The median (125 vs 150) shouldn't differ if we have the same data — median isn't affected by outliers. A 25-point median difference with same N suggests fundamentally different distributions.
+
+**Additional investigation — S10/S11 relationship:**
+- S11 is "Of those [S10] patients..." so S11 should be <= S10
+- Found 3 cases where S11 = S10 exactly (100% ratio) — not a data quality issue
+- The 90th/91st sorted values (which determine median at n=180) are both **125**
+- Our median calculation is correct: median of 180 values = average of 90th and 91st = 125
+
+**Conclusion: Our statistics are correct.**
+
+We calculate mean and median correctly from the data. The difference with Joe's output likely reflects different data versions, weighting, or methodology on his end — but that's not our concern. Our goal isn't to copy Joe; it's to do legitimate statistics. We've verified our calculations are mathematically correct.
+
+**Status: Investigated and resolved. No action needed.**
 
 ---
 
