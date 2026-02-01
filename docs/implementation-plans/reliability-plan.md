@@ -12,54 +12,48 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 
 **Status**: COMPLETE ✓
 
-**Goal**: Get the pipeline to a stable state where we can run end-to-end and judge actual output quality, rather than fixing mid-pipeline failures.
+**Goal**: Get the pipeline to a stable state where we can run end-to-end and judge actual output quality.
 
-### Checklist
-
-- [x] **Per-table R validation** — Validate each table's R code individually before running the full script, so one bad table doesn't crash the entire run
-- [x] **Confirm output is usable** — Run pipeline, review Excel output, confirm it's meaningful enough to judge (not broken/incomplete)
-- [x] **Fix R script generation bugs** — Address any remaining issues that cause R failures (hallucinated variables, syntax errors, etc.)
-- [x] **Investigate mean_rows NET failures** — Understand and resolve the pattern causing R validation failures (see details below)
-- [x] **Update RScriptGeneratorV2** — Add support for mean_rows NETs (sum component means for allocation questions)
-- [x] **Update RValidationGenerator** — Validate component variables for mean_rows NETs instead of synthetic variable name
-- [x] **Improve retry error message** — Rewrite the R validation error context to match the production prompt style and provide clearer guidance
-- [x] **Re-run full pipeline** — Validate fixes with fresh pipeline run (147 tables, 0 R validation failures)
-
-### Investigation: mean_rows NET Failures (RESOLVED)
-
-The following tables failed R validation with "Variable not found" errors:
-
-| Table ID | Question | Error |
-|----------|----------|-------|
-| `a3a_inaddition` | A3a - % of LAST 100 patients by treatment (in addition to statin) | `_NET_PCSK9_InAddition` not found |
-| `a3a_withoutstatin` | A3a - % of LAST 100 patients by treatment (without statin) | `_NET_PCSK9_Without` not found |
-| `a4_last100` | A4 - LAST 100 patients allocation (FDA indication change scenario) | `_NET_A4_PCSK9_c1` not found |
-| `a4_next100` | A4 - NEXT 100 patients allocation (FDA indication change scenario) | `_NET_A4_PCSK9_c2` not found |
-| `b1` | B1 - % of patients by insurance type | `_NET_AnyMedicare` not found |
-
-All are **allocation questions** (mean_rows) where VerificationAgent correctly tried to create NETs (e.g., "Any PCSK9i", "Any Medicare").
-
-**Root Cause**: VerificationAgent correctly creates NETs for mean_rows tables (allocation questions) using:
-- Synthetic variable name: `_NET_PCSK9_InAddition`
-- Real components in `netComponents`: `["A3ar1c1", "A3ar2c1", "A3ar3c1"]`
-
-This pattern works for **frequency** tables (R generator handles `netComponents`), but for **mean_rows** tables the R generator just looked up the synthetic variable name directly — which doesn't exist in the data.
-
-**Resolution**: Updated both R generators to handle mean_rows NETs:
-1. `RScriptGeneratorV2.ts` — For NET rows, sum component means instead of looking up synthetic variable
-2. `RValidationGenerator.ts` — Validate component variables instead of synthetic variable name
-
-Summing is correct for allocation questions because the values represent mutually exclusive percentages that sum to a meaningful total (e.g., "Any PCSK9i" = Leqvio % + Praluent % + Repatha %).
-
-No prompt changes needed — the agent was already doing the right thing; we just needed the infrastructure to support it.
+**What was done**:
+- Per-table R validation (one bad table doesn't crash everything)
+- Fixed mean_rows NET generation (sum component means for allocation questions)
+- Improved retry error messages for VerificationAgent
+- Result: 147 tables, 0 R validation failures
 
 ---
 
 ## Part 2: Finalize Leqvio Monotherapy Demand Testing
 
-**Status**: IN PROGRESS
+**Status**: IN PROGRESS — Iteration 1 of 3
 
 **Goal**: Confirm output quality and consistency for our primary dataset through practical testing.
+
+### Current State
+
+**Most recent run**: `outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-02-01T05-49-17-899Z`
+- This run has NOT been reviewed in detail yet
+- When returning, start here with top-to-bottom review
+
+**Review process**:
+1. Open Excel, go through tables top-to-bottom
+2. Highlight context column for tables that look weird
+3. Create `feedback.md` in the pipeline folder with notes (use tableId from context column for specificity)
+
+### BaseFilterAgent Pivot (COMPLETE)
+
+During Part 2 review, we discovered tables with incorrect bases due to skip/show logic (e.g., A3a showing one base for all therapies when each therapy should have its own base).
+
+**What we built**: BaseFilterAgent — a new pipeline step that:
+- Detects skip/show logic in the survey document
+- Interprets whether logic applies at table or row level
+- Splits tables when rows need different bases
+- Applies additionalFilter as R constraint after banner cut
+- Validates filter variables against datamap (catches hallucinations)
+- Removes analytically invalid NETs when component rows have different bases
+
+**Result**: Tables now have correct bases. A3a splits by therapy, each with accurate base (135, 126, 177). Percentages sum to 100%. Numbers match Joe's output exactly.
+
+This was a quick pivot — the system now handles complex show logic without survey-specific hacks.
 
 ### Process
 
@@ -286,5 +280,5 @@ As we test broader datasets, we'll likely discover that we need more information
 ---
 
 *Created: January 6, 2026*
-*Updated: January 30, 2026*
-*Status: Part 1 complete, Part 2 in progress*
+*Updated: February 1, 2026*
+*Status: Part 1 complete, Part 2 iteration 1 (BaseFilterAgent pivot complete, review pending)*
