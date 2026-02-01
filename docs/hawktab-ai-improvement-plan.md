@@ -498,9 +498,480 @@ Not blocking for Feb 16 deadline, but worth tracking.
 
 ---
 
-## Part 2: Implementation Priorities
+## Part 2: Root Cause Analysis & Recommendations
 
-*To be filled in after discussing solutions with Jason.*
+This section documents the analysis of scratchpad traces, prompt structures, and pipeline outputs to identify why each theme of issues occurred and what fixes are recommended.
+
+### Classification Overview
+
+| Theme | Issue Type | Fix Category |
+|-------|------------|--------------|
+| A: Base Filtering | Agent misinterpretation of survey logic | **Prompt-level** |
+| B: Redundant NETs | Missing guardrail | **Prompt-level** |
+| C: Missing Rollups | Incomplete guidance for conceptual groupings | **Prompt-level** |
+| D: Binning | Partial prompt, partial system | **Mixed** |
+| E: Calculations | Statistical implementation | **System-level** |
+| F: Presentation | Missing examples | **Prompt-level** |
+| G: Over-splitting | Missing guidance on value-add splits | **Prompt-level** |
+| H: Future Features | New capabilities | **System-level** |
+
+---
+
+### Theme A: Base Filtering — Root Cause & Fix
+
+#### What the Scratchpad Revealed
+
+The BaseFilterAgent applied overly complex or incorrect filters because it:
+1. **Confused hypothetical questions with actual behavior questions** — When a question asks "Assume X happens, what would you do?" the agent inferred skip logic from question content rather than recognizing these are asked to everyone.
+2. **Created overly literal "change" filters** — For questions about "those whose response differed," the agent wrote strict inequality comparisons that failed when values were NA or when the conceptual "difference" didn't match literal inequality.
+3. **Inferred skip logic where none exists** — The agent saw content about specific topics (e.g., medications) and assumed only users of those topics would be asked, even when the question was hypothetical.
+
+#### Current Prompt Gap
+
+The BaseFilterAgent prompt distinguishes table-level vs row-level show logic, but lacks:
+- Explicit guidance on hypothetical/scenario questions
+- Caution about "change" or "difference" calculations
+- Recognition that future-intent questions ("your NEXT 100 patients") differ from past-behavior questions
+
+#### Recommended Prompt Addition
+
+**Location**: `src/prompts/basefilter/production.ts` — Add to `<interpreting_show_logic>` section
+
+```markdown
+DISTINGUISHING QUESTION TYPES BY INTENT:
+
+1. ACTUAL BEHAVIOR QUESTIONS
+   Questions about what the respondent HAS done or currently does.
+   - "How many [X] did you [action] last month?"
+   - "Which brands have you used?"
+   - "What is your current [practice/habit]?"
+
+   These often have skip logic based on prior eligibility or behavior.
+   Look for corresponding usage/awareness/qualification variables.
+
+2. HYPOTHETICAL/SCENARIO QUESTIONS
+   Questions asking what the respondent WOULD do in a described situation.
+   - "Assume [hypothetical condition]... what would you..."
+   - "If [scenario], how would you..."
+   - "Imagine [situation]..."
+
+   CRITICAL: These are typically asked to ALL respondents regardless of actual behavior.
+   The scenario is hypothetical—everyone can answer what they WOULD do.
+   DO NOT filter based on actual current behavior or eligibility.
+
+3. FUTURE INTENT QUESTIONS
+   Questions about what the respondent PLANS or EXPECTS to do.
+   - "For your next [N] patients/projects/purchases..."
+   - "What do you expect to [do] in the future?"
+
+   These are usually asked to everyone who could potentially have that future.
+   Don't filter based on past behavior unless the survey explicitly says so.
+
+4. CHANGE/COMPARISON QUESTIONS
+   Questions asking about differences between two time points or conditions.
+   - "How has your [behavior] changed?"
+   - "If your response to [Q2] differs from [Q1]..."
+
+   CAUTION: These require careful interpretation.
+   - "Differed" doesn't always mean strict numeric inequality
+   - Consider: Did respondent answer BOTH questions?
+   - Consider: What counts as "different"? (Any change? Directional change? Threshold change?)
+
+   When uncertain about how to operationalize "change," PASS through and flag for review
+   rather than creating complex filters that may be wrong.
+```
+
+**Location**: Add a new concrete example
+
+```markdown
+EXAMPLE: HYPOTHETICAL SCENARIO - DO NOT FILTER
+
+Survey says:
+"Q15. Please assume that [regulatory/market condition changes].
+For your next [N] [patients/customers/projects], please rank which approaches..."
+
+Your analysis:
+- This is a HYPOTHETICAL scenario question ("Please assume...")
+- "Next N" indicates future intent, not actual past behavior
+- No explicit [ASK IF] or [SHOW IF] instruction
+- Even though it discusses specific products/approaches, this is asked to ALL respondents
+  because everyone can answer what they WOULD do in a hypothetical scenario
+- DO NOT filter based on current usage or past behavior
+
+Action: pass
+Reasoning: Hypothetical scenario question asked to all respondents.
+```
+
+---
+
+### Theme B: Redundant NETs — Root Cause & Fix
+
+#### What the Scratchpad Revealed
+
+The VerificationAgent creates NETs based on logical groupings without checking whether the resulting NET will be meaningful:
+- Created "all respondents" NETs for screener questions where everyone qualified (100%)
+- Created "Any X" NETs for multi-select questions where everyone or no one selected at least one option
+- Created NETs that mirror qualification criteria (guaranteed to be 100% or 0%)
+
+#### Current Prompt Gap
+
+The prompt says "Avoid redundant NETs" and "Check that NETs will show meaningful variation" — but this guidance is vague and appears late in the constraints section. It's a soft guideline, not a hard rule.
+
+#### Recommended Prompt Addition
+
+**Location**: `src/prompts/verification/alternative.ts` — Add to `<constraints>` as a RULE (not guideline)
+
+```markdown
+10. NEVER CREATE TRIVIAL NETs (100% OR 0%)
+    Before creating ANY NET row, ask: "Will this NET show approximately 100% or 0%?"
+
+    SIGNS A NET WILL BE TRIVIAL:
+
+    a) Screener/qualification NETs
+       If the question is a screener and the NET captures "everyone who qualified,"
+       that NET will be ~100% by definition. Don't create it.
+
+    b) "All of the above" NETs for homogeneous populations
+       If all respondents share a characteristic by study design (e.g., all are
+       healthcare providers, all are product users), a NET capturing that
+       characteristic is ~100%. Don't create it.
+
+    c) Qualification-criterion NETs
+       If a threshold was used to qualify respondents (e.g., "must spend >=X% time
+       on activity"), a NET for "those meeting threshold" will be ~100%. Don't create it.
+
+    d) "None of the above" dominance
+       If a multi-select question has "None of these" at ~100% (screener/exclusion logic),
+       the "Any of the above" NET will be ~0%. Don't create it.
+
+    INSTEAD, look for MEANINGFUL sub-groupings:
+    - Break the trivial group into sub-categories that show variation
+    - Example: Instead of "All Respondents (NET)" at 100%, create:
+      - "Group A (NET)" = subset A
+      - "Group B (NET)" = subset B
+      where A and B show meaningful variation
+
+11. SUPPRESS DEGENERATE TABLES
+    If a table's data shows NO meaningful variation:
+    - All rows 0% except one at 100% (or vice versa)
+    - This often happens with screeners where only one answer doesn't terminate
+
+    Set exclude: true with excludeReason: "Degenerate distribution - no meaningful variation"
+```
+
+---
+
+### Theme C: Missing Rollups — Root Cause & Fix
+
+#### What the Scratchpad Revealed
+
+The agent explicitly decided "no NETs needed" for categorical questions because they weren't scale questions. The scratchpad shows: "Labels verified... no NETs or T2B (not a scale)."
+
+The prompt's NET guidance focuses on:
+- Same-variable NETs (combining scale values)
+- Multi-variable NETs (combining binary variables in multi-select)
+
+It doesn't address **conceptual groupings** in categorical questions where labels imply natural umbrella categories.
+
+#### Current Prompt Gap
+
+No guidance for recognizing when categorical answer options imply hierarchical relationships that would benefit from rollup NETs.
+
+#### Recommended Prompt Addition
+
+**Location**: `src/prompts/verification/alternative.ts` — Expand `TOOL 2: NET ROWS`
+
+```markdown
+TOOL 2: NET ROWS
+
+WHEN TO USE: Categorical questions where logical groupings add analytical value
+
+THREE TYPES OF NETs:
+
+A. SAME-VARIABLE NETs (single variable, combined scale values)
+   Use when answer options on a scale should be grouped.
+   Example: satisfaction scale values 4,5 → "Satisfied (T2B)"
+
+B. MULTI-VARIABLE NETs (multiple binary variables summed)
+   Use for multi-select questions where you want "Any of X" rollups.
+   Example: combining Teacher1, Teacher2, SubTeacher → "Any teacher (NET)"
+
+C. CONCEPTUAL GROUPING NETs (categorical with implied hierarchies)
+   Use when categorical answer options suggest natural umbrella categories,
+   even if not explicitly stated in the survey.
+
+   LOOK FOR THESE PATTERNS:
+
+   Pattern 1: "General" vs "Specific" distinctions
+   - Answer options include one broad/general category and multiple specific variants
+   - Example: "General Practitioner" vs "Cardiologist," "Neurologist," "Oncologist"
+   - Create: "Specialist (Total)" combining the specific variants
+
+   Pattern 2: Shared prefix/suffix indicating family
+   - Answer options share naming patterns suggesting they belong together
+   - Example: "Full-time employee," "Part-time employee" vs "Contractor," "Consultant"
+   - Create: "Employee (Total)" and "Non-Employee (Total)"
+
+   Pattern 3: Conceptually opposite or complementary groups
+   - Answer options can be grouped by conceptual similarity
+   - Example: Multiple "Option A first" approaches vs one "Option B first" approach
+   - Create: "Option A First (Total)" to highlight the conceptual split
+
+   IMPLEMENTATION:
+   { "variable": "Q5", "label": "Broad Category (Total)", "filterValue": "1,3,4", "isNet": true, "indent": 0 },
+   { "variable": "Q5", "label": "Specific Type A", "filterValue": "1", "indent": 1 },
+   { "variable": "Q5", "label": "Specific Type B", "filterValue": "3", "indent": 1 },
+   { "variable": "Q5", "label": "Specific Type C", "filterValue": "4", "indent": 1 },
+   { "variable": "Q5", "label": "Other Category", "filterValue": "2", "indent": 0 }
+
+   RULE: Only create conceptual NETs when the grouping is OBVIOUS from the labels.
+   Don't invent groupings that aren't clearly implied by the answer text.
+   If you're uncertain whether a grouping makes sense, don't create the NET.
+```
+
+---
+
+### Theme D: Binning — Root Cause & Fix
+
+#### What the Analysis Revealed
+
+**D1-D2 (binning choices)**: The agent creates bins without guidance on what makes bins "sensible." The prompt says "Create sensible bins based on data range" but doesn't specify heuristics.
+
+**D3 (trimmed mean)**: This is a regression — the feature was removed or disabled. Requires **system-level** code change to reintroduce.
+
+**D4 (missing binned distribution)**: Agent didn't recognize that numeric sub-components of a question needed binning.
+
+#### Classification
+
+| Sub-issue | Fix Category |
+|-----------|--------------|
+| D1, D2, D4 | Prompt-level |
+| D3 | System-level |
+
+#### Recommended Prompt Addition
+
+**Location**: `src/prompts/verification/alternative.ts` — Expand `TOOL 5: BINNED DISTRIBUTIONS`
+
+```markdown
+TOOL 5: BINNED DISTRIBUTIONS FOR NUMERIC VARIABLES
+
+WHEN TO USE: mean_rows questions where distribution shape matters analytically
+
+BINNING HEURISTICS BY QUESTION TYPE:
+
+FOR TENURE/EXPERIENCE QUESTIONS (years in role, years of practice):
+- Use interpretable round-number breakpoints: 5, 10, 15, 20, 25
+- Consider natural career stages (early career, mid-career, senior)
+- 4-6 bins is usually sufficient
+- Create high-level rollups: "≤15 years (Total)" vs ">15 years (Total)"
+- Example bins: 0-4, 5-9, 10-14, 15-19, 20+
+
+FOR VOLUME/COUNT QUESTIONS (patients per month, transactions, etc.):
+- Use round numbers appropriate to the scale: 50, 100, 200, 500, 1000
+- Consider any qualification thresholds (if >=50 was required, start there)
+- Create meaningful rollups: "Low volume (Total)" vs "High volume (Total)"
+- Consider the natural distribution shape (often right-skewed)
+
+FOR PERCENTAGE QUESTIONS (% of time, % of budget):
+- Use intuitive quartile-like breakpoints: 25%, 50%, 75%
+- If a threshold was a qualifier (e.g., >=70%), acknowledge it:
+  - Start bins at the threshold
+  - Don't show bins below threshold (they're structurally 0%)
+- Example for "% of time" with 70% qualifier: 70-79%, 80-89%, 90-100%
+
+GENERAL PRINCIPLES:
+- Fewer bins (4-6) are usually better than many narrow bins (8+)
+- Create rollup NETs for major thresholds
+- Ensure bins don't overlap and cover the full valid range
+- When a qualification threshold applies, note it in userNote
+
+NUMERIC SUB-COMPONENTS:
+When a question has multiple numeric parts (e.g., "how many in each time period"),
+each numeric sub-part may warrant its own binned distribution, not just the
+categorical breakdown across parts.
+```
+
+#### System-Level Fix for D3
+
+The trimmed mean calculation needs to be reintroduced in the R script generation:
+- Add "Mean (excluding outliers)" row for numeric questions
+- Use consistent method (e.g., IQR rule: exclude values > Q3 + 1.5*IQR or < Q1 - 1.5*IQR)
+- Record method in table metadata
+
+---
+
+### Theme E: Calculations — Root Cause & Fix
+
+#### Classification
+
+These are entirely **system-level** issues:
+
+| Sub-issue | Nature | Fix |
+|-----------|--------|-----|
+| E1: Stat testing | Configuration | Add pipeline-level config for confidence level, test type, minimum base |
+| E2: Mean/median mismatch | Implementation | Audit R calculation logic, compare against reference implementation |
+
+#### Recommended System Changes
+
+**E1: Stat Testing Configurability**
+- Add to pipeline config: `statisticalTesting.confidenceLevel` (default: 0.90)
+- Add to pipeline config: `statisticalTesting.testType` (default: "unpooled_z" for proportions, "t_test" for means)
+- Add to pipeline config: `statisticalTesting.minimumBase` (default: 0, meaning no minimum)
+- Document in Excel footnote: what tests were used, at what confidence level
+
+**E2: Calculation Audit**
+- Compare our R calculation logic line-by-line against WinCross documentation
+- Check handling of: extreme values, top-coding, minimum thresholds, NA values
+- Identify specific questions where results diverge and trace the calculation
+
+---
+
+### Theme F: Presentation — Root Cause & Fix
+
+#### What the Analysis Revealed
+
+The prompt lacks examples of advanced presentation patterns:
+- Factoring out common prefixes into header rows
+- Maintaining consistent row ordering across related tables
+- Using header rows to group conceptually related items
+
+#### Recommended Prompt Addition
+
+**Location**: `src/prompts/verification/alternative.ts` — Add new section `<presentation_patterns>`
+
+```markdown
+<presentation_patterns>
+ADVANCED PRESENTATION: IMPROVING SCANNABILITY
+
+PATTERN 1: FACTOR OUT COMMON PREFIXES
+When multiple rows share a long common prefix, extract it as a header row.
+
+BEFORE (verbose, hard to scan):
+- "Recommend approach X for patients with condition A and threshold >=55"
+- "Recommend approach X for patients with condition A and threshold >=70"
+- "Recommend approach X for patients with condition A and threshold >=100"
+
+AFTER (scannable):
+- "Recommend approach X for patients with condition A and:" [HEADER]
+  - "Threshold >=55"
+  - "Threshold >=70"
+  - "Threshold >=100"
+
+Implementation:
+{ "variable": "_CAT_", "label": "Recommend approach X for... and:", "filterValue": "_HEADER_", "indent": 0 },
+{ "variable": "Q8", "label": "Threshold >=55", "filterValue": "1", "indent": 1 },
+{ "variable": "Q8", "label": "Threshold >=70", "filterValue": "2", "indent": 1 },
+{ "variable": "Q8", "label": "Threshold >=100", "filterValue": "3", "indent": 1 }
+
+
+PATTERN 2: GROUP BY PRIMARY DIMENSION
+When rows combine two dimensions (e.g., brand × condition), use one dimension as header rows.
+
+BEFORE (interleaved, confusing):
+- "Brand A: Condition 1"
+- "Brand A: Condition 2"
+- "Brand B: Condition 1"
+- "Brand B: Condition 2"
+
+AFTER (grouped by brand):
+- "Brand A" [HEADER]
+  - "Condition 1"
+  - "Condition 2"
+- "Brand B" [HEADER]
+  - "Condition 1"
+  - "Condition 2"
+
+
+PATTERN 3: CONSISTENT ROW ORDERING ACROSS RELATED TABLES
+When multiple tables cover the same items (brands, products, categories):
+- Use the SAME row order across all related tables
+- Default to datamap order unless there's a strong analytical reason to reorder
+- WHY: Users copy rows across tables for comparison. Consistent order means rows align.
+
+PRINCIPLE: Stability > Optimization
+A consistent mediocre order is better than an inconsistent "optimal" order.
+
+
+PATTERN 4: LOGICAL GROUPING WITHIN TABLES
+When a table mixes conceptually different rows:
+- Group related rows together using category headers
+- Separate standalone items from rollup groups
+- Example ordering: Individual items first, then NETs; OR NETs first, then components
+- Pick one approach and apply consistently
+</presentation_patterns>
+```
+
+---
+
+### Theme G: Over-splitting — Root Cause & Fix
+
+#### What the Analysis Revealed
+
+The VerificationAgent creates both combined tables AND split tables for the same data, even when the combined table already shows the comparison. This results in significantly more tables than necessary.
+
+#### Current Prompt Gap
+
+No guidance on when splitting adds value vs when it creates redundancy.
+
+#### Recommended Prompt Addition
+
+**Location**: `src/prompts/verification/alternative.ts` — Add to `<analysis_checklist>` after Step 4
+
+```markdown
+□ STEP 4B: AVOID REDUNDANT SPLITS
+  When considering derived/split tables, ask: "Does this split ADD substantial value?"
+
+  PREFER COMBINED tables when:
+  - The combined table already shows the comparison (e.g., columns for each condition)
+  - The split would only add minor statistics (median, std dev) that are rarely reported
+  - The combined table is reasonably sized (<20 rows)
+
+  CREATE SPLIT tables when:
+  - The combined table is too large (>20 rows) to scan easily
+  - The split reveals patterns not visible in the combined view
+  - Different bases are required for each split (this is BaseFilterAgent's job, not yours)
+  - The analysis calls for comparing individual items in detail
+
+  GUIDELINE: Fewer, denser tables are better than many sparse tables.
+  If a combined table already shows the comparison, don't also create per-condition splits
+  just to add median/std dev. That bloats the workbook without adding analytical value.
+```
+
+---
+
+### Summary: Implementation Roadmap
+
+#### Phase 1: Prompt Updates (Immediate)
+
+These changes can be made to improve the next pipeline run:
+
+**BaseFilterAgent (`src/prompts/basefilter/production.ts`):**
+1. Add "Distinguishing Question Types by Intent" section
+2. Add hypothetical scenario example
+3. Add caution for change/comparison filters
+
+**VerificationAgent (`src/prompts/verification/alternative.ts`):**
+1. Add Rule 10 (no trivial NETs) and Rule 11 (suppress degenerate tables)
+2. Expand TOOL 2 with conceptual grouping NETs
+3. Expand TOOL 5 with binning heuristics
+4. Add `<presentation_patterns>` section
+5. Add Step 4B for avoiding redundant splits
+
+#### Phase 2: System Changes (Requires Code)
+
+| Change | Files Affected | Complexity |
+|--------|----------------|------------|
+| Reintroduce trimmed mean | `src/lib/r/RScriptGeneratorV2.ts` | Medium |
+| Stat testing configurability | Pipeline config, R generation | High |
+| Calculation audit | R generation, compare to WinCross | Medium |
+
+#### Phase 3: Future Features (Post-MVP)
+
+| Feature | Description |
+|---------|-------------|
+| Pre/post comparison tables | Detect paired questions, generate comparison views |
+| Excel color themes | 4+ selectable palettes mapped to semantic roles |
+| Interactive browser review | Preview tables, toggle exclusions, live feedback |
 
 ---
 
