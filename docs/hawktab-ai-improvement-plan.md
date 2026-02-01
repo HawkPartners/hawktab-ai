@@ -986,39 +986,34 @@ When a table mixes conceptually different rows:
 
 ---
 
-### Theme G: Over-splitting — Root Cause & Fix
+### Theme G: Over-splitting — Root Cause & Analysis
 
-#### What the Analysis Revealed
+#### What the Investigation Revealed
 
-The VerificationAgent creates both combined tables AND split tables for the same data, even when the combined table already shows the comparison. This results in significantly more tables than necessary.
+Over-splitting happens because of how the pipeline processes tables:
 
-#### Current Prompt Gap
+1. **VerificationAgent** creates situation views: `a3a`, `a3a_in_addition`, `a3a_without_statins`
 
-No guidance on when splitting adds value vs when it creates redundancy.
+2. **BaseFilterAgent** processes each table **independently** — it doesn't know what other tables exist
 
-#### Recommended Prompt Addition
+3. When it sees `a3a`, it correctly splits by brand → `a3a_leqvio`, `a3a_praluent`, etc.
 
-**Location**: `src/prompts/verification/alternative.ts` — Add to `<analysis_checklist>` after Step 4
+4. When it sees `a3a_in_addition`, it **doesn't know** `a3a_leqvio` already exists, so it correctly splits again → `a3a_in_addition_leqvio`, etc.
 
-```markdown
-□ STEP 4B: AVOID REDUNDANT SPLITS
-  When considering derived/split tables, ask: "Does this split ADD substantial value?"
+5. **Result**: 15 tables instead of 5, but each split was locally correct
 
-  PREFER COMBINED tables when:
-  - The combined table already shows the comparison (e.g., columns for each condition)
-  - The split would only add minor statistics (median, std dev) that are rarely reported
-  - The combined table is reasonably sized (<20 rows)
+**The core issue**: This is an **architectural limitation**, not an agent error. BaseFilterAgent processes tables in isolation without visibility into what tables already exist in the system. Given its limited context, it's doing exactly what it should.
 
-  CREATE SPLIT tables when:
-  - The combined table is too large (>20 rows) to scan easily
-  - The split reveals patterns not visible in the combined view
-  - Different bases are required for each split (this is BaseFilterAgent's job, not yours)
-  - The analysis calls for comparing individual items in detail
+#### Classification: Architectural (Not Prompt-Level)
 
-  GUIDELINE: Fewer, denser tables are better than many sparse tables.
-  If a combined table already shows the comparison, don't also create per-condition splits
-  just to add median/std dev. That bloats the workbook without adding analytical value.
-```
+This isn't fixable with prompt guidance. Possible system-level solutions:
+
+1. **Give BaseFilterAgent visibility** into all tables created so far in this run
+2. **Process related tables together** instead of one at a time
+3. **Post-processing step** to identify and merge/remove redundant tables
+4. **Prevent upstream splits** — have VerificationAgent not create the situation views, letting BaseFilterAgent handle all splitting
+
+**Status**: Known limitation. Acceptable for MVP. Future enhancement could add cross-table awareness to reduce redundancy.
 
 ---
 
