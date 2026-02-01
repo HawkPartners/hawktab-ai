@@ -24,15 +24,25 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 
 ## Part 2: Finalize Leqvio Monotherapy Demand Testing
 
-**Status**: IN PROGRESS — Iteration 1 of 3
+**Status**: IN PROGRESS — Iteration 1 reviewed, awaiting prompt iteration
 
 **Goal**: Confirm output quality and consistency for our primary dataset through practical testing.
 
 ### Current State
 
 **Most recent run**: `outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-02-01T05-49-17-899Z`
-- This run has NOT been reviewed in detail yet
-- When returning, start here with top-to-bottom review
+- ✅ **REVIEWED** — Detailed top-to-bottom review completed (Feb 1, 2026)
+- 24 feedback items captured in `feedback.md`
+- See feedback file for prioritized themes and next steps
+
+**Key findings from review**:
+- BaseFilterAgent calibration is inconsistent (over/under filtering) — highest priority
+- 100% NET guardrail needed (4+ instances) — simple fix, high impact
+- S11 mean/median mismatch needs investigation — calculation accuracy
+- Presentation polish items captured as few-shot example opportunities
+- Pre/post comparison tables NOT blocking — analysts can derive themselves
+
+**Next step**: Iterate on prompts (especially BaseFilterAgent) using feedback, then run again to validate improvements.
 
 **Review process**:
 1. Open Excel, go through tables top-to-bottom
@@ -269,4 +279,4 @@ As we test broader datasets, we'll likely discover that we need more information
 
 *Created: January 6, 2026*
 *Updated: February 1, 2026*
-*Status: Part 1 complete, Part 2 iteration 1 (BaseFilterAgent pivot complete, review pending)*
+*Status: Part 1 complete, Part 2 iteration 1 reviewed — 24 feedback items captured, awaiting prompt iteration*
