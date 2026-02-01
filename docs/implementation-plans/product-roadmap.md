@@ -233,6 +233,94 @@ When no banner plan is providedâ€”or user explicitly chooses "AI generate cuts"â
 
 ---
 
+### 2.11 Excel Color Themes
+
+**Problem**: We have effectively one styling look-and-feel. Users may want flexibility in workbook color palette while preserving readability and visual hierarchy.
+
+**What's Needed**:
+
+1. **Map current colors to semantic roles**:
+   - Header row fill
+   - Alternating row fill (zebra striping)
+   - Banner column separation
+   - NET/Total row emphasis
+   - Derived row styling
+   - Stat letter highlighting
+
+2. **Define 4+ curated palettes**:
+   | Theme | Description |
+   |-------|-------------|
+   | Classic (default) | Current blue-gray palette |
+   | Minimal | Light grays, subtle contrast |
+   | High Contrast | Bold colors for presentations |
+   | Print-Friendly | Optimized for black-and-white printing |
+
+3. **CLI configuration**:
+   - `--theme classic` (default)
+   - `--theme minimal`
+   - Show available themes: `hawktab themes`
+
+4. **Implementation**:
+   - Create `src/lib/excel/themes.ts` with semantic color mapping
+   - ExcelFormatter reads theme config and applies colors
+   - Each palette plugs into same semantic roles
+
+**Phase 2**: CLI flag for theme selection
+**Phase 3**: UI dropdown in project settings
+
+**Level of Effort**: Low (color mapping + config flag, no structural changes)
+
+---
+
+### 2.12 Interactive Browser Review (defer to after MVP delivery)
+
+**Problem**: Current review workflow is inefficient:
+- Reviewer looks at static Excel output
+- Decides which tables to exclude/keep
+- Has to regenerate full workbook to see changes
+
+**Why It Matters**: This friction slows down iteration. Reviewers want to see changes live before committing to final output.
+
+> **Note**: This feature isn't blocking for initial Antares access. The core value is reliable tabs from their existing workflow. We can tell them: "We have a plan to add interactive review, but we wanted to get this in your hands as soon as possible." Ship as a fast-follow after MVP delivery.
+
+**Desired Workflow**:
+
+1. After pipeline runs, open preview **in browser** (not Excel)
+2. See all tables rendered in a scrollable list
+3. Toggle tables on/off (exclude/include) with instant visual feedback
+4. Add feedback notes to specific tables
+5. See changes **live** without regeneration
+6. Click "Generate Final Excel" when satisfied
+
+**Implementation**:
+
+1. **Table preview component**:
+   - Render `tables.json` as HTML tables
+   - Style to match Excel output (close enough for review purposes)
+   - Collapsible sections by question/table group
+
+2. **State management**:
+   - Track include/exclude toggles in local state
+   - Track feedback notes per table
+   - No backend changes until "Generate" clicked
+
+3. **Regeneration on demand**:
+   - When user clicks "Generate Final Excel", apply exclusions and feedback
+   - Call existing regeneration logic (2.9, 2.10)
+   - Provide updated Excel for download
+
+4. **Route structure**:
+   ```
+   /projects/[id]/review     # Interactive review page
+   /projects/[id]/results    # Final download page (existing)
+   ```
+
+**Phase 3**: Ship after core UI is stable. Requires 2.9 (include/exclude) and 2.10 (feedback) as foundations.
+
+**Level of Effort**: Medium-High (new UI component, state management, integration with existing regeneration)
+
+---
+
 ## Phase 3: Productization
 
 Taking the reliable, feature-rich CLI and bringing it to a self-service UI that external parties like Antares can use.
