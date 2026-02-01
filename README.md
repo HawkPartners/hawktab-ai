@@ -60,7 +60,7 @@ An AI-powered system that:
 | **Banner Processing** | Production | PDF/DOC extraction via Vision API, group separation |
 | **Data Map Processing** | Production | CSV parsing with parent inference, type classification |
 | **CrossTab Agent** | Production | Expression validation with confidence scoring |
-| **Table Agent** | Production | AI-based table structure decisions (frequency vs mean) |
+| **Table Generator** | Production | Deterministic table structure from datamap (frequency vs mean) |
 | **Verification Agent** | Production | Survey-aware label cleanup, NET rows, T2B, table splitting |
 | **BaseFilter Agent** | Production | Skip/show logic detection, base filters, table splits |
 | **R Validation** | Production | Per-table validation, retry with error context |
@@ -70,7 +70,7 @@ An AI-powered system that:
 | **API Pipeline** | Production | Single endpoint, session-based processing |
 
 ### Key Achievements
-- **TableAgent**: AI decides table structure based on `normalizedType` (replaces regex)
+- **TableGenerator**: Deterministic table structure based on `normalizedType` (no AI needed)
 - **VerificationAgent**: Uses survey document to fix labels, add NETs, create T2B/B2B tables
 - **BaseFilterAgent**: Detects skip/show logic, applies base filters, splits tables when rows need different bases
 - **RScriptGeneratorV2**: JSON output with `ExtendedTableDefinition` support (NET rows, indentation)
@@ -200,13 +200,13 @@ npx tsx scripts/export-excel.ts [sessionId]        # Uses specific session
 - `results/crosstabs.xlsx` - Formatted Excel workbook (Antares-style)
 - `pipeline-summary.json` - Run metadata and timing
 
-The pipeline runs 10 steps:
+The pipeline runs 10 steps (4 AI agents + 6 deterministic steps):
 1. **DataMapProcessor** - Parse datamap CSV with SPSS metadata
-2. **BannerAgent** - Extract banner structure from PDF/DOCX
-3. **CrosstabAgent** - Validate and generate R expressions for cuts
-4. **TableAgent** - Analyze variables and generate table definitions
-5. **VerificationAgent** - Enhance tables using survey document (fix labels, add NETs, T2B)
-6. **BaseFilterAgent** - Detect skip/show logic, apply base filters, split tables as needed
+2. **BannerAgent** *(AI)* - Extract banner structure from PDF/DOCX
+3. **CrosstabAgent** *(AI)* - Validate and generate R expressions for cuts
+4. **TableGenerator** - Build table definitions from datamap (deterministic)
+5. **VerificationAgent** *(AI)* - Enhance tables using survey document (fix labels, add NETs, T2B)
+6. **BaseFilterAgent** *(AI)* - Detect skip/show logic, apply base filters, split tables as needed
 7. **R Validation** - Validate each table's R code before full script run
 8. **RScriptGeneratorV2** - Generate R script with derived tables
 9. **R Execution** - Run R script to calculate tables with significance testing
@@ -226,7 +226,7 @@ Upload files via http://localhost:3000:
 ```
 hawktab-ai/
 ├── src/
-│   ├── agents/           # AI agents (Banner, Crosstab, Table, Verification)
+│   ├── agents/           # AI agents (Banner, Crosstab, Verification, BaseFilter)
 │   ├── app/api/          # API endpoints
 │   ├── lib/
 │   │   ├── excel/        # ExcelFormatter and table renderers

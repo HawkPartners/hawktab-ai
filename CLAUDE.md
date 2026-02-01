@@ -71,28 +71,73 @@ We're making HawkTab AI reliably produce publication-quality crosstabs that matc
 ## Pipeline Architecture
 
 ```
-User Uploads → BannerAgent → CrosstabAgent → TableAgent → VerificationAgent → BaseFilterAgent → R Validation → R Script → Excel
-                   ↓              ↓              ↓              ↓                    ↓               ↓             ↓          ↓
-              Banner PDF      DataMap        Questions      Survey Doc          Survey Doc      Catch errors   tables.json  .xlsx
-              → Cuts          → Variables    → Tables       → Enhanced          → Base filters   before R run   (calculated)
+User Uploads → BannerAgent → CrosstabAgent → TableGenerator → VerificationAgent → BaseFilterAgent → R Validation → R Script → Excel
+                   ↓              ↓              ↓                  ↓                    ↓               ↓             ↓          ↓
+              Banner PDF      DataMap        DataMap            Survey Doc          Survey Doc      Catch errors   tables.json  .xlsx
+              → Cuts          → Variables    → Tables           → Enhanced          → Base filters   before R run   (calculated)
 ```
 
-### The Five Agents
+### The Four AI Agents
 
 | Agent | Purpose | Key Outputs |
 |-------|---------|-------------|
 | **BannerAgent** | Extract banner structure from PDF/DOCX | Banner groups, columns, stat letters |
 | **CrosstabAgent** | Validate expressions, generate R syntax | CutDefinitions with R expressions |
-| **TableAgent** | Decide table structure per variable | TableDefinitions (frequency/mean_rows) |
 | **VerificationAgent** | Enhance tables using survey document | ExtendedTableDefinitions (NETs, T2B, labels) |
 | **BaseFilterAgent** | Detect skip/show logic, apply base filters | additionalFilter, table splits for different bases |
+
+### TableGenerator (Deterministic)
+
+The TableGenerator is **not an AI agent**—it's deterministic code that builds table definitions from the datamap. It uses `normalizedType` to decide table structure (frequency vs mean_rows). Located at `src/lib/tables/TableGenerator.ts`.
 
 ### Provenance Tracking
 
 Each table tracks who last modified it:
-- `sourceTableId` — Points back to TableAgent's tableId (VerificationAgent sets when splitting)
+- `sourceTableId` — Points back to TableGenerator's tableId (VerificationAgent sets when splitting)
 - `splitFromTableId` — Points back to VerificationAgent's tableId (BaseFilterAgent sets when splitting)
 - `lastModifiedBy` — Which agent last made meaningful changes ('VerificationAgent' or 'BaseFilterAgent')
+
+### Two Interaction Modes
+
+The pipeline can be run two ways:
+
+| Mode | Entry Point | Use Case |
+|------|-------------|----------|
+| **CLI** | `npx tsx scripts/test-pipeline.ts` | Development, testing, iteration |
+| **UI** | `http://localhost:3000` | User-facing uploads, future production |
+
+The CLI is our primary development interface. UI behavior should mirror CLI pipeline behavior—when we update the pipeline, we may need to sync changes to the UI.
+
+**Most recent run**: Pipeline outputs are saved to `outputs/<dataset>/pipeline-<timestamp>/`. The most recent run is always the latest timestamp folder.
+
+### Cost & Time Tracking
+
+Every agent records its token usage and duration via `recordAgentMetrics()` from `src/lib/observability.ts`. At the end of a pipeline run, `getPipelineCostSummary()` returns total cost and per-agent breakdown.
+
+**When adding new agents or systems**: Always integrate with the metrics collector so costs appear in the pipeline summary. See existing agents for the pattern:
+
+```typescript
+import { recordAgentMetrics } from '../lib/observability';
+
+// After generateText call:
+recordAgentMetrics(
+  'AgentName',
+  getModelName(),
+  { input: usage?.inputTokens || 0, output: usage?.outputTokens || 0 },
+  durationMs
+);
+```
+
+### Prompt Paths (A/B)
+
+Some agents have multiple prompt versions for experimentation:
+
+| Agent | Path A (production.ts) | Path B (alternative.ts) |
+|-------|------------------------|-------------------------|
+| VerificationAgent | Conservative, fewer changes | More aggressive table enhancement |
+| BaseFilterAgent | Production prompt | (none currently) |
+
+Select via environment variable or in code. This allows prompt iteration without losing working versions.
 
 ### Per-Agent Configuration
 
@@ -149,12 +194,13 @@ npx tsx scripts/export-excel.ts               # Excel from existing tables.json
 ```
 hawktab-ai/
 ├── src/
-│   ├── agents/                    # AI agents
+│   ├── agents/                    # AI agents (4 total)
 │   │   ├── BannerAgent.ts
 │   │   ├── CrosstabAgent.ts
-│   │   ├── TableAgent.ts
 │   │   ├── VerificationAgent.ts
-│   │   └── BaseFilterAgent.ts     # NEW: Skip/show logic handling
+│   │   └── BaseFilterAgent.ts
+│   ├── lib/tables/
+│   │   └── TableGenerator.ts      # Deterministic table builder (not an AI agent)
 │   ├── schemas/                   # Zod type definitions
 │   │   ├── tableAgentSchema.ts        # TableDefinition
 │   │   ├── verificationAgentSchema.ts # ExtendedTableDefinition
