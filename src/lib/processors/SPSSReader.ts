@@ -12,9 +12,11 @@
  */
 
 import fs from 'fs/promises';
+import { createRequire } from 'module';
 import { ProcessedDataMapVariable } from './DataMapProcessor';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+// sav-reader is CommonJS only, use createRequire for ESM compatibility
+const require = createRequire(import.meta.url);
 const { SavFileReader, SavBufferReader } = require('sav-reader');
 
 // ===== TYPES =====

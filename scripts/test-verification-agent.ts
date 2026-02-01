@@ -26,8 +26,7 @@
  */
 
 // Load environment variables
-import { loadEnvConfig } from '@next/env';
-loadEnvConfig(process.cwd());
+import '../src/lib/loadEnv';
 
 import fs from 'fs/promises';
 import path from 'path';

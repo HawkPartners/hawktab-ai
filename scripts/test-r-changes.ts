@@ -44,8 +44,7 @@ console.warn('\x1b[33m' + '=' .repeat(70) + '\x1b[0m');
 console.warn('');
 
 // Load environment variables
-import { loadEnvConfig } from '@next/env';
-loadEnvConfig(process.cwd());
+import '../src/lib/loadEnv';
 
 import fs from 'fs/promises';
 import path from 'path';

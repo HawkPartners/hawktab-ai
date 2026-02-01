@@ -44,6 +44,7 @@ import {
 import { getVerificationPrompt } from '../prompts';
 import { retryWithPolicyHandling } from '../lib/retryWithPolicyHandling';
 import { recordAgentMetrics } from '../lib/observability';
+import { getPipelineEventBus } from '../lib/events';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -507,12 +508,26 @@ export async function verifyAllTablesParallel(
   const limit = pLimit(concurrency);
   let completed = 0;
 
+  // Track active slots for event emission
+  const activeSlots = new Map<string, number>(); // tableId -> slotIndex
+  let nextSlotIndex = 0;
+
   // Process in parallel with limit
   const resultPromises = allTables.map(({ table, questionId, questionText, index }) =>
     limit(async () => {
       if (abortSignal?.aborted) {
         throw new DOMException('VerificationAgent aborted', 'AbortError');
       }
+
+      // Assign slot index (round-robin)
+      const slotIndex = nextSlotIndex % concurrency;
+      nextSlotIndex++;
+      activeSlots.set(table.tableId, slotIndex);
+
+      const startTime = Date.now();
+
+      // Emit slot:start event
+      getPipelineEventBus().emitSlotStart('VerificationAgent', slotIndex, table.tableId);
 
       const datamapContext = getDatamapContextForTable(table, datamapByColumn);
       const input: VerificationInput = {
@@ -527,7 +542,16 @@ export async function verifyAllTablesParallel(
       const contextScratchpad = createContextScratchpadTool('VerificationAgent', table.tableId);
       const result = await verifyTable(input, abortSignal, contextScratchpad);
 
+      // Emit slot:complete event
+      const durationMs = Date.now() - startTime;
+      getPipelineEventBus().emitSlotComplete('VerificationAgent', slotIndex, table.tableId, durationMs);
+      activeSlots.delete(table.tableId);
+
       completed++;
+
+      // Emit agent:progress event
+      getPipelineEventBus().emitAgentProgress('VerificationAgent', completed, allTables.length);
+
       try {
         onProgress?.(completed, allTables.length, table.tableId);
       } catch { /* ignore progress errors */ }

@@ -51,8 +51,7 @@
  */
 
 // Load environment variables
-import { loadEnvConfig } from '@next/env';
-loadEnvConfig(process.cwd());
+import '../src/lib/loadEnv';
 
 import fs from 'fs/promises';
 import path from 'path';
@@ -77,6 +76,7 @@ import { ExcelFormatter, type ExcelFormat, type DisplayMode } from '../src/lib/e
 import { extractStreamlinedData } from '../src/lib/data/extractStreamlinedData';
 import { getPromptVersions } from '../src/lib/env';
 import { resetMetricsCollector, getPipelineCostSummary, getMetricsCollector } from '../src/lib/observability';
+import { getPipelineEventBus, STAGE_NAMES } from '../src/lib/events';
 import type { VerboseDataMapType } from '../src/schemas/processingSchemas';
 import type { ExtendedTableDefinition } from '../src/schemas/verificationAgentSchema';
 
@@ -237,6 +237,9 @@ async function runPipeline(datasetFolder: string) {
   // Reset metrics collector for this pipeline run
   resetMetricsCollector();
 
+  // Get event bus for CLI events
+  const eventBus = getPipelineEventBus();
+
   log('', 'reset');
   log('='.repeat(70), 'magenta');
   log('  HawkTab AI - Pipeline Test', 'bright');
@@ -273,17 +276,22 @@ async function runPipeline(datasetFolder: string) {
   const spssDestPath = path.join(outputDir, 'dataFile.sav');
   await fs.copyFile(files.spss, spssDestPath);
 
+  // Emit pipeline:start event
+  eventBus.emitPipelineStart(files.name, totalSteps, outputDir);
+
   // -------------------------------------------------------------------------
   // Step 1: DataMapProcessor
   // -------------------------------------------------------------------------
   logStep(1, totalSteps, 'Processing datamap CSV...');
   const stepStart1 = Date.now();
+  eventBus.emitStageStart(1, STAGE_NAMES[1]);
 
   const dataMapProcessor = new DataMapProcessor();
   const dataMapResult = await dataMapProcessor.processDataMap(files.datamap, files.spss, outputDir);
   const verboseDataMap = dataMapResult.verbose as VerboseDataMapType[];
   log(`  Processed ${verboseDataMap.length} variables`, 'green');
   log(`  Duration: ${Date.now() - stepStart1}ms`, 'dim');
+  eventBus.emitStageComplete(1, STAGE_NAMES[1], Date.now() - stepStart1);
   log('', 'reset');
 
   // -------------------------------------------------------------------------
@@ -310,6 +318,7 @@ async function runPipeline(datasetFolder: string) {
   const pathAPromise = (async () => {
     const pathAStart = Date.now();
     log(`  [Path A] Starting BannerAgent...`, 'cyan');
+    eventBus.emitStageStart(2, STAGE_NAMES[2]);
 
     const bannerAgent = new BannerAgent();
     const bannerResult = await bannerAgent.processDocument(files.banner, outputDir);
@@ -327,7 +336,10 @@ async function runPipeline(datasetFolder: string) {
     }
 
     log(`  [Path A] BannerAgent: ${groupCount} groups, ${columnCount} columns`, 'green');
+    eventBus.emitStageComplete(2, STAGE_NAMES[2], Date.now() - pathAStart);
     log(`  [Path A] Starting CrosstabAgent...`, 'cyan');
+    const crosstabStart = Date.now();
+    eventBus.emitStageStart(3, STAGE_NAMES[3]);
 
     const agentBanner = bannerResult.agent || [];
     const crosstabResult = await processCrosstabGroups(
@@ -337,6 +349,7 @@ async function runPipeline(datasetFolder: string) {
     );
 
     log(`  [Path A] CrosstabAgent: ${crosstabResult.result.bannerCuts.length} groups validated`, 'green');
+    eventBus.emitStageComplete(3, STAGE_NAMES[3], Date.now() - crosstabStart);
     log(`  [Path A] Complete in ${((Date.now() - pathAStart) / 1000).toFixed(1)}s`, 'dim');
 
     return { bannerResult, crosstabResult, agentBanner, groupCount, columnCount };
@@ -346,6 +359,7 @@ async function runPipeline(datasetFolder: string) {
   const pathBPromise = (async () => {
     const pathBStart = Date.now();
     log(`  [Path B] Starting TableGenerator...`, 'cyan');
+    eventBus.emitStageStart(4, STAGE_NAMES[4]);
 
     // Replace TableAgent (LLM) with TableGenerator (deterministic)
     const groups = groupDataMap(verboseDataMap);
@@ -354,6 +368,7 @@ async function runPipeline(datasetFolder: string) {
     const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
     const stats = getGeneratorStats(generatedOutputs);
     log(`  [Path B] TableGenerator: ${tableAgentTables.length} tables (${stats.tableTypeDistribution['frequency'] || 0} freq, ${stats.tableTypeDistribution['mean_rows'] || 0} mean) in ${stats.totalRows} rows`, 'green');
+    eventBus.emitStageComplete(4, STAGE_NAMES[4], Date.now() - pathBStart);
 
     // Survey processing
     let surveyMarkdown: string | null = null;
@@ -374,6 +389,8 @@ async function runPipeline(datasetFolder: string) {
 
     if (surveyMarkdown) {
       log(`  [Path B] Starting VerificationAgent (parallel, concurrency: 3)...`, 'cyan');
+      const verificationStart = Date.now();
+      eventBus.emitStageStart(5, STAGE_NAMES[5]);
       try {
         const verificationResult = await verifyAllTablesParallel(
           tableAgentResults,
@@ -383,8 +400,10 @@ async function runPipeline(datasetFolder: string) {
         );
         verifiedTables = verificationResult.tables;
         log(`  [Path B] VerificationAgent: ${verifiedTables.length} tables (${verificationResult.metadata.tablesModified} modified)`, 'green');
+        eventBus.emitStageComplete(5, STAGE_NAMES[5], Date.now() - verificationStart);
       } catch (verifyError) {
         log(`  [Path B] VerificationAgent failed: ${verifyError instanceof Error ? verifyError.message : String(verifyError)}`, 'yellow');
+        eventBus.emitStageFailed(5, STAGE_NAMES[5], verifyError instanceof Error ? verifyError.message : String(verifyError));
         verifiedTables = tableAgentResults.flatMap(group =>
           group.tables.map(t => toExtendedTable(t, group.questionId))
         );
@@ -528,6 +547,7 @@ async function runPipeline(datasetFolder: string) {
   // -------------------------------------------------------------------------
   logStep(6, totalSteps, 'Analyzing table bases for skip logic...');
   const stepStart6 = Date.now();
+  eventBus.emitStageStart(6, STAGE_NAMES[6]);
 
   let filteredTables: ExtendedTableDefinition[];
   if (surveyMarkdown) {
@@ -558,6 +578,7 @@ async function runPipeline(datasetFolder: string) {
     log(`  No survey - skipping base filter analysis`, 'yellow');
     filteredTables = sortedTables;
   }
+  eventBus.emitStageComplete(6, STAGE_NAMES[6], Date.now() - stepStart6);
   log(`  Duration: ${Date.now() - stepStart6}ms`, 'dim');
   log('', 'reset');
 
@@ -566,6 +587,7 @@ async function runPipeline(datasetFolder: string) {
   // -------------------------------------------------------------------------
   logStep(7, totalSteps, 'Validating R code per table...');
   const stepStart7 = Date.now();
+  eventBus.emitStageStart(7, STAGE_NAMES[7]);
 
   const cutsSpec = buildCutsSpec(crosstabResult.result);
 
@@ -597,6 +619,7 @@ async function runPipeline(datasetFolder: string) {
   if (failedValidationCount > 0) {
     log(`  Failed R validation: ${failedValidationCount}`, 'red');
   }
+  eventBus.emitStageComplete(7, STAGE_NAMES[7], Date.now() - stepStart7);
   log(`  Duration: ${Date.now() - stepStart7}ms`, 'dim');
   log('', 'reset');
 
@@ -610,6 +633,7 @@ async function runPipeline(datasetFolder: string) {
   // -------------------------------------------------------------------------
   logStep(8, totalSteps, 'Generating R script...');
   const stepStart8 = Date.now();
+  eventBus.emitStageStart(8, STAGE_NAMES[8]);
   const rDir = path.join(outputDir, 'r');
   await fs.mkdir(rDir, { recursive: true });
 
@@ -633,6 +657,7 @@ async function runPipeline(datasetFolder: string) {
 
   log(`  Generated R script (${Math.round(masterScript.length / 1024)} KB)`, 'green');
   log(`  Tables in script: ${allTablesForR.length} (${validTables.length} valid, ${newlyExcluded.length} excluded)`, 'green');
+  eventBus.emitStageComplete(8, STAGE_NAMES[8], Date.now() - stepStart8);
   log(`  Duration: ${Date.now() - stepStart8}ms`, 'dim');
   log('', 'reset');
 
@@ -641,6 +666,7 @@ async function runPipeline(datasetFolder: string) {
   // -------------------------------------------------------------------------
   logStep(9, totalSteps, 'Executing R script...');
   const stepStart9 = Date.now();
+  eventBus.emitStageStart(9, STAGE_NAMES[9]);
 
   // Create results directory
   const resultsDir = path.join(outputDir, 'results');
@@ -709,6 +735,7 @@ async function runPipeline(datasetFolder: string) {
       log(`  WARNING: No tables.json generated`, 'yellow');
     }
 
+    eventBus.emitStageComplete(9, STAGE_NAMES[9], Date.now() - stepStart9);
     log(`  Duration: ${Date.now() - stepStart9}ms`, 'dim');
 
     // -------------------------------------------------------------------------
@@ -716,6 +743,7 @@ async function runPipeline(datasetFolder: string) {
     // -------------------------------------------------------------------------
     logStep(10, totalSteps, 'Generating Excel workbook...');
     const stepStart10 = Date.now();
+    eventBus.emitStageStart(10, STAGE_NAMES[10]);
 
     const tablesJsonPath = path.join(resultsDir, 'tables.json');
     const excelPath = path.join(resultsDir, 'crosstabs.xlsx');
@@ -729,9 +757,11 @@ async function runPipeline(datasetFolder: string) {
       await formatter.saveToFile(excelPath);
 
       log(`  Generated crosstabs.xlsx (format: ${excelFormat}, display: ${displayMode})`, 'green');
+      eventBus.emitStageComplete(10, STAGE_NAMES[10], Date.now() - stepStart10);
       log(`  Duration: ${Date.now() - stepStart10}ms`, 'dim');
     } catch (excelError) {
       log(`  Excel generation failed: ${excelError instanceof Error ? excelError.message : String(excelError)}`, 'red');
+      eventBus.emitStageFailed(10, STAGE_NAMES[10], excelError instanceof Error ? excelError.message : String(excelError));
     }
 
   } catch (rError) {
@@ -752,8 +782,10 @@ async function runPipeline(datasetFolder: string) {
     // Only "R not installed" if command literally not found (not just any error with "Rscript" in path)
     if (errorMsg.includes('command not found') && !errorMsg.includes('Error in')) {
       log(`  R not installed - script saved for manual execution`, 'yellow');
+      eventBus.emitStageFailed(9, STAGE_NAMES[9], 'R not installed');
     } else {
       log(`  R execution failed:`, 'red');
+      eventBus.emitStageFailed(9, STAGE_NAMES[9], errorMsg.substring(0, 200));
       // Show more context - stderr often has the actual R error
       if (stderr) {
         // Show last 500 chars of stderr (usually contains the error)
@@ -790,6 +822,15 @@ async function runPipeline(datasetFolder: string) {
 
   // Get cost metrics for summary
   const costMetrics = await getMetricsCollector().getSummary();
+
+  // Emit pipeline:complete event
+  eventBus.emitPipelineComplete(
+    files.name,
+    totalDuration,
+    costMetrics.totals.estimatedCostUsd,
+    allTablesForR.length,
+    outputDir
+  );
 
   // Write summary file
   const summary = {

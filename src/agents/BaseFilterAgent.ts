@@ -44,6 +44,7 @@ import {
 import { getBaseFilterPrompt } from '../prompts';
 import { retryWithPolicyHandling } from '../lib/retryWithPolicyHandling';
 import { recordAgentMetrics } from '../lib/observability';
+import { getPipelineEventBus } from '../lib/events';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -406,12 +407,24 @@ export async function analyzeAllTableBasesParallel(
   const limit = pLimit(concurrency);
   let completed = 0;
 
+  // Track active slots for event emission
+  let nextSlotIndex = 0;
+
   // Process in parallel with limit
   const resultPromises = tables.map((table, index) =>
     limit(async () => {
       if (abortSignal?.aborted) {
         throw new DOMException('BaseFilterAgent aborted', 'AbortError');
       }
+
+      // Assign slot index (round-robin)
+      const slotIndex = nextSlotIndex % concurrency;
+      nextSlotIndex++;
+
+      const startTime = Date.now();
+
+      // Emit slot:start event
+      getPipelineEventBus().emitSlotStart('BaseFilterAgent', slotIndex, table.tableId);
 
       const input: BaseFilterInput = {
         table,
@@ -424,7 +437,15 @@ export async function analyzeAllTableBasesParallel(
       const contextScratchpad = createContextScratchpadTool('BaseFilterAgent', table.tableId);
       const result = await analyzeTableBase(input, abortSignal, contextScratchpad);
 
+      // Emit slot:complete event
+      const durationMs = Date.now() - startTime;
+      getPipelineEventBus().emitSlotComplete('BaseFilterAgent', slotIndex, table.tableId, durationMs);
+
       completed++;
+
+      // Emit agent:progress event
+      getPipelineEventBus().emitAgentProgress('BaseFilterAgent', completed, tables.length);
+
       try {
         onProgress?.(completed, tables.length, table.tableId);
       } catch { /* ignore progress errors */ }

@@ -16,10 +16,12 @@
 
 import {
   calculateCost,
+  calculateCostSync,
   formatCost,
   type TokenUsage,
   type CostBreakdown,
 } from './CostCalculator';
+import { getPipelineEventBus } from '../events';
 
 // =============================================================================
 // Types
@@ -87,6 +89,30 @@ export class AgentMetricsCollector {
       durationMs,
       timestamp: new Date(),
     });
+
+    // Emit cost:update event for CLI
+    const costBreakdown = calculateCostSync(model, tokens);
+    const totalCostUsd = this.getTotalCostSync();
+    getPipelineEventBus().emitCostUpdate(
+      agentName,
+      model,
+      tokens.input,
+      tokens.output,
+      costBreakdown.totalCost,
+      totalCostUsd
+    );
+  }
+
+  /**
+   * Get total cost synchronously (for event emission)
+   */
+  private getTotalCostSync(): number {
+    let total = 0;
+    for (const metric of this.metrics) {
+      const cost = calculateCostSync(metric.model, metric.tokens);
+      total += cost.totalCost;
+    }
+    return total;
   }
 
   /**

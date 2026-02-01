@@ -6,6 +6,7 @@
 
 import { tool } from 'ai';
 import { z } from 'zod';
+import { getPipelineEventBus } from '../../lib/events';
 
 // Accumulated scratchpad entries for the current session
 let scratchpadEntries: Array<{
@@ -129,6 +130,9 @@ export function createContextScratchpadTool(agentName: string, contextId: string
         contextScratchpads.set(contextId, []);
       }
       contextScratchpads.get(contextId)!.push({ timestamp, agentName, action, content });
+
+      // Emit slot:log event for CLI
+      getPipelineEventBus().emitSlotLog(agentName, contextId, action, content);
 
       // Log for real-time debugging with context
       console.log(`[${agentName}:${contextId}] ${action}: ${content}`);
