@@ -22,6 +22,7 @@ export interface AgentReasoningConfig {
   bannerReasoningEffort: ReasoningEffort;
   tableReasoningEffort: ReasoningEffort;
   verificationReasoningEffort: ReasoningEffort;
+  baseFilterReasoningEffort: ReasoningEffort;
 }
 
 export interface ProcessingLimits {
@@ -35,6 +36,7 @@ export interface ProcessingLimits {
   bannerModelTokens: number;
   tableModelTokens: number;
   verificationModelTokens: number;
+  baseFilterModelTokens: number;
 }
 
 export interface PromptVersions {
@@ -42,6 +44,7 @@ export interface PromptVersions {
   bannerPromptVersion: string;
   tablePromptVersion: string;
   verificationPromptVersion: string;
+  baseFilterPromptVersion: string;
 }
 
 export interface EnvironmentConfig {
@@ -59,6 +62,7 @@ export interface EnvironmentConfig {
   bannerModel: string;     // e.g., 'gpt-5-nano' - used by BannerAgent (vision/extraction)
   tableModel: string;      // e.g., 'gpt-5-nano' - used by TableAgent (table definitions)
   verificationModel: string; // e.g., 'gpt-5-mini' - used by VerificationAgent (survey enhancement)
+  baseFilterModel: string;   // e.g., 'gpt-5-mini' - used by BaseFilterAgent (skip logic detection)
 
   // Deprecated (optional, for rollback purposes)
   openaiApiKey?: string;

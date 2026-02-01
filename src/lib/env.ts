@@ -75,6 +75,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   const bannerModel = process.env.BANNER_MODEL || process.env.BASE_MODEL || 'gpt-5-nano';
   const tableModel = process.env.TABLE_MODEL || 'gpt-5-nano';
   const verificationModel = process.env.VERIFICATION_MODEL || process.env.TABLE_MODEL || 'gpt-5-mini';
+  const baseFilterModel = process.env.BASEFILTER_MODEL || verificationModel;
 
   // Legacy model aliases (for backward compatibility)
   const reasoningModel = process.env.REASONING_MODEL || crosstabModel;
@@ -86,6 +87,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   const bannerReasoningEffort = parseReasoningEffort(process.env.BANNER_REASONING_EFFORT, 'BANNER');
   const tableReasoningEffort = parseReasoningEffort(process.env.TABLE_REASONING_EFFORT, 'TABLE');
   const verificationReasoningEffort = parseReasoningEffort(process.env.VERIFICATION_REASONING_EFFORT, 'VERIFICATION');
+  const baseFilterReasoningEffort = parseReasoningEffort(process.env.BASEFILTER_REASONING_EFFORT, 'BASEFILTER');
 
   const nodeEnv = (process.env.NODE_ENV as 'development' | 'production') || 'development';
 
@@ -103,6 +105,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
     bannerModel,
     tableModel,
     verificationModel,
+    baseFilterModel,
 
     // Deprecated
     openaiApiKey: process.env.OPENAI_API_KEY,  // Optional, deprecated
@@ -115,6 +118,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
       bannerPromptVersion: process.env.BANNER_PROMPT_VERSION || 'production',
       tablePromptVersion: process.env.TABLE_PROMPT_VERSION || 'production',
       verificationPromptVersion: process.env.VERIFICATION_PROMPT_VERSION || 'production',
+      baseFilterPromptVersion: process.env.BASEFILTER_PROMPT_VERSION || 'production',
     },
     processingLimits: {
       maxDataMapVariables: parseInt(process.env.MAX_DATA_MAP_VARIABLES || '1000'),
@@ -127,12 +131,14 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
       bannerModelTokens: parseInt(process.env.BANNER_MODEL_TOKENS || process.env.BASE_MODEL_TOKENS || '128000'),
       tableModelTokens: parseInt(process.env.TABLE_MODEL_TOKENS || '128000'),
       verificationModelTokens: parseInt(process.env.VERIFICATION_MODEL_TOKENS || process.env.TABLE_MODEL_TOKENS || '128000'),
+      baseFilterModelTokens: parseInt(process.env.BASEFILTER_MODEL_TOKENS || process.env.VERIFICATION_MODEL_TOKENS || '128000'),
     },
     reasoningConfig: {
       crosstabReasoningEffort,
       bannerReasoningEffort,
       tableReasoningEffort,
       verificationReasoningEffort,
+      baseFilterReasoningEffort,
     },
   };
 };
@@ -189,6 +195,16 @@ export const getVerificationModel = () => {
 };
 
 /**
+ * Get BaseFilterAgent model for skip logic detection
+ * Used by: BaseFilterAgent (detects skip/show logic and applies filters)
+ */
+export const getBaseFilterModel = () => {
+  const config = getEnvironmentConfig();
+  const provider = getAzureProvider();
+  return provider.chat(config.baseFilterModel);
+};
+
+/**
  * Get per-agent model name strings (for logging)
  */
 export const getCrosstabModelName = (): string => {
@@ -209,6 +225,11 @@ export const getTableModelName = (): string => {
 export const getVerificationModelName = (): string => {
   const config = getEnvironmentConfig();
   return `azure/${config.verificationModel}`;
+};
+
+export const getBaseFilterModelName = (): string => {
+  const config = getEnvironmentConfig();
+  return `azure/${config.baseFilterModel}`;
 };
 
 /**
@@ -232,6 +253,11 @@ export const getTableModelTokenLimit = (): number => {
 export const getVerificationModelTokenLimit = (): number => {
   const config = getEnvironmentConfig();
   return config.processingLimits.verificationModelTokens;
+};
+
+export const getBaseFilterModelTokenLimit = (): number => {
+  const config = getEnvironmentConfig();
+  return config.processingLimits.baseFilterModelTokens;
 };
 
 // =============================================================================
@@ -262,6 +288,11 @@ export const getTableReasoningEffort = (): ReasoningEffort => {
 export const getVerificationReasoningEffort = (): ReasoningEffort => {
   const config = getEnvironmentConfig();
   return config.reasoningConfig.verificationReasoningEffort;
+};
+
+export const getBaseFilterReasoningEffort = (): ReasoningEffort => {
+  const config = getEnvironmentConfig();
+  return config.reasoningConfig.baseFilterReasoningEffort;
 };
 
 /**
@@ -393,6 +424,10 @@ export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
 
     if (config.processingLimits.verificationModelTokens < 1000) {
       errors.push('VERIFICATION_MODEL_TOKENS must be at least 1000');
+    }
+
+    if (config.processingLimits.baseFilterModelTokens < 1000) {
+      errors.push('BASEFILTER_MODEL_TOKENS must be at least 1000');
     }
 
   } catch (error) {

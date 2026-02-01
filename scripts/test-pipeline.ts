@@ -66,6 +66,8 @@ import { processAllGroups as processCrosstabGroups } from '../src/agents/Crossta
 import { groupDataMap } from '../src/lib/tables/DataMapGrouper';
 import { generateTables, convertToLegacyFormat, getGeneratorStats } from '../src/lib/tables/TableGenerator';
 import { verifyAllTablesParallel } from '../src/agents/VerificationAgent';
+import { analyzeAllTableBasesParallel } from '../src/agents/BaseFilterAgent';
+import { summarizeBaseFilterResults } from '../src/schemas/baseFilterAgentSchema';
 import { processSurvey } from '../src/lib/processors/SurveyProcessor';
 import { generateRScriptV2WithValidation, type ValidationReport } from '../src/lib/r/RScriptGeneratorV2';
 import { validateAndFixTables } from '../src/lib/r/ValidationOrchestrator';
@@ -230,7 +232,7 @@ async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
 
 async function runPipeline(datasetFolder: string) {
   const startTime = Date.now();
-  const totalSteps = stopAfterVerification ? 5 : 9;  // Fewer steps if stopping early (added validation step)
+  const totalSteps = stopAfterVerification ? 5 : 10;  // Fewer steps if stopping early (added BaseFilterAgent step)
 
   // Reset metrics collector for this pipeline run
   resetMetricsCollector();
@@ -522,16 +524,54 @@ async function runPipeline(datasetFolder: string) {
   log('', 'reset');
 
   // -------------------------------------------------------------------------
-  // Step 6: R Validation with Retry
+  // Step 6: BaseFilterAgent - Detect skip/show logic
   // -------------------------------------------------------------------------
-  logStep(6, totalSteps, 'Validating R code per table...');
+  logStep(6, totalSteps, 'Analyzing table bases for skip logic...');
   const stepStart6 = Date.now();
+
+  let filteredTables: ExtendedTableDefinition[];
+  if (surveyMarkdown) {
+    const baseFilterResult = await analyzeAllTableBasesParallel(
+      sortedTables,
+      surveyMarkdown,
+      verboseDataMap,
+      { outputDir, concurrency: 3 }
+    );
+
+    // Flatten results (each input table may become 1+ output tables)
+    filteredTables = baseFilterResult.results.flatMap(r => r.tables);
+    const baseFilterSummary = summarizeBaseFilterResults(baseFilterResult.results);
+
+    log(`  Analyzed ${sortedTables.length} tables:`, 'green');
+    log(`    Pass: ${baseFilterSummary.passCount}`, 'dim');
+    if (baseFilterSummary.filterCount > 0) {
+      log(`    Filter: ${baseFilterSummary.filterCount}`, 'yellow');
+    }
+    if (baseFilterSummary.splitCount > 0) {
+      log(`    Split: ${baseFilterSummary.splitCount}`, 'yellow');
+    }
+    if (baseFilterSummary.reviewRequiredCount > 0) {
+      log(`    Review required: ${baseFilterSummary.reviewRequiredCount}`, 'yellow');
+    }
+    log(`  Output: ${filteredTables.length} tables`, 'green');
+  } else {
+    log(`  No survey - skipping base filter analysis`, 'yellow');
+    filteredTables = sortedTables;
+  }
+  log(`  Duration: ${Date.now() - stepStart6}ms`, 'dim');
+  log('', 'reset');
+
+  // -------------------------------------------------------------------------
+  // Step 7: R Validation with Retry
+  // -------------------------------------------------------------------------
+  logStep(7, totalSteps, 'Validating R code per table...');
+  const stepStart7 = Date.now();
 
   const cutsSpec = buildCutsSpec(crosstabResult.result);
 
   // Run per-table R validation with retry loop
   const { validTables, excludedTables: newlyExcluded, validationReport: rValidationReport } = await validateAndFixTables(
-    sortedTables,
+    filteredTables,
     cutsSpec.cuts,
     surveyMarkdown || '',
     verboseDataMap,
@@ -544,7 +584,7 @@ async function runPipeline(datasetFolder: string) {
   );
 
   // Calculate pre-excluded vs failed-validation counts
-  const preExcludedCount = sortedTables.filter(t => t.exclude).length;
+  const preExcludedCount = filteredTables.filter(t => t.exclude).length;
   const failedValidationCount = rValidationReport.excluded - preExcludedCount;
 
   log(`  Passed first time: ${rValidationReport.passedFirstTime}`, 'green');
@@ -557,7 +597,7 @@ async function runPipeline(datasetFolder: string) {
   if (failedValidationCount > 0) {
     log(`  Failed R validation: ${failedValidationCount}`, 'red');
   }
-  log(`  Duration: ${Date.now() - stepStart6}ms`, 'dim');
+  log(`  Duration: ${Date.now() - stepStart7}ms`, 'dim');
   log('', 'reset');
 
   // Combine valid + excluded tables for R script generation
@@ -566,10 +606,10 @@ async function runPipeline(datasetFolder: string) {
   log(`  Tables for R script: ${validTables.length} valid + ${newlyExcluded.length} excluded = ${allTablesForR.length} total`, 'dim');
 
   // -------------------------------------------------------------------------
-  // Step 7: RScriptGeneratorV2
+  // Step 8: RScriptGeneratorV2
   // -------------------------------------------------------------------------
-  logStep(7, totalSteps, 'Generating R script...');
-  const stepStart7 = Date.now();
+  logStep(8, totalSteps, 'Generating R script...');
+  const stepStart8 = Date.now();
   const rDir = path.join(outputDir, 'r');
   await fs.mkdir(rDir, { recursive: true });
 
@@ -593,14 +633,14 @@ async function runPipeline(datasetFolder: string) {
 
   log(`  Generated R script (${Math.round(masterScript.length / 1024)} KB)`, 'green');
   log(`  Tables in script: ${allTablesForR.length} (${validTables.length} valid, ${newlyExcluded.length} excluded)`, 'green');
-  log(`  Duration: ${Date.now() - stepStart7}ms`, 'dim');
+  log(`  Duration: ${Date.now() - stepStart8}ms`, 'dim');
   log('', 'reset');
 
   // -------------------------------------------------------------------------
-  // Step 8: R Execution
+  // Step 9: R Execution
   // -------------------------------------------------------------------------
-  logStep(8, totalSteps, 'Executing R script...');
-  const stepStart8 = Date.now();
+  logStep(9, totalSteps, 'Executing R script...');
+  const stepStart9 = Date.now();
 
   // Create results directory
   const resultsDir = path.join(outputDir, 'results');
@@ -669,13 +709,13 @@ async function runPipeline(datasetFolder: string) {
       log(`  WARNING: No tables.json generated`, 'yellow');
     }
 
-    log(`  Duration: ${Date.now() - stepStart8}ms`, 'dim');
+    log(`  Duration: ${Date.now() - stepStart9}ms`, 'dim');
 
     // -------------------------------------------------------------------------
-    // Step 9: Excel Export
+    // Step 10: Excel Export
     // -------------------------------------------------------------------------
-    logStep(9, totalSteps, 'Generating Excel workbook...');
-    const stepStart9 = Date.now();
+    logStep(10, totalSteps, 'Generating Excel workbook...');
+    const stepStart10 = Date.now();
 
     const tablesJsonPath = path.join(resultsDir, 'tables.json');
     const excelPath = path.join(resultsDir, 'crosstabs.xlsx');
@@ -689,7 +729,7 @@ async function runPipeline(datasetFolder: string) {
       await formatter.saveToFile(excelPath);
 
       log(`  Generated crosstabs.xlsx (format: ${excelFormat}, display: ${displayMode})`, 'green');
-      log(`  Duration: ${Date.now() - stepStart9}ms`, 'dim');
+      log(`  Duration: ${Date.now() - stepStart10}ms`, 'dim');
     } catch (excelError) {
       log(`  Excel generation failed: ${excelError instanceof Error ? excelError.message : String(excelError)}`, 'red');
     }

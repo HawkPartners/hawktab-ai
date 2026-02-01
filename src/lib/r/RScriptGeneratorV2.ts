@@ -778,6 +778,18 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
 
   lines.push('for (cut_name in names(cuts)) {');
   lines.push('  cut_data <- apply_cut(data, cuts[[cut_name]])');
+
+  // Apply additional table-level filter if specified (skip logic from BaseFilterAgent)
+  const hasAdditionalFilter = table.additionalFilter && table.additionalFilter.trim().length > 0;
+  if (hasAdditionalFilter) {
+    const filterExpr = escapeRString(table.additionalFilter);
+    lines.push('');
+    lines.push('  # Apply table-specific filter (skip logic)');
+    lines.push(`  additional_mask <- with(cut_data, eval(parse(text = "${filterExpr}")))`);
+    lines.push('  additional_mask[is.na(additional_mask)] <- FALSE');
+    lines.push('  cut_data <- cut_data[additional_mask, ]');
+  }
+
   lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]] <- list()`);
   lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]]$stat_letter <- cut_stat_letters[[cut_name]]`);
   lines.push('');
@@ -949,6 +961,18 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
 
   lines.push('for (cut_name in names(cuts)) {');
   lines.push('  cut_data <- apply_cut(data, cuts[[cut_name]])');
+
+  // Apply additional table-level filter if specified (skip logic from BaseFilterAgent)
+  const hasAdditionalFilterMean = table.additionalFilter && table.additionalFilter.trim().length > 0;
+  if (hasAdditionalFilterMean) {
+    const filterExprMean = escapeRString(table.additionalFilter);
+    lines.push('');
+    lines.push('  # Apply table-specific filter (skip logic)');
+    lines.push(`  additional_mask <- with(cut_data, eval(parse(text = "${filterExprMean}")))`);
+    lines.push('  additional_mask[is.na(additional_mask)] <- FALSE');
+    lines.push('  cut_data <- cut_data[additional_mask, ]');
+  }
+
   lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]] <- list()`);
   lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]]$stat_letter <- cut_stat_letters[[cut_name]]`);
   lines.push('');

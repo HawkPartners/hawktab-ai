@@ -119,6 +119,31 @@ export const ExtendedTableDefinitionSchema = z.object({
    * Empty string for original/overview tables or tables with no siblings.
    */
   tableSubtitle: z.string(),
+
+  // =========================================================================
+  // Phase 3: BaseFilterAgent Fields (skip/show logic handling)
+  // =========================================================================
+
+  /**
+   * Additional R filter expression to apply before counting.
+   * Applied after banner cut, before calculating statistics.
+   * Example: "Q3 == 1" or "usage_BrandX > 0"
+   * Empty string means no additional filter.
+   */
+  additionalFilter: z.string(),
+
+  /**
+   * Whether this table's base filter requires human review.
+   * Set true when agent is uncertain about skip logic interpretation.
+   */
+  filterReviewRequired: z.boolean(),
+
+  /**
+   * Original table ID if this was split by BaseFilterAgent due to different bases.
+   * Different from sourceTableId (which is for VerificationAgent T2B/derived splits).
+   * Empty string if not split from another table.
+   */
+  splitFromTableId: z.string(),
 });
 
 export type ExtendedTableDefinition = z.infer<typeof ExtendedTableDefinitionSchema>;
@@ -259,6 +284,10 @@ export function toExtendedTable(
     baseText: '',
     userNote: '',
     tableSubtitle: '',
+    // Phase 3: BaseFilterAgent fields (defaults)
+    additionalFilter: '',
+    filterReviewRequired: false,
+    splitFromTableId: '',
   };
 }
 

@@ -26,6 +26,13 @@ export {
   EXCLUDED_NORMALIZED_TYPES,
 } from './TableAgent';
 
+// BaseFilter Agent exports (detects skip/show logic for base calculations)
+export {
+  analyzeTableBase,
+  analyzeAllTableBases,
+  analyzeAllTableBasesParallel,
+} from './BaseFilterAgent';
+
 // Tool exports
 export { scratchpadTool } from './tools/scratchpad';
 
