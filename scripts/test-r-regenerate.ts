@@ -240,6 +240,18 @@ function loadCutsFromCrosstabOutput(data: CrosstabOutput): { cuts: CutDefinition
   const cuts: CutDefinition[] = [];
   const cutGroups: CutGroup[] = [];
 
+  // Always add Total as first cut (matches buildCutsSpec in full pipeline)
+  const totalCut: CutDefinition = {
+    id: 'total.total',
+    name: 'Total',
+    rExpression: 'rep(TRUE, nrow(data))',  // All respondents
+    statLetter: 'T',
+    groupName: 'Total',
+    groupIndex: 0,
+  };
+  cuts.push(totalCut);
+  cutGroups.push({ groupName: 'Total', cuts: [totalCut] });
+
   let letterIndex = 0;
   const getNextLetter = () => {
     if (letterIndex < 26) {
@@ -257,8 +269,13 @@ function loadCutsFromCrosstabOutput(data: CrosstabOutput): { cuts: CutDefinition
     for (let i = 0; i < (group.columns || []).length; i++) {
       const col = group.columns[i];
       if (col.name && col.adjusted && col.confidence > 0) {
+        // Skip Total from crosstab output (we already added our own above)
         const isTotal = col.name === 'Total' || group.groupName === 'Total';
-        const statLetter = isTotal ? 'T' : getNextLetter();
+        if (isTotal) {
+          continue;
+        }
+
+        const statLetter = getNextLetter();
 
         const cutDef: CutDefinition = {
           id: `${group.groupName.toLowerCase().replace(/\s+/g, '-')}.${col.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')}`,
