@@ -593,7 +593,7 @@ function generateDemoTable(
   lines.push('    isNet = FALSE,');
   lines.push('    indent = 0,');
   lines.push('    sig_higher_than = c(),');
-  lines.push('    sig_vs_total = NULL');
+  lines.push('    sig_vs_total = NA');
   lines.push('  )');
   lines.push('');
   rowIndex++;
@@ -623,7 +623,7 @@ function generateDemoTable(
       lines.push('      isNet = FALSE,');
       lines.push('      indent = 0,');
       lines.push('      sig_higher_than = c(),');
-      lines.push('      sig_vs_total = NULL');
+      lines.push('      sig_vs_total = NA');
       lines.push('    )');
       lines.push('  }');
       lines.push('');
@@ -880,17 +880,19 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
 
     if (isCategoryHeader) {
       // Category header: output row with null values, no computation
+      // NOTE: Use NA instead of NULL because R's NULL inside a list serializes to {}
+      // in JSON, while NA properly serializes to null
       lines.push(`  # Row ${i + 1}: Category header - ${row.label}`);
       lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
       lines.push(`    label = "${label}",`);
-      lines.push('    n = NULL,');
-      lines.push('    count = NULL,');
-      lines.push('    pct = NULL,');
+      lines.push('    n = NA,');
+      lines.push('    count = NA,');
+      lines.push('    pct = NA,');
       lines.push('    isNet = FALSE,');
       lines.push(`    indent = ${indent},`);
       lines.push('    isCategoryHeader = TRUE,');
       lines.push('    sig_higher_than = c(),');
-      lines.push('    sig_vs_total = NULL');
+      lines.push('    sig_vs_total = NA');
       lines.push('  )');
       lines.push('');
       continue; // Skip to next row
@@ -956,7 +958,7 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
     lines.push(`      isNet = ${isNet ? 'TRUE' : 'FALSE'},`);
     lines.push(`      indent = ${indent},`);
     lines.push('      sig_higher_than = c(),');
-    lines.push('      sig_vs_total = NULL');
+    lines.push('      sig_vs_total = NA');
     lines.push('    )');
 
     // Close the if block for non-NET rows
@@ -970,7 +972,7 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
       lines.push(`      isNet = ${isNet ? 'TRUE' : 'FALSE'},`);
       lines.push(`      indent = ${indent},`);
       lines.push('      sig_higher_than = c(),');
-      lines.push('      sig_vs_total = NULL,');
+      lines.push('      sig_vs_total = NA,');
       lines.push(`      error = "Variable ${varName} not found"`);
       lines.push('    )');
       lines.push('  }');
@@ -1089,7 +1091,7 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
       lines.push(`    isNet = TRUE,`);
       lines.push(`    indent = ${indent},`);
       lines.push('    sig_higher_than = c(),');
-      lines.push('    sig_vs_total = NULL');
+      lines.push('    sig_vs_total = NA');
       lines.push('  )');
     } else {
       // Standard row: calculate mean from variable directly
@@ -1119,7 +1121,7 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
       lines.push(`      isNet = FALSE,`);
       lines.push(`      indent = ${indent},`);
       lines.push('      sig_higher_than = c(),');
-      lines.push('      sig_vs_total = NULL');
+      lines.push('      sig_vs_total = NA');
       lines.push('    )');
       lines.push('  } else {');
       lines.push(`    table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
@@ -1135,7 +1137,7 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
       lines.push(`      isNet = FALSE,`);
       lines.push(`      indent = ${indent},`);
       lines.push('      sig_higher_than = c(),');
-      lines.push('      sig_vs_total = NULL,');
+      lines.push('      sig_vs_total = NA,');
       lines.push(`      error = "Variable ${varName} not found"`);
       lines.push('    )');
       lines.push('  }');
@@ -1272,13 +1274,13 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('      if ("Total" %in% names(tbl$data) && cut_name != "Total") {');
   lines.push('        total_data <- tbl$data[["Total"]][[row_key]]');
   lines.push('        if (!is.null(total_data) && is.null(total_data$error)) {');
-  lines.push('          sig_vs_total <- NULL');
+  lines.push('          sig_vs_total <- NA');
   lines.push('');
   lines.push('          if (table_type == "frequency") {');
   lines.push('            # Skip category headers and rows with null values');
   lines.push('            if (is.null(row_data$n) || is.null(row_data$count) ||');
   lines.push('                is.null(total_data$n) || is.null(total_data$count)) {');
-  lines.push('              sig_vs_total <- NULL');
+  lines.push('              sig_vs_total <- NA');
   lines.push('            } else {');
   lines.push('              p1 <- row_data$count / row_data$n');
   lines.push('              p2 <- total_data$count / total_data$n');
