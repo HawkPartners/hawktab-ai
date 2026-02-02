@@ -234,6 +234,12 @@ function generateFrequencyTableValidation(
     const varNameEscaped = escapeRString(row.variable);
     const filterValue = row.filterValue;
 
+    // Skip category headers - they have no data to validate (visual grouping only)
+    if (filterValue === '_HEADER_') {
+      lines.push(`  # Row ${i + 1}: Category header - ${row.label} (skip validation)`);
+      continue;
+    }
+
     // Check if this is a NET with components
     const isNetWithComponents = row.isNet && row.netComponents && row.netComponents.length > 0;
 

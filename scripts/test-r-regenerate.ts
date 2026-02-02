@@ -399,23 +399,40 @@ async function main() {
 
   log(`  Source: outputs/${dataset}/${pipelineId}`, 'blue');
 
-  // 2. Load verified tables and cuts
+  // 2. Load tables and cuts
   log('');
   log(`[2/${totalSteps}] Loading pipeline data...`, 'cyan');
 
-  // Find verified tables (try verified-table-output first, then verification-output-raw)
+  // Try to load tables in order of preference:
+  // 1. basefilter output (has all tables after BaseFilterAgent splits)
+  // 2. verification output (fallback, has fewer tables)
+  const basefilterDir = path.join(pipelinePath, 'basefilter');
   const verificationDir = path.join(pipelinePath, 'verification');
-  let verifiedTablesFile = await findJsonFile(verificationDir, 'verified-table-output');
-  if (!verifiedTablesFile) {
-    verifiedTablesFile = await findJsonFile(verificationDir, 'verification-output-raw');
+
+  let tablesFile: string | null = null;
+  let tablesSource = '';
+
+  // Try basefilter first (preferred - has all tables including splits)
+  tablesFile = await findJsonFile(basefilterDir, 'basefilter-output-raw');
+  if (tablesFile) {
+    tablesSource = 'basefilter';
+  } else {
+    // Fall back to verification output
+    tablesFile = await findJsonFile(verificationDir, 'verified-table-output');
+    if (!tablesFile) {
+      tablesFile = await findJsonFile(verificationDir, 'verification-output-raw');
+    }
+    if (tablesFile) {
+      tablesSource = 'verification';
+    }
   }
 
   // Find crosstab output
   const crosstabDir = path.join(pipelinePath, 'crosstab');
   const crosstabFile = await findJsonFile(crosstabDir, 'crosstab-output');
 
-  if (!verifiedTablesFile) {
-    log('  Missing: verified tables (verification/verified-table-output-*.json)', 'red');
+  if (!tablesFile) {
+    log('  Missing: tables output (basefilter/ or verification/)', 'red');
     process.exit(1);
   }
   if (!crosstabFile) {
@@ -423,13 +440,23 @@ async function main() {
     process.exit(1);
   }
 
-  const verifiedData: VerifiedTableOutput = JSON.parse(await fs.readFile(verifiedTablesFile, 'utf-8'));
+  // Load tables based on source
+  let tables: ExtendedTableDefinition[];
+  const rawData = JSON.parse(await fs.readFile(tablesFile, 'utf-8'));
+
+  if (tablesSource === 'basefilter') {
+    // Basefilter format: { results: [{ tables: [...] }, ...] }
+    const results = rawData.results || [];
+    tables = results.flatMap((r: { tables?: ExtendedTableDefinition[] }) => r.tables || []);
+    log(`  Loaded ${tables.length} tables from basefilter (includes splits)`, 'green');
+  } else {
+    // Verification format: { tables: [...] }
+    tables = rawData.tables || [];
+    log(`  Loaded ${tables.length} tables from verification (pre-split)`, 'yellow');
+  }
+
   const crosstabData: CrosstabOutput = JSON.parse(await fs.readFile(crosstabFile, 'utf-8'));
-
-  let tables = verifiedData.tables;
   const { cuts, cutGroups } = loadCutsFromCrosstabOutput(crosstabData);
-
-  log(`  Loaded ${tables.length} tables`, 'green');
   log(`  Loaded ${cuts.length} cuts in ${cutGroups.length} groups`, 'green');
 
   // 3. Find SPSS file and copy to working location
