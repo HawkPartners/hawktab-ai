@@ -65,7 +65,55 @@ This same issue likely affects all A4a split tables:
 
 ---
 
-## Issue 2: [Placeholder for additional issues]
+## Issue 2: Unnecessary Derived Table with Base=0 (a5_12m)
+
+**Discovered**: 2026-02-02
+**Dataset**: leqvio-monotherapy-demand-NOV217
+**Table**: a5_12m
+**Severity**: Low (table can be excluded from output)
+
+### Problem
+
+The pipeline created a derived table `a5_12m` from `a5` with an overly restrictive filter that resulted in **base=0** (no respondents qualify).
+
+- **Original table**: `a5` (correct, should be kept)
+- **Derived table**: `a5_12m` (base=0, should not have been created)
+
+### Filter Applied
+
+```r
+additionalFilter: "A4r2c1 != A3r2 | A4r3c1 != A3r3 | A4r4c1 != A3r4"
+```
+
+The reasoning was: "A5 is asked only if prescribing in A4 is greater or less than A3 for rows 2/3/4 (Leqvio, Praluent, Repatha)."
+
+### Why It Fails
+
+This filter compares apples to oranges:
+- `A4r2c1` = Leqvio "in addition to statin" only (one column of A4)
+- `A3r2` = Leqvio total allocation (all of A3)
+
+The comparison `A4r2c1 != A3r2` doesn't make sense because A4 splits the allocation into two columns (c1 and c2) while A3 has a single value. The correct comparison would need to use `(A4r2c1 + A4r2c2) != A3r2`.
+
+### Impact
+
+- The original `a5` table is correct and present in output
+- The derived `a5_12m` table is invalid (base=0) but also present
+- **Workaround**: Exclude `a5_12m` from final output
+
+### Root Cause
+
+The BaseFilterAgent (or VerificationAgent creating the derived table) didn't account for A4's two-column structure when building the comparison filter. This is the same underlying issue as Issue 1.
+
+### Fix Options
+
+1. **Improve column-sum detection**: When comparing variables with different column structures, sum the multi-column variable first
+2. **Add base validation**: Flag or auto-exclude tables where the filter produces base=0
+3. **Conservative splitting**: Don't create derived tables unless high confidence the filter is correct
+
+---
+
+## Issue 3: [Placeholder for additional issues]
 
 *Add additional issues as discovered during review.*
 
