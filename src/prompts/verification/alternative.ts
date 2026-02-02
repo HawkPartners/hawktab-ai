@@ -263,18 +263,19 @@ This makes comparison hard. Reorder to group by one dimension, then use category
 Now all items for Situation 1 are together, then Situation 2.
 
 FACTORING OUT COMMON PREFIXES:
-When multiple rows share a long common prefix, extract it as a header to reduce repetition:
+When multiple rows repeat the same long phrase at the start, you can "factor out" that shared
+text into a header row. The header holds the common part; the indented rows hold only what differs.
 
-BEFORE (verbose, hard to scan):
-  "Recommend approach X for patients with condition A and threshold >=55"
-  "Recommend approach X for patients with condition A and threshold >=70"
-  "Recommend approach X for patients with condition A and threshold >=100"
+BEFORE (repetitive, hard to scan):
+  "Likelihood to recommend to a friend or family member"
+  "Likelihood to recommend to a professional colleague"
+  "Likelihood to recommend to someone in your industry"
 
-AFTER (scannable):
-  "Recommend approach X for patients with condition A and:"  ← header
-    "Threshold >=55"
-    "Threshold >=70"
-    "Threshold >=100"
+AFTER (scannable - common prefix becomes the header):
+  "Likelihood to recommend to:"  ← header row (the shared prefix)
+    "A friend or family member"  ← only the unique part
+    "A professional colleague"
+    "Someone in your industry"
 
 HOW IT WORKS:
 1. Create a row with filterValue: "_HEADER_"
@@ -287,10 +288,10 @@ EXAMPLE (grouping by time period):
 { "variable": "Q7r1", "label": "Any (1+)", "filterValue": "1-99", "isNet": false, "indent": 1 },
 
 EXAMPLE (factoring out common prefix):
-{ "variable": "_CAT_", "label": "Recommend approach X for patients with condition A and:", "filterValue": "_HEADER_", "isNet": false, "indent": 0 },
-{ "variable": "Q8", "label": "Threshold >=55", "filterValue": "1", "isNet": false, "indent": 1 },
-{ "variable": "Q8", "label": "Threshold >=70", "filterValue": "2", "isNet": false, "indent": 1 },
-{ "variable": "Q8", "label": "Threshold >=100", "filterValue": "3", "isNet": false, "indent": 1 },
+{ "variable": "_CAT_", "label": "Likelihood to recommend to:", "filterValue": "_HEADER_", "isNet": false, "indent": 0 },
+{ "variable": "Q12", "label": "A friend or family member", "filterValue": "1", "isNet": false, "indent": 1 },
+{ "variable": "Q12", "label": "A professional colleague", "filterValue": "2", "isNet": false, "indent": 1 },
+{ "variable": "Q12", "label": "Someone in your industry", "filterValue": "3", "isNet": false, "indent": 1 },
 
 KEY DISTINCTION: Category headers use "_HEADER_" → no data computed. NETs use actual filterValues → data aggregated.
 
