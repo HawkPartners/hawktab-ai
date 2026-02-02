@@ -19,7 +19,6 @@ This document consolidates feedback from comparing our pipeline output against J
 | E: Calculations | Statistical implementation | **System-level** | ✅ Complete |
 | F: Presentation | Missing examples | **Prompt-level** | |
 | G: Over-splitting | Architectural limitation | **System-level** | |
-| H: Future Features | New capabilities | **System-level** | |
 
 ---
 
@@ -207,50 +206,6 @@ This isn't fixable with prompt guidance. Possible system-level solutions:
 4. **Prevent upstream splits** — have VerificationAgent not create the situation views, letting BaseFilterAgent handle all splitting
 
 **Status**: Known limitation. Acceptable for MVP. Future enhancement could add cross-table awareness to reduce redundancy.
-
----
-
-## Theme H: Future Features (Not MVP)
-
-Not blocking for Feb 16 deadline, but worth tracking.
-
-### H1. Pre/Post comparison tables
-
-**What Joe does**: Creates pre/post comparison tables spanning multiple questions (A3 vs A4, A3a vs A4a) with "Mean difference (pre- vs post)" calculations.
-
-**What we produce**: Separate tables for pre (A3) and post (A4) questions.
-
-**Why NOT blocking**: Analyst can derive comparison themselves. Antares' existing tools don't produce these either.
-
-**Future enhancement**: Detect pre/post pairs (LAST 100 vs NEXT 100), pass paired context to VerificationAgent, instruct to create comparison tables.
-
-### H2. Selectable Excel color themes
-
-**Problem**: We have effectively one styling look-and-feel.
-
-**Expected**: Offer 4+ curated color themes that users select at run start. Themes should preserve semantics (header fill, alternating row fill, banner separation) while allowing palette customization.
-
-**Tasks**:
-- Map current color usage to semantic roles
-- Define 4+ palettes that plug into those semantic roles
-- Expose theme selector (config / run metadata)
-
-### H3. Interactive browser-based review
-
-**Current workflow** (inefficient):
-- Reviewer looks at static Excel
-- Decides what to exclude/keep
-- Has to regenerate to see changes
-
-**Desired workflow**:
-- After pipeline runs, generate preview **in browser**
-- Reviewer can visually see all tables
-- Toggle tables on/off (exclude/keep)
-- Give feedback on specific tables
-- See changes **live** before clicking submit
-- Then generate final Excel
-
-**Timeline**: NOT MVP (Feb 16 deadline), but memorializing for future.
 
 ---
 
