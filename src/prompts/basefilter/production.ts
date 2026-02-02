@@ -118,6 +118,20 @@ WHEN DEFAULT BASE IS SUFFICIENT (no refinement needed):
 - Questions asked to everyone (some screener questions, some administrative questions, etc.)
 - Questions with no skip/show logic mentioned
 - Questions where the survey says "Base: All respondents"
+
+WHAT IS NOT EVIDENCE OF SKIP/SHOW LOGIC:
+- Question content (topics, products, behaviors mentioned) is NOT evidence of a filter.
+  A question can discuss Brand X without being filtered to Brand X users.
+- Hypothetical framing ("Assume that...", "Imagine...") often signals questions asked to
+  everyone to gauge potential behavior, not filtered by current behavior.
+
+FOUNDATIONAL PRINCIPLE:
+Your job is to find and implement EXPLICIT skip/show logic, not to infer whether a filter
+SHOULD exist. If a question has no [ASK IF], [SHOW IF], or Base: instruction — and other
+questions in this survey DO have such instructions — that absence is likely intentional.
+
+The inference you DO make: When explicit logic EXISTS, does it apply at the table level
+or the row level? You interpret the filter's scope, not whether a filter should exist.
 </skip_show_logic_patterns>
 
 <interpreting_show_logic>
@@ -387,6 +401,60 @@ Output:
   "reasoning": "No explicit skip/show logic for Q10. Might be intended for dissatisfied respondents only (Q9=2) but survey doesn't specify. Flagging for human review.",
   "humanReviewRequired": true
 }
+
+
+EXAMPLE 5: HYPOTHETICAL QUESTION - NO FILTER NEEDED
+
+Survey says:
+"Q12. Assume that Brand X is now approved for a new indication.
+For your NEXT 100 patients with this condition, how would you prescribe it?
+[RANK UP TO 4]"
+
+Your analysis:
+- Searched for [ASK IF], [SHOW IF], Base: instructions — none found
+- Question mentions Brand X but has NO explicit filter to Brand X users
+- "Assume that..." signals hypothetical scenario
+- Other questions in this survey use [ASK IF] when filtered; this one doesn't
+
+Output:
+{
+  "action": "pass",
+  "tables": [{
+    ...originalTable,
+    "additionalFilter": "",
+    "baseText": "",
+    "filterReviewRequired": false
+  }],
+  "confidence": 0.95,
+  "reasoning": "Hypothetical scenario question with no explicit skip/show logic. Other questions use [ASK IF] when filtered; absence here is intentional.",
+  "humanReviewRequired": false
+}
+
+
+EXAMPLE 6: EXPLICIT LOGIC - SIMPLE FILTER
+
+Survey says:
+"Q15. Why did you change your approach? [ASK IF Q12 DIFFERS FROM Q10]"
+
+Your analysis:
+- Found explicit instruction: [ASK IF Q12 DIFFERS FROM Q10]
+- Intent: "Ask only those whose Q12 differs from Q10"
+- Variables: Q12, Q10 exist in datamap
+- Simple expression: Q12 != Q10
+
+Output:
+{
+  "action": "filter",
+  "tables": [{
+    ...originalTable,
+    "additionalFilter": "Q12 != Q10",
+    "baseText": "Those whose Q12 response differed from Q10",
+    "filterReviewRequired": false
+  }],
+  "confidence": 0.95,
+  "reasoning": "Explicit [ASK IF Q12 DIFFERS FROM Q10]. Simple expression captures intent.",
+  "humanReviewRequired": false
+}
 </concrete_examples>
 
 <r_expression_syntax>
@@ -406,8 +474,11 @@ EXAMPLES:
 "Q3 == 1 & Q4 > 0"                  # AND condition
 "Q3 == 1 | Q3 == 2"                 # OR condition
 "Q3 %in% c(1, 2, 3)"                # Multiple values
-"!is.na(Q5_usage)"                  # Not NA
-"Q3 == 1 & !is.na(brand_awareness)" # Combined
+"Q8 != Q5"                          # Changed from prior question (can also be at the answer option level)
+
+KEEP EXPRESSIONS SIMPLE:
+The default base already filters out NA for the question being asked. Your additionalFilter
+adds constraints ON TOP of this — don't reimplement the default.
 
 RULES:
 1. Use EXACT variable names from the datamap (case-sensitive)
@@ -542,14 +613,19 @@ FORMAT:
 "[tableId]:
   Survey: [Found skip/show logic / No skip/show logic found]
   Logic: [Description of the skip/show condition]
+  Intent: [Restate in plain language: "Ask only those who..."]
   Variables: [Variables used in filter, verified in datamap]
   Action: [pass/filter/split] - [brief reason]
   Confidence: [score] - [why]"
+
+PROGRESSION: Survey instruction → Plain language intent → Simple expression.
+If you can't state the intent simply, you may be overcomplicating it.
 
 EXAMPLE:
 "q5_satisfaction:
   Survey: Found '[ASK IF Q3=1]' before question
   Logic: Only asked to those aware of Brand X (Q3=1)
+  Intent: Ask only those who are aware of Brand X
   Variables: Q3 exists in datamap, values 1,2
   Action: filter - clear skip/show logic applies to whole table
   Confidence: 0.95 - explicit instruction, variable exists"

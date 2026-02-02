@@ -126,7 +126,9 @@ TOOL 2: NET ROWS
 
 WHEN TO USE: Categorical questions where logical groupings add analytical value
 
-SAME-VARIABLE NETS (single variable, combined values):
+THREE TYPES OF NETs:
+
+A. SAME-VARIABLE NETS (single variable, combined values)
 Use when answer options group naturally (e.g., grade levels → "Students")
 
 { "variable": "Q2", "label": "Students (NET)", "filterValue": "2,3,4,5", "isNet": true, "indent": 0 },
@@ -135,7 +137,7 @@ Use when answer options group naturally (e.g., grade levels → "Students")
 { "variable": "Q2", "label": "Sophomore", "filterValue": "4", "isNet": false, "indent": 1 },
 { "variable": "Q2", "label": "Freshman", "filterValue": "5", "isNet": false, "indent": 1 }
 
-MULTI-VARIABLE NETS (multiple binary variables summed):
+B. MULTI-VARIABLE NETS (multiple binary variables summed)
 Use for multi-select questions where you want "Any of X" rollups
 
 { "variable": "_NET_AnyTeacher", "label": "Any teacher (NET)", "filterValue": "", "isNet": true, "netComponents": ["Q3_Teacher1", "Q3_Teacher2", "Q3_SubTeacher"], "indent": 0 },
@@ -144,6 +146,25 @@ Use for multi-select questions where you want "Any of X" rollups
 { "variable": "Q3_SubTeacher", "label": "Substitute teacher", "filterValue": "1", "isNet": false, "indent": 1 }
 
 RULE: Synthetic variable names (like _NET_AnyTeacher) MUST have isNet: true AND netComponents populated with exact variable names from the datamap.
+
+C. CONCEPTUAL GROUPING NETS (categorical with implied hierarchies)
+Use when categorical answer options suggest natural umbrella categories, even for non-scale questions.
+
+LOOK FOR THESE PATTERNS:
+- "General" vs "Specific": One broad category + multiple specific variants
+  → "Specialist (Total)" combining specific types under the general category
+- Shared prefix/suffix: "Full-time employee," "Part-time employee" vs "Contractor"
+  → "Employee (Total)" grouping the shared-prefix options
+- Conceptually opposite groups: Multiple "statin first" approaches vs one "PCSK9i first"
+  → "Statin First (Total)" highlighting the conceptual split
+
+{ "variable": "Q5", "label": "Specialist (Total)", "filterValue": "2,3,4", "isNet": true, "indent": 0 },
+{ "variable": "Q5", "label": "Cardiologist", "filterValue": "2", "isNet": false, "indent": 1 },
+{ "variable": "Q5", "label": "Neurologist", "filterValue": "3", "isNet": false, "indent": 1 },
+{ "variable": "Q5", "label": "Oncologist", "filterValue": "4", "isNet": false, "indent": 1 },
+{ "variable": "Q5", "label": "General Practitioner", "filterValue": "1", "isNet": false, "indent": 0 }
+
+RULE: Only create conceptual NETs when the grouping is OBVIOUS from the labels. If uncertain, don't create it.
 
 
 TOOL 3: DIMENSIONAL SPLITS FOR GRIDS
@@ -376,9 +397,19 @@ GUIDELINES - USE JUDGMENT:
    Keep original tables when creating splits. Derived tables supplement.
    Exception: You can exclude an overview if splits fully capture it.
 
-9. Avoid redundant NETs
-   "Any of the above (NET)" where everyone selected at least one = 100% = no insight.
-   Check that NETs will show meaningful variation.
+9. AVOID TRIVIAL NETs
+   Before creating a NET, ask: "Will this NET be ~100% or ~0%?"
+
+   Signs a NET will be trivial:
+   - It rolls up answer options where all but one has a TERMINATE instruction
+     (Everyone qualified = 100% for the non-terminate options)
+   - It captures a characteristic all respondents share by study design
+     (e.g., "Clinicians (NET)" when the study only recruits clinicians)
+   - It's the inverse of "None of these" in a screener/exclusion question
+     (If selecting affiliations terminates, "Any affiliation (NET)" = 0%)
+   - It groups all options of a single-select question (always sums to 100%)
+
+   If a NET would be trivial, don't create it. Look for meaningful sub-groupings instead.
 </constraints>
 
 <output_specifications>

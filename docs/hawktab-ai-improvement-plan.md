@@ -10,212 +10,44 @@ This document consolidates feedback from comparing our pipeline output against J
 
 ## Classification Overview
 
-| Theme | Issue Type | Fix Category |
-|-------|------------|--------------|
-| A: Base Filtering | Agent misinterpretation of survey logic | **Prompt-level** |
-| B: Redundant NETs | Missing guardrail | **Prompt-level** |
-| C: Missing Rollups | Incomplete guidance for conceptual groupings | **Prompt-level** |
-| D: Binning | Partial prompt, partial system | **Mixed** |
-| E: Calculations | Statistical implementation | **System-level** |
-| F: Presentation | Missing examples | **Prompt-level** |
-| G: Over-splitting | Architectural limitation | **System-level** |
-| H: Future Features | New capabilities | **System-level** |
+| Theme | Issue Type | Fix Category | Status |
+|-------|------------|--------------|--------|
+| A: Base Filtering | Agent misinterpretation of survey logic | **Prompt-level** | ✅ Complete |
+| B: Redundant NETs | Missing guardrail | **Prompt-level** | ✅ Complete |
+| C: Missing Rollups | Incomplete guidance for conceptual groupings | **Prompt-level** | ✅ Complete |
+| D: Binning | Partial prompt, partial system | **Mixed** | |
+| E: Calculations | Statistical implementation | **System-level** | |
+| F: Presentation | Missing examples | **Prompt-level** | |
+| G: Over-splitting | Architectural limitation | **System-level** | |
+| H: Future Features | New capabilities | **System-level** | |
 
 ---
 
-## Theme A: Base Filtering
+## Theme A: Base Filtering ✅
 
-BaseFilterAgent is inconsistently applying filters — sometimes too restrictive (eliminating valid respondents), sometimes not restrictive enough, and sometimes applying filters where none should exist.
+**Problems**: A5 over-filtered to zero (redundant `!is.na()` checks), A6 invented filter for hypothetical question (inferred from content, not explicit instructions), A4a/A9 inconsistent bases.
 
-### Problem Examples
-
-| Table | Issue | Our Base | Joe's Base |
-|-------|-------|----------|------------|
-| A5 | Over-filtered to zero | 0 | 123 |
-| A6 | Over-filtered (hypothetical question) | 138 | 180 |
-| A9 | Under-filtered | — | — |
-| A4a | Base definition mismatch | 131 | 142 |
-
-**A5**: Our filter was so restrictive it eliminated everyone. The agent wrote an overly complex expression with strict NA checks that created an impossible condition.
-
-**A6**: Filter applied where none exists in the survey. A6 is a hypothetical scenario question ("Assume the FDA decides...") which should be asked to ALL respondents. The agent inferred skip logic from question content rather than actual survey programming.
-
-**A9**: Opposite problem — BaseFilterAgent is NOT applying enough filtering when it should be.
-
-**A4a**: Different base sizes (131 vs 142), but both datasets sum to 100%. This is a base definition issue, not a calculation error.
-
-### Root Cause Analysis
-
-The BaseFilterAgent made two distinct types of errors:
-
-1. **Invented a filter where none was specified** (A6) — The agent saw question content about specific products and inferred that only users of those products should be asked. But there was no explicit `[ASK IF]` or `[SHOW IF]` instruction.
-
-2. **Over-engineered an explicit filter** (A5) — The survey clearly said `ASK IF PRESCRIBING IN A4 is > or < A3`. This IS an explicit filter. But the agent wrote an overly complex expression with strict NA checks that created an impossible condition.
-
-### Recommended Fix
-
-**Location**: `src/prompts/basefilter/production.ts` — Add to `<decision_framework>` before Step 1
-
-```markdown
-FOUNDATIONAL PRINCIPLE: DON'T INVENT FILTERS
-
-Your job is to find and implement EXPLICIT skip/show/ask logic from the survey.
-You are NOT inferring whether a filter should exist — you are finding filters that DO exist.
-
-Use the survey's conventions as your guide:
-- If other questions in this survey have explicit [ASK IF], [SHOW IF], or base instructions,
-  and this question does NOT, that's intentional. The designer chose not to filter it.
-- Question content (topics, products, behaviors mentioned) is NOT evidence of a filter.
-  A question can discuss specific products without being filtered to users of those products.
-- Ranking questions, hypothetical scenarios, and future-intent questions are often asked
-  to everyone. Don't assume they need filters based on current behavior.
-
-The only inference you make: When an explicit filter EXISTS, does it apply at the
-table level or the row level? You do NOT infer whether a filter should exist.
-```
-
-**Location**: Add to `<decision_framework>` after the foundational principle
-
-```markdown
-REMEMBER: NA FILTERING IS ALREADY DONE
-
-The default base calculation is: banner cut + non-NA values.
-This means respondents with NA (not answered, not applicable, not shown) are ALREADY excluded.
-
-Your `additionalFilter` adds constraints ON TOP of this default. You are not reimplementing
-the default — you are adding further restrictions when the survey specifies them.
-
-DO NOT add `!is.na(variable)` checks to your filters. That's redundant.
-If a respondent has NA for the question, they're already excluded from the base.
-```
-
-**Location**: Add to `<r_expression_syntax>` section
-
-```markdown
-WRITING CLEAR FILTERS:
-
-Before writing any filter expression, restate the intent in plain language:
-- "ASK IF Q4 > or < Q3" → "Ask only if Q4 differs from Q3"
-- "SHOW IF aware of brand" → "Show only to those who selected 'aware' at the awareness question"
-
-Then write the simplest expression that captures that intent.
-
-AVOID over-engineering:
-- NA is already filtered by default — don't add !is.na() checks
-- Don't create complex boolean logic when a simple comparison suffices
-- If your filter has more than 2-3 conditions joined by & or |, step back and ask
-  if you're overcomplicating the intent
-```
+**Solution**: Updated `src/prompts/basefilter/production.ts`:
+1. Added **Foundational Principle** to `<skip_show_logic_patterns>`: Find explicit logic, don't infer whether filters should exist. The inference you DO make is filter scope (table vs row level).
+2. Added **Keep Expressions Simple** to `<r_expression_syntax>`: Removed `!is.na()` example, warned against redundant NA checks.
+3. Added **Intent Restatement** to `<scratchpad_protocol>`: "Intent:" field forces plain-language thinking before writing filters.
+4. Added **Examples 5 & 6**: Hypothetical question (no filter) and "differs from" logic (simple filter).
 
 ---
 
-## Theme B: Redundant NETs
+## Theme B: Redundant NETs ✅
 
-Multiple instances of NETs that equal 100% or are structurally uninformative. This should be a clear guardrail: **never emit a NET that equals 100%**.
+**Problems**: S2B `Clinicians (NET)` = 100%, S5 `Any affiliation (NET)` = 0%, S8 `>=70% (NET)` = 100% (qualification criterion), A7 NET sums to 100%.
 
-### Problem Examples
-
-| Table | Issue |
-|-------|-------|
-| S2B | `Clinicians (NET)` = 100% (all respondents are clinicians) |
-| S5 | Every affiliation = 0%, `None of these` = 100% (degenerate screener) |
-| S8 | `Treating patients >=70% (NET)` = 100% (qualification criterion) |
-| A7 | NET sums to 100% |
-
-### Root Cause Analysis
-
-The VerificationAgent creates NETs based on logical groupings without considering whether they'll be meaningful. It created NETs for:
-- Characteristics all respondents share by study design
-- The inverse of "None of these" in screener questions
-- Answer options that include terminate criteria
-
-### Recommended Fix
-
-**Location**: `src/prompts/verification/alternative.ts` — Add to `<constraints>` as a RULE
-
-```markdown
-10. AVOID TRIVIAL NETs
-    Before creating a NET, use the survey to ask: "Will this NET be ~100% or ~0%?"
-
-    Signs a NET will be trivial:
-    - It rolls up answer options where all but one has a TERMINATE instruction
-    - It captures a characteristic all respondents share by study design
-    - It's the inverse of a "None of these" option in a screener/exclusion question
-
-    If a NET would be trivial, don't create it. Instead, look for meaningful
-    sub-groupings within the answer options that would show actual variation.
-```
+**Solution**: Expanded Guideline 9 in `src/prompts/verification/alternative.ts` `<constraints>` to explicitly list signs a NET will be trivial: TERMINATE-based rollups, study design characteristics, inverse of "None of these", grouping all options of single-select.
 
 ---
 
-## Theme C: Missing Rollups
+## Theme C: Missing Rollups ✅
 
-The flip side of Theme B — cases where we WANT NETs that add insight, not trivial ones.
+**Problems**: S3a missing "Specialized Cardiologist (Total)" grouping Interventional + Preventative; A2b missing "Recommend a Statin First (Total)" grouping two statin-first options.
 
-### Problem Examples
-
-| Table | Missing Rollup |
-|-------|----------------|
-| S3a | `Specialized Cardiologist (Total)` grouping Interventional + Preventative |
-| A2b | `Recommend a Statin First (Total)` grouping two statin-first options |
-
-### Root Cause Analysis
-
-The agent explicitly decided "no NETs needed" for categorical questions because they weren't scale questions. The scratchpad shows: "Labels verified... no NETs or T2B (not a scale)."
-
-The prompt's NET guidance focuses on same-variable NETs (combining scale values) and multi-variable NETs (combining binary variables). It doesn't address **conceptual groupings** in categorical questions where labels imply natural umbrella categories.
-
-### Recommended Fix
-
-**Location**: `src/prompts/verification/alternative.ts` — Expand `TOOL 2: NET ROWS`
-
-```markdown
-TOOL 2: NET ROWS
-
-WHEN TO USE: Categorical questions where logical groupings add analytical value
-
-THREE TYPES OF NETs:
-
-A. SAME-VARIABLE NETs (single variable, combined scale values)
-   Use when answer options on a scale should be grouped.
-   Example: satisfaction scale values 4,5 → "Satisfied (T2B)"
-
-B. MULTI-VARIABLE NETs (multiple binary variables summed)
-   Use for multi-select questions where you want "Any of X" rollups.
-   Example: combining Teacher1, Teacher2, SubTeacher → "Any teacher (NET)"
-
-C. CONCEPTUAL GROUPING NETs (categorical with implied hierarchies)
-   Use when categorical answer options suggest natural umbrella categories,
-   even if not explicitly stated in the survey.
-
-   LOOK FOR THESE PATTERNS:
-
-   Pattern 1: "General" vs "Specific" distinctions
-   - Answer options include one broad/general category and multiple specific variants
-   - Example: "General Practitioner" vs "Cardiologist," "Neurologist," "Oncologist"
-   - Create: "Specialist (Total)" combining the specific variants
-
-   Pattern 2: Shared prefix/suffix indicating family
-   - Answer options share naming patterns suggesting they belong together
-   - Example: "Full-time employee," "Part-time employee" vs "Contractor," "Consultant"
-   - Create: "Employee (Total)" and "Non-Employee (Total)"
-
-   Pattern 3: Conceptually opposite or complementary groups
-   - Answer options can be grouped by conceptual similarity
-   - Example: Multiple "Option A first" approaches vs one "Option B first" approach
-   - Create: "Option A First (Total)" to highlight the conceptual split
-
-   IMPLEMENTATION:
-   { "variable": "Q5", "label": "Broad Category (Total)", "filterValue": "1,3,4", "isNet": true, "indent": 0 },
-   { "variable": "Q5", "label": "Specific Type A", "filterValue": "1", "indent": 1 },
-   { "variable": "Q5", "label": "Specific Type B", "filterValue": "3", "indent": 1 },
-   { "variable": "Q5", "label": "Specific Type C", "filterValue": "4", "indent": 1 },
-   { "variable": "Q5", "label": "Other Category", "filterValue": "2", "indent": 0 }
-
-   RULE: Only create conceptual NETs when the grouping is OBVIOUS from the labels.
-   Don't invent groupings that aren't clearly implied by the answer text.
-   If you're uncertain whether a grouping makes sense, don't create the NET.
-```
+**Solution**: Expanded TOOL 2: NET ROWS in `src/prompts/verification/alternative.ts` to add a third type: **Conceptual Grouping NETs**. Added patterns to look for: "General vs Specific" distinctions, shared prefix/suffix, conceptually opposite groups.
 
 ---
 
