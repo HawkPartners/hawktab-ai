@@ -6,10 +6,19 @@
 
 import type {
   AppState,
+  AppMode,
   PipelineState,
   NavigationState,
   SlotState,
   LogEntry,
+  MenuState,
+  ScriptState,
+  ScriptInfo,
+  HistoryState,
+  PipelineRun,
+  HistoryArtifact,
+  SettingsState,
+  AgentModelConfig,
 } from './types';
 import { createInitialPipelineState } from './types';
 import type { PipelineEvent } from '../../lib/events/types';
@@ -33,11 +42,50 @@ export type NavigationAction =
   | { type: 'nav:enter' }
   | { type: 'nav:back' }
   | { type: 'nav:scroll-up' }
-  | { type: 'nav:scroll-down' };
+  | { type: 'nav:scroll-down' }
+  | { type: 'nav:number'; number: number };
+
+export type ModeAction =
+  | { type: 'mode:set'; mode: AppMode }
+  | { type: 'mode:back' };
+
+export type MenuAction =
+  | { type: 'menu:select'; index: number };
+
+export type ScriptAction =
+  | { type: 'scripts:load'; scripts: ScriptInfo[] }
+  | { type: 'scripts:select'; index: number }
+  | { type: 'scripts:confirm'; script: ScriptInfo }
+  | { type: 'scripts:cancel' }
+  | { type: 'scripts:start'; scriptName: string }
+  | { type: 'scripts:output'; line: string }
+  | { type: 'scripts:complete'; exitCode: number };
+
+export type HistoryAction =
+  | { type: 'history:load-datasets'; datasets: string[] }
+  | { type: 'history:load-runs'; runs: PipelineRun[] }
+  | { type: 'history:load-artifacts'; artifacts: HistoryArtifact[] }
+  | { type: 'history:select-dataset'; index: number }
+  | { type: 'history:select-run'; index: number }
+  | { type: 'history:select-artifact'; index: number }
+  | { type: 'history:view-content'; content: string }
+  | { type: 'history:drill-down' }
+  | { type: 'history:drill-up' };
+
+export type SettingsAction =
+  | { type: 'settings:load'; agents: AgentModelConfig[]; statTesting: SettingsState['statTesting'] }
+  | { type: 'settings:select'; index: number };
 
 export type PipelineAction = { type: 'event'; event: PipelineEvent };
 
-export type AppAction = NavigationAction | PipelineAction;
+export type AppAction =
+  | NavigationAction
+  | ModeAction
+  | MenuAction
+  | ScriptAction
+  | HistoryAction
+  | SettingsAction
+  | PipelineAction;
 
 // =============================================================================
 // Pipeline State Reducer
@@ -353,10 +401,117 @@ function navigationReducer(
 }
 
 // =============================================================================
+// Menu State Reducer
+// =============================================================================
+
+function menuReducer(state: MenuState, action: MenuAction): MenuState {
+  switch (action.type) {
+    case 'menu:select':
+      return { ...state, selectedIndex: Math.max(0, Math.min(3, action.index)) };
+    default:
+      return state;
+  }
+}
+
+// =============================================================================
+// Script State Reducer
+// =============================================================================
+
+function scriptReducer(state: ScriptState, action: ScriptAction): ScriptState {
+  switch (action.type) {
+    case 'scripts:load':
+      return { ...state, scripts: action.scripts, selectedIndex: 0 };
+    case 'scripts:select':
+      return { ...state, selectedIndex: Math.max(0, Math.min(state.scripts.length - 1, action.index)) };
+    case 'scripts:confirm':
+      return { ...state, showConfirmation: true, pendingScript: action.script };
+    case 'scripts:cancel':
+      return { ...state, showConfirmation: false, pendingScript: null };
+    case 'scripts:start':
+      return { ...state, runningScript: action.scriptName, output: [], exitCode: null, showConfirmation: false, pendingScript: null };
+    case 'scripts:output':
+      return { ...state, output: [...state.output, action.line].slice(-500) }; // Keep last 500 lines
+    case 'scripts:complete':
+      return { ...state, runningScript: null, exitCode: action.exitCode };
+    default:
+      return state;
+  }
+}
+
+// =============================================================================
+// History State Reducer
+// =============================================================================
+
+function historyReducer(state: HistoryState, action: HistoryAction): HistoryState {
+  switch (action.type) {
+    case 'history:load-datasets':
+      return { ...state, datasets: action.datasets, selectedDatasetIndex: 0 };
+    case 'history:load-runs':
+      return { ...state, runs: action.runs, selectedRunIndex: 0 };
+    case 'history:load-artifacts':
+      return { ...state, artifacts: action.artifacts, selectedArtifactIndex: 0 };
+    case 'history:select-dataset':
+      return { ...state, selectedDatasetIndex: Math.max(0, Math.min(state.datasets.length - 1, action.index)) };
+    case 'history:select-run':
+      return { ...state, selectedRunIndex: Math.max(0, Math.min(state.runs.length - 1, action.index)) };
+    case 'history:select-artifact':
+      return { ...state, selectedArtifactIndex: Math.max(0, Math.min(state.artifacts.length - 1, action.index)) };
+    case 'history:view-content':
+      return { ...state, level: 'viewer', viewerContent: action.content, viewerScrollOffset: 0 };
+    case 'history:drill-down':
+      if (state.level === 'datasets') {
+        return { ...state, level: 'runs' };
+      } else if (state.level === 'runs') {
+        return { ...state, level: 'artifacts' };
+      }
+      return state;
+    case 'history:drill-up':
+      if (state.level === 'viewer') {
+        return { ...state, level: 'artifacts', viewerContent: null, viewerScrollOffset: 0 };
+      } else if (state.level === 'artifacts') {
+        return { ...state, level: 'runs' };
+      } else if (state.level === 'runs') {
+        return { ...state, level: 'datasets' };
+      }
+      return state;
+    default:
+      return state;
+  }
+}
+
+// =============================================================================
+// Settings State Reducer
+// =============================================================================
+
+function settingsReducer(state: SettingsState, action: SettingsAction): SettingsState {
+  switch (action.type) {
+    case 'settings:load':
+      return { ...state, agents: action.agents, statTesting: action.statTesting };
+    case 'settings:select':
+      return { ...state, selectedIndex: action.index };
+    default:
+      return state;
+  }
+}
+
+// =============================================================================
 // Combined Reducer
 // =============================================================================
 
 export function appReducer(state: AppState, action: AppAction): AppState {
+  // Mode actions
+  if (action.type === 'mode:set') {
+    return { ...state, mode: action.mode };
+  }
+  if (action.type === 'mode:back') {
+    // Go back to menu from any mode
+    if (state.mode !== 'menu' && state.mode !== 'pipeline') {
+      return { ...state, mode: 'menu' };
+    }
+    return state;
+  }
+
+  // Pipeline events
   if (action.type === 'event') {
     return {
       ...state,
@@ -364,11 +519,272 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     };
   }
 
-  // Navigation action
-  return {
-    ...state,
-    navigation: navigationReducer(state.navigation, action, state.pipeline),
-  };
+  // Menu actions
+  if (action.type === 'menu:select') {
+    return { ...state, menu: menuReducer(state.menu, action) };
+  }
+
+  // Script actions
+  if (action.type.startsWith('scripts:')) {
+    return { ...state, scripts: scriptReducer(state.scripts, action as ScriptAction) };
+  }
+
+  // History actions
+  if (action.type.startsWith('history:')) {
+    return { ...state, history: historyReducer(state.history, action as HistoryAction) };
+  }
+
+  // Settings actions
+  if (action.type.startsWith('settings:')) {
+    return { ...state, settings: settingsReducer(state.settings, action as SettingsAction) };
+  }
+
+  // Navigation actions (for pipeline view and general navigation)
+  if (action.type.startsWith('nav:')) {
+    // Handle mode-specific navigation
+    if (state.mode === 'menu') {
+      return handleMenuNavigation(state, action as NavigationAction);
+    }
+    if (state.mode === 'scripts') {
+      return handleScriptsNavigation(state, action as NavigationAction);
+    }
+    if (state.mode === 'history') {
+      return handleHistoryNavigation(state, action as NavigationAction);
+    }
+    if (state.mode === 'settings') {
+      return handleSettingsNavigation(state, action as NavigationAction);
+    }
+    if (state.mode === 'pipeline') {
+      return {
+        ...state,
+        navigation: navigationReducer(state.navigation, action as NavigationAction, state.pipeline),
+      };
+    }
+  }
+
+  return state;
+}
+
+// =============================================================================
+// Mode-Specific Navigation Handlers
+// =============================================================================
+
+function handleMenuNavigation(state: AppState, action: NavigationAction): AppState {
+  switch (action.type) {
+    case 'nav:up':
+      return {
+        ...state,
+        menu: { ...state.menu, selectedIndex: Math.max(0, state.menu.selectedIndex - 1) },
+      };
+    case 'nav:down':
+      return {
+        ...state,
+        menu: { ...state.menu, selectedIndex: Math.min(3, state.menu.selectedIndex + 1) },
+      };
+    case 'nav:enter':
+      // Mode switch is handled by the component that knows which mode to go to
+      return state;
+    case 'nav:number':
+      if (action.number >= 1 && action.number <= 4) {
+        return {
+          ...state,
+          menu: { ...state.menu, selectedIndex: action.number - 1 },
+        };
+      }
+      return state;
+    default:
+      return state;
+  }
+}
+
+function handleScriptsNavigation(state: AppState, action: NavigationAction): AppState {
+  // Don't navigate if a script is running or confirmation is showing
+  if (state.scripts.runningScript || state.scripts.showConfirmation) {
+    return state;
+  }
+
+  switch (action.type) {
+    case 'nav:up':
+      return {
+        ...state,
+        scripts: {
+          ...state.scripts,
+          selectedIndex: Math.max(0, state.scripts.selectedIndex - 1),
+        },
+      };
+    case 'nav:down':
+      return {
+        ...state,
+        scripts: {
+          ...state.scripts,
+          selectedIndex: Math.min(state.scripts.scripts.length - 1, state.scripts.selectedIndex + 1),
+        },
+      };
+    case 'nav:back':
+      return { ...state, mode: 'menu' };
+    default:
+      return state;
+  }
+}
+
+function handleHistoryNavigation(state: AppState, action: NavigationAction): AppState {
+  const { history } = state;
+
+  switch (action.type) {
+    case 'nav:up':
+      if (history.level === 'viewer') {
+        return {
+          ...state,
+          history: {
+            ...history,
+            viewerScrollOffset: Math.max(0, history.viewerScrollOffset - 1),
+          },
+        };
+      }
+      if (history.level === 'datasets') {
+        return {
+          ...state,
+          history: {
+            ...history,
+            selectedDatasetIndex: Math.max(0, history.selectedDatasetIndex - 1),
+          },
+        };
+      }
+      if (history.level === 'runs') {
+        return {
+          ...state,
+          history: {
+            ...history,
+            selectedRunIndex: Math.max(0, history.selectedRunIndex - 1),
+          },
+        };
+      }
+      if (history.level === 'artifacts') {
+        return {
+          ...state,
+          history: {
+            ...history,
+            selectedArtifactIndex: Math.max(0, history.selectedArtifactIndex - 1),
+          },
+        };
+      }
+      return state;
+
+    case 'nav:down':
+      if (history.level === 'viewer') {
+        return {
+          ...state,
+          history: {
+            ...history,
+            viewerScrollOffset: history.viewerScrollOffset + 1,
+          },
+        };
+      }
+      if (history.level === 'datasets') {
+        return {
+          ...state,
+          history: {
+            ...history,
+            selectedDatasetIndex: Math.min(history.datasets.length - 1, history.selectedDatasetIndex + 1),
+          },
+        };
+      }
+      if (history.level === 'runs') {
+        return {
+          ...state,
+          history: {
+            ...history,
+            selectedRunIndex: Math.min(history.runs.length - 1, history.selectedRunIndex + 1),
+          },
+        };
+      }
+      if (history.level === 'artifacts') {
+        return {
+          ...state,
+          history: {
+            ...history,
+            selectedArtifactIndex: Math.min(history.artifacts.length - 1, history.selectedArtifactIndex + 1),
+          },
+        };
+      }
+      return state;
+
+    case 'nav:back':
+      if (history.level === 'viewer') {
+        return {
+          ...state,
+          history: { ...history, level: 'artifacts', viewerContent: null, viewerScrollOffset: 0 },
+        };
+      }
+      if (history.level === 'artifacts') {
+        return {
+          ...state,
+          history: { ...history, level: 'runs' },
+        };
+      }
+      if (history.level === 'runs') {
+        // Go back to menu
+        return { ...state, mode: 'menu' };
+      }
+      if (history.level === 'datasets') {
+        return { ...state, mode: 'menu' };
+      }
+      return state;
+
+    case 'nav:scroll-up':
+      if (history.level === 'viewer') {
+        return {
+          ...state,
+          history: {
+            ...history,
+            viewerScrollOffset: Math.max(0, history.viewerScrollOffset - 5),
+          },
+        };
+      }
+      return state;
+
+    case 'nav:scroll-down':
+      if (history.level === 'viewer') {
+        return {
+          ...state,
+          history: {
+            ...history,
+            viewerScrollOffset: history.viewerScrollOffset + 5,
+          },
+        };
+      }
+      return state;
+
+    default:
+      return state;
+  }
+}
+
+function handleSettingsNavigation(state: AppState, action: NavigationAction): AppState {
+  switch (action.type) {
+    case 'nav:up':
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          selectedIndex: Math.max(0, state.settings.selectedIndex - 1),
+        },
+      };
+    case 'nav:down':
+      // Allow scrolling through agents + stat testing section
+      const maxIndex = state.settings.agents.length; // agents + 1 for stat testing
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          selectedIndex: Math.min(maxIndex, state.settings.selectedIndex + 1),
+        },
+      };
+    case 'nav:back':
+      return { ...state, mode: 'menu' };
+    default:
+      return state;
+  }
 }
 
 // =============================================================================

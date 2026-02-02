@@ -7,6 +7,110 @@
 import type { StageStatus, SlotStatus } from '../../lib/events/types';
 
 // =============================================================================
+// App Mode
+// =============================================================================
+
+export type AppMode = 'menu' | 'scripts' | 'history' | 'settings' | 'pipeline';
+
+// =============================================================================
+// Menu State
+// =============================================================================
+
+export interface MenuState {
+  /** Selected menu item index (0-3) */
+  selectedIndex: number;
+}
+
+// =============================================================================
+// Script State
+// =============================================================================
+
+export interface ScriptInfo {
+  /** Script file name */
+  name: string;
+  /** Script description (from comment) */
+  description: string;
+  /** Script category: 'long' | 'fast' | 'normal' */
+  category: 'long' | 'fast' | 'normal';
+  /** Full path to script */
+  path: string;
+}
+
+export interface ScriptState {
+  /** Available scripts */
+  scripts: ScriptInfo[];
+  /** Selected script index */
+  selectedIndex: number;
+  /** Running script name (if any) */
+  runningScript: string | null;
+  /** Script output lines */
+  output: string[];
+  /** Script exit code (null if running or not started) */
+  exitCode: number | null;
+  /** Show confirmation dialog */
+  showConfirmation: boolean;
+  /** Script pending confirmation */
+  pendingScript: ScriptInfo | null;
+}
+
+// =============================================================================
+// History State
+// =============================================================================
+
+export interface PipelineRun {
+  /** Dataset name */
+  dataset: string;
+  /** Run timestamp */
+  timestamp: Date;
+  /** Run directory path */
+  path: string;
+  /** Duration in ms */
+  durationMs: number;
+  /** Total cost in USD */
+  costUsd: number;
+  /** Number of tables */
+  tableCount: number;
+  /** Status: completed, failed */
+  status: 'completed' | 'failed';
+  /** Error message (if failed) */
+  error?: string;
+}
+
+export interface HistoryArtifact {
+  /** Artifact name (folder or file) */
+  name: string;
+  /** Full path */
+  path: string;
+  /** Is directory */
+  isDirectory: boolean;
+  /** Description */
+  description: string;
+}
+
+export type HistoryLevel = 'datasets' | 'runs' | 'artifacts' | 'viewer';
+
+export interface HistoryState {
+  /** Current drill-down level */
+  level: HistoryLevel;
+  /** Available datasets */
+  datasets: string[];
+  /** Selected dataset index */
+  selectedDatasetIndex: number;
+  /** Runs for selected dataset */
+  runs: PipelineRun[];
+  /** Selected run index */
+  selectedRunIndex: number;
+  /** Artifacts for selected run */
+  artifacts: HistoryArtifact[];
+  /** Selected artifact index */
+  selectedArtifactIndex: number;
+  /** File content being viewed */
+  viewerContent: string | null;
+  /** Viewer scroll offset */
+  viewerScrollOffset: number;
+}
+
+// =============================================================================
 // Slot State
 // =============================================================================
 
@@ -136,11 +240,54 @@ export interface NavigationState {
 }
 
 // =============================================================================
+// Settings State
+// =============================================================================
+
+export interface AgentModelConfig {
+  /** Agent name */
+  agent: string;
+  /** Model name */
+  model: string;
+  /** Token limit */
+  tokenLimit: number;
+  /** Reasoning effort */
+  reasoningEffort: string;
+  /** Prompt version */
+  promptVersion: string;
+}
+
+export interface SettingsState {
+  /** Agent model configurations */
+  agents: AgentModelConfig[];
+  /** Stat testing config display */
+  statTesting: {
+    thresholds: number[];
+    proportionTest: string;
+    meanTest: string;
+    minBase: number;
+  };
+  /** Selected section index */
+  selectedIndex: number;
+}
+
+// =============================================================================
 // Combined State
 // =============================================================================
 
 export interface AppState {
+  /** Current app mode */
+  mode: AppMode;
+  /** Menu state */
+  menu: MenuState;
+  /** Script runner state */
+  scripts: ScriptState;
+  /** History browser state */
+  history: HistoryState;
+  /** Settings view state */
+  settings: SettingsState;
+  /** Pipeline state (existing) */
   pipeline: PipelineState;
+  /** Navigation state (for pipeline view) */
   navigation: NavigationState;
 }
 
@@ -194,8 +341,58 @@ export function createInitialNavigationState(): NavigationState {
   };
 }
 
+export function createInitialMenuState(): MenuState {
+  return {
+    selectedIndex: 0,
+  };
+}
+
+export function createInitialScriptState(): ScriptState {
+  return {
+    scripts: [],
+    selectedIndex: 0,
+    runningScript: null,
+    output: [],
+    exitCode: null,
+    showConfirmation: false,
+    pendingScript: null,
+  };
+}
+
+export function createInitialHistoryState(): HistoryState {
+  return {
+    level: 'runs',
+    datasets: [],
+    selectedDatasetIndex: 0,
+    runs: [],
+    selectedRunIndex: 0,
+    artifacts: [],
+    selectedArtifactIndex: 0,
+    viewerContent: null,
+    viewerScrollOffset: 0,
+  };
+}
+
+export function createInitialSettingsState(): SettingsState {
+  return {
+    agents: [],
+    statTesting: {
+      thresholds: [],
+      proportionTest: '',
+      meanTest: '',
+      minBase: 0,
+    },
+    selectedIndex: 0,
+  };
+}
+
 export function createInitialAppState(): AppState {
   return {
+    mode: 'menu',
+    menu: createInitialMenuState(),
+    scripts: createInitialScriptState(),
+    history: createInitialHistoryState(),
+    settings: createInitialSettingsState(),
     pipeline: createInitialPipelineState(),
     navigation: createInitialNavigationState(),
   };

@@ -3,9 +3,10 @@
  * HawkTab AI CLI Entry Point
  *
  * Usage:
- *   hawktab                Show help
+ *   hawktab                Show interactive menu (default)
  *   hawktab run [dataset]  Run the pipeline
  *   hawktab demo           Show UI in demo mode (no pipeline)
+ *   hawktab help           Show help
  *
  * Options:
  *   --no-ui              Run without interactive UI (plain output)
@@ -33,9 +34,10 @@ import type { ExcelFormat, DisplayMode } from '../lib/excel/ExcelFormatter';
 const cli = meow(
   `
   Usage
-    $ hawktab              Show this help
+    $ hawktab              Show interactive menu
     $ hawktab run [dataset]  Run the pipeline
     $ hawktab demo         Show UI in demo mode (no pipeline)
+    $ hawktab help         Show this help
 
   Options
     --no-ui              Run without interactive UI (plain output mode)
@@ -47,6 +49,7 @@ const cli = meow(
     --stat-min-base=N    Minimum base size for significance testing (default: 0)
 
   Examples
+    $ hawktab
     $ hawktab run
     $ hawktab run data/leqvio-monotherapy-demand-NOV217
     $ hawktab run --format=antares --display=both
@@ -114,8 +117,54 @@ function suppressConsole(): void {
 async function main(): Promise<void> {
   const [command, datasetFolder] = cli.input;
 
-  // Show help if no command provided
+  // Show interactive menu if no command provided (new default behavior)
   if (!command) {
+    // Enable event bus for when user starts pipeline from menu
+    const bus = getPipelineEventBus();
+    bus.enable();
+
+    suppressConsole();
+
+    // Track if pipeline has been started
+    let pipelineStarted = false;
+
+    const { waitUntilExit, unmount } = render(
+      <App
+        initialMode="menu"
+        onExit={() => {
+          unmount();
+          process.exit(0);
+        }}
+        onStartPipeline={() => {
+          if (pipelineStarted) return;
+          pipelineStarted = true;
+
+          // Start pipeline with default options
+          runPipeline(DEFAULT_DATASET, {
+            format: 'joe',
+            displayMode: 'frequency',
+            stopAfterVerification: false,
+            concurrency: 3,
+            quiet: true,
+          })
+            .then((result) => {
+              if (!result.success) {
+                console.error(`\nPipeline failed: ${result.error}`);
+              }
+            })
+            .catch((error) => {
+              console.error('\nUnexpected error:', error);
+            });
+        }}
+      />
+    );
+
+    await waitUntilExit();
+    return;
+  }
+
+  // Show help
+  if (command === 'help' || command === '--help' || command === '-h') {
     cli.showHelp();
     return;
   }
@@ -126,6 +175,7 @@ async function main(): Promise<void> {
 
     const { waitUntilExit, unmount } = render(
       <App
+        initialMode="pipeline"
         onExit={() => {
           unmount();
           process.exit(0);
@@ -139,7 +189,7 @@ async function main(): Promise<void> {
 
   if (command !== 'run') {
     console.error(`Unknown command: ${command}`);
-    console.error('Use "hawktab run [dataset]" or "hawktab demo"');
+    console.error('Use "hawktab" for interactive menu, "hawktab run [dataset]", or "hawktab help"');
     process.exit(1);
   }
 
@@ -200,18 +250,32 @@ async function main(): Promise<void> {
   // The pipeline emits events that the UI displays instead
   suppressConsole();
 
+  // Create a promise that resolves when the App is ready to receive events
+  let resolveReady: () => void;
+  const readyPromise = new Promise<void>((resolve) => {
+    resolveReady = resolve;
+  });
+
   // Render the Ink app
   const { waitUntilExit, unmount } = render(
     <App
+      initialMode="pipeline"
+      dataset={dataset}
       onExit={() => {
         unmount();
         process.exit(0);
       }}
+      onReady={() => {
+        resolveReady();
+      }}
     />
   );
 
-  // Run the pipeline in parallel with the UI
-  // The UI will receive events from the pipeline
+  // Wait for App to be ready before starting pipeline
+  // This ensures the event bus subscription is set up first
+  await readyPromise;
+
+  // Run the pipeline - now the UI is subscribed and ready for events
   runPipeline(dataset, {
     format,
     displayMode,
