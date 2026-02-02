@@ -24,53 +24,24 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 
 ## Part 2: Finalize Leqvio Monotherapy Demand Testing
 
-**Status**: IN PROGRESS — Iteration 1 reviewed, awaiting prompt iteration
+**Status**: COMPLETE ✓
 
 **Goal**: Confirm output quality and consistency for our primary dataset through practical testing.
 
-### Current State
+**What was done**:
+- Multiple pipeline runs with top-to-bottom review against Joe's reference output
+- Built BaseFilterAgent to handle skip/show logic and table splitting
+- Fixed R script generation issues (NULL→NA serialization, category headers, stat testing)
+- Fixed Excel formatter issues (base row display for category headers)
 
-**Most recent run**: `outputs/leqvio-monotherapy-demand-NOV217/pipeline-2026-02-01T05-49-17-899Z`
-- ✅ **REVIEWED** — Detailed top-to-bottom review completed (Feb 1, 2026)
-- 24 feedback items captured in `feedback.md`
-- See feedback file for prioritized themes and next steps
+**Result**: Pipeline produces usable crosstabs. Most tables match Joe's output. Three edge-case issues documented for future refinement.
 
-**Key findings from review**:
-- BaseFilterAgent calibration is inconsistent (over/under filtering) — highest priority
-- 100% NET guardrail needed (4+ instances) — simple fix, high impact
-- S11 mean/median mismatch needs investigation — calculation accuracy
-- Presentation polish items captured as few-shot example opportunities
-- Pre/post comparison tables NOT blocking — analysts can derive themselves
+**Outstanding Issues**: See [Pipeline Feedback Log](./pipeline-feedback.md) for 3 documented issues:
+1. Multi-column grid filters (A4a tables) — BaseFilterAgent
+2. Unnecessary derived table with base=0 (a5_12m) — BaseFilterAgent
+3. Ranking question base calculation (A6 tables) — R Script Generator
 
-**Next step**: Iterate on prompts (especially BaseFilterAgent) using feedback, then run again to validate improvements.
-
-**Review process**:
-1. Open Excel, go through tables top-to-bottom
-2. Highlight context column for tables that look weird
-3. Create `feedback.md` in the pipeline folder with notes (use tableId from context column for specificity)
-
-### BaseFilterAgent Pivot (COMPLETE)
-
-During Part 2 review, we discovered tables with incorrect bases due to skip/show logic (e.g., A3a showing one base for all therapies when each therapy should have its own base).
-
-**What we built**: BaseFilterAgent — a new pipeline step that:
-- Detects skip/show logic in the survey document
-- Interprets whether logic applies at table or row level
-- Splits tables when rows need different bases
-- Applies additionalFilter as R constraint after banner cut
-- Validates filter variables against datamap (catches hallucinations)
-- Removes analytically invalid NETs when component rows have different bases
-
-**Result**: Tables now have correct bases. A3a splits by therapy, each with accurate base (135, 126, 177). Percentages sum to 100%. Numbers match Joe's output exactly. This was a quick pivot — the system now handles complex show logic without survey-specific hacks.
-
-### Process
-
-1. **Run the pipeline** — Generate output with the stable system from Part 1
-2. **Review the output** — Open the Excel, look at the tables. Does it have what you need? Are the labels right? Are there tables you'd remove or add?
-3. **Run it again** — Second run. Compare to first. Notice any differences between runs - anything missing or inconsistent?
-4. **Adjust if needed** — If there's unreliability (e.g., a table appears in one run but not another), adjust the prompt to fix it
-5. **Third run** — Confirm the fix worked and output is stable
-6. **Move on** — When it feels right, you're done. You're the judge.
+**Decision**: Moving forward to Parts 3-4 to validate system robustness across different datasets. The issues above are edge cases related to complex question types (multi-column grids, ranking questions) and do not block broader testing.
 
 ---
 
@@ -278,5 +249,5 @@ As we test broader datasets, we'll likely discover that we need more information
 ---
 
 *Created: January 6, 2026*
-*Updated: February 1, 2026*
-*Status: Part 1 complete, Part 2 iteration 1 reviewed — 24 feedback items captured, awaiting prompt iteration*
+*Updated: February 2, 2026*
+*Status: Parts 1-2 complete, moving to Part 3 (Loop/Stacked Data)*

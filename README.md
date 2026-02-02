@@ -92,11 +92,11 @@ Working through the reliability plan to ensure consistent, publication-quality o
 | Part | Description | Status |
 |------|-------------|--------|
 | 1 | Stable System for Testing | Complete |
-| 2 | Leqvio Testing (iteration loop) | In Progress |
+| 2 | Leqvio Testing (iteration loop) | Complete |
 | 3 | Loop/Stacked Data Support | Not started |
 | 4 | Broader Testing | Not started |
 
-**Recent**: Built BaseFilterAgent to handle skip/show logic. Tables now have correct bases that match Joe's output.
+**Recent**: Leqvio testing complete. 3 edge-case issues documented in `docs/implementation-plans/pipeline-feedback.md`. Moving to Part 3.
 
 **Deadline**: Send updated version to Antares by February 16th.
 

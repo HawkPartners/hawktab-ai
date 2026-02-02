@@ -24,14 +24,13 @@ ACTIVE WORK: `docs/implementation-plans/reliability-plan.md`
 | Part | Description | Status |
 |------|-------------|--------|
 | 1 | Stable System for Testing | Complete |
-| 2 | Leqvio Testing (iteration loop) | In Progress |
+| 2 | Leqvio Testing (iteration loop) | Complete |
 | 3 | Loop/Stacked Data Support | Not started |
 | 4 | Broader Testing | Not started |
 
-PRIMARY TEST DATA: `data/leqvio-monotherapy-demand-NOV217/`
-REFERENCE OUTPUT: `tabs/leqvio-monotherapy-demand-tabs-joe.xlsx`
+**Part 2 Issues**: 3 edge cases documented in `docs/implementation-plans/pipeline-feedback.md` (multi-column grids, ranking questions). Moving forward to validate system robustness.
 
-Success = our output matches Joe's output.
+NEXT TEST DATA: `data/stacked-data-example/` (Tito's Future Growth - loops + weights)
 </current_focus>
 
 <pipeline_architecture>

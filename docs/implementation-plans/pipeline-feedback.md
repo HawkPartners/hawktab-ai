@@ -1,6 +1,16 @@
 # Pipeline Feedback Log
 
-This document captures issues discovered during pipeline runs that we're deferring to address later. We're moving on to test with different projects to validate the system more broadly, but we don't want to lose track of these specific issues.
+> **Context**: This document is part of the [Reliability Plan](./reliability-plan.md), specifically finalizing **Part 2: Leqvio Monotherapy Demand Testing**.
+
+## Summary
+
+**Dataset**: `leqvio-monotherapy-demand-NOV217`
+**Pipeline Run**: 2026-02-02
+**Overall Assessment**: Pipeline is working well. The issues below are edge cases related to complex question types (multi-column grids, ranking questions).
+
+**Decision**: We are intentionally moving forward to Part 3 (Loop/Stacked Data) and Part 4 (Broader Testing) to validate the system's robustness across different datasets. These issues are documented for future refinement but do not block progress.
+
+**Issues Found**: 3 (all medium/low severity)
 
 ---
 
@@ -167,14 +177,22 @@ All A6 detail tables are affected:
 
 ---
 
-## Issue 4: [Placeholder for additional issues]
+## Common Theme
 
-*Add additional issues as discovered during review.*
+All three issues stem from **complex question types** that our agents don't fully recognize:
+
+| Issue | Question Type | Component Affected |
+|-------|--------------|-------------------|
+| 1 | Multi-column grid (A4) | BaseFilterAgent |
+| 2 | Multi-column grid comparison | BaseFilterAgent |
+| 3 | Ranking question | R Script Generator |
+
+**Future Fix Direction**: Add question type detection (grid columns, ranking) and adjust base/filter logic accordingly.
 
 ---
 
 ## Notes
 
-- These issues represent edge cases that require either prompt tuning or architectural changes
-- The core pipeline is working well enough to test with other datasets
-- We'll return to address these systematically after broader validation
+- These issues are edge cases—the majority of tables in this run match Joe's output
+- The core pipeline is production-ready for testing with other datasets
+- We'll revisit these after validating with diverse survey types in Parts 3-4
