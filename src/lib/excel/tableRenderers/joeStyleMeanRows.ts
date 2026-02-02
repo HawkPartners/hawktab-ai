@@ -177,7 +177,13 @@ export function renderJoeStyleMeanRowsTable(
   // Base (n) row - Purple background, bold+italic text, thick bottom border
   // NO merge - value col gets n, sig col empty
   // -------------------------------------------------------------------------
-  const firstRowKey = rowKeys[0];
+  // Find the first non-category-header row for base calculation
+  // Category headers have n=null/undefined/{} and should be skipped
+  const firstDataRowKey = rowKeys.find(key => {
+    const rowData = totalCutData?.[key] as MeanRowData | undefined;
+    // Skip category headers and rows without valid numeric n
+    return rowData && !rowData.isCategoryHeader && typeof rowData.n === 'number';
+  }) || rowKeys[0];
 
   // Context column - purple, thick left+right + top + bottom border
   const baseContextCell = worksheet.getCell(currentRow, CONTEXT_COL);
@@ -187,9 +193,9 @@ export function renderJoeStyleMeanRowsTable(
 
   // Label column - purple, bold+italic, thick bottom border
   const baseLabelCell = worksheet.getCell(currentRow, LABEL_COL);
-  // Get base n from first row of Total cut
-  const firstRowData = totalCutData?.[firstRowKey] as MeanRowData | undefined;
-  const baseN = firstRowData?.n || 0;
+  // Get base n from first data row of Total cut (skipping category headers)
+  const firstRowData = totalCutData?.[firstDataRowKey] as MeanRowData | undefined;
+  const baseN = typeof firstRowData?.n === 'number' ? firstRowData.n : 0;
   // Base text logic: use provided baseText, or fall back to count-based default
   let baseTextValue: string;
   if (table.baseText) {
@@ -208,8 +214,9 @@ export function renderJoeStyleMeanRowsTable(
   // Base n for each cut - purple background, bold+italic, NO merge
   for (const cut of cuts) {
     const cutData = table.data[cut.name];
-    const rowData = cutData?.[firstRowKey] as MeanRowData | undefined;
-    const n = rowData?.n || 0;
+    // Use firstDataRowKey (first non-category-header row) for base n
+    const rowData = cutData?.[firstDataRowKey] as MeanRowData | undefined;
+    const n = typeof rowData?.n === 'number' ? rowData.n : 0;
 
     // Value column gets the n value (NO merge)
     const valCell = worksheet.getCell(currentRow, cut.valueCol);
