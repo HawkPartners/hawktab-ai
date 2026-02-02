@@ -18,7 +18,6 @@ This document consolidates feedback from comparing our pipeline output against J
 | D: Binning | Partial prompt, partial system | **Mixed** | ✅ Complete |
 | E: Calculations | Statistical implementation | **System-level** | ✅ Complete |
 | F: Presentation | Missing examples | **Prompt-level** | |
-| G: Over-splitting | Architectural limitation | **System-level** | |
 
 ---
 
@@ -80,7 +79,7 @@ This document consolidates feedback from comparing our pipeline output against J
 
 ---
 
-## Theme F: Presentation & Hierarchy
+## Theme F: Presentation & Hierarchy (Not Started)
 
 Presentation improvements that enhance readability without affecting accuracy.
 
@@ -165,47 +164,6 @@ When a table mixes conceptually different rows:
 - Pick one approach and apply consistently
 </presentation_patterns>
 ```
-
----
-
-## Theme G: Over-splitting
-
-Over-splitting creates too many tables; this is why our output has **way more tables than Joe's**.
-
-### Problem Examples
-
-| Tables affected | Issue |
-|-----------------|-------|
-| `A3a_brand` ✅ | Good — shows both situations in one table |
-| `A3a_situation_brand` ❌ | Over-split — creates separate tables for each situation, redundant |
-| Same pattern for A3b, A4a | Bloats workbook with redundant splits |
-
-### Root Cause Analysis
-
-Over-splitting happens because of how the pipeline processes tables:
-
-1. **VerificationAgent** creates situation views: `a3a`, `a3a_in_addition`, `a3a_without_statins`
-
-2. **BaseFilterAgent** processes each table **independently** — it doesn't know what other tables exist
-
-3. When it sees `a3a`, it correctly splits by brand → `a3a_leqvio`, `a3a_praluent`, etc.
-
-4. When it sees `a3a_in_addition`, it **doesn't know** `a3a_leqvio` already exists, so it correctly splits again → `a3a_in_addition_leqvio`, etc.
-
-5. **Result**: 15 tables instead of 5, but each split was locally correct
-
-**The core issue**: This is an **architectural limitation**, not an agent error. BaseFilterAgent processes tables in isolation without visibility into what tables already exist in the system.
-
-### Classification: Architectural (Not Prompt-Level)
-
-This isn't fixable with prompt guidance. Possible system-level solutions:
-
-1. **Give BaseFilterAgent visibility** into all tables created so far in this run
-2. **Process related tables together** instead of one at a time
-3. **Post-processing step** to identify and merge/remove redundant tables
-4. **Prevent upstream splits** — have VerificationAgent not create the situation views, letting BaseFilterAgent handle all splitting
-
-**Status**: Known limitation. Acceptable for MVP. Future enhancement could add cross-table awareness to reduce redundancy.
 
 ---
 
