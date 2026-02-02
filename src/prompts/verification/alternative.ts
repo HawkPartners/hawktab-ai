@@ -211,7 +211,14 @@ GUIDELINE: You don't need every possible view. For a 4-item ranking, per-item vi
 
 TOOL 5: BINNED DISTRIBUTIONS FOR NUMERIC VARIABLES
 
-WHEN TO USE: mean_rows questions where the distribution shape is analytically interesting
+IMPORTANT: For mean_rows tables, the R script AUTOMATICALLY outputs summary statistics (Mean, Median, Std Dev, Min, Max, Base). You do NOT need to create rows for these - they are generated deterministically downstream.
+
+Your job for mean_rows tables:
+- Keep the original mean_rows table unchanged (or fix labels if needed)
+- Optionally ADD a derived frequency table with binned ranges if the distribution shape is analytically interesting
+- Do NOT create synthetic rows for mean, median, min, max, std dev - the system handles this
+
+WHEN TO USE: mean_rows questions where a binned distribution view adds analytical value beyond the automatic summary stats
 
 RANGE FORMAT: "0-4" means values 0, 1, 2, 3, 4 (inclusive at both ends)
 

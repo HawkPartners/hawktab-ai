@@ -74,7 +74,8 @@ import { buildCutsSpec } from '../src/lib/tables/CutsSpec';
 import { sortTables, getSortingMetadata } from '../src/lib/tables/sortTables';
 import { ExcelFormatter, type ExcelFormat, type DisplayMode } from '../src/lib/excel/ExcelFormatter';
 import { extractStreamlinedData } from '../src/lib/data/extractStreamlinedData';
-import { getPromptVersions } from '../src/lib/env';
+import { getPromptVersions, getStatTestingConfig, formatStatTestingConfig } from '../src/lib/env';
+import type { StatTestingConfig } from '../src/lib/env';
 import { resetMetricsCollector, getPipelineCostSummary, getMetricsCollector } from '../src/lib/observability';
 import { getPipelineEventBus, STAGE_NAMES } from '../src/lib/events';
 import type { VerboseDataMapType } from '../src/schemas/processingSchemas';
@@ -264,6 +265,12 @@ async function runPipeline(datasetFolder: string) {
   log(`  Verification:  ${promptVersions.verificationPromptVersion}`, 'dim');
   log('', 'reset');
 
+  // Get stat testing config
+  const statTestingConfig: StatTestingConfig = getStatTestingConfig();
+  log('Stat Testing:', 'blue');
+  log(`  ${formatStatTestingConfig(statTestingConfig)}`, 'dim');
+  log('', 'reset');
+
   // Create output folder: outputs/<dataset>/pipeline-<timestamp>/
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const outputFolder = `pipeline-${timestamp}`;
@@ -364,11 +371,30 @@ async function runPipeline(datasetFolder: string) {
     // Replace TableAgent (LLM) with TableGenerator (deterministic)
     const groups = groupDataMap(verboseDataMap);
     const generatedOutputs = generateTables(groups);
-    const tableAgentResults = convertToLegacyFormat(generatedOutputs);
+    let tableAgentResults = convertToLegacyFormat(generatedOutputs);
     const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
     const stats = getGeneratorStats(generatedOutputs);
     log(`  [Path B] TableGenerator: ${tableAgentTables.length} tables (${stats.tableTypeDistribution['frequency'] || 0} freq, ${stats.tableTypeDistribution['mean_rows'] || 0} mean) in ${stats.totalRows} rows`, 'green');
     eventBus.emitStageComplete(4, STAGE_NAMES[4], Date.now() - pathBStart);
+
+    // Calculate distribution stats for mean_rows tables
+    log(`  [Path B] Calculating distribution stats...`, 'cyan');
+    try {
+      const { enrichTableResultsWithStats } = await import('../src/lib/stats/DistributionCalculator');
+      tableAgentResults = await enrichTableResultsWithStats(
+        tableAgentResults,
+        files.spss,
+        outputDir
+      );
+      const enrichedMeanRowsTables = tableAgentResults.flatMap(r => r.tables).filter(t => t.meta?.distribution);
+      if (enrichedMeanRowsTables.length > 0) {
+        log(`  [Path B] Distribution stats: ${enrichedMeanRowsTables.length} tables enriched`, 'green');
+      } else {
+        log(`  [Path B] Distribution stats: 0 tables enriched (no mean_rows tables found or R failed)`, 'yellow');
+      }
+    } catch (distError) {
+      log(`  [Path B] Distribution stats skipped: ${distError instanceof Error ? distError.message : String(distError)}`, 'yellow');
+    }
 
     // Survey processing
     let surveyMarkdown: string | null = null;
@@ -640,7 +666,12 @@ async function runPipeline(datasetFolder: string) {
   // Use all tables (valid + excluded) for R script generation
   // Excluded tables get calculated but flagged with excluded=TRUE in JSON output
   const { script: masterScript, validation: staticValidationReport } = generateRScriptV2WithValidation(
-    { tables: allTablesForR, cuts: cutsSpec.cuts },
+    {
+      tables: allTablesForR,
+      cuts: cutsSpec.cuts,
+      statTestingConfig: statTestingConfig,
+      significanceThresholds: statTestingConfig.thresholds,
+    },
     { sessionId: outputFolder, outputDir: 'results' }
   );
 
@@ -842,6 +873,15 @@ async function runPipeline(datasetFolder: string) {
       crosstab: promptVersions.crosstabPromptVersion,
       table: promptVersions.tablePromptVersion,
       verification: promptVersions.verificationPromptVersion,
+    },
+    statTesting: {
+      thresholds: statTestingConfig.thresholds,
+      confidenceLevels: statTestingConfig.thresholds.map(t => Math.round((1 - t) * 100)),
+      proportionTest: statTestingConfig.proportionTest,
+      meanTest: statTestingConfig.meanTest,
+      minBase: statTestingConfig.minBase,
+      dualThresholdMode: statTestingConfig.thresholds.length >= 2 &&
+        statTestingConfig.thresholds[0] !== statTestingConfig.thresholds[1],
     },
     inputs: {
       datamap: path.basename(files.datamap),
