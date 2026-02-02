@@ -17,7 +17,7 @@ This document consolidates feedback from comparing our pipeline output against J
 | C: Missing Rollups | Incomplete guidance for conceptual groupings | **Prompt-level** | ✅ Complete |
 | D: Binning | Partial prompt, partial system | **Mixed** | ✅ Complete |
 | E: Calculations | Statistical implementation | **System-level** | ✅ Complete |
-| F: Presentation | Missing examples | **Prompt-level** | |
+| F: Presentation | Missing examples | **Prompt-level** | ✅ Complete |
 
 ---
 
@@ -79,91 +79,13 @@ This document consolidates feedback from comparing our pipeline output against J
 
 ---
 
-## Theme F: Presentation & Hierarchy (Not Started)
+## Theme F: Presentation & Hierarchy ✅
 
-Presentation improvements that enhance readability without affecting accuracy.
+**Problems**: Verbose repeated prefixes in row labels, inconsistent row ordering across related tables.
 
-### Problem Examples
-
-| Table | Issue |
-|-------|-------|
-| S3a | Indentation too shallow — components not indented under NETs |
-| A1 | Rows repeat full "Leqvio (inclisiran): As an adjunct to..." instead of factoring out treatment name |
-| A2a | Common prefix repeated three times instead of factored into header |
-| A3 | Inconsistent row ordering across related tables |
-
-### Root Cause Analysis
-
-The prompt lacks examples of advanced presentation patterns:
-- Factoring out common prefixes into header rows
-- Maintaining consistent row ordering across related tables
-- Using header rows to group conceptually related items
-
-### Recommended Fix
-
-**Location**: `src/prompts/verification/alternative.ts` — Add new section `<presentation_patterns>`
-
-```markdown
-<presentation_patterns>
-ADVANCED PRESENTATION: IMPROVING SCANNABILITY
-
-PATTERN 1: FACTOR OUT COMMON PREFIXES
-When multiple rows share a long common prefix, extract it as a header row.
-
-BEFORE (verbose, hard to scan):
-- "Recommend approach X for patients with condition A and threshold >=55"
-- "Recommend approach X for patients with condition A and threshold >=70"
-- "Recommend approach X for patients with condition A and threshold >=100"
-
-AFTER (scannable):
-- "Recommend approach X for patients with condition A and:" [HEADER]
-  - "Threshold >=55"
-  - "Threshold >=70"
-  - "Threshold >=100"
-
-Implementation:
-{ "variable": "_CAT_", "label": "Recommend approach X for... and:", "filterValue": "_HEADER_", "indent": 0 },
-{ "variable": "Q8", "label": "Threshold >=55", "filterValue": "1", "indent": 1 },
-{ "variable": "Q8", "label": "Threshold >=70", "filterValue": "2", "indent": 1 },
-{ "variable": "Q8", "label": "Threshold >=100", "filterValue": "3", "indent": 1 }
-
-
-PATTERN 2: GROUP BY PRIMARY DIMENSION
-When rows combine two dimensions (e.g., brand × condition), use one dimension as header rows.
-
-BEFORE (interleaved, confusing):
-- "Brand A: Condition 1"
-- "Brand A: Condition 2"
-- "Brand B: Condition 1"
-- "Brand B: Condition 2"
-
-AFTER (grouped by brand):
-- "Brand A" [HEADER]
-  - "Condition 1"
-  - "Condition 2"
-- "Brand B" [HEADER]
-  - "Condition 1"
-  - "Condition 2"
-
-
-PATTERN 3: CONSISTENT ROW ORDERING ACROSS RELATED TABLES
-When multiple tables cover the same items (brands, products, categories):
-- Use the SAME row order across all related tables
-- Default to datamap order unless there's a strong analytical reason to reorder
-- WHY: Users copy rows across tables for comparison. Consistent order means rows align.
-
-PRINCIPLE: Stability > Optimization
-A consistent mediocre order is better than an inconsistent "optimal" order.
-
-
-PATTERN 4: LOGICAL GROUPING WITHIN TABLES
-When a table mixes conceptually different rows:
-- Group related rows together using category headers
-- Separate standalone items from rollup groups
-- Example ordering: Individual items first, then NETs; OR NETs first, then components
-- Pick one approach and apply consistently
-</presentation_patterns>
-```
+**Solution**: Enhanced TOOL 6 in `src/prompts/verification/alternative.ts`:
+1. Added "Factoring out common prefixes" pattern with before/after example showing how to extract shared text into a header row
+2. Added row ordering principle: maintain datamap order unless actively restructuring
 
 ---
 
@@ -182,7 +104,7 @@ These changes can be made to improve the next pipeline run:
 1. ~~Add Rule 10 (no trivial NETs)~~ ✅ Done (Theme B)
 2. ~~Expand TOOL 2 with conceptual grouping NETs~~ ✅ Done (Theme C)
 3. ~~Expand TOOL 5 with binning heuristics~~ ✅ Done (Theme D)
-4. Add `<presentation_patterns>` section (Theme F)
+4. ~~Expand TOOL 6 with prefix factoring example + row ordering~~ ✅ Done (Theme F)
 
 ### Phase 2: System Changes (Requires Code)
 

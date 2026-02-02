@@ -254,27 +254,49 @@ Flat tables for grids sometimes interleave dimensions confusingly:
 
 This makes comparison hard. Reorder to group by one dimension, then use category headers:
   Situation 1          ← category header
-    Brand A            
-    Brand B            
+    Brand A
+    Brand B
   Situation 2          ← category header
     Brand A
     Brand B
 
 Now all items for Situation 1 are together, then Situation 2.
 
+FACTORING OUT COMMON PREFIXES:
+When multiple rows share a long common prefix, extract it as a header to reduce repetition:
+
+BEFORE (verbose, hard to scan):
+  "Recommend approach X for patients with condition A and threshold >=55"
+  "Recommend approach X for patients with condition A and threshold >=70"
+  "Recommend approach X for patients with condition A and threshold >=100"
+
+AFTER (scannable):
+  "Recommend approach X for patients with condition A and:"  ← header
+    "Threshold >=55"
+    "Threshold >=70"
+    "Threshold >=100"
+
 HOW IT WORKS:
 1. Create a row with filterValue: "_HEADER_"
 2. The row renders with just the label—data columns are empty
 3. Rows below can be indented (indent: 1) for visual grouping
 
-EXAMPLE:
+EXAMPLE (grouping by time period):
 { "variable": "_CAT_", "label": "Over 5 years ago", "filterValue": "_HEADER_", "isNet": false, "indent": 0 },
 { "variable": "Q7r1", "label": "None (0)", "filterValue": "0", "isNet": false, "indent": 1 },
 { "variable": "Q7r1", "label": "Any (1+)", "filterValue": "1-99", "isNet": false, "indent": 1 },
 
+EXAMPLE (factoring out common prefix):
+{ "variable": "_CAT_", "label": "Recommend approach X for patients with condition A and:", "filterValue": "_HEADER_", "isNet": false, "indent": 0 },
+{ "variable": "Q8", "label": "Threshold >=55", "filterValue": "1", "isNet": false, "indent": 1 },
+{ "variable": "Q8", "label": "Threshold >=70", "filterValue": "2", "isNet": false, "indent": 1 },
+{ "variable": "Q8", "label": "Threshold >=100", "filterValue": "3", "isNet": false, "indent": 1 },
+
 KEY DISTINCTION: Category headers use "_HEADER_" → no data computed. NETs use actual filterValues → data aggregated.
 
-GUIDELINE: Use sparingly. Only add when grouping and row reordering significantly improves readability.
+ROW ORDERING: Maintain the datamap's row order unless you're actively restructuring (adding rollups, grouping by dimension). Consistent ordering across related tables lets analysts compare without hunting for matching rows.
+
+GUIDELINE: Use sparingly. Only add when grouping or prefix factoring significantly improves readability.
 </enrichment_toolkit>
 
 <indentation_semantics>
