@@ -387,13 +387,14 @@ export function getGeneratorStats(outputs: TableGeneratorOutput[]): {
  */
 export function toTableDefinition(
   table: TableDefinitionWithMeta
-): Omit<TableDefinition, 'hints'> & { hints: never[] } {
+): Omit<TableDefinition, 'hints'> & { hints: never[]; meta?: TableMeta } {
   return {
     tableId: table.tableId,
     questionText: table.questionText,
     tableType: table.tableType,
     rows: table.rows,
     hints: [], // Empty array for compatibility
+    meta: table.meta, // Preserve meta field for VerificationAgent
   };
 }
 

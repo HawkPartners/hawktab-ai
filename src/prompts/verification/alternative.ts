@@ -222,6 +222,24 @@ RANGE FORMAT: "0-4" means values 0, 1, 2, 3, 4 (inclusive at both ends)
 
 GUIDELINE: Create sensible bins based on data range and what distinctions matter analytically.
 
+WHEN DISTRIBUTION DATA IS AVAILABLE:
+
+If the table's meta field includes distribution stats (n, min, max, mean, median, q1, q3),
+use them to inform bin thresholds:
+
+COMMON PATTERNS:
+1. None / Any / High: Split at 0, 1+, and a threshold near q3 or median
+2. Quartile-based: Split at q1, median, q3 for roughly equal groups
+3. Round numbers: Use meaningful thresholds near distribution landmarks
+
+EXAMPLE (with distribution: min=0, max=250, median=15, q3=35):
+- "None (0)": filterValue: "0"
+- "Low (1-15)": filterValue: "1-15"  (up to median)
+- "Moderate (16-35)": filterValue: "16-35"  (median to q3)
+- "High (36+)": filterValue: "36-999"  (above q3)
+
+PRINCIPLE: Use distribution data to find natural breakpoints rather than arbitrary increments.
+
 
 TOOL 6: CATEGORY HEADERS FOR VISUAL GROUPING
 

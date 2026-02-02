@@ -257,6 +257,7 @@ export function renderJoeStyleMeanRowsTable(
     const rowKey = rowKeys[0];
     const statRows = [
       { label: 'Mean', getValue: (rd: MeanRowData) => rd?.mean },
+      { label: 'Mean (minus outliers)', getValue: (rd: MeanRowData) => rd?.mean_no_outliers },
       { label: 'Median', getValue: (rd: MeanRowData) => rd?.median },
       { label: 'Standard Deviation', getValue: (rd: MeanRowData) => rd?.sd },
     ];

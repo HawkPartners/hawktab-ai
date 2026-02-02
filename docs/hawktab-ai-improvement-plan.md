@@ -15,7 +15,7 @@ This document consolidates feedback from comparing our pipeline output against J
 | A: Base Filtering | Agent misinterpretation of survey logic | **Prompt-level** | ✅ Complete |
 | B: Redundant NETs | Missing guardrail | **Prompt-level** | ✅ Complete |
 | C: Missing Rollups | Incomplete guidance for conceptual groupings | **Prompt-level** | ✅ Complete |
-| D: Binning | Partial prompt, partial system | **Mixed** | |
+| D: Binning | Partial prompt, partial system | **Mixed** | ✅ Complete |
 | E: Calculations | Statistical implementation | **System-level** | |
 | F: Presentation | Missing examples | **Prompt-level** | |
 | G: Over-splitting | Architectural limitation | **System-level** | |
@@ -51,80 +51,17 @@ This document consolidates feedback from comparing our pipeline output against J
 
 ---
 
-## Theme D: Binning & Distribution
+## Theme D: Binning & Distribution ✅
 
-VerificationAgent lacks distribution context when choosing bins, leading to inconsistent or suboptimal binning decisions.
+**Problems**: S6_DIST bins lacked interpretable cut points, S10_BINNED chose bins without knowing actual distribution, S10 missing "mean excluding outliers", S12 missing binned distribution.
 
-### Problem Examples
+**Solution**: Mixed system and prompt changes:
 
-| Table | Issue |
-|-------|-------|
-| S6_DIST | Bins (3-5, 6-10, 11-15...) lack interpretable cut points vs Joe's (≤15 vs >15) |
-| S10_BINNED | Agent chooses bins without knowing actual response distribution |
-| S10 | Missing "mean excluding outliers" (we used to show this) |
-| S12 | Missing binned distribution + useless NET |
+1. **System: Pass distribution data to VerificationAgent** — Created `src/lib/stats/DistributionCalculator.ts` that uses R subprocess to calculate actual stats (n, min, max, mean, median, q1, q3) from SPSS data. Extended `TableMetaSchema` with `distribution` field. Integrated into `PipelineRunner.ts` before VerificationAgent call.
 
-### Root Cause Analysis
+2. **System: Display trimmed mean in Excel** — Added "Mean (minus outliers)" row to `src/lib/excel/tableRenderers/joeStyleMeanRows.ts` (data already calculated by R).
 
-| Sub-issue | Fix Category |
-|-----------|--------------|
-| D1, D2 (binning choices) | System-level (pass distribution data to agent) |
-| D3 (trimmed mean) | System-level (reintroduce trimmed mean) |
-| D4 (missing binned distribution) | Prompt-level (one-shot example) |
-
-### Recommended Fix
-
-#### System-Level Changes
-
-**Change 1: Pass distribution data to VerificationAgent**
-
-For mean_rows questions, calculate actual distribution stats from the data and pass to the agent:
-```typescript
-meta: {
-  distribution: {
-    min: 50,
-    max: 1200,
-    mean: 245,
-    median: 175,
-    q1: 100,
-    q3: 350
-  }
-}
-```
-
-This lets the agent create sensible bins based on where the data actually falls, not guesses.
-
-**Implementation**: Add a pre-processing step (in TableGenerator or a new stats calculator) that reads the data CSV, calculates stats for numeric variables, and includes them in the table's meta field.
-
-**Change 2: Reintroduce trimmed mean**
-
-Add "Mean (excluding outliers)" back to numeric question output:
-- Calculate using IQR rule or percentile trim
-- Include in the distribution data passed to VerificationAgent
-- Render in Excel output
-
-#### Prompt-Level Change
-
-**Location**: `src/prompts/verification/alternative.ts` — Add one-shot example to `TOOL 5: BINNED DISTRIBUTIONS`
-
-```markdown
-FREQUENCY DISTRIBUTIONS FOR MEAN QUESTIONS:
-
-For mean_rows questions, consider creating a frequency distribution alongside the mean.
-This shows HOW MANY respondents fall into each range, not just the average.
-
-A common pattern: None / Any / Above threshold
-
-Example for "How many patients did you prescribe X to last month?":
-- None (0): What % prescribed to zero patients?
-- Any (1+): What % prescribed to at least one?
-- Above median (e.g., 15+): What % are high-volume prescribers?
-
-This turns a single mean into an actionable distribution.
-
-If distribution data is available in the table's meta field (min, max, median, quartiles),
-use it to choose meaningful thresholds for your bins.
-```
+3. **Prompt: Binning guidance with distribution data** — Updated TOOL 5 in `src/prompts/verification/alternative.ts` with guidance on using distribution stats to choose natural breakpoints (None/Any/High, quartile-based, round numbers near landmarks).
 
 ---
 
@@ -423,21 +360,21 @@ Not blocking for Feb 16 deadline, but worth tracking.
 These changes can be made to improve the next pipeline run:
 
 **BaseFilterAgent (`src/prompts/basefilter/production.ts`):**
-1. Add "Don't Invent Filters" foundational principle
-2. Add "NA Filtering is Already Done" reminder
-3. Add "Writing Clear Filters" guidance
+1. ~~Add "Don't Invent Filters" foundational principle~~ ✅ Done (Theme A)
+2. ~~Add "NA Filtering is Already Done" reminder~~ ✅ Done (Theme A)
+3. ~~Add "Writing Clear Filters" guidance~~ ✅ Done (Theme A)
 
 **VerificationAgent (`src/prompts/verification/alternative.ts`):**
-1. Add Rule 10 (no trivial NETs)
-2. Expand TOOL 2 with conceptual grouping NETs
-3. Expand TOOL 5 with binning heuristics
-4. Add `<presentation_patterns>` section
+1. ~~Add Rule 10 (no trivial NETs)~~ ✅ Done (Theme B)
+2. ~~Expand TOOL 2 with conceptual grouping NETs~~ ✅ Done (Theme C)
+3. ~~Expand TOOL 5 with binning heuristics~~ ✅ Done (Theme D)
+4. Add `<presentation_patterns>` section (Theme F)
 
 ### Phase 2: System Changes (Requires Code)
 
-| Change | Files Affected | Complexity |
-|--------|----------------|------------|
-| Fix fake mean significance testing | `src/lib/r/RScriptGeneratorV2.ts` | Medium |
-| Reintroduce trimmed mean | `src/lib/r/RScriptGeneratorV2.ts` | Medium |
-| Pass distribution data to agent | TableGenerator, VerificationAgent | Medium |
-| Stat testing configurability | Pipeline config, R generation | High |
+| Change | Files Affected | Complexity | Status |
+|--------|----------------|------------|--------|
+| Fix fake mean significance testing | `src/lib/r/RScriptGeneratorV2.ts` | Medium | |
+| ~~Reintroduce trimmed mean~~ | ~~`joeStyleMeanRows.ts`~~ | ~~Low~~ | ✅ Done (Theme D) |
+| ~~Pass distribution data to agent~~ | ~~`DistributionCalculator.ts`, `PipelineRunner.ts`~~ | ~~Medium~~ | ✅ Done (Theme D) |
+| Stat testing configurability | Pipeline config, R generation | High | |

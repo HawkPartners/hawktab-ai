@@ -239,11 +239,28 @@ export async function runPipeline(
       // Replace TableAgent (LLM) with TableGenerator (deterministic)
       const groups = groupDataMap(verboseDataMap);
       const generatedOutputs = generateTables(groups);
-      const tableAgentResults = convertToLegacyFormat(generatedOutputs);
+      let tableAgentResults = convertToLegacyFormat(generatedOutputs);
       const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
       const stats = getGeneratorStats(generatedOutputs);
       log(`  [Path B] TableGenerator: ${tableAgentTables.length} tables (${stats.tableTypeDistribution['frequency'] || 0} freq, ${stats.tableTypeDistribution['mean_rows'] || 0} mean) in ${stats.totalRows} rows`, 'green');
       eventBus.emitStageComplete(4, STAGE_NAMES[4], Date.now() - pathBStart);
+
+      // Calculate distribution stats for mean_rows tables (Theme D: D1/D2)
+      log(`  [Path B] Calculating distribution stats...`, 'cyan');
+      try {
+        const { enrichTableResultsWithStats } = await import('../stats/DistributionCalculator');
+        tableAgentResults = await enrichTableResultsWithStats(
+          tableAgentResults,
+          files.spss,
+          outputDir
+        );
+        const enrichedMeanRowsTables = tableAgentResults.flatMap(r => r.tables).filter(t => t.meta?.distribution);
+        if (enrichedMeanRowsTables.length > 0) {
+          log(`  [Path B] Distribution stats: ${enrichedMeanRowsTables.length} tables enriched`, 'green');
+        }
+      } catch (distError) {
+        log(`  [Path B] Distribution stats skipped: ${distError instanceof Error ? distError.message : String(distError)}`, 'yellow');
+      }
 
       // Survey processing
       let surveyMarkdown: string | null = null;

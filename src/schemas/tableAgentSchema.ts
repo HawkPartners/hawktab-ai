@@ -159,6 +159,16 @@ export const TableMetaSchema = z.object({
     rows: z.number(),
     cols: z.number(),
   }).optional(),
+  /** Actual distribution stats from data (for mean_rows tables) */
+  distribution: z.object({
+    n: z.number(),
+    min: z.number(),
+    max: z.number(),
+    mean: z.number(),
+    median: z.number(),
+    q1: z.number(),
+    q3: z.number(),
+  }).optional(),
 });
 
 export type TableMeta = z.infer<typeof TableMetaSchema>;
