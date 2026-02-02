@@ -25,7 +25,8 @@ import { buildCutsSpec } from '../tables/CutsSpec';
 import { sortTables, getSortingMetadata } from '../tables/sortTables';
 import { ExcelFormatter } from '../excel/ExcelFormatter';
 import { extractStreamlinedData } from '../data/extractStreamlinedData';
-import { getPromptVersions } from '../env';
+import { getPromptVersions, getStatTestingConfig, formatStatTestingConfig } from '../env';
+import type { StatTestingConfig } from '../env';
 import { resetMetricsCollector, getPipelineCostSummary, getMetricsCollector } from '../observability';
 import { getPipelineEventBus, STAGE_NAMES } from '../events';
 
@@ -86,7 +87,16 @@ export async function runPipeline(
   options: Partial<PipelineOptions> = {}
 ): Promise<PipelineResult> {
   const opts: PipelineOptions = { ...DEFAULT_PIPELINE_OPTIONS, ...options };
-  const { format, displayMode, stopAfterVerification, concurrency, quiet } = opts;
+  const { format, displayMode, stopAfterVerification, concurrency, quiet, statTesting } = opts;
+
+  // Build effective stat testing config (CLI overrides -> env defaults)
+  const envStatConfig = getStatTestingConfig();
+  const effectiveStatConfig: StatTestingConfig = {
+    thresholds: statTesting?.thresholds ?? envStatConfig.thresholds,
+    proportionTest: statTesting?.proportionTest ?? envStatConfig.proportionTest,
+    meanTest: statTesting?.meanTest ?? envStatConfig.meanTest,
+    minBase: statTesting?.minBase ?? envStatConfig.minBase,
+  };
 
   const logger = createLogger(quiet);
   const { log, logStep } = logger;
@@ -138,6 +148,11 @@ export async function runPipeline(
   log(`  Crosstab:      ${promptVersions.crosstabPromptVersion}`, 'dim');
   log(`  Table:         ${promptVersions.tablePromptVersion}`, 'dim');
   log(`  Verification:  ${promptVersions.verificationPromptVersion}`, 'dim');
+  log('', 'reset');
+
+  // Log stat testing configuration
+  log('Stat Testing Configuration:', 'blue');
+  log(`  ${formatStatTestingConfig(effectiveStatConfig).split('\n').join('\n  ')}`, 'dim');
   log('', 'reset');
 
   // Create output folder: outputs/<dataset>/pipeline-<timestamp>/
@@ -486,7 +501,12 @@ export async function runPipeline(
     await fs.mkdir(rDir, { recursive: true });
 
     const { script: masterScript, validation: staticValidationReport } = generateRScriptV2WithValidation(
-      { tables: allTablesForR, cuts: cutsSpec.cuts },
+      {
+        tables: allTablesForR,
+        cuts: cutsSpec.cuts,
+        statTestingConfig: effectiveStatConfig,
+        significanceThresholds: effectiveStatConfig.thresholds,
+      },
       { sessionId: outputFolder, outputDir: 'results' }
     );
 
@@ -663,6 +683,15 @@ export async function runPipeline(
         crosstab: promptVersions.crosstabPromptVersion,
         table: promptVersions.tablePromptVersion,
         verification: promptVersions.verificationPromptVersion,
+      },
+      statTesting: {
+        thresholds: effectiveStatConfig.thresholds,
+        confidenceLevels: effectiveStatConfig.thresholds.map(t => Math.round((1 - t) * 100)),
+        proportionTest: effectiveStatConfig.proportionTest,
+        meanTest: effectiveStatConfig.meanTest,
+        minBase: effectiveStatConfig.minBase,
+        dualThresholdMode: effectiveStatConfig.thresholds.length >= 2 &&
+          effectiveStatConfig.thresholds[0] !== effectiveStatConfig.thresholds[1],
       },
       inputs: {
         datamap: path.basename(files.datamap),

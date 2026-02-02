@@ -43,11 +43,14 @@ const cli = meow(
     --display=MODE       Display mode: frequency (default), counts, or both
     --concurrency=N      Override parallel processing limit (default: 3)
     --stop-after-verification  Stop pipeline before R/Excel generation
+    --stat-thresholds=X,Y  Significance thresholds (e.g., 0.05,0.10 for dual confidence)
+    --stat-min-base=N    Minimum base size for significance testing (default: 0)
 
   Examples
     $ hawktab run
     $ hawktab run data/leqvio-monotherapy-demand-NOV217
     $ hawktab run --format=antares --display=both
+    $ hawktab run --stat-thresholds=0.05,0.10 --stat-min-base=30
     $ hawktab run --no-ui
     $ hawktab demo
 `,
@@ -73,6 +76,14 @@ const cli = meow(
       stopAfterVerification: {
         type: 'boolean',
         default: false,
+      },
+      statThresholds: {
+        type: 'string',
+        default: '',
+      },
+      statMinBase: {
+        type: 'number',
+        default: -1,  // -1 means use env default
       },
     },
   }
@@ -143,6 +154,22 @@ async function main(): Promise<void> {
   const concurrency = cli.flags.concurrency || 3;
   const stopAfterVerification = cli.flags.stopAfterVerification;
 
+  // Parse stat testing options (CLI overrides env)
+  type StatTestingOverride = { thresholds?: number[]; minBase?: number };
+  const statTesting: StatTestingOverride = {};
+  if (cli.flags.statThresholds) {
+    const parsed = cli.flags.statThresholds
+      .split(',')
+      .map((s: string) => parseFloat(s.trim()))
+      .filter((n: number) => !isNaN(n) && n > 0 && n < 1);
+    if (parsed.length > 0) {
+      statTesting.thresholds = parsed.sort((a: number, b: number) => a - b);
+    }
+  }
+  if (cli.flags.statMinBase >= 0) {
+    statTesting.minBase = cli.flags.statMinBase;
+  }
+
   // Check for --no-ui flag
   if (cli.flags.noUi) {
     // Run in plain output mode (no UI, just console output)
@@ -154,6 +181,7 @@ async function main(): Promise<void> {
       stopAfterVerification,
       concurrency,
       quiet: false, // Show console output
+      statTesting: Object.keys(statTesting).length > 0 ? statTesting : undefined,
     });
 
     if (!result.success) {
@@ -190,6 +218,7 @@ async function main(): Promise<void> {
     stopAfterVerification,
     concurrency,
     quiet: true, // Suppress console output in UI mode
+    statTesting: Object.keys(statTesting).length > 0 ? statTesting : undefined,
   })
     .then((result) => {
       if (!result.success) {

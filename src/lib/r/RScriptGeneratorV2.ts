@@ -17,6 +17,7 @@
 
 import type { ExtendedTableDefinition, ExtendedTableRow } from '../../schemas/verificationAgentSchema';
 import type { CutDefinition, CutGroup } from '../tables/CutsSpec';
+import type { StatTestingConfig } from '../env';
 
 // =============================================================================
 // Types
@@ -45,6 +46,7 @@ export interface RScriptV2Input {
   significanceThresholds?: number[];  // NEW: [0.05, 0.10] for 95%/90% dual thresholds
   totalRespondents?: number;        // Total qualified respondents (for base description)
   bannerGroups?: BannerGroup[];     // Banner structure for Excel formatter
+  statTestingConfig?: StatTestingConfig;  // Full stat testing configuration
 }
 
 export interface RScriptV2Options {
@@ -238,8 +240,14 @@ export function generateRScriptV2WithValidation(
     significanceLevel = 0.10,
     significanceThresholds,
     totalRespondents,
-    bannerGroups = []
+    bannerGroups = [],
+    statTestingConfig,
   } = input;
+
+  // Extract stat testing config values (use explicit params if provided, else config, else defaults)
+  const minBase = statTestingConfig?.minBase ?? 0;
+  const proportionTest = statTestingConfig?.proportionTest ?? 'unpooled_z';
+  const meanTest = statTestingConfig?.meanTest ?? 'welch_t';
   const { sessionId = 'unknown', outputDir = 'results' } = options;
 
   // Compute effective thresholds: use significanceThresholds if provided, else fall back to significanceLevel
@@ -274,11 +282,17 @@ export function generateRScriptV2WithValidation(
   lines.push(`# Generated: ${new Date().toISOString()}`);
   lines.push(`# Tables: ${report.validTables} (${report.invalidTables} skipped due to validation errors)`);
   lines.push(`# Cuts: ${cuts.length}`);  // Total is now included in cuts
+  lines.push('#');
+  lines.push('# STATISTICAL TESTING:');
   if (hasMultipleThresholds) {
-    lines.push(`# Significance: p<${effectiveThresholds[0]} (uppercase) / p<${effectiveThresholds[1]} (lowercase)`);
+    lines.push(`#   Thresholds: p<${effectiveThresholds[0]} (uppercase) / p<${effectiveThresholds[1]} (lowercase)`);
   } else {
-    lines.push(`# Significance Level: ${effectiveThresholds[0]} (${Math.round((1 - effectiveThresholds[0]) * 100)}% confidence)`);
+    lines.push(`#   Threshold: p<${effectiveThresholds[0]} (${Math.round((1 - effectiveThresholds[0]) * 100)}% confidence)`);
   }
+  lines.push(`#   Proportion test: ${proportionTest === 'unpooled_z' ? 'Unpooled z-test' : 'Pooled z-test'}`);
+  lines.push(`#   Mean test: ${meanTest === 'welch_t' ? "Welch's t-test" : "Student's t-test"}`);
+  lines.push(`#   Minimum base: ${minBase > 0 ? minBase : 'None (testing all cells)'}`);
+  lines.push('#   Comparisons: Within-group + vs Total')
   if (report.invalidTables > 0) {
     lines.push('#');
     lines.push('# WARNING: Some tables were skipped due to validation errors.');
@@ -306,7 +320,11 @@ export function generateRScriptV2WithValidation(
   // -------------------------------------------------------------------------
   // Significance Thresholds
   // -------------------------------------------------------------------------
-  lines.push('# Significance testing threshold(s)');
+  lines.push('# =============================================================================');
+  lines.push('# Statistical Testing Configuration');
+  lines.push('# =============================================================================');
+  lines.push('');
+  lines.push('# Significance thresholds');
   if (hasMultipleThresholds) {
     lines.push(`p_threshold_high <- ${effectiveThresholds[0]}  # High confidence (uppercase letters)`);
     lines.push(`p_threshold_low <- ${effectiveThresholds[1]}   # Low confidence (lowercase letters)`);
@@ -314,6 +332,13 @@ export function generateRScriptV2WithValidation(
   } else {
     lines.push(`p_threshold <- ${effectiveThresholds[0]}`);
   }
+  lines.push('');
+  lines.push('# Minimum base size for significance testing (0 = no minimum)');
+  lines.push(`stat_min_base <- ${minBase}`);
+  lines.push('');
+  lines.push('# Test methodology');
+  lines.push(`# Proportion test: ${proportionTest === 'unpooled_z' ? 'Unpooled z-test (WinCross default)' : 'Pooled z-test'}`);
+  lines.push(`# Mean test: ${meanTest === 'welch_t' ? "Welch's t-test (unequal variances)" : "Student's t-test (equal variances)"}`);
   lines.push('');
 
   // -------------------------------------------------------------------------
@@ -697,13 +722,59 @@ function generateHelperFunctions(lines: string[]): void {
   lines.push('}');
   lines.push('');
 
-  // T-test for means
-  lines.push('# T-test for means (returns TRUE if significantly different)');
+  // T-test for means (summary statistics version - doesn't need raw data)
+  // Uses Welch's t-test formula with n, mean, sd from each group
+  lines.push("# Welch's t-test for means using summary statistics (n, mean, sd)");
+  lines.push('# Returns list(p_value, higher) or NA if cannot compute');
+  lines.push('sig_test_mean_summary <- function(n1, mean1, sd1, n2, mean2, sd2, min_base = 0) {');
+  lines.push('  # Check minimum base size');
+  lines.push('  if (!is.na(min_base) && min_base > 0) {');
+  lines.push('    if (n1 < min_base || n2 < min_base) return(NA)');
+  lines.push('  }');
+  lines.push('');
+  lines.push('  # Need at least 2 observations for SD and variance');
+  lines.push('  if (is.na(n1) || is.na(n2) || n1 < 2 || n2 < 2) return(NA)');
+  lines.push('  if (is.na(mean1) || is.na(mean2)) return(NA)');
+  lines.push('  if (is.na(sd1) || is.na(sd2)) return(NA)');
+  lines.push('');
+  lines.push('  # Handle zero variance (SD = 0)');
+  lines.push('  if (sd1 == 0 && sd2 == 0) {');
+  lines.push('    # Both have no variance - cannot compute t-test');
+  lines.push('    # If means are exactly equal, not significant');
+  lines.push('    # If means differ, technically infinite t-stat but we return NA');
+  lines.push('    return(NA)');
+  lines.push('  }');
+  lines.push('');
+  lines.push("  # Welch's t-test formula");
+  lines.push('  var1 <- sd1^2');
+  lines.push('  var2 <- sd2^2');
+  lines.push('');
+  lines.push('  # Standard error of the difference');
+  lines.push('  se <- sqrt(var1/n1 + var2/n2)');
+  lines.push('  if (se == 0) return(NA)  # Cannot divide by zero');
+  lines.push('');
+  lines.push('  # t statistic');
+  lines.push('  t_stat <- (mean1 - mean2) / se');
+  lines.push('');
+  lines.push('  # Welch-Satterthwaite degrees of freedom');
+  lines.push('  df_num <- (var1/n1 + var2/n2)^2');
+  lines.push('  df_denom <- (var1/n1)^2/(n1-1) + (var2/n2)^2/(n2-1)');
+  lines.push('  df <- df_num / df_denom');
+  lines.push('');
+  lines.push('  # Two-tailed p-value');
+  lines.push('  p_value <- 2 * pt(-abs(t_stat), df)');
+  lines.push('');
+  lines.push('  return(list(p_value = p_value, higher = mean1 > mean2))');
+  lines.push('}');
+  lines.push('');
+
+  // Legacy t-test with raw data (kept for backward compatibility)
+  lines.push('# T-test for means using raw data (legacy, for backward compatibility)');
   lines.push('sig_test_mean <- function(vals1, vals2, threshold = p_threshold) {');
   lines.push('  n1 <- sum(!is.na(vals1))');
   lines.push('  n2 <- sum(!is.na(vals2))');
   lines.push('');
-  lines.push('  if (n1 < 5 || n2 < 5) return(NA)  # Insufficient sample size');
+  lines.push('  if (n1 < 2 || n2 < 2) return(NA)  # Insufficient sample size');
   lines.push('');
   lines.push('  tryCatch({');
   lines.push('    result <- t.test(vals1, vals2, na.rm = TRUE)');
@@ -1161,13 +1232,33 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('            }');
   lines.push('          }');
   lines.push('        } else if (table_type == "mean_rows") {');
-  lines.push('          # For means, we need the raw values - use count/pct as proxy');
-  lines.push('          # In practice, need to store raw values or use different approach');
-  lines.push('          if (!is.na(row_data$mean) && !is.na(other_data$mean)) {');
-  lines.push('            if (row_data$mean > other_data$mean) {');
-  lines.push('              # Simplified: flag if mean is higher (proper t-test needs raw data)');
-  lines.push('              # For dual mode, always use uppercase (can\'t calc p-value without raw data)');
-  lines.push('              sig_higher <- c(sig_higher, toupper(other_letter))');
+  lines.push("          # Welch's t-test using summary statistics (n, mean, sd)");
+  lines.push('          # These are stored in each row during mean_rows table generation');
+  lines.push('          if (!is.na(row_data$mean) && !is.na(other_data$mean) &&');
+  lines.push('              !is.null(row_data$n) && !is.null(other_data$n) &&');
+  lines.push('              !is.null(row_data$sd) && !is.null(other_data$sd)) {');
+  lines.push('');
+  lines.push('            # Get minimum base from config (defaults to 0 = no minimum)');
+  lines.push('            min_base <- if (exists("stat_min_base")) stat_min_base else 0');
+  lines.push('');
+  lines.push('            result <- sig_test_mean_summary(');
+  lines.push('              row_data$n, row_data$mean, row_data$sd,');
+  lines.push('              other_data$n, other_data$mean, other_data$sd,');
+  lines.push('              min_base');
+  lines.push('            )');
+  lines.push('');
+  lines.push('            if (!is.null(result) && !is.na(result$p_value) && result$higher) {');
+  lines.push('              if (has_dual_thresholds) {');
+  lines.push('                if (result$p_value < p_threshold_high) {');
+  lines.push('                  sig_higher <- c(sig_higher, toupper(other_letter))');
+  lines.push('                } else if (result$p_value < p_threshold_low) {');
+  lines.push('                  sig_higher <- c(sig_higher, tolower(other_letter))');
+  lines.push('                }');
+  lines.push('              } else {');
+  lines.push('                if (result$p_value < p_threshold) {');
+  lines.push('                  sig_higher <- c(sig_higher, other_letter)');
+  lines.push('                }');
+  lines.push('              }');
   lines.push('            }');
   lines.push('          }');
   lines.push('        }');
@@ -1197,9 +1288,24 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('              }');
   lines.push('            }');
   lines.push('          } else if (table_type == "mean_rows") {');
-  lines.push('            if (!is.na(row_data$mean) && !is.na(total_data$mean)) {');
-  lines.push('              if (row_data$mean != total_data$mean) {');
-  lines.push('                sig_vs_total <- if (row_data$mean > total_data$mean) "higher" else "lower"');
+  lines.push("            # Welch's t-test vs Total using summary statistics");
+  lines.push('            if (!is.na(row_data$mean) && !is.na(total_data$mean) &&');
+  lines.push('                !is.null(row_data$n) && !is.null(total_data$n) &&');
+  lines.push('                !is.null(row_data$sd) && !is.null(total_data$sd)) {');
+  lines.push('');
+  lines.push('              min_base <- if (exists("stat_min_base")) stat_min_base else 0');
+  lines.push('');
+  lines.push('              result <- sig_test_mean_summary(');
+  lines.push('                row_data$n, row_data$mean, row_data$sd,');
+  lines.push('                total_data$n, total_data$mean, total_data$sd,');
+  lines.push('                min_base');
+  lines.push('              )');
+  lines.push('');
+  lines.push('              if (!is.null(result) && !is.na(result$p_value)) {');
+  lines.push('                threshold_to_use <- if (has_dual_thresholds) p_threshold_high else p_threshold');
+  lines.push('                if (result$p_value < threshold_to_use) {');
+  lines.push('                  sig_vs_total <- if (result$higher) "higher" else "lower"');
+  lines.push('                }');
   lines.push('              }');
   lines.push('            }');
   lines.push('          }');

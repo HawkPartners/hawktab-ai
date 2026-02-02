@@ -14,6 +14,48 @@
 import { createAzure } from '@ai-sdk/azure';
 import { EnvironmentConfig, ReasoningEffort } from './types';
 
+// =============================================================================
+// Stat Testing Configuration
+// =============================================================================
+
+/**
+ * Proportion test types (for frequency tables)
+ * - 'unpooled_z': Unpooled z-test for proportions (WinCross default)
+ * - 'pooled_z': Pooled z-test for proportions
+ */
+export type ProportionTestType = 'unpooled_z' | 'pooled_z';
+
+/**
+ * Mean test types (for mean_rows tables)
+ * - 'welch_t': Welch's t-test (unequal variances - more robust)
+ * - 'student_t': Student's t-test (assumes equal variances)
+ */
+export type MeanTestType = 'welch_t' | 'student_t';
+
+/**
+ * Statistical testing configuration
+ */
+export interface StatTestingConfig {
+  /** Significance thresholds (e.g., [0.05, 0.10] for dual 95%/90% confidence) */
+  thresholds: number[];
+  /** Proportion test type for frequency tables */
+  proportionTest: ProportionTestType;
+  /** Mean test type for mean_rows tables */
+  meanTest: MeanTestType;
+  /** Minimum base size for testing (0 = no minimum) */
+  minBase: number;
+}
+
+/**
+ * Default stat testing configuration (matches WinCross defaults)
+ */
+export const DEFAULT_STAT_TESTING_CONFIG: StatTestingConfig = {
+  thresholds: [0.10],           // 90% confidence
+  proportionTest: 'unpooled_z', // WinCross default
+  meanTest: 'welch_t',          // More robust for unequal variances
+  minBase: 0,                   // No minimum (WinCross tests all data)
+};
+
 /**
  * Valid reasoning effort levels for Azure OpenAI GPT-5 and o-series models
  * @see https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/reasoning
@@ -304,6 +346,122 @@ export const getReasoningConfig = () => {
 };
 
 // =============================================================================
+// Stat Testing Configuration
+// =============================================================================
+
+/**
+ * Parse significance thresholds from environment variable
+ * Supports single value (e.g., "0.10") or comma-separated dual values (e.g., "0.05,0.10")
+ */
+function parseStatThresholds(value: string | undefined): number[] {
+  if (!value) return DEFAULT_STAT_TESTING_CONFIG.thresholds;
+
+  const parts = value.split(',').map(p => parseFloat(p.trim())).filter(n => !isNaN(n) && n > 0 && n < 1);
+  if (parts.length === 0) {
+    console.warn(`[env.ts] Invalid STAT_THRESHOLDS "${value}", using default "${DEFAULT_STAT_TESTING_CONFIG.thresholds.join(',')}"`);
+    return DEFAULT_STAT_TESTING_CONFIG.thresholds;
+  }
+
+  // Sort ascending (lower threshold = higher confidence first)
+  return parts.sort((a, b) => a - b);
+}
+
+/**
+ * Parse proportion test type from environment variable
+ */
+function parseProportionTest(value: string | undefined): ProportionTestType {
+  if (!value) return DEFAULT_STAT_TESTING_CONFIG.proportionTest;
+  const normalized = value.toLowerCase().trim();
+  if (normalized === 'unpooled_z' || normalized === 'pooled_z') {
+    return normalized;
+  }
+  console.warn(`[env.ts] Invalid STAT_PROPORTION_TEST "${value}", using default "${DEFAULT_STAT_TESTING_CONFIG.proportionTest}"`);
+  return DEFAULT_STAT_TESTING_CONFIG.proportionTest;
+}
+
+/**
+ * Parse mean test type from environment variable
+ */
+function parseMeanTest(value: string | undefined): MeanTestType {
+  if (!value) return DEFAULT_STAT_TESTING_CONFIG.meanTest;
+  const normalized = value.toLowerCase().trim();
+  if (normalized === 'welch_t' || normalized === 'student_t') {
+    return normalized;
+  }
+  console.warn(`[env.ts] Invalid STAT_MEAN_TEST "${value}", using default "${DEFAULT_STAT_TESTING_CONFIG.meanTest}"`);
+  return DEFAULT_STAT_TESTING_CONFIG.meanTest;
+}
+
+/**
+ * Parse minimum base size from environment variable
+ */
+function parseMinBase(value: string | undefined): number {
+  if (!value) return DEFAULT_STAT_TESTING_CONFIG.minBase;
+  const parsed = parseInt(value, 10);
+  if (isNaN(parsed) || parsed < 0) {
+    console.warn(`[env.ts] Invalid STAT_MIN_BASE "${value}", using default "${DEFAULT_STAT_TESTING_CONFIG.minBase}"`);
+    return DEFAULT_STAT_TESTING_CONFIG.minBase;
+  }
+  return parsed;
+}
+
+/**
+ * Get statistical testing configuration from environment variables
+ *
+ * Environment variables:
+ * - STAT_THRESHOLDS: Comma-separated significance thresholds (e.g., "0.05,0.10")
+ * - STAT_PROPORTION_TEST: "unpooled_z" (default) or "pooled_z"
+ * - STAT_MEAN_TEST: "welch_t" (default) or "student_t"
+ * - STAT_MIN_BASE: Minimum base size for testing (default: 0 = no minimum)
+ */
+export function getStatTestingConfig(): StatTestingConfig {
+  return {
+    thresholds: parseStatThresholds(process.env.STAT_THRESHOLDS),
+    proportionTest: parseProportionTest(process.env.STAT_PROPORTION_TEST),
+    meanTest: parseMeanTest(process.env.STAT_MEAN_TEST),
+    minBase: parseMinBase(process.env.STAT_MIN_BASE),
+  };
+}
+
+/**
+ * Format stat testing config for display
+ * Returns a human-readable description of the current settings
+ */
+export function formatStatTestingConfig(config: StatTestingConfig): string {
+  const lines: string[] = [];
+
+  // Confidence levels
+  if (config.thresholds.length === 1) {
+    const confidence = Math.round((1 - config.thresholds[0]) * 100);
+    lines.push(`Confidence Level: ${confidence}% (p < ${config.thresholds[0]})`);
+  } else {
+    const confidences = config.thresholds.map(t => Math.round((1 - t) * 100));
+    lines.push(`Confidence Levels: ${confidences.join('%, ')}% (p < ${config.thresholds.join(', ')})`);
+    lines.push(`Notation: uppercase (p < ${config.thresholds[0]}), lowercase (p < ${config.thresholds[1]})`);
+  }
+
+  // Test types
+  const proportionTestName = config.proportionTest === 'unpooled_z'
+    ? 'Unpooled z-test (WinCross default)'
+    : 'Pooled z-test';
+  lines.push(`Proportion Test: ${proportionTestName}`);
+
+  const meanTestName = config.meanTest === 'welch_t'
+    ? "Welch's t-test (unequal variances)"
+    : "Student's t-test (equal variances)";
+  lines.push(`Mean Test: ${meanTestName}`);
+
+  // Minimum base
+  if (config.minBase > 0) {
+    lines.push(`Minimum Base: ${config.minBase} (cells below this are not tested)`);
+  } else {
+    lines.push(`Minimum Base: None (testing all cells)`);
+  }
+
+  return lines.join('\n  ');
+}
+
+// =============================================================================
 // Legacy Model Selection (Backward Compatibility)
 // These functions are deprecated but maintained for existing code
 // =============================================================================
@@ -428,6 +586,17 @@ export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
 
     if (config.processingLimits.baseFilterModelTokens < 1000) {
       errors.push('BASEFILTER_MODEL_TOKENS must be at least 1000');
+    }
+
+    // Validate stat testing config
+    const statConfig = getStatTestingConfig();
+    if (statConfig.thresholds.length === 0) {
+      errors.push('STAT_THRESHOLDS must have at least one value');
+    }
+    for (const threshold of statConfig.thresholds) {
+      if (threshold <= 0 || threshold >= 1) {
+        errors.push(`Invalid stat threshold ${threshold}: must be between 0 and 1`);
+      }
     }
 
   } catch (error) {

@@ -16,7 +16,7 @@ This document consolidates feedback from comparing our pipeline output against J
 | B: Redundant NETs | Missing guardrail | **Prompt-level** | ✅ Complete |
 | C: Missing Rollups | Incomplete guidance for conceptual groupings | **Prompt-level** | ✅ Complete |
 | D: Binning | Partial prompt, partial system | **Mixed** | ✅ Complete |
-| E: Calculations | Statistical implementation | **System-level** | |
+| E: Calculations | Statistical implementation | **System-level** | ✅ Complete |
 | F: Presentation | Missing examples | **Prompt-level** | |
 | G: Over-splitting | Architectural limitation | **System-level** | |
 | H: Future Features | New capabilities | **System-level** | |
@@ -65,118 +65,19 @@ This document consolidates feedback from comparing our pipeline output against J
 
 ---
 
-## Theme E: Calculations & Statistical Accuracy
+## Theme E: Calculations & Statistical Accuracy ✅
 
-Core accuracy issues that affect trust in the output.
+**Problems**: Fake significance testing for means (just comparing values without t-test), hardcoded stat testing options, no logging of statistical assumptions.
 
-### Problem Examples
+**Solution**: System-level changes to `src/lib/env.ts`, `src/lib/r/RScriptGeneratorV2.ts`, `src/lib/pipeline/`:
 
-| Issue | Details |
-|-------|---------|
-| Stat testing | Our significance callouts don't always match Joe's |
-| S11 mean/median | Our mean=168, median=125 vs Joe's mean=175.9, median=150 |
+1. **Fixed fake mean significance** — Replaced simple mean comparison with proper Welch's t-test using summary statistics (n, mean, sd). Both within-group and vs-Total comparisons now use legitimate p-value calculations.
 
-### Current Stat Testing State
+2. **Made stat testing configurable** — Added `StatTestingConfig` interface with env vars (`STAT_THRESHOLDS`, `STAT_PROPORTION_TEST`, `STAT_MEAN_TEST`, `STAT_MIN_BASE`) and CLI flags (`--stat-thresholds`, `--stat-min-base`).
 
-| Feature | Status | Details |
-|---------|--------|---------|
-| Confidence level | ✅ Configurable | Default 0.10 (90%) |
-| Dual thresholds | ✅ Supported | `[0.05, 0.10]` → uppercase (95%) / lowercase (90%) |
-| Z-test for proportions | ✅ Implemented | Unpooled z-test |
-| T-test for means | ✅ Implemented | Welch's t-test |
-| Within-group comparisons | ✅ Works | Compares columns in same banner group |
-| Comparison to Total | ✅ Works | All columns vs Total |
-| Stat letters | ✅ Works | T, A, B, C... deterministic assignment |
+3. **Added stat testing logging** — Configuration now logged to console, R script header, and `pipeline-summary.json`.
 
-**What's hardcoded (candidates for configurability):**
-
-| Feature | Current State | Potential Option |
-|---------|---------------|------------------|
-| Test type (proportions) | Always unpooled z-test | Pooled z-test, chi-square |
-| Test type (means) | Always Welch's t-test | Student's t-test |
-| Minimum base | No minimum (tests all cells) | Configurable minimum n |
-| Multiple comparison correction | None | Bonferroni correction |
-| Overlap handling | Not implemented | Dependent sample handling |
-
-### Critical Bug Found: Fake Significance Testing for Means
-
-**Location**: `src/lib/r/RScriptGeneratorV2.ts` lines 1163-1172 and 1199-1204
-
-**The problem**: For `mean_rows` tables, we are NOT doing statistical significance testing. The code just checks if one mean is larger than another and marks it "significant" — no t-test, no p-value calculation.
-
-```r
-# CURRENT (WRONG):
-if (row_data$mean > other_data$mean) {
-  sig_higher <- c(sig_higher, toupper(other_letter))  # Fake!
-}
-```
-
-**The fix**: We already store `n`, `mean`, `sd` for each cell. Use these to calculate a proper Welch's t-test:
-
-```r
-# CORRECT:
-se <- sqrt(sd1^2/n1 + sd2^2/n2)
-t_stat <- (mean1 - mean2) / se
-df <- ((sd1^2/n1 + sd2^2/n2)^2) / ((sd1^2/n1)^2/(n1-1) + (sd2^2/n2)^2/(n2-1))
-p_value <- 2 * pt(-abs(t_stat), df)
-if (p_value < p_threshold && mean1 > mean2) {
-  sig_higher <- c(sig_higher, other_letter)
-}
-```
-
-**Scope**: This affects ALL mean_rows tables in the output. Every significance letter for means is currently fake.
-
-**Principle**: No shortcuts in statistical testing. Everything must be legitimate, defensible statistics.
-
-### E2: Mean/Median Mismatch — Investigation Results
-
-**S11 comparison** (same n=180):
-
-| Stat | Our Output | Joe's Output | Difference |
-|------|------------|--------------|------------|
-| Mean | 168.0 | 175.9 | -7.9 |
-| Median | 125 | 150 | -25 |
-| Mean (minus outliers) | 152.6 (IQR method) | 159.8 | -7.2 |
-
-**What we verified:**
-- Our calculation is correct for the data we have (R confirms mean=168, median=125)
-- No values below 10 in data (TERMINATE IF <10 was applied)
-- No invalid values where S11 > S10
-- 3 outliers exist (600, 750, 900) but don't explain median difference
-
-**Conclusion: Our statistics are correct.**
-
-We calculate mean and median correctly from the data. The difference with Joe's output likely reflects different data versions, weighting, or methodology on his end — but that's not our concern. Our goal isn't to copy Joe; it's to do legitimate statistics.
-
-**Status: Investigated and resolved. No action needed.**
-
-### Recommended Configuration Interface
-
-```typescript
-interface StatTestingConfig {
-  // Thresholds
-  confidenceLevels: number[];  // e.g., [0.90] or [0.95, 0.90]
-
-  // Test options
-  proportionTest: 'unpooled_z' | 'pooled_z';
-  meanTest: 'welch_t' | 'student_t';
-
-  // Base handling
-  minimumBase: number;  // Default: 0 (no minimum)
-
-  // Multiple comparisons
-  correction: 'none' | 'bonferroni';
-
-  // Display
-  letterCase: 'uppercase_only' | 'dual_case';
-}
-```
-
-**Defaults for HawkPartners:**
-- 90% confidence (single level, uppercase letters)
-- Unpooled z-test for proportions, Welch's t-test for means
-- No minimum base (test all cells, note small bases in reporting)
-- No multiple comparison correction
+**Note on mean/median mismatch**: Investigated S11 discrepancy with Joe's output. Our statistics are correct for the data we have; differences likely reflect different data versions or methodology on Joe's end. No action needed.
 
 ---
 
@@ -374,7 +275,7 @@ These changes can be made to improve the next pipeline run:
 
 | Change | Files Affected | Complexity | Status |
 |--------|----------------|------------|--------|
-| Fix fake mean significance testing | `src/lib/r/RScriptGeneratorV2.ts` | Medium | |
+| ~~Fix fake mean significance testing~~ | ~~`src/lib/r/RScriptGeneratorV2.ts`~~ | ~~Medium~~ | ✅ Done (Theme E) |
 | ~~Reintroduce trimmed mean~~ | ~~`joeStyleMeanRows.ts`~~ | ~~Low~~ | ✅ Done (Theme D) |
 | ~~Pass distribution data to agent~~ | ~~`DistributionCalculator.ts`, `PipelineRunner.ts`~~ | ~~Medium~~ | ✅ Done (Theme D) |
-| Stat testing configurability | Pipeline config, R generation | High | |
+| ~~Stat testing configurability~~ | ~~`env.ts`, `PipelineRunner.ts`, `cli/index.tsx`~~ | ~~High~~ | ✅ Done (Theme E) |

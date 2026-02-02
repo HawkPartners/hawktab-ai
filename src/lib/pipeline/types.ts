@@ -5,6 +5,7 @@
  */
 
 import type { ExcelFormat, DisplayMode } from '../excel/ExcelFormatter';
+import type { StatTestingConfig } from '../env';
 
 // =============================================================================
 // File Discovery
@@ -33,6 +34,8 @@ export interface PipelineOptions {
   concurrency: number;
   /** Suppress console output (for UI mode) */
   quiet: boolean;
+  /** Statistical testing configuration (overrides env defaults) */
+  statTesting?: Partial<StatTestingConfig>;
 }
 
 export const DEFAULT_PIPELINE_OPTIONS: PipelineOptions = {
