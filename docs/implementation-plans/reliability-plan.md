@@ -201,6 +201,73 @@ Apply weights to calculations?
 
 ---
 
+## Part 6: Survey Classification & Confidence Scoring
+
+**Status**: NOT STARTED
+
+**Goal**: Automatically detect survey methodology type from datamap patterns, and provide multi-dimensional confidence scores to surface when human review is needed.
+
+**Prerequisites**: Parts 3-5 complete. This is enhancement-level work once the core system is reliable.
+
+### Survey Classification
+
+Different research methodologies need different handling. If we can detect the type, we can:
+1. Set user expectations ("This looks like a MaxDiff survey...")
+2. Prompt for missing context (MaxDiff needs actual message text, not just "Message 1")
+3. Pre-configure agent behavior
+4. Flag when we're out of our depth
+
+| Type | Detection Signals | Why It Matters |
+|------|-------------------|----------------|
+| **MaxDiff** | Variables named `MD*`, `maxdiff*`; "best/worst" or "most/least appealing" in descriptions | Needs message text; has utility scores |
+| **Conjoint/DCM** | Variables named `DCM*`, `conjoint*`, `choice*`; utility score patterns | Has choice tasks and derived utilities |
+| **ATU** | "awareness" + "trial/usage" patterns; "ever heard/used" | Standard table structures expected |
+| **Message Testing** | "message N" patterns; "appeal" + "message" | Needs actual message content |
+| **Segmentation** | "segment" or "cluster" in variables | May have derived segment assignments |
+| **Standard** | None of the above | Default handling |
+
+### Multi-Dimensional Confidence Scoring
+
+Instead of a single confidence score, track confidence across dimensions:
+
+| Dimension | What It Measures | When Low Score Matters |
+|-----------|------------------|------------------------|
+| **Structure** | Did we parse brackets/values/options correctly? | Parser may have failed |
+| **Parent-Child** | Are relationships between variables clear? | Context enrichment issues |
+| **Variable Types** | Did we identify types correctly? | Wrong table treatment |
+| **Loop Detection** | If loops detected, how certain? | May ask for wrong format |
+| **Survey Classification** | How confident in methodology type? | May miss required context |
+
+### Flagging Thresholds
+
+```
+If overall confidence < 70%:
+  → Flag for human review before proceeding
+  → "We're not confident we parsed this correctly. Please review."
+
+If loop confidence < 80% AND loops detected:
+  → Ask user to confirm loop detection
+  → "We think this has looped questions. Is that right?"
+
+If survey type confidence < 60%:
+  → Don't auto-configure, ask user
+  → "What type of research is this? MaxDiff / Conjoint / Standard / Other"
+```
+
+### Implementation Notes
+
+This is UI-level work. The pipeline produces confidence scores; the UI decides what to surface. The validation layer (Part 3) provides the foundation—this part adds intelligence on top.
+
+### Success Criteria
+
+- [ ] Detect MaxDiff surveys with >80% accuracy
+- [ ] Detect Conjoint surveys with >80% accuracy
+- [ ] Multi-dimensional confidence scores available
+- [ ] UI prompts when confidence is low
+- [ ] Survey type influences agent behavior or user prompts
+
+---
+
 *Created: January 6, 2026*
 *Updated: February 5, 2026*
 *Status: Parts 1-2 complete, Part 3 design complete, ready for implementation*
