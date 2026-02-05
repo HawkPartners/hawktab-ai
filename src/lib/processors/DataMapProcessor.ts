@@ -14,6 +14,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { DataMapValidator } from './DataMapValidator';
 import { groupDataMapByParent } from '@/agents/TableAgent';
+import { parseAntaresFile } from './AntaresParser';
 
 // ===== TYPES & INTERFACES =====
 
@@ -64,27 +65,6 @@ export interface ProcessingResult {
   warnings: string[];
 }
 
-// ===== STATE MACHINE ENUMS =====
-
-enum ParsingState {
-  SCANNING,
-  IN_PARENT,
-  IN_VALUES, 
-  IN_OPTIONS,
-  IN_SUB
-}
-
-interface ParsingContext {
-  currentParent: string | null;
-  currentValueType: string | null;
-  currentDescription: string | null;
-  answerOptions: string[];
-  state: ParsingState;
-  variables: RawDataMapVariable[];
-  currentRangeMin?: number;
-  currentRangeMax?: number;
-}
-
 // ===== MAIN PROCESSOR CLASS =====
 
 export class DataMapProcessor {
@@ -95,16 +75,46 @@ export class DataMapProcessor {
    * CSV Upload → Parse → Inference → Enrichment → Validation → Dual Outputs
    */
   async processDataMap(filePath: string, spssFilePath?: string, outputDir?: string): Promise<ProcessingResult> {
+    try {
+      // Step 1: State machine parsing (using extracted AntaresParser)
+      console.log(`[DataMapProcessor] Starting CSV parsing: ${path.basename(filePath)}`);
+      const rawVariables = await parseAntaresFile(filePath);
+      console.log(`[DataMapProcessor] Parsed ${rawVariables.length} raw variables`);
+
+      // Steps 2-5: Enrichment pipeline
+      return await this.processFromRawVariables(rawVariables, filePath, spssFilePath, outputDir);
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown processing error';
+      console.error(`[DataMapProcessor] Error:`, errorMessage);
+
+      return {
+        success: false,
+        verbose: [],
+        agent: [],
+        validationPassed: false,
+        confidence: 0,
+        errors: [errorMessage],
+        warnings: []
+      };
+    }
+  }
+
+  /**
+   * Process from pre-parsed raw variables (used by both Antares and SPSS parsers).
+   * Runs only the enrichment pipeline: parent inference → context → type normalization → validation → dual outputs.
+   */
+  async processFromRawVariables(
+    rawVariables: RawDataMapVariable[],
+    filePath: string,
+    spssFilePath?: string,
+    outputDir?: string
+  ): Promise<ProcessingResult> {
     const errors: string[] = [];
     const warnings: string[] = [];
 
     try {
-      // Step 1: State machine parsing
-      console.log(`[DataMapProcessor] Starting CSV parsing: ${path.basename(filePath)}`);
-      const rawVariables = await this.parseCSVStructure(filePath);
-      console.log(`[DataMapProcessor] Parsed ${rawVariables.length} raw variables`);
-
-      // Step 2: Parent inference 
+      // Step 2: Parent inference
       console.log(`[DataMapProcessor] Adding parent relationships`);
       const withParents = this.addParentRelationships(rawVariables);
       const parentCount = withParents.filter(v => v.parentQuestion !== 'NA').length;
@@ -115,7 +125,7 @@ export class DataMapProcessor {
       const enriched = await this.addContextInformation(withParents, filePath);
       const contextCount = enriched.filter(v => v.context).length;
       console.log(`[DataMapProcessor] Added context for ${contextCount} variables`);
-      
+
       // Step 3.5: Type normalization and pattern detection
       console.log(`[DataMapProcessor] Normalizing types and detecting patterns`);
       const normalized = this.normalizeVariableTypes(enriched);
@@ -129,7 +139,7 @@ export class DataMapProcessor {
 
       // Step 5: Generate dual outputs
       const dualOutputs = this.generateDualOutputs(normalized);
-      
+
       // Save outputs (always save for MVP)
       if (outputDir) {
         await this.saveDevelopmentOutputs(dualOutputs, path.basename(filePath), outputDir);
@@ -148,7 +158,7 @@ export class DataMapProcessor {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown processing error';
       console.error(`[DataMapProcessor] Error:`, errorMessage);
-      
+
       return {
         success: false,
         verbose: [],
@@ -159,212 +169,6 @@ export class DataMapProcessor {
         warnings
       };
     }
-  }
-
-  // ===== STEP 1: STATE MACHINE PARSING =====
-
-  private async parseCSVStructure(filePath: string): Promise<RawDataMapVariable[]> {
-    const fileContent = await fs.readFile(filePath, 'utf-8');
-    const lines = fileContent.trim().split('\n');
-    
-    const context: ParsingContext = {
-      currentParent: null,
-      currentValueType: null,
-      currentDescription: null,
-      answerOptions: [],
-      state: ParsingState.SCANNING,
-      variables: []
-    };
-    
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      
-      // Skip empty lines - they reset context
-      if (!line || line === ',,') {
-        this.resetContext(context);
-        continue;
-      }
-      
-      this.processLine(line, context);
-    }
-    
-    // Finalize any remaining context
-    this.finalizeCurrentVariable(context);
-    
-    return context.variables;
-  }
-
-  private processLine(line: string, context: ParsingContext): void {
-    const fields = this.parseCSVLine(line);
-    
-    // Check for bracket pattern (column definition)
-    const bracketMatch = this.extractBracketContent(fields[0]);
-    if (bracketMatch) {
-      this.handleBracketLine(bracketMatch, fields, context);
-      return;
-    }
-    
-    // Check for Values: line
-    if (fields[0].toLowerCase().startsWith('values:')) {
-      this.handleValuesLine(fields[0], context);
-      return;
-    }
-
-    // Check for Open text/numeric response line (appears after variable definition)
-    if (fields[0].toLowerCase().startsWith('open ')) {
-      this.handleValuesLine(fields[0], context);
-      return;
-    }
-    
-    // Check for answer options (lines starting with comma + number)
-    if (fields[0] === '' && fields[1] && /^\d+$/.test(fields[1])) {
-      this.handleAnswerOptionLine(fields, context);
-      return;
-    }
-    
-    // Check for sub-variable (comma + bracket)
-    if (fields[0] === '' && fields[1]) {
-      const subBracketMatch = this.extractBracketContent(fields[1]);
-      if (subBracketMatch) {
-        this.handleSubVariableLine(subBracketMatch, fields, context);
-        return;
-      }
-    }
-  }
-
-  private extractBracketContent(text: string): string | null {
-    const match = text.match(/\[([^\]]+)\]/);
-    return match ? match[1] : null;
-  }
-
-  private handleBracketLine(columnName: string, fields: string[], context: ParsingContext): void {
-    // Finalize previous variable if exists
-    this.finalizeCurrentVariable(context);
-    
-    // Start new parent variable
-    context.currentParent = columnName;
-    context.currentDescription = this.extractDescription(fields[0]);
-    context.state = ParsingState.IN_PARENT;
-    context.answerOptions = [];
-    context.currentValueType = null;
-  }
-
-  private handleValuesLine(valuesText: string, context: ParsingContext): void {
-    context.currentValueType = valuesText.trim();
-    context.state = ParsingState.IN_VALUES;
-    
-    // Parse numeric ranges from "Values: X-Y" pattern
-    const rangeMatch = valuesText.match(/values\s*:\s*(-?\d+)\s*-\s*(-?\d+)/i);
-    if (rangeMatch) {
-      const min = parseInt(rangeMatch[1], 10);
-      const max = parseInt(rangeMatch[2], 10);
-      
-      // Store range info in context for later use
-      context.currentRangeMin = min;
-      context.currentRangeMax = max;
-    }
-  }
-
-  private handleAnswerOptionLine(fields: string[], context: ParsingContext): void {
-    const optionNumber = fields[1];
-    const optionText = fields[2] || '';
-    
-    if (optionNumber && optionText) {
-      context.answerOptions.push(`${optionNumber}=${optionText}`);
-      context.state = ParsingState.IN_OPTIONS;
-    }
-  }
-
-  private handleSubVariableLine(columnName: string, fields: string[], context: ParsingContext): void {
-    const description = fields[2] || '';
-    
-    // Create sub-variable using parent's value type
-    const subVariable: RawDataMapVariable & { rangeMin?: number; rangeMax?: number } = {
-      level: 'sub',
-      column: columnName,
-      description: description,
-      valueType: context.currentValueType || '',
-      answerOptions: 'NA',
-      parentQuestion: 'NA'  // Will be set correctly in parent inference
-    };
-    
-    // Propagate range info from parent context to sub-variables
-    if (context.currentRangeMin !== undefined) {
-      subVariable.rangeMin = context.currentRangeMin;
-      subVariable.rangeMax = context.currentRangeMax;
-    }
-    
-    context.variables.push(subVariable);
-  }
-
-  private extractDescription(bracketLine: string): string {
-    // Extract description after the bracket and colon
-    const match = bracketLine.match(/\[[^\]]+\]:\s*(.+)/);
-    return match ? match[1].trim() : '';
-  }
-
-  private finalizeCurrentVariable(context: ParsingContext): void {
-    if (context.currentParent && context.currentDescription) {
-      const answerOptions = context.answerOptions.length > 0 
-        ? context.answerOptions.join(',')
-        : 'NA';
-      
-      const variable: RawDataMapVariable & { rangeMin?: number; rangeMax?: number } = {
-        level: 'parent',
-        column: context.currentParent,
-        description: context.currentDescription,
-        valueType: context.currentValueType || '',
-        answerOptions: answerOptions,
-        parentQuestion: 'NA'  // Will be set correctly in parent inference
-      };
-      
-      // Add range info if available
-      if (context.currentRangeMin !== undefined) {
-        variable.rangeMin = context.currentRangeMin;
-        variable.rangeMax = context.currentRangeMax;
-      }
-      
-      context.variables.push(variable);
-    }
-  }
-
-  private resetContext(context: ParsingContext): void {
-    this.finalizeCurrentVariable(context);
-    context.currentParent = null;
-    context.currentDescription = null;
-    context.currentValueType = null;
-    context.answerOptions = [];
-    context.state = ParsingState.SCANNING;
-    // Clear range info
-    context.currentRangeMin = undefined;
-    context.currentRangeMax = undefined;
-  }
-
-  private parseCSVLine(line: string): string[] {
-    const result: string[] = [];
-    let current = '';
-    let inQuotes = false;
-    
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      
-      if (char === '"') {
-        if (inQuotes && line[i + 1] === '"') {
-          current += '"';
-          i++;
-        } else {
-          inQuotes = !inQuotes;
-        }
-      } else if (char === ',' && !inQuotes) {
-        result.push(current.trim());
-        current = '';
-      } else {
-        current += char;
-      }
-    }
-    
-    result.push(current.trim());
-    return result;
   }
 
   // ===== STEP 2: PARENT INFERENCE =====

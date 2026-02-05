@@ -19,6 +19,10 @@ import type {
   PipelineStartEvent,
   PipelineCompleteEvent,
   PipelineFailedEvent,
+  ValidationStageStartEvent,
+  ValidationStageCompleteEvent,
+  ValidationWarningEvent,
+  ValidationCompleteEvent,
 } from './types';
 
 // =============================================================================
@@ -204,6 +208,60 @@ class PipelineEventBus extends EventEmitter {
       dataset,
       error,
       failedStage,
+      timestamp: Date.now(),
+    };
+    this.emitEvent(event);
+  }
+
+  // =============================================================================
+  // Validation Event Helpers
+  // =============================================================================
+
+  emitValidationStageStart(stage: number, name: string): void {
+    const event: ValidationStageStartEvent = {
+      type: 'validation:stage:start',
+      stage,
+      name,
+      timestamp: Date.now(),
+    };
+    this.emitEvent(event);
+  }
+
+  emitValidationStageComplete(stage: number, name: string, durationMs: number): void {
+    const event: ValidationStageCompleteEvent = {
+      type: 'validation:stage:complete',
+      stage,
+      name,
+      durationMs,
+      timestamp: Date.now(),
+    };
+    this.emitEvent(event);
+  }
+
+  emitValidationWarning(stage: number, message: string): void {
+    const event: ValidationWarningEvent = {
+      type: 'validation:warning',
+      stage,
+      message,
+      timestamp: Date.now(),
+    };
+    this.emitEvent(event);
+  }
+
+  emitValidationComplete(
+    canProceed: boolean,
+    format: string,
+    errorCount: number,
+    warningCount: number,
+    durationMs: number
+  ): void {
+    const event: ValidationCompleteEvent = {
+      type: 'validation:complete',
+      canProceed,
+      format,
+      errorCount,
+      warningCount,
+      durationMs,
       timestamp: Date.now(),
     };
     this.emitEvent(event);

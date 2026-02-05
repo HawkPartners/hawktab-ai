@@ -35,6 +35,7 @@ import type { PipelineOptions, PipelineResult, DatasetFiles } from './types';
 import { DEFAULT_PIPELINE_OPTIONS } from './types';
 import type { VerboseDataMapType } from '../../schemas/processingSchemas';
 import type { ExtendedTableDefinition } from '../../schemas/verificationAgentSchema';
+import { validate as runValidation } from '../validation/ValidationRunner';
 
 const execAsync = promisify(exec);
 
@@ -172,14 +173,70 @@ export async function runPipeline(
 
   try {
     // -------------------------------------------------------------------------
-    // Step 1: DataMapProcessor
+    // Pre-Step: Validation
+    // -------------------------------------------------------------------------
+    log('Running pre-pipeline validation...', 'cyan');
+    const validationStart = Date.now();
+
+    const validationResult = await runValidation({
+      dataMapPath: files.datamap,
+      spssPath: files.spss,
+      outputDir,
+    });
+
+    const validationDuration = Date.now() - validationStart;
+    log(`  Format: ${validationResult.format}`, 'dim');
+    log(`  Errors: ${validationResult.errors.length}, Warnings: ${validationResult.warnings.length}`, 'dim');
+
+    if (validationResult.loopDetection?.hasLoops) {
+      for (const loop of validationResult.loopDetection.loops) {
+        log(`  Loop: ${loop.iterations.length} iterations x ${loop.diversity} questions`, 'yellow');
+      }
+    }
+
+    for (const w of validationResult.warnings) {
+      log(`  Warning: ${w.message}`, 'yellow');
+    }
+
+    if (!validationResult.canProceed) {
+      log('', 'reset');
+      log('Validation FAILED — pipeline cannot proceed:', 'red');
+      for (const e of validationResult.errors) {
+        log(`  [Stage ${e.stage}] ${e.message}`, 'red');
+        if (e.details) log(`    ${e.details}`, 'dim');
+      }
+      eventBus.emitPipelineFailed(files.name, 'Validation failed: ' + validationResult.errors.map(e => e.message).join('; '));
+      return {
+        success: false,
+        dataset: files.name,
+        outputDir,
+        durationMs: Date.now() - startTime,
+        tableCount: 0,
+        totalCostUsd: 0,
+        error: 'Validation failed: ' + validationResult.errors.map(e => e.message).join('; '),
+      };
+    }
+
+    log(`  Validation passed in ${validationDuration}ms`, 'green');
+    log('', 'reset');
+
+    // -------------------------------------------------------------------------
+    // Step 1: DataMapProcessor (reuse validation result if available)
     // -------------------------------------------------------------------------
     logStep(1, totalSteps, 'Processing datamap CSV...');
     const stepStart1 = Date.now();
     eventBus.emitStageStart(1, STAGE_NAMES[1]);
 
-    const dataMapProcessor = new DataMapProcessor();
-    const dataMapResult = await dataMapProcessor.processDataMap(files.datamap, files.spss, outputDir);
+    let dataMapResult;
+    if (validationResult.processingResult && validationResult.processingResult.success) {
+      // Reuse the already-parsed result from validation (no double-parsing)
+      dataMapResult = validationResult.processingResult;
+      log(`  Reused validation result (${dataMapResult.verbose.length} variables)`, 'green');
+    } else {
+      // Fallback: parse fresh
+      const dataMapProcessor = new DataMapProcessor();
+      dataMapResult = await dataMapProcessor.processDataMap(files.datamap, files.spss, outputDir);
+    }
     const verboseDataMap = dataMapResult.verbose as VerboseDataMapType[];
     log(`  Processed ${verboseDataMap.length} variables`, 'green');
     log(`  Duration: ${Date.now() - stepStart1}ms`, 'dim');

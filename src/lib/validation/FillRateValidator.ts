@@ -1,0 +1,128 @@
+/**
+ * FillRateValidator.ts
+ *
+ * Validates fill rates for detected loop groups.
+ * Determines if loop data is valid wide format, stacked, or has expected dropout.
+ *
+ * Pure logic - takes fill rates as input (R reading is separate).
+ */
+
+import type { LoopGroup, LoopFillRateResult, LoopDataPattern } from './types';
+
+/**
+ * Classify the fill rate pattern for a loop group.
+ *
+ * @param loopGroup - The detected loop group
+ * @param fillRates - Fill rates per column: { 'A1_1': 0.95, 'A1_2': 0.82, ... }
+ */
+export function classifyLoopFillRates(
+  loopGroup: LoopGroup,
+  fillRates: Record<string, number>
+): LoopFillRateResult {
+  // Group fill rates by iteration
+  const iterationRates: Record<string, number[]> = {};
+
+  for (const varName of loopGroup.variables) {
+    const rate = fillRates[varName];
+    if (rate === undefined) continue;
+
+    // Find which iteration this variable belongs to
+    // by checking the token at the iterator position
+    for (const iter of loopGroup.iterations) {
+      // Check if this variable's iteration value matches
+      if (varName.includes(`_${iter}`) || varName.endsWith(iter)) {
+        // Simple heuristic: check if the variable contains the iteration marker
+        if (!iterationRates[iter]) {
+          iterationRates[iter] = [];
+        }
+        iterationRates[iter].push(rate);
+        break;
+      }
+    }
+  }
+
+  // Calculate average fill rate per iteration
+  const avgRates: Record<string, number> = {};
+  for (const [iter, rates] of Object.entries(iterationRates)) {
+    avgRates[iter] = rates.reduce((sum, r) => sum + r, 0) / rates.length;
+  }
+
+  // Classify the pattern
+  const { pattern, explanation } = classifyPattern(loopGroup.iterations, avgRates);
+
+  return {
+    loopGroup,
+    fillRates: avgRates,
+    pattern,
+    explanation,
+  };
+}
+
+/**
+ * Classify the fill rate pattern from iteration average rates.
+ */
+function classifyPattern(
+  iterations: string[],
+  avgRates: Record<string, number>
+): { pattern: LoopDataPattern; explanation: string } {
+  const sortedIters = [...iterations].sort(
+    (a, b) => parseInt(a) - parseInt(b)
+  );
+
+  const rates = sortedIters.map((iter) => avgRates[iter] ?? 0);
+
+  if (rates.length < 2) {
+    return {
+      pattern: 'uncertain',
+      explanation: 'Not enough iterations to classify pattern',
+    };
+  }
+
+  const firstRate = rates[0];
+  const otherRates = rates.slice(1);
+  const avgOtherRate =
+    otherRates.reduce((sum, r) => sum + r, 0) / otherRates.length;
+
+  // Pattern: likely_stacked
+  // First iteration has high fill rate, others are very low (< 1%)
+  if (firstRate > 0.1 && avgOtherRate < 0.01) {
+    return {
+      pattern: 'likely_stacked',
+      explanation: `Iteration 1 has ${(firstRate * 100).toFixed(0)}% fill rate, others avg ${(avgOtherRate * 100).toFixed(1)}% — data appears stacked (not wide)`,
+    };
+  }
+
+  // Pattern: valid_wide
+  // All iterations have similar fill rates (within 30% of each other)
+  const minRate = Math.min(...rates);
+  const maxRate = Math.max(...rates);
+  if (minRate > 0.1 && maxRate - minRate < 0.3) {
+    return {
+      pattern: 'valid_wide',
+      explanation: `All iterations have similar fill rates (${(minRate * 100).toFixed(0)}%-${(maxRate * 100).toFixed(0)}%) — valid wide format`,
+    };
+  }
+
+  // Pattern: expected_dropout
+  // Rates decrease monotonically (common when loops have optional iterations)
+  let isDecreasing = true;
+  for (let i = 1; i < rates.length; i++) {
+    if (rates[i] > rates[i - 1] + 0.05) {
+      // Allow small increases (5%) due to noise
+      isDecreasing = false;
+      break;
+    }
+  }
+
+  if (isDecreasing && firstRate > 0.1 && avgOtherRate > 0.01) {
+    return {
+      pattern: 'expected_dropout',
+      explanation: `Fill rates decrease across iterations (${rates.map((r) => `${(r * 100).toFixed(0)}%`).join(' → ')}) — expected dropout pattern`,
+    };
+  }
+
+  return {
+    pattern: 'uncertain',
+    explanation: `Fill rates: ${rates.map((r) => `${(r * 100).toFixed(0)}%`).join(', ')} — pattern unclear`,
+  };
+}

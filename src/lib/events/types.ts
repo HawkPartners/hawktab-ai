@@ -182,6 +182,54 @@ export interface PipelineFailedEvent {
 }
 
 // =============================================================================
+// Validation Events
+// =============================================================================
+
+export interface ValidationStageStartEvent {
+  type: 'validation:stage:start';
+  /** Validation stage number (1-5) */
+  stage: number;
+  /** Stage name */
+  name: string;
+  timestamp: number;
+}
+
+export interface ValidationStageCompleteEvent {
+  type: 'validation:stage:complete';
+  /** Validation stage number (1-5) */
+  stage: number;
+  /** Stage name */
+  name: string;
+  /** Duration in ms */
+  durationMs: number;
+  timestamp: number;
+}
+
+export interface ValidationWarningEvent {
+  type: 'validation:warning';
+  /** Validation stage number */
+  stage: number;
+  /** Warning message */
+  message: string;
+  timestamp: number;
+}
+
+export interface ValidationCompleteEvent {
+  type: 'validation:complete';
+  /** Whether pipeline can proceed */
+  canProceed: boolean;
+  /** Detected format */
+  format: string;
+  /** Number of errors */
+  errorCount: number;
+  /** Number of warnings */
+  warningCount: number;
+  /** Total duration in ms */
+  durationMs: number;
+  timestamp: number;
+}
+
+// =============================================================================
 // Union Type
 // =============================================================================
 
@@ -196,7 +244,11 @@ export type PipelineEvent =
   | CostUpdateEvent
   | PipelineStartEvent
   | PipelineCompleteEvent
-  | PipelineFailedEvent;
+  | PipelineFailedEvent
+  | ValidationStageStartEvent
+  | ValidationStageCompleteEvent
+  | ValidationWarningEvent
+  | ValidationCompleteEvent;
 
 // =============================================================================
 // Stage Definitions
