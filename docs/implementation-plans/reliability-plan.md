@@ -46,12 +46,17 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 ---
 
 ## Part 3: Loop/Stacked Data + Weights
-
-**Status**: NOT STARTED
-
+ 
+**Status**: IN PROGRESS
+ 
 **Goal**: Detect whether a survey has loops or weighted data, handle both correctly, and ensure outputs reflect this (weighted/unweighted base rows, proper sheet organization).
-
+ 
 **Test Case**: `stacked-data-example/` (Tito's Future Growth)
+**Detailed Plan**: See [Phase 3 Parser Reliability](./phase-3-parser-reliability.md) for full implementation plan.
+ 
+**Key De-scoping Decision**: We detect loops and tell the user to upload stacked data—we don't auto-stack. This shifts complexity to the user (who knows their data) and keeps our scope manageable.
+ 
+**Test Case**: `data/titos-future-growth/` (Tito's Future Growth)
 
 ### Testing Process
 
