@@ -23,6 +23,7 @@ This document consolidates the design work for HawkTab AI's data validation laye
 
 ### In Scope
 - Format detection (Antares vs SPSS Variable Info)
+- **SPSS Variable Info parser** (unlocks 81% of test files for broader testing)
 - DataMap validation (structure, variables)
 - Data file validation (via R + Haven)
 - Cross-validation (DataMap ↔ Data file)
@@ -33,8 +34,7 @@ This document consolidates the design work for HawkTab AI's data validation laye
 ### Out of Scope (Part 3)
 - Weight detection (deferred to Part 5)
 - Auto-stacking transformation (we require wide format)
-- New SPSS Variable Info parser implementation (separate task)
-- Research type classification (deferred)
+- Research type classification (deferred to Part 6)
 
 ---
 
@@ -78,6 +78,92 @@ User uploads files
         ↓
 Pipeline proceeds OR user action required
 ```
+
+---
+
+## SPSS Variable Info Parser
+
+### Why Build This
+
+81% of datamap files in test-data are SPSS Variable Info format. Without this parser, we can only test against 12% of available datasets. Building it unlocks Part 4 broader testing.
+
+### Format Structure
+
+SPSS Variable Info CSVs have two sections:
+
+**Section 1: Variable Information** (9-column table)
+```csv
+Variable,Position,Label,Measurement Level,Role,Column Width,Alignment,Print Format,Write Format
+record,1,record: Record number,Ordinal,Input,7,Right,F7,F7
+S8r1,17,S8r1: Federally Qualified Health Center (FQHC)...,Ordinal,Input,19,Right,F19,F19
+```
+
+**Section 2: Variable Values** (value codes and labels)
+```csv
+Variable Values,,Label
+status,1,Terminated
+,2,Overquota
+S3r1,0,NO TO: Asthma
+,1,Asthma
+```
+
+### Parsing Algorithm
+
+1. **Detect section headers** — Find "Variable,Position,Label" row (Variable Information) and "Variable Values" row
+2. **Parse Variable Information** — Extract variable name, position, label (contains question text)
+3. **Parse Variable Values** — Extract value codes and labels for each variable
+4. **Merge** — Combine into our `ProcessedDataMapVariable` format
+
+```typescript
+interface SPSSVariableInfo {
+  variable: string;
+  position: number;
+  label: string;           // "S8r1: Federally Qualified Health Center..."
+  measurementLevel: string;
+}
+
+interface SPSSVariableValue {
+  variable: string;
+  code: number;
+  label: string;
+}
+
+function parseSPSSVariableInfo(content: string): ProcessedDataMapVariable[] {
+  // 1. Split content into sections
+  const { variableInfo, variableValues } = splitSections(content);
+
+  // 2. Parse each section
+  const variables = parseVariableInfoSection(variableInfo);
+  const values = parseVariableValuesSection(variableValues);
+
+  // 3. Merge values into variables
+  return mergeVariablesAndValues(variables, values);
+}
+```
+
+### Label Extraction
+
+The Label column contains both variable name and description:
+- `"S8r1: Federally Qualified Health Center (FQHC)..."`
+- Split on first `:` to get description
+- Note: Labels may be truncated at ~200 characters
+
+### Implementation Location
+
+```
+src/lib/processors/
+├── DataMapProcessor.ts      # Add format routing
+├── AntaresParser.ts         # Extract current parser (already works)
+└── SPSSVariableInfoParser.ts # New parser for SPSS format
+```
+
+### Test Cases
+
+| File | Variables | Notes |
+|------|-----------|-------|
+| Spravato HCP MaxDiff | ~150 | MaxDiff survey |
+| Iptacopan | ~200 | Standard survey |
+| Leqvio Segmentation | ~180 | Segmentation study |
 
 ---
 

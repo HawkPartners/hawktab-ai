@@ -57,10 +57,11 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 ### Key Design Decisions
 
 1. **Wide format only** — We don't process already-stacked data. If we detect stacking, we ask users for the original wide format.
-2. **Gemini's diversity approach for loop detection** — More robust than regex patterns. Uses tokenization and "internal diversity" to distinguish loops from grids.
-3. **Fill-rate validation** — Confirms data matches format. If `_2` columns are empty but `_1` has data, the data is likely already stacked.
-4. **R + Haven for all data reading** — Consistency with pipeline. No JavaScript SPSS readers.
-5. **Weights deferred** — Weight detection is out of scope. Moved to Part 5.
+2. **SPSS Variable Info parser** — Build parser for the 81% of datamaps in SPSS format. Unlocks broader testing.
+3. **Gemini's diversity approach for loop detection** — More robust than regex patterns. Uses tokenization and "internal diversity" to distinguish loops from grids.
+4. **Fill-rate validation** — Confirms data matches format. If `_2` columns are empty but `_1` has data, the data is likely already stacked.
+5. **R + Haven for all data reading** — Consistency with pipeline. No JavaScript SPSS readers.
+6. **Weights deferred** — Weight detection is out of scope. Moved to Part 5.
 
 ### Validation Stages
 
