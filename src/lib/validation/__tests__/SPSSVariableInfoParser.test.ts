@@ -131,18 +131,33 @@ with no sections
       );
     });
 
-    it('all variables are level=parent', () => {
+    it('infers level from structural suffixes', () => {
       const content = `Variable Information,,,,,,,,
 Variable,Position,Label,Measurement Level,Role,Column Width,Alignment,Print Format,Write Format
 S1,1,S1: Q1,Ordinal,Input,1,Right,F1,F1
 S1r1,2,S1r1: Row 1,Ordinal,Input,1,Right,F1,F1
 S1r2,3,S1r2: Row 2,Ordinal,Input,1,Right,F1,F1
+S7r1c1,4,S7r1c1: Grid cell,Ordinal,Input,1,Right,F1,F1
+S2r98oe,5,S2r98oe: Other specify,Nominal,Input,50,Left,A50,A50
+hS4,6,hS4: Hidden var,Ordinal,Input,1,Right,F1,F1
+record,7,record: Record number,Ordinal,Input,7,Right,F7,F7
 `;
 
       const result = parseSPSSVariableInfo(content);
-      // SPSS format doesn't have parent/sub structure — all parsed as 'parent'
-      // Parent inference is done later by DataMapProcessor
-      expect(result.every((v) => v.level === 'parent')).toBe(true);
+
+      // Standalone question → parent
+      expect(result.find((v) => v.column === 'S1')!.level).toBe('parent');
+      // Row suffix → sub
+      expect(result.find((v) => v.column === 'S1r1')!.level).toBe('sub');
+      expect(result.find((v) => v.column === 'S1r2')!.level).toBe('sub');
+      // Grid suffix → sub
+      expect(result.find((v) => v.column === 'S7r1c1')!.level).toBe('sub');
+      // Open-ended suffix → sub
+      expect(result.find((v) => v.column === 'S2r98oe')!.level).toBe('sub');
+      // Hidden/computed → parent (h prefix is not a structural suffix)
+      expect(result.find((v) => v.column === 'hS4')!.level).toBe('parent');
+      // System var → parent
+      expect(result.find((v) => v.column === 'record')!.level).toBe('parent');
     });
   });
 

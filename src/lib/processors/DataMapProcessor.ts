@@ -192,35 +192,30 @@ export class DataMapProcessor {
   }
 
   private inferParentFromSubVariable(subVariableName: string): string {
-    // Business rules from parent-inference.ts:
-    // - R = Row, C = Column (structural indicators, not part of question ID)
-    // - Parent questions are max 3 characters 
-    // - Preserve meaningful sub-question letters (a, b, etc.)
-    
+    // Strip structural suffixes to find the parent question code.
+    // Handles both Antares (S8r1, A4c1) and SPSS patterns (A3DKr99c1, S2r98oe, C3_1r15).
+
     let parent = subVariableName;
-    
-    // Remove structural suffixes (R and C with numbers)
-    // Order matters: remove most specific patterns first
-    
+
+    // Remove structural suffixes — order matters (most specific first)
+
     // Remove r\d+c\d+ (like r1c2, r2c1)
     parent = parent.replace(/r\d+c\d+$/i, '');
-    
+
+    // Remove r\d+oe (like r98oe — open-ended row)
+    parent = parent.replace(/r\d+oe$/i, '');
+
     // Remove c\d+ (like c1, c2, c3)
     parent = parent.replace(/c\d+$/i, '');
-    
-    // Remove r\d+ (like r1, r2, r3)  
+
+    // Remove r\d+ (like r1, r2, r3)
     parent = parent.replace(/r\d+$/i, '');
-    
-    // Apply business rule: Max 3 characters for parent questions
-    if (parent.length > 3) {
-      parent = parent.substring(0, 3);
-    }
-    
+
     // If no change was made or result is too short, return 'NA'
     if (parent === subVariableName || parent.length < 2) {
       return 'NA';
     }
-    
+
     return parent;
   }
 
@@ -419,7 +414,7 @@ export class DataMapProcessor {
     processedVariables = processedVariables.map(variable => {
       if (variable.level === 'sub' && !variable.context) {
         const context = this.findBestContextMatch(lines, variable.column);
-        
+
         if (context) {
           return {
             ...variable,
@@ -427,7 +422,24 @@ export class DataMapProcessor {
           };
         }
       }
-      
+
+      return variable;
+    });
+
+    // Fourth pass: look up parent description from parsed variables
+    // This handles SPSS format where context isn't in Antares-style file structure
+    // but a standalone parent variable (e.g., S8) may exist with its description
+    processedVariables = processedVariables.map(variable => {
+      if (variable.level === 'sub' && !variable.context && variable.parentQuestion !== 'NA') {
+        const parentVar = processedVariables.find(v => v.column === variable.parentQuestion);
+        if (parentVar && parentVar.description) {
+          return {
+            ...variable,
+            context: `${parentVar.column}: ${parentVar.description}`
+          };
+        }
+      }
+
       return variable;
     });
 

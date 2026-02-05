@@ -72,8 +72,11 @@ export function parseSPSSVariableInfo(content: string): RawDataMapVariable[] {
     // Determine value type from print format and answer options
     const valueType = inferValueType(v, labels);
 
+    // Infer level from structural suffixes in variable name
+    const level = hasStructuralSuffix(v.variable) ? 'sub' as const : 'parent' as const;
+
     return {
-      level: 'parent' as const,
+      level,
       column: v.variable,
       description: v.description,
       valueType,
@@ -285,6 +288,33 @@ function inferValueType(variable: SPSSVariable, labels: SPSSValueLabel[]): strin
   }
 
   return '';
+}
+
+/**
+ * Detect structural suffixes that indicate a sub-variable.
+ *
+ * Patterns (order matters — check most specific first):
+ * - r\d+c\d+   → grid cell (S13r1c1)
+ * - r\d+oe     → open-ended row (S2r98oe)
+ * - r\d+       → row item (S8r1)
+ * - c\d+       → column item (standalone column index)
+ *
+ * NOT sub-variables:
+ * - h-prefixed  → hidden/computed (hS4, hAge)
+ * - d-prefixed  → derived (dTier)
+ * - NDP_        → calculated
+ * - system vars → record, uuid, date, status
+ */
+function hasStructuralSuffix(varName: string): boolean {
+  // System/admin variables are never sub-variables
+  const lower = varName.toLowerCase();
+  if (['record', 'uuid', 'date', 'status'].includes(lower)) return false;
+
+  // Check for structural suffix patterns
+  return /r\d+c\d+$/i.test(varName) ||   // r1c1 grid pattern
+         /r\d+oe$/i.test(varName) ||      // r6oe open-ended pattern
+         /r\d+$/i.test(varName) ||         // r1 row pattern
+         /c\d+$/i.test(varName);           // c1 column-only pattern
 }
 
 /**
