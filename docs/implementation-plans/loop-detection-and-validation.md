@@ -41,24 +41,33 @@ This document consolidates the design work for HawkTab AI's data validation laye
 ## Architecture
 
 ```
-User uploads files
+User uploads files (DataMap CSV + Data SAV/CSV)
         ↓
 ┌─────────────────────────────────────┐
 │ Stage 1: File Validation            │
 │ - Files exist and parseable?        │
-│ - DataMap format detected?          │
+│ - Detect DataMap format             │
 └─────────────────────────────────────┘
-        ↓ (Block if fails)
+        ↓ (Block if unknown format)
 ┌─────────────────────────────────────┐
-│ Stage 2: DataMap Validation         │
+│ Stage 2: DataMap Parsing            │
+│                                     │
+│   ┌─────────────┐ ┌───────────────┐ │
+│   │   Antares   │ │ SPSS Variable │ │
+│   │   Parser    │ │ Info Parser   │ │
+│   │   (12%)     │ │ (81%)         │ │
+│   └──────┬──────┘ └───────┬───────┘ │
+│          └────────┬───────┘         │
+│                   ↓                 │
+│     ProcessedDataMapVariable[]      │
 │ - Variables extracted?              │
 │ - Survey vars identified?           │
 └─────────────────────────────────────┘
         ↓ (Block if no survey vars)
 ┌─────────────────────────────────────┐
 │ Stage 3: Data File Validation       │
-│ - Has rows/columns? (via R)         │
-│ - Stacking columns present?         │
+│ - Has rows/columns? (via R + Haven) │
+│ - Stacking columns present? (LOOP)  │
 └─────────────────────────────────────┘
         ↓
 ┌─────────────────────────────────────┐
