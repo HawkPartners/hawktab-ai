@@ -105,10 +105,34 @@ cols <- colnames(data)
 stacking_patterns <- c("LOOP", "ITERATION", "ITER", "STACK", "REPEAT", "WAVE")
 stacking_cols <- cols[toupper(cols) %in% stacking_patterns]
 
+# Extract per-column metadata (labels, value labels, format)
+metadata <- lapply(cols, function(col_name) {
+  col <- data[[col_name]]
+  lbl <- attr(col, "label")
+  vl <- attr(col, "labels")
+  fmt <- attr(col, "format.spss")
+
+  value_labels <- list()
+  if (!is.null(vl)) {
+    value_labels <- mapply(function(v, l) {
+      list(value = as.character(v), label = l)
+    }, vl, names(vl), SIMPLIFY = FALSE, USE.NAMES = FALSE)
+  }
+
+  list(
+    column = col_name,
+    label = ifelse(is.null(lbl), "", lbl),
+    format = ifelse(is.null(fmt), "", fmt),
+    valueLabels = value_labels
+  )
+})
+names(metadata) <- cols
+
 result <- list(
   rowCount = nrow(data),
   columns = cols,
-  stackingColumns = stacking_cols
+  stackingColumns = stacking_cols,
+  variableMetadata = metadata
 )
 
 cat(toJSON(result, auto_unbox = TRUE))

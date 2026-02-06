@@ -53,6 +53,18 @@ export interface LoopDetectionResult {
 // Data File Stats
 // =============================================================================
 
+/** Metadata for a single variable extracted from .sav via R + haven */
+export interface SavVariableMetadata {
+  /** Column name */
+  column: string;
+  /** Variable label / question text (from attr(col, "label")) */
+  label: string;
+  /** SPSS print format, e.g. "F8.0", "A255" (from attr(col, "format.spss")) */
+  format: string;
+  /** Coded value labels (from attr(col, "labels")) */
+  valueLabels: Array<{ value: string; label: string }>;
+}
+
 export interface DataFileStats {
   /** Number of rows in the data file */
   rowCount: number;
@@ -60,6 +72,8 @@ export interface DataFileStats {
   columns: string[];
   /** Columns that look like stacking indicators (LOOP, ITERATION, etc.) */
   stackingColumns: string[];
+  /** Per-column metadata extracted from .sav (labels, value labels, format) */
+  variableMetadata: Record<string, SavVariableMetadata>;
 }
 
 // =============================================================================

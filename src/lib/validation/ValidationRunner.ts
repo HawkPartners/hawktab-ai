@@ -23,7 +23,7 @@ import { checkRAvailability, getDataFileStats, getColumnFillRates } from './RDat
 import { classifyLoopFillRates } from './FillRateValidator';
 import { DataMapProcessor } from '../processors/DataMapProcessor';
 import { getPipelineEventBus } from '../events';
-import type { ProcessingResult } from '../processors/DataMapProcessor';
+import type { ProcessingResult, RawDataMapVariable } from '../processors/DataMapProcessor';
 import type {
   ValidationReport,
   ValidationError,
@@ -305,25 +305,88 @@ export async function validate(options: ValidationRunnerOptions): Promise<Valida
     }
 
     // Supplement: add columns from .sav that aren't in the datamap
+    // Use .sav metadata (labels, value labels, format) to build real entries
     const inDataOnly = [...dataColumns].filter((c) => !dataMapColumns.has(c));
     if (inDataOnly.length > 0) {
       console.log(`[Validation] Supplementing ${inDataOnly.length} variables from data file`);
-      for (const col of inDataOnly) {
+
+      // Build RawDataMapVariable[] from .sav metadata
+      const supplementVars: RawDataMapVariable[] = inDataOnly.map((col) => {
+        const meta = dataFileStats.variableMetadata?.[col];
+
+        // Answer options from value labels
+        let answerOptions = 'NA';
+        if (meta?.valueLabels && meta.valueLabels.length > 0) {
+          answerOptions = meta.valueLabels
+            .map((vl) => `${vl.value}=${vl.label}`)
+            .join(',');
+        }
+
+        // Value type from format or value labels
+        let valueType = '';
+        if (meta?.format) {
+          if (meta.format.startsWith('A')) {
+            valueType = 'Open Text';
+          } else if (meta.valueLabels && meta.valueLabels.length > 0) {
+            const values = meta.valueLabels.map((vl) => parseFloat(vl.value));
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            valueType = `Values: ${min}-${max}`;
+          }
+        }
+
         const level = hasStructuralSuffix(col) ? 'sub' as const : 'parent' as const;
-        processingResult.verbose.push({
+        const description = meta?.label || '';
+
+        return {
           level,
           column: col,
-          description: '',
-          valueType: '',
-          answerOptions: 'NA',
+          description,
+          valueType,
+          answerOptions,
           parentQuestion: 'NA',
-          context: '',
-        });
-        processingResult.agent.push({
-          Column: col,
-          Description: '',
-          Answer_Options: '',
-        });
+        };
+      });
+
+      // Run through enrichment pipeline (parent inference, type normalization)
+      const supplementProcessor = new DataMapProcessor();
+      try {
+        const supplementResult = await supplementProcessor.processFromRawVariables(
+          supplementVars,
+          options.dataMapPath,
+          undefined, // no SPSS validation needed
+          undefined  // no output saving
+        );
+
+        if (supplementResult.success) {
+          // Merge enriched variables into main result
+          processingResult.verbose.push(...supplementResult.verbose);
+          processingResult.agent.push(...supplementResult.agent);
+          const enrichedCount = supplementResult.verbose.filter((v) => v.normalizedType).length;
+          console.log(`[Validation] Supplemented ${supplementResult.verbose.length} variables (${enrichedCount} with normalizedType)`);
+        } else {
+          // Fallback: push raw entries without enrichment
+          console.log(`[Validation] Supplement enrichment failed, using raw metadata`);
+          for (const raw of supplementVars) {
+            processingResult.verbose.push({ ...raw, context: '' });
+            processingResult.agent.push({
+              Column: raw.column,
+              Description: raw.description,
+              Answer_Options: raw.answerOptions !== 'NA' ? raw.answerOptions : '',
+            });
+          }
+        }
+      } catch (err) {
+        // Fallback: push raw entries without enrichment
+        console.log(`[Validation] Supplement enrichment error: ${err instanceof Error ? err.message : String(err)}`);
+        for (const raw of supplementVars) {
+          processingResult.verbose.push({ ...raw, context: '' });
+          processingResult.agent.push({
+            Column: raw.column,
+            Description: raw.description,
+            Answer_Options: raw.answerOptions !== 'NA' ? raw.answerOptions : '',
+          });
+        }
       }
     }
   } else {

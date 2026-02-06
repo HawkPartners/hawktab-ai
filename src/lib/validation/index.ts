@@ -13,6 +13,7 @@ export type {
   LoopGroup,
   LoopDetectionResult,
   DataFileStats,
+  SavVariableMetadata,
   LoopDataPattern,
   LoopFillRateResult,
   ValidationSeverity,
