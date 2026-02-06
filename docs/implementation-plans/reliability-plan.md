@@ -47,7 +47,7 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 
 ## Part 3: Loop Detection & Data Validation
 
-**Status**: IMPLEMENTATION COMPLETE (needs integration testing)
+**Status**: VALIDATION COMPLETE — Data stacking not yet implemented
 
 **Goal**: Validate data inputs before they reach the pipeline. Catch problems early (wrong format, mismatched files, already-stacked data) and provide clear user guidance.
 
@@ -101,14 +101,15 @@ After detecting loop patterns, validate data format:
 
 ### Success Criteria
 
-- [ ] Correctly detect loop patterns using diversity approach
-- [ ] Correctly identify already-stacked data via fill rates
-- [ ] Block with clear message when data appears stacked
-- [ ] Handle both Antares and SPSS Variable Info datamap formats
-- [ ] Cross-validate datamap ↔ data with >50% threshold
-- [ ] User-facing messages are clear and actionable
+- [x] Correctly detect loop patterns using diversity approach
+- [x] Correctly identify already-stacked data via fill rates
+- [x] Block with clear message when data appears stacked
+- [x] Handle both Antares and SPSS Variable Info datamap formats
+- [x] Cross-validate datamap ↔ data with >50% threshold
+- [x] User-facing messages are clear and actionable
+- [ ] Stack looped data from wide format for pipeline consumption
 
-NOTE: Current plan doesn't stack the data. before calling this complete, we need to add the ability to stack the data.
+NOTE: Detection and validation are complete. The remaining piece is data stacking — transforming wide-format looped data so the pipeline can process each iteration as a separate table group.
 
 ---
 
@@ -273,4 +274,4 @@ This is UI-level work. The pipeline produces confidence scores; the UI decides w
 
 *Created: January 6, 2026*
 *Updated: February 5, 2026*
-*Status: Parts 1-2 complete, Part 3 implemented (42 tests passing, needs integration testing)*
+*Status: Parts 1-2 complete, Part 3 validation complete (42 tests passing), data stacking remaining*
