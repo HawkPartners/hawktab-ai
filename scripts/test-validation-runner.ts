@@ -307,6 +307,29 @@ async function main() {
         JSON.stringify(reportForDisk, null, 2)
       );
 
+      // Save untyped variables (normalizedType missing) for audit
+      if (result.processingResult?.verbose.length) {
+        const untypedVars = result.processingResult.verbose
+          .filter((v) => !(v as { normalizedType?: string }).normalizedType)
+          .map((v) => ({
+            column: v.column,
+            description: v.description,
+            level: v.level,
+            valueType: v.valueType,
+            answerOptions: v.answerOptions,
+            parentQuestion: v.parentQuestion,
+            context: v.context || '',
+          }));
+
+        if (untypedVars.length > 0) {
+          fs.writeFileSync(
+            path.join(datasetDir, 'untyped-variables.json'),
+            JSON.stringify(untypedVars, null, 2)
+          );
+          console.log(`  Saved untyped-variables.json (${untypedVars.length} variables without normalizedType)`);
+        }
+      }
+
       // Save loop variables detail file (for checking in Q)
       const loopReport = buildLoopVariablesReport(result);
       if (loopReport) {

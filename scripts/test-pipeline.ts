@@ -27,9 +27,11 @@
  *   # Explicit path to dataset folder
  *
  * Required files in dataset folder (or inputs/ subfolder):
- *   - *datamap*.csv  (datamap file)
  *   - *banner*.docx  (banner plan)
- *   - *.sav          (SPSS data file)
+ *   - *.sav          (SPSS data file — single source of truth)
+ *
+ * Optional:
+ *   - *datamap*.csv  (legacy — not used by pipeline)
  *
  * Supports nested structure:
  *   dataset-folder/
@@ -141,7 +143,7 @@ function logStep(step: number, total: number, message: string) {
 // =============================================================================
 
 interface DatasetFiles {
-  datamap: string;
+  datamap: string | null;
   banner: string;
   spss: string;
   survey: string | null;  // Optional - needed for VerificationAgent
@@ -164,13 +166,10 @@ async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
 
   const files = await fs.readdir(inputsFolder);
 
-  // Find datamap CSV
+  // Find datamap CSV (optional — .sav is the source of truth)
   const datamap = files.find(f =>
     f.toLowerCase().includes('datamap') && f.endsWith('.csv')
-  );
-  if (!datamap) {
-    throw new Error(`No datamap CSV found in ${folder}. Expected file containing "datamap" with .csv extension.`);
-  }
+  ) || null;
 
   // Find banner plan (prefer 'adjusted' > 'clean' > original)
   let banner = files.find(f =>
@@ -219,7 +218,7 @@ async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
   const name = path.basename(absFolder);
 
   return {
-    datamap: path.join(inputsFolder, datamap),
+    datamap: datamap ? path.join(inputsFolder, datamap) : null,
     banner: path.join(inputsFolder, banner),
     spss: path.join(inputsFolder, spss),
     survey: survey ? path.join(inputsFolder, survey) : null,
@@ -250,7 +249,7 @@ async function runPipeline(datasetFolder: string) {
   // Discover files
   log(`Dataset folder: ${datasetFolder}`, 'blue');
   const files = await findDatasetFiles(datasetFolder);
-  log(`  Datamap: ${path.basename(files.datamap)}`, 'dim');
+  log(`  Datamap: ${files.datamap ? path.basename(files.datamap) : '(not used)'}`, 'dim');
   log(`  Banner:  ${path.basename(files.banner)}`, 'dim');
   log(`  SPSS:    ${path.basename(files.spss)}`, 'dim');
   log(`  Survey:  ${files.survey ? path.basename(files.survey) : '(not found - VerificationAgent will use passthrough)'}`, 'dim');
@@ -522,7 +521,7 @@ async function runPipeline(datasetFolder: string) {
         verification: promptVersions.verificationPromptVersion,
       },
       inputs: {
-        datamap: path.basename(files.datamap),
+        datamap: files.datamap ? path.basename(files.datamap) : null,
         banner: path.basename(files.banner),
         spss: path.basename(files.spss),
         survey: files.survey ? path.basename(files.survey) : null,
@@ -887,7 +886,7 @@ async function runPipeline(datasetFolder: string) {
         statTestingConfig.thresholds[0] !== statTestingConfig.thresholds[1],
     },
     inputs: {
-      datamap: path.basename(files.datamap),
+      datamap: files.datamap ? path.basename(files.datamap) : null,
       banner: path.basename(files.banner),
       spss: path.basename(files.spss),
       survey: files.survey ? path.basename(files.survey) : null,

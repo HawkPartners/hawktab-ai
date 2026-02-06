@@ -57,6 +57,14 @@ export interface SavVariableMetadata {
   format: string;
   /** Coded value labels (from attr(col, "labels")) */
   valueLabels: Array<{ value: string; label: string }>;
+  /** R class of the column: "numeric", "character", "haven_labelled", etc. */
+  rClass: string;
+  /** Number of distinct non-NA values observed in the data */
+  nUnique: number;
+  /** Actual minimum value (numeric columns only, null for text) */
+  observedMin: number | null;
+  /** Actual maximum value (numeric columns only, null for text) */
+  observedMax: number | null;
 }
 
 export interface DataFileStats {

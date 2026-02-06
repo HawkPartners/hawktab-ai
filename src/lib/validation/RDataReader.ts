@@ -110,7 +110,7 @@ cols <- colnames(data)
 stacking_patterns <- c("LOOP", "ITERATION", "ITER", "STACK", "REPEAT", "WAVE")
 stacking_cols <- cols[toupper(cols) %in% stacking_patterns]
 
-# Extract per-column metadata (labels, value labels, format)
+# Extract per-column metadata (labels, value labels, format, data stats)
 metadata <- lapply(cols, function(col_name) {
   col <- data[[col_name]]
   lbl <- attr(col, "label")
@@ -124,11 +124,27 @@ metadata <- lapply(cols, function(col_name) {
     }, vl, names(vl), SIMPLIFY = FALSE, USE.NAMES = FALSE)
   }
 
+  # Data stats from actual values (data is already in memory)
+  raw <- as.vector(col)  # strip haven attributes
+  non_na <- raw[!is.na(raw)]
+  r_class <- class(raw)[1]
+  n_unique <- length(unique(non_na))
+  obs_min <- NULL
+  obs_max <- NULL
+  if (is.numeric(raw) && length(non_na) > 0) {
+    obs_min <- min(non_na)
+    obs_max <- max(non_na)
+  }
+
   list(
     column = col_name,
     label = ifelse(is.null(lbl), "", lbl),
     format = ifelse(is.null(fmt), "", fmt),
-    valueLabels = value_labels
+    valueLabels = value_labels,
+    rClass = r_class,
+    nUnique = n_unique,
+    observedMin = obs_min,
+    observedMax = obs_max
   )
 })
 names(metadata) <- cols
@@ -263,22 +279,34 @@ export function convertToRawVariables(stats: DataFileStats): RawDataMapVariable[
         .join(',');
     }
 
-    // Value type from SPSS format
+    // Value type and range — use actual observed data when available
     let valueType = '';
-    if (meta?.format) {
-      if (meta.format.startsWith('A')) {
-        valueType = 'Open Text';
-      } else if (meta.valueLabels && meta.valueLabels.length > 0) {
-        const values = meta.valueLabels.map((vl) => parseFloat(vl.value));
-        const min = Math.min(...values);
-        const max = Math.max(...values);
-        valueType = `Values: ${min}-${max}`;
-      }
+    let rangeMin: number | undefined;
+    let rangeMax: number | undefined;
+
+    const isText = meta?.format?.startsWith('A') || meta?.rClass === 'character';
+
+    if (isText) {
+      valueType = 'Open Text';
+    } else if (meta?.valueLabels && meta.valueLabels.length > 0) {
+      // Has value labels → derive range from labeled values
+      const values = meta.valueLabels.map((vl) => parseFloat(vl.value));
+      rangeMin = Math.min(...values);
+      rangeMax = Math.max(...values);
+      valueType = `Values: ${rangeMin}-${rangeMax}`;
+    } else if (meta?.observedMin !== null && meta?.observedMin !== undefined &&
+               meta?.observedMax !== null && meta?.observedMax !== undefined) {
+      // No value labels but we have actual data — use observed range
+      rangeMin = meta.observedMin;
+      rangeMax = meta.observedMax;
+      valueType = `Values: ${rangeMin}-${rangeMax}`;
     }
 
     const level = hasStructuralSuffix(col) ? 'sub' as const : 'parent' as const;
     const description = meta?.label || '';
 
+    // Return with range fields — ProcessedDataMapVariable extends RawDataMapVariable
+    // and normalizeVariableTypes reads rangeMin/rangeMax for type classification
     return {
       level,
       column: col,
@@ -286,6 +314,8 @@ export function convertToRawVariables(stats: DataFileStats): RawDataMapVariable[
       valueType,
       answerOptions,
       parentQuestion: 'NA',
-    };
+      rangeMin,
+      rangeMax,
+    } as RawDataMapVariable;
   });
 }
