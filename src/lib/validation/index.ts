@@ -1,5 +1,7 @@
 export { detectDataMapFormat } from './FormatDetector';
 export { parseSPSSVariableInfo } from './SPSSVariableInfoParser';
+export { parseSPSSValuesOnly } from './SPSSValuesOnlyParser';
+export { hasStructuralSuffix, parseCSVLine, parseVariableValuesSection } from './spss-utils';
 export { tokenize, createSkeleton, detectLoops } from './LoopDetector';
 export { classifyLoopFillRates } from './FillRateValidator';
 export { getDataFileStats, getColumnFillRates, checkRAvailability } from './RDataReader';

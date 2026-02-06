@@ -16,6 +16,8 @@ import fs from 'fs/promises';
 
 import { detectDataMapFormat } from './FormatDetector';
 import { parseSPSSVariableInfo } from './SPSSVariableInfoParser';
+import { parseSPSSValuesOnly } from './SPSSValuesOnlyParser';
+import { hasStructuralSuffix } from './spss-utils';
 import { detectLoops } from './LoopDetector';
 import { checkRAvailability, getDataFileStats, getColumnFillRates } from './RDataReader';
 import { classifyLoopFillRates } from './FillRateValidator';
@@ -98,12 +100,14 @@ export async function validate(options: ValidationRunnerOptions): Promise<Valida
           details: `Signals: ${detection.signals.join('; ')}`,
         });
       } else if (format === 'spss_values_only') {
-        errors.push({
+        // Supported but limited — no descriptions, no print format metadata.
+        // Missing variables will be supplemented from .sav in Stage 4.
+        console.log(`[Validation] Format detected: ${format} (confidence: ${detection.confidence.toFixed(2)})`);
+        warnings.push({
           stage: 1,
           stageName: STAGE_NAMES[1],
-          severity: 'error',
-          message: 'SPSS Values Only format is not yet supported (need Variable Information section)',
-          details: 'Re-export from SPSS using DISPLAY DICTIONARY to include variable metadata.',
+          message: 'SPSS Values Only format — variable descriptions and open-ended variables unavailable from CSV',
+          details: 'Missing variables will be supplemented from the data file. For full metadata, re-export from SPSS using DISPLAY DICTIONARY.',
         });
       } else {
         console.log(`[Validation] Format detected: ${format} (confidence: ${detection.confidence.toFixed(2)})`);
@@ -146,7 +150,20 @@ export async function validate(options: ValidationRunnerOptions): Promise<Valida
       // Parse SPSS Variable Info → RawDataMapVariable[]
       const content = await fs.readFile(options.dataMapPath, 'utf-8');
       const rawVariables = parseSPSSVariableInfo(content);
-      console.log(`[Validation] SPSS parser extracted ${rawVariables.length} variables`);
+      console.log(`[Validation] SPSS Variable Info parser extracted ${rawVariables.length} variables`);
+
+      // Feed into enrichment pipeline
+      processingResult = await processor.processFromRawVariables(
+        rawVariables,
+        options.dataMapPath,
+        options.spssPath,
+        options.outputDir
+      );
+    } else if (format === 'spss_values_only') {
+      // Parse SPSS Values Only → RawDataMapVariable[] (only coded variables)
+      const content = await fs.readFile(options.dataMapPath, 'utf-8');
+      const rawVariables = parseSPSSValuesOnly(content);
+      console.log(`[Validation] SPSS Values Only parser extracted ${rawVariables.length} variables (coded only)`);
 
       // Feed into enrichment pipeline
       processingResult = await processor.processFromRawVariables(
@@ -285,6 +302,29 @@ export async function validate(options: ValidationRunnerOptions): Promise<Valida
         stageName: STAGE_NAMES[4],
         message: `Column match rate: ${(matchRate * 100).toFixed(0)}% — some variables may be missing from data`,
       });
+    }
+
+    // Supplement: add columns from .sav that aren't in the datamap
+    const inDataOnly = [...dataColumns].filter((c) => !dataMapColumns.has(c));
+    if (inDataOnly.length > 0) {
+      console.log(`[Validation] Supplementing ${inDataOnly.length} variables from data file`);
+      for (const col of inDataOnly) {
+        const level = hasStructuralSuffix(col) ? 'sub' as const : 'parent' as const;
+        processingResult.verbose.push({
+          level,
+          column: col,
+          description: '',
+          valueType: '',
+          answerOptions: 'NA',
+          parentQuestion: 'NA',
+          context: '',
+        });
+        processingResult.agent.push({
+          Column: col,
+          Description: '',
+          Answer_Options: '',
+        });
+      }
     }
   } else {
     // Skip if we don't have both pieces
