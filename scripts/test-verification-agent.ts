@@ -68,7 +68,6 @@ interface ResolvedPaths {
   folder: string;
   tableOutput: string;
   surveyDoc: string | null;
-  dataMapCsv: string | null;
   dataMapVerbose: string | null;
   spssPath: string | null;
 }
@@ -134,34 +133,8 @@ async function resolveInputPaths(inputArg?: string): Promise<ResolvedPaths> {
     (f) => f.toLowerCase().includes('survey') && (f.endsWith('.docx') || f.endsWith('.doc'))
   );
 
-  // Find datamap CSV (optional - for context)
-  // First check the folder itself, then check default dataset if this is a test-pipeline output
-  let dataMapCsv: string | null = null;
+  // Find verbose datamap JSON (optional - for context)
   let dataMapVerbose: string | null = null;
-
-  // Check for CSV in current folder
-  const csvInFolder = files.find((f) => f.toLowerCase().includes('datamap') && f.endsWith('.csv'));
-  if (csvInFolder) {
-    dataMapCsv = path.join(folder, csvInFolder);
-  } else {
-    // Check default dataset folder (supports inputs/ subfolder)
-    const defaultDatasetPath = path.join(process.cwd(), DEFAULT_DATASET);
-    try {
-      const datasetContents = await fs.readdir(defaultDatasetPath);
-      const inputsPath = datasetContents.includes('inputs')
-        ? path.join(defaultDatasetPath, 'inputs')
-        : defaultDatasetPath;
-      const inputFiles = await fs.readdir(inputsPath);
-      const datasetCsv = inputFiles.find(
-        (f) => f.toLowerCase().includes('datamap') && f.endsWith('.csv')
-      );
-      if (datasetCsv) {
-        dataMapCsv = path.join(inputsPath, datasetCsv);
-      }
-    } catch {
-      // Ignore if default dataset doesn't exist
-    }
-  }
 
   // Check for verbose JSON in current folder (case-insensitive)
   const verboseInFolder = files.find(
@@ -222,7 +195,6 @@ async function resolveInputPaths(inputArg?: string): Promise<ResolvedPaths> {
     folder,
     tableOutput: path.join(folder, tableOutputFile),
     surveyDoc: surveyPath,
-    dataMapCsv,
     dataMapVerbose,
     spssPath,
   };

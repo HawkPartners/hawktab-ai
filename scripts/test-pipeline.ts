@@ -30,9 +30,6 @@
  *   - *banner*.docx  (banner plan)
  *   - *.sav          (SPSS data file — single source of truth)
  *
- * Optional:
- *   - *datamap*.csv  (legacy — not used by pipeline)
- *
  * Supports nested structure:
  *   dataset-folder/
  *   ├── inputs/           # Input files go here
@@ -40,13 +37,16 @@
  *   └── golden-datasets/  # For evaluation framework
  *
  * Pipeline stages:
- *   1. DataMapProcessor → Verbose datamap JSON
+ *   1. ValidationRunner → .sav validation + verbose datamap JSON
  *   2. BannerAgent → Banner extraction JSON
  *   3. CrosstabAgent → Validation with cuts
- *   4. TableAgent → Table definitions
- *   5. RScriptGeneratorV2 → master.R
- *   6. R execution → results/tables.json
- *   7. ExcelFormatter → results/crosstabs.xlsx
+ *   4. TableGenerator → Table definitions (deterministic)
+ *   5. VerificationAgent → Enhanced tables with NETs, T2B, labels
+ *   6. BaseFilterAgent → Skip/show logic, base filters
+ *   7. R Validation → Per-table R code validation with retry
+ *   8. RScriptGeneratorV2 → master.R
+ *   9. R execution → results/tables.json
+ *   10. ExcelFormatter → results/crosstabs.xlsx
  *
  * Output:
  *   outputs/<dataset>/pipeline-<timestamp>/
@@ -143,7 +143,6 @@ function logStep(step: number, total: number, message: string) {
 // =============================================================================
 
 interface DatasetFiles {
-  datamap: string | null;
   banner: string;
   spss: string;
   survey: string | null;  // Optional - needed for VerificationAgent
@@ -165,11 +164,6 @@ async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
   }
 
   const files = await fs.readdir(inputsFolder);
-
-  // Find datamap CSV (optional — .sav is the source of truth)
-  const datamap = files.find(f =>
-    f.toLowerCase().includes('datamap') && f.endsWith('.csv')
-  ) || null;
 
   // Find banner plan (prefer 'adjusted' > 'clean' > original)
   let banner = files.find(f =>
@@ -218,7 +212,6 @@ async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
   const name = path.basename(absFolder);
 
   return {
-    datamap: datamap ? path.join(inputsFolder, datamap) : null,
     banner: path.join(inputsFolder, banner),
     spss: path.join(inputsFolder, spss),
     survey: survey ? path.join(inputsFolder, survey) : null,
@@ -249,7 +242,6 @@ async function runPipeline(datasetFolder: string) {
   // Discover files
   log(`Dataset folder: ${datasetFolder}`, 'blue');
   const files = await findDatasetFiles(datasetFolder);
-  log(`  Datamap: ${files.datamap ? path.basename(files.datamap) : '(not used)'}`, 'dim');
   log(`  Banner:  ${path.basename(files.banner)}`, 'dim');
   log(`  SPSS:    ${path.basename(files.spss)}`, 'dim');
   log(`  Survey:  ${files.survey ? path.basename(files.survey) : '(not found - VerificationAgent will use passthrough)'}`, 'dim');
@@ -288,7 +280,7 @@ async function runPipeline(datasetFolder: string) {
   // -------------------------------------------------------------------------
   // Step 1: DataMapProcessor
   // -------------------------------------------------------------------------
-  logStep(1, totalSteps, 'Processing datamap CSV...');
+  logStep(1, totalSteps, 'Validating .sav and building datamap...');
   const stepStart1 = Date.now();
   eventBus.emitStageStart(1, STAGE_NAMES[1]);
 
@@ -521,7 +513,6 @@ async function runPipeline(datasetFolder: string) {
         verification: promptVersions.verificationPromptVersion,
       },
       inputs: {
-        datamap: files.datamap ? path.basename(files.datamap) : null,
         banner: path.basename(files.banner),
         spss: path.basename(files.spss),
         survey: files.survey ? path.basename(files.survey) : null,
@@ -886,7 +877,6 @@ async function runPipeline(datasetFolder: string) {
         statTestingConfig.thresholds[0] !== statTestingConfig.thresholds[1],
     },
     inputs: {
-      datamap: files.datamap ? path.basename(files.datamap) : null,
       banner: path.basename(files.banner),
       spss: path.basename(files.spss),
       survey: files.survey ? path.basename(files.survey) : null,

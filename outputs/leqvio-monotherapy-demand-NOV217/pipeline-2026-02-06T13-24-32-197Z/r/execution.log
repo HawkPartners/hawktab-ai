@@ -1,0 +1,88 @@
+R Execution Log
+===============
+Timestamp: 2026-02-06T14:28:13.361Z
+Status: FAILED
+
+--- STDOUT ---
+[1] "Loaded 180 rows and 192 columns"
+[1] "Defined 19 cuts in 8 groups"
+[1] "Generated demo table: _demo_banner_x_banner"
+[1] "Generated frequency table: s1"
+[1] "Generated frequency table: s2"
+[1] "Generated frequency table: s2a"
+[1] "Generated frequency table: s2b"
+[1] "Generated frequency table: s3a"
+[1] "Generated frequency table: s4"
+[1] "Generated frequency table: s6"
+[1] "Generated frequency table: s6_binned"
+[1] "Generated mean_rows table: s8"
+[1] "Generated frequency table: s8_S8r1_distribution"
+[1] "Generated frequency table: s9"
+[1] "Generated mean_rows table: s10"
+[1] "Generated frequency table: s10_binned"
+[1] "Generated mean_rows table: s11"
+[1] "Generated frequency table: s11_binned"
+[1] "Generated mean_rows table: s12"
+[1] "Generated mean_rows table: s12_total"
+[1] "Generated frequency table: s12_total_binned"
+[1] "Generated frequency table: a1"
+[1] "Generated frequency table: a2a"
+[1] "Generated frequency table: a2b"
+[1] "Generated mean_rows table: a3"
+[1] "Generated frequency table: a3_A3r1_bins"
+[1] "Generated frequency table: a3_A3r2_bins"
+[1] "Generated frequency table: a3_A3r3_bins"
+[1] "Generated frequency table: a3_A3r4_bins"
+[1] "Generated frequency table: a3_A3r5_bins"
+[1] "Generated frequency table: a3_A3r6_bins"
+[1] "Generated frequency table: a3_A3r7_bins"
+[1] "Generated mean_rows table: a3a_leqvio"
+[1] "Generated mean_rows table: a3a_praluent"
+[1] "Generated mean_rows table: a3a_repatha"
+[1] "Generated mean_rows table: a3a_zetia"
+[1] "Generated mean_rows table: a3a_nexletol"
+[1] "Generated mean_rows table: a3b_leqvio"
+[1] "Generated mean_rows table: a3b_praluent"
+[1] "Generated mean_rows table: a3b_repatha"
+[1] "Generated mean_rows table: a3b_zetia"
+[1] "Generated mean_rows table: a3b_nexletol"
+[1] "Generated frequency table: a3b_leqvio_dist"
+[1] "Generated frequency table: a3b_nexletol_dist"
+[1] "Generated frequency table: a3b_praluent_dist"
+[1] "Generated frequency table: a3b_repatha_dist"
+[1] "Generated frequency table: a3b_zetia_dist"
+[1] "Generated mean_rows table: a4_last100"
+[1] "Generated mean_rows table: a4_next100"
+[1] "Generated mean_rows table: a4a_leqvio"
+[1] "Generated mean_rows table: a4a_praluent"
+[1] "Generated mean_rows table: a4a_repatha"
+[1] "Generated mean_rows table: a4a_zetia"
+[1] "Generated mean_rows table: a4a_nexletol"
+[1] "Generated mean_rows table: a4b_leqvio"
+[1] "Generated mean_rows table: a4b_praluent"
+[1] "Generated mean_rows table: a4b_repatha"
+[1] "Generated mean_rows table: a4b_zetia"
+[1] "Generated mean_rows table: a4b_nexletol"
+[1] "Generated frequency table: a5"
+[1] "Generated frequency table: a6_detail_A6r1"
+[1] "Generated frequency table: a6_detail_A6r2"
+[1] "Generated frequency table: a6_detail_A6r3"
+[1] "Generated frequency table: a6_detail_A6r4"
+
+
+--- STDERR ---
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Error: unexpected symbol in:
+"Id = "A6",
+  questionText = "Again, please assume that the FDA decides that all PCSK9 inhibitors (Repatha, Praluent, Leqvio) will now be indicated for use as an adjunct to diet and exercise, alone or in "
+Execution halted

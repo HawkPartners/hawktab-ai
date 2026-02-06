@@ -12,19 +12,19 @@
  *
  * Input can be:
  *   - Nothing: Uses default data/leqvio-monotherapy-demand-NOV217/
- *   - CSV file: Processes raw datamap CSV first
+ *   - .sav file: Validates and extracts datamap from SPSS file
  *   - JSON file: Uses existing verbose datamap JSON
- *   - Folder: Looks for *datamap*.csv in folder (or inputs/ subfolder)
+ *   - Folder: Looks for *.sav in folder (or inputs/ subfolder)
  *
  * Examples:
  *   npx tsx scripts/test-table-generator.ts
  *   # Uses default dataset
  *
  *   npx tsx scripts/test-table-generator.ts data/test-data/some-dataset
- *   # Finds datamap CSV in folder (supports inputs/ subfolder)
+ *   # Finds .sav in folder (supports inputs/ subfolder)
  *
  * Output:
- *   temp-outputs/test-table-generator-<timestamp>/
+ *   outputs/<dataset>/table-generator-<timestamp>/
  *     - groups.json: Output from DataMapGrouper
  *     - tables.json: Output from TableGenerator
  *     - stats.json: Statistics and summary
@@ -67,7 +67,7 @@ function log(message: string, color: keyof typeof colors = 'reset') {
 // =============================================================================
 
 interface InputInfo {
-  type: 'csv' | 'json';
+  type: 'sav' | 'json';
   path: string;
   spssPath: string;  // .sav file for validation runner
   name: string;
@@ -100,7 +100,7 @@ async function resolveInput(inputArg?: string): Promise<InputInfo> {
       throw new Error(`No .sav file found in ${input}`);
     }
     return {
-      type: 'csv',
+      type: 'sav',
       path: path.join(inputsFolder, savFile),
       spssPath: path.join(inputsFolder, savFile),
       name: path.basename(absPath),
@@ -110,7 +110,7 @@ async function resolveInput(inputArg?: string): Promise<InputInfo> {
   // It's a file
   if (input.endsWith('.sav')) {
     return {
-      type: 'csv',
+      type: 'sav',
       path: absPath,
       spssPath: absPath,
       name: path.basename(path.dirname(absPath)),
@@ -138,7 +138,7 @@ async function resolveInput(inputArg?: string): Promise<InputInfo> {
 // =============================================================================
 
 async function loadDataMap(input: InputInfo, outputFolder: string): Promise<VerboseDataMapType[]> {
-  if (input.type === 'csv') {
+  if (input.type === 'sav') {
     log(`Processing .sav: ${path.basename(input.spssPath)}`, 'blue');
     const report = await validate({ spssPath: input.spssPath, outputDir: outputFolder });
     if (!report.canProceed || !report.processingResult) {
@@ -170,6 +170,8 @@ async function loadDataMap(input: InputInfo, outputFolder: string): Promise<Verb
 // =============================================================================
 
 async function main() {
+  const startTime = Date.now();
+
   log('', 'reset');
   log('='.repeat(60), 'magenta');
   log('  TableGenerator Test Script', 'bright');
@@ -189,7 +191,7 @@ async function main() {
     log('Usage:', 'yellow');
     log('  npx tsx scripts/test-table-generator.ts              # Use default dataset', 'dim');
     log('  npx tsx scripts/test-table-generator.ts <folder>     # Find datamap in folder', 'dim');
-    log('  npx tsx scripts/test-table-generator.ts <file.csv>   # Process CSV file', 'dim');
+    log('  npx tsx scripts/test-table-generator.ts <file.sav>   # Process .sav file', 'dim');
     log('  npx tsx scripts/test-table-generator.ts <file.json>  # Use verbose JSON', 'dim');
     process.exit(1);
   }
@@ -200,7 +202,7 @@ async function main() {
 
   // Create output folder
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const outputDir = path.join(process.cwd(), 'temp-outputs', `test-table-generator-${timestamp}`);
+  const outputDir = path.join(process.cwd(), 'outputs', input.name, `table-generator-${timestamp}`);
   await fs.mkdir(outputDir, { recursive: true });
 
   // Load datamap
@@ -310,9 +312,10 @@ async function main() {
   log(`  Groups: ${groupingStats.totalGroups}`, 'reset');
   log(`  Tables: ${generatorStats.totalTables}`, 'reset');
   log(`  Rows: ${generatorStats.totalRows}`, 'reset');
-  log(`  Duration: ${groupingDuration + generationDuration}ms total`, 'reset');
+  const totalDuration = Date.now() - startTime;
+  log(`  Duration: ${(totalDuration / 1000).toFixed(1)}s total (grouping: ${groupingDuration}ms, generation: ${generationDuration}ms)`, 'reset');
   log('', 'reset');
-  log(`Output: ${outputDir}/`, 'green');
+  log(`Output: outputs/${input.name}/table-generator-${timestamp}/`, 'green');
   log('', 'reset');
 
   // Verification notes

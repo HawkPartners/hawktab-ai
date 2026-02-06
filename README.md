@@ -197,41 +197,36 @@ The CLI provides a real-time view of pipeline progress with stage-by-stage statu
 
 ### Test Scripts
 
-Test scripts that run against `data/test-data/practice-files/`:
-
 ```bash
-# Full pipeline: DataMap → Banner → Crosstab → Table → R → Excel
+# Full pipeline: .sav → Banner → Crosstab → Tables → Verification → R → Excel
 npx tsx scripts/test-pipeline.ts
 
-# TableAgent only (table structure analysis)
-npx tsx scripts/test-table-agent.ts
+# TableGenerator only (deterministic table generation, <1s)
+npx tsx scripts/test-table-generator.ts
 
 # VerificationAgent only (enhance tables using survey document)
 npx tsx scripts/test-verification-agent.ts                     # Uses most recent pipeline output
 npx tsx scripts/test-verification-agent.ts [folder]            # Uses specific output folder
 
-# Test R script changes without re-running full pipeline
-# Uses existing pipeline outputs → generates new R script → runs R → generates Excel
-npx tsx scripts/test-r-changes.ts                  # Uses most recent pipeline output
-npx tsx scripts/test-r-changes.ts [folder]         # Uses specific pipeline folder
-# Output: temp-outputs/test-r-changes-<timestamp>/results/crosstabs-changes.xlsx
+# Regenerate R script from existing pipeline output
+npx tsx scripts/test-r-regenerate.ts [dataset] [pipelineId]
 
-# Export Excel from existing tables.json (if pipeline was interrupted)
+# Validate .sav files across datasets
+npx tsx scripts/test-validation-runner.ts
+
+# Export Excel from existing tables.json
 npx tsx scripts/export-excel.ts                    # Uses most recent session
 npx tsx scripts/export-excel.ts [sessionId]        # Uses specific session
-
-# DEPRECATED: Use test-r-changes.ts instead
-# npx tsx scripts/test-r-script-v2.ts
 ```
 
-**Full Pipeline Output** (`temp-outputs/test-pipeline-<dataset>-<timestamp>/`):
+**Full Pipeline Output** (`outputs/<dataset>/pipeline-<timestamp>/`):
 - `r/master.R` - Generated R script
 - `results/tables.json` - Calculated tables with significance testing
-- `results/crosstabs.xlsx` - Formatted Excel workbook (Antares-style)
+- `results/crosstabs.xlsx` - Formatted Excel workbook
 - `pipeline-summary.json` - Run metadata and timing
 
 The pipeline runs 10 steps (4 AI agents + 6 deterministic steps):
-1. **DataMapProcessor** - Parse datamap CSV with SPSS metadata
+1. **ValidationRunner** - Validate .sav and build verbose datamap
 2. **BannerAgent** *(AI)* - Extract banner structure from PDF/DOCX
 3. **CrosstabAgent** *(AI)* - Validate and generate R expressions for cuts
 4. **TableGenerator** - Build table definitions from datamap (deterministic)
@@ -240,7 +235,7 @@ The pipeline runs 10 steps (4 AI agents + 6 deterministic steps):
 7. **R Validation** - Validate each table's R code before full script run
 8. **RScriptGeneratorV2** - Generate R script with derived tables
 9. **R Execution** - Run R script to calculate tables with significance testing
-10. **ExcelFormatter** - Format tables.json into Antares-style Excel workbook
+10. **ExcelFormatter** - Format tables.json into Excel workbook
 
 ### Testing (UI)
 

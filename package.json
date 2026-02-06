@@ -11,7 +11,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:table-agent": "tsx scripts/test-table-agent.ts",
+    "test:table-generator": "tsx scripts/test-table-generator.ts",
     "cli": "tsx src/cli/index.tsx",
     "pipeline": "tsx scripts/test-pipeline.ts",
     "test": "vitest run"

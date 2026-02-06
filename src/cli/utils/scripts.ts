@@ -28,21 +28,9 @@ const SCRIPT_METADATA: Record<string, { description: string; category: 'long' | 
     description: 'Deterministic table gen (<1s)',
     category: 'fast',
   },
-  'test-table-agent.ts': {
-    description: 'Old LLM-based TableAgent',
-    category: 'normal',
-  },
   'compare-to-golden.ts': {
     description: 'Compare to reference output',
     category: 'fast',
-  },
-  'test-r-changes.ts': {
-    description: 'Test R script changes',
-    category: 'normal',
-  },
-  'test-r-script-v2.ts': {
-    description: 'Test R script v2 generator',
-    category: 'normal',
   },
   'test-r-regenerate.ts': {
     description: 'Regenerate R script from existing tables',
@@ -58,6 +46,18 @@ const SCRIPT_METADATA: Record<string, { description: string; category: 'long' | 
   },
   'export-excel.ts': {
     description: 'Export Excel from tables.json',
+    category: 'fast',
+  },
+  'test-validation-runner.ts': {
+    description: 'Validate .sav files across datasets',
+    category: 'normal',
+  },
+  'test-loop-stacking.ts': {
+    description: 'Test loop detection and stacking',
+    category: 'normal',
+  },
+  'test-parser-analysis.ts': {
+    description: 'Quick .sav parser analysis',
     category: 'fast',
   },
 };

@@ -113,7 +113,7 @@ hawktab demo         # Preview UI without running
 
 # 2. Test scripts (for isolated testing)
 npx tsx scripts/test-verification-agent.ts   # Fast, safe to run
-npx tsx scripts/test-table-agent.ts          # Fast, safe to run
+npx tsx scripts/test-table-generator.ts       # Fast, safe to run
 
 # 3. Web UI
 npm run dev          # http://localhost:3000

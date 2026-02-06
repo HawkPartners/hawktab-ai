@@ -103,7 +103,7 @@ Browse and execute test scripts from the `scripts/` directory.
     compare-to-golden.ts       FAST   Compare to reference output
     test-table-generator.ts    FAST   Deterministic table gen (<1s)
     test-verification-agent.ts        VerificationAgent isolation
-    test-r-changes.ts                 Test R script changes
+    test-r-regenerate.ts               Regenerate R script from existing tables
   ▶ test-pipeline.ts           LONG   Full pipeline (45-60 min)
 ```
 

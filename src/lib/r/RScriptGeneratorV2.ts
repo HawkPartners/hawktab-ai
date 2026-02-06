@@ -1550,7 +1550,11 @@ function escapeRString(str: string): string {
     .replace(/"/g, '\\"')     // Double quotes
     .replace(/\n/g, '\\n')    // Newlines
     .replace(/\r/g, '\\r')    // Carriage returns
-    .replace(/\t/g, '\\t');   // Tabs
+    .replace(/\t/g, '\\t')    // Tabs
+    // Normalize uncommon line separators that can break R parsing
+    .replace(/[\u2028\u2029\u0085]/g, '\\n')
+    // Replace other control chars (except escaped \n/\r/\t) with spaces
+    .replace(/[\u0000-\u001F]/g, ' ');
 }
 
 /**

@@ -1,0 +1,267 @@
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "extractionType": "banner_extraction",
+    "timestamp": "2026-02-06T00:00:00Z",
+    "extractedStructure": {
+      "bannerCuts": [
+        {
+          "groupName": "HCP Specialty",
+          "columns": [
+            {
+              "name": "Cards",
+              "original": "S2=1 OR S2a=1",
+              "adjusted": "S2=1 OR S2a=1",
+              "statLetter": "A",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            },
+            {
+              "name": "PCPs",
+              "original": "S2=2",
+              "adjusted": "S2=2",
+              "statLetter": "B",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Other",
+              "original": "S2=3 OR S2=4 OR S2=5",
+              "adjusted": "S2=3 OR S2=4 OR S2=5",
+              "statLetter": "C",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            }
+          ]
+        },
+        {
+          "groupName": "HCP Role",
+          "columns": [
+            {
+              "name": "Physician",
+              "original": "S2=1 OR S2=2 OR S2=3 OR S2=4 OR S2=5",
+              "adjusted": "S2=1 OR S2=2 OR S2=3 OR S2=4 OR S2=5",
+              "statLetter": "D",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            },
+            {
+              "name": "APP",
+              "original": "S2a=1",
+              "adjusted": "S2a=1",
+              "statLetter": "E",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            }
+          ]
+        },
+        {
+          "groupName": "Volume of ASCVD Patients",
+          "columns": [
+            {
+              "name": "150+ (Higher)",
+              "original": "S11=150+",
+              "adjusted": "S11=150+",
+              "statLetter": "F",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            },
+            {
+              "name": "20-149 (Lower)",
+              "original": "S11=20 - 149",
+              "adjusted": "S11=20 - 149",
+              "statLetter": "G",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            }
+          ]
+        },
+        {
+          "groupName": "Tiers",
+          "columns": [
+            {
+              "name": "Tier 1",
+              "original": "Tier 1 from list",
+              "adjusted": "Tier 1 from list",
+              "statLetter": "H",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Tier 2",
+              "original": "Tier 2 from list",
+              "adjusted": "Tier 2 from list",
+              "statLetter": "I",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Tier 3",
+              "original": "Tier 3 from list",
+              "adjusted": "Tier 3 from list",
+              "statLetter": "J",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Tier 4",
+              "original": "Tier 4 from list",
+              "adjusted": "Tier 4 from list",
+              "statLetter": "K",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            }
+          ]
+        },
+        {
+          "groupName": "Currently Prescribe Leqvio without a Statin and Before Other Therapies",
+          "columns": [
+            {
+              "name": "Yes",
+              "original": "A3ar1c2>0 AND A3br1c1>0",
+              "adjusted": "A3ar1c2>0 AND A3br1c1>0",
+              "statLetter": "L",
+              "confidence": 0.92,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            },
+            {
+              "name": "No",
+              "original": "NOT (A3ar1c2>0 AND A3br1c1>0)",
+              "adjusted": "NOT (A3ar1c2>0 AND A3br1c1>0)",
+              "statLetter": "M",
+              "confidence": 0.92,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            }
+          ]
+        },
+        {
+          "groupName": "Leqvio Rx'ing Would Increase with New PCSK9s Indication",
+          "columns": [
+            {
+              "name": "All Leqvio Prescribing",
+              "original": "A4r2c2>A4r2c1",
+              "adjusted": "A4r2c2>A4r2c1",
+              "statLetter": "N",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Leqvio Rx'ing without a Statin & Before Other Therapies",
+              "original": "A3ar1c2 > 0 AND A4ar1c2 > 0 AND A4br1c1 > A3br1c1",
+              "adjusted": "A3ar1c2 > 0 AND A4ar1c2 > 0 AND A4br1c1 > A3br1c1",
+              "statLetter": "O",
+              "confidence": 0.8,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": true,
+              "uncertainties": [
+                "Spacing and exact operator chaining in the original expression is ambiguous on the image; verify the intended comparisons (e.g. confirm whether a trailing \"> 0\" applies and confirm exact ordering/parentheses).",
+                "Confirm that each variable identifier (A3ar1c2, A4ar1c2, A4br1c1, A3br1c1) is correct as transcribed."
+              ]
+            }
+          ]
+        },
+        {
+          "groupName": "Primary Practice Setting",
+          "columns": [
+            {
+              "name": "Academic / Univ. Hospital",
+              "original": "S9=6",
+              "adjusted": "S9=6",
+              "statLetter": "P",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            },
+            {
+              "name": "Total Community",
+              "original": "S9=1 OR S9=2 OR S9=3 OR S9=4 OR S9=5",
+              "adjusted": "S9=1 OR S9=2 OR S9=3 OR S9=4 OR S9=5",
+              "statLetter": "Q",
+              "confidence": 0.95,
+              "requiresInference": false,
+              "inferenceReason": "",
+              "humanInLoopRequired": false,
+              "uncertainties": []
+            }
+          ]
+        }
+      ],
+      "notes": [],
+      "processingMetadata": {
+        "totalColumns": 17,
+        "groupCount": 7,
+        "statisticalLettersUsed": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L",
+          "M",
+          "N",
+          "O",
+          "P",
+          "Q"
+        ],
+        "processingTimestamp": "2026-02-06T00:00:00Z"
+      }
+    },
+    "errors": [],
+    "warnings": [
+      "One column (statLetter O) has ambiguous operator/spacing in its filter expression; human review recommended."
+    ]
+  },
+  "timestamp": "2026-02-06T13:27:00.426Z"
+}
