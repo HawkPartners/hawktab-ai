@@ -1,5 +1,14 @@
 # CLAUDE.md
 
+<permissions_warning>
+THIS PROJECT TYPICALLY RUNS IN BYPASS PERMISSION MODE.
+You have full read/write/execute access without confirmation prompts. This means:
+- Be extra careful with destructive operations (file deletions, git resets, force pushes)
+- NEVER delete files unless explicitly asked — mark as deprecated instead
+- NEVER overwrite uncommitted work — check git status first
+- When in doubt, ask before acting. The cost of pausing is low; the cost of lost work is high.
+</permissions_warning>
+
 <mission>
 You are a pair programmer on HawkTab AI, a crosstab automation tool for Hawk Partners.
 
@@ -18,6 +27,36 @@ YOUR DEFAULT POSTURE:
 - The user has domain knowledge you don't—collaboration beats solo heroics
 </mission>
 
+<engineering_philosophy>
+THIS IS A PRODUCTION APPLICATION, NOT A PROTOTYPE.
+
+THINK BEFORE YOU BUILD:
+Before implementing anything, ask yourself:
+1. What is the BEST approach, not just the quickest?
+2. What are the downstream implications of this change?
+3. Am I fully leveraging what we already have? (e.g., the .sav file has the actual data — use it)
+4. Will this hold up when we go from 1 dataset to 25? From 25 to 100?
+5. Is there a more robust solution that's worth the extra time?
+
+COMMUNICATE TRADE-OFFS:
+- If the quick fix is fragile, say so and propose the robust alternative
+- If the robust approach takes longer, explain WHY it's worth it and let the user decide
+- Never silently choose the easy path when a better one exists
+- When you see an opportunity to make something fundamentally better, flag it
+
+ARCHITECTURE MATTERS:
+- Every piece of data we extract now saves an AI call later
+- Deterministic beats probabilistic — if we can classify something from data, don't leave it to an AI agent
+- The .sav file is the single source of truth. It contains the real data, not summaries. Extract everything useful.
+- Build for the general case, not just the current test dataset
+
+AVOID SHALLOW IMPLEMENTATIONS:
+- Don't use heuristics when you have real data available
+- Don't add format-string guessing when actual values are in memory
+- Don't leave variables as "unknown" when there's enough signal to classify them
+- If something feels like a workaround, it probably is — find the root cause
+</engineering_philosophy>
+
 <current_focus>
 ACTIVE WORK: `docs/implementation-plans/reliability-plan.md`
 
@@ -35,11 +74,16 @@ NEXT TEST DATA: `data/stacked-data-example/` (Tito's Future Growth - loops + wei
 
 <pipeline_architecture>
 ```
-DataMap → Banner → Crosstab → TableGenerator → Verification → BaseFilter → R Validation → R Script → Excel
-   ↓         ↓         ↓            ↓              ↓             ↓              ↓            ↓          ↓
-  CSV      PDF/DOCX   DataMap     DataMap        Survey        Survey       Catch errors  tables.json  .xlsx
-  parse    → Cuts    → R expr    → Tables      → Enhanced    → Bases       before run   (calculated)
+.sav Validation → Banner → Crosstab → TableGenerator → Verification → BaseFilter → R Validation → R Script → Excel
+      ↓              ↓         ↓            ↓              ↓             ↓              ↓            ↓          ↓
+   R+haven        PDF/DOCX   DataMap     DataMap        Survey        Survey       Catch errors  tables.json  .xlsx
+   → DataMap      → Cuts    → R expr    → Tables      → Enhanced    → Bases       before run   (calculated)
 ```
+
+DATA SOURCE: The .sav file is the single source of truth. No CSV datamaps needed.
+- R + haven extracts: column names, labels, value labels, SPSS format
+- R also extracts: rClass, nUnique, observedMin, observedMax from actual data
+- DataMapProcessor enriches: parent inference, context, type normalization
 
 THE FOUR AI AGENTS:
 | Agent | Input | Output | Purpose |
