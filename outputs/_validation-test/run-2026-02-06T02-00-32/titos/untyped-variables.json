@@ -1,0 +1,200 @@
+[
+  {
+    "column": "S2",
+    "description": "S2: What is your age?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "S8",
+    "description": "S8: How many alcoholic drinks, if any, have you consumed in the past week? For example, if you had 3 beers and 2 different cocktails, that would be 5 alcoholic drinks. Please provide an honest, best-estimate — we are trying to reach a range of different",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "S9r1",
+    "description": "S9r1: At your home - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r2",
+    "description": "S9r2: At someone else's home - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r3",
+    "description": "S9r3: At work/office - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r4",
+    "description": "S9r4: At college/university dorm or apartment - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r5",
+    "description": "S9r5: At a casual dining restaurant (e.g. Applebee's, Chili's) - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r6",
+    "description": "S9r6: At a upscale casual dining restaurant (e.g. Hillstone, Seasons 52, North Italia) - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r7",
+    "description": "S9r7: At a fine dining restaurant (e.g. Mastro's, Capital Grille, Nick & Sam's) - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r8",
+    "description": "S9r8: At a local sports bar or pub (e.g. Irish pub, Dave & Buster's) - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r9",
+    "description": "S9r9: At a craft cocktail bar - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r10",
+    "description": "S9r10: At a premium bar or upscale lounge - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r11",
+    "description": "S9r11: At a nightclub - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r12",
+    "description": "S9r12: At a hotel or motel - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r13",
+    "description": "S9r13: At a recreation or entertainment venue (e.g. country club, casino, private club) - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r14",
+    "description": "S9r14: At a concession stand or festival (e.g. stadium, live music event, food festival) - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r15",
+    "description": "S9r15: At an outdoor gathering (e.g., BBQ, picnic, tailgate) - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r16",
+    "description": "S9r16: At airport or other transit location - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "S9r99",
+    "description": "S9r99: Other (specify) - Of the [pipe: S8] alcoholic drinks you had in the past week, where did you drink them? Feel free to add multiple drinks for one location — your best guess is fine.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S9",
+    "context": ""
+  },
+  {
+    "column": "A10_1",
+    "description": "A10_1: Including yourself, how many people were with you when you had this drink? As a reminder, we’re asking about the drink .",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "A10_2",
+    "description": "A10_2: Including yourself, how many people were with you when you had this drink? As a reminder, we’re asking about the drink .",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "start_date",
+    "description": "start_date: Survey start time",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  }
+]

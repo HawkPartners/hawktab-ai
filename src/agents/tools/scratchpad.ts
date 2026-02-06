@@ -33,8 +33,10 @@ export function createScratchpadTool(agentName: string) {
       // Accumulate entry with agent attribution
       scratchpadEntries.push({ timestamp, agentName, action, content });
 
-      // Log for real-time debugging with correct agent attribution
-      console.log(`[${agentName} Scratchpad] ${action}: ${content}`);
+      // Log for real-time debugging (avoid UI mode to prevent spill)
+      if (!getPipelineEventBus().isEnabled()) {
+        console.log(`[${agentName} Scratchpad] ${action}: ${content}`);
+      }
 
       switch (action) {
         case 'add':
@@ -134,8 +136,10 @@ export function createContextScratchpadTool(agentName: string, contextId: string
       // Emit slot:log event for CLI
       getPipelineEventBus().emitSlotLog(agentName, contextId, action, content);
 
-      // Log for real-time debugging with context
-      console.log(`[${agentName}:${contextId}] ${action}: ${content}`);
+      // Log for real-time debugging with context (avoid UI mode to prevent spill)
+      if (!getPipelineEventBus().isEnabled()) {
+        console.log(`[${agentName}:${contextId}] ${action}: ${content}`);
+      }
 
       switch (action) {
         case 'add':

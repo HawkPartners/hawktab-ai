@@ -1,0 +1,1990 @@
+[
+  {
+    "Column": "record",
+    "Description": "record: Record number",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "uuid",
+    "Description": "uuid: Participant identifier",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "date",
+    "Description": "date: Completion time and date",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "status",
+    "Description": "status: Participant status",
+    "Answer_Options": "1=Terminated,2=Overquota,3=Qualified,4=Partial"
+  },
+  {
+    "Column": "S2",
+    "Description": "S2: This research is conducted for the benefit of a pharma company. The pharma company is not a recipient of your personal data and, thus, will never have access to your personal data. The pharma company shall only receive anonymized results analyzed acro",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "S3",
+    "Description": "S3: During this survey you may be shown certain confidential information. By participating in this survey, you agree that you will neither use nor disclose to any other person or entity any of the information provided to you in this study. By selecting ",
+    "Answer_Options": "1=Accept,2=No thanks"
+  },
+  {
+    "Column": "S4",
+    "Description": "S4: Are you, or is any immediate family member, employed by or affiliated with any pharmaceutical or biotechnology company, or working in market research?",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "S5",
+    "Description": "S5: What is your gender?",
+    "Answer_Options": "1=Male,2=Female,3=Non-binary,4=Prefer not to answer"
+  },
+  {
+    "Column": "S6",
+    "Description": "S6: How old are you?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "hCaregiverAge",
+    "Description": "hCaregiverAge: CAREGIVER AGE",
+    "Answer_Options": "1=18-29 Years Old,2=30-34 Years Old,3=35-39 Years Old,4=40-49 Years Old,5=50-59 Years Old,6=60-64 Years Old,7=65+ Years Old"
+  },
+  {
+    "Column": "S8",
+    "Description": "S8: In which state do you currently reside?",
+    "Answer_Options": "1=Alaska,2=Alabama,3=Arkansas,4=Arizona,5=California,6=Colorado,7=Connecticut,8=District of Columbia,9=Delaware,10=Florida,11=Georgia,12=Hawaii,13=Iowa,14=Idaho,15=Illinois,16=Indiana,17=Kansas,18=Kentucky,19=Louisiana,20=Massachusetts,21=Maryland,22=Maine,23=Michigan,24=Minnesota,25=Missouri,26=Mississippi,27=Montana,28=North Carolina,29=North Dakota,30=Nebraska,31=New Hampshire,32=New Jersey,33=New Mexico,34=Nevada,35=New York,36=Ohio,37=Oklahoma,38=Oregon,39=Pennsylvania,40=Rhode Island,41=South Carolina,42=South Dakota,43=Tennessee,44=Texas,45=Utah,46=Virginia,47=Vermont,48=Washington,49=Wisconsin,50=West Virginia,51=Wyoming"
+  },
+  {
+    "Column": "REGION",
+    "Description": "REGION: REGION",
+    "Answer_Options": "1=Northeast,2=South,3=Midwest,4=West"
+  },
+  {
+    "Column": "S9",
+    "Description": "S9: How many children are you responsible for the care of?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "noanswerS9_r1",
+    "Description": "noanswerS9_r1: How many children are you responsible for the care of?: I do not care for any child(ren) - No Answer",
+    "Answer_Options": "0=NO TO: How many children are you responsible for the care of?: I do not care for any child(ren),1=How many children are you responsible for the care of?: I do not care for any child(ren)",
+    "ParentQuestion": "noanswerS9_"
+  },
+  {
+    "Column": "hFlagS9",
+    "Description": "hFlagS9: Hidden in live. - FLAG IF CARE FOR 6+ (6 or more) CHILDREN",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "S10r1",
+    "Description": "S10r1: Child 1 - What are the ages of the child(ren) you care for?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S10"
+  },
+  {
+    "Column": "S10r2",
+    "Description": "S10r2: Child 2 - What are the ages of the child(ren) you care for?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S10"
+  },
+  {
+    "Column": "S10r3",
+    "Description": "S10r3: Child 3 - What are the ages of the child(ren) you care for?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S10"
+  },
+  {
+    "Column": "S10r4",
+    "Description": "S10r4: Child 4 - What are the ages of the child(ren) you care for?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S10"
+  },
+  {
+    "Column": "S10r5",
+    "Description": "S10r5: Child 5 - What are the ages of the child(ren) you care for?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S10"
+  },
+  {
+    "Column": "S10r6",
+    "Description": "S10r6: Child 6 - What are the ages of the child(ren) you care for?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S10"
+  },
+  {
+    "Column": "S10r7",
+    "Description": "S10r7: Child 7 - What are the ages of the child(ren) you care for?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S10"
+  },
+  {
+    "Column": "S10r8",
+    "Description": "S10r8: Child 8 - What are the ages of the child(ren) you care for?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S10"
+  },
+  {
+    "Column": "S10r9",
+    "Description": "S10r9: Child 9 - What are the ages of the child(ren) you care for?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S10"
+  },
+  {
+    "Column": "S10r10",
+    "Description": "S10r10: Child 10 - What are the ages of the child(ren) you care for?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S10"
+  },
+  {
+    "Column": "hFlagS10r1",
+    "Description": "hFlagS10r1: IF HAVE ANY CHILD BETWEEN 11-19 YEARS OLD AND S6 AGE < S10 AGE - Flag S10",
+    "Answer_Options": "0=NO TO: IF HAVE ANY CHILD BETWEEN 11-19 YEARS OLD AND S6 AGE < S10 AGE,1=IF HAVE ANY CHILD BETWEEN 11-19 YEARS OLD AND S6 AGE < S10 AGE",
+    "ParentQuestion": "hFlagS10"
+  },
+  {
+    "Column": "hFlagS10r2",
+    "Description": "hFlagS10r2: IF S6 AGE - S10 AGE = 0-15 - Flag S10",
+    "Answer_Options": "0=NO TO: IF S6 AGE - S10 AGE = 0-15,1=IF S6 AGE - S10 AGE = 0-15",
+    "ParentQuestion": "hFlagS10"
+  },
+  {
+    "Column": "S11",
+    "Description": "S11: Which of the following statements besides describes your role in making decisions regarding the healthcare for the child(ren) you care for, including what vaccines he/she/they receive(s)?",
+    "Answer_Options": "1=I take the lead role in making decisions,2=I share decisions with another adult,3=Someone other than myself makes decisions for my adolescent(s)"
+  },
+  {
+    "Column": "hChildsAge",
+    "Description": "hChildsAge: Final Child age",
+    "Answer_Options": "11=11,12=12,13=13,14=14,15=15,16=16,17=17,18=18,19=19"
+  },
+  {
+    "Column": "ndpFlagChildsWithSameAge",
+    "Description": "ndpFlagChildsWithSameAge: Hidden in live.",
+    "Answer_Options": "1=HAVE 2+ CHILDREN, SOME OF WHOM ARE SAME AGE,2=No"
+  },
+  {
+    "Column": "S11b",
+    "Description": "S11b: What is the first initial of this adolescent who is [pipe: hChildsAge] years old?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "S12",
+    "Description": "S12: To the best of your knowledge, which of the following best describes [pipe: S11b upper]'s status with vaccinations?",
+    "Answer_Options": "1=[pipe: S11b upper] has received/will receive all of the vaccinations recommended by the pediatrician or family doctor, e,2=[pipe: S11b upper] has received/will receive most, but not all, of the vaccinations recommended by the pediatrician or f,3=[pipe: S11b upper] has received/will receive a few, but not all, of the vaccinations recommended by the pediatrician or,4=[pipe: S11b upper] has not received/will not receive any of the vaccinations recommended by the pediatrician or family d,5=I am not sure whether [pipe: S11b upper] has received will receive some/all of the vaccinations recommended by the pedia"
+  },
+  {
+    "Column": "A1",
+    "Description": "A1: How would you rate [pipe: S11b upper]’s general health over the course of the last year?",
+    "Answer_Options": "1=Poor,2=Fair,3=Good,4=Very Good,5=Excellent"
+  },
+  {
+    "Column": "A2",
+    "Description": "A2: Does [pipe: S11b upper] have any chronic conditions that they have been diagnosed with (e.g., asthma, diabetes, etc.)?",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "A3r1",
+    "Description": "A3r1: Annual Well Visits (e.g., general check-ups, not related to a sickness) - How important do you think each of the following are in managing [pipe: S11b upper]’s health?",
+    "Answer_Options": "0=Not at allImportant 0,1=1,2=2,3=3,4=4,5=Somewhat Important 5,6=6,7=7,8=8,9=9,10=Extremely Important 10",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r2",
+    "Description": "A3r2: Exercise - How important do you think each of the following are in managing [pipe: S11b upper]’s health?",
+    "Answer_Options": "0=Not at allImportant 0,1=1,2=2,3=3,4=4,5=Somewhat Important 5,6=6,7=7,8=8,9=9,10=Extremely Important 10",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r3",
+    "Description": "A3r3: Healthy Diet / Nutrition - How important do you think each of the following are in managing [pipe: S11b upper]’s health?",
+    "Answer_Options": "0=Not at allImportant 0,1=1,2=2,3=3,4=4,5=Somewhat Important 5,6=6,7=7,8=8,9=9,10=Extremely Important 10",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r4",
+    "Description": "A3r4: Sleep - How important do you think each of the following are in managing [pipe: S11b upper]’s health?",
+    "Answer_Options": "0=Not at allImportant 0,1=1,2=2,3=3,4=4,5=Somewhat Important 5,6=6,7=7,8=8,9=9,10=Extremely Important 10",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r5",
+    "Description": "A3r5: Vaccination - How important do you think each of the following are in managing [pipe: S11b upper]’s health?",
+    "Answer_Options": "0=Not at allImportant 0,1=1,2=2,3=3,4=4,5=Somewhat Important 5,6=6,7=7,8=8,9=9,10=Extremely Important 10",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A4r1",
+    "Description": "A4r1: I encourage [pipe: S11b upper] to play sports to be healthy and active - Please rate your level of agreement with each of the following statements.",
+    "Answer_Options": "0=Completely Disagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=Completely Agree 10",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r2",
+    "Description": "A4r2: If [pipe: S11b upper] sees the doctor regularly, he/she is less likely to get sick - Please rate your level of agreement with each of the following statements.",
+    "Answer_Options": "0=Completely Disagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=Completely Agree 10",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r3",
+    "Description": "A4r3: As long as [pipe: S11b upper] eats right and exercises then he/she does not need to see a doctor regularly - Please rate your level of agreement with each of the following statements.",
+    "Answer_Options": "0=Completely Disagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=Completely Agree 10",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r4",
+    "Description": "A4r4: I only take [pipe: S11b upper] to the doctor when he/she is sick or injured - Please rate your level of agreement with each of the following statements.",
+    "Answer_Options": "0=Completely Disagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=Completely Agree 10",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r5",
+    "Description": "A4r5: I am wary of [pipe: S11b upper] going to the doctor’s office unless absolutely necessary, for fear of he/she catching something while there - Please rate your level of agreement with each of the following statements.",
+    "Answer_Options": "0=Completely Disagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=Completely Agree 10",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r6",
+    "Description": "A4r6: I am wary of [pipe: S11b upper] going to the doctor’s office for reasons around cost, lack of convenience/transportation, and/or [pipe: S11b upper]'s fear of going to the doctor - Please rate your level of agreement with each of the following stat",
+    "Answer_Options": "0=Completely Disagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=Completely Agree 10",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r7",
+    "Description": "A4r7: I rely on [pipe: S11b upper]’s doctor to tell us what he/she needs to do to stay healthy - Please rate your level of agreement with each of the following statements.",
+    "Answer_Options": "0=Completely Disagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=Completely Agree 10",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "B1",
+    "Description": "B1: How often does [pipe: S11b upper] go to his/her pediatrician or family doctor for a “well visit” (e.g., general check-up, not related to a sickness)?",
+    "Answer_Options": "1=At least 2-3 times a year,2=Once a year,3=Every other year,4=Less than every other year,5=Never,6=Don’t know / Not sure"
+  },
+  {
+    "Column": "B2",
+    "Description": "B2: When was [pipe: S11b upper]’s last well visit?",
+    "Answer_Options": "1=Within the last 6 months,3=Within the last 7-12 months,4=Within the past 1-2 years,5=More than 2 years ago,6=Never,7=Don’t know / Not sure"
+  },
+  {
+    "Column": "B3",
+    "Description": "B3: How if, at all, has the frequency of “well visits” changed for [pipe: S11b upper] in recent years?",
+    "Answer_Options": "1=Increased,2=Remained the same,3=Decreased"
+  },
+  {
+    "Column": "B4r1",
+    "Description": "B4r1: COVID-19 restrictions - Why has the frequency of “well visits” changed for [pipe: S11b upper] in recent years?",
+    "Answer_Options": "0=NO TO: COVID-19 restrictions,1=COVID-19 restrictions",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r2",
+    "Description": "B4r2: [pipe: S11b upper]’s health conditions have changed - Why has the frequency of “well visits” changed for [pipe: S11b upper] in recent years?",
+    "Answer_Options": "0=NO TO: [pipe: S11b upper]’s health conditions have changed,1=[pipe: S11b upper]’s health conditions have changed",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r3",
+    "Description": "B4r3: [pipe: S11b upper] is healthy and doesn’t need to go as frequently - Why has the frequency of “well visits” changed for [pipe: S11b upper] in recent years?",
+    "Answer_Options": "0=NO TO: [pipe: S11b upper] is healthy and doesn’t need to go as frequently,1=[pipe: S11b upper] is healthy and doesn’t need to go as frequently",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r4",
+    "Description": "B4r4: Insurance changes - Why has the frequency of “well visits” changed for [pipe: S11b upper] in recent years?",
+    "Answer_Options": "0=NO TO: Insurance changes,1=Insurance changes",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r5",
+    "Description": "B4r5: Family’s financial situation has changed - Why has the frequency of “well visits” changed for [pipe: S11b upper] in recent years?",
+    "Answer_Options": "0=NO TO: Family’s financial situation has changed,1=Family’s financial situation has changed",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r6",
+    "Description": "B4r6: School and/or sports/extracurricular activities - Why has the frequency of “well visits” changed for [pipe: S11b upper] in recent years?",
+    "Answer_Options": "0=NO TO: School and/or sports/extracurricular activities,1=School and/or sports/extracurricular activities",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r99",
+    "Description": "B4r99: Other - Why has the frequency of “well visits” changed for [pipe: S11b upper] in recent years?",
+    "Answer_Options": "0=NO TO: Other,1=Other",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B5",
+    "Description": "B5: If [pipe: S11b upper]’s doctor were to make a vaccine recommendation, how likely are you to accept that recommendation for [pipe: S11b upper]?",
+    "Answer_Options": "0=Not at all Likely 0,1=1,2=2,3=3,4=4,5=Somewhat Likely 5,6=6,7=7,8=8,9=9,10=Extremely Likely 10"
+  },
+  {
+    "Column": "B6r1",
+    "Description": "B6r1: Recommended by [pipe: S11b upper]’s doctor - Which of the following factors MOST influence your decision on whether [pipe: S11b upper] receives a vaccine? Please click or drag to rank the MOST influential factor, then select the next most influent",
+    "Answer_Options": "1=1st MOST influential factor,2=2nd MOST influential factor,3=3rd MOST influential factor,4=4th MOST influential factor,5=5th MOST influential factor",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r2",
+    "Description": "B6r2: School requirements - Which of the following factors MOST influence your decision on whether [pipe: S11b upper] receives a vaccine? Please click or drag to rank the MOST influential factor, then select the next most influential, etc. for up to 5 pos",
+    "Answer_Options": "1=1st MOST influential factor,2=2nd MOST influential factor,3=3rd MOST influential factor,4=4th MOST influential factor,5=5th MOST influential factor",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r3",
+    "Description": "B6r3: Sports or other extracurricular activities requirements - Which of the following factors MOST influence your decision on whether [pipe: S11b upper] receives a vaccine? Please click or drag to rank the MOST influential factor, then select the next mo",
+    "Answer_Options": "1=1st MOST influential factor,2=2nd MOST influential factor,3=3rd MOST influential factor,4=4th MOST influential factor,5=5th MOST influential factor",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r4",
+    "Description": "B6r4: Social media - Which of the following factors MOST influence your decision on whether [pipe: S11b upper] receives a vaccine? Please click or drag to rank the MOST influential factor, then select the next most influential, etc. for up to 5 possible r",
+    "Answer_Options": "1=1st MOST influential factor,2=2nd MOST influential factor,3=3rd MOST influential factor,4=4th MOST influential factor,5=5th MOST influential factor",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r5",
+    "Description": "B6r5: Friends/family/colleagues - Which of the following factors MOST influence your decision on whether [pipe: S11b upper] receives a vaccine? Please click or drag to rank the MOST influential factor, then select the next most influential, etc. for up to",
+    "Answer_Options": "1=1st MOST influential factor,2=2nd MOST influential factor,3=3rd MOST influential factor,4=4th MOST influential factor,5=5th MOST influential factor",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r6",
+    "Description": "B6r6: [pipe: S11b upper]’s experience with other vaccines - Which of the following factors MOST influence your decision on whether [pipe: S11b upper] receives a vaccine? Please click or drag to rank the MOST influential factor, then select the next most",
+    "Answer_Options": "1=1st MOST influential factor,2=2nd MOST influential factor,3=3rd MOST influential factor,4=4th MOST influential factor,5=5th MOST influential factor",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r7",
+    "Description": "B6r7: Ease of getting the vaccine (convenient time/location) - Which of the following factors MOST influence your decision on whether [pipe: S11b upper] receives a vaccine? Please click or drag to rank the MOST influential factor, then select the next mos",
+    "Answer_Options": "1=1st MOST influential factor,2=2nd MOST influential factor,3=3rd MOST influential factor,4=4th MOST influential factor,5=5th MOST influential factor",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r8",
+    "Description": "B6r8: Ability to get questions about the vaccine answered on site - Which of the following factors MOST influence your decision on whether [pipe: S11b upper] receives a vaccine? Please click or drag to rank the MOST influential factor, then select the nex",
+    "Answer_Options": "1=1st MOST influential factor,2=2nd MOST influential factor,3=3rd MOST influential factor,4=4th MOST influential factor,5=5th MOST influential factor",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r9",
+    "Description": "B6r9: Out-of-pocket cost - Which of the following factors MOST influence your decision on whether [pipe: S11b upper] receives a vaccine? Please click or drag to rank the MOST influential factor, then select the next most influential, etc. for up to 5 poss",
+    "Answer_Options": "1=1st MOST influential factor,2=2nd MOST influential factor,3=3rd MOST influential factor,4=4th MOST influential factor,5=5th MOST influential factor",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r10",
+    "Description": "B6r10: Produced by a pharmaceutical company I know/trust - Which of the following factors MOST influence your decision on whether [pipe: S11b upper] receives a vaccine? Please click or drag to rank the MOST influential factor, then select the next most in",
+    "Answer_Options": "1=1st MOST influential factor,2=2nd MOST influential factor,3=3rd MOST influential factor,4=4th MOST influential factor,5=5th MOST influential factor",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r11",
+    "Description": "B6r11: Recommended by health authority (e.g., CDC) - Which of the following factors MOST influence your decision on whether [pipe: S11b upper] receives a vaccine? Please click or drag to rank the MOST influential factor, then select the next most influent",
+    "Answer_Options": "1=1st MOST influential factor,2=2nd MOST influential factor,3=3rd MOST influential factor,4=4th MOST influential factor,5=5th MOST influential factor",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r12",
+    "Description": "B6r12: My own research on the vaccine - Which of the following factors MOST influence your decision on whether [pipe: S11b upper] receives a vaccine? Please click or drag to rank the MOST influential factor, then select the next most influential, etc. for",
+    "Answer_Options": "1=1st MOST influential factor,2=2nd MOST influential factor,3=3rd MOST influential factor,4=4th MOST influential factor,5=5th MOST influential factor",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B7",
+    "Description": "B7: Does [pipe: S11b upper]’s school require that he/she receives certain vaccinations?",
+    "Answer_Options": "1=Yes, and we get the required vaccines,2=Yes, but we claim an exemption (religious, etc.),3=No, there are no requirements,4=Not applicable / [pipe: S11b upper] doesn’t go to school"
+  },
+  {
+    "Column": "FlagB7",
+    "Description": "FlagB7: FLAG CAREGIVERS WITH ADOLESCENT 11-15 YEARS OLD WHO DOES NOT GO TO SCHOOL: B7_4",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "B8r1",
+    "Description": "B8r1: Doctor’s office - In what setting(s) do you feel comfortable getting [pipe: S11b upper] vaccinated?",
+    "Answer_Options": "0=NO TO: Doctor’s office,1=Doctor’s office",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r2",
+    "Description": "B8r2: School - In what setting(s) do you feel comfortable getting [pipe: S11b upper] vaccinated?",
+    "Answer_Options": "0=NO TO: School,1=School",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r3",
+    "Description": "B8r3: Pharmacy (e.g., Walgreen, CVS, etc.) - In what setting(s) do you feel comfortable getting [pipe: S11b upper] vaccinated?",
+    "Answer_Options": "0=NO TO: Pharmacy (e.g., Walgreen, CVS, etc.),1=Pharmacy (e.g., Walgreen, CVS, etc.)",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r4",
+    "Description": "B8r4: Local clinic/health center - In what setting(s) do you feel comfortable getting [pipe: S11b upper] vaccinated?",
+    "Answer_Options": "0=NO TO: Local clinic/health center,1=Local clinic/health center",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r5",
+    "Description": "B8r5: Other: (Specify) - In what setting(s) do you feel comfortable getting [pipe: S11b upper] vaccinated?",
+    "Answer_Options": "0=NO TO: Other: (Specify),1=Other: (Specify)",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r5oe",
+    "Description": "B8r5oe: In what setting(s) do you feel comfortable getting [pipe: S11b upper] vaccinated? - Other: (Specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "C0r1",
+    "Description": "C0r1: What specific brands of vaccines or names of vaccines/illnesses that are given to children and adolescents (~age 7 to 19) are you aware of?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "C0"
+  },
+  {
+    "Column": "C0r2",
+    "Description": "C0r2: What specific brands of vaccines or names of vaccines/illnesses that are given to children and adolescents (~age 7 to 19) are you aware of?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "C0"
+  },
+  {
+    "Column": "C0r3",
+    "Description": "C0r3: What specific brands of vaccines or names of vaccines/illnesses that are given to children and adolescents (~age 7 to 19) are you aware of?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "C0"
+  },
+  {
+    "Column": "C0r4",
+    "Description": "C0r4: What specific brands of vaccines or names of vaccines/illnesses that are given to children and adolescents (~age 7 to 19) are you aware of?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "C0"
+  },
+  {
+    "Column": "C0r5",
+    "Description": "C0r5: What specific brands of vaccines or names of vaccines/illnesses that are given to children and adolescents (~age 7 to 19) are you aware of?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "C0"
+  },
+  {
+    "Column": "C0r6",
+    "Description": "C0r6: What specific brands of vaccines or names of vaccines/illnesses that are given to children and adolescents (~age 7 to 19) are you aware of?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "C0"
+  },
+  {
+    "Column": "C0r7",
+    "Description": "C0r7: What specific brands of vaccines or names of vaccines/illnesses that are given to children and adolescents (~age 7 to 19) are you aware of?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "C0"
+  },
+  {
+    "Column": "C0r8",
+    "Description": "C0r8: What specific brands of vaccines or names of vaccines/illnesses that are given to children and adolescents (~age 7 to 19) are you aware of?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "C0"
+  },
+  {
+    "Column": "C0r9",
+    "Description": "C0r9: What specific brands of vaccines or names of vaccines/illnesses that are given to children and adolescents (~age 7 to 19) are you aware of?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "C0"
+  },
+  {
+    "Column": "C0r10",
+    "Description": "C0r10: What specific brands of vaccines or names of vaccines/illnesses that are given to children and adolescents (~age 7 to 19) are you aware of?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "C0"
+  },
+  {
+    "Column": "noanswerC0_r99",
+    "Description": "noanswerC0_r99: What specific brands of vaccines or names of vaccines/illnesses that are given to children and adolescents (~age 7 to 19) are you aware of? : None come to mind - No Answer",
+    "Answer_Options": "0=NO TO: What specific brands of vaccines or names of vaccines/illnesses that are given to children and adolescents (~age,1=What specific brands of vaccines or names of vaccines/illnesses that are given to children and adolescents (~age 7 to 19",
+    "ParentQuestion": "noanswerC0_"
+  },
+  {
+    "Column": "C1r1",
+    "Description": "C1r1: COVID-19 Vaccine (e.g., Moderna, Pfizer, Johnson & Johnson) Recommended for ages 6 months and older - Please select any of the below vaccines that [pipe: S11b upper] who is [pipe: hChildsAge] years old has received to date, since birth. Keep in mind",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r2",
+    "Description": "C1r2: Measles, Mumps and Rubella Vaccine (e.g., ProQuad)This vaccine is typically required by most schoolsFirst injection recommended at 12-15 months old, second injection at 4-6 years old - Please select any of the below vaccines that [pipe: S11b upper]",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r3",
+    "Description": "C1r3: Diphtheria, Tetanus, and Whooping Cough (Pertussis) Vaccine (DTaP / Tdap) (e.g., Daptacel, Infanrix)This vaccine is typically required by most schoolsSeveral injections recommended early in life, then again at 11-12 years old - Please select any of",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r4",
+    "Description": "C1r4: Meningitis (MenACWY) Vaccine (e.g., Menactra, Menveo, MenQuadfi)This vaccine is typically required by most schoolsFirst injection recommended at 11-12 years old, second injection at 16 years old - Please select any of the below vaccines that [pipe:",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r5",
+    "Description": "C1r5: Meningitis (MenB) Vaccine (e.g., Bexsero, Trumenba)First injection recommended at 16-18 years old, second injection shortly thereafter - Please select any of the below vaccines that [pipe: S11b upper] who is [pipe: hChildsAge] years old has received",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r6",
+    "Description": "C1r6: Human Papillomavirus (HPV) Vaccine (e.g., Gardasil, Gardasil9, Cervarix)First injection recommended at 11-12 years old, second injection shortly thereafter - Please select any of the below vaccines that [pipe: S11b upper] who is [pipe: hChildsAge] y",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "FlagC1",
+    "Description": "FlagC1: IN DATAFILE, HAVE A CODE FOR THOSE WHO SELECTED “NO” FOR ALL VACCINES AND LABEL “NOT VACCINATED” & FLAG TO HAWKPARTNERS",
+    "Answer_Options": "1=Has Not Received Any Doses\" is Selected for all in C1,2=Not flagged",
+    "ParentQuestion": "Flag"
+  },
+  {
+    "Column": "C2",
+    "Description": "C2: Do you plan to get [pipe: S11b upper] the meningitis (MenACWY) vaccine in the next 6 months?",
+    "Answer_Options": "1=Never heard of this vaccine so unsure,2=Heard of it and considering but unsure,3=Heard of it and planning to get vaccinated, but not in the next 6 months,4=Heard of it and planning to get vaccinated in the next 6 months,5=Heard of it but not planning to get vaccinated"
+  },
+  {
+    "Column": "C3",
+    "Description": "C3: How certain are you that [pipe: S11b upper] has received the meningitis (MenACWY) vaccine?",
+    "Answer_Options": "0=Not at all certain 0,1=1,2=2,3=3,4=4,5=Somewhat certain 5,6=6,7=7,8=8,9=9,10=Extremely certain 10"
+  },
+  {
+    "Column": "C4r1",
+    "Description": "C4r1: COVID-19 - For each of the vaccinations listed below, please indicate how important you believe it is for [pipe: S11b upper] to receive the vaccine for the following disease(s).",
+    "Answer_Options": "0=Not at all important 0,1=1,2=2,3=3,4=4,5=Moderately important  5,6=6,7=7,8=8,9=9,10=Extremely important 10,98=Don't Know",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r2",
+    "Description": "C4r2: Measles, Mumps and Rubella - For each of the vaccinations listed below, please indicate how important you believe it is for [pipe: S11b upper] to receive the vaccine for the following disease(s).",
+    "Answer_Options": "0=Not at all important 0,1=1,2=2,3=3,4=4,5=Moderately important  5,6=6,7=7,8=8,9=9,10=Extremely important 10,98=Don't Know",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r3",
+    "Description": "C4r3: Human Papillomavirus (HPV) - For each of the vaccinations listed below, please indicate how important you believe it is for [pipe: S11b upper] to receive the vaccine for the following disease(s).",
+    "Answer_Options": "0=Not at all important 0,1=1,2=2,3=3,4=4,5=Moderately important  5,6=6,7=7,8=8,9=9,10=Extremely important 10,98=Don't Know",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r4",
+    "Description": "C4r4: Diphtheria, Tetanus, and Whooping Cough (DTaP / Tdap) - For each of the vaccinations listed below, please indicate how important you believe it is for [pipe: S11b upper] to receive the vaccine for the following disease(s).",
+    "Answer_Options": "0=Not at all important 0,1=1,2=2,3=3,4=4,5=Moderately important  5,6=6,7=7,8=8,9=9,10=Extremely important 10,98=Don't Know",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r5",
+    "Description": "C4r5: Meningitis (MenACWY) - For each of the vaccinations listed below, please indicate how important you believe it is for [pipe: S11b upper] to receive the vaccine for the following disease(s).",
+    "Answer_Options": "0=Not at all important 0,1=1,2=2,3=3,4=4,5=Moderately important  5,6=6,7=7,8=8,9=9,10=Extremely important 10,98=Don't Know",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r6",
+    "Description": "C4r6: Meningitis (MenB) - For each of the vaccinations listed below, please indicate how important you believe it is for [pipe: S11b upper] to receive the vaccine for the following disease(s).",
+    "Answer_Options": "0=Not at all important 0,1=1,2=2,3=3,4=4,5=Moderately important  5,6=6,7=7,8=8,9=9,10=Extremely important 10,98=Don't Know",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C5r1",
+    "Description": "C5r1: COVID-19 - How effective do you consider the below vaccines to be?",
+    "Answer_Options": "0=Not at all effective 0,1=1,2=2,3=3,4=4,5=Moderately effective 5,6=6,7=7,8=8,9=9,10=Extremely effective 10,98=Don't Know",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C5r2",
+    "Description": "C5r2: Measles, Mumps and Rubella - How effective do you consider the below vaccines to be?",
+    "Answer_Options": "0=Not at all effective 0,1=1,2=2,3=3,4=4,5=Moderately effective 5,6=6,7=7,8=8,9=9,10=Extremely effective 10,98=Don't Know",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C5r3",
+    "Description": "C5r3: Human Papillomavirus (HPV) - How effective do you consider the below vaccines to be?",
+    "Answer_Options": "0=Not at all effective 0,1=1,2=2,3=3,4=4,5=Moderately effective 5,6=6,7=7,8=8,9=9,10=Extremely effective 10,98=Don't Know",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C5r4",
+    "Description": "C5r4: Diphtheria, Tetanus, and Whooping Cough (DTaP / Tdap) - How effective do you consider the below vaccines to be?",
+    "Answer_Options": "0=Not at all effective 0,1=1,2=2,3=3,4=4,5=Moderately effective 5,6=6,7=7,8=8,9=9,10=Extremely effective 10,98=Don't Know",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C5r5",
+    "Description": "C5r5: Meningitis (MenACWY) - How effective do you consider the below vaccines to be?",
+    "Answer_Options": "0=Not at all effective 0,1=1,2=2,3=3,4=4,5=Moderately effective 5,6=6,7=7,8=8,9=9,10=Extremely effective 10,98=Don't Know",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C5r6",
+    "Description": "C5r6: Meningitis (MenB) - How effective do you consider the below vaccines to be?",
+    "Answer_Options": "0=Not at all effective 0,1=1,2=2,3=3,4=4,5=Moderately effective 5,6=6,7=7,8=8,9=9,10=Extremely effective 10,98=Don't Know",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C6r1",
+    "Description": "C6r1: [pipe: S11b upper] gets the vaccines his/her doctor recommends, with no/few questions - Please rate your level of agreement or disagreement with each of the following statements.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r2",
+    "Description": "C6r2: I think children are given too many vaccines at a young age - Please rate your level of agreement or disagreement with each of the following statements.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r3",
+    "Description": "C6r3: I thoroughly research childhood vaccine recommendations - Please rate your level of agreement or disagreement with each of the following statements.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r4",
+    "Description": "C6r4: Vaccines are effective at preventing people from catching a disease - Please rate your level of agreement or disagreement with each of the following statements.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r5",
+    "Description": "C6r5: Vaccines are effective at preventing severe illness - Please rate your level of agreement or disagreement with each of the following statements.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r6",
+    "Description": "C6r6: Getting vaccines makes me feel confident that I am doing the best I can to manage [pipe: S11b upper]’s health - Please rate your level of agreement or disagreement with each of the following statements.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r7",
+    "Description": "C6r7: I believe that the benefits of a preventative vaccine outweigh the risks - Please rate your level of agreement or disagreement with each of the following statements.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r8",
+    "Description": "C6r8: I am selective about which vaccines [pipe: S11b upper] receives - Please rate your level of agreement or disagreement with each of the following statements.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r9",
+    "Description": "C6r9: I do not believe in the science of vaccines - Please rate your level of agreement or disagreement with each of the following statements.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r10",
+    "Description": "C6r10: I like it when [pipe: S11b upper] can receive one vaccine and be protected against multiple conditions (e.g., Tdap, Measles, Mumps and Rubella) - Please rate your level of agreement or disagreement with each of the following statements.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r11",
+    "Description": "C6r11: I would not be comfortable with [pipe: S11b upper] receiving a vaccine that was only recently approved - Please rate your level of agreement or disagreement with each of the following statements.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r12",
+    "Description": "C6r12: If there was a vaccination that I really wanted for [pipe: S11b upper], but my doctor didn’t have available, I’d go find it somewhere else - Please rate your level of agreement or disagreement with each of the following statements.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r13",
+    "Description": "C6r13: My friends and/or family often look to me for information about vaccines - Please rate your level of agreement or disagreement with each of the following statements.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r14",
+    "Description": "C6r14: Vaccines are toxins in the body - Please rate your level of agreement or disagreement with each of the following statements.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r15",
+    "Description": "C6r15: If a vaccine is recently approved, I would be comfortable with [pipe: S11b upper] receiving it - Please rate your level of agreement or disagreement with each of the following statements.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "SL_Flag_C6",
+    "Description": "SL_Flag_C6: HIDDEN IN LIVE : QC FLAG_C6",
+    "Answer_Options": "1=FLAG,2=NULL",
+    "ParentQuestion": "SL_Flag_"
+  },
+  {
+    "Column": "C7r1",
+    "Description": "C7r1: Vaccines are the best form of protection against COVID-19 - Please rate your level of agreement or disagreement with each of the following statements about COVID-19.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r2",
+    "Description": "C7r2: I am a strong advocate for the COVID-19 vaccine to my friends and family - Please rate your level of agreement or disagreement with each of the following statements about COVID-19.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r3",
+    "Description": "C7r3: The COVID-19 vaccine has positively impacted my consideration of other vaccines - Please rate your level of agreement or disagreement with each of the following statements about COVID-19.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r4",
+    "Description": "C7r4: COVID-19 has made me much more aware of other vaccines - Please rate your level of agreement or disagreement with each of the following statements about COVID-19.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r5",
+    "Description": "C7r5: The speed of the development of the COVID-19 vaccines has made me suspicious of vaccines in general - Please rate your level of agreement or disagreement with each of the following statements about COVID-19.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r6",
+    "Description": "C7r6: COVID-19 has made me exhausted of thinking about which vaccines to get and when - Please rate your level of agreement or disagreement with each of the following statements about COVID-19.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "D1",
+    "Description": "D1: How familiar are you with meningitis?",
+    "Answer_Options": "0=Not at allFamiliar 0,1=1,2=2,3=3,4=4,5=Somewhat Familiar 5,6=6,7=7,8=8,9=9,10=Extremely Familiar 10"
+  },
+  {
+    "Column": "D2r1",
+    "Description": "D2r1: I know and understand the risks associated with meningitis for adolescents - Please rate your level of agreement or disagreement with each of the following statements about meningitis.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "D2"
+  },
+  {
+    "Column": "D2r2",
+    "Description": "D2r2: Meningitis can be life-threatening - Please rate your level of agreement or disagreement with each of the following statements about meningitis.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "D2"
+  },
+  {
+    "Column": "D2r3",
+    "Description": "D2r3: I think a vaccine is the best way to prevent meningitis - Please rate your level of agreement or disagreement with each of the following statements about meningitis.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "D2"
+  },
+  {
+    "Column": "D2r4",
+    "Description": "D2r4: The meningitis vaccine is recommended only for adolescents with certain medical conditions - Please rate your level of agreement or disagreement with each of the following statements about meningitis.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "D2"
+  },
+  {
+    "Column": "D2r5",
+    "Description": "D2r5: Meningitis can be easily spread through sharing behaviors (e.g., sharing utensils, kissing, having close social contact in group settings) - Please rate your level of agreement or disagreement with each of the following statements about meningitis.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "D2"
+  },
+  {
+    "Column": "D2r6",
+    "Description": "D2r6: Meningitis is generally spread in shared spaces (e.g., on college campuses, summer camps, etc) - Please rate your level of agreement or disagreement with each of the following statements about meningitis.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "D2"
+  },
+  {
+    "Column": "D2r7",
+    "Description": "D2r7: I know someone who has had meningitis - Please rate your level of agreement or disagreement with each of the following statements about meningitis.",
+    "Answer_Options": "0=CompletelyDisagree 0,1=1,2=2,3=3,4=4,5=Neither Agree nor Disagree 5,6=6,7=7,8=8,9=9,10=CompletelyAgree 10",
+    "ParentQuestion": "D2"
+  },
+  {
+    "Column": "D2a",
+    "Description": "D2a: Which of the following statements do you believe is “true” about meningitis?",
+    "Answer_Options": "1=There is only one strain of bacteria which causes meningitis,2=There are multiple strains of bacteria which cause meningitis"
+  },
+  {
+    "Column": "D2b",
+    "Description": "D2b: Which of the following statements do you believe is “true” about meningitis vaccine(s)?",
+    "Answer_Options": "1=There is only one vaccine available to protect against different strains of meningitis,2=There are multiple vaccines available to protect against different strains of meningitis"
+  },
+  {
+    "Column": "D2c",
+    "Description": "D2c: Which of the following statements do you believe is “true” about meningitis vaccines?",
+    "Answer_Options": "1=Patients need one injection to be protected against meningitis,2=Patients need multiple injections to be protected against meningitis"
+  },
+  {
+    "Column": "D3r1c1",
+    "Description": "D3r1c1: Doctor recommended - Did [pipe: S11b upper]’s doctor recommend/you request the meningitis (MenACWY) vaccine for [pipe: S11b upper]?",
+    "Answer_Options": "0=NO TO: Doctor recommended,1=Doctor recommended",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r2c1",
+    "Description": "D3r2c1: I requested for [pipe: S11b upper] - Did [pipe: S11b upper]’s doctor recommend/you request the meningitis (MenACWY) vaccine for [pipe: S11b upper]?",
+    "Answer_Options": "0=NO TO: I requested for [pipe: S11b upper],1=I requested for [pipe: S11b upper]",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r3c1",
+    "Description": "D3r3c1: Neither - Did [pipe: S11b upper]’s doctor recommend/you request the meningitis (MenACWY) vaccine for [pipe: S11b upper]?",
+    "Answer_Options": "0=NO TO: Neither,1=Neither",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3ar1c1",
+    "Description": "D3ar1c1: Doctor recommended - Did [pipe: S11b upper]’s doctor recommend/you request the meningitis (MenB) vaccine for [pipe: S11b upper]?",
+    "Answer_Options": "0=NO TO: Doctor recommended,1=Doctor recommended",
+    "ParentQuestion": "D3a"
+  },
+  {
+    "Column": "D3ar2c1",
+    "Description": "D3ar2c1: I requested for [pipe: S11b upper] - Did [pipe: S11b upper]’s doctor recommend/you request the meningitis (MenB) vaccine for [pipe: S11b upper]?",
+    "Answer_Options": "0=NO TO: I requested for [pipe: S11b upper],1=I requested for [pipe: S11b upper]",
+    "ParentQuestion": "D3a"
+  },
+  {
+    "Column": "D3ar3c1",
+    "Description": "D3ar3c1: Neither - Did [pipe: S11b upper]’s doctor recommend/you request the meningitis (MenB) vaccine for [pipe: S11b upper]?",
+    "Answer_Options": "0=NO TO: Neither,1=Neither",
+    "ParentQuestion": "D3a"
+  },
+  {
+    "Column": "D4",
+    "Description": "D4: How strongly did [pipe: S11b upper]’s doctor recommend the meningitis (MenACWY) vaccine?",
+    "Answer_Options": "0=0 Doctor’s Recommendation Was WEAK,1=1,2=2,3=3,4=4,5=5 Doctor’s Recommendation was NEITHER Strong Nor Weak,6=6,7=7,8=8,9=9,10=10 Doctor’s Recommendation Was STRONG"
+  },
+  {
+    "Column": "D5",
+    "Description": "D5: How strongly did [pipe: S11b upper]’s doctor recommend the meningitis (MenB) vaccine?",
+    "Answer_Options": "0=0 Doctor’s Recommendation Was WEAK,1=1,2=2,3=3,4=4,5=5 Doctor’s Recommendation was NEITHER Strong Nor Weak,6=6,7=7,8=8,9=9,10=10 Doctor’s Recommendation Was STRONG"
+  },
+  {
+    "Column": "D6r1",
+    "Description": "D6r1: Upcoming travel for [pipe: S11b upper] - What are the reasons why you first decided that [pipe: S11b upper] should receive the meningitis (MenACWY) vaccine?",
+    "Answer_Options": "0=NO TO: Upcoming travel for [pipe: S11b upper],1=Upcoming travel for [pipe: S11b upper]",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r2",
+    "Description": "D6r2: [pipe: S11b upper] entering military - What are the reasons why you first decided that [pipe: S11b upper] should receive the meningitis (MenACWY) vaccine?",
+    "Answer_Options": "0=NO TO: [pipe: S11b upper] entering military,1=[pipe: S11b upper] entering military",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r3",
+    "Description": "D6r3: [pipe: S11b upper] is college-bound - What are the reasons why you first decided that [pipe: S11b upper] should receive the meningitis (MenACWY) vaccine?",
+    "Answer_Options": "0=NO TO: [pipe: S11b upper] is college-bound,1=[pipe: S11b upper] is college-bound",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r4",
+    "Description": "D6r4: Doctor’s recommendation - What are the reasons why you first decided that [pipe: S11b upper] should receive the meningitis (MenACWY) vaccine?",
+    "Answer_Options": "0=NO TO: Doctor’s recommendation,1=Doctor’s recommendation",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r5",
+    "Description": "D6r5: School requirement - What are the reasons why you first decided that [pipe: S11b upper] should receive the meningitis (MenACWY) vaccine?",
+    "Answer_Options": "0=NO TO: School requirement,1=School requirement",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r6",
+    "Description": "D6r6: Friends’/family’s recommendation - What are the reasons why you first decided that [pipe: S11b upper] should receive the meningitis (MenACWY) vaccine?",
+    "Answer_Options": "0=NO TO: Friends’/family’s recommendation,1=Friends’/family’s recommendation",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r7",
+    "Description": "D6r7: For the welfare/protection of the community/society - What are the reasons why you first decided that [pipe: S11b upper] should receive the meningitis (MenACWY) vaccine?",
+    "Answer_Options": "0=NO TO: For the welfare/protection of the community/society,1=For the welfare/protection of the community/society",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r8",
+    "Description": "D6r8: To protect [pipe: S11b upper] from meningitis and future health risks - What are the reasons why you first decided that [pipe: S11b upper] should receive the meningitis (MenACWY) vaccine?",
+    "Answer_Options": "0=NO TO: To protect [pipe: S11b upper] from meningitis and future health risks,1=To protect [pipe: S11b upper] from meningitis and future health risks",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r9",
+    "Description": "D6r9: Centers for Disease Control (CDC) Guideline - What are the reasons why you first decided that [pipe: S11b upper] should receive the meningitis (MenACWY) vaccine?",
+    "Answer_Options": "0=NO TO: Centers for Disease Control (CDC) Guideline,1=Centers for Disease Control (CDC) Guideline",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r96",
+    "Description": "D6r96: Other: (Specify) - What are the reasons why you first decided that [pipe: S11b upper] should receive the meningitis (MenACWY) vaccine?",
+    "Answer_Options": "0=NO TO: Other: (Specify),1=Other: (Specify)",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r97",
+    "Description": "D6r97: Don’t know / can’t recall - What are the reasons why you first decided that [pipe: S11b upper] should receive the meningitis (MenACWY) vaccine?",
+    "Answer_Options": "0=NO TO: Don’t know / can’t recall,1=Don’t know / can’t recall",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r96oe",
+    "Description": "D6r96oe: What are the reasons why you first decided that [pipe: S11b upper] should receive the meningitis (MenACWY) vaccine? - Other: (Specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D7r1",
+    "Description": "D7r1: Planning to but just haven’t yet - [pipe: Pipe_D7]",
+    "Answer_Options": "0=NO TO: Planning to but just haven’t yet,1=Planning to but just haven’t yet",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r2",
+    "Description": "D7r2: Didn’t think it was important/relevant for [pipe: S11b upper] - [pipe: Pipe_D7]",
+    "Answer_Options": "0=NO TO: Didn’t think it was important/relevant for [pipe: S11b upper],1=Didn’t think it was important/relevant for [pipe: S11b upper]",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r3",
+    "Description": "D7r3: Didn’t realize there was more than one injection - [pipe: Pipe_D7]",
+    "Answer_Options": "0=NO TO: Didn’t realize there was more than one injection,1=Didn’t realize there was more than one injection",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r4",
+    "Description": "D7r4: Didn’t think meningitis was a health risk for [pipe: S11b upper] - [pipe: Pipe_D7]",
+    "Answer_Options": "0=NO TO: Didn’t think meningitis was a health risk for [pipe: S11b upper],1=Didn’t think meningitis was a health risk for [pipe: S11b upper]",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r5",
+    "Description": "D7r5: Doctor did not mention it - [pipe: Pipe_D7]",
+    "Answer_Options": "0=NO TO: Doctor did not mention it,1=Doctor did not mention it",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r6",
+    "Description": "D7r6: Worried about potential side effects for [pipe: S11b upper] - [pipe: Pipe_D7]",
+    "Answer_Options": "0=NO TO: Worried about potential side effects for [pipe: S11b upper],1=Worried about potential side effects for [pipe: S11b upper]",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r7",
+    "Description": "D7r7: Doctor said it wasn’t required - [pipe: Pipe_D7]",
+    "Answer_Options": "0=NO TO: Doctor said it wasn’t required,1=Doctor said it wasn’t required",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r8",
+    "Description": "D7r8: Doctor said we should wait - [pipe: Pipe_D7]",
+    "Answer_Options": "0=NO TO: Doctor said we should wait,1=Doctor said we should wait",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r9",
+    "Description": "D7r9: Financial concerns - [pipe: Pipe_D7]",
+    "Answer_Options": "0=NO TO: Financial concerns,1=Financial concerns",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r10",
+    "Description": "D7r10: [pipe: S11b upper] has strong fear of needles - [pipe: Pipe_D7]",
+    "Answer_Options": "0=NO TO: [pipe: S11b upper] has strong fear of needles,1=[pipe: S11b upper] has strong fear of needles",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r96",
+    "Description": "D7r96: Other: (Specify) - [pipe: Pipe_D7]",
+    "Answer_Options": "0=NO TO: Other: (Specify),1=Other: (Specify)",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r97",
+    "Description": "D7r97: Don’t know / can’t recall  - [pipe: Pipe_D7]",
+    "Answer_Options": "0=NO TO: Don’t know / can’t recall ,1=Don’t know / can’t recall ",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r96oe",
+    "Description": "D7r96oe: [pipe: Pipe_D7] - Other: (Specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D8r1",
+    "Description": "D8r1: Upcoming travel for [pipe: S11b upper] - What are the reasons why you decided that [pipe: S11b upper] should receive the meningitis (MenB) vaccine?",
+    "Answer_Options": "0=NO TO: Upcoming travel for [pipe: S11b upper],1=Upcoming travel for [pipe: S11b upper]",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r2",
+    "Description": "D8r2: [pipe: S11b upper] entering military - What are the reasons why you decided that [pipe: S11b upper] should receive the meningitis (MenB) vaccine?",
+    "Answer_Options": "0=NO TO: [pipe: S11b upper] entering military,1=[pipe: S11b upper] entering military",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r3",
+    "Description": "D8r3: [pipe: S11b upper] is college-bound - What are the reasons why you decided that [pipe: S11b upper] should receive the meningitis (MenB) vaccine?",
+    "Answer_Options": "0=NO TO: [pipe: S11b upper] is college-bound,1=[pipe: S11b upper] is college-bound",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r4",
+    "Description": "D8r4: Doctor’s recommendation - What are the reasons why you decided that [pipe: S11b upper] should receive the meningitis (MenB) vaccine?",
+    "Answer_Options": "0=NO TO: Doctor’s recommendation,1=Doctor’s recommendation",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r5",
+    "Description": "D8r5: School requirement - What are the reasons why you decided that [pipe: S11b upper] should receive the meningitis (MenB) vaccine?",
+    "Answer_Options": "0=NO TO: School requirement,1=School requirement",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r6",
+    "Description": "D8r6: Friends’/family’s recommendation - What are the reasons why you decided that [pipe: S11b upper] should receive the meningitis (MenB) vaccine?",
+    "Answer_Options": "0=NO TO: Friends’/family’s recommendation,1=Friends’/family’s recommendation",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r7",
+    "Description": "D8r7: For the welfare/protection of the community/society - What are the reasons why you decided that [pipe: S11b upper] should receive the meningitis (MenB) vaccine?",
+    "Answer_Options": "0=NO TO: For the welfare/protection of the community/society,1=For the welfare/protection of the community/society",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r8",
+    "Description": "D8r8: To protect [pipe: S11b upper] from meningitis and future health risks - What are the reasons why you decided that [pipe: S11b upper] should receive the meningitis (MenB) vaccine?",
+    "Answer_Options": "0=NO TO: To protect [pipe: S11b upper] from meningitis and future health risks,1=To protect [pipe: S11b upper] from meningitis and future health risks",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r9",
+    "Description": "D8r9: Centers for Disease Control (CDC) Guideline - What are the reasons why you decided that [pipe: S11b upper] should receive the meningitis (MenB) vaccine?",
+    "Answer_Options": "0=NO TO: Centers for Disease Control (CDC) Guideline,1=Centers for Disease Control (CDC) Guideline",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r96",
+    "Description": "D8r96: Other: (Specify) - What are the reasons why you decided that [pipe: S11b upper] should receive the meningitis (MenB) vaccine?",
+    "Answer_Options": "0=NO TO: Other: (Specify),1=Other: (Specify)",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r97",
+    "Description": "D8r97: Don’t know / can’t recall - What are the reasons why you decided that [pipe: S11b upper] should receive the meningitis (MenB) vaccine?",
+    "Answer_Options": "0=NO TO: Don’t know / can’t recall,1=Don’t know / can’t recall",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r96oe",
+    "Description": "D8r96oe: What are the reasons why you decided that [pipe: S11b upper] should receive the meningitis (MenB) vaccine? - Other: (Specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8br1",
+    "Description": "D8br1: Planning to but just haven’t yet - [pipe: Pipe_D8b]",
+    "Answer_Options": "0=NO TO: Planning to but just haven’t yet,1=Planning to but just haven’t yet",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br2",
+    "Description": "D8br2: Didn’t think it was important/relevant for [pipe: S11b upper] - [pipe: Pipe_D8b]",
+    "Answer_Options": "0=NO TO: Didn’t think it was important/relevant for [pipe: S11b upper],1=Didn’t think it was important/relevant for [pipe: S11b upper]",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br3",
+    "Description": "D8br3: Didn’t realize there was more than one injection - [pipe: Pipe_D8b]",
+    "Answer_Options": "0=NO TO: Didn’t realize there was more than one injection,1=Didn’t realize there was more than one injection",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br4",
+    "Description": "D8br4: Didn’t think meningitis was a health risk for [pipe: S11b upper] - [pipe: Pipe_D8b]",
+    "Answer_Options": "0=NO TO: Didn’t think meningitis was a health risk for [pipe: S11b upper],1=Didn’t think meningitis was a health risk for [pipe: S11b upper]",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br5",
+    "Description": "D8br5: Doctor did not mention it - [pipe: Pipe_D8b]",
+    "Answer_Options": "0=NO TO: Doctor did not mention it,1=Doctor did not mention it",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br6",
+    "Description": "D8br6: Worried about potential side effects for [pipe: S11b upper] - [pipe: Pipe_D8b]",
+    "Answer_Options": "0=NO TO: Worried about potential side effects for [pipe: S11b upper],1=Worried about potential side effects for [pipe: S11b upper]",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br7",
+    "Description": "D8br7: Didn’t realize there was a different meningitis vaccine - [pipe: Pipe_D8b]",
+    "Answer_Options": "0=NO TO: Didn’t realize there was a different meningitis vaccine,1=Didn’t realize there was a different meningitis vaccine",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br8",
+    "Description": "D8br8: Doctor said it wasn’t required - [pipe: Pipe_D8b]",
+    "Answer_Options": "0=NO TO: Doctor said it wasn’t required,1=Doctor said it wasn’t required",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br9",
+    "Description": "D8br9: Doctor said we should wait - [pipe: Pipe_D8b]",
+    "Answer_Options": "0=NO TO: Doctor said we should wait,1=Doctor said we should wait",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br10",
+    "Description": "D8br10: Financial concerns - [pipe: Pipe_D8b]",
+    "Answer_Options": "0=NO TO: Financial concerns,1=Financial concerns",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br11",
+    "Description": "D8br11: [pipe: S11b upper] has strong fear of needles - [pipe: Pipe_D8b]",
+    "Answer_Options": "0=NO TO: [pipe: S11b upper] has strong fear of needles,1=[pipe: S11b upper] has strong fear of needles",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br96",
+    "Description": "D8br96: Other: (Specify) - [pipe: Pipe_D8b]",
+    "Answer_Options": "0=NO TO: Other: (Specify),1=Other: (Specify)",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br97",
+    "Description": "D8br97: Don’t know / can’t recall - [pipe: Pipe_D8b]",
+    "Answer_Options": "0=NO TO: Don’t know / can’t recall,1=Don’t know / can’t recall",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br96oe",
+    "Description": "D8br96oe: [pipe: Pipe_D8b] - Other: (Specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "E1",
+    "Description": "E1: How familiar are you with multivalent vaccines (e.g., vaccines that protect against multiple types of a disease – such as the HPV vaccine that protects against 9 strains of the virus) for adolescents?",
+    "Answer_Options": "0=Not at allFamiliar 0,1=1,2=2,3=3,4=4,5=Somewhat Familiar 5,6=6,7=7,8=8,9=9,10=Extremely Familiar 10"
+  },
+  {
+    "Column": "E3",
+    "Description": "E3: Generally speaking, if offered a choice, which type of vaccine do you prefer for [pipe: S11b upper], regardless of the disease it protects against?",
+    "Answer_Options": "1=Single vaccine that protects against one strain of disease,2=Multivalent vaccine that protects against more than one strain of disease,3=I do not have a preference"
+  },
+  {
+    "Column": "E4",
+    "Description": "E4: Before today, how familiar were you with the details about meningitis vaccination?",
+    "Answer_Options": "0=Not at allFamiliar 0,1=1,2=2,3=3,4=4,5=Somewhat Familiar 5,6=6,7=7,8=8,9=9,10=Extremely Familiar 10"
+  },
+  {
+    "Column": "E4b",
+    "Description": "E4b: In the context of meningitis vaccination, how familiar are you with the term “routine use”?",
+    "Answer_Options": "0=Not at allFamiliar 0,1=1,2=2,3=3,4=4,5=Somewhat Familiar 5,6=6,7=7,8=8,9=9,10=Extremely Familiar 10"
+  },
+  {
+    "Column": "E4c",
+    "Description": "E4c: In the context of meningitis vaccination, how familiar are you with the term “shared clinical decision-making” (SCDM)?",
+    "Answer_Options": "0=Not at allFamiliar 0,1=1,2=2,3=3,4=4,5=Somewhat Familiar 5,6=6,7=7,8=8,9=9,10=Extremely Familiar 10"
+  },
+  {
+    "Column": "E5",
+    "Description": "E5: Based on the information you just reviewed, please rate your overall impression of Vaccine X.",
+    "Answer_Options": "1=Extremely Unfavorable,2=Unfavorable,3=Neutral,4=Favorable,5=Extremely Favorable"
+  },
+  {
+    "Column": "E5ar1",
+    "Description": "E5ar1: Fewer injections needed - Why are you [pipe: E5] toward Vaccine X?",
+    "Answer_Options": "0=NO TO: Fewer injections needed,1=Fewer injections needed",
+    "ParentQuestion": "E5a"
+  },
+  {
+    "Column": "E5ar2",
+    "Description": "E5ar2: Fewer visits to the doctor needed - Why are you [pipe: E5] toward Vaccine X?",
+    "Answer_Options": "0=NO TO: Fewer visits to the doctor needed,1=Fewer visits to the doctor needed",
+    "ParentQuestion": "E5a"
+  },
+  {
+    "Column": "E5ar3",
+    "Description": "E5ar3: I am not interested in/do not want [pipe: S11b upper] to receive a multivalent vaccine that covers multiple strains in a single vaccine - Why are you [pipe: E5] toward Vaccine X?",
+    "Answer_Options": "0=NO TO: I am not interested in/do not want [pipe: S11b upper] to receive a multivalent vaccine that covers multiple strai,1=I am not interested in/do not want [pipe: S11b upper] to receive a multivalent vaccine that covers multiple strains in a",
+    "ParentQuestion": "E5a"
+  },
+  {
+    "Column": "E5ar4",
+    "Description": "E5ar4: I am indifferent to which vaccine [pipe: S11b upper] receives as long as [pipe: S11b upper] is protected from meningitis - Why are you [pipe: E5] toward Vaccine X?",
+    "Answer_Options": "0=NO TO: I am indifferent to which vaccine [pipe: S11b upper] receives as long as [pipe: S11b upper] is protected from men,1=I am indifferent to which vaccine [pipe: S11b upper] receives as long as [pipe: S11b upper] is protected from meningitis",
+    "ParentQuestion": "E5a"
+  },
+  {
+    "Column": "E5ar5",
+    "Description": "E5ar5: I do not want [pipe: S11b upper] to receive a vaccine that is new to the market - Why are you [pipe: E5] toward Vaccine X?",
+    "Answer_Options": "0=NO TO: I do not want [pipe: S11b upper] to receive a vaccine that is new to the market,1=I do not want [pipe: S11b upper] to receive a vaccine that is new to the market",
+    "ParentQuestion": "E5a"
+  },
+  {
+    "Column": "E5b",
+    "Description": "E5b: How likely are you to ask [pipe: S11b upper]‘s doctor for Vaccine X?",
+    "Answer_Options": "0=Not at all Likely 0,1=1,2=2,3=3,4=4,5=Somewhat Likely 5,6=6,7=7,8=8,9=9,10=Extremely Likely 10"
+  },
+  {
+    "Column": "E6",
+    "Description": "E6: How likely are you to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=Not at all Likely 0,1=1,2=2,3=3,4=4,5=Somewhat Likely 5,6=6,7=7,8=8,9=9,10=Extremely Likely 10"
+  },
+  {
+    "Column": "E7r1",
+    "Description": "E7r1: Vaccine X is too new - What are the reasons you are unlikely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Vaccine X is too new,1=Vaccine X is too new",
+    "ParentQuestion": "E7"
+  },
+  {
+    "Column": "E7r2",
+    "Description": "E7r2: Vaccine X is too risky - What are the reasons you are unlikely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Vaccine X is too risky,1=Vaccine X is too risky",
+    "ParentQuestion": "E7"
+  },
+  {
+    "Column": "E7r3",
+    "Description": "E7r3: Don’t think Vaccine X is important/relevant for [pipe: S11b upper] - What are the reasons you are unlikely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Don’t think Vaccine X is important/relevant for [pipe: S11b upper],1=Don’t think Vaccine X is important/relevant for [pipe: S11b upper]",
+    "ParentQuestion": "E7"
+  },
+  {
+    "Column": "E7r4",
+    "Description": "E7r4: Vaccine X’s dosing/administration schedules seems like a hassle - What are the reasons you are unlikely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Vaccine X’s dosing/administration schedules seems like a hassle,1=Vaccine X’s dosing/administration schedules seems like a hassle",
+    "ParentQuestion": "E7"
+  },
+  {
+    "Column": "E7r5",
+    "Description": "E7r5: Don’t think meningitis is a health risk for [pipe: S11b upper] - What are the reasons you are unlikely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Don’t think meningitis is a health risk for [pipe: S11b upper],1=Don’t think meningitis is a health risk for [pipe: S11b upper]",
+    "ParentQuestion": "E7"
+  },
+  {
+    "Column": "E7r6",
+    "Description": "E7r6: Worried about Vaccine X’s potential side effects for [pipe: S11b upper] - What are the reasons you are unlikely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Worried about Vaccine X’s potential side effects for [pipe: S11b upper],1=Worried about Vaccine X’s potential side effects for [pipe: S11b upper]",
+    "ParentQuestion": "E7"
+  },
+  {
+    "Column": "E7r7",
+    "Description": "E7r7: Prefer current vaccines available - What are the reasons you are unlikely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Prefer current vaccines available,1=Prefer current vaccines available",
+    "ParentQuestion": "E7"
+  },
+  {
+    "Column": "E7r8",
+    "Description": "E7r8: Not interested in a multivalent vaccine - What are the reasons you are unlikely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Not interested in a multivalent vaccine,1=Not interested in a multivalent vaccine",
+    "ParentQuestion": "E7"
+  },
+  {
+    "Column": "E7r96",
+    "Description": "E7r96: Other: - What are the reasons you are unlikely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Other:,1=Other:",
+    "ParentQuestion": "E7"
+  },
+  {
+    "Column": "E7r97",
+    "Description": "E7r97: Don’t know - What are the reasons you are unlikely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Don’t know,1=Don’t know",
+    "ParentQuestion": "E7"
+  },
+  {
+    "Column": "E7r96oe",
+    "Description": "E7r96oe: What are the reasons you are unlikely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X? - Other:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E7"
+  },
+  {
+    "Column": "E8r1",
+    "Description": "E8r1: Vaccine X is efficacious - What are the reasons you are likely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Vaccine X is efficacious,1=Vaccine X is efficacious",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r2",
+    "Description": "E8r2: [pipe: S11b upper] is entering the military - What are the reasons you are likely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: [pipe: S11b upper] is entering the military,1=[pipe: S11b upper] is entering the military",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r3",
+    "Description": "E8r3: [pipe: S11b upper] is college-bound - What are the reasons you are likely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: [pipe: S11b upper] is college-bound,1=[pipe: S11b upper] is college-bound",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r4",
+    "Description": "E8r4: For the welfare/protection of the community/society - What are the reasons you are likely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: For the welfare/protection of the community/society,1=For the welfare/protection of the community/society",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r5",
+    "Description": "E8r5: To protect [pipe: S11b upper] from meningitis and future health risks - What are the reasons you are likely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: To protect [pipe: S11b upper] from meningitis and future health risks,1=To protect [pipe: S11b upper] from meningitis and future health risks",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r6",
+    "Description": "E8r6: Prefer one vaccine instead of two separate vaccines - What are the reasons you are likely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Prefer one vaccine instead of two separate vaccines,1=Prefer one vaccine instead of two separate vaccines",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r7",
+    "Description": "E8r7: Prefer fewer injections overall - What are the reasons you are likely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Prefer fewer injections overall,1=Prefer fewer injections overall",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r8",
+    "Description": "E8r8: Because my doctor recommended it and I usually adhere to his/her vaccine recommendations - What are the reasons you are likely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Because my doctor recommended it and I usually adhere to his/her vaccine recommendations,1=Because my doctor recommended it and I usually adhere to his/her vaccine recommendations",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r96",
+    "Description": "E8r96: Other: - What are the reasons you are likely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Other:,1=Other:",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r97",
+    "Description": "E8r97: Don’t know - What are the reasons you are likely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X?",
+    "Answer_Options": "0=NO TO: Don’t know,1=Don’t know",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r96oe",
+    "Description": "E8r96oe: What are the reasons you are likely to accept a recommendation from [pipe: S11b upper]’s doctor for Vaccine X? - Other:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8bx1r1",
+    "Description": "E8bx1r1: I prefer Vaccine X due to the convenience of [pipe: S11b upper] getting fewer injections total (3 injections of Vaccine X vs. 2 injections of ACWY and 2 injections of B vaccines) vs. the current approach with separate vaccines - Please read the p",
+    "Answer_Options": "1=Much more 1,2=More 2,3=Equal 3,4=More 4,5=Much more 5",
+    "ParentQuestion": "E8bx1"
+  },
+  {
+    "Column": "E8bx1r2",
+    "Description": "E8bx1r2: I expect Vaccine X to make the conversations with [pipe: S11b upper]’s doctor about which meningitis vaccine(s) to receive easier - Please read the pair of statements below and indicate which one you agree with more.",
+    "Answer_Options": "1=Much more 1,2=More 2,3=Equal 3,4=More 4,5=Much more 5",
+    "ParentQuestion": "E8bx1"
+  },
+  {
+    "Column": "E8bx2r1",
+    "Description": "E8bx2r1: $ {res.E8ba_right1} - Please read the pair of statements below and indicate which one you agree with more.",
+    "Answer_Options": "1=Much more 1,2=More 2,3=Equal 3,4=More 4,5=Much more 5",
+    "ParentQuestion": "E8bx2"
+  },
+  {
+    "Column": "E8bx2r2",
+    "Description": "E8bx2r2: $ {res.E8bb_right2} - Please read the pair of statements below and indicate which one you agree with more.",
+    "Answer_Options": "1=Much more 1,2=More 2,3=Equal 3,4=More 4,5=Much more 5",
+    "ParentQuestion": "E8bx2"
+  },
+  {
+    "Column": "E8br1",
+    "Description": "E8br1: I prefer Vaccine X due to the convenience of [pipe: S11b upper] getting fewer injections total (3 injections of Vaccine X vs. 2 injections of ACWY and 2 injections of B vaccines) vs. the current approach with separate vaccines - Please read the pai",
+    "Answer_Options": "1=Much more 1,2=More 2,3=Equal 3,4=More 4,5=Much more 5",
+    "ParentQuestion": "E8b"
+  },
+  {
+    "Column": "E8br2",
+    "Description": "E8br2: I expect Vaccine X to make the conversations with [pipe: S11b upper]’s doctor about which meningitis vaccine(s) to receive easier - Please read the pair of statements below and indicate which one you agree with more.",
+    "Answer_Options": "1=Much more 1,2=More 2,3=Equal 3,4=More 4,5=Much more 5",
+    "ParentQuestion": "E8b"
+  },
+  {
+    "Column": "E9",
+    "Description": "E9: If, instead of receiving 3 total injections of Vaccine X (1 injection at 11 years old and 2 injections at 16 years old), how much more appealing would Vaccine X be if it only required 2 total injections (1 injection at 11 years old and 1 injection at",
+    "Answer_Options": "1=No more appealing,2=Somewhat more appealing,3=Much more appealing"
+  },
+  {
+    "Column": "E10",
+    "Description": "E10: If there was a program that, for every adolescent who received Vaccine X, the pharmaceutical manufacturer would give another Vaccine X to an adolescent in need or without the means to receive it – how would that impact your likelihood to request th",
+    "Answer_Options": "1=Significantly Less Likely to Request,2=Somewhat Less Likely to Request,3=No Impact,4=Somewhat More Likely to Request,5=Significantly More Likely to Request"
+  },
+  {
+    "Column": "E10a",
+    "Description": "E10a: If your pediatrician/family doctor did not carry the brand associated with this program, how motivated would you be to find a different provider (e.g., doctor or pharmacist) that carried that specific vaccine brand?",
+    "Answer_Options": "1=Very Unmotivated,2=Somewhat Unmotivated,3=Neutral,4=Somewhat Motivated,5=Very Motivated"
+  },
+  {
+    "Column": "E10br1",
+    "Description": "E10br1: Distributed to adolescent in need in US - Regardless of how you feel about a program like this, what would be your top 3 preferences for how the donated vaccine is distributed with this program? Please click or drag to rank your TOP 3, starting wi",
+    "Answer_Options": "1=1,2=2,3=3",
+    "ParentQuestion": "E10b"
+  },
+  {
+    "Column": "E10br2",
+    "Description": "E10br2: Distributed to adolescent in need in global country outside US (e.g., Africa) - Regardless of how you feel about a program like this, what would be your top 3 preferences for how the donated vaccine is distributed with this program? Please click o",
+    "Answer_Options": "1=1,2=2,3=3",
+    "ParentQuestion": "E10b"
+  },
+  {
+    "Column": "E10br3",
+    "Description": "E10br3: Able to choose the specific adolescent in need who would receive Vaccine X - Regardless of how you feel about a program like this, what would be your top 3 preferences for how the donated vaccine is distributed with this program? Please click or d",
+    "Answer_Options": "1=1,2=2,3=3",
+    "ParentQuestion": "E10b"
+  },
+  {
+    "Column": "E10br4",
+    "Description": "E10br4: Able to choose the specific country of the adolescent in need who would receive Vaccine X - Regardless of how you feel about a program like this, what would be your top 3 preferences for how the donated vaccine is distributed with this program? Pl",
+    "Answer_Options": "1=1,2=2,3=3",
+    "ParentQuestion": "E10b"
+  },
+  {
+    "Column": "noanswerE10b_r5",
+    "Description": "noanswerE10b_r5: Regardless of how you feel about a program like this, what would be your top 3 preferences for how the donated vaccine is distributed with this program? Please click or drag to rank your TOP 3, starting with your first preference, for up",
+    "Answer_Options": "0=NO TO: Regardless of how you feel about a program like this, what would be your top 3 preferences for how the donated va,1=Regardless of how you feel about a program like this, what would be your top 3 preferences for how the donated vaccine i",
+    "ParentQuestion": "noanswerE10b_"
+  },
+  {
+    "Column": "E11r1",
+    "Description": "E11r1: The child in your care aged: $ {hUniqueChildAge.r1.ival}",
+    "Answer_Options": "1=Has received/will receive all of the vaccinations recommended by the pediatrician or family doctor, either on the recomm,2=Has received/will receive most, but not all, of the vaccinations recommended by the pediatrician or family doctor,3=Has received/will receive a few, but not all, of the vaccinations recommended by the pediatrician or family doctor,4=Has not received/will not receive any of the vaccinations recommended by the pediatrician or family doctor,5=I am not sure about the status of vaccinations for the other child(ren) I care for",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r2",
+    "Description": "E11r2: The child in your care aged: $ {hUniqueChildAge.r2.ival}",
+    "Answer_Options": "1=Has received/will receive all of the vaccinations recommended by the pediatrician or family doctor, either on the recomm,2=Has received/will receive most, but not all, of the vaccinations recommended by the pediatrician or family doctor,3=Has received/will receive a few, but not all, of the vaccinations recommended by the pediatrician or family doctor,4=Has not received/will not receive any of the vaccinations recommended by the pediatrician or family doctor,5=I am not sure about the status of vaccinations for the other child(ren) I care for",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r3",
+    "Description": "E11r3: The child in your care aged: $ {hUniqueChildAge.r3.ival}",
+    "Answer_Options": "1=Has received/will receive all of the vaccinations recommended by the pediatrician or family doctor, either on the recomm,2=Has received/will receive most, but not all, of the vaccinations recommended by the pediatrician or family doctor,3=Has received/will receive a few, but not all, of the vaccinations recommended by the pediatrician or family doctor,4=Has not received/will not receive any of the vaccinations recommended by the pediatrician or family doctor,5=I am not sure about the status of vaccinations for the other child(ren) I care for",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r4",
+    "Description": "E11r4: The child in your care aged: $ {hUniqueChildAge.r4.ival}",
+    "Answer_Options": "1=Has received/will receive all of the vaccinations recommended by the pediatrician or family doctor, either on the recomm,2=Has received/will receive most, but not all, of the vaccinations recommended by the pediatrician or family doctor,3=Has received/will receive a few, but not all, of the vaccinations recommended by the pediatrician or family doctor,4=Has not received/will not receive any of the vaccinations recommended by the pediatrician or family doctor,5=I am not sure about the status of vaccinations for the other child(ren) I care for",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r5",
+    "Description": "E11r5: The child in your care aged: $ {hUniqueChildAge.r5.ival}",
+    "Answer_Options": "1=Has received/will receive all of the vaccinations recommended by the pediatrician or family doctor, either on the recomm,2=Has received/will receive most, but not all, of the vaccinations recommended by the pediatrician or family doctor,3=Has received/will receive a few, but not all, of the vaccinations recommended by the pediatrician or family doctor,4=Has not received/will not receive any of the vaccinations recommended by the pediatrician or family doctor,5=I am not sure about the status of vaccinations for the other child(ren) I care for",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r6",
+    "Description": "E11r6: The child in your care aged: $ {hUniqueChildAge.r6.ival}",
+    "Answer_Options": "1=Has received/will receive all of the vaccinations recommended by the pediatrician or family doctor, either on the recomm,2=Has received/will receive most, but not all, of the vaccinations recommended by the pediatrician or family doctor,3=Has received/will receive a few, but not all, of the vaccinations recommended by the pediatrician or family doctor,4=Has not received/will not receive any of the vaccinations recommended by the pediatrician or family doctor,5=I am not sure about the status of vaccinations for the other child(ren) I care for",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r7",
+    "Description": "E11r7: The child in your care aged: $ {hUniqueChildAge.r7.ival}",
+    "Answer_Options": "1=Has received/will receive all of the vaccinations recommended by the pediatrician or family doctor, either on the recomm,2=Has received/will receive most, but not all, of the vaccinations recommended by the pediatrician or family doctor,3=Has received/will receive a few, but not all, of the vaccinations recommended by the pediatrician or family doctor,4=Has not received/will not receive any of the vaccinations recommended by the pediatrician or family doctor,5=I am not sure about the status of vaccinations for the other child(ren) I care for",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r8",
+    "Description": "E11r8: The child in your care aged: $ {hUniqueChildAge.r8.ival}",
+    "Answer_Options": "1=Has received/will receive all of the vaccinations recommended by the pediatrician or family doctor, either on the recomm,2=Has received/will receive most, but not all, of the vaccinations recommended by the pediatrician or family doctor,3=Has received/will receive a few, but not all, of the vaccinations recommended by the pediatrician or family doctor,4=Has not received/will not receive any of the vaccinations recommended by the pediatrician or family doctor,5=I am not sure about the status of vaccinations for the other child(ren) I care for",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r9",
+    "Description": "E11r9: The child in your care aged: $ {hUniqueChildAge.r9.ival}",
+    "Answer_Options": "1=Has received/will receive all of the vaccinations recommended by the pediatrician or family doctor, either on the recomm,2=Has received/will receive most, but not all, of the vaccinations recommended by the pediatrician or family doctor,3=Has received/will receive a few, but not all, of the vaccinations recommended by the pediatrician or family doctor,4=Has not received/will not receive any of the vaccinations recommended by the pediatrician or family doctor,5=I am not sure about the status of vaccinations for the other child(ren) I care for",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r10",
+    "Description": "E11r10: The child in your care aged: $ {hUniqueChildAge.r10.ival}",
+    "Answer_Options": "1=Has received/will receive all of the vaccinations recommended by the pediatrician or family doctor, either on the recomm,2=Has received/will receive most, but not all, of the vaccinations recommended by the pediatrician or family doctor,3=Has received/will receive a few, but not all, of the vaccinations recommended by the pediatrician or family doctor,4=Has not received/will not receive any of the vaccinations recommended by the pediatrician or family doctor,5=I am not sure about the status of vaccinations for the other child(ren) I care for",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E12_1r1",
+    "Description": "E12_1r1: Meningitis (MenACWY) Vaccine (e.g., Menactra, Menveo, MenQuadfi)This vaccine is typically required by most schools - Specifically, has he/she who is Child 1: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_1"
+  },
+  {
+    "Column": "E12_1r2",
+    "Description": "E12_1r2: Meningitis (MenB) Vaccine (e.g., Bexsero, Trumenba) Vaccine - Specifically, has he/she who is Child 1: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_1"
+  },
+  {
+    "Column": "E12_2r1",
+    "Description": "E12_2r1: Meningitis (MenACWY) Vaccine (e.g., Menactra, Menveo, MenQuadfi)This vaccine is typically required by most schools - Specifically, has he/she who is Child 2: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_2"
+  },
+  {
+    "Column": "E12_2r2",
+    "Description": "E12_2r2: Meningitis (MenB) Vaccine (e.g., Bexsero, Trumenba) Vaccine - Specifically, has he/she who is Child 2: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_2"
+  },
+  {
+    "Column": "E12_3r1",
+    "Description": "E12_3r1: Meningitis (MenACWY) Vaccine (e.g., Menactra, Menveo, MenQuadfi)This vaccine is typically required by most schools - Specifically, has he/she who is Child 3: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_3"
+  },
+  {
+    "Column": "E12_3r2",
+    "Description": "E12_3r2: Meningitis (MenB) Vaccine (e.g., Bexsero, Trumenba) Vaccine - Specifically, has he/she who is Child 3: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_3"
+  },
+  {
+    "Column": "E12_4r1",
+    "Description": "E12_4r1: Meningitis (MenACWY) Vaccine (e.g., Menactra, Menveo, MenQuadfi)This vaccine is typically required by most schools - Specifically, has he/she who is Child 4: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_4"
+  },
+  {
+    "Column": "E12_4r2",
+    "Description": "E12_4r2: Meningitis (MenB) Vaccine (e.g., Bexsero, Trumenba) Vaccine - Specifically, has he/she who is Child 4: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_4"
+  },
+  {
+    "Column": "E12_5r1",
+    "Description": "E12_5r1: Meningitis (MenACWY) Vaccine (e.g., Menactra, Menveo, MenQuadfi)This vaccine is typically required by most schools - Specifically, has he/she who is Child 5: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_5"
+  },
+  {
+    "Column": "E12_5r2",
+    "Description": "E12_5r2: Meningitis (MenB) Vaccine (e.g., Bexsero, Trumenba) Vaccine - Specifically, has he/she who is Child 5: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_5"
+  },
+  {
+    "Column": "E12_6r1",
+    "Description": "E12_6r1: Meningitis (MenACWY) Vaccine (e.g., Menactra, Menveo, MenQuadfi)This vaccine is typically required by most schools - Specifically, has he/she who is Child 6: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_6"
+  },
+  {
+    "Column": "E12_6r2",
+    "Description": "E12_6r2: Meningitis (MenB) Vaccine (e.g., Bexsero, Trumenba) Vaccine - Specifically, has he/she who is Child 6: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_6"
+  },
+  {
+    "Column": "E12_7r1",
+    "Description": "E12_7r1: Meningitis (MenACWY) Vaccine (e.g., Menactra, Menveo, MenQuadfi)This vaccine is typically required by most schools - Specifically, has he/she who is Child 7: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_7"
+  },
+  {
+    "Column": "E12_7r2",
+    "Description": "E12_7r2: Meningitis (MenB) Vaccine (e.g., Bexsero, Trumenba) Vaccine - Specifically, has he/she who is Child 7: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_7"
+  },
+  {
+    "Column": "E12_8r1",
+    "Description": "E12_8r1: Meningitis (MenACWY) Vaccine (e.g., Menactra, Menveo, MenQuadfi)This vaccine is typically required by most schools - Specifically, has he/she who is Child 8: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_8"
+  },
+  {
+    "Column": "E12_8r2",
+    "Description": "E12_8r2: Meningitis (MenB) Vaccine (e.g., Bexsero, Trumenba) Vaccine - Specifically, has he/she who is Child 8: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_8"
+  },
+  {
+    "Column": "E12_9r1",
+    "Description": "E12_9r1: Meningitis (MenACWY) Vaccine (e.g., Menactra, Menveo, MenQuadfi)This vaccine is typically required by most schools - Specifically, has he/she who is Child 9: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_9"
+  },
+  {
+    "Column": "E12_9r2",
+    "Description": "E12_9r2: Meningitis (MenB) Vaccine (e.g., Bexsero, Trumenba) Vaccine - Specifically, has he/she who is Child 9: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_9"
+  },
+  {
+    "Column": "E12_10r1",
+    "Description": "E12_10r1: Meningitis (MenACWY) Vaccine (e.g., Menactra, Menveo, MenQuadfi)This vaccine is typically required by most schools - Specifically, has he/she who is Child 10: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_10"
+  },
+  {
+    "Column": "E12_10r2",
+    "Description": "E12_10r2: Meningitis (MenB) Vaccine (e.g., Bexsero, Trumenba) Vaccine - Specifically, has he/she who is Child 10: aged gotten the following meningitis vaccines?",
+    "Answer_Options": "1=Has Received One Injection,2=Has Received Additional Injections,3=Has Not Received Any Injections,4=Not Sure",
+    "ParentQuestion": "E12_10"
+  },
+  {
+    "Column": "F0ar1",
+    "Description": "F0ar1: [rel Pfizer.png] - How familiar are you with the following pharmaceutical companies?",
+    "Answer_Options": "1=Never heard Of,2=Heard of and know a little about their products / vaccines,3=Heard of and know some information about their products / vaccines,4=Heard of and know a lot about their products / vaccines",
+    "ParentQuestion": "F0a"
+  },
+  {
+    "Column": "F0ar2",
+    "Description": "F0ar2: [rel Sanofi.png] - How familiar are you with the following pharmaceutical companies?",
+    "Answer_Options": "1=Never heard Of,2=Heard of and know a little about their products / vaccines,3=Heard of and know some information about their products / vaccines,4=Heard of and know a lot about their products / vaccines",
+    "ParentQuestion": "F0a"
+  },
+  {
+    "Column": "F0ar3",
+    "Description": "F0ar3: [rel GlaxoSmithKline_GSK.png] - How familiar are you with the following pharmaceutical companies?",
+    "Answer_Options": "1=Never heard Of,2=Heard of and know a little about their products / vaccines,3=Heard of and know some information about their products / vaccines,4=Heard of and know a lot about their products / vaccines",
+    "ParentQuestion": "F0a"
+  },
+  {
+    "Column": "F0ar4",
+    "Description": "F0ar4: [rel Merck.png] - How familiar are you with the following pharmaceutical companies?",
+    "Answer_Options": "1=Never heard Of,2=Heard of and know a little about their products / vaccines,3=Heard of and know some information about their products / vaccines,4=Heard of and know a lot about their products / vaccines",
+    "ParentQuestion": "F0a"
+  },
+  {
+    "Column": "F0br1",
+    "Description": "F0br1: [rel Pfizer.png] - How do you feel about each of the following pharmaceutical companies?",
+    "Answer_Options": "0=Extremely Negative 0,1=1,2=2,3=3,4=4,5=Neutral 5,6=6,7=7,8=8,9=9,10=Extremely Positive 10",
+    "ParentQuestion": "F0b"
+  },
+  {
+    "Column": "F0br2",
+    "Description": "F0br2: [rel Sanofi.png] - How do you feel about each of the following pharmaceutical companies?",
+    "Answer_Options": "0=Extremely Negative 0,1=1,2=2,3=3,4=4,5=Neutral 5,6=6,7=7,8=8,9=9,10=Extremely Positive 10",
+    "ParentQuestion": "F0b"
+  },
+  {
+    "Column": "F0br3",
+    "Description": "F0br3: [rel GlaxoSmithKline_GSK.png] - How do you feel about each of the following pharmaceutical companies?",
+    "Answer_Options": "0=Extremely Negative 0,1=1,2=2,3=3,4=4,5=Neutral 5,6=6,7=7,8=8,9=9,10=Extremely Positive 10",
+    "ParentQuestion": "F0b"
+  },
+  {
+    "Column": "F0br4",
+    "Description": "F0br4: [rel Merck.png] - How do you feel about each of the following pharmaceutical companies?",
+    "Answer_Options": "0=Extremely Negative 0,1=1,2=2,3=3,4=4,5=Neutral 5,6=6,7=7,8=8,9=9,10=Extremely Positive 10",
+    "ParentQuestion": "F0b"
+  },
+  {
+    "Column": "F1r1",
+    "Description": "F1r1: Health apps (e.g., exercise or health trackers, weight loss regimens, portals to message doctors/view lab results, manage prescriptions, etc.) - Which of the following sources, if any, do you typically use to learn about health-related information f",
+    "Answer_Options": "0=NO TO: Health apps (e.g., exercise or health trackers, weight loss regimens, portals to message doctors/view lab results,1=Health apps (e.g., exercise or health trackers, weight loss regimens, portals to message doctors/view lab results, manag",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1r2",
+    "Description": "F1r2: Internet (e.g., Google) - Which of the following sources, if any, do you typically use to learn about health-related information for yourself or adolescents?",
+    "Answer_Options": "0=NO TO: Internet (e.g., Google),1=Internet (e.g., Google)",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1r3",
+    "Description": "F1r3: Government and Health authority resources and information - Which of the following sources, if any, do you typically use to learn about health-related information for yourself or adolescents?",
+    "Answer_Options": "0=NO TO: Government and Health authority resources and information,1=Government and Health authority resources and information",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1r4",
+    "Description": "F1r4: Social Media (e.g., Facebook, Instagram, YouTube, TikTok, Twitter, online forums, support groups) - Which of the following sources, if any, do you typically use to learn about health-related information for yourself or adolescents?",
+    "Answer_Options": "0=NO TO: Social Media (e.g., Facebook, Instagram, YouTube, TikTok, Twitter, online forums, support groups),1=Social Media (e.g., Facebook, Instagram, YouTube, TikTok, Twitter, online forums, support groups)",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1r5",
+    "Description": "F1r5: Blogs - Which of the following sources, if any, do you typically use to learn about health-related information for yourself or adolescents?",
+    "Answer_Options": "0=NO TO: Blogs,1=Blogs",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1r6",
+    "Description": "F1r6: Newspapers - Which of the following sources, if any, do you typically use to learn about health-related information for yourself or adolescents?",
+    "Answer_Options": "0=NO TO: Newspapers,1=Newspapers",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1r7",
+    "Description": "F1r7: Magazines - Which of the following sources, if any, do you typically use to learn about health-related information for yourself or adolescents?",
+    "Answer_Options": "0=NO TO: Magazines,1=Magazines",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1r8",
+    "Description": "F1r8: Medical journals - Which of the following sources, if any, do you typically use to learn about health-related information for yourself or adolescents?",
+    "Answer_Options": "0=NO TO: Medical journals,1=Medical journals",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1r9",
+    "Description": "F1r9: TV - Which of the following sources, if any, do you typically use to learn about health-related information for yourself or adolescents?",
+    "Answer_Options": "0=NO TO: TV,1=TV",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1r10",
+    "Description": "F1r10: Online video - Which of the following sources, if any, do you typically use to learn about health-related information for yourself or adolescents?",
+    "Answer_Options": "0=NO TO: Online video,1=Online video",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1r11",
+    "Description": "F1r11: Brochures/pamphlets from doctor's office - Which of the following sources, if any, do you typically use to learn about health-related information for yourself or adolescents?",
+    "Answer_Options": "0=NO TO: Brochures/pamphlets from doctor's office,1=Brochures/pamphlets from doctor's office",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1r99",
+    "Description": "F1r99: None of the above - Which of the following sources, if any, do you typically use to learn about health-related information for yourself or adolescents?",
+    "Answer_Options": "0=NO TO: None of the above,1=None of the above",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1br1",
+    "Description": "F1br1: Stay active / exercise - You mentioned that you use health apps to learn about health-related information for yourself or adolescents. How often do you use health apps for each of the following?",
+    "Answer_Options": "1=Never,2=Less than once a month,3=At least once a month,4=A few times a week,5=Daily",
+    "ParentQuestion": "F1b"
+  },
+  {
+    "Column": "F1br2",
+    "Description": "F1br2: Message doctor, view lab results, and/or manage prescriptions - You mentioned that you use health apps to learn about health-related information for yourself or adolescents. How often do you use health apps for each of the following?",
+    "Answer_Options": "1=Never,2=Less than once a month,3=At least once a month,4=A few times a week,5=Daily",
+    "ParentQuestion": "F1b"
+  },
+  {
+    "Column": "F1br3",
+    "Description": "F1br3: Keep up to date on latest news about health or a specific condition - You mentioned that you use health apps to learn about health-related information for yourself or adolescents. How often do you use health apps for each of the following?",
+    "Answer_Options": "1=Never,2=Less than once a month,3=At least once a month,4=A few times a week,5=Daily",
+    "ParentQuestion": "F1b"
+  },
+  {
+    "Column": "F1br4",
+    "Description": "F1br4: Keep up to date on latest news about vaccines - You mentioned that you use health apps to learn about health-related information for yourself or adolescents. How often do you use health apps for each of the following?",
+    "Answer_Options": "1=Never,2=Less than once a month,3=At least once a month,4=A few times a week,5=Daily",
+    "ParentQuestion": "F1b"
+  },
+  {
+    "Column": "F1br5",
+    "Description": "F1br5: Find a doctor - You mentioned that you use health apps to learn about health-related information for yourself or adolescents. How often do you use health apps for each of the following?",
+    "Answer_Options": "1=Never,2=Less than once a month,3=At least once a month,4=A few times a week,5=Daily",
+    "ParentQuestion": "F1b"
+  },
+  {
+    "Column": "F1br6",
+    "Description": "F1br6: Find a pharmacy that carries vaccines - You mentioned that you use health apps to learn about health-related information for yourself or adolescents. How often do you use health apps for each of the following?",
+    "Answer_Options": "1=Never,2=Less than once a month,3=At least once a month,4=A few times a week,5=Daily",
+    "ParentQuestion": "F1b"
+  },
+  {
+    "Column": "F2r1",
+    "Description": "F2r1: Health apps (e.g., exercise or health trackers, weight loss regimens, portals to message doctors/view lab results, manage prescriptions, etc.) - Where have you seen or heard about information specifically about meningitis vaccination?",
+    "Answer_Options": "0=NO TO: Health apps (e.g., exercise or health trackers, weight loss regimens, portals to message doctors/view lab results,1=Health apps (e.g., exercise or health trackers, weight loss regimens, portals to message doctors/view lab results, manag",
+    "ParentQuestion": "F2"
+  },
+  {
+    "Column": "F2r2",
+    "Description": "F2r2: Internet (e.g., Google) - Where have you seen or heard about information specifically about meningitis vaccination?",
+    "Answer_Options": "0=NO TO: Internet (e.g., Google),1=Internet (e.g., Google)",
+    "ParentQuestion": "F2"
+  },
+  {
+    "Column": "F2r3",
+    "Description": "F2r3: Government and Health authority resources and information - Where have you seen or heard about information specifically about meningitis vaccination?",
+    "Answer_Options": "0=NO TO: Government and Health authority resources and information,1=Government and Health authority resources and information",
+    "ParentQuestion": "F2"
+  },
+  {
+    "Column": "F2r4",
+    "Description": "F2r4: Social Media (e.g., Facebook, Instagram, YouTube, TikTok, Twitter, online forums, support groups) - Where have you seen or heard about information specifically about meningitis vaccination?",
+    "Answer_Options": "0=NO TO: Social Media (e.g., Facebook, Instagram, YouTube, TikTok, Twitter, online forums, support groups),1=Social Media (e.g., Facebook, Instagram, YouTube, TikTok, Twitter, online forums, support groups)",
+    "ParentQuestion": "F2"
+  },
+  {
+    "Column": "F2r5",
+    "Description": "F2r5: Blogs - Where have you seen or heard about information specifically about meningitis vaccination?",
+    "Answer_Options": "0=NO TO: Blogs,1=Blogs",
+    "ParentQuestion": "F2"
+  },
+  {
+    "Column": "F2r6",
+    "Description": "F2r6: Newspapers - Where have you seen or heard about information specifically about meningitis vaccination?",
+    "Answer_Options": "0=NO TO: Newspapers,1=Newspapers",
+    "ParentQuestion": "F2"
+  },
+  {
+    "Column": "F2r7",
+    "Description": "F2r7: Magazines - Where have you seen or heard about information specifically about meningitis vaccination?",
+    "Answer_Options": "0=NO TO: Magazines,1=Magazines",
+    "ParentQuestion": "F2"
+  },
+  {
+    "Column": "F2r8",
+    "Description": "F2r8: Medical journals - Where have you seen or heard about information specifically about meningitis vaccination?",
+    "Answer_Options": "0=NO TO: Medical journals,1=Medical journals",
+    "ParentQuestion": "F2"
+  },
+  {
+    "Column": "F2r9",
+    "Description": "F2r9: TV - Where have you seen or heard about information specifically about meningitis vaccination?",
+    "Answer_Options": "0=NO TO: TV,1=TV",
+    "ParentQuestion": "F2"
+  },
+  {
+    "Column": "F2r10",
+    "Description": "F2r10: Online video - Where have you seen or heard about information specifically about meningitis vaccination?",
+    "Answer_Options": "0=NO TO: Online video,1=Online video",
+    "ParentQuestion": "F2"
+  },
+  {
+    "Column": "F2r11",
+    "Description": "F2r11: Brochures/pamphlets from doctor's office - Where have you seen or heard about information specifically about meningitis vaccination?",
+    "Answer_Options": "0=NO TO: Brochures/pamphlets from doctor's office,1=Brochures/pamphlets from doctor's office",
+    "ParentQuestion": "F2"
+  },
+  {
+    "Column": "F2r99",
+    "Description": "F2r99: None of the above - Where have you seen or heard about information specifically about meningitis vaccination?",
+    "Answer_Options": "0=NO TO: None of the above,1=None of the above",
+    "ParentQuestion": "F2"
+  },
+  {
+    "Column": "G1",
+    "Description": "G1: Which of the following best describes the area where you live?",
+    "Answer_Options": "1=Urban (within a large city limits),2=Suburban (just outside of a large city limits),3=Rural (not close to a large city)"
+  },
+  {
+    "Column": "G2",
+    "Description": "G2: Please indicate your current marital status or living arrangement.",
+    "Answer_Options": "1=Single, never married,2=Married,3=Domestic partnership / Living with partner,4=Widowed,5=Divorced,6=Separated,7=Prefer not to answer"
+  },
+  {
+    "Column": "G3",
+    "Description": "G3: What is your current employment status?",
+    "Answer_Options": "1=Employed for wages,2=Self-employed,3=Full-time homemaker,4=Out of work for 1 year or more, but not retired,5=Out of work for less than 1 year, but not retired,6=Retired,7=Unable to work, for reasons other than COVID-19,8=Currently unable to work due to COVID-19,99=Prefer not to answer"
+  },
+  {
+    "Column": "G4",
+    "Description": "G4: What is the highest level of school you have completed?",
+    "Answer_Options": "1=Some high school or less, no diploma,2=High school graduate (or equivalency),3=Some college, no degree,4=Associate degree,5=Bachelor's degree,6=Graduate or professional degree,7=Prefer not to answer"
+  },
+  {
+    "Column": "G5",
+    "Description": "G5: How would you rate your current lifestyle?",
+    "Answer_Options": "0=Not at all Active 0,1=1,2=2,3=3,4=4,5=Somewhat Active 5,6=6,7=7,8=8,9=9,10=Extremely Active 10"
+  },
+  {
+    "Column": "G6",
+    "Description": "G6: What is your relationship with [pipe: S11b upper]?",
+    "Answer_Options": "1=Parent,2=Aunt/Uncle,3=Grandparent,4=Sibling,5=Guardian"
+  },
+  {
+    "Column": "G7",
+    "Description": "G7: How would you describe your living situation in relation to [pipe: S11b upper]?",
+    "Answer_Options": "1=Lives with me in my home (permanently or for majority of the time),2=Lives with me in my home half of the time,3=Does not live with me in my home"
+  },
+  {
+    "Column": "G8",
+    "Description": "G8: What is [pipe: S11b upper]’s gender identity?",
+    "Answer_Options": "1=Male,2=Female,3=Non-binary,4=Prefer not to answer"
+  },
+  {
+    "Column": "G9",
+    "Description": "G9: Which of the following best represents your annual household income? Your response will be kept strictly confidential and will be used for research purposes only.",
+    "Answer_Options": "1=Less than $50,000,2=$50,000-$74,999,3=$75,000-$99,999,4=$100,000-$149,999,5=$150,000-$199,999,6=$200,000 or more,7=Prefer not to answer"
+  },
+  {
+    "Column": "G10",
+    "Description": "G10: What is your primary form of insurance coverage?",
+    "Answer_Options": "1=HMO/PPO or other commercial insurance,2=Medicaid,3=Medicare,4=VA or military benefits,5=Don't currently have coverage / pay cash,6=Don't know,7=Other type of coverage:"
+  },
+  {
+    "Column": "G10r7oe",
+    "Description": "G10r7oe: What is your primary form of insurance coverage? - Other type of coverage:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "G10",
+    "Context": "G10: G10: What is your primary form of insurance coverage?"
+  },
+  {
+    "Column": "G11",
+    "Description": "G11: To what extent, if at all, are vaccines covered by your insurance for [pipe: S11b upper]?",
+    "Answer_Options": "1=Fully covered by my insurance,2=Partially covered by my insurance,3=Other:"
+  },
+  {
+    "Column": "G11r3oe",
+    "Description": "G11r3oe: To what extent, if at all, are vaccines covered by your insurance for [pipe: S11b upper]? - Other:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "G11",
+    "Context": "G11: G11: To what extent, if at all, are vaccines covered by your insurance for [pipe: S11b upper]?"
+  },
+  {
+    "Column": "G12",
+    "Description": "G12: How much do you typically pay out of pocket for [pipe: S11b upper] to receive a vaccine?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "G13r1",
+    "Description": "G13r1: White or Caucasian - What is your race?",
+    "Answer_Options": "0=NO TO: White or Caucasian,1=White or Caucasian",
+    "ParentQuestion": "G13"
+  },
+  {
+    "Column": "G13r2",
+    "Description": "G13r2: Black, African American, or Caribbean American - What is your race?",
+    "Answer_Options": "0=NO TO: Black, African American, or Caribbean American,1=Black, African American, or Caribbean American",
+    "ParentQuestion": "G13"
+  },
+  {
+    "Column": "G13r3",
+    "Description": "G13r3: American Indian or Alaska Native - What is your race?",
+    "Answer_Options": "0=NO TO: American Indian or Alaska Native,1=American Indian or Alaska Native",
+    "ParentQuestion": "G13"
+  },
+  {
+    "Column": "G13r4",
+    "Description": "G13r4: Asian - What is your race?",
+    "Answer_Options": "0=NO TO: Asian,1=Asian",
+    "ParentQuestion": "G13"
+  },
+  {
+    "Column": "G13r5",
+    "Description": "G13r5: Native Hawaiian or Other Pacific Islander - What is your race?",
+    "Answer_Options": "0=NO TO: Native Hawaiian or Other Pacific Islander,1=Native Hawaiian or Other Pacific Islander",
+    "ParentQuestion": "G13"
+  },
+  {
+    "Column": "G13r6",
+    "Description": "G13r6: Some other race - What is your race?",
+    "Answer_Options": "0=NO TO: Some other race,1=Some other race",
+    "ParentQuestion": "G13"
+  },
+  {
+    "Column": "G13r7",
+    "Description": "G13r7: Prefer not to answer - What is your race?",
+    "Answer_Options": "0=NO TO: Prefer not to answer,1=Prefer not to answer",
+    "ParentQuestion": "G13"
+  },
+  {
+    "Column": "G14",
+    "Description": "G14: Are you of Hispanic or Latino origin?",
+    "Answer_Options": "1=Yes,2=No,3=Prefer not to answer"
+  },
+  {
+    "Column": "qtime",
+    "Description": "qtime: Total Interview Time",
+    "Answer_Options": "NA"
+  }
+]

@@ -218,13 +218,15 @@ export interface PipelineState {
   logsByTable: Map<string, LogEntry[]>;
   /** Recently completed tables (for display) */
   recentCompletions: CompletedTable[];
+  /** System logs (pipeline + agent console output) */
+  systemLogs: LogEntry[];
 }
 
 // =============================================================================
 // Navigation State
 // =============================================================================
 
-export type ViewLevel = 'pipeline' | 'stage' | 'log';
+export type ViewLevel = 'pipeline' | 'stage' | 'log' | 'system';
 
 export interface NavigationState {
   /** Current view level */
@@ -237,6 +239,10 @@ export interface NavigationState {
   selectedTableId: string | null;
   /** Log scroll position */
   logScrollOffset: number;
+  /** System log scroll position */
+  systemLogScrollOffset: number;
+  /** Return level when exiting system logs */
+  systemLogReturnLevel: ViewLevel;
 }
 
 // =============================================================================
@@ -328,6 +334,7 @@ export function createInitialPipelineState(): PipelineState {
     recentLogs: [],
     logsByTable: new Map(),
     recentCompletions: [],
+    systemLogs: [],
   };
 }
 
@@ -338,6 +345,8 @@ export function createInitialNavigationState(): NavigationState {
     selectedSlot: 0,
     selectedTableId: null,
     logScrollOffset: 0,
+    systemLogScrollOffset: 0,
+    systemLogReturnLevel: 'pipeline',
   };
 }
 

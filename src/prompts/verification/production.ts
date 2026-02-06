@@ -453,7 +453,13 @@ STRUCTURE PER TABLE:
   "excludeReason": "",           // "" if not excluded
   "surveySection": "string",     // Section name from survey, ALL CAPS (or "")
   "baseText": "string",          // Who was asked - not the question (or "")
-  "userNote": "string"           // Helpful context in parentheses (or "")
+  "userNote": "string",          // Helpful context in parentheses (or "")
+  "tableSubtitle": "string",     // "" unless needed to differentiate siblings
+  "additionalFilter": "string",  // "" unless BaseFilter logic applies
+  "filterReviewRequired": boolean,
+  "splitFromTableId": "string",  // "" unless BaseFilter split
+  "lastModifiedBy": "VerificationAgent",
+  "loopDataFrame": ""            // "" unless loop table (system fills later)
 }
 
 COMPLETE OUTPUT:

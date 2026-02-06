@@ -230,6 +230,23 @@ export interface ValidationCompleteEvent {
 }
 
 // =============================================================================
+// System Log Events
+// =============================================================================
+
+export type SystemLogLevel = 'info' | 'warn' | 'error' | 'debug';
+
+export interface SystemLogEvent {
+  type: 'system:log';
+  /** Log level */
+  level: SystemLogLevel;
+  /** Log message */
+  message: string;
+  /** Optional stage name */
+  stageName?: string;
+  timestamp: number;
+}
+
+// =============================================================================
 // Union Type
 // =============================================================================
 
@@ -248,7 +265,8 @@ export type PipelineEvent =
   | ValidationStageStartEvent
   | ValidationStageCompleteEvent
   | ValidationWarningEvent
-  | ValidationCompleteEvent;
+  | ValidationCompleteEvent
+  | SystemLogEvent;
 
 // =============================================================================
 // Stage Definitions

@@ -1,0 +1,1475 @@
+[
+  {
+    "Column": "record",
+    "Description": "record: Record number",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "uuid",
+    "Description": "uuid: Participant identifier",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "date",
+    "Description": "date: Completion time and date",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "status",
+    "Description": "status: Participant status",
+    "Answer_Options": "1=Terminated,2=Overquota,3=Qualified,4=Partial"
+  },
+  {
+    "Column": "AE1",
+    "Description": "AE1: Different patients sometimes respond in different ways to the same medicine, and some adverse events may not be discovered until many people have used a medicine over a period of time. For this reason, we are now being asked to pass on to our client,",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "AE2",
+    "Description": "AE2: In case you mention any adverse event/product complaint during this market research we would file a report, without mentioning your personal details, but if the Drug Safety Department requires more information, would you be willing to waive the confi",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "AE3",
+    "Description": "AE3: In this case, would you allow us to contact you on behalf of the company for this purpose?",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "PARTICIPANT_CONSENT_FORM",
+    "Description": "PARTICIPANT_CONSENT_FORM: This market research is being conducted by HawkPartners, a market research firm which is working on behalf of a pharmaceutical company that is sponsoring the study (“Sponsor”). Information to be Used or Shared. The Sponsor an",
+    "Answer_Options": "1=I Agree,2=I Do Not Agree"
+  },
+  {
+    "Column": "S1",
+    "Description": "S1: Are you or is any member of your family currently affiliated with any pharmaceutical company or other health care organization, marketing research firm, the FDA or advertising agency?",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "S2",
+    "Description": "S2: What is your primary specialty?",
+    "Answer_Options": "1=General / Family Practice / Primary Care,2=Cardiology,3=Neurology,4=Dermatology,5=Nephrology,6=Other"
+  },
+  {
+    "Column": "S3",
+    "Description": "S3: Are you board-certified or board-eligible in your specialty?",
+    "Answer_Options": "1=Yes, board-certified,2=Yes, board-eligible,3=No"
+  },
+  {
+    "Column": "S4",
+    "Description": "S4: Since completing your residency, how many years have you practiced medicine?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "S5",
+    "Description": "S5: Which of the following best describes the practice setting where you spend the majority of your time?",
+    "Answer_Options": "1=Solo practice/office-based,2=Group practice/office-based,3=Academic/Teaching Hospital-based,4=Community/Regional Hospital-based,5=Other (specify)"
+  },
+  {
+    "Column": "S5r5oe",
+    "Description": "S5r5oe: Which of the following best describes the practice setting where you spend the majority of your time? - Other (specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S5",
+    "Context": "S5: S5: Which of the following best describes the practice setting where you spend the majority of your time?"
+  },
+  {
+    "Column": "S6",
+    "Description": "S6: In which state do you primarily practice?",
+    "Answer_Options": "1=Alaska,2=Alabama,3=Arkansas,4=Arizona,5=California,6=Colorado,7=Connecticut,8=District of Columbia,9=Delaware,10=Florida,11=Georgia,12=Hawaii,13=Iowa,14=Idaho,15=Illinois,16=Indiana,17=Kansas,18=Kentucky,19=Louisiana,20=Massachusetts,21=Maryland,22=Maine,23=Michigan,24=Minnesota,25=Missouri,26=Mississippi,27=Montana,28=North Carolina,29=North Dakota,30=Nebraska,31=New Hampshire,32=New Jersey,33=New Mexico,34=Nevada,35=New York,36=Ohio,37=Oklahoma,38=Oregon,39=Pennsylvania,40=Rhode Island,41=South Carolina,42=South Dakota,43=Tennessee,44=Texas,45=Utah,46=Virginia,47=Vermont,48=Washington,49=Wisconsin,50=West Virginia,51=Wyoming"
+  },
+  {
+    "Column": "REGION",
+    "Description": "REGION: Geographic regions",
+    "Answer_Options": "1=Northeast,2=Midwest,3=South,4=West"
+  },
+  {
+    "Column": "S7",
+    "Description": "S7: Do you currently work as a local, state or federal government employee in any of the following locations?",
+    "Answer_Options": "1=District of Columbia/Washington, D.C.,2=Indiana,3=Louisiana,4=None of these"
+  },
+  {
+    "Column": "S8",
+    "Description": "S8: Are you a member of a P&T Committee of a health plan, pharmacy benefit manager, or other health care provider or payor?",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "S9",
+    "Description": "S9: Does your participation in a market research study and acceptance of honoraria comply with applicable ethics rules of the P&T Committee, including standards for conflict of interest, disclosure and recusal?",
+    "Answer_Options": "1=Yes, it complies,2=No, it does not comply"
+  },
+  {
+    "Column": "S10r1c1",
+    "Description": "S10r1c1: Direct patient care - Approximately what percentage of your time is spent on each of the following?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S10"
+  },
+  {
+    "Column": "S10r2c1",
+    "Description": "S10r2c1: Teaching - Approximately what percentage of your time is spent on each of the following?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S10"
+  },
+  {
+    "Column": "S10r3c1",
+    "Description": "S10r3c1: Research and/or clinical trials - Approximately what percentage of your time is spent on each of the following?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S10"
+  },
+  {
+    "Column": "S10r4c1",
+    "Description": "S10r4c1: Administration / Other - Approximately what percentage of your time is spent on each of the following?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S10"
+  },
+  {
+    "Column": "S11r1c1",
+    "Description": "S11r1c1: Chronic Kidney Disease - Approximately, how many patients have you personally managed for each of the following conditions in the past 12 months?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S11"
+  },
+  {
+    "Column": "S11r2c1",
+    "Description": "S11r2c1: Polycystic Kidney Disease - Approximately, how many patients have you personally managed for each of the following conditions in the past 12 months?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S11"
+  },
+  {
+    "Column": "S11r3c1",
+    "Description": "S11r3c1: IgA Nephropathy - Approximately, how many patients have you personally managed for each of the following conditions in the past 12 months?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S11"
+  },
+  {
+    "Column": "S11r4c1",
+    "Description": "S11r4c1: C3G - Approximately, how many patients have you personally managed for each of the following conditions in the past 12 months?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S11"
+  },
+  {
+    "Column": "hRESPONDENT",
+    "Description": "hRESPONDENT: Hidden in live",
+    "Answer_Options": "1=IgAN ONLY,2=IgAN & C3G"
+  },
+  {
+    "Column": "S12",
+    "Description": "S12: Of the IgA Nephropathy patients currently under your care, how many are actively being treated?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "S12a",
+    "Description": "S12a: Of the C3G patients currently under your care, how many are actively being treated?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "FRESPONDENT",
+    "Description": "FRESPONDENT: Hidden in live",
+    "Answer_Options": "1=IgAN ONLY,2=IgAN & C3G"
+  },
+  {
+    "Column": "S13r1c1",
+    "Description": "S13r1c1: ACE Inhibitor (such as fosinopril, ramipril) - Of the IgAN patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S13r2c1",
+    "Description": "S13r2c1: Angiotension II Recepter Blockers/ARBs (such as losartan, valsartan) - Of the IgAN patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those th",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S13r3c1",
+    "Description": "S13r3c1: Tarpeyo (budesonide) - Of the IgAN patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S13r4c1",
+    "Description": "S13r4c1: SGLT-2s (such as dapagliflozin, empagliflozin) - Of the IgAN patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to yo",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S13r5c1",
+    "Description": "S13r5c1: Glucosteroids (such as dexamethasone, prednisone) - Of the IgAN patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S13r6c1",
+    "Description": "S13r6c1: Filspari (sparsentan) - Of the IgAN patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S13r8c1",
+    "Description": "S13r8c1: Other (Please specify) - Of the IgAN patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S13r8oe",
+    "Description": "S13r8oe: Of the IgAN patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment. - Other (Please specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S14r1c1",
+    "Description": "S14r1c1: ACE Inhibitor (such as fosinopril, ramipril) - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you a",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r2c1",
+    "Description": "S14r2c1: Angiotension II Recepter Blockers/ARBs (such as losartan, valsartan) - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those tha",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r3c1",
+    "Description": "S14r3c1: Cyclophosphamide - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r4c1",
+    "Description": "S14r4c1: Glucosteroids (such as dexamethasone, prednisone) - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r5c1",
+    "Description": "S14r5c1: Mycophenolate mofetil (MMF) - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatme",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r6c1",
+    "Description": "S14r6c1: Soliris (eculizumab) - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r9c1",
+    "Description": "S14r9c1: Ultomiris (ravulizumab) - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r7c1",
+    "Description": "S14r7c1: Plasma infusion - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r98c1",
+    "Description": "S14r98c1: Other (Please specify) - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r98oe",
+    "Description": "S14r98oe: Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment. - Other (Please specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "hTermr1",
+    "Description": "hTermr1: Term @ S1 - hidden in live *client sample Terms*",
+    "Answer_Options": "0=NO TO: Term @ S1,1=Term @ S1",
+    "ParentQuestion": "hTerm"
+  },
+  {
+    "Column": "hTermr2",
+    "Description": "hTermr2: Term @ S2 - hidden in live *client sample Terms*",
+    "Answer_Options": "0=NO TO: Term @ S2,1=Term @ S2",
+    "ParentQuestion": "hTerm"
+  },
+  {
+    "Column": "hTermr3",
+    "Description": "hTermr3: Term @ S3 - hidden in live *client sample Terms*",
+    "Answer_Options": "0=NO TO: Term @ S3,1=Term @ S3",
+    "ParentQuestion": "hTerm"
+  },
+  {
+    "Column": "hTermr4",
+    "Description": "hTermr4: Term @ S4 - hidden in live *client sample Terms*",
+    "Answer_Options": "0=NO TO: Term @ S4,1=Term @ S4",
+    "ParentQuestion": "hTerm"
+  },
+  {
+    "Column": "hTermr5",
+    "Description": "hTermr5: Term @ S5 - hidden in live *client sample Terms*",
+    "Answer_Options": "0=NO TO: Term @ S5,1=Term @ S5",
+    "ParentQuestion": "hTerm"
+  },
+  {
+    "Column": "hTermr6",
+    "Description": "hTermr6: Term @ S6 - hidden in live *client sample Terms*",
+    "Answer_Options": "0=NO TO: Term @ S6,1=Term @ S6",
+    "ParentQuestion": "hTerm"
+  },
+  {
+    "Column": "hTermr7",
+    "Description": "hTermr7: Term @ S7 - hidden in live *client sample Terms*",
+    "Answer_Options": "0=NO TO: Term @ S7,1=Term @ S7",
+    "ParentQuestion": "hTerm"
+  },
+  {
+    "Column": "hTermr8",
+    "Description": "hTermr8: Term @ S10 - hidden in live *client sample Terms*",
+    "Answer_Options": "0=NO TO: Term @ S10,1=Term @ S10",
+    "ParentQuestion": "hTerm"
+  },
+  {
+    "Column": "B1a_3r1",
+    "Description": "B1a_3r1: Affordable for patients - When thinking about the process of obtaining access for your IgAN patients, please indicate how well you think the following statements describe each medication listed below.Tarpeyo (budesonide)",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Does Not Describe at All,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Describes Completely,8=Unsure",
+    "ParentQuestion": "B1a_3"
+  },
+  {
+    "Column": "B1a_3r2",
+    "Description": "B1a_3r2: A reasonable process for obtaining insurance coverage - When thinking about the process of obtaining access for your IgAN patients, please indicate how well you think the following statements describe each medication listed below.Tarpeyo (budeson",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Does Not Describe at All,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Describes Completely,8=Unsure",
+    "ParentQuestion": "B1a_3"
+  },
+  {
+    "Column": "B1a_3r3",
+    "Description": "B1a_3r3: I/My staff have built an effective system for obtaining insurance coverage - When thinking about the process of obtaining access for your IgAN patients, please indicate how well you think the following statements describe each medication listed b",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Does Not Describe at All,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Describes Completely,8=Unsure",
+    "ParentQuestion": "B1a_3"
+  },
+  {
+    "Column": "B1c_3r1",
+    "Description": "B1c_3r1: Obtaining insurance coverage for Tarpeyo (budesonide) is difficult more often than not. / Obtaining insurance coverage for Tarpeyo (budesonide) is easy more often than not. - Please indicate how much more you agree with one statement vs. the othe",
+    "Answer_Options": "1=Agree much more - Statement A,2=Agree somewhat more with - Statement A,3=Agree slightly more with - Statement A,4=Agree slightly more with - Statement B,5=Agree somewhat more with - Statement B,6=Agree much more - Statement B",
+    "ParentQuestion": "B1c_3"
+  },
+  {
+    "Column": "B1a_6r1",
+    "Description": "B1a_6r1: Affordable for patients - When thinking about the process of obtaining access for your IgAN patients, please indicate how well you think the following statements describe each medication listed below.Filspari (sparsentan)",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Does Not Describe at All,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Describes Completely,8=Unsure",
+    "ParentQuestion": "B1a_6"
+  },
+  {
+    "Column": "B1a_6r2",
+    "Description": "B1a_6r2: A reasonable process for obtaining insurance coverage - When thinking about the process of obtaining access for your IgAN patients, please indicate how well you think the following statements describe each medication listed below.Filspari (sparse",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Does Not Describe at All,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Describes Completely,8=Unsure",
+    "ParentQuestion": "B1a_6"
+  },
+  {
+    "Column": "B1a_6r3",
+    "Description": "B1a_6r3: I/My staff have built an effective system for obtaining insurance coverage - When thinking about the process of obtaining access for your IgAN patients, please indicate how well you think the following statements describe each medication listed b",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Does Not Describe at All,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Describes Completely,8=Unsure",
+    "ParentQuestion": "B1a_6"
+  },
+  {
+    "Column": "B1c_6r1",
+    "Description": "B1c_6r1: Obtaining insurance coverage for Filspari (sparsentan) is difficult more often than not. / Obtaining insurance coverage for Filspari (sparsentan) is easy more often than not. - Please indicate how much more you agree with one statement vs. the ot",
+    "Answer_Options": "1=Agree much more - Statement A,2=Agree somewhat more with - Statement A,3=Agree slightly more with - Statement A,4=Agree slightly more with - Statement B,5=Agree somewhat more with - Statement B,6=Agree much more - Statement B",
+    "ParentQuestion": "B1c_6"
+  },
+  {
+    "Column": "B1b_6r1",
+    "Description": "B1b_6r1: Affordable for patients - When thinking about the process of obtaining access for your C3G patients, please indicate how well you think the following statements describe each medication listed below. Soliris (eculizumab)",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Does Not Describe at All,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Describes Completely,8=Unsure",
+    "ParentQuestion": "B1b_6"
+  },
+  {
+    "Column": "B1b_6r2",
+    "Description": "B1b_6r2: A reasonable process for obtaining insurance coverage - When thinking about the process of obtaining access for your C3G patients, please indicate how well you think the following statements describe each medication listed below. Soliris (eculizu",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Does Not Describe at All,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Describes Completely,8=Unsure",
+    "ParentQuestion": "B1b_6"
+  },
+  {
+    "Column": "B1b_6r3",
+    "Description": "B1b_6r3: I/My staff have built an effective system for obtaining insurance coverage - When thinking about the process of obtaining access for your C3G patients, please indicate how well you think the following statements describe each medication listed be",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Does Not Describe at All,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Describes Completely,8=Unsure",
+    "ParentQuestion": "B1b_6"
+  },
+  {
+    "Column": "B1d_6r1",
+    "Description": "B1d_6r1: Obtaining insurance coverage for Soliris (eculizumab) is difficult more often than not. / Obtaining insurance coverage for Soliris (eculizumab) is easy more often than not. - Please indicate how much more you agree with one statement vs. the othe",
+    "Answer_Options": "1=Agree much more - Statement A,2=Agree somewhat more with - Statement A,3=Agree slightly more with - Statement A,4=Agree slightly more with - Statement B,5=Agree somewhat more with - Statement B,6=Agree much more - Statement B",
+    "ParentQuestion": "B1d_6"
+  },
+  {
+    "Column": "B1b_9r1",
+    "Description": "B1b_9r1: Affordable for patients - When thinking about the process of obtaining access for your C3G patients, please indicate how well you think the following statements describe each medication listed below. Ultomiris (ravulizumab)",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Does Not Describe at All,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Describes Completely,8=Unsure",
+    "ParentQuestion": "B1b_9"
+  },
+  {
+    "Column": "B1b_9r2",
+    "Description": "B1b_9r2: A reasonable process for obtaining insurance coverage - When thinking about the process of obtaining access for your C3G patients, please indicate how well you think the following statements describe each medication listed below. Ultomiris (ravul",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Does Not Describe at All,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Describes Completely,8=Unsure",
+    "ParentQuestion": "B1b_9"
+  },
+  {
+    "Column": "B1b_9r3",
+    "Description": "B1b_9r3: I/My staff have built an effective system for obtaining insurance coverage - When thinking about the process of obtaining access for your C3G patients, please indicate how well you think the following statements describe each medication listed be",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Does Not Describe at All,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Describes Completely,8=Unsure",
+    "ParentQuestion": "B1b_9"
+  },
+  {
+    "Column": "B1d_9r1",
+    "Description": "B1d_9r1: Obtaining insurance coverage for Ultomiris (ravulizumab) is difficult more often than not. / Obtaining insurance coverage for Ultomiris (ravulizumab) is easy more often than not. - Please indicate how much more you agree with one statement vs. th",
+    "Answer_Options": "1=Agree much more - Statement A,2=Agree somewhat more with - Statement A,3=Agree slightly more with - Statement A,4=Agree slightly more with - Statement B,5=Agree somewhat more with - Statement B,6=Agree much more - Statement B",
+    "ParentQuestion": "B1d_9"
+  },
+  {
+    "Column": "B2a_3r1",
+    "Description": "B2a_3r1: Insurance and coverage support they provide to you and your practice - When thinking about the process of obtaining access for your IgAN patients, how would you rate the manufacturers of medications on each of the following aspects? Calliditas Th",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Poor,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Excellent,8=Unsure",
+    "ParentQuestion": "B2a_3"
+  },
+  {
+    "Column": "B2a_3r2",
+    "Description": "B2a_3r2: Insurance and coverage information - When thinking about the process of obtaining access for your IgAN patients, how would you rate the manufacturers of medications on each of the following aspects? Calliditas Therapeutics",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Poor,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Excellent,8=Unsure",
+    "ParentQuestion": "B2a_3"
+  },
+  {
+    "Column": "B2a_3r3",
+    "Description": "B2a_3r3: Patient support programs providing medication for free or at deep discount for those with low household income or significant financial need - When thinking about the process of obtaining access for your IgAN patients, how would you rate the manu",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Poor,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Excellent,8=Unsure",
+    "ParentQuestion": "B2a_3"
+  },
+  {
+    "Column": "B2a_3r4",
+    "Description": "B2a_3r4: Bridge programs providing the medication for free while the patient is still gaining coverage through insurance - When thinking about the process of obtaining access for your IgAN patients, how would you rate the manufacturers of medications on e",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Poor,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Excellent,8=Unsure",
+    "ParentQuestion": "B2a_3"
+  },
+  {
+    "Column": "B2a_3r5",
+    "Description": "B2a_3r5: Copay assistance programs - When thinking about the process of obtaining access for your IgAN patients, how would you rate the manufacturers of medications on each of the following aspects? Calliditas Therapeutics",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Poor,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Excellent,8=Unsure",
+    "ParentQuestion": "B2a_3"
+  },
+  {
+    "Column": "B2a_6r1",
+    "Description": "B2a_6r1: Insurance and coverage support they provide to you and your practice - When thinking about the process of obtaining access for your IgAN patients, how would you rate the manufacturers of medications on each of the following aspects? Travere Thera",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Poor,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Excellent,8=Unsure",
+    "ParentQuestion": "B2a_6"
+  },
+  {
+    "Column": "B2a_6r2",
+    "Description": "B2a_6r2: Insurance and coverage information - When thinking about the process of obtaining access for your IgAN patients, how would you rate the manufacturers of medications on each of the following aspects? Travere Therapeutics",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Poor,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Excellent,8=Unsure",
+    "ParentQuestion": "B2a_6"
+  },
+  {
+    "Column": "B2a_6r3",
+    "Description": "B2a_6r3: Patient support programs providing medication for free or at deep discount for those with low household income or significant financial need - When thinking about the process of obtaining access for your IgAN patients, how would you rate the manu",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Poor,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Excellent,8=Unsure",
+    "ParentQuestion": "B2a_6"
+  },
+  {
+    "Column": "B2a_6r4",
+    "Description": "B2a_6r4: Bridge programs providing the medication for free while the patient is still gaining coverage through insurance - When thinking about the process of obtaining access for your IgAN patients, how would you rate the manufacturers of medications on e",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Poor,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Excellent,8=Unsure",
+    "ParentQuestion": "B2a_6"
+  },
+  {
+    "Column": "B2a_6r5",
+    "Description": "B2a_6r5: Copay assistance programs - When thinking about the process of obtaining access for your IgAN patients, how would you rate the manufacturers of medications on each of the following aspects? Travere Therapeutics",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Poor,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Excellent,8=Unsure",
+    "ParentQuestion": "B2a_6"
+  },
+  {
+    "Column": "B2b_6r1",
+    "Description": "B2b_6r1: Insurance and coverage support they provide to you and your practice - When thinking about the process of obtaining access for your C3G patients, how would you rate the manufacturers of medications on each of the following aspects? AstraZeneca",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Poor,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Excellent,8=Unsure",
+    "ParentQuestion": "B2b_6"
+  },
+  {
+    "Column": "B2b_6r2",
+    "Description": "B2b_6r2: Insurance and coverage information - When thinking about the process of obtaining access for your C3G patients, how would you rate the manufacturers of medications on each of the following aspects? AstraZeneca",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Poor,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Excellent,8=Unsure",
+    "ParentQuestion": "B2b_6"
+  },
+  {
+    "Column": "B2b_6r3",
+    "Description": "B2b_6r3: Patient support programs providing medication for free or at deep discount for those with low household income or significant financial need - When thinking about the process of obtaining access for your C3G patients, how would you rate the manuf",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Poor,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Excellent,8=Unsure",
+    "ParentQuestion": "B2b_6"
+  },
+  {
+    "Column": "B2b_6r4",
+    "Description": "B2b_6r4: Bridge programs providing the medication for free while the patient is still gaining coverage through insurance - When thinking about the process of obtaining access for your C3G patients, how would you rate the manufacturers of medications on ea",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Poor,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Excellent,8=Unsure",
+    "ParentQuestion": "B2b_6"
+  },
+  {
+    "Column": "B2b_6r5",
+    "Description": "B2b_6r5: Copay assistance programs - When thinking about the process of obtaining access for your C3G patients, how would you rate the manufacturers of medications on each of the following aspects? AstraZeneca",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Poor,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Excellent,8=Unsure",
+    "ParentQuestion": "B2b_6"
+  },
+  {
+    "Column": "C1r1",
+    "Description": "C1r1: I try to choose medications that will have the lowest cost to the patient - Please indicate your level of agreement with the following statements.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Disagree,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Agree",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r2",
+    "Description": "C1r2: I only take prescription cost/copay into consideration if a patient brings it up - Please indicate your level of agreement with the following statements.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Disagree,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Agree",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r3",
+    "Description": "C1r3: I always take prescription cost/copay into consideration when making treatment decisions - Please indicate your level of agreement with the following statements.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Disagree,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Agree",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r4",
+    "Description": "C1r4: Negative feedback from my staff on getting coverage for a branded medication will make me less likely to choose that medication for the next patient - Please indicate your level of agreement with the following statements.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Disagree,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Agree",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r5",
+    "Description": "C1r5: I try to avoid prescribing medications that require extra work to get approval (e.g., letter of medical necessity) - Please indicate your level of agreement with the following statements.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Disagree,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Agree",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r6",
+    "Description": "C1r6: Prior authorizations are easy to get approved if you know how to navigate \"the system\" - Please indicate your level of agreement with the following statements.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Disagree,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Agree",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r7",
+    "Description": "C1r7: I view navigating insurance coverage as my staff's responsibility - Please indicate your level of agreement with the following statements.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Disagree,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Agree",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r8",
+    "Description": "C1r8: Navigating patient insurance coverage is a drain on my/ my staff's time - Please indicate your level of agreement with the following statements.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Disagree,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Agree",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r9",
+    "Description": "C1r9: Peer-to-peer reviews are worthwhile to prescribe the medication I feel is most appropriate for my patient - Please indicate your level of agreement with the following statements.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Disagree,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Agree",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r10",
+    "Description": "C1r10: Manufacturers provide services that help me navigate the coverage process - Please indicate your level of agreement with the following statements.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Disagree,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Agree",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r11",
+    "Description": "C1r11: I have made a change in my clinical management of a patient because of a patient's insurance coverage - Please indicate your level of agreement with the following statements.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Disagree,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Agree",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r12",
+    "Description": "C1r12: When I prescribe a medication, I am confident my patient will be getting that medication based on my previous experience - Please indicate your level of agreement with the following statements.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Disagree,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Agree",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r13",
+    "Description": "C1r13: A positive change to a medication's coverage is important to my prescribing decision - Please indicate your level of agreement with the following statements.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Disagree,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Agree",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r14",
+    "Description": "C1r14: My practice has enough resources to help my patients obtain insurance coverage for the medications I prescribe. - Please indicate your level of agreement with the following statements.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Disagree,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Agree",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C1r15",
+    "Description": "C1r15: Specialty pharmacies help me and my patients obtain coverage of prescribed medications - Please indicate your level of agreement with the following statements.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Disagree,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Agree",
+    "ParentQuestion": "C1"
+  },
+  {
+    "Column": "C2ar1",
+    "Description": "C2ar1: Insurance coverage for medication - There are a number of factors that can influence your prescribing decisions. Thinking about after your clinical prescribing decision has been made on a product class, please indicate the extent to which the follo",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}No Impact,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderate Impact,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Great Deal of Impact",
+    "ParentQuestion": "C2a"
+  },
+  {
+    "Column": "C2ar2",
+    "Description": "C2ar2: Out-of-pocket costs for patients - There are a number of factors that can influence your prescribing decisions. Thinking about after your clinical prescribing decision has been made on a product class, please indicate the extent to which the follow",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}No Impact,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderate Impact,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Great Deal of Impact",
+    "ParentQuestion": "C2a"
+  },
+  {
+    "Column": "C2ar3",
+    "Description": "C2ar3: Need for prior-authorizations - There are a number of factors that can influence your prescribing decisions. Thinking about after your clinical prescribing decision has been made on a product class, please indicate the extent to which the following",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}No Impact,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderate Impact,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Great Deal of Impact",
+    "ParentQuestion": "C2a"
+  },
+  {
+    "Column": "C2ar4",
+    "Description": "C2ar4: Manufacturer support for my practice (e.g., prior authorization support, help with appeals, etc.) - There are a number of factors that can influence your prescribing decisions. Thinking about after your clinical prescribing decision has been made o",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}No Impact,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderate Impact,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Great Deal of Impact",
+    "ParentQuestion": "C2a"
+  },
+  {
+    "Column": "C2ar5",
+    "Description": "C2ar5: Manufacturer support for patients (e.g., co-pay cards, patient financial assistance, etc.) - There are a number of factors that can influence your prescribing decisions. Thinking about after your clinical prescribing decision has been made on a pro",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}No Impact,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderate Impact,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Great Deal of Impact",
+    "ParentQuestion": "C2a"
+  },
+  {
+    "Column": "C2br1",
+    "Description": "C2br1: Insurance coverage for medication - There are a number of factors that can influence your prescribing decisions. Thinking about after your clinical prescribing decision has been made on a product class, please indicate the extent to which the follo",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}No Impact,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderate Impact,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Great Deal of Impact",
+    "ParentQuestion": "C2b"
+  },
+  {
+    "Column": "C2br2",
+    "Description": "C2br2: Out-of-pocket costs for patients - There are a number of factors that can influence your prescribing decisions. Thinking about after your clinical prescribing decision has been made on a product class, please indicate the extent to which the follow",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}No Impact,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderate Impact,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Great Deal of Impact",
+    "ParentQuestion": "C2b"
+  },
+  {
+    "Column": "C2br3",
+    "Description": "C2br3: Need for prior-authorizations - There are a number of factors that can influence your prescribing decisions. Thinking about after your clinical prescribing decision has been made on a product class, please indicate the extent to which the following",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}No Impact,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderate Impact,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Great Deal of Impact",
+    "ParentQuestion": "C2b"
+  },
+  {
+    "Column": "C2br4",
+    "Description": "C2br4: Manufacturer support for my practice (e.g., prior authorization support, help with appeals, etc.) - There are a number of factors that can influence your prescribing decisions. Thinking about after your clinical prescribing decision has been made o",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}No Impact,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderate Impact,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Great Deal of Impact",
+    "ParentQuestion": "C2b"
+  },
+  {
+    "Column": "C2br5",
+    "Description": "C2br5: Manufacturer support for patients (e.g., co-pay cards, patient financial assistance, etc.) - There are a number of factors that can influence your prescribing decisions. Thinking about after your clinical prescribing decision has been made on a pro",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}No Impact,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderate Impact,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Great Deal of Impact",
+    "ParentQuestion": "C2b"
+  },
+  {
+    "Column": "C3cr1",
+    "Description": "C3cr1: Benefits investigation - For each stage, please indicate how likely you are to stop pursuing your preferred medication when faced with insurance challenges.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Unlikely,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Likely",
+    "ParentQuestion": "C3c"
+  },
+  {
+    "Column": "C3cr2",
+    "Description": "C3cr2: Prior authorization submission - For each stage, please indicate how likely you are to stop pursuing your preferred medication when faced with insurance challenges.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Unlikely,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Likely",
+    "ParentQuestion": "C3c"
+  },
+  {
+    "Column": "C3cr3",
+    "Description": "C3cr3: Discovering if a medication is not covered - For each stage, please indicate how likely you are to stop pursuing your preferred medication when faced with insurance challenges.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Unlikely,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Likely",
+    "ParentQuestion": "C3c"
+  },
+  {
+    "Column": "C3cr4",
+    "Description": "C3cr4: Discovering prior authorization is denied - For each stage, please indicate how likely you are to stop pursuing your preferred medication when faced with insurance challenges.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Unlikely,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Likely",
+    "ParentQuestion": "C3c"
+  },
+  {
+    "Column": "C3cr5",
+    "Description": "C3cr5: Writing an appeal letter - For each stage, please indicate how likely you are to stop pursuing your preferred medication when faced with insurance challenges.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Unlikely,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Likely",
+    "ParentQuestion": "C3c"
+  },
+  {
+    "Column": "C3cr6",
+    "Description": "C3cr6: Peer-to-peer reviews - For each stage, please indicate how likely you are to stop pursuing your preferred medication when faced with insurance challenges.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Unlikely,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Likely",
+    "ParentQuestion": "C3c"
+  },
+  {
+    "Column": "C3cr7",
+    "Description": "C3cr7: Other (Specify) - For each stage, please indicate how likely you are to stop pursuing your preferred medication when faced with insurance challenges.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Unlikely,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Likely",
+    "ParentQuestion": "C3c"
+  },
+  {
+    "Column": "C3cr7oe",
+    "Description": "C3cr7oe: For each stage, please indicate how likely you are to stop pursuing your preferred medication when faced with insurance challenges. - Other (Specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "C3c"
+  },
+  {
+    "Column": "noanswerC3c_r98",
+    "Description": "noanswerC3c_r98: For each stage, please indicate how likely you are to stop pursuing your preferred medication when faced with insurance challenges. : None of the above - No Answer",
+    "Answer_Options": "0=NO TO: For each stage, please indicate how likely you are to stop pursuing your preferred medication when faced with ins,1=For each stage, please indicate how likely you are to stop pursuing your preferred medication when faced with insurance",
+    "ParentQuestion": "noanswerC3c_"
+  },
+  {
+    "Column": "C3dr1",
+    "Description": "C3dr1: Benefits investigation - For each of the following aspects, please indicate how challenging you find each when obtaining coverage for medications for your patients.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Challenging,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Challenging",
+    "ParentQuestion": "C3d"
+  },
+  {
+    "Column": "C3dr2",
+    "Description": "C3dr2: Prior authorization submission - For each of the following aspects, please indicate how challenging you find each when obtaining coverage for medications for your patients.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Challenging,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Challenging",
+    "ParentQuestion": "C3d"
+  },
+  {
+    "Column": "C3dr3",
+    "Description": "C3dr3: Discovering if a medication is not covered - For each of the following aspects, please indicate how challenging you find each when obtaining coverage for medications for your patients.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Challenging,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Challenging",
+    "ParentQuestion": "C3d"
+  },
+  {
+    "Column": "C3dr4",
+    "Description": "C3dr4: Discovering prior authorization is denied - For each of the following aspects, please indicate how challenging you find each when obtaining coverage for medications for your patients.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Challenging,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Challenging",
+    "ParentQuestion": "C3d"
+  },
+  {
+    "Column": "C3dr5",
+    "Description": "C3dr5: Writing an appeal letter - For each of the following aspects, please indicate how challenging you find each when obtaining coverage for medications for your patients.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Challenging,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Challenging",
+    "ParentQuestion": "C3d"
+  },
+  {
+    "Column": "C3dr6",
+    "Description": "C3dr6: Peer-to-peer reviews - For each of the following aspects, please indicate how challenging you find each when obtaining coverage for medications for your patients.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Challenging,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Completely Challenging",
+    "ParentQuestion": "C3d"
+  },
+  {
+    "Column": "C4a",
+    "Description": "C4a: Approximately how many hours per week do you spend obtaining coverage for medication for your patients?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C4r1",
+    "Description": "C4r1: IgAN - For each of the following diagnoses, please indicate how often you are able to obtain your first choice of a non-generic prescription medication, without being limited by insurance coverage restrictions.",
+    "Answer_Options": "1=Never,2=Occasionally,3=Half the Time,4=Most of the Time,5=Always",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r2",
+    "Description": "C4r2: C3G - For each of the following diagnoses, please indicate how often you are able to obtain your first choice of a non-generic prescription medication, without being limited by insurance coverage restrictions.",
+    "Answer_Options": "1=Never,2=Occasionally,3=Half the Time,4=Most of the Time,5=Always",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C6a",
+    "Description": "C6a: How often are you aware of what the patient's out-of-pocket cost is for medications you prescribe?",
+    "Answer_Options": "1=Never,2=Occasionally,3=About Half the Time,4=Most of the Time,5=Always"
+  },
+  {
+    "Column": "C6r1",
+    "Description": "C6r1: Tarpeyo (budesonide) - For each of the following medications, please indicate how often the out-of-pocket cost is considered unaffordable by patients.",
+    "Answer_Options": "1=Never,2=Occasionally,3=Half the Time,4=Most of the Time,5=Always",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r2",
+    "Description": "C6r2: Filspari (sparsentan) - For each of the following medications, please indicate how often the out-of-pocket cost is considered unaffordable by patients.",
+    "Answer_Options": "1=Never,2=Occasionally,3=Half the Time,4=Most of the Time,5=Always",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r3",
+    "Description": "C6r3: Soliris (eculizumab) - For each of the following medications, please indicate how often the out-of-pocket cost is considered unaffordable by patients.",
+    "Answer_Options": "1=Never,2=Occasionally,3=Half the Time,4=Most of the Time,5=Always",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r4",
+    "Description": "C6r4: Ultomiris (ravulizumab) - For each of the following medications, please indicate how often the out-of-pocket cost is considered unaffordable by patients.",
+    "Answer_Options": "1=Never,2=Occasionally,3=Half the Time,4=Most of the Time,5=Always",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C7a",
+    "Description": "C7a: Please indicate what you anticipate the process of obtaining insurance coverage for Product X would be for your IgAN patients compared to currently available treatments.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Difficult,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Similar for Product X and currently available treatments,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Extremely Easy"
+  },
+  {
+    "Column": "C8a",
+    "Description": "C8a: Given your expectation of the process of obtaining insurance coverage for Product X for your IgAN patients compared to currently available treatments, how worth it, if at all, is it to go through that process to get Product X to your patients?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Worth It,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Worth It"
+  },
+  {
+    "Column": "C7b",
+    "Description": "C7b: Please indicate what you anticipate the process of obtaining insurance coverage for Product X would be for you C3G patients compared to currently available treatments.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Difficult,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"} Similar for Product X and currently available treatments,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Easy"
+  },
+  {
+    "Column": "C8c",
+    "Description": "C8c: Given your expectation of the process of obtaining insurance coverage for Product X for your C3G patients compared to currently available treatments, how worth it, if at all, is it to go through that process to get Product X to your patients.",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}No at all Worth It,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Worth It"
+  },
+  {
+    "Column": "D0r1",
+    "Description": "D0r1: Pharmaceutical rep - How would you rate the following sources for medication coverage information in terms of being trustworthy?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Trustworthy,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately Trustworthy,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Trustworthy,8=N/A",
+    "ParentQuestion": "D0"
+  },
+  {
+    "Column": "D0r2",
+    "Description": "D0r2: Pharmaceutical manufacturer communications (i.e., emails, banner ads, etc) - How would you rate the following sources for medication coverage information in terms of being trustworthy?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Trustworthy,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately Trustworthy,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Trustworthy,8=N/A",
+    "ParentQuestion": "D0"
+  },
+  {
+    "Column": "D0r3",
+    "Description": "D0r3: Foundations/Nonprofits - How would you rate the following sources for medication coverage information in terms of being trustworthy?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Trustworthy,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately Trustworthy,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Trustworthy,8=N/A",
+    "ParentQuestion": "D0"
+  },
+  {
+    "Column": "D0r4",
+    "Description": "D0r4: Websites (e.g., covermymeds, MMIT) - How would you rate the following sources for medication coverage information in terms of being trustworthy?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Trustworthy,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately Trustworthy,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Trustworthy,8=N/A",
+    "ParentQuestion": "D0"
+  },
+  {
+    "Column": "D0r5",
+    "Description": "D0r5: EMR/EHR - How would you rate the following sources for medication coverage information in terms of being trustworthy?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Trustworthy,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately Trustworthy,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Trustworthy,8=N/A",
+    "ParentQuestion": "D0"
+  },
+  {
+    "Column": "D0r6",
+    "Description": "D0r6: My practice staff - How would you rate the following sources for medication coverage information in terms of being trustworthy?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Trustworthy,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately Trustworthy,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Trustworthy,8=N/A",
+    "ParentQuestion": "D0"
+  },
+  {
+    "Column": "D0r7",
+    "Description": "D0r7: Peers/colleagues - How would you rate the following sources for medication coverage information in terms of being trustworthy?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Trustworthy,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately Trustworthy,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Trustworthy,8=N/A",
+    "ParentQuestion": "D0"
+  },
+  {
+    "Column": "D10",
+    "Description": "D10: Does your practice utilize specialty pharmacies?",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "D10a",
+    "Description": "D10a: What are the names of the specialty pharmacies your practice utilizes?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "D10br1",
+    "Description": "D10br1: Practice has an ownership stake in the pharmacy - Which of the following describes your relationship with the specialty pharmacy(ies)?",
+    "Answer_Options": "0=NO TO: Practice has an ownership stake in the pharmacy,1=Practice has an ownership stake in the pharmacy",
+    "ParentQuestion": "D10b"
+  },
+  {
+    "Column": "D10br2",
+    "Description": "D10br2: Pharmacy has access to the EMR/patient notes - Which of the following describes your relationship with the specialty pharmacy(ies)?",
+    "Answer_Options": "0=NO TO: Pharmacy has access to the EMR/patient notes,1=Pharmacy has access to the EMR/patient notes",
+    "ParentQuestion": "D10b"
+  },
+  {
+    "Column": "D10br3",
+    "Description": "D10br3: Pharmacy provides a level of assistance in prior authorizations - Which of the following describes your relationship with the specialty pharmacy(ies)?",
+    "Answer_Options": "0=NO TO: Pharmacy provides a level of assistance in prior authorizations,1=Pharmacy provides a level of assistance in prior authorizations",
+    "ParentQuestion": "D10b"
+  },
+  {
+    "Column": "D10br4",
+    "Description": "D10br4: Other (specify) - Which of the following describes your relationship with the specialty pharmacy(ies)?",
+    "Answer_Options": "0=NO TO: Other (specify),1=Other (specify)",
+    "ParentQuestion": "D10b"
+  },
+  {
+    "Column": "D10br99",
+    "Description": "D10br99: None of these - Which of the following describes your relationship with the specialty pharmacy(ies)?",
+    "Answer_Options": "0=NO TO: None of these,1=None of these",
+    "ParentQuestion": "D10b"
+  },
+  {
+    "Column": "D10br4oe",
+    "Description": "D10br4oe: Which of the following describes your relationship with the specialty pharmacy(ies)? - Other (specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D10b"
+  },
+  {
+    "Column": "D11r1",
+    "Description": "D11r1: Fulfilling prescriptions - What role do specialty pharmacies play with the process of obtaining insurance coverage for your practice?",
+    "Answer_Options": "0=NO TO: Fulfilling prescriptions,1=Fulfilling prescriptions",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r2",
+    "Description": "D11r2: Benefits investigation - What role do specialty pharmacies play with the process of obtaining insurance coverage for your practice?",
+    "Answer_Options": "0=NO TO: Benefits investigation,1=Benefits investigation",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r3",
+    "Description": "D11r3: Prior authorization assistance - What role do specialty pharmacies play with the process of obtaining insurance coverage for your practice?",
+    "Answer_Options": "0=NO TO: Prior authorization assistance,1=Prior authorization assistance",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r4",
+    "Description": "D11r4: Enrollment in patient assistance programs - What role do specialty pharmacies play with the process of obtaining insurance coverage for your practice?",
+    "Answer_Options": "0=NO TO: Enrollment in patient assistance programs,1=Enrollment in patient assistance programs",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r5",
+    "Description": "D11r5: Patient education and medication adverse effect counseling - What role do specialty pharmacies play with the process of obtaining insurance coverage for your practice?",
+    "Answer_Options": "0=NO TO: Patient education and medication adverse effect counseling,1=Patient education and medication adverse effect counseling",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r6",
+    "Description": "D11r6: Patient communication and follow-up - What role do specialty pharmacies play with the process of obtaining insurance coverage for your practice?",
+    "Answer_Options": "0=NO TO: Patient communication and follow-up,1=Patient communication and follow-up",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D12",
+    "Description": "D12: How helpful do you find specialty pharmacies in the process of obtaining insurance coverage for your prescribed medications?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Helpful,2=2,3=3,4=4,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Helpful"
+  },
+  {
+    "Column": "D1",
+    "Description": "D1: Does your practice accept visits from sales representatives and/or field representative manager?",
+    "Answer_Options": "1=Yes,2=No,3=Unsure"
+  },
+  {
+    "Column": "D2",
+    "Description": "D2: In a typical week, approximately how many individual representatives do you see from pharmaceutical companies? Please think only about those representatives with whom you have some type of interaction, whether it is signing for samples or discussing a",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "D2ar1",
+    "Description": "D2ar1: Calliditas Therapeutics - How often do you typically see the following representatives?",
+    "Answer_Options": "1=Not at all,2=Less than once per month,3=1-2 times per month,4=3-4 times per month,5=More than 4 times per month",
+    "ParentQuestion": "D2a"
+  },
+  {
+    "Column": "D2ar2",
+    "Description": "D2ar2: Travere Therapeutics - How often do you typically see the following representatives?",
+    "Answer_Options": "1=Not at all,2=Less than once per month,3=1-2 times per month,4=3-4 times per month,5=More than 4 times per month",
+    "ParentQuestion": "D2a"
+  },
+  {
+    "Column": "D2ar3",
+    "Description": "D2ar3: AstraZeneca - How often do you typically see the following representatives?",
+    "Answer_Options": "1=Not at all,2=Less than once per month,3=1-2 times per month,4=3-4 times per month,5=More than 4 times per month",
+    "ParentQuestion": "D2a"
+  },
+  {
+    "Column": "D3r1",
+    "Description": "D3r1: Calliditas Therapeutics - How would you rate the following manufacturer representatives in terms of being helpful with insurance coverage information for medications?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Helpful,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately Helpful,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Helpful",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r2",
+    "Description": "D3r2: Travere Therapeutics - How would you rate the following manufacturer representatives in terms of being helpful with insurance coverage information for medications?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Helpful,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately Helpful,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Helpful",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r3",
+    "Description": "D3r3: AstraZeneca - How would you rate the following manufacturer representatives in terms of being helpful with insurance coverage information for medications?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all Helpful,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately Helpful,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely Helpful",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D4",
+    "Description": "D4: How often are you generally discussing insurance coverage for medications with a manufacturer representative?",
+    "Answer_Options": "1=Monthly or more often,2=Quarterly,3=Semi-annually,4=Annually,5=Less often than annually,6=Never"
+  },
+  {
+    "Column": "D6r1c1",
+    "Description": "D6r1c1: Insurance coverage and affordability - How much of a conversation with manufacturer representatives would you prefer to be focused on insurance coverage and affordability vs. clinical aspects of the medication?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r2c1",
+    "Description": "D6r2c1: Clinical aspects of medication - How much of a conversation with manufacturer representatives would you prefer to be focused on insurance coverage and affordability vs. clinical aspects of the medication?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r3c1",
+    "Description": "D6r3c1: Other (Please specify) - How much of a conversation with manufacturer representatives would you prefer to be focused on insurance coverage and affordability vs. clinical aspects of the medication?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r3oe",
+    "Description": "D6r3oe: How much of a conversation with manufacturer representatives would you prefer to be focused on insurance coverage and affordability vs. clinical aspects of the medication? - Other (Please specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D7r1c1",
+    "Description": "D7r1c1: Updates on medication insurance coverage for health plans in my region/area - Myself - Which of the following applies to how you and your staff prefer to receive information from a manufacturer representative about medication insurance coverage?",
+    "Answer_Options": "0=NO TO: Updates on medication insurance coverage for health plans in my region/area,1=Updates on medication insurance coverage for health plans in my region/area",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r2c1",
+    "Description": "D7r2c1: Information on manufacturer support for patients (e.g., co-pay cards, patient financial assistance, etc.) - Myself - Which of the following applies to how you and your staff prefer to receive information from a manufacturer representative about me",
+    "Answer_Options": "0=NO TO: Information on manufacturer support for patients (e.g., co-pay cards, patient financial assistance, etc.),1=Information on manufacturer support for patients (e.g., co-pay cards, patient financial assistance, etc.)",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r3c1",
+    "Description": "D7r3c1: Information on manufacturer support for my practice (e.g., prior authorization support, help with appeals, etc.) - Myself - Which of the following applies to how you and your staff prefer to receive information from a manufacturer representative a",
+    "Answer_Options": "0=NO TO: Information on manufacturer support for my practice (e.g., prior authorization support, help with appeals, etc.),1=Information on manufacturer support for my practice (e.g., prior authorization support, help with appeals, etc.)",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r4c1",
+    "Description": "D7r4c1: Information on what other practices are doing/have done to ease the process of gaining insurance coverage for medications - Myself - Which of the following applies to how you and your staff prefer to receive information from a manufacturer represe",
+    "Answer_Options": "0=NO TO: Information on what other practices are doing/have done to ease the process of gaining insurance coverage for med,1=Information on what other practices are doing/have done to ease the process of gaining insurance coverage for medication",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r5c1",
+    "Description": "D7r5c1: Personalized coverage updates on medication insurance coverage relevant to the health plans I see in my practice - Myself - Which of the following applies to how you and your staff prefer to receive information from a manufacturer representative a",
+    "Answer_Options": "0=NO TO: Personalized coverage updates on medication insurance coverage relevant to the health plans I see in my practice,1=Personalized coverage updates on medication insurance coverage relevant to the health plans I see in my practice",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r6c1",
+    "Description": "D7r6c1: Information about average copay associated with medication insurance coverage - Myself - Which of the following applies to how you and your staff prefer to receive information from a manufacturer representative about medication insurance coverage?",
+    "Answer_Options": "0=NO TO: Information about average copay associated with medication insurance coverage,1=Information about average copay associated with medication insurance coverage",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r98c1",
+    "Description": "D7r98c1: None of the above - I/they prefer not to receive information from a representative about medication insurance coverage - Myself - Which of the following applies to how you and your staff prefer to receive information from a manufacturer represent",
+    "Answer_Options": "0=NO TO: None of the above - I/they prefer not to receive information from a representative about medication insurance cov,1=None of the above - I/they prefer not to receive information from a representative about medication insurance coverage",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r1c2",
+    "Description": "D7r1c2: Updates on medication insurance coverage for health plans in my region/area - My Staff - Which of the following applies to how you and your staff prefer to receive information from a manufacturer representative about medication insurance coverage?",
+    "Answer_Options": "0=NO TO: Updates on medication insurance coverage for health plans in my region/area,1=Updates on medication insurance coverage for health plans in my region/area",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r2c2",
+    "Description": "D7r2c2: Information on manufacturer support for patients (e.g., co-pay cards, patient financial assistance, etc.) - My Staff - Which of the following applies to how you and your staff prefer to receive information from a manufacturer representative about",
+    "Answer_Options": "0=NO TO: Information on manufacturer support for patients (e.g., co-pay cards, patient financial assistance, etc.),1=Information on manufacturer support for patients (e.g., co-pay cards, patient financial assistance, etc.)",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r3c2",
+    "Description": "D7r3c2: Information on manufacturer support for my practice (e.g., prior authorization support, help with appeals, etc.) - My Staff - Which of the following applies to how you and your staff prefer to receive information from a manufacturer representative",
+    "Answer_Options": "0=NO TO: Information on manufacturer support for my practice (e.g., prior authorization support, help with appeals, etc.),1=Information on manufacturer support for my practice (e.g., prior authorization support, help with appeals, etc.)",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r4c2",
+    "Description": "D7r4c2: Information on what other practices are doing/have done to ease the process of gaining insurance coverage for medications - My Staff - Which of the following applies to how you and your staff prefer to receive information from a manufacturer repre",
+    "Answer_Options": "0=NO TO: Information on what other practices are doing/have done to ease the process of gaining insurance coverage for med,1=Information on what other practices are doing/have done to ease the process of gaining insurance coverage for medication",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r5c2",
+    "Description": "D7r5c2: Personalized coverage updates on medication insurance coverage relevant to the health plans I see in my practice - My Staff - Which of the following applies to how you and your staff prefer to receive information from a manufacturer representative",
+    "Answer_Options": "0=NO TO: Personalized coverage updates on medication insurance coverage relevant to the health plans I see in my practice,1=Personalized coverage updates on medication insurance coverage relevant to the health plans I see in my practice",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r6c2",
+    "Description": "D7r6c2: Information about average copay associated with medication insurance coverage - My Staff - Which of the following applies to how you and your staff prefer to receive information from a manufacturer representative about medication insurance coverag",
+    "Answer_Options": "0=NO TO: Information about average copay associated with medication insurance coverage,1=Information about average copay associated with medication insurance coverage",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r98c2",
+    "Description": "D7r98c2: None of the above - I/they prefer not to receive information from a representative about medication insurance coverage - My Staff - Which of the following applies to how you and your staff prefer to receive information from a manufacturer represe",
+    "Answer_Options": "0=NO TO: None of the above - I/they prefer not to receive information from a representative about medication insurance cov,1=None of the above - I/they prefer not to receive information from a representative about medication insurance coverage",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D8r1",
+    "Description": "D8r1: In-person rep visits - Thinking of manufacturer resources as it relates to medication insurance coverage, how valuable are each of the following formats for the delivery of those resources and information?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all valuable,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately valuable,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely valuable",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r2",
+    "Description": "D8r2: Sales rep presentations - Thinking of manufacturer resources as it relates to medication insurance coverage, how valuable are each of the following formats for the delivery of those resources and information?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all valuable,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately valuable,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely valuable",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r3",
+    "Description": "D8r3: Digital media (i.e., social, banner ads, targeted digital promotions) - Thinking of manufacturer resources as it relates to medication insurance coverage, how valuable are each of the following formats for the delivery of those resources and informa",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all valuable,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately valuable,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely valuable",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r4",
+    "Description": "D8r4: Print materials - Thinking of manufacturer resources as it relates to medication insurance coverage, how valuable are each of the following formats for the delivery of those resources and information?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all valuable,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately valuable,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely valuable",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r5",
+    "Description": "D8r5: Emails - Thinking of manufacturer resources as it relates to medication insurance coverage, how valuable are each of the following formats for the delivery of those resources and information?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all valuable,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately valuable,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely valuable",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D8r6",
+    "Description": "D8r6: Field Reimbursement Manager - Thinking of manufacturer resources as it relates to medication insurance coverage, how valuable are each of the following formats for the delivery of those resources and information?",
+    "Answer_Options": "1=1 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Not at all valuable,2=2,3=3,4=4 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Moderately valuable,5=5,6=6,7=7 $ {\"-\" if gv.request.device.isMobileDevice() else \"\"}Extremely valuable",
+    "ParentQuestion": "D8"
+  },
+  {
+    "Column": "D9r1",
+    "Description": "D9r1: In-person rep visits - Please rank the following in terms of how you prefer to receive information from a manufacturer as it relates to medication insurance coverage. Click on the items below where the first item you select is your most preferred wa",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D9"
+  },
+  {
+    "Column": "D9r5",
+    "Description": "D9r5: Sales rep presentations - Please rank the following in terms of how you prefer to receive information from a manufacturer as it relates to medication insurance coverage. Click on the items below where the first item you select is your most preferred",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D9"
+  },
+  {
+    "Column": "D9r2",
+    "Description": "D9r2: Digital media - Please rank the following in terms of how you prefer to receive information from a manufacturer as it relates to medication insurance coverage. Click on the items below where the first item you select is your most preferred way to re",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D9"
+  },
+  {
+    "Column": "D9r3",
+    "Description": "D9r3: Print materials - Please rank the following in terms of how you prefer to receive information from a manufacturer as it relates to medication insurance coverage. Click on the items below where the first item you select is your most preferred way to",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D9"
+  },
+  {
+    "Column": "D9r4",
+    "Description": "D9r4: Emails - Please rank the following in terms of how you prefer to receive information from a manufacturer as it relates to medication insurance coverage. Click on the items below where the first item you select is your most preferred way to receive i",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D9"
+  },
+  {
+    "Column": "D9r6",
+    "Description": "D9r6: Field Reimbursement Manager - Please rank the following in terms of how you prefer to receive information from a manufacturer as it relates to medication insurance coverage. Click on the items below where the first item you select is your most prefe",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D9"
+  },
+  {
+    "Column": "E1r1c1",
+    "Description": "E1r1c1: Commercial insurance (HMO, PPO, or other private insurance) - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r2c1",
+    "Description": "E1r2c1: Traditional Medicare - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r3c1",
+    "Description": "E1r3c1: Medicare Advantage - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r4c1",
+    "Description": "E1r4c1: Medicaid / Public Aid - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r5c1",
+    "Description": "E1r5c1: VA (Veteran's Administration) or - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r6c1",
+    "Description": "E1r6c1: Department of Defense/Tri Care - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r7c1",
+    "Description": "E1r7c1: No Coverage / Cash Paying - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r8c1",
+    "Description": "E1r8c1: Other - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E2r1c1",
+    "Description": "E2r1c1: Physicians - Please indicate the number of each of the following in your practice, including yourself.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r2c1",
+    "Description": "E2r2c1: Nurse Practitioners/Physician's Assistants - Please indicate the number of each of the following in your practice, including yourself.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r3c1",
+    "Description": "E2r3c1: Office Manager / Reception / Clerical - Please indicate the number of each of the following in your practice, including yourself.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r4c1",
+    "Description": "E2r4c1: Nurses (LPN, RN) - Please indicate the number of each of the following in your practice, including yourself.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r5c1",
+    "Description": "E2r5c1: Medical Assistants - Please indicate the number of each of the following in your practice, including yourself.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r6c1",
+    "Description": "E2r6c1: Biologic Coordinators/Reimbursement Specialists (Specifically dedicated to obtaining coverage for medications) - Please indicate the number of each of the following in your practice, including yourself.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r7c1",
+    "Description": "E2r7c1: Other - Please indicate the number of each of the following in your practice, including yourself.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E4",
+    "Description": "E4: Which best describes your primary practice type?",
+    "Answer_Options": "1=Single-specialty group,2=Multi-specialty group"
+  },
+  {
+    "Column": "E5",
+    "Description": "E5: How many office locations does your practice have?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "E6",
+    "Description": "E6: Which of the following best describes the location of your practice?",
+    "Answer_Options": "1=Urban,2=Suburban,3=Rural"
+  },
+  {
+    "Column": "qtime",
+    "Description": "qtime: Total Interview Time",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "ListAAID",
+    "Description": "ListAAID: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "NPI",
+    "Description": "NPI: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "MDM_ID",
+    "Description": "MDM_ID: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Physician_Name",
+    "Description": "Physician_Name: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Physician_First_Name",
+    "Description": "Physician_First_Name: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Physician_Last_Name",
+    "Description": "Physician_Last_Name: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Specialty",
+    "Description": "Specialty: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Address1",
+    "Description": "Address1: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Address2",
+    "Description": "Address2: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "City",
+    "Description": "City: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "State",
+    "Description": "State: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Zip",
+    "Description": "Zip: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "IgAN_Patients_Predicted",
+    "Description": "IgAN_Patients_Predicted: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C3G_Patients_Confirmed",
+    "Description": "C3G_Patients_Confirmed: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C3G_Patients_Predicted",
+    "Description": "C3G_Patients_Predicted: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Total_C3G_Patients_Confirmed_Predicted",
+    "Description": "Total_C3G_Patients_Confirmed_Predicted: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Total_Patients_IgAN_Predicted_C3G_Confirmed_C3_Predicted",
+    "Description": "Total_Patients_IgAN_Predicted_C3G_Confirmed_C3_Predicted: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Tier",
+    "Description": "Tier: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "TLL_Flag",
+    "Description": "TLL_Flag: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "MSL_Flag",
+    "Description": "MSL_Flag: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "GN_Specialists_From_Nephcure",
+    "Description": "GN_Specialists_From_Nephcure: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Territory_ID",
+    "Description": "Territory_ID: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Territory_Name",
+    "Description": "Territory_Name: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Area_ID",
+    "Description": "Area_ID: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Area_Name",
+    "Description": "Area_Name: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Region_ID",
+    "Description": "Region_ID: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Region_Name",
+    "Description": "Region_Name: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "IMS_Org_ID",
+    "Description": "IMS_Org_ID: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Business_Name",
+    "Description": "Business_Name: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Physical_Addr_1",
+    "Description": "Physical_Addr_1: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Physical_Addr_2",
+    "Description": "Physical_Addr_2: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Physical_City",
+    "Description": "Physical_City: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Physical_State",
+    "Description": "Physical_State: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Physical_Zip",
+    "Description": "Physical_Zip: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "COT_Classification",
+    "Description": "COT_Classification: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "COT_Facility_Type",
+    "Description": "COT_Facility_Type: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "LNGP_Flag_IQVIA",
+    "Description": "LNGP_Flag_IQVIA: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "NVS_LNGP_Assignment_IQVIA",
+    "Description": "NVS_LNGP_Assignment_IQVIA: Captured variable",
+    "Answer_Options": "NA"
+  }
+]

@@ -25,7 +25,6 @@
 *.pem
 
 # pipeline outputs (generated, regenerable)
-/outputs
 /temp-outputs
 
 # debug

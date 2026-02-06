@@ -1,0 +1,1604 @@
+[
+  {
+    "column": "S7",
+    "description": "S7: How many years have you been in clinical practice, post residency/training?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "S11",
+    "description": "S11: What percent of your time is spent in direct patient management as opposed to teaching, research, or administration?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "S15",
+    "description": "S15: Of the total individual cancer patients you managed in the past 12 months, how many were large B-cell lymphoma (LBCL) patients?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "S16r1c1",
+    "description": "S16r1c1: First Line of Therapy (1L)(including patients who are actively receiving therapy, in remission, or are receiving maintenance therapy) - Of the LBCL patients you personally managed in the past 12 months, approximately how many patients were in the",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S16",
+    "context": ""
+  },
+  {
+    "column": "S16r2c1",
+    "description": "S16r2c1: Second Line of Therapy (2L)(including patients who have progressed from 1L but haven’t started next line of therapy) - Of the LBCL patients you personally managed in the past 12 months, approximately how many patients were in the following line",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S16",
+    "context": ""
+  },
+  {
+    "column": "S16r3c1",
+    "description": "S16r3c1: Third Line of Therapy (3L)(including patients who have progressed from 2L but haven’t started next line of therapy) - Of the LBCL patients you personally managed in the past 12 months, approximately how many patients were in the following lines",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S16",
+    "context": ""
+  },
+  {
+    "column": "S16r4c1",
+    "description": "S16r4c1: Fourth Line of Therapy or Beyond(including patients who have progressed from 3L but haven’t started next line of therapy) - Of the LBCL patients you personally managed in the past 12 months, approximately how many patients were in the following",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S16",
+    "context": ""
+  },
+  {
+    "column": "A1",
+    "description": "A1: Of the total LBCL patients you managed in the past 12 months, how many patients have you referred out to another physician team (within or outside of your institution) for management of their continued treatment of LBCL?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "A2r1c1",
+    "description": "A2r1c1: Refractory(Absence of complete remission [CR] from 1L therapy) - Of the relapsed / refractory LBCL patients you managed in the past 12 months, how many fall in each of the following groups based on their response to 1L therapy? Your answers must s",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A2",
+    "context": ""
+  },
+  {
+    "column": "A2r2c1",
+    "description": "A2r2c1: Very Early Relapse (within 2 to 6 months)(Achieved CR, but relapsed within 2 to 6 months from end of 1L therapy) - Of the relapsed / refractory LBCL patients you managed in the past 12 months, how many fall in each of the following groups based on",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A2",
+    "context": ""
+  },
+  {
+    "column": "A2r3c1",
+    "description": "A2r3c1: Early Relapse (within 6 to 12 months)(Achieved CR, but relapsed within 6 to 12 months from end of 1L therapy) - Of the relapsed / refractory LBCL patients you managed in the past 12 months, how many fall in each of the following groups based on th",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A2",
+    "context": ""
+  },
+  {
+    "column": "A2r4c1",
+    "description": "A2r4c1: Late Relapse (after 12 months)(Achieved CR, but relapsed after 12 months from end of 1L therapy) - Of the relapsed / refractory LBCL patients you managed in the past 12 months, how many fall in each of the following groups based on their response",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A2",
+    "context": ""
+  },
+  {
+    "column": "A5a_1r1",
+    "description": "A5a_1r1: Monjuvi (tafasitamab) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2L), whe",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_1",
+    "context": ""
+  },
+  {
+    "column": "A5a_1r2",
+    "description": "A5a_1r2: Polivy (polatuzumab vedotin) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_1",
+    "context": ""
+  },
+  {
+    "column": "A5a_1r3",
+    "description": "A5a_1r3: Other antibody drug conjugates (not Polivy) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second lin",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_1",
+    "context": ""
+  },
+  {
+    "column": "A5a_1r4",
+    "description": "A5a_1r4: Commercially available CAR-T therapy (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank or",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_1",
+    "context": ""
+  },
+  {
+    "column": "A5a_1r6",
+    "description": "A5a_1r6: Autologous stem cell transplant (ASCT) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_1",
+    "context": ""
+  },
+  {
+    "column": "A5a_1r8",
+    "description": "A5a_1r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consid",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_1",
+    "context": ""
+  },
+  {
+    "column": "A5a_1r7",
+    "description": "A5a_1r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy bas",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_1",
+    "context": ""
+  },
+  {
+    "column": "A5a_2r1",
+    "description": "A5a_2r1: Monjuvi (tafasitamab) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2L), whe",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_2",
+    "context": ""
+  },
+  {
+    "column": "A5a_2r2",
+    "description": "A5a_2r2: Polivy (polatuzumab vedotin) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_2",
+    "context": ""
+  },
+  {
+    "column": "A5a_2r3",
+    "description": "A5a_2r3: Other antibody drug conjugates (not Polivy) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second lin",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_2",
+    "context": ""
+  },
+  {
+    "column": "A5a_2r4",
+    "description": "A5a_2r4: Commercially available CAR-T therapy (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank or",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_2",
+    "context": ""
+  },
+  {
+    "column": "A5a_2r6",
+    "description": "A5a_2r6: Autologous stem cell transplant (ASCT) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_2",
+    "context": ""
+  },
+  {
+    "column": "A5a_2r8",
+    "description": "A5a_2r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consid",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_2",
+    "context": ""
+  },
+  {
+    "column": "A5a_2r7",
+    "description": "A5a_2r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy bas",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_2",
+    "context": ""
+  },
+  {
+    "column": "A5a_3r1",
+    "description": "A5a_3r1: Monjuvi (tafasitamab) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2L), whe",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_3",
+    "context": ""
+  },
+  {
+    "column": "A5a_3r2",
+    "description": "A5a_3r2: Polivy (polatuzumab vedotin) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_3",
+    "context": ""
+  },
+  {
+    "column": "A5a_3r3",
+    "description": "A5a_3r3: Other antibody drug conjugates (not Polivy) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second lin",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_3",
+    "context": ""
+  },
+  {
+    "column": "A5a_3r4",
+    "description": "A5a_3r4: Commercially available CAR-T therapy (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank or",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_3",
+    "context": ""
+  },
+  {
+    "column": "A5a_3r6",
+    "description": "A5a_3r6: Autologous stem cell transplant (ASCT) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_3",
+    "context": ""
+  },
+  {
+    "column": "A5a_3r8",
+    "description": "A5a_3r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consid",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_3",
+    "context": ""
+  },
+  {
+    "column": "A5a_3r7",
+    "description": "A5a_3r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy bas",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_3",
+    "context": ""
+  },
+  {
+    "column": "A5a_4r1",
+    "description": "A5a_4r1: Monjuvi (tafasitamab) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2L), whe",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_4",
+    "context": ""
+  },
+  {
+    "column": "A5a_4r2",
+    "description": "A5a_4r2: Polivy (polatuzumab vedotin) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_4",
+    "context": ""
+  },
+  {
+    "column": "A5a_4r3",
+    "description": "A5a_4r3: Other antibody drug conjugates (not Polivy) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second lin",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_4",
+    "context": ""
+  },
+  {
+    "column": "A5a_4r4",
+    "description": "A5a_4r4: Commercially available CAR-T therapy (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank or",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_4",
+    "context": ""
+  },
+  {
+    "column": "A5a_4r6",
+    "description": "A5a_4r6: Autologous stem cell transplant (ASCT) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_4",
+    "context": ""
+  },
+  {
+    "column": "A5a_4r8",
+    "description": "A5a_4r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consid",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_4",
+    "context": ""
+  },
+  {
+    "column": "A5a_4r7",
+    "description": "A5a_4r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy bas",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5a_4",
+    "context": ""
+  },
+  {
+    "column": "A5b_1r1",
+    "description": "A5b_1r1: Monjuvi (tafasitamab) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each therapy ba",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_1",
+    "context": ""
+  },
+  {
+    "column": "A5b_1r2",
+    "description": "A5b_1r2: Polivy (polatuzumab vedotin) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each the",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_1",
+    "context": ""
+  },
+  {
+    "column": "A5b_1r3",
+    "description": "A5b_1r3: Other antibody drug conjugates (not Polivy) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_1",
+    "context": ""
+  },
+  {
+    "column": "A5b_1r4",
+    "description": "A5b_1r4: Commercially available CAR-T therapy [Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type rece",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_1",
+    "context": ""
+  },
+  {
+    "column": "A5b_1r5",
+    "description": "A5b_1r5: Bispecifics [Columvi (glofitamab) or Epkinly (epcoritamab)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_1",
+    "context": ""
+  },
+  {
+    "column": "A5b_1r6",
+    "description": "A5b_1r6: Autologous stem cell transplant (ASCT) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank orde",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_1",
+    "context": ""
+  },
+  {
+    "column": "A5b_1r8",
+    "description": "A5b_1r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific trea",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_1",
+    "context": ""
+  },
+  {
+    "column": "A5b_1r7",
+    "description": "A5b_1r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_1",
+    "context": ""
+  },
+  {
+    "column": "A5b_2r1",
+    "description": "A5b_2r1: Monjuvi (tafasitamab) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each therapy ba",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_2",
+    "context": ""
+  },
+  {
+    "column": "A5b_2r2",
+    "description": "A5b_2r2: Polivy (polatuzumab vedotin) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each the",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_2",
+    "context": ""
+  },
+  {
+    "column": "A5b_2r3",
+    "description": "A5b_2r3: Other antibody drug conjugates (not Polivy) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_2",
+    "context": ""
+  },
+  {
+    "column": "A5b_2r4",
+    "description": "A5b_2r4: Commercially available CAR-T therapy [Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type rece",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_2",
+    "context": ""
+  },
+  {
+    "column": "A5b_2r5",
+    "description": "A5b_2r5: Bispecifics [Columvi (glofitamab) or Epkinly (epcoritamab)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_2",
+    "context": ""
+  },
+  {
+    "column": "A5b_2r6",
+    "description": "A5b_2r6: Autologous stem cell transplant (ASCT) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank orde",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_2",
+    "context": ""
+  },
+  {
+    "column": "A5b_2r8",
+    "description": "A5b_2r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific trea",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_2",
+    "context": ""
+  },
+  {
+    "column": "A5b_2r7",
+    "description": "A5b_2r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_2",
+    "context": ""
+  },
+  {
+    "column": "A5b_3r1",
+    "description": "A5b_3r1: Monjuvi (tafasitamab) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each therapy ba",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_3",
+    "context": ""
+  },
+  {
+    "column": "A5b_3r2",
+    "description": "A5b_3r2: Polivy (polatuzumab vedotin) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each the",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_3",
+    "context": ""
+  },
+  {
+    "column": "A5b_3r3",
+    "description": "A5b_3r3: Other antibody drug conjugates (not Polivy) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_3",
+    "context": ""
+  },
+  {
+    "column": "A5b_3r4",
+    "description": "A5b_3r4: Commercially available CAR-T therapy [Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type rece",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_3",
+    "context": ""
+  },
+  {
+    "column": "A5b_3r5",
+    "description": "A5b_3r5: Bispecifics [Columvi (glofitamab) or Epkinly (epcoritamab)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_3",
+    "context": ""
+  },
+  {
+    "column": "A5b_3r6",
+    "description": "A5b_3r6: Autologous stem cell transplant (ASCT) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank orde",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_3",
+    "context": ""
+  },
+  {
+    "column": "A5b_3r8",
+    "description": "A5b_3r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific trea",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_3",
+    "context": ""
+  },
+  {
+    "column": "A5b_3r7",
+    "description": "A5b_3r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_3",
+    "context": ""
+  },
+  {
+    "column": "A5b_4r1",
+    "description": "A5b_4r1: Monjuvi (tafasitamab) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each therapy ba",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_4",
+    "context": ""
+  },
+  {
+    "column": "A5b_4r2",
+    "description": "A5b_4r2: Polivy (polatuzumab vedotin) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each the",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_4",
+    "context": ""
+  },
+  {
+    "column": "A5b_4r3",
+    "description": "A5b_4r3: Other antibody drug conjugates (not Polivy) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_4",
+    "context": ""
+  },
+  {
+    "column": "A5b_4r4",
+    "description": "A5b_4r4: Commercially available CAR-T therapy [Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type rece",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_4",
+    "context": ""
+  },
+  {
+    "column": "A5b_4r5",
+    "description": "A5b_4r5: Bispecifics [Columvi (glofitamab) or Epkinly (epcoritamab)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_4",
+    "context": ""
+  },
+  {
+    "column": "A5b_4r6",
+    "description": "A5b_4r6: Autologous stem cell transplant (ASCT) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank orde",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_4",
+    "context": ""
+  },
+  {
+    "column": "A5b_4r8",
+    "description": "A5b_4r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific trea",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_4",
+    "context": ""
+  },
+  {
+    "column": "A5b_4r7",
+    "description": "A5b_4r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5b_4",
+    "context": ""
+  },
+  {
+    "column": "A6r1c1",
+    "description": "A6r1c1: Monjuvi (tafasitamab) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider all patients, including",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r2c1",
+    "description": "A6r2c1: Polivy (polatuzumab vedotin) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider all patients, inc",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r3c1",
+    "description": "A6r3c1: Other antibody drug conjugates (not Polivy) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider al",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r4c1",
+    "description": "A6r4c1: Commercially available CAR-T therapy (Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the pas",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r5c1",
+    "description": "A6r5c1: Bispecifics (Columvi (glofitamab) or Epkinly (epcoritamab)) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Pl",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r6c1",
+    "description": "A6r6c1: Autologous stem cell transplant (ASCT) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider all pat",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r8c1",
+    "description": "A6r8c1: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following ad",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r7c1",
+    "description": "A6r7c1: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r98c1",
+    "description": "A6r98c1: Other treatments - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider all patients, including thos",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r1c2",
+    "description": "A6r1c2: Monjuvi (tafasitamab) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider all patients,",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r2c2",
+    "description": "A6r2c2: Polivy (polatuzumab vedotin) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider all pat",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r3c2",
+    "description": "A6r3c2: Other antibody drug conjugates (not Polivy) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please c",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r4c2",
+    "description": "A6r4c2: Commercially available CAR-T therapy (Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r5c2",
+    "description": "A6r5c2: Bispecifics (Columvi (glofitamab) or Epkinly (epcoritamab)) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced the",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r6c2",
+    "description": "A6r6c2: Autologous stem cell transplant (ASCT) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consid",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r8c2",
+    "description": "A6r8c2: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the fo",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r7c2",
+    "description": "A6r7c2: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approxi",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A6r98c2",
+    "description": "A6r98c2: Other treatments - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider all patients, incl",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A6",
+    "context": ""
+  },
+  {
+    "column": "A8",
+    "description": "A8: In the past 12 months, for approximately what portion of your 1st line LBCL patients have you included Polivy in frontline treatment?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "A9r1c1",
+    "description": "A9r1c1: Referred for CAR-T therapy - You previously indicated you referred LBCL patients out for continued treatment. Of these referred patients, how many did you refer with each of the following expectations?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A9",
+    "context": ""
+  },
+  {
+    "column": "A9r2c1",
+    "description": "A9r2c1: Referred for ASCT treatment - You previously indicated you referred LBCL patients out for continued treatment. Of these referred patients, how many did you refer with each of the following expectations?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A9",
+    "context": ""
+  },
+  {
+    "column": "A9r3c1",
+    "description": "A9r3c1: Referred for other advanced therapy - You previously indicated you referred LBCL patients out for continued treatment. Of these referred patients, how many did you refer with each of the following expectations?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A9",
+    "context": ""
+  },
+  {
+    "column": "A9r4c1",
+    "description": "A9r4c1: Referred without a specific therapy in mind(i.e., will let physician accepting referral decide) - You previously indicated you referred LBCL patients out for continued treatment. Of these referred patients, how many did you refer with each of the",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A9",
+    "context": ""
+  },
+  {
+    "column": "B4r1",
+    "description": "B4r1: Yescarta (axicabtagene ciloleucel), Kite/Gilead - Of the relapsed / refractory LBCL patients you treated with CAR-T in the past 12 months, how many patients were treated with each of the following? Please consider both inpatient and outpatient. Your",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B4",
+    "context": ""
+  },
+  {
+    "column": "B4r2",
+    "description": "B4r2: Kymriah (tisagenlecleucel), Novartis - Of the relapsed / refractory LBCL patients you treated with CAR-T in the past 12 months, how many patients were treated with each of the following? Please consider both inpatient and outpatient. Your answers mu",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B4",
+    "context": ""
+  },
+  {
+    "column": "B4r3",
+    "description": "B4r3: Breyanzi (lisocabtagene maraleucel), Bristol Myers Squibb - Of the relapsed / refractory LBCL patients you treated with CAR-T in the past 12 months, how many patients were treated with each of the following? Please consider both inpatient and outpat",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B4",
+    "context": ""
+  },
+  {
+    "column": "vB4Calcr1",
+    "description": "vB4Calcr1: Yescarta Loyalist - Calculate percents of total for each product: B4_X / TOTAL A6_4",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "vB4Calc",
+    "context": ""
+  },
+  {
+    "column": "vB4Calcr2",
+    "description": "vB4Calcr2: Breyanzi Loyalist - Calculate percents of total for each product: B4_X / TOTAL A6_4",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "vB4Calc",
+    "context": ""
+  },
+  {
+    "column": "vB4Calcr3",
+    "description": "vB4Calcr3: Kymriah Loyalist - Calculate percents of total for each product: B4_X / TOTAL A6_4",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "vB4Calc",
+    "context": ""
+  },
+  {
+    "column": "B5r1",
+    "description": "B5r1: Received CAR-T in the outpatient setting - Of the relapsed / refractory LBCL patients you have treated and/or referred for treatment with CAR-T in the past 12 months, what percentage of these patients received CAR-T in an outpatient vs. inpatient se",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B5",
+    "context": ""
+  },
+  {
+    "column": "B5r2",
+    "description": "B5r2: Received CAR-T in the inpatient setting - Of the relapsed / refractory LBCL patients you have treated and/or referred for treatment with CAR-T in the past 12 months, what percentage of these patients received CAR-T in an outpatient vs. inpatient set",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B5",
+    "context": ""
+  },
+  {
+    "column": "B5ar1c1",
+    "description": "B5ar1c1: Yescarta (axicabtagene ciloleucel), Kite/Gilead - Of the relapsed / refractory LBCL patients you treated with CAR-T in the outpatient setting in the past 12 months, what percentage were treated with each of the following?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B5a",
+    "context": ""
+  },
+  {
+    "column": "B5ar2c1",
+    "description": "B5ar2c1: Kymriah (tisagenlecleucel), Novartis - Of the relapsed / refractory LBCL patients you treated with CAR-T in the outpatient setting in the past 12 months, what percentage were treated with each of the following?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B5a",
+    "context": ""
+  },
+  {
+    "column": "B5ar3c1",
+    "description": "B5ar3c1: Breyanzi (lisocabtagene maraleucel), Bristol Myers Squibb - Of the relapsed / refractory LBCL patients you treated with CAR-T in the outpatient setting in the past 12 months, what percentage were treated with each of the following?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B5a",
+    "context": ""
+  },
+  {
+    "column": "B8b",
+    "description": "B8b: Assuming an LBCL patient has an ECOG of 1, no comorbidities, and relapsed within 12 months, up to what age would you consider CAR-T treatment? That is, is there an age above which you would not consider CAR-T?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C1",
+    "description": "C1: Thinking about the next 12 months, approximately how many total LBCL patients (all lines of therapy) do you expect to manage? Your answer for the past 12 months is shown for reference.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "D4r1",
+    "description": "D4r1: Patient CAR-T Educational Materials - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D4",
+    "context": ""
+  },
+  {
+    "column": "D4r2",
+    "description": "D4r2: Patient Financial Support - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D4",
+    "context": ""
+  },
+  {
+    "column": "D4r3",
+    "description": "D4r3: Access & Reimbursement Tools/Support - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D4",
+    "context": ""
+  },
+  {
+    "column": "D4r4",
+    "description": "D4r4: Patient Lodging/Housing for Treatment - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D4",
+    "context": ""
+  },
+  {
+    "column": "D4r5",
+    "description": "D4r5: Patient Transportation for Treatment - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D4",
+    "context": ""
+  },
+  {
+    "column": "D4r6",
+    "description": "D4r6: Patient Meal Assistance during Treatment - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D4",
+    "context": ""
+  },
+  {
+    "column": "D4r7",
+    "description": "D4r7: Dedicated Patient Support Navigators - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D4",
+    "context": ""
+  },
+  {
+    "column": "D4r8",
+    "description": "D4r8: 24/7 Call Line Support for Patients and HCPs - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D4",
+    "context": ""
+  },
+  {
+    "column": "D4r9",
+    "description": "D4r9: HCP Training Programs (e.g., REMS Training) - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D4",
+    "context": ""
+  },
+  {
+    "column": "D4r10",
+    "description": "D4r10: Provision of a Patient Caregiver - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D4",
+    "context": ""
+  },
+  {
+    "column": "D4r11",
+    "description": "D4r11: Support for Household of Patient/Caregiver (e.g., housecleaning, child support, petsitting) - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D4",
+    "context": ""
+  },
+  {
+    "column": "E0",
+    "description": "E0: On average, how many hours per week in total do you spend on keeping abreast of medical developments or medical education, specifically related to Large B-cell Lymphoma? This would include any of the following activities: reading medical journals revi",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "E2r1",
+    "description": "E2r1: Cancer advocacy / research non-profits (e.g., NCCN, Leukemia & Lymphoma Society (LLS)) - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r2",
+    "description": "E2r2: Medical societies - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r3",
+    "description": "E2r3: Key opinion leaders / influential peers or specialists in the field - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r4",
+    "description": "E2r4: Congress or trade shows with manufacturer symposia - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r5",
+    "description": "E2r5: Digital or print newsletters and journals (e.g., OncLive, Epocrates, Medscape) - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r6",
+    "description": "E2r6: Manufacturer field/sales representatives - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r7",
+    "description": "E2r7: Manufacturer medical science liaisons - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r8",
+    "description": "E2r8: Manufacturer sponsored advertisement on medical website - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r9",
+    "description": "E2r9: Dinner meetings / roundtable discussions - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r10",
+    "description": "E2r10: HCP educational platforms (e.g., VuMedi, Medscape) - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r11",
+    "description": "E2r11: Professional networking platforms (e.g., Doximity, LinkedIn) - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r12",
+    "description": "E2r12: Social media (e.g., Twitter, Facebook, Instagram) - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r13",
+    "description": "E2r13: Podcasts - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r14",
+    "description": "E2r14: Medical & health websites (e.g., UptoDate) - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r15",
+    "description": "E2r15: Other: - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E5r1c1",
+    "description": "E5r1c1: Kite/Gilead (Yescarta) - How many times in the past 12 months have you interacted with pharmaceutical representatives from the following manufacturers specifically to discuss LBCL treatments?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E5",
+    "context": ""
+  },
+  {
+    "column": "E5r2c1",
+    "description": "E5r2c1: BMS (Breyanzi) - How many times in the past 12 months have you interacted with pharmaceutical representatives from the following manufacturers specifically to discuss LBCL treatments?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E5",
+    "context": ""
+  },
+  {
+    "column": "E5r3c1",
+    "description": "E5r3c1: Novartis (Kymriah) - How many times in the past 12 months have you interacted with pharmaceutical representatives from the following manufacturers specifically to discuss LBCL treatments?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E5",
+    "context": ""
+  },
+  {
+    "column": "E5r4c1",
+    "description": "E5r4c1: Abbvie (Epkinly) - How many times in the past 12 months have you interacted with pharmaceutical representatives from the following manufacturers specifically to discuss LBCL treatments?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E5",
+    "context": ""
+  },
+  {
+    "column": "E5r5c1",
+    "description": "E5r5c1: Genentech (Columvi) - How many times in the past 12 months have you interacted with pharmaceutical representatives from the following manufacturers specifically to discuss LBCL treatments?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E5",
+    "context": ""
+  },
+  {
+    "column": "E8r1",
+    "description": "E8r1: National/international conferences or seminars - In a typical year, approximately how many LBCL related medical conferences or seminars do you attend?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E8",
+    "context": ""
+  },
+  {
+    "column": "E8r2",
+    "description": "E8r2: Regional/local conferences or seminars - In a typical year, approximately how many LBCL related medical conferences or seminars do you attend?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E8",
+    "context": ""
+  },
+  {
+    "column": "F6ar1",
+    "description": "F6ar1: Physicians - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice/institution?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F6a",
+    "context": ""
+  },
+  {
+    "column": "F6ar2",
+    "description": "F6ar2: Nurse Practitioners/Physicians Assistants - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice/institution?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F6a",
+    "context": ""
+  },
+  {
+    "column": "F6ar3",
+    "description": "F6ar3: Nurse Coordinators - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice/institution?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F6a",
+    "context": ""
+  },
+  {
+    "column": "F6ar4",
+    "description": "F6ar4: Nurses or Medical Assistants - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice/institution?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F6a",
+    "context": ""
+  },
+  {
+    "column": "F6ar5",
+    "description": "F6ar5: Other Support Staff - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice/institution?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F6a",
+    "context": ""
+  },
+  {
+    "column": "F7r1",
+    "description": "F7r1: Commercial health insurance - What percent of all your LBCL patients have the following types of health coverage? Your answers may sum to more than 100% to account for multiple coverage types.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F7",
+    "context": ""
+  },
+  {
+    "column": "F7r2",
+    "description": "F7r2: Medicare/Medicare/Military coverage - What percent of all your LBCL patients have the following types of health coverage? Your answers may sum to more than 100% to account for multiple coverage types.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F7",
+    "context": ""
+  },
+  {
+    "column": "F7r3",
+    "description": "F7r3: No insurance, cash only - What percent of all your LBCL patients have the following types of health coverage? Your answers may sum to more than 100% to account for multiple coverage types.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F7",
+    "context": ""
+  },
+  {
+    "column": "RR_PATIENTS",
+    "description": "RR_PATIENTS: HIDDEN IN LIVE - S16_R2 + S16_R3 + S16_R4",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "hA6_2L_percentagesr1",
+    "description": "hA6_2L_percentagesr1: Monjuvi (tafasitamab) - A6 2nd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_2L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_2L_percentagesr2",
+    "description": "hA6_2L_percentagesr2: Polivy (polatuzumab vedotin) - A6 2nd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_2L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_2L_percentagesr3",
+    "description": "hA6_2L_percentagesr3: Other antibody drug conjugates (not Polivy) - A6 2nd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_2L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_2L_percentagesr4",
+    "description": "hA6_2L_percentagesr4: CAR-T therapy (Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)) - A6 2nd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_2L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_2L_percentagesr5",
+    "description": "hA6_2L_percentagesr5: Bispecifics (Columvi (glofitamab) or Epkinly (epcoritamab)) - A6 2nd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_2L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_2L_percentagesr6",
+    "description": "hA6_2L_percentagesr6: Autologous stem cell transplant (ASCT) - A6 2nd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_2L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_2L_percentagesr7",
+    "description": "hA6_2L_percentagesr7: Clinical trials - A6 2nd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_2L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_2L_percentagesr8",
+    "description": "hA6_2L_percentagesr8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - A6 2nd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_2L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_2L_percentagesr98",
+    "description": "hA6_2L_percentagesr98: Other treatments - A6 2nd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_2L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_3L_percentagesr1",
+    "description": "hA6_3L_percentagesr1: Monjuvi (tafasitamab) - A6 3rd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_3L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_3L_percentagesr2",
+    "description": "hA6_3L_percentagesr2: Polivy (polatuzumab vedotin) - A6 3rd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_3L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_3L_percentagesr3",
+    "description": "hA6_3L_percentagesr3: Other antibody drug conjugates (not Polivy) - A6 3rd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_3L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_3L_percentagesr4",
+    "description": "hA6_3L_percentagesr4: CAR-T therapy (Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)) - A6 3rd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_3L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_3L_percentagesr5",
+    "description": "hA6_3L_percentagesr5: Bispecifics (Columvi (glofitamab) or Epkinly (epcoritamab)) - A6 3rd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_3L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_3L_percentagesr6",
+    "description": "hA6_3L_percentagesr6: Autologous stem cell transplant (ASCT) - A6 3rd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_3L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_3L_percentagesr7",
+    "description": "hA6_3L_percentagesr7: Clinical trials - A6 3rd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_3L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_3L_percentagesr8",
+    "description": "hA6_3L_percentagesr8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - A6 3rd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_3L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_3L_percentagesr98",
+    "description": "hA6_3L_percentagesr98: Other treatments - A6 3rd line percentages",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_3L_percentages",
+    "context": ""
+  },
+  {
+    "column": "hA6_SUMr1",
+    "description": "hA6_SUMr1: Monjuvi SUM - HIDDEN IN LIVE",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_SUM",
+    "context": ""
+  },
+  {
+    "column": "hA6_SUMr2",
+    "description": "hA6_SUMr2: Polivy SUM - HIDDEN IN LIVE",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_SUM",
+    "context": ""
+  },
+  {
+    "column": "hA6_SUMr3",
+    "description": "hA6_SUMr3: Other ADC SUM - HIDDEN IN LIVE",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_SUM",
+    "context": ""
+  },
+  {
+    "column": "hA6_SUMr4",
+    "description": "hA6_SUMr4: CAR-T SUM - HIDDEN IN LIVE",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_SUM",
+    "context": ""
+  },
+  {
+    "column": "hA6_SUMr5",
+    "description": "hA6_SUMr5: BISP SUM - HIDDEN IN LIVE",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_SUM",
+    "context": ""
+  },
+  {
+    "column": "hA6_SUMr6",
+    "description": "hA6_SUMr6: ASCT SUM - HIDDEN IN LIVE",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_SUM",
+    "context": ""
+  },
+  {
+    "column": "hA6_SUMr7",
+    "description": "hA6_SUMr7: CLINICAL TRIAL SUM - HIDDEN IN LIVE",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_SUM",
+    "context": ""
+  },
+  {
+    "column": "hA6_SUMr8",
+    "description": "hA6_SUMr8: CHEMO SUM - HIDDEN IN LIVE",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_SUM",
+    "context": ""
+  },
+  {
+    "column": "hA6_SUMr98",
+    "description": "hA6_SUMr98: OTHER SUM - HIDDEN IN LIVE",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "hA6_SUM",
+    "context": ""
+  }
+]

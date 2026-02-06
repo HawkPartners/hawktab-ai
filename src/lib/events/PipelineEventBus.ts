@@ -23,6 +23,8 @@ import type {
   ValidationStageCompleteEvent,
   ValidationWarningEvent,
   ValidationCompleteEvent,
+  SystemLogEvent,
+  SystemLogLevel,
 } from './types';
 
 // =============================================================================
@@ -262,6 +264,21 @@ class PipelineEventBus extends EventEmitter {
       errorCount,
       warningCount,
       durationMs,
+      timestamp: Date.now(),
+    };
+    this.emitEvent(event);
+  }
+
+  // =============================================================================
+  // System Log Helpers
+  // =============================================================================
+
+  emitSystemLog(level: SystemLogLevel, message: string, stageName?: string): void {
+    const event: SystemLogEvent = {
+      type: 'system:log',
+      level,
+      message,
+      stageName,
       timestamp: Date.now(),
     };
     this.emitEvent(event);

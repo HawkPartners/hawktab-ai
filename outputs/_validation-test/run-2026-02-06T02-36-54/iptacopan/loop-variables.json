@@ -1,0 +1,96 @@
+[
+  {
+    "pattern": "B-N-a-_-N-r-N",
+    "iteratorPosition": 4,
+    "iterations": [
+      "3",
+      "6"
+    ],
+    "iterationCount": 2,
+    "diversity": 8,
+    "baseCount": 8,
+    "totalVariables": 16,
+    "variables": [
+      "B1a_3r1",
+      "B1a_3r2",
+      "B1a_3r3",
+      "B1a_6r1",
+      "B1a_6r2",
+      "B1a_6r3",
+      "B2a_3r1",
+      "B2a_3r2",
+      "B2a_3r3",
+      "B2a_3r4",
+      "B2a_3r5",
+      "B2a_6r1",
+      "B2a_6r2",
+      "B2a_6r3",
+      "B2a_6r4",
+      "B2a_6r5"
+    ],
+    "byIteration": {
+      "iteration_3": [
+        "B1a_3r1",
+        "B1a_3r2",
+        "B1a_3r3",
+        "B2a_3r1",
+        "B2a_3r2",
+        "B2a_3r3",
+        "B2a_3r4",
+        "B2a_3r5"
+      ],
+      "iteration_6": [
+        "B1a_6r1",
+        "B1a_6r2",
+        "B1a_6r3",
+        "B2a_6r1",
+        "B2a_6r2",
+        "B2a_6r3",
+        "B2a_6r4",
+        "B2a_6r5"
+      ]
+    }
+  },
+  {
+    "pattern": "B-N-b-_-N-r-N",
+    "iteratorPosition": 4,
+    "iterations": [
+      "6",
+      "9"
+    ],
+    "iterationCount": 2,
+    "diversity": 8,
+    "baseCount": 8,
+    "totalVariables": 11,
+    "variables": [
+      "B1b_6r1",
+      "B1b_6r2",
+      "B1b_6r3",
+      "B1b_9r1",
+      "B1b_9r2",
+      "B1b_9r3",
+      "B2b_6r1",
+      "B2b_6r2",
+      "B2b_6r3",
+      "B2b_6r4",
+      "B2b_6r5"
+    ],
+    "byIteration": {
+      "iteration_6": [
+        "B1b_6r1",
+        "B1b_6r2",
+        "B1b_6r3",
+        "B2b_6r1",
+        "B2b_6r2",
+        "B2b_6r3",
+        "B2b_6r4",
+        "B2b_6r5"
+      ],
+      "iteration_9": [
+        "B1b_9r1",
+        "B1b_9r2",
+        "B1b_9r3"
+      ]
+    }
+  }
+]

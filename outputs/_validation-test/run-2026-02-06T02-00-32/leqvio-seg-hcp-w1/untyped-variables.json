@@ -1,0 +1,1523 @@
+[
+  {
+    "column": "S6",
+    "description": "S6: How many years have you been in clinical practice, post residency/training?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "S8r1c1",
+    "description": "S8r1c1: Treating/Managing patients - Approximately what percentage of your professional time is spent performing each of the following activities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S8",
+    "context": ""
+  },
+  {
+    "column": "S8r2c1",
+    "description": "S8r2c1: Performing academic functions (e.g., teaching, publishing) - Approximately what percentage of your professional time is spent performing each of the following activities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S8",
+    "context": ""
+  },
+  {
+    "column": "S8r3c1",
+    "description": "S8r3c1: Participating in clinical research - Approximately what percentage of your professional time is spent performing each of the following activities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S8",
+    "context": ""
+  },
+  {
+    "column": "S8r4c1",
+    "description": "S8r4c1: Performing other functions - Approximately what percentage of your professional time is spent performing each of the following activities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S8",
+    "context": ""
+  },
+  {
+    "column": "S10",
+    "description": "S10: Using your best estimate, how many adult patients, age 18 or older, do you personally manage in your practice in a month?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "S11",
+    "description": "S11: Of those [pipe:S10] adult patients, how may have a confirmed diagnosis of hypercholesterolemia?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "S12r1c1",
+    "description": "S12r1c1: Established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Of those [pipe:S11] adult patients with a diagnosis of hypercholesterolemia, how many fit into the following categories?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S12",
+    "context": ""
+  },
+  {
+    "column": "S12r2c1",
+    "description": "S12r2c1: Familial Hypercholesterolemia (FH) - Of those [pipe:S11] adult patients with a diagnosis of hypercholesterolemia, how many fit into the following categories?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S12",
+    "context": ""
+  },
+  {
+    "column": "S12r3c1",
+    "description": "S12r3c1: Patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Of those [pipe:S11] adult patients with a diagnosis of hypercholesterolemia, how many fit into the following ca",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S12",
+    "context": ""
+  },
+  {
+    "column": "S13r1c1",
+    "description": "S13r1c1: # of patients - Established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of adult patients in these categories, for how many of them do you personally make prescribing choices for their cholesterol treatment (rat",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "S13r1c2",
+    "description": "S13r1c2: # of patients on prescription drug therapy that you personally prescribe - Established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of adult patients in these categories, for how many of them do you personally ma",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "S13r3c1",
+    "description": "S13r3c1: # of patients - Patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of adult patients in these categories, for how many of them do you personally make pre",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "S13r3c2",
+    "description": "S13r3c2: # of patients on prescription drug therapy that you personally prescribe - Patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of adult patients in these",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "A1r1c1",
+    "description": "A1r1c1: Diet & exercise alone - Patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - What % of your patients are able to control their LDL-C with …?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A1",
+    "context": ""
+  },
+  {
+    "column": "A1r2c1",
+    "description": "A1r2c1: Statin therapy only - Patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - What % of your patients are able to control their LDL-C with …?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A1",
+    "context": ""
+  },
+  {
+    "column": "A1r3c1",
+    "description": "A1r3c1: Oral therapies beyond statins (including ezetimibe, Nexletol/Nexlizet, etc.) - Patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - What % of your patients are able to control their LDL-C with …?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A1",
+    "context": ""
+  },
+  {
+    "column": "A1r4c1",
+    "description": "A1r4c1: Require injectable therapy (e.g., Repatha, Leqvio, Praluent) - Patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - What % of your patients are able to control their LDL-C with …?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A1",
+    "context": ""
+  },
+  {
+    "column": "A1r1c2",
+    "description": "A1r1c2: Diet & exercise alone - Patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - What % of your patients are able to control their LDL-C with …?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A1",
+    "context": ""
+  },
+  {
+    "column": "A1r2c2",
+    "description": "A1r2c2: Statin therapy only - Patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - What % of your patients are able to control their LDL-C with …?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A1",
+    "context": ""
+  },
+  {
+    "column": "A1r3c2",
+    "description": "A1r3c2: Oral therapies beyond statins (including ezetimibe, Nexletol/Nexlizet, etc.) - Patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - What % of your patients are able",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A1",
+    "context": ""
+  },
+  {
+    "column": "A1r4c2",
+    "description": "A1r4c2: Require injectable therapy (e.g., Repatha, Leqvio, Praluent) - Patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - What % of your patients are able to control their",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A1",
+    "context": ""
+  },
+  {
+    "column": "A3r1c1",
+    "description": "A3r1c1: Leqvio (inclisiran) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of your NEXT 100 patients of each type who require therapy in addition to statins to lower LDL-C and/or to redu",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r2c1",
+    "description": "A3r2c1: Praluent (alirocumab) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of your NEXT 100 patients of each type who require therapy in addition to statins to lower LDL-C and/or to re",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r3c1",
+    "description": "A3r3c1: Repatha (evolocumab) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of your NEXT 100 patients of each type who require therapy in addition to statins to lower LDL-C and/or to red",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r4c1",
+    "description": "A3r4c1: Zetia (ezetimibe) or generic - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of your NEXT 100 patients of each type who require therapy in addition to statins to lower LDL-C and/o",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r5c1",
+    "description": "A3r5c1: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of your NEXT 100 patients of each type who require therapy in",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r13c1",
+    "description": "A3r13c1: Other - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of your NEXT 100 patients of each type who require therapy in addition to statins to lower LDL-C and/or to reduce the risk o",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r14c1",
+    "description": "A3r14c1: No additional therapy - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of your NEXT 100 patients of each type who require therapy in addition to statins to lower LDL-C and/or to r",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r1c2",
+    "description": "A3r1c2: Leqvio (inclisiran) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of your NEXT 100 patients of each type who require therapy in addition t",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r2c2",
+    "description": "A3r2c2: Praluent (alirocumab) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of your NEXT 100 patients of each type who require therapy in addition",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r3c2",
+    "description": "A3r3c2: Repatha (evolocumab) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of your NEXT 100 patients of each type who require therapy in addition",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r4c2",
+    "description": "A3r4c2: Zetia (ezetimibe) or generic - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of your NEXT 100 patients of each type who require therapy in a",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r5c2",
+    "description": "A3r5c2: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of your NEXT 100 patien",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r13c2",
+    "description": "A3r13c2: Other - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of your NEXT 100 patients of each type who require therapy in addition to statins to",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r14c2",
+    "description": "A3r14c2: No additional therapy - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of your NEXT 100 patients of each type who require therapy in additio",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "B5r1c1",
+    "description": "B5r1c1: Leqvio (inclisiran) - In the past 3 months, approximately how many times have patients with established CVD asked you for each of the following therapies?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B5",
+    "context": ""
+  },
+  {
+    "column": "B5r2c1",
+    "description": "B5r2c1: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - In the past 3 months, approximately how many times have patients with established CVD asked you for each of the following therapies?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B5",
+    "context": ""
+  },
+  {
+    "column": "B5r3c1",
+    "description": "B5r3c1: Repatha (evolocumab) - In the past 3 months, approximately how many times have patients with established CVD asked you for each of the following therapies?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B5",
+    "context": ""
+  },
+  {
+    "column": "B6r1c1",
+    "description": "B6r1c1: # of Patients Requesting Therapy - Leqvio (inclisiran) - And for approximately how many of the patients requesting did you ultimately end up prescribing?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B6",
+    "context": ""
+  },
+  {
+    "column": "B6r1c2",
+    "description": "B6r1c2: # of Patients Granted Request - Leqvio (inclisiran) - And for approximately how many of the patients requesting did you ultimately end up prescribing?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B6",
+    "context": ""
+  },
+  {
+    "column": "B6r2c1",
+    "description": "B6r2c1: # of Patients Requesting Therapy - Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - And for approximately how many of the patients requesting did you ultimately end up prescribing?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B6",
+    "context": ""
+  },
+  {
+    "column": "B6r2c2",
+    "description": "B6r2c2: # of Patients Granted Request - Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - And for approximately how many of the patients requesting did you ultimately end up prescribing?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B6",
+    "context": ""
+  },
+  {
+    "column": "B6r3c1",
+    "description": "B6r3c1: # of Patients Requesting Therapy - Repatha (evolocumab) - And for approximately how many of the patients requesting did you ultimately end up prescribing?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B6",
+    "context": ""
+  },
+  {
+    "column": "B6r3c2",
+    "description": "B6r3c2: # of Patients Granted Request - Repatha (evolocumab) - And for approximately how many of the patients requesting did you ultimately end up prescribing?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B6",
+    "context": ""
+  },
+  {
+    "column": "B12r1c1",
+    "description": "B12r1c1: No coverage / cash paying - % of $ {res.eCVD} patients - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B12",
+    "context": ""
+  },
+  {
+    "column": "B12r2c1",
+    "description": "B12r2c1: Commercial insurance (HMO, PPO, or other private insurance – may be a Medicare supplement) - % of $ {res.eCVD} patients - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B12",
+    "context": ""
+  },
+  {
+    "column": "B12r3c1",
+    "description": "B12r3c1: Medicaid / Public Aid - % of $ {res.eCVD} patients - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B12",
+    "context": ""
+  },
+  {
+    "column": "B12r4c1",
+    "description": "B12r4c1: Traditional Medicare - % of $ {res.eCVD} patients - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B12",
+    "context": ""
+  },
+  {
+    "column": "B12r5c1",
+    "description": "B12r5c1: Medicare Advantage - % of $ {res.eCVD} patients - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B12",
+    "context": ""
+  },
+  {
+    "column": "B12r6c1",
+    "description": "B12r6c1: VA (Veterans’ Administration) or Department of Defense - % of $ {res.eCVD} patients - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B12",
+    "context": ""
+  },
+  {
+    "column": "B12r7c1",
+    "description": "B12r7c1: Other, please specify - % of $ {res.eCVD} patients - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B12",
+    "context": ""
+  },
+  {
+    "column": "B12r1c2",
+    "description": "B12r1c2: No coverage / cash paying - % of patients at $ {res.hrCVD} - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B12",
+    "context": ""
+  },
+  {
+    "column": "B12r2c2",
+    "description": "B12r2c2: Commercial insurance (HMO, PPO, or other private insurance – may be a Medicare supplement) - % of patients at $ {res.hrCVD} - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B12",
+    "context": ""
+  },
+  {
+    "column": "B12r3c2",
+    "description": "B12r3c2: Medicaid / Public Aid - % of patients at $ {res.hrCVD} - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B12",
+    "context": ""
+  },
+  {
+    "column": "B12r4c2",
+    "description": "B12r4c2: Traditional Medicare - % of patients at $ {res.hrCVD} - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B12",
+    "context": ""
+  },
+  {
+    "column": "B12r5c2",
+    "description": "B12r5c2: Medicare Advantage - % of patients at $ {res.hrCVD} - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B12",
+    "context": ""
+  },
+  {
+    "column": "B12r6c2",
+    "description": "B12r6c2: VA (Veterans’ Administration) or Department of Defense - % of patients at $ {res.hrCVD} - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B12",
+    "context": ""
+  },
+  {
+    "column": "B12r7c2",
+    "description": "B12r7c2: Other, please specify - % of patients at $ {res.hrCVD} - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B12",
+    "context": ""
+  },
+  {
+    "column": "C8r1c1",
+    "description": "C8r1c1: Leqvio (inclisiran) - Previous Responses for Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in additi",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r2c1",
+    "description": "C8r2c1: Praluent (alirocumab) - Previous Responses for Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addi",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r3c1",
+    "description": "C8r3c1: Repatha (evolocumab) - Previous Responses for Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addit",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r4c1",
+    "description": "C8r4c1: Zetia (ezetimibe) or generic - Previous Responses for Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r5c1",
+    "description": "C8r5c1: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Previous Responses for Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 pa",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r13c1",
+    "description": "C8r13c1: Other - Previous Responses for Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addition to statins",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r14c1",
+    "description": "C8r14c1: No additional therapy - Previous Responses for Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in add",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r1c2",
+    "description": "C8r1c2: Leqvio (inclisiran) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addition to statins to lower",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r2c2",
+    "description": "C8r2c2: Praluent (alirocumab) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addition to statins to lowe",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r3c2",
+    "description": "C8r3c2: Repatha (evolocumab) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addition to statins to lower",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r4c2",
+    "description": "C8r4c2: Zetia (ezetimibe) or generic - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addition to statins",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r5c2",
+    "description": "C8r5c2: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r13c2",
+    "description": "C8r13c2: Other - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addition to statins to lower LDL-C and/or",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r14c2",
+    "description": "C8r14c2: No additional therapy - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addition to statins to low",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r1c3",
+    "description": "C8r1c3: Leqvio (inclisiran) - Previous Responses for Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r2c3",
+    "description": "C8r2c3: Praluent (alirocumab) - Previous Responses for Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients o",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r3c3",
+    "description": "C8r3c3: Repatha (evolocumab) - Previous Responses for Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r4c3",
+    "description": "C8r4c3: Zetia (ezetimibe) or generic - Previous Responses for Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 pat",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r5c3",
+    "description": "C8r5c3: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Previous Responses for Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given thi",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r13c3",
+    "description": "C8r13c3: Other - Previous Responses for Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of each type who",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r14c3",
+    "description": "C8r14c3: No additional therapy - Previous Responses for Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r1c4",
+    "description": "C8r1c4: Leqvio (inclisiran) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of each type who require t",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r2c4",
+    "description": "C8r2c4: Praluent (alirocumab) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of each type who require",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r3c4",
+    "description": "C8r3c4: Repatha (evolocumab) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of each type who require",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r4c4",
+    "description": "C8r4c4: Zetia (ezetimibe) or generic - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of each type who",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r5c4",
+    "description": "C8r5c4: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r13c4",
+    "description": "C8r13c4: Other - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of each type who require therapy in add",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "C8r14c4",
+    "description": "C8r14c4: No additional therapy - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of each type who requir",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "D5r1",
+    "description": "D5r1: Delivered by Physicians - Approximately what percentage of cardiovascular information/education for your patients is delivered by physicians, by NPs & PAs, or others on your staff?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D5",
+    "context": ""
+  },
+  {
+    "column": "D5r2",
+    "description": "D5r2: Delivered by Physician Assistants or Nurse Practitioners - Approximately what percentage of cardiovascular information/education for your patients is delivered by physicians, by NPs & PAs, or others on your staff?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D5",
+    "context": ""
+  },
+  {
+    "column": "D5r3",
+    "description": "D5r3: Delivered by Others on your staff - Approximately what percentage of cardiovascular information/education for your patients is delivered by physicians, by NPs & PAs, or others on your staff?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D5",
+    "context": ""
+  },
+  {
+    "column": "D7r1c1",
+    "description": "D7r1c1: High cholesterol (elevated LDL-C) - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r2c1",
+    "description": "D7r2c1: Hypertension - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r3c1",
+    "description": "D7r3c1: Diabetes - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r4c1",
+    "description": "D7r4c1: Atrial fibrillation - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r5c1",
+    "description": "D7r5c1: Heart failure - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r6c1",
+    "description": "D7r6c1: Unstable angina - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r7c1",
+    "description": "D7r7c1: Obesity (BMI > 30) - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r8c1",
+    "description": "D7r8c1: Current smoker - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r9c1",
+    "description": "D7r9c1: Other - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r1c2",
+    "description": "D7r1c2: High cholesterol (elevated LDL-C) - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r2c2",
+    "description": "D7r2c2: Hypertension - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r3c2",
+    "description": "D7r3c2: Diabetes - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r4c2",
+    "description": "D7r4c2: Atrial fibrillation - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r5c2",
+    "description": "D7r5c2: Heart failure - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r6c2",
+    "description": "D7r6c2: Unstable angina - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r7c2",
+    "description": "D7r7c2: Obesity (BMI > 30) - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r8c2",
+    "description": "D7r8c2: Current smoker - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7r9c2",
+    "description": "D7r9c2: Other - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7",
+    "context": ""
+  },
+  {
+    "column": "D7ar1c1",
+    "description": "D7ar1c1: High cholesterol (elevated LDL-C) - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7a",
+    "context": ""
+  },
+  {
+    "column": "D7ar2c1",
+    "description": "D7ar2c1: Hypertension - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7a",
+    "context": ""
+  },
+  {
+    "column": "D7ar3c1",
+    "description": "D7ar3c1: Diabetes - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7a",
+    "context": ""
+  },
+  {
+    "column": "D7ar4c1",
+    "description": "D7ar4c1: Atrial fibrillation - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7a",
+    "context": ""
+  },
+  {
+    "column": "D7ar5c1",
+    "description": "D7ar5c1: Heart failure - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7a",
+    "context": ""
+  },
+  {
+    "column": "D7ar6c1",
+    "description": "D7ar6c1: Unstable angina - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7a",
+    "context": ""
+  },
+  {
+    "column": "D7ar7c1",
+    "description": "D7ar7c1: Obesity (BMI > 30) - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7a",
+    "context": ""
+  },
+  {
+    "column": "D7ar8c1",
+    "description": "D7ar8c1: Current smoker - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7a",
+    "context": ""
+  },
+  {
+    "column": "D7ar9c1",
+    "description": "D7ar9c1: Other - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D7a",
+    "context": ""
+  },
+  {
+    "column": "D9r1c1",
+    "description": "D9r1c1: Below age 45 - % of $ {res.eCVD_Upper} Patients - Please indicate the age distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D9",
+    "context": ""
+  },
+  {
+    "column": "D9r2c1",
+    "description": "D9r2c1: Age 45 – 64 - % of $ {res.eCVD_Upper} Patients - Please indicate the age distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D9",
+    "context": ""
+  },
+  {
+    "column": "D9r3c1",
+    "description": "D9r3c1: 65 and older - % of $ {res.eCVD_Upper} Patients - Please indicate the age distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D9",
+    "context": ""
+  },
+  {
+    "column": "D9r1c2",
+    "description": "D9r1c2: Below age 45 - % of Patients at $ {res.hrCVD_Upper} - Please indicate the age distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D9",
+    "context": ""
+  },
+  {
+    "column": "D9r2c2",
+    "description": "D9r2c2: Age 45 – 64 - % of Patients at $ {res.hrCVD_Upper} - Please indicate the age distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D9",
+    "context": ""
+  },
+  {
+    "column": "D9r3c2",
+    "description": "D9r3c2: 65 and older - % of Patients at $ {res.hrCVD_Upper} - Please indicate the age distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D9",
+    "context": ""
+  },
+  {
+    "column": "D10r1c1",
+    "description": "D10r1c1: Woman - % of $ {res.eCVD_Upper} Patients - Please indicate the gender distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D10",
+    "context": ""
+  },
+  {
+    "column": "D10r2c1",
+    "description": "D10r2c1: Man - % of $ {res.eCVD_Upper} Patients - Please indicate the gender distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D10",
+    "context": ""
+  },
+  {
+    "column": "D10r3c1",
+    "description": "D10r3c1: Transgender Woman - % of $ {res.eCVD_Upper} Patients - Please indicate the gender distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D10",
+    "context": ""
+  },
+  {
+    "column": "D10r4c1",
+    "description": "D10r4c1: Transgender Man - % of $ {res.eCVD_Upper} Patients - Please indicate the gender distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D10",
+    "context": ""
+  },
+  {
+    "column": "D10r5c1",
+    "description": "D10r5c1: Non-Binary - % of $ {res.eCVD_Upper} Patients - Please indicate the gender distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D10",
+    "context": ""
+  },
+  {
+    "column": "D10r1c2",
+    "description": "D10r1c2: Woman - % of Patients at $ {res.hrCVD_Upper} - Please indicate the gender distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D10",
+    "context": ""
+  },
+  {
+    "column": "D10r2c2",
+    "description": "D10r2c2: Man - % of Patients at $ {res.hrCVD_Upper} - Please indicate the gender distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D10",
+    "context": ""
+  },
+  {
+    "column": "D10r3c2",
+    "description": "D10r3c2: Transgender Woman - % of Patients at $ {res.hrCVD_Upper} - Please indicate the gender distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D10",
+    "context": ""
+  },
+  {
+    "column": "D10r4c2",
+    "description": "D10r4c2: Transgender Man - % of Patients at $ {res.hrCVD_Upper} - Please indicate the gender distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D10",
+    "context": ""
+  },
+  {
+    "column": "D10r5c2",
+    "description": "D10r5c2: Non-Binary - % of Patients at $ {res.hrCVD_Upper} - Please indicate the gender distribution for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D10",
+    "context": ""
+  },
+  {
+    "column": "D11r1c1",
+    "description": "D11r1c1: Asian - % of $ {res.eCVD_Upper} Patients - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D11",
+    "context": ""
+  },
+  {
+    "column": "D11r2c1",
+    "description": "D11r2c1: Black or African American - % of $ {res.eCVD_Upper} Patients - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D11",
+    "context": ""
+  },
+  {
+    "column": "D11r3c1",
+    "description": "D11r3c1: Hispanic, Latinx, or of Spanish origin - % of $ {res.eCVD_Upper} Patients - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D11",
+    "context": ""
+  },
+  {
+    "column": "D11r4c1",
+    "description": "D11r4c1: Native American or Alaskan Native - % of $ {res.eCVD_Upper} Patients - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D11",
+    "context": ""
+  },
+  {
+    "column": "D11r5c1",
+    "description": "D11r5c1: Native Hawaiian or Other Pacific Islander - % of $ {res.eCVD_Upper} Patients - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D11",
+    "context": ""
+  },
+  {
+    "column": "D11r6c1",
+    "description": "D11r6c1: White - % of $ {res.eCVD_Upper} Patients - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D11",
+    "context": ""
+  },
+  {
+    "column": "D11r7c1",
+    "description": "D11r7c1: Other, please specify - % of $ {res.eCVD_Upper} Patients - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D11",
+    "context": ""
+  },
+  {
+    "column": "D11r1c2",
+    "description": "D11r1c2: Asian - % of Patients at $ {res.hrCVD_Upper} - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D11",
+    "context": ""
+  },
+  {
+    "column": "D11r2c2",
+    "description": "D11r2c2: Black or African American - % of Patients at $ {res.hrCVD_Upper} - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D11",
+    "context": ""
+  },
+  {
+    "column": "D11r3c2",
+    "description": "D11r3c2: Hispanic, Latinx, or of Spanish origin - % of Patients at $ {res.hrCVD_Upper} - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D11",
+    "context": ""
+  },
+  {
+    "column": "D11r4c2",
+    "description": "D11r4c2: Native American or Alaskan Native - % of Patients at $ {res.hrCVD_Upper} - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D11",
+    "context": ""
+  },
+  {
+    "column": "D11r5c2",
+    "description": "D11r5c2: Native Hawaiian or Other Pacific Islander - % of Patients at $ {res.hrCVD_Upper} - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D11",
+    "context": ""
+  },
+  {
+    "column": "D11r6c2",
+    "description": "D11r6c2: White - % of Patients at $ {res.hrCVD_Upper} - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D11",
+    "context": ""
+  },
+  {
+    "column": "D11r7c2",
+    "description": "D11r7c2: Other, please specify - % of Patients at $ {res.hrCVD_Upper} - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D11",
+    "context": ""
+  },
+  {
+    "column": "E1",
+    "description": "E1: On average, how many hours per week in total do you spend on keeping abreast of medical developments or medical education, specifically in cardiovascular disease? This would include any of the following activities: reading medical journals reviewing n",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "E2",
+    "description": "E2: In the past year, how many medical conferences or seminars related to cardiovascular disease did you attend?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "E6",
+    "description": "E6: In a typical week, approximately how many representatives do you personally see from pharmaceutical or medical device companies? Please think only about those representatives with whom you have some type of interaction, whether it is signing for sampl",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "E7r1",
+    "description": "E7r1: Leqvio - In the past 3 months, approximately how many times have you been visited by a pharmaceutical representative specifically from …",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E7",
+    "context": ""
+  },
+  {
+    "column": "E7r2",
+    "description": "E7r2: Nexletol/Nexlizet - In the past 3 months, approximately how many times have you been visited by a pharmaceutical representative specifically from …",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E7",
+    "context": ""
+  },
+  {
+    "column": "E7r3",
+    "description": "E7r3: Repatha - In the past 3 months, approximately how many times have you been visited by a pharmaceutical representative specifically from …",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E7",
+    "context": ""
+  },
+  {
+    "column": "E8r1c1",
+    "description": "E8r1c1: Clinical information (e.g. product attributes, medical references) - # of Leqvio interactions primarily focused on … - Of your interactions for [pipe: E8Pipe] in the past three months, approximately how many of those conversations primarily focu",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E8",
+    "context": ""
+  },
+  {
+    "column": "E8r2c1",
+    "description": "E8r2c1: Administrative information (e.g. reimbursement, logistics) - # of Leqvio interactions primarily focused on … - Of your interactions for [pipe: E8Pipe] in the past three months, approximately how many of those conversations primarily focused on e",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E8",
+    "context": ""
+  },
+  {
+    "column": "E8r3c1",
+    "description": "E8r3c1: Other (Specify) - # of Leqvio interactions primarily focused on … - Of your interactions for [pipe: E8Pipe] in the past three months, approximately how many of those conversations primarily focused on each of the following?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E8",
+    "context": ""
+  },
+  {
+    "column": "E8r1c2",
+    "description": "E8r1c2: Clinical information (e.g. product attributes, medical references) - # of Repatha interactions primarily focused on … - Of your interactions for [pipe: E8Pipe] in the past three months, approximately how many of those conversations primarily foc",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E8",
+    "context": ""
+  },
+  {
+    "column": "E8r2c2",
+    "description": "E8r2c2: Administrative information (e.g. reimbursement, logistics) - # of Repatha interactions primarily focused on … - Of your interactions for [pipe: E8Pipe] in the past three months, approximately how many of those conversations primarily focused on",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E8",
+    "context": ""
+  },
+  {
+    "column": "E8r3c2",
+    "description": "E8r3c2: Other (Specify) - # of Repatha interactions primarily focused on … - Of your interactions for [pipe: E8Pipe] in the past three months, approximately how many of those conversations primarily focused on each of the following?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E8",
+    "context": ""
+  },
+  {
+    "column": "F1r1c1",
+    "description": "F1r1c1: Office-based / out-patient setting - Approximately what % of your professional time is spent in each of the following settings?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F1",
+    "context": ""
+  },
+  {
+    "column": "F1r2c1",
+    "description": "F1r2c1: Hospital / in-patient setting - Approximately what % of your professional time is spent in each of the following settings?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F1",
+    "context": ""
+  },
+  {
+    "column": "F1r3c1",
+    "description": "F1r3c1: Clinic setting - Approximately what % of your professional time is spent in each of the following settings?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F1",
+    "context": ""
+  },
+  {
+    "column": "F1r4c1",
+    "description": "F1r4c1: Performing procedures (e.g., in Cath lab) - Approximately what % of your professional time is spent in each of the following settings?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F1",
+    "context": ""
+  },
+  {
+    "column": "F1r97c1",
+    "description": "F1r97c1: Other - Approximately what % of your professional time is spent in each of the following settings?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F1",
+    "context": ""
+  },
+  {
+    "column": "F7",
+    "description": "F7: Approximately how many miles away is the closest academic hospital to your primary practice?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "F8r1",
+    "description": "F8r1: Physicians - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F8",
+    "context": ""
+  },
+  {
+    "column": "F8r2",
+    "description": "F8r2: Nurses or Medical Assistants - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F8",
+    "context": ""
+  },
+  {
+    "column": "F8r3",
+    "description": "F8r3: Nurse Practitioners/Physicians Assistants - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F8",
+    "context": ""
+  },
+  {
+    "column": "F8r4",
+    "description": "F8r4: Administrative Staff - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "F8",
+    "context": ""
+  }
+]

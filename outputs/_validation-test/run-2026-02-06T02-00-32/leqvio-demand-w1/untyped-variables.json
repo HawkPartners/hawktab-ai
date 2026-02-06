@@ -1,0 +1,2729 @@
+[
+  {
+    "column": "S6",
+    "description": "S6: How many years have you been in clinical practice, post residency/training?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "S8r1c1",
+    "description": "S8r1c1: Treating/Managing patients - Approximately what percentage of your professional time is spent performing each of the following activities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S8",
+    "context": ""
+  },
+  {
+    "column": "S8r2c1",
+    "description": "S8r2c1: Performing academic functions (e.g. teaching, publishing) - Approximately what percentage of your professional time is spent performing each of the following activities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S8",
+    "context": ""
+  },
+  {
+    "column": "S8r3c1",
+    "description": "S8r3c1: Participating in clinical research - Approximately what percentage of your professional time is spent performing each of the following activities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S8",
+    "context": ""
+  },
+  {
+    "column": "S8r4c1",
+    "description": "S8r4c1: Performing other functions - Approximately what percentage of your professional time is spent performing each of the following activities?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S8",
+    "context": ""
+  },
+  {
+    "column": "S10",
+    "description": "S10: Using your best estimate, how many adult patients, age 18 or older, do you personally manage in your practice in a month?By 'personally', we mean patients for whom you are the primary decision maker for all therapeutic decisions concerning these pati",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "S11",
+    "description": "S11: Of those [pipe: S10] adult patients, how may have a confirmed diagnosis of hypercholesterolemia?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "S12r1c1",
+    "description": "S12r1c1: Atherosclerotic Cardiovascular Disease (ASCVD) - Of those [pipe: S10] adult patients, how many have been diagnosed with the following conditions?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S12",
+    "context": ""
+  },
+  {
+    "column": "S12r2c1",
+    "description": "S12r2c1: Familial Hypercholesterolemia (FH) - Of those [pipe: S10] adult patients, how many have been diagnosed with the following conditions?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S12",
+    "context": ""
+  },
+  {
+    "column": "S12r3c1",
+    "description": "S12r3c1: Other primary prevention related conditions that require prescription drug therapy to lower LDL-C - Of those [pipe: S10] adult patients, how many have been diagnosed with the following conditions?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S12",
+    "context": ""
+  },
+  {
+    "column": "S13r1c1",
+    "description": "S13r1c1: # of patients - Atherosclerotic Cardiovascular Disease (ASCVD) - Thinking of the adult patients who are currently on prescription drug therapy (oral or injectable) for the following conditions that you manage, how many of them did you personally",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "S13r1c2",
+    "description": "S13r1c2: # of patients on prescription drug therapy that you personally prescribe - Atherosclerotic Cardiovascular Disease (ASCVD) - Thinking of the adult patients who are currently on prescription drug therapy (oral or injectable) for the following condi",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "S13r2c1",
+    "description": "S13r2c1: # of patients - Familial Hypercholesterolemia (FH) - Thinking of the adult patients who are currently on prescription drug therapy (oral or injectable) for the following conditions that you manage, how many of them did you personally make the pre",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "S13r2c2",
+    "description": "S13r2c2: # of patients on prescription drug therapy that you personally prescribe - Familial Hypercholesterolemia (FH) - Thinking of the adult patients who are currently on prescription drug therapy (oral or injectable) for the following conditions that y",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "S13r3c1",
+    "description": "S13r3c1: # of patients - Other primary prevention related conditions that require prescription drug therapy to lower LDL-C - Thinking of the adult patients who are currently on prescription drug therapy (oral or injectable) for the following conditions th",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "S13r3c2",
+    "description": "S13r3c2: # of patients on prescription drug therapy that you personally prescribe - Other primary prevention related conditions that require prescription drug therapy to lower LDL-C - Thinking of the adult patients who are currently on prescription drug t",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "A1",
+    "description": "A1: Approximately how many TOTAL adult patients do you have with (e.g., MI, stroke, or symptomatic PAD)?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "A1a",
+    "description": "A1a: What percentage of your adult patients with require additional therapy on top of maximally tolerated statin therapy to lower LDL-C and/or to reduce the risk of future CV events?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "A1b",
+    "description": "A1b: Approximately how many TOTAL adult patients do you have with ?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "A1c",
+    "description": "A1c: What percentage of your adult patients with require additional lowering of LDL-C on top of maximally tolerated statin therapy?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "A3r1c1",
+    "description": "A3r1c1: Leqvio (inclisiran) - Adults with $ {res.established_CVD} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r2c1",
+    "description": "A3r2c1: Praluent (alirocumab) - Adults with $ {res.established_CVD} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r3c1",
+    "description": "A3r3c1: Repatha (evolocumab) - Adults with $ {res.established_CVD} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r4c1",
+    "description": "A3r4c1: Zetia (ezetimibe) or generic - Adults with $ {res.established_CVD} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r5c1",
+    "description": "A3r5c1: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Adults with $ {res.established_CVD} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top o",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r6c1",
+    "description": "A3r6c1: Other - Adults with $ {res.established_CVD} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r7c1",
+    "description": "A3r7c1: No additional therapy - Adults with $ {res.established_CVD} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r1c2",
+    "description": "A3r1c2: Leqvio (inclisiran) - Adults with $ {res.risk_factors_for_CV} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r2c2",
+    "description": "A3r2c2: Praluent (alirocumab) - Adults with $ {res.risk_factors_for_CV} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r3c2",
+    "description": "A3r3c2: Repatha (evolocumab) - Adults with $ {res.risk_factors_for_CV} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r4c2",
+    "description": "A3r4c2: Zetia (ezetimibe) or generic - Adults with $ {res.risk_factors_for_CV} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r5c2",
+    "description": "A3r5c2: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Adults with $ {res.risk_factors_for_CV} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on t",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r6c2",
+    "description": "A3r6c2: Other - Adults with $ {res.risk_factors_for_CV} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A3r7c2",
+    "description": "A3r7c2: No additional therapy - Adults with $ {res.risk_factors_for_CV} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A3",
+    "context": ""
+  },
+  {
+    "column": "A5r1c1",
+    "description": "A5r1c1: Leqvio (inclisiran) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r2c1",
+    "description": "A5r2c1: Praluent (alirocumab) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r3c1",
+    "description": "A5r3c1: Repatha (evolocumab) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r4c1",
+    "description": "A5r4c1: Zetia (ezetimibe) or generic - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy f",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r5c1",
+    "description": "A5r5c1: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r6c1",
+    "description": "A5r6c1: Other - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r7c1",
+    "description": "A5r7c1: No additional therapy - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r1c2",
+    "description": "A5r1c2: Leqvio (inclisiran) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r2c2",
+    "description": "A5r2c2: Praluent (alirocumab) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerate",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r3c2",
+    "description": "A5r3c2: Repatha (evolocumab) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r4c2",
+    "description": "A5r4c2: Zetia (ezetimibe) or generic - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally t",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r5c2",
+    "description": "A5r5c2: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following trea",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r6c2",
+    "description": "A5r6c2: Other - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r7c2",
+    "description": "A5r7c2: No additional therapy - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerate",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r1c3",
+    "description": "A5r1c3: Leqvio (inclisiran) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r2c3",
+    "description": "A5r2c3: Praluent (alirocumab) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r3c3",
+    "description": "A5r3c3: Repatha (evolocumab) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r4c3",
+    "description": "A5r4c3: Zetia (ezetimibe) or generic - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy f",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r5c3",
+    "description": "A5r5c3: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r6c3",
+    "description": "A5r6c3: Other - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r7c3",
+    "description": "A5r7c3: No additional therapy - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r1c4",
+    "description": "A5r1c4: Leqvio (inclisiran) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r2c4",
+    "description": "A5r2c4: Praluent (alirocumab) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerate",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r3c4",
+    "description": "A5r3c4: Repatha (evolocumab) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r4c4",
+    "description": "A5r4c4: Zetia (ezetimibe) or generic - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally t",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r5c4",
+    "description": "A5r5c4: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following trea",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r6c4",
+    "description": "A5r6c4: Other - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "A5r7c4",
+    "description": "A5r7c4: No additional therapy - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerate",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "A5",
+    "context": ""
+  },
+  {
+    "column": "B3_1r1c1",
+    "description": "B3_1r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r2c1",
+    "description": "B3_1r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r3c1",
+    "description": "B3_1r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r4c1",
+    "description": "B3_1r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r5c1",
+    "description": "B3_1r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r6c1",
+    "description": "B3_1r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r7c1",
+    "description": "B3_1r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r8c1",
+    "description": "B3_1r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r9c1",
+    "description": "B3_1r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r1c2",
+    "description": "B3_1r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r2c2",
+    "description": "B3_1r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r3c2",
+    "description": "B3_1r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r4c2",
+    "description": "B3_1r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r5c2",
+    "description": "B3_1r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r6c2",
+    "description": "B3_1r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r7c2",
+    "description": "B3_1r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r8c2",
+    "description": "B3_1r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_1r9c2",
+    "description": "B3_1r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_1",
+    "context": ""
+  },
+  {
+    "column": "B3_2r1c1",
+    "description": "B3_2r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r2c1",
+    "description": "B3_2r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r3c1",
+    "description": "B3_2r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r4c1",
+    "description": "B3_2r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r5c1",
+    "description": "B3_2r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r6c1",
+    "description": "B3_2r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r7c1",
+    "description": "B3_2r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r8c1",
+    "description": "B3_2r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r9c1",
+    "description": "B3_2r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r1c2",
+    "description": "B3_2r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r2c2",
+    "description": "B3_2r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r3c2",
+    "description": "B3_2r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r4c2",
+    "description": "B3_2r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r5c2",
+    "description": "B3_2r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r6c2",
+    "description": "B3_2r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r7c2",
+    "description": "B3_2r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r8c2",
+    "description": "B3_2r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_2r9c2",
+    "description": "B3_2r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_2",
+    "context": ""
+  },
+  {
+    "column": "B3_3r1c1",
+    "description": "B3_3r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r2c1",
+    "description": "B3_3r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r3c1",
+    "description": "B3_3r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r4c1",
+    "description": "B3_3r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r5c1",
+    "description": "B3_3r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r6c1",
+    "description": "B3_3r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r7c1",
+    "description": "B3_3r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r8c1",
+    "description": "B3_3r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r9c1",
+    "description": "B3_3r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r1c2",
+    "description": "B3_3r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r2c2",
+    "description": "B3_3r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r3c2",
+    "description": "B3_3r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r4c2",
+    "description": "B3_3r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r5c2",
+    "description": "B3_3r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r6c2",
+    "description": "B3_3r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r7c2",
+    "description": "B3_3r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r8c2",
+    "description": "B3_3r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_3r9c2",
+    "description": "B3_3r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_3",
+    "context": ""
+  },
+  {
+    "column": "B3_4r1c1",
+    "description": "B3_4r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r2c1",
+    "description": "B3_4r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r3c1",
+    "description": "B3_4r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r4c1",
+    "description": "B3_4r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r5c1",
+    "description": "B3_4r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r6c1",
+    "description": "B3_4r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r7c1",
+    "description": "B3_4r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r8c1",
+    "description": "B3_4r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r9c1",
+    "description": "B3_4r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r1c2",
+    "description": "B3_4r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r2c2",
+    "description": "B3_4r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r3c2",
+    "description": "B3_4r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r4c2",
+    "description": "B3_4r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r5c2",
+    "description": "B3_4r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r6c2",
+    "description": "B3_4r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r7c2",
+    "description": "B3_4r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r8c2",
+    "description": "B3_4r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_4r9c2",
+    "description": "B3_4r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_4",
+    "context": ""
+  },
+  {
+    "column": "B3_5r1c1",
+    "description": "B3_5r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r2c1",
+    "description": "B3_5r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r3c1",
+    "description": "B3_5r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r4c1",
+    "description": "B3_5r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r5c1",
+    "description": "B3_5r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r6c1",
+    "description": "B3_5r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r7c1",
+    "description": "B3_5r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r8c1",
+    "description": "B3_5r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r9c1",
+    "description": "B3_5r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r1c2",
+    "description": "B3_5r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r2c2",
+    "description": "B3_5r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r3c2",
+    "description": "B3_5r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r4c2",
+    "description": "B3_5r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r5c2",
+    "description": "B3_5r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r6c2",
+    "description": "B3_5r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r7c2",
+    "description": "B3_5r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r8c2",
+    "description": "B3_5r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_5r9c2",
+    "description": "B3_5r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_5",
+    "context": ""
+  },
+  {
+    "column": "B3_6r1c1",
+    "description": "B3_6r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r2c1",
+    "description": "B3_6r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r3c1",
+    "description": "B3_6r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r4c1",
+    "description": "B3_6r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r5c1",
+    "description": "B3_6r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r6c1",
+    "description": "B3_6r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r7c1",
+    "description": "B3_6r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r8c1",
+    "description": "B3_6r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r9c1",
+    "description": "B3_6r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r1c2",
+    "description": "B3_6r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r2c2",
+    "description": "B3_6r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r3c2",
+    "description": "B3_6r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r4c2",
+    "description": "B3_6r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r5c2",
+    "description": "B3_6r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r6c2",
+    "description": "B3_6r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r7c2",
+    "description": "B3_6r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r8c2",
+    "description": "B3_6r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_6r9c2",
+    "description": "B3_6r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_6",
+    "context": ""
+  },
+  {
+    "column": "B3_7r1c1",
+    "description": "B3_7r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r2c1",
+    "description": "B3_7r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r3c1",
+    "description": "B3_7r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r4c1",
+    "description": "B3_7r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r5c1",
+    "description": "B3_7r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r6c1",
+    "description": "B3_7r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r7c1",
+    "description": "B3_7r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r8c1",
+    "description": "B3_7r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r9c1",
+    "description": "B3_7r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r1c2",
+    "description": "B3_7r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r2c2",
+    "description": "B3_7r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r3c2",
+    "description": "B3_7r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r4c2",
+    "description": "B3_7r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r5c2",
+    "description": "B3_7r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r6c2",
+    "description": "B3_7r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r7c2",
+    "description": "B3_7r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r8c2",
+    "description": "B3_7r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_7r9c2",
+    "description": "B3_7r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_7",
+    "context": ""
+  },
+  {
+    "column": "B3_8r1c1",
+    "description": "B3_8r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r2c1",
+    "description": "B3_8r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r3c1",
+    "description": "B3_8r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r4c1",
+    "description": "B3_8r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r5c1",
+    "description": "B3_8r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r6c1",
+    "description": "B3_8r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r7c1",
+    "description": "B3_8r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r8c1",
+    "description": "B3_8r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r9c1",
+    "description": "B3_8r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r1c2",
+    "description": "B3_8r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r2c2",
+    "description": "B3_8r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r3c2",
+    "description": "B3_8r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r4c2",
+    "description": "B3_8r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r5c2",
+    "description": "B3_8r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r6c2",
+    "description": "B3_8r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r7c2",
+    "description": "B3_8r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r8c2",
+    "description": "B3_8r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_8r9c2",
+    "description": "B3_8r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_8",
+    "context": ""
+  },
+  {
+    "column": "B3_9r1c1",
+    "description": "B3_9r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r2c1",
+    "description": "B3_9r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r3c1",
+    "description": "B3_9r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r4c1",
+    "description": "B3_9r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r5c1",
+    "description": "B3_9r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r6c1",
+    "description": "B3_9r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r7c1",
+    "description": "B3_9r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r8c1",
+    "description": "B3_9r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r9c1",
+    "description": "B3_9r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r1c2",
+    "description": "B3_9r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r2c2",
+    "description": "B3_9r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r3c2",
+    "description": "B3_9r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r4c2",
+    "description": "B3_9r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r5c2",
+    "description": "B3_9r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r6c2",
+    "description": "B3_9r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r7c2",
+    "description": "B3_9r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r8c2",
+    "description": "B3_9r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_9r9c2",
+    "description": "B3_9r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_9",
+    "context": ""
+  },
+  {
+    "column": "B3_10r1c1",
+    "description": "B3_10r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r2c1",
+    "description": "B3_10r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r3c1",
+    "description": "B3_10r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r4c1",
+    "description": "B3_10r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r5c1",
+    "description": "B3_10r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r6c1",
+    "description": "B3_10r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r7c1",
+    "description": "B3_10r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r8c1",
+    "description": "B3_10r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r9c1",
+    "description": "B3_10r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r1c2",
+    "description": "B3_10r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r2c2",
+    "description": "B3_10r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r3c2",
+    "description": "B3_10r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r4c2",
+    "description": "B3_10r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r5c2",
+    "description": "B3_10r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r6c2",
+    "description": "B3_10r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r7c2",
+    "description": "B3_10r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r8c2",
+    "description": "B3_10r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_10r9c2",
+    "description": "B3_10r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_10",
+    "context": ""
+  },
+  {
+    "column": "B3_11r1c1",
+    "description": "B3_11r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r2c1",
+    "description": "B3_11r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r3c1",
+    "description": "B3_11r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r4c1",
+    "description": "B3_11r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r5c1",
+    "description": "B3_11r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r6c1",
+    "description": "B3_11r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r7c1",
+    "description": "B3_11r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r8c1",
+    "description": "B3_11r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r9c1",
+    "description": "B3_11r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r1c2",
+    "description": "B3_11r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r2c2",
+    "description": "B3_11r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r3c2",
+    "description": "B3_11r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r4c2",
+    "description": "B3_11r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r5c2",
+    "description": "B3_11r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r6c2",
+    "description": "B3_11r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r7c2",
+    "description": "B3_11r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r8c2",
+    "description": "B3_11r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_11r9c2",
+    "description": "B3_11r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_11",
+    "context": ""
+  },
+  {
+    "column": "B3_12r1c1",
+    "description": "B3_12r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r2c1",
+    "description": "B3_12r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r3c1",
+    "description": "B3_12r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r4c1",
+    "description": "B3_12r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r5c1",
+    "description": "B3_12r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r6c1",
+    "description": "B3_12r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r7c1",
+    "description": "B3_12r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r8c1",
+    "description": "B3_12r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r9c1",
+    "description": "B3_12r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r1c2",
+    "description": "B3_12r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r2c2",
+    "description": "B3_12r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r3c2",
+    "description": "B3_12r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r4c2",
+    "description": "B3_12r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r5c2",
+    "description": "B3_12r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r6c2",
+    "description": "B3_12r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r7c2",
+    "description": "B3_12r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r8c2",
+    "description": "B3_12r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "B3_12r9c2",
+    "description": "B3_12r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "B3_12",
+    "context": ""
+  },
+  {
+    "column": "D1r1c1",
+    "description": "D1r1c1: <70 mg/dL - Distribution of hypercholesterolemia patients based on *baseline LDL-C, prior to ANY prescription medication(s), including statins*\"BEFORE\" - Thank you for your time so far. Just a few more questions…For this next question, we'd like",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D1",
+    "context": ""
+  },
+  {
+    "column": "D1r2c1",
+    "description": "D1r2c1: 70-100 mg/dL - Distribution of hypercholesterolemia patients based on *baseline LDL-C, prior to ANY prescription medication(s), including statins*\"BEFORE\" - Thank you for your time so far. Just a few more questions…For this next question, we'd l",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D1",
+    "context": ""
+  },
+  {
+    "column": "D1r3c1",
+    "description": "D1r3c1: 101-130 mg/dL - Distribution of hypercholesterolemia patients based on *baseline LDL-C, prior to ANY prescription medication(s), including statins*\"BEFORE\" - Thank you for your time so far. Just a few more questions…For this next question, we'd",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D1",
+    "context": ""
+  },
+  {
+    "column": "D1r4c1",
+    "description": "D1r4c1: >130 mg/dL - Distribution of hypercholesterolemia patients based on *baseline LDL-C, prior to ANY prescription medication(s), including statins*\"BEFORE\" - Thank you for your time so far. Just a few more questions…For this next question, we'd lik",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D1",
+    "context": ""
+  },
+  {
+    "column": "D1r1c2",
+    "description": "D1r1c2: <70 mg/dL - Distribution of hypercholesterolemia patients based on *current LDL-C levels as a result of prescription medication(s)*\"AFTER\" - Thank you for your time so far. Just a few more questions…For this next question, we'd like to understan",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D1",
+    "context": ""
+  },
+  {
+    "column": "D1r2c2",
+    "description": "D1r2c2: 70-100 mg/dL - Distribution of hypercholesterolemia patients based on *current LDL-C levels as a result of prescription medication(s)*\"AFTER\" - Thank you for your time so far. Just a few more questions…For this next question, we'd like to unders",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D1",
+    "context": ""
+  },
+  {
+    "column": "D1r3c2",
+    "description": "D1r3c2: 101-130 mg/dL - Distribution of hypercholesterolemia patients based on *current LDL-C levels as a result of prescription medication(s)*\"AFTER\" - Thank you for your time so far. Just a few more questions…For this next question, we'd like to under",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D1",
+    "context": ""
+  },
+  {
+    "column": "D1r4c2",
+    "description": "D1r4c2: >130 mg/dL - Distribution of hypercholesterolemia patients based on *current LDL-C levels as a result of prescription medication(s)*\"AFTER\" - Thank you for your time so far. Just a few more questions…For this next question, we'd like to understa",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D1",
+    "context": ""
+  },
+  {
+    "column": "D3r1c1",
+    "description": "D3r1c1: Not insured - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D3r2c1",
+    "description": "D3r2c1: Private insurance provided by employer / purchased in exchange - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D3r3c1",
+    "description": "D3r3c1: Traditional Medicare (Medicare Part B Fee for Service) - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D3r4c1",
+    "description": "D3r4c1: Traditional Medicare with supplemental insurance - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D3r5c1",
+    "description": "D3r5c1: Private Medicare (Medicare Advantage / Part C managed through Private payer) - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D3r6c1",
+    "description": "D3r6c1: Medicaid - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D3r7c1",
+    "description": "D3r7c1: Veterans Administration (VA) - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D3r8c1",
+    "description": "D3r8c1: Other (Please Specify): - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D3r1c2",
+    "description": "D3r1c2: Not insured - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D3r2c2",
+    "description": "D3r2c2: Private insurance provided by employer / purchased in exchange - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D3r3c2",
+    "description": "D3r3c2: Traditional Medicare (Medicare Part B Fee for Service) - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D3r4c2",
+    "description": "D3r4c2: Traditional Medicare with supplemental insurance - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D3r5c2",
+    "description": "D3r5c2: Private Medicare (Medicare Advantage / Part C managed through Private payer) - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D3r6c2",
+    "description": "D3r6c2: Medicaid - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D3r7c2",
+    "description": "D3r7c2: Veterans Administration (VA) - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D3r8c2",
+    "description": "D3r8c2: Other (Please Specify): - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D3",
+    "context": ""
+  },
+  {
+    "column": "D6",
+    "description": "D6: How many physicians, including yourself, are in your practice?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  }
+]

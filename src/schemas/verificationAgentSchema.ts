@@ -166,7 +166,7 @@ export const ExtendedTableDefinitionSchema = z.object({
    * Non-empty = use named stacked frame (e.g., 'stacked_loop_1').
    * Set by infrastructure code after agent processing, not by agents.
    */
-  loopDataFrame: z.string().default(''),
+  loopDataFrame: z.string(),
 });
 
 export type ExtendedTableDefinition = z.infer<typeof ExtendedTableDefinitionSchema>;

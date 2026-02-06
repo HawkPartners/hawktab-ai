@@ -1,0 +1,2234 @@
+[
+  {
+    "Column": "record",
+    "Description": "record: Record number",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "uuid",
+    "Description": "uuid: Participant identifier",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "date",
+    "Description": "date: Completion time and date",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "status",
+    "Description": "status: Participant status",
+    "Answer_Options": "1=Terminated,2=Overquota,3=Qualified,4=Partial"
+  },
+  {
+    "Column": "S1",
+    "Description": "S1: Do you acknowledge and agree to the terms described above?",
+    "Answer_Options": "1=Yes. I would like to complete the survey.,2=No. I do not agree and will not complete the survey."
+  },
+  {
+    "Column": "S2",
+    "Description": "S2: What is your title/role?",
+    "Answer_Options": "1=Physician,2=Nurse Practitioner/ Physician’s Assistant,3=Doctor of Pharmacy,98=Other (please specify)"
+  },
+  {
+    "Column": "S2r98oe",
+    "Description": "S2r98oe: What is your title/role? - Other (please specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S2",
+    "Context": "S2: S2: What is your title/role?"
+  },
+  {
+    "Column": "S3",
+    "Description": "S3: What is your specialty?",
+    "Answer_Options": "1=Hematology Oncology,2=Hematology,3=Medical Oncology,4=Bone Marrow Transplant (BMT) specialist,5=Dermatology,6=Ophthalmology,7=Pulmonology,8=Rheumatology,9=Gastroenterology,98=Other (please specify)"
+  },
+  {
+    "Column": "S3r98oe",
+    "Description": "S3r98oe: What is your specialty? - Other (please specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S3",
+    "Context": "S3: S3: What is your specialty?"
+  },
+  {
+    "Column": "S4",
+    "Description": "S4: In what professional setting do you spend the most of your time?",
+    "Answer_Options": "1=Solo private practice,2=Group private practice,3=Community/Non-University/Non-Teaching Hospital,4=Academic/University/Teaching Hospital or Medical Center,5=VA or other Government Hospital,98=Other"
+  },
+  {
+    "Column": "S4r6oe",
+    "Description": "S4r6oe: In what professional setting do you spend the most of your time? - Other",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S4",
+    "Context": "S4: S4: In what professional setting do you spend the most of your time?"
+  },
+  {
+    "Column": "hS4",
+    "Description": "hS4: Hidden in live",
+    "Answer_Options": "1=COMMUNITY,2=ACADEMIC"
+  },
+  {
+    "Column": "S5r1",
+    "Description": "S5r1: What percentage of your clinical time is spent within the Bone Marrow Transplant (BMT) or Stem Cell Transplant (SCT) service at your practice center?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S5"
+  },
+  {
+    "Column": "S6",
+    "Description": "S6: What statement best describes your role as it relates to allogeneic hematopoietic stem cell transplantations (HSCT)?",
+    "Answer_Options": "1=I conduct allogeneic HSCTs myself,2=I am the primary decision maker in determining the Allo-HSCT graft source but do not conduct transplants myself,3=I monitor Allo-HSCT patients following transplant but do not conduct allogeneic HSCTs myself"
+  },
+  {
+    "Column": "S7r1c1",
+    "Description": "S7r1c1: # Pediatric patients - Allogeneic stem cell transplant (Allo-HSCT) - How many HSCTs do you conduct per year, among adult or pediatric patients?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S7"
+  },
+  {
+    "Column": "S7r1c2",
+    "Description": "S7r1c2: # Adult patients - Allogeneic stem cell transplant (Allo-HSCT) - How many HSCTs do you conduct per year, among adult or pediatric patients?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S7"
+  },
+  {
+    "Column": "S7r2c1",
+    "Description": "S7r2c1: # Pediatric patients - Autologous stem cell transplant (Auto-HSCT) - How many HSCTs do you conduct per year, among adult or pediatric patients?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S7"
+  },
+  {
+    "Column": "S7r2c2",
+    "Description": "S7r2c2: # Adult patients - Autologous stem cell transplant (Auto-HSCT) - How many HSCTs do you conduct per year, among adult or pediatric patients?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S7"
+  },
+  {
+    "Column": "NDP_S7",
+    "Description": "NDP_S7: Hidden in live",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "S8r1c1",
+    "Description": "S8r1c1: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - Thinking about your next 20 Allo-HSCT adult patients across donor types coming to transplant, which of the following would you potentially prescribe for the purpose of GvHD prophylaxis? Pl",
+    "Answer_Options": "0=NO TO: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®),1=rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®)",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r2c1",
+    "Description": "S8r2c1: eATG (horse/equine ATG, ATGAM®) - Thinking about your next 20 Allo-HSCT adult patients across donor types coming to transplant, which of the following would you potentially prescribe for the purpose of GvHD prophylaxis? Please consider regimens w",
+    "Answer_Options": "0=NO TO: eATG (horse/equine ATG, ATGAM®),1=eATG (horse/equine ATG, ATGAM®)",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r3c1",
+    "Description": "S8r3c1: Alemtuzumab - Thinking about your next 20 Allo-HSCT adult patients across donor types coming to transplant, which of the following would you potentially prescribe for the purpose of GvHD prophylaxis? Please consider regimens with multiple agents a",
+    "Answer_Options": "0=NO TO: Alemtuzumab,1=Alemtuzumab",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r4c1",
+    "Description": "S8r4c1: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - Thinking about your next 20 Allo-HSCT adult patients across donor types coming to transplant, which of the following would you potentially prescribe for the purpose of GvHD prophylaxis?",
+    "Answer_Options": "0=NO TO: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)),1=Cyclophosphamide (Post-transplant cyclophosphamide (PTCy))",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r5c1",
+    "Description": "S8r5c1: Ex Vivo Donor T Cell Depletion - Thinking about your next 20 Allo-HSCT adult patients across donor types coming to transplant, which of the following would you potentially prescribe for the purpose of GvHD prophylaxis? Please consider regimens wit",
+    "Answer_Options": "0=NO TO: Ex Vivo Donor T Cell Depletion,1=Ex Vivo Donor T Cell Depletion",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r6c1",
+    "Description": "S8r6c1: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - Thinking about your next 20 Allo-HSCT adult patients across donor types coming to transplant, which of the following would you potentially prescribe for the purpose of GvHD prop",
+    "Answer_Options": "0=NO TO: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)),1=CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac))",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r7c1",
+    "Description": "S8r7c1: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - Thinking about your next 20 Allo-HSCT adult patients across donor types coming to transplant, which of the following would you potentially prescribe for the purpose of GvHD prop",
+    "Answer_Options": "0=NO TO: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)),1=Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF))",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r8c1",
+    "Description": "S8r8c1: Abatacept (Orencia®) - Thinking about your next 20 Allo-HSCT adult patients across donor types coming to transplant, which of the following would you potentially prescribe for the purpose of GvHD prophylaxis? Please consider regimens with multipl",
+    "Answer_Options": "0=NO TO: Abatacept (Orencia®),1=Abatacept (Orencia®)",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r9c1",
+    "Description": "S8r9c1: Corticosteroids - Thinking about your next 20 Allo-HSCT adult patients across donor types coming to transplant, which of the following would you potentially prescribe for the purpose of GvHD prophylaxis? Please consider regimens with multiple agen",
+    "Answer_Options": "0=NO TO: Corticosteroids,1=Corticosteroids",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r10c1",
+    "Description": "S8r10c1: Rituximab - Thinking about your next 20 Allo-HSCT adult patients across donor types coming to transplant, which of the following would you potentially prescribe for the purpose of GvHD prophylaxis? Please consider regimens with multiple agents an",
+    "Answer_Options": "0=NO TO: Rituximab,1=Rituximab",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r11c1",
+    "Description": "S8r11c1: Sirolimus - Thinking about your next 20 Allo-HSCT adult patients across donor types coming to transplant, which of the following would you potentially prescribe for the purpose of GvHD prophylaxis? Please consider regimens with multiple agents an",
+    "Answer_Options": "0=NO TO: Sirolimus,1=Sirolimus",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r12c1",
+    "Description": "S8r12c1: Sitagliptin - Thinking about your next 20 Allo-HSCT adult patients across donor types coming to transplant, which of the following would you potentially prescribe for the purpose of GvHD prophylaxis? Please consider regimens with multiple agents",
+    "Answer_Options": "0=NO TO: Sitagliptin,1=Sitagliptin",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r13c1",
+    "Description": "S8r13c1: Tocilizumab - Thinking about your next 20 Allo-HSCT adult patients across donor types coming to transplant, which of the following would you potentially prescribe for the purpose of GvHD prophylaxis? Please consider regimens with multiple agents",
+    "Answer_Options": "0=NO TO: Tocilizumab,1=Tocilizumab",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r98c1",
+    "Description": "S8r98c1: Other agents (Specify) - Thinking about your next 20 Allo-HSCT adult patients across donor types coming to transplant, which of the following would you potentially prescribe for the purpose of GvHD prophylaxis? Please consider regimens with multi",
+    "Answer_Options": "0=NO TO: Other agents (Specify),1=Other agents (Specify)",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r98oe",
+    "Description": "S8r98oe: Thinking about your next 20 Allo-HSCT adult patients across donor types coming to transplant, which of the following would you potentially prescribe for the purpose of GvHD prophylaxis? Please consider regimens with multiple agents and for all do",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8_QC",
+    "Description": "S8_QC: Hidden in live",
+    "Answer_Options": "1=Flag,2=Null"
+  },
+  {
+    "Column": "hS8",
+    "Description": "hS8: Hidden in live",
+    "Answer_Options": "1=THYMO USER,2=NON-THYMO USER"
+  },
+  {
+    "Column": "S9r1",
+    "Description": "S9r1: Advertising Agency or Public Relations Firm - Do you, or do any members of your immediate family, work for any of the following types of companies?",
+    "Answer_Options": "0=NO TO: Advertising Agency or Public Relations Firm,1=Advertising Agency or Public Relations Firm",
+    "ParentQuestion": "S9"
+  },
+  {
+    "Column": "S9r2",
+    "Description": "S9r2: Marketing or Market Research Firm - Do you, or do any members of your immediate family, work for any of the following types of companies?",
+    "Answer_Options": "0=NO TO: Marketing or Market Research Firm,1=Marketing or Market Research Firm",
+    "ParentQuestion": "S9"
+  },
+  {
+    "Column": "S9r3",
+    "Description": "S9r3: Pharmaceutical company - Do you, or do any members of your immediate family, work for any of the following types of companies?",
+    "Answer_Options": "0=NO TO: Pharmaceutical company,1=Pharmaceutical company",
+    "ParentQuestion": "S9"
+  },
+  {
+    "Column": "S9r4",
+    "Description": "S9r4: Government agency - Do you, or do any members of your immediate family, work for any of the following types of companies?",
+    "Answer_Options": "0=NO TO: Government agency,1=Government agency",
+    "ParentQuestion": "S9"
+  },
+  {
+    "Column": "S9r5",
+    "Description": "S9r5: None of the above - Do you, or do any members of your immediate family, work for any of the following types of companies?",
+    "Answer_Options": "0=NO TO: None of the above,1=None of the above",
+    "ParentQuestion": "S9"
+  },
+  {
+    "Column": "S10r1",
+    "Description": "S10r1: What is the name of the center/hospital where you conduct Allo-HSCTs?",
+    "Answer_Options": "1=Adventhealth Orlando (5002044006),2=Advocate Christ Medical Center (5007337550),3=Albany Medical Center (5007252664),4=Ann And Robert H Lurie Childrens Hospital (5007249199),5=Atrium Health (5007337730),6=Augusta University Medical Center (5007297749),7=Avera Mckennan Hospital (5002054119),8=Banner University Medical Center Tucson Campus (5007374332),9=Barbara Ann Karmanos Cancer Institute (5001340454),10=Barbara Ann Karmanos Cancer Institute (5007337554),11=Barnes Jewish Hospital (5007255020),12=Beth Israel Deaconess Medical Center (5001341224),13=Boston Childrens Hospital (5007255130),14=Brain And Spine Hospital (5007253219),15=Cancer Treatment Center Of America At Western Regional Medical Center (5002068186),16=Cedars Sinai Medical Center (5007252688),17=Childrens Health Childrens Medical Center Of Dallas (5007251961),18=Childrens Healthcare (5002037265),19=Choc Childrens (5001339359),20=Cincinnati Childrens Hospital Medical Center (5001338870),21=City Of Hope Comprehensive Cancer Center (5002066286),22=Cook Childrens Medical Center (5007337462),23=Dana Farber Cancer Institute (5002027169),24=Duke University Health Systems (5007337795),25=Emory University Hospital (5007256464),26=Fox Chase Cancer Center (5002031957),27=Franciscan Saint Francis Health Indianapolis (5002047722),28=Froedtert Hospital (5002051129),29=H Lee Moffitt Cancer Center And Research Institute (5007336376),30=Hackensack University Medical Center (5007251778),31=Henry Ford Kingswood Hospital (5007251166),32=Honorhealth (5001341921),33=Hospital Of The University Of Pennsylvania (5007252410),34=Houston Methodist Hospital (5007335090),35=Illinois Cancer Specialists Niles (5002053457),36=Inspira Auxilio Mutuo (5004509288),37=Iu Health University Hospital (5007252976),38=Kaiser Hospital Riverside (5007677064),39=Loyola University Health System (5007249141),40=Mayo Clinic (5007252653),41=Mayo Clinic Hospital (5007252023),42=Mayo Clinic Hospital Methodist Campus (5007249727),43=Medical City Dallas Hospital (5007249169),44=Medical University Hospital (5002039020),45=Medical University Of South Carolina Medical Center (5001341977),46=Medstar Georgetown University Hospital (5007251935),47=Memorial Sloan Kettering Cancer Center (5001341672),48=Methodist Healthcare System Of San Antonio, Ltd, LLP (5002064641),49=Methodist Le Bonheur Healthcare University Hospital (5002046239),50=Montefiore Medical Center Moses Campus (5007254955),51=Nationwide Childrens Hospital (5007252899),52=Nebraska Medical Center (5007253128),53=New York Presbyterian Columbia University Medical Center (5007296682),54=New York Presbyterian Weill Cornell Medical Center (5002028110),55=Nicklaus Childrens Hospital (5007252663),56=Northside Hospital Atlanta (5007337139),57=Northwestern Memorial Hospital (5007250553),58=Oregon Health And Science University Hospital (5007337629),59=Orlando Health Cancer Inst (5009914954),60=Penn State Milton S Hershey Medical Center (5002033647),61=Presbyterian Saint Lukes Medical Center (5002064593),62=Prisma Health Upstate (5002039883),63=Roswell Park Comprehensive Cancer Center (5001338477),64=Rush University Medical Center (5007254371),65=Saint Davids North Austin Medical Center (5007249140),66=Saint Louis Childrens Hospital (5002054745),67=Saint Lukes Boise Medical Center (5002063709),68=SPECTRUM HEALTH,69=St Louis University Hospital (5007297663),70=Stanford Health Care (5007249837),71=Stony Brook University Hospital (5007252937),72=Sutter Medical Center Sacramento (5002070909),73=Texas Childrens Hospital (5001341836),74=Texas Childrens Hospital (5002064197),75=The Cleveland Clinic Foundation (5007255222),76=The General Hospital (5007251854),77=The Jewish Hospital (5007337015),78=The Johns Hopkins Hospital (5007255017),79=The Mount Sinai Hospital (5007249172),80=The University Of Chicago Medicine (5007251930),81=The University Of Kansas Hospital (5007251881),82=The University Of Texas Md Anderson Cancer Center (5002059309),83=The Western Pennsylvania Hospital (5002033298),84=Thomas Jefferson University Hospital (5007256302),85=Tisch Hospital (5002030526),86=Tristar Centennial Medical Center (5002046708),87=Tufts Medical Center (5007249921),88=Tulane Medical Center (5002056100),89=Uchealth University Of Colorado Hospital (5007297709),90=Uf Health Shands Hospital (5007253540),91=Unc Hospital (5002035041),92=University Hospitals Cleveland Medical Center (5007337796),93=University Of Alabama Hospital (5007363168),94=University Of Ca Hospital (5007255147),95=University Of California Los Angeles Health System (5001339345),96=University Of California San Diego Health System (5001339398),97=University Of Iowa Stead Family Childrens Hospital (5007336751),98=University Of Kentucky Albert B Chandler Medical Center,99=University Of Maryland Medical Center (5007256313),100=University Of Miami Health System (5001339636),101=University Of Michigan Health System (5002051420),102=University Of Mn Medical Center West (5007338029),103=University Of Rochester Medical Center (5001341826),104=University Of Southern California (5001339544),105=University Of Utah Health (5007336645),106=University Of Virginia Health System (5001341754),107=University Of Washington School Of Medicine (5002074307),108=Uofl Hospital (5007251590),109=Upmc Hillman Cancer Center (5001339360),110=Ut Southwestern Medical Center (5001340517),111=Uw Health University Hospital (5002051143),112=Vanderbilt University Op (5007296693),113=Vcu Medical Center (5007251920),114=Wake Frst University Baptst Hth (5007336519),115=West Virginia University Hospital Ruby Memorial (5002034475),116=Westchester County Healthcare Corp (5007249962),117=Yale New Haven Hospital (5007252420),118=OTHER (SPECIFY)",
+    "ParentQuestion": "S10"
+  },
+  {
+    "Column": "S10_Other",
+    "Description": "S10_Other: Please specify below.",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "A1r1c1",
+    "Description": "A1r1c1: Matched related donor (MRD) - Thinking about the  Allo-HSCTs you conduct on adult patients in a typical year, approximately what number are each of the following donor types?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A1"
+  },
+  {
+    "Column": "A1r2c1",
+    "Description": "A1r2c1: Matched unrelated donor (MUD) - Thinking about the  Allo-HSCTs you conduct on adult patients in a typical year, approximately what number are each of the following donor types?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A1"
+  },
+  {
+    "Column": "A1r3c1",
+    "Description": "A1r3c1: Haploidentical (Haplo) donor - Thinking about the  Allo-HSCTs you conduct on adult patients in a typical year, approximately what number are each of the following donor types?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A1"
+  },
+  {
+    "Column": "A1r4c1",
+    "Description": "A1r4c1: Mismatched unrelated donor (MMUD) - Thinking about the  Allo-HSCTs you conduct on adult patients in a typical year, approximately what number are each of the following donor types?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A1"
+  },
+  {
+    "Column": "A1r5c1",
+    "Description": "A1r5c1: Umbilical cord blood - Thinking about the  Allo-HSCTs you conduct on adult patients in a typical year, approximately what number are each of the following donor types?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A1"
+  },
+  {
+    "Column": "hA1r1c1",
+    "Description": "hA1r1c1: Matched related donor (MRD) - HIDDEN IN LIVE: % of Allo-HSCT patients of each donor type",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA1"
+  },
+  {
+    "Column": "hA1r2c1",
+    "Description": "hA1r2c1: Matched unrelated donor (MUD) - HIDDEN IN LIVE: % of Allo-HSCT patients of each donor type",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA1"
+  },
+  {
+    "Column": "hA1r3c1",
+    "Description": "hA1r3c1: Haploidentical (Haplo) donor - HIDDEN IN LIVE: % of Allo-HSCT patients of each donor type",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA1"
+  },
+  {
+    "Column": "hA1r4c1",
+    "Description": "hA1r4c1: Mismatched unrelated donor (MMUD) - HIDDEN IN LIVE: % of Allo-HSCT patients of each donor type",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA1"
+  },
+  {
+    "Column": "hA1r5c1",
+    "Description": "hA1r5c1: Umbilical cord blood - HIDDEN IN LIVE: % of Allo-HSCT patients of each donor type",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA1"
+  },
+  {
+    "Column": "A2r1",
+    "Description": "A2r1: Degree of immunologic match - How important is each of the following factors in determining which agents you choose for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "A2"
+  },
+  {
+    "Column": "A2r2",
+    "Description": "A2r2: Conditioning regimen - How important is each of the following factors in determining which agents you choose for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "A2"
+  },
+  {
+    "Column": "A2r3",
+    "Description": "A2r3: Graft source - How important is each of the following factors in determining which agents you choose for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "A2"
+  },
+  {
+    "Column": "A2r4",
+    "Description": "A2r4: Institutional practice guidelines - How important is each of the following factors in determining which agents you choose for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "A2"
+  },
+  {
+    "Column": "A2r5",
+    "Description": "A2r5: Clinical trial/study design - How important is each of the following factors in determining which agents you choose for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "A2"
+  },
+  {
+    "Column": "A2r6",
+    "Description": "A2r6: Personal experience with the treatment - How important is each of the following factors in determining which agents you choose for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "A2"
+  },
+  {
+    "Column": "A2r7",
+    "Description": "A2r7: Patient age - How important is each of the following factors in determining which agents you choose for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "A2"
+  },
+  {
+    "Column": "A2r8",
+    "Description": "A2r8: Disease status - How important is each of the following factors in determining which agents you choose for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "A2"
+  },
+  {
+    "Column": "A3",
+    "Description": "A3: Which of the following best describes your approach to GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant as it relates to your institution’s practice standards/guidelines?",
+    "Answer_Options": "1=I always or almost always follow my institution’s practice standards/guidelines,2=I usually follow my institution’s practice standards/guidelines with some exceptions,3=I have my own approach and rarely follow my institution’s practice standards/guidelines,4=My institution does not have a codified standard approach"
+  },
+  {
+    "Column": "A4",
+    "Description": "A4: How stringent are the practice standards/guidelines at your institution?",
+    "Answer_Options": "1=Requirement to follow,2=Need to follow for most patients but ability to make exceptions,3=Standards/guidelines are guidelines only"
+  },
+  {
+    "Column": "A5r1",
+    "Description": "A5r1: Safety (i.e., avoid nephrotoxicity, neurotoxicity) - How important is each of the following attributes in choosing a regimen for GvHD prophylaxis in your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5"
+  },
+  {
+    "Column": "A5r2",
+    "Description": "A5r2: Ease of Dosing - How important is each of the following attributes in choosing a regimen for GvHD prophylaxis in your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5"
+  },
+  {
+    "Column": "A5r3",
+    "Description": "A5r3: Efficacy in preventing GvHD - How important is each of the following attributes in choosing a regimen for GvHD prophylaxis in your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5"
+  },
+  {
+    "Column": "A5r4",
+    "Description": "A5r4: Tolerability - How important is each of the following attributes in choosing a regimen for GvHD prophylaxis in your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5"
+  },
+  {
+    "Column": "A5r5",
+    "Description": "A5r5: Minimizing use of maintenance immunosuppressive treatment - How important is each of the following attributes in choosing a regimen for GvHD prophylaxis in your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5"
+  },
+  {
+    "Column": "A6",
+    "Description": "A6: How important is having a formal FDA indication for GvHD prophylaxis in choosing a regimen for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important"
+  },
+  {
+    "Column": "A7r1c1",
+    "Description": "A7r1c1: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - Next 20 MUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the f",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r2c1",
+    "Description": "A7r2c1: eATG (horse/equine ATG, ATGAM®) - Next 20 MUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophy",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r3c1",
+    "Description": "A7r3c1: Alemtuzumab - Next 20 MUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that your",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r4c1",
+    "Description": "A7r4c1: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - Next 20 MUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r5c1",
+    "Description": "A7r5c1: Ex Vivo Donor T Cell Depletion - Next 20 MUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophyla",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r6c1",
+    "Description": "A7r6c1: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - Next 20 MUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you pres",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r7c1",
+    "Description": "A7r7c1: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - Next 20 MUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you pres",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r8c1",
+    "Description": "A7r8c1: Abatacept (Orencia®) - Next 20 MUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? Note",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r9c1",
+    "Description": "A7r9c1: Corticosteroids - Next 20 MUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r10c1",
+    "Description": "A7r10c1: Rituximab - Next 20 MUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that your",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r11c1",
+    "Description": "A7r11c1: Sirolimus - Next 20 MUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that your",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r12c1",
+    "Description": "A7r12c1: Sitagliptin - Next 20 MUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that you",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r13c1",
+    "Description": "A7r13c1: Tocilizumab - Next 20 MUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that you",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r98c1",
+    "Description": "A7r98c1: Other agents (Specify) - Next 20 MUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? No",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r1c2",
+    "Description": "A7r1c2: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - Next 20 MMUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r2c2",
+    "Description": "A7r2c2: eATG (horse/equine ATG, ATGAM®) - Next 20 MMUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD proph",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r3c2",
+    "Description": "A7r3c2: Alemtuzumab - Next 20 MMUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that you",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r4c2",
+    "Description": "A7r4c2: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - Next 20 MMUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe th",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r5c2",
+    "Description": "A7r5c2: Ex Vivo Donor T Cell Depletion - Next 20 MMUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophyl",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r6c2",
+    "Description": "A7r6c2: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - Next 20 MMUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you pre",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r7c2",
+    "Description": "A7r7c2: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - Next 20 MMUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you pre",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r8c2",
+    "Description": "A7r8c2: Abatacept (Orencia®) - Next 20 MMUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? Not",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r9c2",
+    "Description": "A7r9c2: Corticosteroids - Next 20 MMUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r10c2",
+    "Description": "A7r10c2: Rituximab - Next 20 MMUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that your",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r11c2",
+    "Description": "A7r11c2: Sirolimus - Next 20 MMUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that your",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r12c2",
+    "Description": "A7r12c2: Sitagliptin - Next 20 MMUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that yo",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r13c2",
+    "Description": "A7r13c2: Tocilizumab - Next 20 MMUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that yo",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r98c2",
+    "Description": "A7r98c2: Other agents (Specify) - Next 20 MMUD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? N",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r98oe",
+    "Description": "A7r98oe: Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following unrelated donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that your answers may sum to over 20 to accommodate pre",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A8r1c1",
+    "Description": "A8r1c1: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - Next 20 MRD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the fol",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r2c1",
+    "Description": "A8r2c1: eATG (horse/equine ATG, ATGAM®) - Next 20 MRD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophyla",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r3c1",
+    "Description": "A8r3c1: Alemtuzumab - Next 20 MRD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that your a",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r4c1",
+    "Description": "A8r4c1: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - Next 20 MRD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the f",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r5c1",
+    "Description": "A8r5c1: Ex Vivo Donor T Cell Depletion - Next 20 MRD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxi",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r6c1",
+    "Description": "A8r6c1: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - Next 20 MRD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescr",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r7c1",
+    "Description": "A8r7c1: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - Next 20 MRD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescr",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r8c1",
+    "Description": "A8r8c1: Abatacept (Orencia®) - Next 20 MRD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note t",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r9c1",
+    "Description": "A8r9c1: Corticosteroids - Next 20 MRD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that yo",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r10c1",
+    "Description": "A8r10c1: Rituximab - Next 20 MRD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that your an",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r11c1",
+    "Description": "A8r11c1: Sirolimus - Next 20 MRD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that your an",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r12c1",
+    "Description": "A8r12c1: Sitagliptin - Next 20 MRD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that your",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r13c1",
+    "Description": "A8r13c1: Tocilizumab - Next 20 MRD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that your",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r98c1",
+    "Description": "A8r98c1: Other agents (Specify) - Next 20 MRD Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r1c2",
+    "Description": "A8r1c2: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - Next 20 Haplo Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the f",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r2c2",
+    "Description": "A8r2c2: eATG (horse/equine ATG, ATGAM®) - Next 20 Haplo Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophy",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r3c2",
+    "Description": "A8r3c2: Alemtuzumab - Next 20 Haplo Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that your",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r4c2",
+    "Description": "A8r4c2: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - Next 20 Haplo Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r5c2",
+    "Description": "A8r5c2: Ex Vivo Donor T Cell Depletion - Next 20 Haplo Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophyla",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r6c2",
+    "Description": "A8r6c2: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - Next 20 Haplo Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you pres",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r7c2",
+    "Description": "A8r7c2: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - Next 20 Haplo Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you pres",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r8c2",
+    "Description": "A8r8c2: Abatacept (Orencia®) - Next 20 Haplo Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r9c2",
+    "Description": "A8r9c2: Corticosteroids - Next 20 Haplo Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r10c2",
+    "Description": "A8r10c2: Rituximab - Next 20 Haplo Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that your",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r11c2",
+    "Description": "A8r11c2: Sirolimus - Next 20 Haplo Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that your",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r12c2",
+    "Description": "A8r12c2: Sitagliptin - Next 20 Haplo Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that you",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r13c2",
+    "Description": "A8r13c2: Tocilizumab - Next 20 Haplo Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that you",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r98c2",
+    "Description": "A8r98c2: Other agents (Specify) - Next 20 Haplo Allo-HSCT Patients - Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? No",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A8r98oe",
+    "Description": "A8r98oe: Thinking about your next 20 Allo-HSCT adult patients coming to transplant of the following related donor types, for what number would you prescribe the following for GvHD prophylaxis? Note that your answers may sum to over 20 to accommodate presc",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A8"
+  },
+  {
+    "Column": "A9",
+    "Description": "A9: Which of the following best describes how you would dose rATG (Thymoglobulin®) for GvHD prophylaxis for your next 20 Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=All/Nearly all patients would receive the same dosing (per kg) and duration (unless there is a specific reason not to),2=Dosing (per kg) would be differentiated by patient factors (e.g., donor types/immunologic match, age, etc.)"
+  },
+  {
+    "Column": "A10r1",
+    "Description": "A10r1: Dosing (per kg) would be differentiated by different donor types/immunologic match - And which of the following describes how you would dose rATG (Thymoglobulin®) for GvHD prophylaxis differentially?",
+    "Answer_Options": "0=NO TO: Dosing (per kg) would be differentiated by different donor types/immunologic match,1=Dosing (per kg) would be differentiated by different donor types/immunologic match",
+    "ParentQuestion": "A10"
+  },
+  {
+    "Column": "A10r2",
+    "Description": "A10r2: Dosing (per kg) would be differentiated based on other GvHD risk factors, e.g. age - And which of the following describes how you would dose rATG (Thymoglobulin®) for GvHD prophylaxis differentially?",
+    "Answer_Options": "0=NO TO: Dosing (per kg) would be differentiated based on other GvHD risk factors, e.g. age,1=Dosing (per kg) would be differentiated based on other GvHD risk factors, e.g. age",
+    "ParentQuestion": "A10"
+  },
+  {
+    "Column": "A10r3",
+    "Description": "A10r3: Dosing would be individualized based on patients’ absolute lymphocyte count - And which of the following describes how you would dose rATG (Thymoglobulin®) for GvHD prophylaxis differentially?",
+    "Answer_Options": "0=NO TO: Dosing would be individualized based on patients’ absolute lymphocyte count,1=Dosing would be individualized based on patients’ absolute lymphocyte count",
+    "ParentQuestion": "A10"
+  },
+  {
+    "Column": "A11",
+    "Description": "A11: In what way would your rATG (Thymoglobulin®) dosing approach be guided by your institution’s practice standards/guidelines for dosing for GvHD prophylaxis?",
+    "Answer_Options": "1=I would always or almost always follow my institution’s practice standards/guidelines,2=I would usually follow my institution’s practice standards/guidelines with some exceptions,3=I would have my own approach and rarely follow my institution’s practice standards/guidelines,4=My institution does not have a codified standard approach"
+  },
+  {
+    "Column": "A12r1",
+    "Description": "A12r1: The total number of days over which you would plan to administer rATG (Thymoglobulin®) - Which of the following best describes how you would approach dosing rATG (Thymoglobulin®) for GvHD prophylaxis in your next 20 adult Allo-HSCT patients comin",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A12"
+  },
+  {
+    "Column": "A12r2",
+    "Description": "A12r2: The total dose of rATG (Thymoglobulin®) you would aim for across these days - Which of the following best describes how you would approach dosing rATG (Thymoglobulin®) for GvHD prophylaxis in your next 20 adult Allo-HSCT patients coming to transp",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A12"
+  },
+  {
+    "Column": "A13r1c1",
+    "Description": "A13r1c1: MUD - The total number of days over which you would plan to administer rATG (Thymoglobulin®) - Which of the following best describes how you would approach dosing rATG (Thymoglobulin®) for GvHD prophylaxis in your next 20 adult Allo-HSCT patien",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A13"
+  },
+  {
+    "Column": "A13r1c2",
+    "Description": "A13r1c2: MMUD - The total number of days over which you would plan to administer rATG (Thymoglobulin®) - Which of the following best describes how you would approach dosing rATG (Thymoglobulin®) for GvHD prophylaxis in your next 20 adult Allo-HSCT patie",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A13"
+  },
+  {
+    "Column": "A13r1c3",
+    "Description": "A13r1c3: MRD - The total number of days over which you would plan to administer rATG (Thymoglobulin®) - Which of the following best describes how you would approach dosing rATG (Thymoglobulin®) for GvHD prophylaxis in your next 20 adult Allo-HSCT patien",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A13"
+  },
+  {
+    "Column": "A13r1c4",
+    "Description": "A13r1c4: Haplo - The total number of days over which you would plan to administer rATG (Thymoglobulin®) - Which of the following best describes how you would approach dosing rATG (Thymoglobulin®) for GvHD prophylaxis in your next 20 adult Allo-HSCT pati",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A13"
+  },
+  {
+    "Column": "A13r2c1",
+    "Description": "A13r2c1: MUD - The total dose of rATG (Thymoglobulin®) you would aim for across these days - Which of the following best describes how you would approach dosing rATG (Thymoglobulin®) for GvHD prophylaxis in your next 20 adult Allo-HSCT patients coming t",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A13"
+  },
+  {
+    "Column": "A13r2c2",
+    "Description": "A13r2c2: MMUD - The total dose of rATG (Thymoglobulin®) you would aim for across these days - Which of the following best describes how you would approach dosing rATG (Thymoglobulin®) for GvHD prophylaxis in your next 20 adult Allo-HSCT patients coming",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A13"
+  },
+  {
+    "Column": "A13r2c3",
+    "Description": "A13r2c3: MRD - The total dose of rATG (Thymoglobulin®) you would aim for across these days - Which of the following best describes how you would approach dosing rATG (Thymoglobulin®) for GvHD prophylaxis in your next 20 adult Allo-HSCT patients coming t",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A13"
+  },
+  {
+    "Column": "A13r2c4",
+    "Description": "A13r2c4: Haplo - The total dose of rATG (Thymoglobulin®) you would aim for across these days - Which of the following best describes how you would approach dosing rATG (Thymoglobulin®) for GvHD prophylaxis in your next 20 adult Allo-HSCT patients coming",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A13"
+  },
+  {
+    "Column": "B1",
+    "Description": "B1: What is your overall impression of rATG (Thymoglobulin®)’s additional indication with supporting data for GvHD prophylaxis, based on the information you just reviewed?",
+    "Answer_Options": "1=Not at all favorable,2=Slightly favorable,3=Somewhat favorable,4=Very favorable,5=Extremely favorable"
+  },
+  {
+    "Column": "B2",
+    "Description": "B2: What are some of the reasons you perceive rATG (Thymoglobulin®)’s additional indication with supporting data for GvHD prophylaxis as [pipe:B1]?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "B3r1c3",
+    "Description": "B3r1c3: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - Prior Response \"Next 20 MUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the fo",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r2c3",
+    "Description": "B3r2c3: eATG (horse/equine ATG, ATGAM®) - Prior Response \"Next 20 MUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r3c3",
+    "Description": "B3r3c3: Alemtuzumab - Prior Response \"Next 20 MUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what numbe",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r4c3",
+    "Description": "B3r4c3: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - Prior Response \"Next 20 MUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r5c3",
+    "Description": "B3r5c3: Ex Vivo Donor T Cell Depletion - Prior Response \"Next 20 MUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor ty",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r6c3",
+    "Description": "B3r6c3: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - Prior Response \"Next 20 MUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplan",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r7c3",
+    "Description": "B3r7c3: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - Prior Response \"Next 20 MUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplan",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r8c3",
+    "Description": "B3r8c3: Abatacept (Orencia®) - Prior Response \"Next 20 MUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r9c3",
+    "Description": "B3r9c3: Corticosteroids - Prior Response \"Next 20 MUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what n",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r10c3",
+    "Description": "B3r10c3: Rituximab - Prior Response \"Next 20 MUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r11c3",
+    "Description": "B3r11c3: Sirolimus - Prior Response \"Next 20 MUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r12c3",
+    "Description": "B3r12c3: Sitagliptin - Prior Response \"Next 20 MUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what numb",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r13c3",
+    "Description": "B3r13c3: Tocilizumab - Prior Response \"Next 20 MUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what numb",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r98c3",
+    "Description": "B3r98c3: $ {A7.r98.open} - Prior Response \"Next 20 MUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r1c1",
+    "Description": "B3r1c1: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - Next 20 MUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r2c1",
+    "Description": "B3r2c1: eATG (horse/equine ATG, ATGAM®) - Next 20 MUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what n",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r3c1",
+    "Description": "B3r3c1: Alemtuzumab - Next 20 MUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number would you presc",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r4c1",
+    "Description": "B3r4c1: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - Next 20 MUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelat",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r5c1",
+    "Description": "B3r5c1: Ex Vivo Donor T Cell Depletion - Next 20 MUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what num",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r6c1",
+    "Description": "B3r6c1: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - Next 20 MUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the followin",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r7c1",
+    "Description": "B3r7c1: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - Next 20 MUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the followin",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r8c1",
+    "Description": "B3r8c1: Abatacept (Orencia®) - Next 20 MUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number would",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r9c1",
+    "Description": "B3r9c1: Corticosteroids - Next 20 MUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number would you p",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r10c1",
+    "Description": "B3r10c1: Rituximab - Next 20 MUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number would you prescr",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r11c1",
+    "Description": "B3r11c1: Sirolimus - Next 20 MUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number would you prescr",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r12c1",
+    "Description": "B3r12c1: Sitagliptin - Next 20 MUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number would you pres",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r13c1",
+    "Description": "B3r13c1: Tocilizumab - Next 20 MUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number would you pres",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r98c1",
+    "Description": "B3r98c1: $ {A7.r98.open} - Next 20 MUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number would you",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r1c4",
+    "Description": "B3r1c4: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - Prior Response \"Next 20 MMUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the f",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r2c4",
+    "Description": "B3r2c4: eATG (horse/equine ATG, ATGAM®) - Prior Response \"Next 20 MMUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r3c4",
+    "Description": "B3r3c4: Alemtuzumab - Prior Response \"Next 20 MMUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what numb",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r4c4",
+    "Description": "B3r4c4: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - Prior Response \"Next 20 MMUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r5c4",
+    "Description": "B3r5c4: Ex Vivo Donor T Cell Depletion - Prior Response \"Next 20 MMUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor t",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r6c4",
+    "Description": "B3r6c4: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - Prior Response \"Next 20 MMUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transpla",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r7c4",
+    "Description": "B3r7c4: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - Prior Response \"Next 20 MMUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transpla",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r8c4",
+    "Description": "B3r8c4: Abatacept (Orencia®) - Prior Response \"Next 20 MMUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r9c4",
+    "Description": "B3r9c4: Corticosteroids - Prior Response \"Next 20 MMUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r10c4",
+    "Description": "B3r10c4: Rituximab - Prior Response \"Next 20 MMUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what numbe",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r11c4",
+    "Description": "B3r11c4: Sirolimus - Prior Response \"Next 20 MMUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what numbe",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r12c4",
+    "Description": "B3r12c4: Sitagliptin - Prior Response \"Next 20 MMUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what num",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r13c4",
+    "Description": "B3r13c4: Tocilizumab - Prior Response \"Next 20 MMUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what num",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r98c4",
+    "Description": "B3r98c4: $ {A7.r98.open} - Prior Response \"Next 20 MMUD Allo-HSCT Patients\" - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r1c2",
+    "Description": "B3r1c2: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - Next 20 MMUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelate",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r2c2",
+    "Description": "B3r2c2: eATG (horse/equine ATG, ATGAM®) - Next 20 MMUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r3c2",
+    "Description": "B3r3c2: Alemtuzumab - Next 20 MMUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number would you pres",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r4c2",
+    "Description": "B3r4c2: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - Next 20 MMUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrela",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r5c2",
+    "Description": "B3r5c2: Ex Vivo Donor T Cell Depletion - Next 20 MMUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what nu",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r6c2",
+    "Description": "B3r6c2: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - Next 20 MMUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the followi",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r7c2",
+    "Description": "B3r7c2: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - Next 20 MMUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the followi",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r8c2",
+    "Description": "B3r8c2: Abatacept (Orencia®) - Next 20 MMUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number woul",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r9c2",
+    "Description": "B3r9c2: Corticosteroids - Next 20 MMUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number would you",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r10c2",
+    "Description": "B3r10c2: Rituximab - Next 20 MMUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number would you presc",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r11c2",
+    "Description": "B3r11c2: Sirolimus - Next 20 MMUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number would you presc",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r12c2",
+    "Description": "B3r12c2: Sitagliptin - Next 20 MMUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number would you pre",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r13c2",
+    "Description": "B3r13c2: Tocilizumab - Next 20 MMUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number would you pre",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r98c2",
+    "Description": "B3r98c2: $ {A7.r98.open} - Next 20 MMUD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following unrelated donor types, for what number would you",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B4r1c3",
+    "Description": "B4r1c3: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - Prior to Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r2c3",
+    "Description": "B4r2c3: eATG (horse/equine ATG, ATGAM®) - Prior to Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r3c3",
+    "Description": "B4r3c3: Alemtuzumab - Prior to Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would yo",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r4c3",
+    "Description": "B4r4c3: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - Prior to Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the followin",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r5c3",
+    "Description": "B4r5c3: Ex Vivo Donor T Cell Depletion - Prior to Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for w",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r6c3",
+    "Description": "B4r6c3: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - Prior to Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r7c3",
+    "Description": "B4r7c3: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - Prior to Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r8c3",
+    "Description": "B4r8c3: Abatacept (Orencia®) - Prior to Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what numbe",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r9c3",
+    "Description": "B4r9c3: Corticosteroids - Prior to Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number woul",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r10c3",
+    "Description": "B4r10c3: Rituximab - Prior to Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r11c3",
+    "Description": "B4r11c3: Sirolimus - Prior to Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r12c3",
+    "Description": "B4r12c3: Sitagliptin - Prior to Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would y",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r13c3",
+    "Description": "B4r13c3: Tocilizumab - Prior to Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would y",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r98c3",
+    "Description": "B4r98c3: $ {A8.r98.open} - Prior to Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number wou",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r1c1",
+    "Description": "B4r1c1: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related d",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r2c1",
+    "Description": "B4r2c1: eATG (horse/equine ATG, ATGAM®) - Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what num",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r3c1",
+    "Description": "B4r3c1: Alemtuzumab - Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you prescri",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r4c1",
+    "Description": "B4r4c1: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r5c1",
+    "Description": "B4r5c1: Ex Vivo Donor T Cell Depletion - Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what numbe",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r6c1",
+    "Description": "B4r6c1: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the followin",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r7c1",
+    "Description": "B4r7c1: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the followin",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r8c1",
+    "Description": "B4r8c1: Abatacept (Orencia®) - Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would y",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r9c1",
+    "Description": "B4r9c1: Corticosteroids - Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you pre",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r10c1",
+    "Description": "B4r10c1: Rituximab - Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you prescrib",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r11c1",
+    "Description": "B4r11c1: Sirolimus - Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you prescrib",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r12c1",
+    "Description": "B4r12c1: Sitagliptin - Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you prescr",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r13c1",
+    "Description": "B4r13c1: Tocilizumab - Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you prescr",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r98c1",
+    "Description": "B4r98c1: $ {A8.r98.open} - Next 20 MRD Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you pr",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r1c4",
+    "Description": "B4r1c4: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - Priot to Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the followin",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r2c4",
+    "Description": "B4r2c4: eATG (horse/equine ATG, ATGAM®) - Priot to Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, f",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r3c4",
+    "Description": "B4r3c4: Alemtuzumab - Priot to Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r4c4",
+    "Description": "B4r4c4: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - Priot to Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the follow",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r5c4",
+    "Description": "B4r5c4: Ex Vivo Donor T Cell Depletion - Priot to Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r6c4",
+    "Description": "B4r6c4: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - Priot to Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of t",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r7c4",
+    "Description": "B4r7c4: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - Priot to Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of t",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r8c4",
+    "Description": "B4r8c4: Abatacept (Orencia®) - Priot to Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what num",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r9c4",
+    "Description": "B4r9c4: Corticosteroids - Priot to Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number wo",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r10c4",
+    "Description": "B4r10c4: Rituximab - Priot to Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would y",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r11c4",
+    "Description": "B4r11c4: Sirolimus - Priot to Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would y",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r12c4",
+    "Description": "B4r12c4: Sitagliptin - Priot to Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r13c4",
+    "Description": "B4r13c4: Tocilizumab - Priot to Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r98c4",
+    "Description": "B4r98c4: $ {A8.r98.open} - Priot to Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number w",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r1c2",
+    "Description": "B4r1c2: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r2c2",
+    "Description": "B4r2c2: eATG (horse/equine ATG, ATGAM®) - Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what n",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r3c2",
+    "Description": "B4r3c2: Alemtuzumab - Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you presc",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r4c2",
+    "Description": "B4r4c2: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following relat",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r5c2",
+    "Description": "B4r5c2: Ex Vivo Donor T Cell Depletion - Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what num",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r6c2",
+    "Description": "B4r6c2: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the follow",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r7c2",
+    "Description": "B4r7c2: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the follow",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r8c2",
+    "Description": "B4r8c2: Abatacept (Orencia®) - Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r9c2",
+    "Description": "B4r9c2: Corticosteroids - Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you p",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r10c2",
+    "Description": "B4r10c2: Rituximab - Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you prescr",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r11c2",
+    "Description": "B4r11c2: Sirolimus - Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you prescr",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r12c2",
+    "Description": "B4r12c2: Sitagliptin - Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you pres",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r13c2",
+    "Description": "B4r13c2: Tocilizumab - Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you pres",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r98c2",
+    "Description": "B4r98c2: $ {A8.r98.open} - Next 20 Haplo Allo-HSCT Patients - Assuming this label update for rATG (Thymoglobulin®), thinking about your next 20 adult Allo-HSCT patients coming to transplant of the following related donor types, for what number would you",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B5A",
+    "Description": "B5A: Please indicate below how certain you are that you would prescribe rATG (Thymoglobulin®) to of your next 20 MUD Allo-HSCT patients if you were making an actual prescribing decision.",
+    "Answer_Options": "0=Not at All Certain 0,1=1,2=2,3=3,4=4,5=Somewhat Certain 5,6=6,7=7,8=8,9=9,10=Completely Certain 10"
+  },
+  {
+    "Column": "B5B",
+    "Description": "B5B: Please indicate below how certain you are that you would prescribe rATG (Thymoglobulin®) to of your next 20 MMUD Allo-HSCT patients if you were making an actual prescribing decision.",
+    "Answer_Options": "0=Not at All Certain 0,1=1,2=2,3=3,4=4,5=Somewhat Certain 5,6=6,7=7,8=8,9=9,10=Completely Certain 10"
+  },
+  {
+    "Column": "B6A",
+    "Description": "B6A: Please indicate below how certain you are that you would prescribe rATG (Thymoglobulin®) to of your next 20 MRD Allo-HSCT  patients if you were making an actual prescribing decision.",
+    "Answer_Options": "0=Not at All Certain 0,1=1,2=2,3=3,4=4,5=Somewhat Certain 5,6=6,7=7,8=8,9=9,10=Completely Certain 10"
+  },
+  {
+    "Column": "B6B",
+    "Description": "B6B: Please indicate below how certain you are that you would prescribe rATG (Thymoglobulin®) to of your next 20 Haplo Allo-HSCT  patients if you were making an actual prescribing decision.",
+    "Answer_Options": "0=Not at All Certain 0,1=1,2=2,3=3,4=4,5=Somewhat Certain 5,6=6,7=7,8=8,9=9,10=Completely Certain 10"
+  },
+  {
+    "Column": "B7r1c1",
+    "Description": "B7r1c1: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - MUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-",
+    "Answer_Options": "0=NO TO: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®),1=rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®)",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r2c1",
+    "Description": "B7r2c1: eATG (horse/equine ATG, ATGAM®) - MUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor typ",
+    "Answer_Options": "0=NO TO: eATG (horse/equine ATG, ATGAM®),1=eATG (horse/equine ATG, ATGAM®)",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r3c1",
+    "Description": "B7r3c1: Alemtuzumab - MUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please think only",
+    "Answer_Options": "0=NO TO: Alemtuzumab,1=Alemtuzumab",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r4c1",
+    "Description": "B7r4c1: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - MUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult All",
+    "Answer_Options": "0=NO TO: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)),1=Cyclophosphamide (Post-transplant cyclophosphamide (PTCy))",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r5c1",
+    "Description": "B7r5c1: Ex Vivo Donor T Cell Depletion - MUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types",
+    "Answer_Options": "0=NO TO: Ex Vivo Donor T Cell Depletion,1=Ex Vivo Donor T Cell Depletion",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r6c1",
+    "Description": "B7r6c1: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - MUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following",
+    "Answer_Options": "0=NO TO: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)),1=CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac))",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r7c1",
+    "Description": "B7r7c1: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - MUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following",
+    "Answer_Options": "0=NO TO: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)),1=Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF))",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r8c1",
+    "Description": "B7r8c1: Abatacept (Orencia®) - MUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please",
+    "Answer_Options": "0=NO TO: Abatacept (Orencia®),1=Abatacept (Orencia®)",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r9c1",
+    "Description": "B7r9c1: Corticosteroids - MUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please think",
+    "Answer_Options": "0=NO TO: Corticosteroids,1=Corticosteroids",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r10c1",
+    "Description": "B7r10c1: Rituximab - MUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please think only",
+    "Answer_Options": "0=NO TO: Rituximab,1=Rituximab",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r11c1",
+    "Description": "B7r11c1: Sirolimus - MUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please think only",
+    "Answer_Options": "0=NO TO: Sirolimus,1=Sirolimus",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r12c1",
+    "Description": "B7r12c1: Sitagliptin - MUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please think onl",
+    "Answer_Options": "0=NO TO: Sitagliptin,1=Sitagliptin",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r13c1",
+    "Description": "B7r13c1: Tocilizumab - MUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please think onl",
+    "Answer_Options": "0=NO TO: Tocilizumab,1=Tocilizumab",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r98c1",
+    "Description": "B7r98c1: $ {A7.r98.open} - MUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please think",
+    "Answer_Options": "0=NO TO: $ {A7.r98.open},1=$ {A7.r98.open}",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r1c2",
+    "Description": "B7r1c2: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - MMUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo",
+    "Answer_Options": "0=NO TO: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®),1=rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®)",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r2c2",
+    "Description": "B7r2c2: eATG (horse/equine ATG, ATGAM®) - MMUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor ty",
+    "Answer_Options": "0=NO TO: eATG (horse/equine ATG, ATGAM®),1=eATG (horse/equine ATG, ATGAM®)",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r3c2",
+    "Description": "B7r3c2: Alemtuzumab - MMUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please think onl",
+    "Answer_Options": "0=NO TO: Alemtuzumab,1=Alemtuzumab",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r4c2",
+    "Description": "B7r4c2: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - MMUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Al",
+    "Answer_Options": "0=NO TO: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)),1=Cyclophosphamide (Post-transplant cyclophosphamide (PTCy))",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r5c2",
+    "Description": "B7r5c2: Ex Vivo Donor T Cell Depletion - MMUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor type",
+    "Answer_Options": "0=NO TO: Ex Vivo Donor T Cell Depletion,1=Ex Vivo Donor T Cell Depletion",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r6c2",
+    "Description": "B7r6c2: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - MMUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following",
+    "Answer_Options": "0=NO TO: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)),1=CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac))",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r7c2",
+    "Description": "B7r7c2: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - MMUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following",
+    "Answer_Options": "0=NO TO: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)),1=Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF))",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r8c2",
+    "Description": "B7r8c2: Abatacept (Orencia®) - MMUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please",
+    "Answer_Options": "0=NO TO: Abatacept (Orencia®),1=Abatacept (Orencia®)",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r9c2",
+    "Description": "B7r9c2: Corticosteroids - MMUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please think",
+    "Answer_Options": "0=NO TO: Corticosteroids,1=Corticosteroids",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r10c2",
+    "Description": "B7r10c2: Rituximab - MMUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please think only",
+    "Answer_Options": "0=NO TO: Rituximab,1=Rituximab",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r11c2",
+    "Description": "B7r11c2: Sirolimus - MMUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please think only",
+    "Answer_Options": "0=NO TO: Sirolimus,1=Sirolimus",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r12c2",
+    "Description": "B7r12c2: Sitagliptin - MMUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please think on",
+    "Answer_Options": "0=NO TO: Sitagliptin,1=Sitagliptin",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r13c2",
+    "Description": "B7r13c2: Tocilizumab - MMUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please think on",
+    "Answer_Options": "0=NO TO: Tocilizumab,1=Tocilizumab",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r98c2",
+    "Description": "B7r98c2: $ {A7.r98.open} - MMUD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT unrelated donor types? Please thin",
+    "Answer_Options": "0=NO TO: $ {A7.r98.open},1=$ {A7.r98.open}",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B8r1c1",
+    "Description": "B8r1c1: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - MRD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-",
+    "Answer_Options": "0=NO TO: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®),1=rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®)",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r2c1",
+    "Description": "B8r2c1: eATG (horse/equine ATG, ATGAM®) - MRD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types",
+    "Answer_Options": "0=NO TO: eATG (horse/equine ATG, ATGAM®),1=eATG (horse/equine ATG, ATGAM®)",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r3c1",
+    "Description": "B8r3c1: Alemtuzumab - MRD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please think only o",
+    "Answer_Options": "0=NO TO: Alemtuzumab,1=Alemtuzumab",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r4c1",
+    "Description": "B8r4c1: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - MRD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult All",
+    "Answer_Options": "0=NO TO: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)),1=Cyclophosphamide (Post-transplant cyclophosphamide (PTCy))",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r5c1",
+    "Description": "B8r5c1: Ex Vivo Donor T Cell Depletion - MRD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types?",
+    "Answer_Options": "0=NO TO: Ex Vivo Donor T Cell Depletion,1=Ex Vivo Donor T Cell Depletion",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r6c1",
+    "Description": "B8r6c1: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - MRD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following",
+    "Answer_Options": "0=NO TO: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)),1=CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac))",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r7c1",
+    "Description": "B8r7c1: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - MRD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following",
+    "Answer_Options": "0=NO TO: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)),1=Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF))",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r8c1",
+    "Description": "B8r8c1: Abatacept (Orencia®) - MRD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please th",
+    "Answer_Options": "0=NO TO: Abatacept (Orencia®),1=Abatacept (Orencia®)",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r9c1",
+    "Description": "B8r9c1: Corticosteroids - MRD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please think on",
+    "Answer_Options": "0=NO TO: Corticosteroids,1=Corticosteroids",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r10c1",
+    "Description": "B8r10c1: Rituximab - MRD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please think only of",
+    "Answer_Options": "0=NO TO: Rituximab,1=Rituximab",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r11c1",
+    "Description": "B8r11c1: Sirolimus - MRD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please think only of",
+    "Answer_Options": "0=NO TO: Sirolimus,1=Sirolimus",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r12c1",
+    "Description": "B8r12c1: Sitagliptin - MRD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please think only",
+    "Answer_Options": "0=NO TO: Sitagliptin,1=Sitagliptin",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r13c1",
+    "Description": "B8r13c1: Tocilizumab - MRD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please think only",
+    "Answer_Options": "0=NO TO: Tocilizumab,1=Tocilizumab",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r98c1",
+    "Description": "B8r98c1: $ {A8.r98.open} - MRD post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please think o",
+    "Answer_Options": "0=NO TO: $ {A8.r98.open},1=$ {A8.r98.open}",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r1c2",
+    "Description": "B8r1c2: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®) - Haplo post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult All",
+    "Answer_Options": "0=NO TO: rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®),1=rATG (rabbit anti‐thymocyte globulin, Thymoglobulin®)",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r2c2",
+    "Description": "B8r2c2: eATG (horse/equine ATG, ATGAM®) - Haplo post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor typ",
+    "Answer_Options": "0=NO TO: eATG (horse/equine ATG, ATGAM®),1=eATG (horse/equine ATG, ATGAM®)",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r3c2",
+    "Description": "B8r3c2: Alemtuzumab - Haplo post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please think only",
+    "Answer_Options": "0=NO TO: Alemtuzumab,1=Alemtuzumab",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r4c2",
+    "Description": "B8r4c2: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)) - Haplo post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult A",
+    "Answer_Options": "0=NO TO: Cyclophosphamide (Post-transplant cyclophosphamide (PTCy)),1=Cyclophosphamide (Post-transplant cyclophosphamide (PTCy))",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r5c2",
+    "Description": "B8r5c2: Ex Vivo Donor T Cell Depletion - Haplo post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types",
+    "Answer_Options": "0=NO TO: Ex Vivo Donor T Cell Depletion,1=Ex Vivo Donor T Cell Depletion",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r6c2",
+    "Description": "B8r6c2: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)) - Haplo post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the followin",
+    "Answer_Options": "0=NO TO: CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac)),1=CNI/Calcineurin inhibitors (cyclosporine (CsA) or tacrolimus (Tac))",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r7c2",
+    "Description": "B8r7c2: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)) - Haplo post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the followin",
+    "Answer_Options": "0=NO TO: Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF)),1=Antimetabolites (methotrexate (MTX) or mycophenolate mofetil (MMF))",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r8c2",
+    "Description": "B8r8c2: Abatacept (Orencia®) - Haplo post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please",
+    "Answer_Options": "0=NO TO: Abatacept (Orencia®),1=Abatacept (Orencia®)",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r9c2",
+    "Description": "B8r9c2: Corticosteroids - Haplo post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please think",
+    "Answer_Options": "0=NO TO: Corticosteroids,1=Corticosteroids",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r10c2",
+    "Description": "B8r10c2: Rituximab - Haplo post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please think only",
+    "Answer_Options": "0=NO TO: Rituximab,1=Rituximab",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r11c2",
+    "Description": "B8r11c2: Sirolimus - Haplo post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please think only",
+    "Answer_Options": "0=NO TO: Sirolimus,1=Sirolimus",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r12c2",
+    "Description": "B8r12c2: Sitagliptin - Haplo post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please think onl",
+    "Answer_Options": "0=NO TO: Sitagliptin,1=Sitagliptin",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r13c2",
+    "Description": "B8r13c2: Tocilizumab - Haplo post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please think onl",
+    "Answer_Options": "0=NO TO: Tocilizumab,1=Tocilizumab",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r98c2",
+    "Description": "B8r98c2: $ {A8.r98.open} - Haplo post Allo-HSCT Patients - Assuming this update, what would be your most common regimen prescribed with rATG (Thymoglobulin®) for GvHD prophylaxis for each of the following adult Allo-HSCT related donor types? Please think",
+    "Answer_Options": "0=NO TO: $ {A8.r98.open},1=$ {A8.r98.open}",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B9",
+    "Description": "B9: Would prescribing rATG (Thymoglobulin®) for GvHD prophylaxis in your center require a change to your institution’s protocol and/or clinical practice guidelines?",
+    "Answer_Options": "1=Yes,2=No, it’s already in place,3=No, I’d have the ability to prescribe it prior to a change"
+  },
+  {
+    "Column": "B10",
+    "Description": "B10: How likely would you be to request that your institution’s protocol and/or clinical practice incorporate rATG (Thymoglobulin®) for GvHD prophylaxis?",
+    "Answer_Options": "1=Not at all likely,2=Slightly likely,3=Somewhat likely,4=Very likely,5=Extremely likely"
+  },
+  {
+    "Column": "B11",
+    "Description": "B11: How long would you expect it to take for your institution to incorporate rATG (Thymoglobulin®) into protocol and/or clinical practice?",
+    "Answer_Options": "1=Within 1 month,2=1 month – up to 6 months,3=6 months – up to 1 year,4=1 year – up to 2 years,5=2 years or longer"
+  },
+  {
+    "Column": "B12",
+    "Description": "B12: Assuming this potential label update, what would your approach to dosing rATG (Thymoglobulin®) for GvHD prophylaxis be?",
+    "Answer_Options": "1=All/Nearly all patients would receive 4.5 mg/kg over 3 days per the label (unless there is a specific reason not to),2=All/Nearly all patients would receive the same dosing (per kg) and duration, but different from the label update dosing,3=Dosing (per kg) would be differentiated by patient factors (e.g., donor types/immunologic match, age, etc.)"
+  },
+  {
+    "Column": "B13r1",
+    "Description": "B13r1: Dosing (per kg) would be differentiated by different donor types/immunologic match - And which of the following describes how you would dose rATG (Thymoglobulin®) for GvHD prophylaxis differentially?",
+    "Answer_Options": "0=NO TO: Dosing (per kg) would be differentiated by different donor types/immunologic match,1=Dosing (per kg) would be differentiated by different donor types/immunologic match",
+    "ParentQuestion": "B13"
+  },
+  {
+    "Column": "B13r2",
+    "Description": "B13r2: Dosing (per kg) would be differentiated based on other GvHD risk factors, e.g. age - And which of the following describes how you would dose rATG (Thymoglobulin®) for GvHD prophylaxis differentially?",
+    "Answer_Options": "0=NO TO: Dosing (per kg) would be differentiated based on other GvHD risk factors, e.g. age,1=Dosing (per kg) would be differentiated based on other GvHD risk factors, e.g. age",
+    "ParentQuestion": "B13"
+  },
+  {
+    "Column": "B13r3",
+    "Description": "B13r3: Dosing would be individualized based on patients' absolute lymphocyte count - And which of the following describes how you would dose rATG (Thymoglobulin®) for GvHD prophylaxis differentially?",
+    "Answer_Options": "0=NO TO: Dosing would be individualized based on patients' absolute lymphocyte count,1=Dosing would be individualized based on patients' absolute lymphocyte count",
+    "ParentQuestion": "B13"
+  },
+  {
+    "Column": "B14r1",
+    "Description": "B14r1: The total number of days over which you plan to administer rATG (Thymoglobulin®) - How would you expect to dose rATG (Thymoglobulin®) for GvHD prophylaxis in your adult Allo-HSCT patients coming to transplant following this label update?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B14"
+  },
+  {
+    "Column": "B14r2",
+    "Description": "B14r2: The total dose of rATG (Thymoglobulin®) you aim for across these days - How would you expect to dose rATG (Thymoglobulin®) for GvHD prophylaxis in your adult Allo-HSCT patients coming to transplant following this label update?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B14"
+  },
+  {
+    "Column": "B15r1c1",
+    "Description": "B15r1c1: MUD - The total number of days over which you would plan to administer rATG (Thymoglobulin®) - How would you dose rATG (Thymoglobulin®) for GvHD prophylaxis in your adult Allo-HSCT patients coming to transplant for each of the following donor t",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B15"
+  },
+  {
+    "Column": "B15r1c2",
+    "Description": "B15r1c2: MMUD - The total number of days over which you would plan to administer rATG (Thymoglobulin®) - How would you dose rATG (Thymoglobulin®) for GvHD prophylaxis in your adult Allo-HSCT patients coming to transplant for each of the following donor",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B15"
+  },
+  {
+    "Column": "B15r1c3",
+    "Description": "B15r1c3: MRD - The total number of days over which you would plan to administer rATG (Thymoglobulin®) - How would you dose rATG (Thymoglobulin®) for GvHD prophylaxis in your adult Allo-HSCT patients coming to transplant for each of the following donor t",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B15"
+  },
+  {
+    "Column": "B15r1c4",
+    "Description": "B15r1c4: Haplo - The total number of days over which you would plan to administer rATG (Thymoglobulin®) - How would you dose rATG (Thymoglobulin®) for GvHD prophylaxis in your adult Allo-HSCT patients coming to transplant for each of the following donor",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B15"
+  },
+  {
+    "Column": "B15r2c1",
+    "Description": "B15r2c1: MUD - The total dose of rATG (Thymoglobulin®) you would aim for - How would you dose rATG (Thymoglobulin®) for GvHD prophylaxis in your adult Allo-HSCT patients coming to transplant for each of the following donor types?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B15"
+  },
+  {
+    "Column": "B15r2c2",
+    "Description": "B15r2c2: MMUD - The total dose of rATG (Thymoglobulin®) you would aim for - How would you dose rATG (Thymoglobulin®) for GvHD prophylaxis in your adult Allo-HSCT patients coming to transplant for each of the following donor types?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B15"
+  },
+  {
+    "Column": "B15r2c3",
+    "Description": "B15r2c3: MRD - The total dose of rATG (Thymoglobulin®) you would aim for - How would you dose rATG (Thymoglobulin®) for GvHD prophylaxis in your adult Allo-HSCT patients coming to transplant for each of the following donor types?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B15"
+  },
+  {
+    "Column": "B15r2c4",
+    "Description": "B15r2c4: Haplo - The total dose of rATG (Thymoglobulin®) you would aim for - How would you dose rATG (Thymoglobulin®) for GvHD prophylaxis in your adult Allo-HSCT patients coming to transplant for each of the following donor types?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B15"
+  },
+  {
+    "Column": "A14",
+    "Description": "A14: How familiar are you with using a patient’s absolute lymphocyte count to individualize dosing of rATG (Thymoglobulin®)?",
+    "Answer_Options": "1=Never heard of it,2=Heard of it, but not familiar with the relevant trials and details,3=Somewhat familiar with the relevant trials and details,4=Very familiar with the relevant trials and details,5=Extremely familiar with the relevant trials and details"
+  },
+  {
+    "Column": "A15",
+    "Description": "A15: In your view, what would be some of the pros and cons to using a patient’s absolute lymphocyte count to individualize dosing of rATG (Thymoglobulin®)?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "B16r1",
+    "Description": "B16r1: Degree of immunologic match - How important would each of the following factors be in choosing whether or not to prescribe rATG (Thymoglobulin®) specifically for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "B16"
+  },
+  {
+    "Column": "B16r2",
+    "Description": "B16r2: Conditioning regimen - How important would each of the following factors be in choosing whether or not to prescribe rATG (Thymoglobulin®) specifically for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "B16"
+  },
+  {
+    "Column": "B16r3",
+    "Description": "B16r3: Graft source - How important would each of the following factors be in choosing whether or not to prescribe rATG (Thymoglobulin®) specifically for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "B16"
+  },
+  {
+    "Column": "B16r4",
+    "Description": "B16r4: Institutional practice guidelines - How important would each of the following factors be in choosing whether or not to prescribe rATG (Thymoglobulin®) specifically for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "B16"
+  },
+  {
+    "Column": "B16r5",
+    "Description": "B16r5: Clinical trial/study design - How important would each of the following factors be in choosing whether or not to prescribe rATG (Thymoglobulin®) specifically for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "B16"
+  },
+  {
+    "Column": "B16r6",
+    "Description": "B16r6: Personal experience with the treatment - How important would each of the following factors be in choosing whether or not to prescribe rATG (Thymoglobulin®) specifically for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "B16"
+  },
+  {
+    "Column": "B16r7",
+    "Description": "B16r7: Patient age - How important would each of the following factors be in choosing whether or not to prescribe rATG (Thymoglobulin®) specifically for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "B16"
+  },
+  {
+    "Column": "B16r8",
+    "Description": "B16r8: Disease status - How important would each of the following factors be in choosing whether or not to prescribe rATG (Thymoglobulin®) specifically for GvHD prophylaxis for your Allo-HSCT adult patients coming to transplant?",
+    "Answer_Options": "1=Not at all Important,2=Slightly Important,3=Somewhat Important,4=Very Important,5=Extremely Important",
+    "ParentQuestion": "B16"
+  },
+  {
+    "Column": "B18",
+    "Description": "B18: How does this additional data (freedom from immunosuppressive treatment at 12 months) impact your perceptions of the product as it relates to the data you previously reviewed, in particular Endpoint Claim 1 (superiority in freedom from GvHD)?",
+    "Answer_Options": "1=Adds no value to info already shared,2=Adds some value to info already shared,3=Adds a lot of value to info already shared"
+  },
+  {
+    "Column": "B19",
+    "Description": "B19: How would this additional data (freedom from immunosuppressive treatment at 12 months) affect how you would prescribe rATG (Thymoglobulin®) for GvHD prophylaxis beyond the data that you previously reviewed (superiority in freedom from GvHD)?",
+    "Answer_Options": "1=No Change to How I would Rx,2=Would Rx to Somewhat More Patients,3=Would Rx to Many More Patients"
+  },
+  {
+    "Column": "B20r1",
+    "Description": "B20r1: Safety (i.e., avoid nephrotoxicity, neurotoxicity) - Thinking of all data reviewed so far for this updated label, what are your impressions of rATG (Thymoglobulin®) for the purpose of GvHD prophylaxis for Allo-HSCT patients coming to transplant?",
+    "Answer_Options": "1=Not at all favorable,2=Slightly favorable,3=Somewhat favorable,4=Very favorable,5=Extremely favorable",
+    "ParentQuestion": "B20"
+  },
+  {
+    "Column": "B20r2",
+    "Description": "B20r2: Ease of Dosing - Thinking of all data reviewed so far for this updated label, what are your impressions of rATG (Thymoglobulin®) for the purpose of GvHD prophylaxis for Allo-HSCT patients coming to transplant?",
+    "Answer_Options": "1=Not at all favorable,2=Slightly favorable,3=Somewhat favorable,4=Very favorable,5=Extremely favorable",
+    "ParentQuestion": "B20"
+  },
+  {
+    "Column": "B20r3",
+    "Description": "B20r3: Efficacy in preventing GvHD - Thinking of all data reviewed so far for this updated label, what are your impressions of rATG (Thymoglobulin®) for the purpose of GvHD prophylaxis for Allo-HSCT patients coming to transplant?",
+    "Answer_Options": "1=Not at all favorable,2=Slightly favorable,3=Somewhat favorable,4=Very favorable,5=Extremely favorable",
+    "ParentQuestion": "B20"
+  },
+  {
+    "Column": "B20r4",
+    "Description": "B20r4: Tolerability - Thinking of all data reviewed so far for this updated label, what are your impressions of rATG (Thymoglobulin®) for the purpose of GvHD prophylaxis for Allo-HSCT patients coming to transplant?",
+    "Answer_Options": "1=Not at all favorable,2=Slightly favorable,3=Somewhat favorable,4=Very favorable,5=Extremely favorable",
+    "ParentQuestion": "B20"
+  },
+  {
+    "Column": "B20r5",
+    "Description": "B20r5: Reducing use of immunosuppressive treatment at 12 months - Thinking of all data reviewed so far for this updated label, what are your impressions of rATG (Thymoglobulin®) for the purpose of GvHD prophylaxis for Allo-HSCT patients coming to transpl",
+    "Answer_Options": "1=Not at all favorable,2=Slightly favorable,3=Somewhat favorable,4=Very favorable,5=Extremely favorable",
+    "ParentQuestion": "B20"
+  },
+  {
+    "Column": "B21r1",
+    "Description": "B21r1: Efficacy related to prevention of GvHD - Thinking of all data reviewed so far for this updated label, which product attributes are the most compelling reasons to prescribe rATG (Thymoglobulin®) with this potential update?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B21"
+  },
+  {
+    "Column": "B21r2",
+    "Description": "B21r2: Reducing use of immunosuppressive treatment at 12 months - Thinking of all data reviewed so far for this updated label, which product attributes are the most compelling reasons to prescribe rATG (Thymoglobulin®) with this potential update?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B21"
+  },
+  {
+    "Column": "B21r3",
+    "Description": "B21r3: Official FDA approval for a GvHD prophylaxis indication - Thinking of all data reviewed so far for this updated label, which product attributes are the most compelling reasons to prescribe rATG (Thymoglobulin®) with this potential update?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B21"
+  },
+  {
+    "Column": "B21r4",
+    "Description": "B21r4: No significant increase in rate of serious adverse events vs. standard of care - Thinking of all data reviewed so far for this updated label, which product attributes are the most compelling reasons to prescribe rATG (Thymoglobulin®) with this pot",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B21"
+  },
+  {
+    "Column": "B21r5",
+    "Description": "B21r5: Straightforward dosing schedule - Thinking of all data reviewed so far for this updated label, which product attributes are the most compelling reasons to prescribe rATG (Thymoglobulin®) with this potential update?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B21"
+  },
+  {
+    "Column": "B21r98",
+    "Description": "B21r98: Other (Specify:) - Thinking of all data reviewed so far for this updated label, which product attributes are the most compelling reasons to prescribe rATG (Thymoglobulin®) with this potential update?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B21"
+  },
+  {
+    "Column": "B21r98oe",
+    "Description": "B21r98oe: Thinking of all data reviewed so far for this updated label, which product attributes are the most compelling reasons to prescribe rATG (Thymoglobulin®) with this potential update? - Other (Specify:)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B21"
+  },
+  {
+    "Column": "noanswerB21_r99",
+    "Description": "noanswerB21_r99: Thinking of all data reviewed so far for this updated label, which product attributes are the most compelling reasons to prescribe rATG (Thymoglobulin®) with this potential update? $ {res.B17_link}: None of these are compelling - No Answ",
+    "Answer_Options": "0=NO TO: Thinking of all data reviewed so far for this updated label, which product attributes are the most compelling rea,1=Thinking of all data reviewed so far for this updated label, which product attributes are the most compelling reasons to",
+    "ParentQuestion": "noanswerB21_"
+  },
+  {
+    "Column": "B22r1",
+    "Description": "B22r1: I expect it will be expensive - Which of the following are barriers to prescribing rATG (Thymoglobulin®) with this potential update? Please select all of the reasons below.",
+    "Answer_Options": "0=NO TO: I expect it will be expensive,1=I expect it will be expensive",
+    "ParentQuestion": "B22"
+  },
+  {
+    "Column": "B22r2",
+    "Description": "B22r2: I expect there will be insurance hurdles (prior authorization, step therapy requirements, etc.) - Which of the following are barriers to prescribing rATG (Thymoglobulin®) with this potential update? Please select all of the reasons below.",
+    "Answer_Options": "0=NO TO: I expect there will be insurance hurdles (prior authorization, step therapy requirements, etc.),1=I expect there will be insurance hurdles (prior authorization, step therapy requirements, etc.)",
+    "ParentQuestion": "B22"
+  },
+  {
+    "Column": "B22r3",
+    "Description": "B22r3: Insufficient efficacy related to prevention of GvHD - Which of the following are barriers to prescribing rATG (Thymoglobulin®) with this potential update? Please select all of the reasons below.",
+    "Answer_Options": "0=NO TO: Insufficient efficacy related to prevention of GvHD,1=Insufficient efficacy related to prevention of GvHD",
+    "ParentQuestion": "B22"
+  },
+  {
+    "Column": "B22r4",
+    "Description": "B22r4: Insufficient efficacy related to reduction/elimination of immunosuppressive treatment - Which of the following are barriers to prescribing rATG (Thymoglobulin®) with this potential update? Please select all of the reasons below.",
+    "Answer_Options": "0=NO TO: Insufficient efficacy related to reduction/elimination of immunosuppressive treatment,1=Insufficient efficacy related to reduction/elimination of immunosuppressive treatment",
+    "ParentQuestion": "B22"
+  },
+  {
+    "Column": "B22r5",
+    "Description": "B22r5: Potential for Epstein-Barr virus reactivation - Which of the following are barriers to prescribing rATG (Thymoglobulin®) with this potential update? Please select all of the reasons below.",
+    "Answer_Options": "0=NO TO: Potential for Epstein-Barr virus reactivation,1=Potential for Epstein-Barr virus reactivation",
+    "ParentQuestion": "B22"
+  },
+  {
+    "Column": "B22r6",
+    "Description": "B22r6: Would require changes in my institution’s practice standards/guidelines - Which of the following are barriers to prescribing rATG (Thymoglobulin®) with this potential update? Please select all of the reasons below.",
+    "Answer_Options": "0=NO TO: Would require changes in my institution’s practice standards/guidelines,1=Would require changes in my institution’s practice standards/guidelines",
+    "ParentQuestion": "B22"
+  },
+  {
+    "Column": "B22r98",
+    "Description": "B22r98: Other (specify) - Which of the following are barriers to prescribing rATG (Thymoglobulin®) with this potential update? Please select all of the reasons below.",
+    "Answer_Options": "0=NO TO: Other (specify),1=Other (specify)",
+    "ParentQuestion": "B22"
+  },
+  {
+    "Column": "B22r99",
+    "Description": "B22r99: I don’t see any drawbacks - Which of the following are barriers to prescribing rATG (Thymoglobulin®) with this potential update? Please select all of the reasons below.",
+    "Answer_Options": "0=NO TO: I don’t see any drawbacks,1=I don’t see any drawbacks",
+    "ParentQuestion": "B22"
+  },
+  {
+    "Column": "B22r98oe",
+    "Description": "B22r98oe: Which of the following are barriers to prescribing rATG (Thymoglobulin®) with this potential update? Please select all of the reasons below. - Other (specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B22"
+  },
+  {
+    "Column": "B23",
+    "Description": "B23: For a quality check, how credible was the product profile you reviewed in this survey? Did you have any issues or concerns with interpreting the data? Did you need any additional information?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C1",
+    "Description": "C1: How many transplanters, including yourself, do you have in your center?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C2r1c1",
+    "Description": "C2r1c1: No coverage / cash paying - Thinking about all of the patients in your practice whom you treat / manage, approximately what proportion would you say have the following healthcare coverage?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C2r2c1",
+    "Description": "C2r2c1: Commercial insurance (HMO, PPO, or other private insurance) - Thinking about all of the patients in your practice whom you treat / manage, approximately what proportion would you say have the following healthcare coverage?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C2r3c1",
+    "Description": "C2r3c1: Medicare - Thinking about all of the patients in your practice whom you treat / manage, approximately what proportion would you say have the following healthcare coverage?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C2r4c1",
+    "Description": "C2r4c1: Medicaid - Thinking about all of the patients in your practice whom you treat / manage, approximately what proportion would you say have the following healthcare coverage?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C2r5c1",
+    "Description": "C2r5c1: VA (Veterans’ Administration) or Department of Defense (TriCare) - Thinking about all of the patients in your practice whom you treat / manage, approximately what proportion would you say have the following healthcare coverage?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C2r6c1",
+    "Description": "C2r6c1: Other Coverage - Thinking about all of the patients in your practice whom you treat / manage, approximately what proportion would you say have the following healthcare coverage?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C3",
+    "Description": "C3: Which of the following best describes the geographic location of your practice?",
+    "Answer_Options": "1=Urban,2=Suburban,3=Rural"
+  },
+  {
+    "Column": "C4",
+    "Description": "C4: Which of the following best describes the region where you practice?",
+    "Answer_Options": "1=Northeast,2=South,3=Midwest,4=West"
+  },
+  {
+    "Column": "C5",
+    "Description": "C5: Are you…",
+    "Answer_Options": "1=Male,2=Female,3=Other/non-binary"
+  },
+  {
+    "Column": "qtime",
+    "Description": "qtime: Total Interview Time",
+    "Answer_Options": "NA"
+  }
+]

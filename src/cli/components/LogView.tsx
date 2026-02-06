@@ -29,14 +29,27 @@ function LogEntryRow({ entry }: LogEntryRowProps): React.ReactElement {
   const ms = (entry.timestamp % 1000).toString().padStart(3, '0');
   const timeStr = `${time}.${ms}`;
 
-  // Color based on action
-  const actionColor = entry.action === 'add' ? 'green' : 'yellow';
+  const actionColorMap: Record<string, string> = {
+    add: 'green',
+    review: 'yellow',
+    info: 'cyan',
+    warn: 'yellow',
+    error: 'red',
+    debug: 'gray',
+  };
+  const actionColor = actionColorMap[entry.action] || 'yellow';
 
   return (
     <Box>
       <Text color="gray">{timeStr}  </Text>
       <Text color={actionColor}>[{entry.action}]</Text>
       <Text> </Text>
+      {entry.source && (
+        <>
+          <Text color="gray">{entry.source}</Text>
+          <Text color="gray">: </Text>
+        </>
+      )}
       <Text wrap="wrap">{entry.content}</Text>
     </Box>
   );
@@ -47,11 +60,13 @@ function LogEntryRow({ entry }: LogEntryRowProps): React.ReactElement {
 // =============================================================================
 
 interface LogViewProps {
-  tableId: string;
-  agentName: string;
+  tableId?: string;
+  agentName?: string;
   logs: LogEntry[];
   scrollOffset: number;
   maxVisible?: number;
+  title?: string;
+  subtitle?: string;
 }
 
 export function LogView({
@@ -60,6 +75,8 @@ export function LogView({
   logs,
   scrollOffset,
   maxVisible = 15,
+  title,
+  subtitle,
 }: LogViewProps): React.ReactElement {
   // Logs are stored newest-first, but we want to display oldest-first
   const sortedLogs = [...logs].reverse();
@@ -76,8 +93,8 @@ export function LogView({
     <Box flexDirection="column">
       {/* Header */}
       <Header
-        title={`${tableId} Log`}
-        subtitle={agentName}
+        title={title || `${tableId || 'Logs'} Log`}
+        subtitle={subtitle || agentName}
         showBack
       />
 

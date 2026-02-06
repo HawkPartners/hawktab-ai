@@ -113,7 +113,7 @@ export function CostBar({ totalCostUsd, elapsedMs, tableCount, cutCount }: CostB
 // =============================================================================
 
 interface KeyHintsProps {
-  level: 'pipeline' | 'stage' | 'log';
+  level: 'pipeline' | 'stage' | 'log' | 'system';
 }
 
 export function KeyHints({ level }: KeyHintsProps): React.ReactElement {
@@ -132,7 +132,7 @@ export function KeyHints({ level }: KeyHintsProps): React.ReactElement {
   );
 }
 
-function getHintsForLevel(level: 'pipeline' | 'stage' | 'log'): Array<{ key: string; action: string }> {
+function getHintsForLevel(level: 'pipeline' | 'stage' | 'log' | 'system'): Array<{ key: string; action: string }> {
   const common = [
     { key: 'j/k', action: 'select' },
     { key: 'q', action: 'quit' },
@@ -143,18 +143,28 @@ function getHintsForLevel(level: 'pipeline' | 'stage' | 'log'): Array<{ key: str
       return [
         { key: 'j/k', action: 'select' },
         { key: 'Enter', action: 'drill down' },
+        { key: 'l', action: 'system logs' },
         { key: 'q', action: 'quit' },
       ];
     case 'stage':
       return [
         { key: 'j/k', action: 'select slot' },
         { key: 'Enter', action: 'view log' },
+        { key: 'l', action: 'system logs' },
         { key: 'Esc', action: 'back' },
         { key: 'q', action: 'quit' },
       ];
     case 'log':
       return [
         { key: 'j/k', action: 'scroll' },
+        { key: 'l', action: 'system logs' },
+        { key: 'Esc', action: 'back' },
+        { key: 'q', action: 'quit' },
+      ];
+    case 'system':
+      return [
+        { key: 'j/k', action: 'scroll' },
+        { key: 'l', action: 'back' },
         { key: 'Esc', action: 'back' },
         { key: 'q', action: 'quit' },
       ];

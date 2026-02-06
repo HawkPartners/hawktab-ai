@@ -83,5 +83,11 @@ export function useNavigation({ mode, onAction, onQuit, onModeAction }: UseNavig
       }
       return;
     }
+
+    // System logs toggle (pipeline mode only)
+    if (mode === 'pipeline' && (input === 'l' || input === 'L')) {
+      onAction({ type: 'nav:logs' });
+      return;
+    }
   });
 }

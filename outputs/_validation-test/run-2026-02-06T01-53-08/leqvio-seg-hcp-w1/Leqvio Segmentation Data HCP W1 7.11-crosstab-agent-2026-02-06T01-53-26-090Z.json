@@ -1,0 +1,3130 @@
+[
+  {
+    "Column": "record",
+    "Description": "record: Record number",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "uuid",
+    "Description": "uuid: Participant identifier",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "date",
+    "Description": "date: Completion time and date",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "status",
+    "Description": "status: Participant status",
+    "Answer_Options": "1=Terminated,2=Overquota,3=Qualified,4=Partial"
+  },
+  {
+    "Column": "ndpResetAAID",
+    "Description": "ndpResetAAID: Enter comma seperated AAID's to reset so they can be reinvited from another panel.",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "hTermDupAAID",
+    "Description": "hTermDupAAID: Hidden in LIVE.",
+    "Answer_Options": "1=Dup AAID,2=Not Dup"
+  },
+  {
+    "Column": "S1",
+    "Description": "S1: You are about to enter a market research survey. We are being asked to pass on to our client details of adverse events about individual patients or groups of patients and / or product complaints that are raised during the course of market research sur",
+    "Answer_Options": "1=I would like to proceed and protect my identity,2=I would like to proceed and give permission for my contact details to be passed on to the Drug Safety department of the,3=I don’t want to proceed"
+  },
+  {
+    "Column": "S2",
+    "Description": "S2: What is your primary specialty/role?",
+    "Answer_Options": "1=Cardiologist,2=Internal Medicine,3=General Practitioner / Primary Care Physician,4=Family Practice,5=Nurse Practitioner,6=Physician’s Assistant,7=Other (specify):"
+  },
+  {
+    "Column": "S2r7oe",
+    "Description": "S2r7oe: What is your primary specialty/role? - Other (specify):",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S2",
+    "Context": "S2: S2: What is your primary specialty/role?"
+  },
+  {
+    "Column": "S2a",
+    "Description": "S2a: In what type of doctor’s office do you work?",
+    "Answer_Options": "1=Cardiologist,2=Internal Medicine / Primary Care / Family Practice,3=Other"
+  },
+  {
+    "Column": "S3",
+    "Description": "S3: What type of Cardiologist are you primarily?",
+    "Answer_Options": "1=Interventional Cardiologist,2=General Cardiologist,3=Preventive Cardiologist,4=Lipidologist"
+  },
+  {
+    "Column": "S4",
+    "Description": "S4: Are you currently board certified or eligible in your specialty?",
+    "Answer_Options": "1=Board Eligible,2=Board Certified,3=Neither"
+  },
+  {
+    "Column": "S5r1",
+    "Description": "S5r1: Advertising Agency - Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+    "Answer_Options": "0=NO TO: Advertising Agency,1=Advertising Agency",
+    "ParentQuestion": "S5"
+  },
+  {
+    "Column": "S5r2",
+    "Description": "S5r2: Marketing/Market Research Firm - Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+    "Answer_Options": "0=NO TO: Marketing/Market Research Firm,1=Marketing/Market Research Firm",
+    "ParentQuestion": "S5"
+  },
+  {
+    "Column": "S5r3",
+    "Description": "S5r3: Public Relations Firm - Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+    "Answer_Options": "0=NO TO: Public Relations Firm,1=Public Relations Firm",
+    "ParentQuestion": "S5"
+  },
+  {
+    "Column": "S5r4",
+    "Description": "S5r4: Any media company (Print, Radio, TV, Internet) - Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+    "Answer_Options": "0=NO TO: Any media company (Print, Radio, TV, Internet),1=Any media company (Print, Radio, TV, Internet)",
+    "ParentQuestion": "S5"
+  },
+  {
+    "Column": "S5r5",
+    "Description": "S5r5: Pharmaceutical Drug / Device Manufacturer (outside of clinical trials) - Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+    "Answer_Options": "0=NO TO: Pharmaceutical Drug / Device Manufacturer (outside of clinical trials),1=Pharmaceutical Drug / Device Manufacturer (outside of clinical trials)",
+    "ParentQuestion": "S5"
+  },
+  {
+    "Column": "S5r6",
+    "Description": "S5r6: Governmental Regulatory Agency (e.g., Food & Drug Administration (FDA) - Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+    "Answer_Options": "0=NO TO: Governmental Regulatory Agency (e.g., Food & Drug Administration (FDA),1=Governmental Regulatory Agency (e.g., Food & Drug Administration (FDA)",
+    "ParentQuestion": "S5"
+  },
+  {
+    "Column": "S5r7",
+    "Description": "S5r7: None of these - Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+    "Answer_Options": "0=NO TO: None of these,1=None of these",
+    "ParentQuestion": "S5"
+  },
+  {
+    "Column": "S6",
+    "Description": "S6: How many years have you been in clinical practice, post residency/training?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "S7",
+    "Description": "S7: And to confirm, are you currently practicing full-time (i.e. 40+ hours weekly across all settings) or part-time?",
+    "Answer_Options": "1=Full-Time,2=Part-Time"
+  },
+  {
+    "Column": "S8r1c1",
+    "Description": "S8r1c1: Treating/Managing patients - Approximately what percentage of your professional time is spent performing each of the following activities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r2c1",
+    "Description": "S8r2c1: Performing academic functions (e.g., teaching, publishing) - Approximately what percentage of your professional time is spent performing each of the following activities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r3c1",
+    "Description": "S8r3c1: Participating in clinical research - Approximately what percentage of your professional time is spent performing each of the following activities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S8r4c1",
+    "Description": "S8r4c1: Performing other functions - Approximately what percentage of your professional time is spent performing each of the following activities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S8"
+  },
+  {
+    "Column": "S9",
+    "Description": "S9: Which of the following best describes the clinical setting where you spend the majority of your time treating patients?",
+    "Answer_Options": "1=Solo Private Practice,2=Group Practice / Clinic (single specialty),3=Group Practice / Clinic (multi-specialty),4=Staff HMO,5=Hospital-based practice,6=VA Hospital,7=None of the above"
+  },
+  {
+    "Column": "S10",
+    "Description": "S10: Using your best estimate, how many adult patients, age 18 or older, do you personally manage in your practice in a month?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "S11",
+    "Description": "S11: Of those [pipe:S10] adult patients, how may have a confirmed diagnosis of hypercholesterolemia?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "S12r1c1",
+    "Description": "S12r1c1: Established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Of those [pipe:S11] adult patients with a diagnosis of hypercholesterolemia, how many fit into the following categories?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S12"
+  },
+  {
+    "Column": "S12r2c1",
+    "Description": "S12r2c1: Familial Hypercholesterolemia (FH) - Of those [pipe:S11] adult patients with a diagnosis of hypercholesterolemia, how many fit into the following categories?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S12"
+  },
+  {
+    "Column": "S12r3c1",
+    "Description": "S12r3c1: Patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Of those [pipe:S11] adult patients with a diagnosis of hypercholesterolemia, how many fit into the following ca",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S12"
+  },
+  {
+    "Column": "S13r1c1",
+    "Description": "S13r1c1: # of patients - Established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of adult patients in these categories, for how many of them do you personally make prescribing choices for their cholesterol treatment (rat",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S13r1c2",
+    "Description": "S13r1c2: # of patients on prescription drug therapy that you personally prescribe - Established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of adult patients in these categories, for how many of them do you personally ma",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S13r3c1",
+    "Description": "S13r3c1: # of patients - Patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of adult patients in these categories, for how many of them do you personally make pre",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S13r3c2",
+    "Description": "S13r3c2: # of patients on prescription drug therapy that you personally prescribe - Patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of adult patients in these",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "A1r1c1",
+    "Description": "A1r1c1: Diet & exercise alone - Patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - What % of your patients are able to control their LDL-C with …?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A1"
+  },
+  {
+    "Column": "A1r2c1",
+    "Description": "A1r2c1: Statin therapy only - Patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - What % of your patients are able to control their LDL-C with …?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A1"
+  },
+  {
+    "Column": "A1r3c1",
+    "Description": "A1r3c1: Oral therapies beyond statins (including ezetimibe, Nexletol/Nexlizet, etc.) - Patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - What % of your patients are able to control their LDL-C with …?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A1"
+  },
+  {
+    "Column": "A1r4c1",
+    "Description": "A1r4c1: Require injectable therapy (e.g., Repatha, Leqvio, Praluent) - Patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - What % of your patients are able to control their LDL-C with …?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A1"
+  },
+  {
+    "Column": "A1r1c2",
+    "Description": "A1r1c2: Diet & exercise alone - Patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - What % of your patients are able to control their LDL-C with …?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A1"
+  },
+  {
+    "Column": "A1r2c2",
+    "Description": "A1r2c2: Statin therapy only - Patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - What % of your patients are able to control their LDL-C with …?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A1"
+  },
+  {
+    "Column": "A1r3c2",
+    "Description": "A1r3c2: Oral therapies beyond statins (including ezetimibe, Nexletol/Nexlizet, etc.) - Patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - What % of your patients are able",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A1"
+  },
+  {
+    "Column": "A1r4c2",
+    "Description": "A1r4c2: Require injectable therapy (e.g., Repatha, Leqvio, Praluent) - Patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - What % of your patients are able to control their",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A1"
+  },
+  {
+    "Column": "A2r1",
+    "Description": "A2r1: Leqvio (inclisiran) - What are your overall impressions of each of the following:",
+    "Answer_Options": "1=Extremely Unfavorable,2=Unfavorable,3=Neutral,4=Favorable,5=Extremely Favorable",
+    "ParentQuestion": "A2"
+  },
+  {
+    "Column": "A2r2",
+    "Description": "A2r2: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - What are your overall impressions of each of the following:",
+    "Answer_Options": "1=Extremely Unfavorable,2=Unfavorable,3=Neutral,4=Favorable,5=Extremely Favorable",
+    "ParentQuestion": "A2"
+  },
+  {
+    "Column": "A2r3",
+    "Description": "A2r3: Repatha (evolocumab) - What are your overall impressions of each of the following:",
+    "Answer_Options": "1=Extremely Unfavorable,2=Unfavorable,3=Neutral,4=Favorable,5=Extremely Favorable",
+    "ParentQuestion": "A2"
+  },
+  {
+    "Column": "A3r1c1",
+    "Description": "A3r1c1: Leqvio (inclisiran) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of your NEXT 100 patients of each type who require therapy in addition to statins to lower LDL-C and/or to redu",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r2c1",
+    "Description": "A3r2c1: Praluent (alirocumab) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of your NEXT 100 patients of each type who require therapy in addition to statins to lower LDL-C and/or to re",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r3c1",
+    "Description": "A3r3c1: Repatha (evolocumab) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of your NEXT 100 patients of each type who require therapy in addition to statins to lower LDL-C and/or to red",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r4c1",
+    "Description": "A3r4c1: Zetia (ezetimibe) or generic - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of your NEXT 100 patients of each type who require therapy in addition to statins to lower LDL-C and/o",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r5c1",
+    "Description": "A3r5c1: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of your NEXT 100 patients of each type who require therapy in",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r13c1",
+    "Description": "A3r13c1: Other - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of your NEXT 100 patients of each type who require therapy in addition to statins to lower LDL-C and/or to reduce the risk o",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r14c1",
+    "Description": "A3r14c1: No additional therapy - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Thinking of your NEXT 100 patients of each type who require therapy in addition to statins to lower LDL-C and/or to r",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r1c2",
+    "Description": "A3r1c2: Leqvio (inclisiran) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of your NEXT 100 patients of each type who require therapy in addition t",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r2c2",
+    "Description": "A3r2c2: Praluent (alirocumab) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of your NEXT 100 patients of each type who require therapy in addition",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r3c2",
+    "Description": "A3r3c2: Repatha (evolocumab) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of your NEXT 100 patients of each type who require therapy in addition",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r4c2",
+    "Description": "A3r4c2: Zetia (ezetimibe) or generic - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of your NEXT 100 patients of each type who require therapy in a",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r5c2",
+    "Description": "A3r5c2: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of your NEXT 100 patien",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r13c2",
+    "Description": "A3r13c2: Other - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of your NEXT 100 patients of each type who require therapy in addition to statins to",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r14c2",
+    "Description": "A3r14c2: No additional therapy - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Thinking of your NEXT 100 patients of each type who require therapy in additio",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A4r1",
+    "Description": "A4r1: My personal goal is to bring ALL my established CVD patients to an LDL-C level of <70 mg/dL - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r2",
+    "Description": "A4r2: For established CVD patients, the ideal LDL-C level would be even lower than the current AHA/ACC guideline of 70 mg/dL - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r3",
+    "Description": "A4r3: Managing patients’ cholesterol is frustrating work - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r4",
+    "Description": "A4r4: Despite my best efforts, my patients still make lots of bad choices that make it hard to get their LDL-C to goal - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r5",
+    "Description": "A4r5: Guideline recommended LDL-C targets are not feasible to achieve in real practice - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r6",
+    "Description": "A4r6: When a patient experiences side-effects on statins, I encourage them to stick with therapy instead of immediately switching - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r7",
+    "Description": "A4r7: I am more aggressive in treating patients with established CVD than most of my peers - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r8",
+    "Description": "A4r8: I am more aggressive in treating patients at high risk for CVD than most of my peers - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r9",
+    "Description": "A4r9: If an established CVD patient has an LDL-C between 70 and 130 mg/dL and is stable, I am hesitant to add/switch treatments - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r10",
+    "Description": "A4r10: I am much more aggressive in trying to lower LDL-C among my established CVD patients vs. my patients at high risk for CVD - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r11",
+    "Description": "A4r11: Immediately after a recent event is a critical time to add/adjust treatment to aggressively lower LDL-C for CVD patients - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r12",
+    "Description": "A4r12: After a recent procedure (e.g., bypass, stent), patients are stable and aggressive lowering of LDL-C is less critical - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "FLAG_A4_SL",
+    "Description": "FLAG_A4_SL: FLAG_A4_SL",
+    "Answer_Options": "0=Not flagged,1=Flagged"
+  },
+  {
+    "Column": "A5r1",
+    "Description": "A5r1: Seeing my patients hit their LDL-C goal - Which of the following are the most rewarding aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: Seeing my patients hit their LDL-C goal,1=Seeing my patients hit their LDL-C goal",
+    "ParentQuestion": "A5"
+  },
+  {
+    "Column": "A5r2",
+    "Description": "A5r2: Knowing I can control one of the most significant risk factors for a CV event (LDL-C) - Which of the following are the most rewarding aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: Knowing I can control one of the most significant risk factors for a CV event (LDL-C),1=Knowing I can control one of the most significant risk factors for a CV event (LDL-C)",
+    "ParentQuestion": "A5"
+  },
+  {
+    "Column": "A5r3",
+    "Description": "A5r3: Seeing my patients take a more proactive role in managing their overall health - Which of the following are the most rewarding aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: Seeing my patients take a more proactive role in managing their overall health,1=Seeing my patients take a more proactive role in managing their overall health",
+    "ParentQuestion": "A5"
+  },
+  {
+    "Column": "A5r4",
+    "Description": "A5r4: Seeing patients respect and welcome my recommendations for treatment - Which of the following are the most rewarding aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: Seeing patients respect and welcome my recommendations for treatment,1=Seeing patients respect and welcome my recommendations for treatment",
+    "ParentQuestion": "A5"
+  },
+  {
+    "Column": "A5r5",
+    "Description": "A5r5: Seeing my patients understand the importance of managing their LDL-C levels - Which of the following are the most rewarding aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: Seeing my patients understand the importance of managing their LDL-C levels,1=Seeing my patients understand the importance of managing their LDL-C levels",
+    "ParentQuestion": "A5"
+  },
+  {
+    "Column": "A5r6",
+    "Description": "A5r6: Helping my patients live a healthier life - Which of the following are the most rewarding aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: Helping my patients live a healthier life,1=Helping my patients live a healthier life",
+    "ParentQuestion": "A5"
+  },
+  {
+    "Column": "A5r7",
+    "Description": "A5r7: Educating my patients on healthy life habits - Which of the following are the most rewarding aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: Educating my patients on healthy life habits,1=Educating my patients on healthy life habits",
+    "ParentQuestion": "A5"
+  },
+  {
+    "Column": "A5r97",
+    "Description": "A5r97: Other - Which of the following are the most rewarding aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: Other,1=Other",
+    "ParentQuestion": "A5"
+  },
+  {
+    "Column": "A5r99",
+    "Description": "A5r99: There are no rewarding aspects of managing these patients - Which of the following are the most rewarding aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: There are no rewarding aspects of managing these patients,1=There are no rewarding aspects of managing these patients",
+    "ParentQuestion": "A5"
+  },
+  {
+    "Column": "A6r1",
+    "Description": "A6r1: Knowing that despite my efforts, many patients will never hit their LDL-C goal - Which of the following are the most frustrating aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: Knowing that despite my efforts, many patients will never hit their LDL-C goal,1=Knowing that despite my efforts, many patients will never hit their LDL-C goal",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r2",
+    "Description": "A6r2: Seeing my patients hit their LDL-C goal, but then see their LDL-C levels rise shortly thereafter - Which of the following are the most frustrating aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: Seeing my patients hit their LDL-C goal, but then see their LDL-C levels rise shortly thereafter,1=Seeing my patients hit their LDL-C goal, but then see their LDL-C levels rise shortly thereafter",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r3",
+    "Description": "A6r3: Having patients who refuse to take additional therapy, despite not having reached their LDL-C goal - Which of the following are the most frustrating aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: Having patients who refuse to take additional therapy, despite not having reached their LDL-C goal,1=Having patients who refuse to take additional therapy, despite not having reached their LDL-C goal",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r4",
+    "Description": "A6r4: Ensuring that my patients consistently adhere to their prescription regimen - Which of the following are the most frustrating aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: Ensuring that my patients consistently adhere to their prescription regimen,1=Ensuring that my patients consistently adhere to their prescription regimen",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r5",
+    "Description": "A6r5: Seeing patients experience coverage and affordability barriers - Which of the following are the most frustrating aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: Seeing patients experience coverage and affordability barriers,1=Seeing patients experience coverage and affordability barriers",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r6",
+    "Description": "A6r6: Encountering acquisition barriers for therapies within my practice - Which of the following are the most frustrating aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: Encountering acquisition barriers for therapies within my practice,1=Encountering acquisition barriers for therapies within my practice",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r97",
+    "Description": "A6r97: Other - Which of the following are the most frustrating aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: Other,1=Other",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r99",
+    "Description": "A6r99: There are no frustrating aspects of managing these patients - Which of the following are the most frustrating aspects of managing your established CVD patients and your patients at high risk for CVD?",
+    "Answer_Options": "0=NO TO: There are no frustrating aspects of managing these patients,1=There are no frustrating aspects of managing these patients",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "B1r1",
+    "Description": "B1r1: It is easy to convince my patients to take an advanced therapy to lower LDL-C - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B1"
+  },
+  {
+    "Column": "B1r2",
+    "Description": "B1r2: My patients would rather take an injectable therapy to lower LDL-C than “add another pill” - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B1"
+  },
+  {
+    "Column": "B1r3",
+    "Description": "B1r3: My patients taking injectable therapy are more compliant than those taking only oral treatments to lower LDL-C - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B1"
+  },
+  {
+    "Column": "B1r4",
+    "Description": "B1r4: I would like to prescribe advanced therapies more broadly among my patients - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B1"
+  },
+  {
+    "Column": "B1r5",
+    "Description": "B1r5: There are too many barriers to prescribing advanced therapies - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B1"
+  },
+  {
+    "Column": "B1r6",
+    "Description": "B1r6: I think advanced therapies should be used sooner for most patients with established CVD - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B1"
+  },
+  {
+    "Column": "B1r7",
+    "Description": "B1r7: I think advanced therapies should be used sooner for patients at high risk for CVD - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B1"
+  },
+  {
+    "Column": "B1r8",
+    "Description": "B1r8: I reserve advanced therapies for a very select number of my most severe patients with established CVD - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B1"
+  },
+  {
+    "Column": "B1r9",
+    "Description": "B1r9: I give patients with established CVD extensive time to aim for target LDL-C with statins and/or ezetimibe before considering advanced therapies - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B1"
+  },
+  {
+    "Column": "B1r10",
+    "Description": "B1r10: If a patient with established CVD resists taking advanced therapy to lower LDL-C, I try hard to convince them - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B1"
+  },
+  {
+    "Column": "B1r11",
+    "Description": "B1r11: I am very comfortable using advanced therapies with my patients at high risk for CVD - How much do agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B1"
+  },
+  {
+    "Column": "FLAG_B1_SL",
+    "Description": "FLAG_B1_SL: FLAG_B1_SL",
+    "Answer_Options": "0=Not flagged,1=Flagged"
+  },
+  {
+    "Column": "hFlipScale",
+    "Description": "hFlipScale: HIDDEN: Flip scale",
+    "Answer_Options": "1=Original scale,2=Flipped scale"
+  },
+  {
+    "Column": "B1ar1",
+    "Description": "B1ar1: I am among the first of my colleagues to prescribe a new medication - I typically take a wait-and-see approach with new medications - Please read the pair of statements below and indicate which one you agree with more.",
+    "Answer_Options": "1=Much More with statement A,2=More with statement A,3=Equal,4=More with statement B,5=Much More with statement B",
+    "ParentQuestion": "B1a"
+  },
+  {
+    "Column": "B2",
+    "Description": "B2: Which of the following best describes your view?",
+    "Answer_Options": "1=I strongly prefer a treatment with CV outcomes data even if it doesn’t reduce LDL-C levels as much,2=I somewhat prefer a treatment with CV outcomes data even if it doesn’t reduce LDL-C levels as much,3=Don’t feel strongly either way,4=I somewhat prefer a treatment with greater LDL-C reduction, even if it doesn’t have CV outcomes data,5=I strongly prefer a treatment with greater LDL-C reduction, even if it doesn’t have CV outcomes data"
+  },
+  {
+    "Column": "B3",
+    "Description": "B3: For patients who require advanced therapy, which best describes how you present that treatment?",
+    "Answer_Options": "1=I offer patients a summary of all available advanced therapies and allow the patients to help choose,2=I offer patients a summary of some of the advanced therapies that I am most comfortable with,3=I offer multiple options, give my recommendation and let patients choose,4=I strongly recommend one option"
+  },
+  {
+    "Column": "B4r1",
+    "Description": "B4r1: Efficacy in lowering LDL-C - Please think about your “typical” conversation with a patient when you are first offering advanced therapy. Drag and drop the topics in the order that you typically discuss them with the patient. You can skip topics",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:,6=6th:,7=7th:,8=8th:,9=9th:,10=10th:",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r2",
+    "Description": "B4r2: Efficacy in reducing risk of cardiovascular events - Please think about your “typical” conversation with a patient when you are first offering advanced therapy. Drag and drop the topics in the order that you typically discuss them with the patie",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:,6=6th:,7=7th:,8=8th:,9=9th:,10=10th:",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r3",
+    "Description": "B4r3: Safety - Please think about your “typical” conversation with a patient when you are first offering advanced therapy. Drag and drop the topics in the order that you typically discuss them with the patient. You can skip topics you do not typically",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:,6=6th:,7=7th:,8=8th:,9=9th:,10=10th:",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r4",
+    "Description": "B4r4: Tolerability - Please think about your “typical” conversation with a patient when you are first offering advanced therapy. Drag and drop the topics in the order that you typically discuss them with the patient. You can skip topics you do not typ",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:,6=6th:,7=7th:,8=8th:,9=9th:,10=10th:",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r5",
+    "Description": "B4r5: How the product is administered (e.g., injectable vs. oral) - Please think about your “typical” conversation with a patient when you are first offering advanced therapy. Drag and drop the topics in the order that you typically discuss them with",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:,6=6th:,7=7th:,8=8th:,9=9th:,10=10th:",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r6",
+    "Description": "B4r6: How often the product is administered - Please think about your “typical” conversation with a patient when you are first offering advanced therapy. Drag and drop the topics in the order that you typically discuss them with the patient. You can s",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:,6=6th:,7=7th:,8=8th:,9=9th:,10=10th:",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r7",
+    "Description": "B4r7: Who administers the product (e.g., self-administered vs. HCP administered) - Please think about your “typical” conversation with a patient when you are first offering advanced therapy. Drag and drop the topics in the order that you typically dis",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:,6=6th:,7=7th:,8=8th:,9=9th:,10=10th:",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r8",
+    "Description": "B4r8: Coverage and/or cost to the patient - Please think about your “typical” conversation with a patient when you are first offering advanced therapy. Drag and drop the topics in the order that you typically discuss them with the patient. You can ski",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:,6=6th:,7=7th:,8=8th:,9=9th:,10=10th:",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r9",
+    "Description": "B4r9: How new the product is - Please think about your “typical” conversation with a patient when you are first offering advanced therapy. Drag and drop the topics in the order that you typically discuss them with the patient. You can skip topics you",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:,6=6th:,7=7th:,8=8th:,9=9th:,10=10th:",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r10",
+    "Description": "B4r10: Your level of experience prescribing that product - Please think about your “typical” conversation with a patient when you are first offering advanced therapy. Drag and drop the topics in the order that you typically discuss them with the patie",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:,6=6th:,7=7th:,8=8th:,9=9th:,10=10th:",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B5r1c1",
+    "Description": "B5r1c1: Leqvio (inclisiran) - In the past 3 months, approximately how many times have patients with established CVD asked you for each of the following therapies?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B5"
+  },
+  {
+    "Column": "B5r2c1",
+    "Description": "B5r2c1: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - In the past 3 months, approximately how many times have patients with established CVD asked you for each of the following therapies?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B5"
+  },
+  {
+    "Column": "B5r3c1",
+    "Description": "B5r3c1: Repatha (evolocumab) - In the past 3 months, approximately how many times have patients with established CVD asked you for each of the following therapies?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B5"
+  },
+  {
+    "Column": "B6r1c1",
+    "Description": "B6r1c1: # of Patients Requesting Therapy - Leqvio (inclisiran) - And for approximately how many of the patients requesting did you ultimately end up prescribing?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r1c2",
+    "Description": "B6r1c2: # of Patients Granted Request - Leqvio (inclisiran) - And for approximately how many of the patients requesting did you ultimately end up prescribing?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r2c1",
+    "Description": "B6r2c1: # of Patients Requesting Therapy - Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - And for approximately how many of the patients requesting did you ultimately end up prescribing?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r2c2",
+    "Description": "B6r2c2: # of Patients Granted Request - Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - And for approximately how many of the patients requesting did you ultimately end up prescribing?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r3c1",
+    "Description": "B6r3c1: # of Patients Requesting Therapy - Repatha (evolocumab) - And for approximately how many of the patients requesting did you ultimately end up prescribing?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r3c2",
+    "Description": "B6r3c2: # of Patients Granted Request - Repatha (evolocumab) - And for approximately how many of the patients requesting did you ultimately end up prescribing?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B7",
+    "Description": "B7: Which of the following best describes who handles the paperwork associated with insurance coverage for advanced therapies?",
+    "Answer_Options": "1=I have primary responsibility for the paperwork,2=My office staff and I share responsibility equally,3=My office staff has primary responsibility,4=My practice does not expend effort to pursue insurance coverage for advanced therapies,5=Other"
+  },
+  {
+    "Column": "B8r1",
+    "Description": "B8r1: I always proactively try to choose medications that will have the lowest cost to the patient - Please indicate your level of agreement or disagreement with each statement.",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r2",
+    "Description": "B8r2: I will prescribe a medication that requires less work to get approval even if I don’t think it’s the best clinical option for a patient - Please indicate your level of agreement or disagreement with each statement.",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r3",
+    "Description": "B8r3: I avoid prescribing medications that require extra work to get approval (e.g., prior authorizations) - Please indicate your level of agreement or disagreement with each statement.",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r4",
+    "Description": "B8r4: Prior authorization is easy to get if you know how to navigate “the system” - Please indicate your level of agreement or disagreement with each statement.",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r5",
+    "Description": "B8r5: I’m willing to consistently fight against cost and coverage issues to get my patients the best treatment possible - Please indicate your level of agreement or disagreement with each statement.",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r6",
+    "Description": "B8r6: My treatment decisions for advanced therapies (e.g., Leqvio, Repatha, Nexletol/Nexlizet) are strongly impacted by patients’ insurance coverage - Please indicate your level of agreement or disagreement with each statement.",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r7",
+    "Description": "B8r7: Oral advanced therapies (e.g., Nexletol/Nexlizet) are always easier to prescribe from a cost and coverage standpoint than injectable advanced therapies (e.g., Leqvio, Repatha) - Please indicate your level of agreement or disagreement with each state",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B9",
+    "Description": "B9: How do cost and co-pay considerations typically come up in conversations with your patients?",
+    "Answer_Options": "1=I always consider cost & copay more than patients,2=I usually consider cost & copay more than patients,3=Patients & I consider cost & copay equally,4=Patients usually consider cost & copay more than me,5=Patients always consider cost & copay more than me"
+  },
+  {
+    "Column": "B10",
+    "Description": "B10: For your Medicare patients, how often do you know whether the patient has traditional Medicare vs. some other type of Medicare coverage (e.g., Medicare Advantage)?",
+    "Answer_Options": "1=Never,2=Rarely,3=Sometimes,4=Often,5=Always"
+  },
+  {
+    "Column": "B11c1",
+    "Description": "B11c1: Patients with $ {res.eCVD} - Which of the following best represents the ability of your patients in each category to afford their medications?",
+    "Answer_Options": "1=Most can easily afford their medications,2=Some can easily afford their medications,3=Few can easily afford their medications",
+    "ParentQuestion": "B11"
+  },
+  {
+    "Column": "B11c2",
+    "Description": "B11c2: Patients at $ {res.hrCVD} - Which of the following best represents the ability of your patients in each category to afford their medications?",
+    "Answer_Options": "1=Most can easily afford their medications,2=Some can easily afford their medications,3=Few can easily afford their medications",
+    "ParentQuestion": "B11"
+  },
+  {
+    "Column": "B12r1c1",
+    "Description": "B12r1c1: No coverage / cash paying - % of $ {res.eCVD} patients - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B12"
+  },
+  {
+    "Column": "B12r2c1",
+    "Description": "B12r2c1: Commercial insurance (HMO, PPO, or other private insurance – may be a Medicare supplement) - % of $ {res.eCVD} patients - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B12"
+  },
+  {
+    "Column": "B12r3c1",
+    "Description": "B12r3c1: Medicaid / Public Aid - % of $ {res.eCVD} patients - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B12"
+  },
+  {
+    "Column": "B12r4c1",
+    "Description": "B12r4c1: Traditional Medicare - % of $ {res.eCVD} patients - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B12"
+  },
+  {
+    "Column": "B12r5c1",
+    "Description": "B12r5c1: Medicare Advantage - % of $ {res.eCVD} patients - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B12"
+  },
+  {
+    "Column": "B12r6c1",
+    "Description": "B12r6c1: VA (Veterans’ Administration) or Department of Defense - % of $ {res.eCVD} patients - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B12"
+  },
+  {
+    "Column": "B12r7c1",
+    "Description": "B12r7c1: Other, please specify - % of $ {res.eCVD} patients - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B12"
+  },
+  {
+    "Column": "B12r1c2",
+    "Description": "B12r1c2: No coverage / cash paying - % of patients at $ {res.hrCVD} - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B12"
+  },
+  {
+    "Column": "B12r2c2",
+    "Description": "B12r2c2: Commercial insurance (HMO, PPO, or other private insurance – may be a Medicare supplement) - % of patients at $ {res.hrCVD} - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B12"
+  },
+  {
+    "Column": "B12r3c2",
+    "Description": "B12r3c2: Medicaid / Public Aid - % of patients at $ {res.hrCVD} - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B12"
+  },
+  {
+    "Column": "B12r4c2",
+    "Description": "B12r4c2: Traditional Medicare - % of patients at $ {res.hrCVD} - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B12"
+  },
+  {
+    "Column": "B12r5c2",
+    "Description": "B12r5c2: Medicare Advantage - % of patients at $ {res.hrCVD} - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B12"
+  },
+  {
+    "Column": "B12r6c2",
+    "Description": "B12r6c2: VA (Veterans’ Administration) or Department of Defense - % of patients at $ {res.hrCVD} - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B12"
+  },
+  {
+    "Column": "B12r7c2",
+    "Description": "B12r7c2: Other, please specify - % of patients at $ {res.hrCVD} - What percent of your patients in each category have the following as their primary healthcare coverage?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B12"
+  },
+  {
+    "Column": "B12r7oe",
+    "Description": "B12r7oe: What percent of your patients in each category have the following as their primary healthcare coverage? - Other, please specify",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B12"
+  },
+  {
+    "Column": "C1",
+    "Description": "C1: How familiar are you with Leqvio?",
+    "Answer_Options": "1=Not at all familiar,2=Slightly familiar,3=Somewhat familiar,4=Very familiar,5=Extremely familiar"
+  },
+  {
+    "Column": "C2r1",
+    "Description": "C2r1: Acquired via “buy and bill” (i.e., doctor purchases treatment from manufacturer/distributor, bills insurance) & administered in office by healthcare provider - Which of the following best describes your understanding of how Leqvio can be acquire",
+    "Answer_Options": "0=NO TO: Acquired via “buy and bill” (i.e., doctor purchases treatment from manufacturer/distributor, bills insurance),1=Acquired via “buy and bill” (i.e., doctor purchases treatment from manufacturer/distributor, bills insurance) & admi",
+    "ParentQuestion": "C2"
+  },
+  {
+    "Column": "C2r2",
+    "Description": "C2r2: Acquired via specialty pharmacy & administered in office by healthcare provider - Which of the following best describes your understanding of how Leqvio can be acquired & administered?",
+    "Answer_Options": "0=NO TO: Acquired via specialty pharmacy & administered in office by healthcare provider,1=Acquired via specialty pharmacy & administered in office by healthcare provider",
+    "ParentQuestion": "C2"
+  },
+  {
+    "Column": "C2r3",
+    "Description": "C2r3: Acquired & administered at an alternate site of care - Which of the following best describes your understanding of how Leqvio can be acquired & administered?",
+    "Answer_Options": "0=NO TO: Acquired & administered at an alternate site of care,1=Acquired & administered at an alternate site of care",
+    "ParentQuestion": "C2"
+  },
+  {
+    "Column": "C2r4",
+    "Description": "C2r4: Not sure / don’t know - Which of the following best describes your understanding of how Leqvio can be acquired & administered?",
+    "Answer_Options": "0=NO TO: Not sure / don’t know,1=Not sure / don’t know",
+    "ParentQuestion": "C2"
+  },
+  {
+    "Column": "C3",
+    "Description": "C3: Have you ever prescribed Leqvio?",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "C4",
+    "Description": "C4: Do you currently administer Leqvio injections in your office?",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "C5",
+    "Description": "C5: Have you ever sent a patient to an alternate site to receive Leqvio injections?",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "C6",
+    "Description": "C6: How often does patient insurance coverage influence your willingness to prescribe Leqvio?",
+    "Answer_Options": "1=Never,2=Rarely,3=Sometimes,4=Often,5=Always"
+  },
+  {
+    "Column": "C7",
+    "Description": "C7: How would knowing that there is $0 out of pocket cost for most traditional Medicare patients with supplemental plans for Leqvio impact your prescribing behavior?",
+    "Answer_Options": "1=Prescribe Leqvio Much Less Often,2=Prescribe Leqvio Slightly Less Often,3=Prescribe Leqvio The Same,4=Prescribe Leqvio Slightly More Often,5=Prescribe Leqvio Much More Often"
+  },
+  {
+    "Column": "C8r1c1",
+    "Description": "C8r1c1: Leqvio (inclisiran) - Previous Responses for Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in additi",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r2c1",
+    "Description": "C8r2c1: Praluent (alirocumab) - Previous Responses for Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addi",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r3c1",
+    "Description": "C8r3c1: Repatha (evolocumab) - Previous Responses for Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addit",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r4c1",
+    "Description": "C8r4c1: Zetia (ezetimibe) or generic - Previous Responses for Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r5c1",
+    "Description": "C8r5c1: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Previous Responses for Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 pa",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r13c1",
+    "Description": "C8r13c1: Other - Previous Responses for Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addition to statins",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r14c1",
+    "Description": "C8r14c1: No additional therapy - Previous Responses for Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in add",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r1c2",
+    "Description": "C8r1c2: Leqvio (inclisiran) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addition to statins to lower",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r2c2",
+    "Description": "C8r2c2: Praluent (alirocumab) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addition to statins to lowe",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r3c2",
+    "Description": "C8r3c2: Repatha (evolocumab) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addition to statins to lower",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r4c2",
+    "Description": "C8r4c2: Zetia (ezetimibe) or generic - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addition to statins",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r5c2",
+    "Description": "C8r5c2: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r13c2",
+    "Description": "C8r13c2: Other - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addition to statins to lower LDL-C and/or",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r14c2",
+    "Description": "C8r14c2: No additional therapy - Next 100 patients with established cardiovascular disease (CVD) (e.g., MI, stroke, or symptomatic PAD) - Given this new information, for your NEXT 100 patients of each type who require therapy in addition to statins to low",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r1c3",
+    "Description": "C8r1c3: Leqvio (inclisiran) - Previous Responses for Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r2c3",
+    "Description": "C8r2c3: Praluent (alirocumab) - Previous Responses for Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients o",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r3c3",
+    "Description": "C8r3c3: Repatha (evolocumab) - Previous Responses for Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r4c3",
+    "Description": "C8r4c3: Zetia (ezetimibe) or generic - Previous Responses for Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 pat",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r5c3",
+    "Description": "C8r5c3: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Previous Responses for Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given thi",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r13c3",
+    "Description": "C8r13c3: Other - Previous Responses for Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of each type who",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r14c3",
+    "Description": "C8r14c3: No additional therapy - Previous Responses for Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r1c4",
+    "Description": "C8r1c4: Leqvio (inclisiran) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of each type who require t",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r2c4",
+    "Description": "C8r2c4: Praluent (alirocumab) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of each type who require",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r3c4",
+    "Description": "C8r3c4: Repatha (evolocumab) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of each type who require",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r4c4",
+    "Description": "C8r4c4: Zetia (ezetimibe) or generic - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of each type who",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r5c4",
+    "Description": "C8r5c4: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r13c4",
+    "Description": "C8r13c4: Other - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of each type who require therapy in add",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r14c4",
+    "Description": "C8r14c4: No additional therapy - Next 100 patients at high risk for cardiovascular disease (e.g., patients with diabetes, hypertension, current smoker, or are obese (BMI>30)) - Given this new information, for your NEXT 100 patients of each type who requir",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C9",
+    "Description": "C9: All else being equal, which describes your preference in terms of administering Leqvio?",
+    "Answer_Options": "1=Strongly prefer to administer Leqvio in my practice,2=Slightly prefer to administer Leqvio in my practice,3=No strong preference either way,4=Slightly prefer to send patients to an alternate site for Leqvio injections,5=Strongly prefer to send patients to an alternate site for Leqvio injections"
+  },
+  {
+    "Column": "C10",
+    "Description": "C10: All else being equal, which do you think your patients would prefer?",
+    "Answer_Options": "1=Patients would strongly prefer injections every two weeks that they self-administer,2=Patients would slightly prefer injections every two weeks that they self-administer,3=Patients won’t have a strong preference either way,4=Patients would slightly prefer injections every six months given by an HCP,5=Patients would strongly prefer injections every six months given by an HCP"
+  },
+  {
+    "Column": "C11r1c1",
+    "Description": "C11r1c1: Trigger to Consider Repatha - Patients who had a recent event (e.g., past 6 months) - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of you",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r1c2",
+    "Description": "C11r1c2: Trigger to Consider Leqvio - Patients who had a recent event (e.g., past 6 months) - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r1c3",
+    "Description": "C11r1c3: Trigger to Consider Ezetimibe - Patients who had a recent event (e.g., past 6 months) - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of y",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r1c4",
+    "Description": "C11r1c4: Trigger to Consider Nexletol/Nexlizet - Patients who had a recent event (e.g., past 6 months) - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardl",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r2c1",
+    "Description": "C11r2c1: Trigger to Consider Repatha - Patients who are struggling to lower LDL-C with statins - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of y",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r2c2",
+    "Description": "C11r2c2: Trigger to Consider Leqvio - Patients who are struggling to lower LDL-C with statins - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of yo",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r2c3",
+    "Description": "C11r2c3: Trigger to Consider Ezetimibe - Patients who are struggling to lower LDL-C with statins - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r2c4",
+    "Description": "C11r2c4: Trigger to Consider Nexletol/Nexlizet - Patients who are struggling to lower LDL-C with statins - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regar",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r3c1",
+    "Description": "C11r3c1: Trigger to Consider Repatha - Patients with a strong family history of premature cardiovascular disease - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medicatio",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r3c2",
+    "Description": "C11r3c2: Trigger to Consider Leqvio - Patients with a strong family history of premature cardiovascular disease - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medication",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r3c3",
+    "Description": "C11r3c3: Trigger to Consider Ezetimibe - Patients with a strong family history of premature cardiovascular disease - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medicat",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r3c4",
+    "Description": "C11r3c4: Trigger to Consider Nexletol/Nexlizet - Patients with a strong family history of premature cardiovascular disease - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r4c1",
+    "Description": "C11r4c1: Trigger to Consider Repatha - Patients with an LDL-C above 130 - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r4c2",
+    "Description": "C11r4c2: Trigger to Consider Leqvio - Patients with an LDL-C above 130 - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r4c3",
+    "Description": "C11r4c3: Trigger to Consider Ezetimibe - Patients with an LDL-C above 130 - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribi",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r4c4",
+    "Description": "C11r4c4: Trigger to Consider Nexletol/Nexlizet - Patients with an LDL-C above 130 - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current p",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r5c1",
+    "Description": "C11r5c1: Trigger to Consider Repatha - Patients with an LDL-C above 100 - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r5c2",
+    "Description": "C11r5c2: Trigger to Consider Leqvio - Patients with an LDL-C above 100 - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r5c3",
+    "Description": "C11r5c3: Trigger to Consider Ezetimibe - Patients with an LDL-C above 100 - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribi",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r5c4",
+    "Description": "C11r5c4: Trigger to Consider Nexletol/Nexlizet - Patients with an LDL-C above 100 - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current p",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r6c1",
+    "Description": "C11r6c1: Trigger to Consider Repatha - Patients with an LDL-C above 70 - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r6c2",
+    "Description": "C11r6c2: Trigger to Consider Leqvio - Patients with an LDL-C above 70 - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing b",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r6c3",
+    "Description": "C11r6c3: Trigger to Consider Ezetimibe - Patients with an LDL-C above 70 - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribin",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r6c4",
+    "Description": "C11r6c4: Trigger to Consider Nexletol/Nexlizet - Patients with an LDL-C above 70 - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current pr",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r7c1",
+    "Description": "C11r7c1: Trigger to Consider Repatha - Patients with Type 2 diabetes - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing be",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r7c2",
+    "Description": "C11r7c2: Trigger to Consider Leqvio - Patients with Type 2 diabetes - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing beh",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r7c3",
+    "Description": "C11r7c3: Trigger to Consider Ezetimibe - Patients with Type 2 diabetes - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r7c4",
+    "Description": "C11r7c4: Trigger to Consider Nexletol/Nexlizet - Patients with Type 2 diabetes - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current pres",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r8c1",
+    "Description": "C11r8c1: Trigger to Consider Repatha - Patients who are obese - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing behavior.",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r8c2",
+    "Description": "C11r8c2: Trigger to Consider Leqvio - Patients who are obese - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing behavior.",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r8c3",
+    "Description": "C11r8c3: Trigger to Consider Ezetimibe - Patients who are obese - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing behavio",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r8c4",
+    "Description": "C11r8c4: Trigger to Consider Nexletol/Nexlizet - Patients who are obese - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r9c1",
+    "Description": "C11r9c1: Trigger to Consider Repatha - Patients who smoke - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing behavior. Ple",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r9c2",
+    "Description": "C11r9c2: Trigger to Consider Leqvio - Patients who smoke - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing behavior. Plea",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r9c3",
+    "Description": "C11r9c3: Trigger to Consider Ezetimibe - Patients who smoke - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing behavior. P",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r9c4",
+    "Description": "C11r9c4: Trigger to Consider Nexletol/Nexlizet - Patients who smoke - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing beh",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r10c1",
+    "Description": "C11r10c1: Trigger to Consider Repatha - Patients with hypertension - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing beha",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r10c2",
+    "Description": "C11r10c2: Trigger to Consider Leqvio - Patients with hypertension - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing behav",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r10c3",
+    "Description": "C11r10c3: Trigger to Consider Ezetimibe - Patients with hypertension - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing be",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r10c4",
+    "Description": "C11r10c4: Trigger to Consider Nexletol/Nexlizet - Patients with hypertension - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescr",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r11c1",
+    "Description": "C11r11c1: Trigger to Consider Repatha - Patients with unstable angina - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing b",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r11c2",
+    "Description": "C11r11c2: Trigger to Consider Leqvio - Patients with unstable angina - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing be",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r11c3",
+    "Description": "C11r11c3: Trigger to Consider Ezetimibe - Patients with unstable angina - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r11c4",
+    "Description": "C11r11c4: Trigger to Consider Nexletol/Nexlizet - Patients with unstable angina - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current pre",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r12c1",
+    "Description": "C11r12c1: Trigger to Consider Repatha - Motivated patients who are likely to comply with therapy - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r12c2",
+    "Description": "C11r12c2: Trigger to Consider Leqvio - Motivated patients who are likely to comply with therapy - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r12c3",
+    "Description": "C11r12c3: Trigger to Consider Ezetimibe - Motivated patients who are likely to comply with therapy - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r12c4",
+    "Description": "C11r12c4: Trigger to Consider Nexletol/Nexlizet - Motivated patients who are likely to comply with therapy - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications reg",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r13c1",
+    "Description": "C11r13c1: Trigger to Consider Repatha - Patients who are frustrated by a lack of progress in lowering their LDL-C - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medicati",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r13c2",
+    "Description": "C11r13c2: Trigger to Consider Leqvio - Patients who are frustrated by a lack of progress in lowering their LDL-C - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medicatio",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r13c3",
+    "Description": "C11r13c3: Trigger to Consider Ezetimibe - Patients who are frustrated by a lack of progress in lowering their LDL-C - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medica",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r13c4",
+    "Description": "C11r13c4: Trigger to Consider Nexletol/Nexlizet - Patients who are frustrated by a lack of progress in lowering their LDL-C - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the followin",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r14c1",
+    "Description": "C11r14c1: Trigger to Consider Repatha - Patients who ask about adding another medication to lower LDL-C - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regard",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r14c2",
+    "Description": "C11r14c2: Trigger to Consider Leqvio - Patients who ask about adding another medication to lower LDL-C - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardl",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r14c3",
+    "Description": "C11r14c3: Trigger to Consider Ezetimibe - Patients who ask about adding another medication to lower LDL-C - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications rega",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r14c4",
+    "Description": "C11r14c4: Trigger to Consider Nexletol/Nexlizet - Patients who ask about adding another medication to lower LDL-C - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medicati",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r15c1",
+    "Description": "C11r15c1: Trigger to Consider Repatha - Patients with Traditional Medicare - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescrib",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r15c2",
+    "Description": "C11r15c2: Trigger to Consider Leqvio - Patients with Traditional Medicare - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribi",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r15c3",
+    "Description": "C11r15c3: Trigger to Consider Ezetimibe - Patients with Traditional Medicare - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescr",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r15c4",
+    "Description": "C11r15c4: Trigger to Consider Nexletol/Nexlizet - Patients with Traditional Medicare - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your curren",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r16c1",
+    "Description": "C11r16c1: Trigger to Consider Repatha - Patients with Medicare Advantage - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribin",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r16c2",
+    "Description": "C11r16c2: Trigger to Consider Leqvio - Patients with Medicare Advantage - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r16c3",
+    "Description": "C11r16c3: Trigger to Consider Ezetimibe - Patients with Medicare Advantage - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescrib",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r16c4",
+    "Description": "C11r16c4: Trigger to Consider Nexletol/Nexlizet - Patients with Medicare Advantage - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r17c1",
+    "Description": "C11r17c1: Trigger to Consider Repatha - Patients with commercial insurance - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescrib",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r17c2",
+    "Description": "C11r17c2: Trigger to Consider Leqvio - Patients with commercial insurance - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribi",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r17c3",
+    "Description": "C11r17c3: Trigger to Consider Ezetimibe - Patients with commercial insurance - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescr",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r17c4",
+    "Description": "C11r17c4: Trigger to Consider Nexletol/Nexlizet - Patients with commercial insurance - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your curren",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r97c1",
+    "Description": "C11r97c1: Trigger to Consider Repatha - Other - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing behavior. Please assume t",
+    "Answer_Options": "0=NO TO: Trigger to Consider Repatha,1=Trigger to Consider Repatha"
+  },
+  {
+    "Column": "C11r97c2",
+    "Description": "C11r97c2: Trigger to Consider Leqvio - Other - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing behavior. Please assume th",
+    "Answer_Options": "0=NO TO: Trigger to Consider Leqvio,1=Trigger to Consider Leqvio"
+  },
+  {
+    "Column": "C11r97c3",
+    "Description": "C11r97c3: Trigger to Consider Ezetimibe - Other - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing behavior. Please assume",
+    "Answer_Options": "0=NO TO: Trigger to Consider Ezetimibe,1=Trigger to Consider Ezetimibe"
+  },
+  {
+    "Column": "C11r97c4",
+    "Description": "C11r97c4: Trigger to Consider Nexletol/Nexlizet - Other - For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing behavior. Pleas",
+    "Answer_Options": "0=NO TO: Trigger to Consider Nexletol/Nexlizet,1=Trigger to Consider Nexletol/Nexlizet"
+  },
+  {
+    "Column": "C11r97oe",
+    "Description": "C11r97oe: For each factor below, please indicate whether that would be a trigger for you to consider initiating treatment with the following medications regardless of your current prescribing behavior. Please assume these medications would be prescribed i",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C12r1",
+    "Description": "C12r1: Lack of insurance coverage - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Lack of insurance coverage,1=Lack of insurance coverage",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r2",
+    "Description": "C12r2: Challenging prior authorization process - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Challenging prior authorization process,1=Challenging prior authorization process",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r3",
+    "Description": "C12r3: Patients prefer to administer at home (vs. at my office or alternate site of care) - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Patients prefer to administer at home (vs. at my office or alternate site of care),1=Patients prefer to administer at home (vs. at my office or alternate site of care)",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r4",
+    "Description": "C12r4: I prefer my patients to administer at home (vs. at my office or alternate site of care) - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: I prefer my patients to administer at home (vs. at my office or alternate site of care),1=I prefer my patients to administer at home (vs. at my office or alternate site of care)",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r5",
+    "Description": "C12r5: Patients prefer to self-inject (vs. HCP-administered) - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Patients prefer to self-inject (vs. HCP-administered),1=Patients prefer to self-inject (vs. HCP-administered)",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r6",
+    "Description": "C12r6: I prefer patients to self-inject (vs. HCP-administered) - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: I prefer patients to self-inject (vs. HCP-administered),1=I prefer patients to self-inject (vs. HCP-administered)",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r7",
+    "Description": "C12r7: Lack of affordability for patients - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Lack of affordability for patients,1=Lack of affordability for patients",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r8",
+    "Description": "C12r8: Challenging process to incorporate into practice - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Challenging process to incorporate into practice,1=Challenging process to incorporate into practice",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r9",
+    "Description": "C12r9: Difficulty acquiring medication - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Difficulty acquiring medication,1=Difficulty acquiring medication",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r10",
+    "Description": "C12r10: Lack of cardiovascular outcomes data - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Lack of cardiovascular outcomes data,1=Lack of cardiovascular outcomes data",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r11",
+    "Description": "C12r11: Less personal comfort and familiarity with the medication - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Less personal comfort and familiarity with the medication,1=Less personal comfort and familiarity with the medication",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r12",
+    "Description": "C12r12: Complex dosing schedule/how often product is administered - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Complex dosing schedule/how often product is administered,1=Complex dosing schedule/how often product is administered",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r13",
+    "Description": "C12r13: Lack of manufacturer support/resources - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Lack of manufacturer support/resources,1=Lack of manufacturer support/resources",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r14",
+    "Description": "C12r14: Overall safety/side effects - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Overall safety/side effects,1=Overall safety/side effects",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r15",
+    "Description": "C12r15: Tolerability - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Tolerability,1=Tolerability",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r16",
+    "Description": "C12r16: Overall efficacy/amount of LDL-C reduction - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Overall efficacy/amount of LDL-C reduction,1=Overall efficacy/amount of LDL-C reduction",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r17",
+    "Description": "C12r17: Injectable (subcutaneous) route of administration - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Injectable (subcutaneous) route of administration,1=Injectable (subcutaneous) route of administration",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r18",
+    "Description": "C12r18: Concerns about patient adherence - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Concerns about patient adherence,1=Concerns about patient adherence",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r19",
+    "Description": "C12r19: Patients who have commercial insurance - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Patients who have commercial insurance,1=Patients who have commercial insurance",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r20",
+    "Description": "C12r20: Patients who are at lower risk or severity - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Patients who are at lower risk or severity,1=Patients who are at lower risk or severity",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r21",
+    "Description": "C12r21: Patients who are more likely to need to easily/quickly change therapies - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Patients who are more likely to need to easily/quickly change therapies,1=Patients who are more likely to need to easily/quickly change therapies",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r22",
+    "Description": "C12r22: Patients who are not busy - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Patients who are not busy,1=Patients who are not busy",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C12r23",
+    "Description": "C12r23: Patients who travel minimally - Which of these would be most likely to prevent you from prescribing Leqvio?",
+    "Answer_Options": "0=NO TO: Patients who travel minimally,1=Patients who travel minimally",
+    "ParentQuestion": "C12"
+  },
+  {
+    "Column": "C13r1",
+    "Description": "C13r1: Broad insurance coverage - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Broad insurance coverage,1=Broad insurance coverage",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r2",
+    "Description": "C13r2: Simple prior authorization process - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Simple prior authorization process,1=Simple prior authorization process",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r3",
+    "Description": "C13r3: Patients prefer to administer at my office or alternate site of care (vs. at home) - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Patients prefer to administer at my office or alternate site of care (vs. at home),1=Patients prefer to administer at my office or alternate site of care (vs. at home)",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r4",
+    "Description": "C13r4: I prefer my patients to administer at my office or alternate site of care (vs. at home) - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: I prefer my patients to administer at my office or alternate site of care (vs. at home),1=I prefer my patients to administer at my office or alternate site of care (vs. at home)",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r5",
+    "Description": "C13r5: Patients prefer an HCP-administered treatment (vs. self-injection) - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Patients prefer an HCP-administered treatment (vs. self-injection),1=Patients prefer an HCP-administered treatment (vs. self-injection)",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r6",
+    "Description": "C13r6: I prefer patients take an HCP-administered treatment (vs. self-injection) - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: I prefer patients take an HCP-administered treatment (vs. self-injection),1=I prefer patients take an HCP-administered treatment (vs. self-injection)",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r7",
+    "Description": "C13r7: Affordability for patients - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Affordability for patients,1=Affordability for patients",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r8",
+    "Description": "C13r8: Easy process to incorporate into practice - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Easy process to incorporate into practice,1=Easy process to incorporate into practice",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r9",
+    "Description": "C13r9: Easy to acquire medication - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Easy to acquire medication,1=Easy to acquire medication",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r10",
+    "Description": "C13r10: Personal comfort and familiarity with the medication - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Personal comfort and familiarity with the medication,1=Personal comfort and familiarity with the medication",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r11",
+    "Description": "C13r11: Easy dosing schedule/how often product is administered - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Easy dosing schedule/how often product is administered,1=Easy dosing schedule/how often product is administered",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r12",
+    "Description": "C13r12: Good manufacturer support/resources - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Good manufacturer support/resources,1=Good manufacturer support/resources",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r13",
+    "Description": "C13r13: Overall safety/side effects - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Overall safety/side effects,1=Overall safety/side effects",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r14",
+    "Description": "C13r14: Tolerability - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Tolerability,1=Tolerability",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r15",
+    "Description": "C13r15: Overall efficacy/amount of LDL-C reduction - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Overall efficacy/amount of LDL-C reduction,1=Overall efficacy/amount of LDL-C reduction",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r16",
+    "Description": "C13r16: Injectable (subcutaneous) route of administration - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Injectable (subcutaneous) route of administration,1=Injectable (subcutaneous) route of administration",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r17",
+    "Description": "C13r17: Supports patient adherence - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Supports patient adherence,1=Supports patient adherence",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r18",
+    "Description": "C13r18: Patients who have Medicare or Medicaid insurance - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Patients who have Medicare or Medicaid insurance,1=Patients who have Medicare or Medicaid insurance",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r19",
+    "Description": "C13r19: Patients who are at higher risk or severity - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Patients who are at higher risk or severity,1=Patients who are at higher risk or severity",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r20",
+    "Description": "C13r20: Patients who are less likely to need to easily/quickly change therapies - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Patients who are less likely to need to easily/quickly change therapies,1=Patients who are less likely to need to easily/quickly change therapies",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r21",
+    "Description": "C13r21: Patients who are busy - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Patients who are busy,1=Patients who are busy",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "C13r22",
+    "Description": "C13r22: Patients who travel frequently - Which of these would be most likely prompt you to choose to prescribe Leqvio?",
+    "Answer_Options": "0=NO TO: Patients who travel frequently,1=Patients who travel frequently",
+    "ParentQuestion": "C13"
+  },
+  {
+    "Column": "D1c1",
+    "Description": "D1c1: $ {res.eCVD_Upper} Patients - Approximately how often do you typically see your patients of each type?",
+    "Answer_Options": "1=More often than every 3 months,2=Every 3 months,3=Every 6 months,4=Every 12 months,5=Less than every 12 months",
+    "ParentQuestion": "D1"
+  },
+  {
+    "Column": "D1c2",
+    "Description": "D1c2: Patients at $ {res.hrCVD_Upper} - Approximately how often do you typically see your patients of each type?",
+    "Answer_Options": "1=More often than every 3 months,2=Every 3 months,3=Every 6 months,4=Every 12 months,5=Less than every 12 months",
+    "ParentQuestion": "D1"
+  },
+  {
+    "Column": "D2c1",
+    "Description": "D2c1: $ {res.eCVD_Upper} Patients - Which of the following best represents your role in managing their cardiovascular care?",
+    "Answer_Options": "1=I am the sole HCP making decisions,2=I get input from other HCPs, but ultimately I make the decisions,3=I share decision-making with at least one other HCP,4=I provide input, but ultimately another HCP makes the decisions",
+    "ParentQuestion": "D2"
+  },
+  {
+    "Column": "D2c2",
+    "Description": "D2c2: Patients at $ {res.hrCVD_Upper} - Which of the following best represents your role in managing their cardiovascular care?",
+    "Answer_Options": "1=I am the sole HCP making decisions,2=I get input from other HCPs, but ultimately I make the decisions,3=I share decision-making with at least one other HCP,4=I provide input, but ultimately another HCP makes the decisions",
+    "ParentQuestion": "D2"
+  },
+  {
+    "Column": "D3r1c1",
+    "Description": "D3r1c1: Primary Care Physicians - $ {res.eCVD_Upper} Patients - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: Primary Care Physicians,1=Primary Care Physicians",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r2c1",
+    "Description": "D3r2c1: General Cardiologist - $ {res.eCVD_Upper} Patients - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: General Cardiologist,1=General Cardiologist",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r3c1",
+    "Description": "D3r3c1: Interventional Cardiologist - $ {res.eCVD_Upper} Patients - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: Interventional Cardiologist,1=Interventional Cardiologist",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r4c1",
+    "Description": "D3r4c1: Lipidologist - $ {res.eCVD_Upper} Patients - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: Lipidologist,1=Lipidologist",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r5c1",
+    "Description": "D3r5c1: Nephrologist - $ {res.eCVD_Upper} Patients - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: Nephrologist,1=Nephrologist",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r6c1",
+    "Description": "D3r6c1: Endocrinologist - $ {res.eCVD_Upper} Patients - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: Endocrinologist,1=Endocrinologist",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r7c1",
+    "Description": "D3r7c1: Neurologist - $ {res.eCVD_Upper} Patients - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: Neurologist,1=Neurologist",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r8c1",
+    "Description": "D3r8c1: Other: - $ {res.eCVD_Upper} Patients - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: Other:,1=Other:",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r9c1",
+    "Description": "D3r9c1: None of the above - $ {res.eCVD_Upper} Patients - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: None of the above,1=None of the above",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r1c2",
+    "Description": "D3r1c2: Primary Care Physicians - Patients at $ {res.hrCVD_Upper} - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: Primary Care Physicians,1=Primary Care Physicians",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r2c2",
+    "Description": "D3r2c2: General Cardiologist - Patients at $ {res.hrCVD_Upper} - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: General Cardiologist,1=General Cardiologist",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r3c2",
+    "Description": "D3r3c2: Interventional Cardiologist - Patients at $ {res.hrCVD_Upper} - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: Interventional Cardiologist,1=Interventional Cardiologist",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r4c2",
+    "Description": "D3r4c2: Lipidologist - Patients at $ {res.hrCVD_Upper} - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: Lipidologist,1=Lipidologist",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r5c2",
+    "Description": "D3r5c2: Nephrologist - Patients at $ {res.hrCVD_Upper} - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: Nephrologist,1=Nephrologist",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r6c2",
+    "Description": "D3r6c2: Endocrinologist - Patients at $ {res.hrCVD_Upper} - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: Endocrinologist,1=Endocrinologist",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r7c2",
+    "Description": "D3r7c2: Neurologist - Patients at $ {res.hrCVD_Upper} - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: Neurologist,1=Neurologist",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r8c2",
+    "Description": "D3r8c2: Other: - Patients at $ {res.hrCVD_Upper} - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: Other:,1=Other:",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r9c2",
+    "Description": "D3r9c2: None of the above - Patients at $ {res.hrCVD_Upper} - What other types of HCPs routinely have input into your management of these patients?",
+    "Answer_Options": "0=NO TO: None of the above,1=None of the above",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r8oe",
+    "Description": "D3r8oe: What other types of HCPs routinely have input into your management of these patients? - Other:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D4r1",
+    "Description": "D4r1: I am very satisfied with the level of care I am able to give my CVD patients - How much do agree with the following statements about your CVD patients (both established CVD and those at high risk of CVD)?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r2",
+    "Description": "D4r2: My CVD patients believe they can control their high cholesterol with diet and exercise alone - How much do agree with the following statements about your CVD patients (both established CVD and those at high risk of CVD)?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r3",
+    "Description": "D4r3: When prescribing, I present options with pros and cons to my CVD patients and include them in the decision - How much do agree with the following statements about your CVD patients (both established CVD and those at high risk of CVD)?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r4",
+    "Description": "D4r4: I select and recommend the best treatment option for my CVD patients - How much do agree with the following statements about your CVD patients (both established CVD and those at high risk of CVD)?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r5",
+    "Description": "D4r5: I'm willing to prescribe a medication a CVD patient specifically requests, even if I prefer a different treatment - How much do agree with the following statements about your CVD patients (both established CVD and those at high risk of CVD)?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r6",
+    "Description": "D4r6: My CVD patients generally accept my recommendations for treatment - How much do agree with the following statements about your CVD patients (both established CVD and those at high risk of CVD)?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r7",
+    "Description": "D4r7: My CVD patients recognize that I’m the expert - How much do agree with the following statements about your CVD patients (both established CVD and those at high risk of CVD)?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r8",
+    "Description": "D4r8: Convenience to the patient is a critical consideration in choosing appropriate therapy for patients with CVD - How much do agree with the following statements about your CVD patients (both established CVD and those at high risk of CVD)?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r9",
+    "Description": "D4r9: I am responsible for ensuring my CVD patients have their LDL-C under control - How much do agree with the following statements about your CVD patients (both established CVD and those at high risk of CVD)?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r10",
+    "Description": "D4r10: My CVD patients are responsible for ensuring their LDL-C is under control - How much do agree with the following statements about your CVD patients (both established CVD and those at high risk of CVD)?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r11",
+    "Description": "D4r11: My CVD patients and I must collaborate to ensure their LDL-C is under control - How much do agree with the following statements about your CVD patients (both established CVD and those at high risk of CVD)?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r12",
+    "Description": "D4r12: I trust that my CVD patients are taking their medication as prescribed - How much do agree with the following statements about your CVD patients (both established CVD and those at high risk of CVD)?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r13",
+    "Description": "D4r13: It is important to always ask CVD patients if they are taking their medication as prescribed - How much do agree with the following statements about your CVD patients (both established CVD and those at high risk of CVD)?",
+    "Answer_Options": "1=Do not agree at all,2=Agree slightly,3=Agree somewhat,4=Agree strongly,5=Agree completely",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D5r1",
+    "Description": "D5r1: Delivered by Physicians - Approximately what percentage of cardiovascular information/education for your patients is delivered by physicians, by NPs & PAs, or others on your staff?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D5"
+  },
+  {
+    "Column": "D5r2",
+    "Description": "D5r2: Delivered by Physician Assistants or Nurse Practitioners - Approximately what percentage of cardiovascular information/education for your patients is delivered by physicians, by NPs & PAs, or others on your staff?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D5"
+  },
+  {
+    "Column": "D5r3",
+    "Description": "D5r3: Delivered by Others on your staff - Approximately what percentage of cardiovascular information/education for your patients is delivered by physicians, by NPs & PAs, or others on your staff?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D5"
+  },
+  {
+    "Column": "D6r1",
+    "Description": "D6r1: Reviewing patient LDL-C levels before/during an appointment - Who is typically responsible for conducting the following tasks for your patients?",
+    "Answer_Options": "1=Myself,2=NP/PA,3=Other Staff",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r2",
+    "Description": "D6r2: Flagging that a patient may need additional LDL-C lowering based on lab results - Who is typically responsible for conducting the following tasks for your patients?",
+    "Answer_Options": "1=Myself,2=NP/PA,3=Other Staff",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D6r3",
+    "Description": "D6r3: Confirming recommended therapy is adequately covered/reimbursed by insurance - Who is typically responsible for conducting the following tasks for your patients?",
+    "Answer_Options": "1=Myself,2=NP/PA,3=Other Staff",
+    "ParentQuestion": "D6"
+  },
+  {
+    "Column": "D7r1c1",
+    "Description": "D7r1c1: High cholesterol (elevated LDL-C) - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r2c1",
+    "Description": "D7r2c1: Hypertension - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r3c1",
+    "Description": "D7r3c1: Diabetes - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r4c1",
+    "Description": "D7r4c1: Atrial fibrillation - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r5c1",
+    "Description": "D7r5c1: Heart failure - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r6c1",
+    "Description": "D7r6c1: Unstable angina - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r7c1",
+    "Description": "D7r7c1: Obesity (BMI > 30) - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r8c1",
+    "Description": "D7r8c1: Current smoker - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r9c1",
+    "Description": "D7r9c1: Other - % of $ {res.eCVD_Upper} Patients - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r1c2",
+    "Description": "D7r1c2: High cholesterol (elevated LDL-C) - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r2c2",
+    "Description": "D7r2c2: Hypertension - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r3c2",
+    "Description": "D7r3c2: Diabetes - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r4c2",
+    "Description": "D7r4c2: Atrial fibrillation - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r5c2",
+    "Description": "D7r5c2: Heart failure - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r6c2",
+    "Description": "D7r6c2: Unstable angina - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r7c2",
+    "Description": "D7r7c2: Obesity (BMI > 30) - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r8c2",
+    "Description": "D7r8c2: Current smoker - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "D7r9c2",
+    "Description": "D7r9c2: Other - % of Patients at $ {res.hrCVD_Upper} - Approximately what % of your Established CVD patients have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7"
+  },
+  {
+    "Column": "Flag_D7_1",
+    "Description": "Flag_D7_1: Flag_D7_1",
+    "Answer_Options": "0=Not Flagged,1=Flagged"
+  },
+  {
+    "Column": "D7ar1c1",
+    "Description": "D7ar1c1: High cholesterol (elevated LDL-C) - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7a"
+  },
+  {
+    "Column": "D7ar2c1",
+    "Description": "D7ar2c1: Hypertension - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7a"
+  },
+  {
+    "Column": "D7ar3c1",
+    "Description": "D7ar3c1: Diabetes - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7a"
+  },
+  {
+    "Column": "D7ar4c1",
+    "Description": "D7ar4c1: Atrial fibrillation - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7a"
+  },
+  {
+    "Column": "D7ar5c1",
+    "Description": "D7ar5c1: Heart failure - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7a"
+  },
+  {
+    "Column": "D7ar6c1",
+    "Description": "D7ar6c1: Unstable angina - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7a"
+  },
+  {
+    "Column": "D7ar7c1",
+    "Description": "D7ar7c1: Obesity (BMI > 30) - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7a"
+  },
+  {
+    "Column": "D7ar8c1",
+    "Description": "D7ar8c1: Current smoker - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7a"
+  },
+  {
+    "Column": "D7ar9c1",
+    "Description": "D7ar9c1: Other - Approximately what % of your patients at High Risk for CVD have each of the following comorbidities?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D7a"
+  },
+  {
+    "Column": "Flag_D7a_1",
+    "Description": "Flag_D7a_1: Flag_D7_1",
+    "Answer_Options": "0=Not Flagged,1=Flagged"
+  },
+  {
+    "Column": "D8ar1",
+    "Description": "D8ar1: High cholesterol (elevated LDL-C) - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8a"
+  },
+  {
+    "Column": "D8ar2",
+    "Description": "D8ar2: Hypertension - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8a"
+  },
+  {
+    "Column": "D8ar3",
+    "Description": "D8ar3: Diabetes - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8a"
+  },
+  {
+    "Column": "D8ar4",
+    "Description": "D8ar4: Atrial fibrillation - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8a"
+  },
+  {
+    "Column": "D8ar5",
+    "Description": "D8ar5: Heart failure - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8a"
+  },
+  {
+    "Column": "D8ar6",
+    "Description": "D8ar6: Unstable angina - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8a"
+  },
+  {
+    "Column": "D8ar7",
+    "Description": "D8ar7: Obesity (BMI > 30) - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8a"
+  },
+  {
+    "Column": "D8ar8",
+    "Description": "D8ar8: Current smoker - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8a"
+  },
+  {
+    "Column": "D8br1",
+    "Description": "D8br1: High cholesterol (elevated LDL-C) - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your at patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br2",
+    "Description": "D8br2: Hypertension - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your at patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br3",
+    "Description": "D8br3: Diabetes - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your at patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br4",
+    "Description": "D8br4: Atrial fibrillation - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your at patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br5",
+    "Description": "D8br5: Heart failure - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your at patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br6",
+    "Description": "D8br6: Unstable angina - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your at patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br7",
+    "Description": "D8br7: Obesity (BMI > 30) - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your at patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D8br8",
+    "Description": "D8br8: Current smoker - Knowing these health issues are all important, if you had to rank 4 of the following comorbidities in order of how important they are to address in your at patients, how would you rank the following:",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:",
+    "ParentQuestion": "D8b"
+  },
+  {
+    "Column": "D9r1c1",
+    "Description": "D9r1c1: Below age 45 - % of $ {res.eCVD_Upper} Patients - Please indicate the age distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D9"
+  },
+  {
+    "Column": "D9r2c1",
+    "Description": "D9r2c1: Age 45 – 64 - % of $ {res.eCVD_Upper} Patients - Please indicate the age distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D9"
+  },
+  {
+    "Column": "D9r3c1",
+    "Description": "D9r3c1: 65 and older - % of $ {res.eCVD_Upper} Patients - Please indicate the age distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D9"
+  },
+  {
+    "Column": "D9r1c2",
+    "Description": "D9r1c2: Below age 45 - % of Patients at $ {res.hrCVD_Upper} - Please indicate the age distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D9"
+  },
+  {
+    "Column": "D9r2c2",
+    "Description": "D9r2c2: Age 45 – 64 - % of Patients at $ {res.hrCVD_Upper} - Please indicate the age distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D9"
+  },
+  {
+    "Column": "D9r3c2",
+    "Description": "D9r3c2: 65 and older - % of Patients at $ {res.hrCVD_Upper} - Please indicate the age distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D9"
+  },
+  {
+    "Column": "D10r1c1",
+    "Description": "D10r1c1: Woman - % of $ {res.eCVD_Upper} Patients - Please indicate the gender distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D10"
+  },
+  {
+    "Column": "D10r2c1",
+    "Description": "D10r2c1: Man - % of $ {res.eCVD_Upper} Patients - Please indicate the gender distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D10"
+  },
+  {
+    "Column": "D10r3c1",
+    "Description": "D10r3c1: Transgender Woman - % of $ {res.eCVD_Upper} Patients - Please indicate the gender distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D10"
+  },
+  {
+    "Column": "D10r4c1",
+    "Description": "D10r4c1: Transgender Man - % of $ {res.eCVD_Upper} Patients - Please indicate the gender distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D10"
+  },
+  {
+    "Column": "D10r5c1",
+    "Description": "D10r5c1: Non-Binary - % of $ {res.eCVD_Upper} Patients - Please indicate the gender distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D10"
+  },
+  {
+    "Column": "D10r1c2",
+    "Description": "D10r1c2: Woman - % of Patients at $ {res.hrCVD_Upper} - Please indicate the gender distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D10"
+  },
+  {
+    "Column": "D10r2c2",
+    "Description": "D10r2c2: Man - % of Patients at $ {res.hrCVD_Upper} - Please indicate the gender distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D10"
+  },
+  {
+    "Column": "D10r3c2",
+    "Description": "D10r3c2: Transgender Woman - % of Patients at $ {res.hrCVD_Upper} - Please indicate the gender distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D10"
+  },
+  {
+    "Column": "D10r4c2",
+    "Description": "D10r4c2: Transgender Man - % of Patients at $ {res.hrCVD_Upper} - Please indicate the gender distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D10"
+  },
+  {
+    "Column": "D10r5c2",
+    "Description": "D10r5c2: Non-Binary - % of Patients at $ {res.hrCVD_Upper} - Please indicate the gender distribution for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D10"
+  },
+  {
+    "Column": "D11r1c1",
+    "Description": "D11r1c1: Asian - % of $ {res.eCVD_Upper} Patients - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r2c1",
+    "Description": "D11r2c1: Black or African American - % of $ {res.eCVD_Upper} Patients - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r3c1",
+    "Description": "D11r3c1: Hispanic, Latinx, or of Spanish origin - % of $ {res.eCVD_Upper} Patients - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r4c1",
+    "Description": "D11r4c1: Native American or Alaskan Native - % of $ {res.eCVD_Upper} Patients - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r5c1",
+    "Description": "D11r5c1: Native Hawaiian or Other Pacific Islander - % of $ {res.eCVD_Upper} Patients - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r6c1",
+    "Description": "D11r6c1: White - % of $ {res.eCVD_Upper} Patients - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r7c1",
+    "Description": "D11r7c1: Other, please specify - % of $ {res.eCVD_Upper} Patients - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r1c2",
+    "Description": "D11r1c2: Asian - % of Patients at $ {res.hrCVD_Upper} - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r2c2",
+    "Description": "D11r2c2: Black or African American - % of Patients at $ {res.hrCVD_Upper} - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r3c2",
+    "Description": "D11r3c2: Hispanic, Latinx, or of Spanish origin - % of Patients at $ {res.hrCVD_Upper} - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r4c2",
+    "Description": "D11r4c2: Native American or Alaskan Native - % of Patients at $ {res.hrCVD_Upper} - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r5c2",
+    "Description": "D11r5c2: Native Hawaiian or Other Pacific Islander - % of Patients at $ {res.hrCVD_Upper} - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r6c2",
+    "Description": "D11r6c2: White - % of Patients at $ {res.hrCVD_Upper} - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r7c2",
+    "Description": "D11r7c2: Other, please specify - % of Patients at $ {res.hrCVD_Upper} - To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D11r7oe",
+    "Description": "D11r7oe: To the best of your knowledge, what is the distribution in terms of race or ethnicity for each patient type: - Other, please specify",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D11"
+  },
+  {
+    "Column": "D12",
+    "Description": "D12: How familiar are you with Lipoprotein (a) testing?",
+    "Answer_Options": "1=I am not aware,2=I am aware and never test,3=I am aware and sometimes test,4=I am aware and often test,5=I am aware and always test"
+  },
+  {
+    "Column": "E1",
+    "Description": "E1: On average, how many hours per week in total do you spend on keeping abreast of medical developments or medical education, specifically in cardiovascular disease? This would include any of the following activities: reading medical journals reviewing n",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "E2",
+    "Description": "E2: In the past year, how many medical conferences or seminars related to cardiovascular disease did you attend?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "E3r1",
+    "Description": "E3r1: Meeting or conference of the American College of Cardiology - Which of the following have you attended or done in the past two years?",
+    "Answer_Options": "0=NO TO: Meeting or conference of the American College of Cardiology,1=Meeting or conference of the American College of Cardiology",
+    "ParentQuestion": "E3"
+  },
+  {
+    "Column": "E3r2",
+    "Description": "E3r2: Meeting or conference of the American Heart Association - Which of the following have you attended or done in the past two years?",
+    "Answer_Options": "0=NO TO: Meeting or conference of the American Heart Association,1=Meeting or conference of the American Heart Association",
+    "ParentQuestion": "E3"
+  },
+  {
+    "Column": "E3r3",
+    "Description": "E3r3: Meeting or conference of the National Lipid Association - Which of the following have you attended or done in the past two years?",
+    "Answer_Options": "0=NO TO: Meeting or conference of the National Lipid Association,1=Meeting or conference of the National Lipid Association",
+    "ParentQuestion": "E3"
+  },
+  {
+    "Column": "E3r4",
+    "Description": "E3r4: Continuing medical education (CME) class about cardiovascular disease - Which of the following have you attended or done in the past two years?",
+    "Answer_Options": "0=NO TO: Continuing medical education (CME) class about cardiovascular disease,1=Continuing medical education (CME) class about cardiovascular disease",
+    "ParentQuestion": "E3"
+  },
+  {
+    "Column": "E3r5",
+    "Description": "E3r5: Lectured at a conference, seminar or class about cardiovascular disease - Which of the following have you attended or done in the past two years?",
+    "Answer_Options": "0=NO TO: Lectured at a conference, seminar or class about cardiovascular disease,1=Lectured at a conference, seminar or class about cardiovascular disease",
+    "ParentQuestion": "E3"
+  },
+  {
+    "Column": "E3r6",
+    "Description": "E3r6: Participated in an Advisory Board for any new or existing therapy for cardiovascular disease - Which of the following have you attended or done in the past two years?",
+    "Answer_Options": "0=NO TO: Participated in an Advisory Board for any new or existing therapy for cardiovascular disease,1=Participated in an Advisory Board for any new or existing therapy for cardiovascular disease",
+    "ParentQuestion": "E3"
+  },
+  {
+    "Column": "E3r7",
+    "Description": "E3r7: Participated in or attended an industry-sponsored speaker program - Which of the following have you attended or done in the past two years?",
+    "Answer_Options": "0=NO TO: Participated in or attended an industry-sponsored speaker program,1=Participated in or attended an industry-sponsored speaker program",
+    "ParentQuestion": "E3"
+  },
+  {
+    "Column": "E3r8",
+    "Description": "E3r8: None of the above - Which of the following have you attended or done in the past two years?",
+    "Answer_Options": "0=NO TO: None of the above,1=None of the above",
+    "ParentQuestion": "E3"
+  },
+  {
+    "Column": "E4r1",
+    "Description": "E4r1: Interactions with sales representatives - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r2",
+    "Description": "E4r2: Interactions with Medical Science Liaisons - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r3",
+    "Description": "E4r3: Seminars / conferences without CME credit - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r4",
+    "Description": "E4r4: Video-conferences / webcasts - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r5",
+    "Description": "E4r5: Podcasts - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r6",
+    "Description": "E4r6: Dinner meetings / roundtable discussions - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r7",
+    "Description": "E4r7: Electronic detailing / e-detailing (sales presentation online or via phone) - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r8",
+    "Description": "E4r8: Medical call centers sponsored by pharma / biotech companies - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r9",
+    "Description": "E4r9: Medical / disease specific websites - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r10",
+    "Description": "E4r10: Influential peers or specialists in the field - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r11",
+    "Description": "E4r11: Internet educational platforms (without CME credit) - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r12",
+    "Description": "E4r12: Audio/teleconferences with clinical speaker - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r13",
+    "Description": "E4r13: CME programs - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r14",
+    "Description": "E4r14: Peer-to-peer online communities (e.g. SERMO, Doximity, etc.) - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r15",
+    "Description": "E4r15: CDC website / newsletters - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r16",
+    "Description": "E4r16: Epocrates / Medscape or other PDA email services - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r17",
+    "Description": "E4r17: E-mails from pharmaceutical manufacturers - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r18",
+    "Description": "E4r18: General health & medical websites (i.e. uptodate.com, webmd.com) - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r19",
+    "Description": "E4r19: Peer-reviewed, published clinical study results - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4r20",
+    "Description": "E4r20: Other (specify) - From which sources would you be most receptive to receiving information on new treatments for cardiovascular disease?",
+    "Answer_Options": "1=1st:,2=2nd:,3=3rd:,4=4th:,5=5th:",
+    "ParentQuestion": "E4"
+  },
+  {
+    "Column": "E4Oth",
+    "Description": "E4Oth: You ranked “other” as a one of your sources to receiving information on new treatments for cardiovascular disease. Please specify this other source below.",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "E5",
+    "Description": "E5: How accessible is your practice to pharmaceutical sales representatives?",
+    "Answer_Options": "1=Does not restrict access at all,2=Allows limited access (e.g. limited to certain days and/or hours only),3=Does not allow access"
+  },
+  {
+    "Column": "E6",
+    "Description": "E6: In a typical week, approximately how many representatives do you personally see from pharmaceutical or medical device companies? Please think only about those representatives with whom you have some type of interaction, whether it is signing for sampl",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "E7r1",
+    "Description": "E7r1: Leqvio - In the past 3 months, approximately how many times have you been visited by a pharmaceutical representative specifically from …",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E7"
+  },
+  {
+    "Column": "E7r2",
+    "Description": "E7r2: Nexletol/Nexlizet - In the past 3 months, approximately how many times have you been visited by a pharmaceutical representative specifically from …",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E7"
+  },
+  {
+    "Column": "E7r3",
+    "Description": "E7r3: Repatha - In the past 3 months, approximately how many times have you been visited by a pharmaceutical representative specifically from …",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E7"
+  },
+  {
+    "Column": "E8r1c1",
+    "Description": "E8r1c1: Clinical information (e.g. product attributes, medical references) - # of Leqvio interactions primarily focused on … - Of your interactions for [pipe: E8Pipe] in the past three months, approximately how many of those conversations primarily focu",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r2c1",
+    "Description": "E8r2c1: Administrative information (e.g. reimbursement, logistics) - # of Leqvio interactions primarily focused on … - Of your interactions for [pipe: E8Pipe] in the past three months, approximately how many of those conversations primarily focused on e",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r3c1",
+    "Description": "E8r3c1: Other (Specify) - # of Leqvio interactions primarily focused on … - Of your interactions for [pipe: E8Pipe] in the past three months, approximately how many of those conversations primarily focused on each of the following?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r1c2",
+    "Description": "E8r1c2: Clinical information (e.g. product attributes, medical references) - # of Repatha interactions primarily focused on … - Of your interactions for [pipe: E8Pipe] in the past three months, approximately how many of those conversations primarily foc",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r2c2",
+    "Description": "E8r2c2: Administrative information (e.g. reimbursement, logistics) - # of Repatha interactions primarily focused on … - Of your interactions for [pipe: E8Pipe] in the past three months, approximately how many of those conversations primarily focused on",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r3c2",
+    "Description": "E8r3c2: Other (Specify) - # of Repatha interactions primarily focused on … - Of your interactions for [pipe: E8Pipe] in the past three months, approximately how many of those conversations primarily focused on each of the following?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r3oe",
+    "Description": "E8r3oe: Of your interactions for [pipe: E8Pipe] in the past three months, approximately how many of those conversations primarily focused on each of the following? - Other (Specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E9_1r1",
+    "Description": "E9_1r1: Clinical information - How useful do you find interactions focused on the following information with a pharmaceutical representative for Leqvio?",
+    "Answer_Options": "1=Never Useful,2=Rarely Useful,3=Sometimes Useful,4=Often Useful,5=Always Useful",
+    "ParentQuestion": "E9_1"
+  },
+  {
+    "Column": "E9_1r2",
+    "Description": "E9_1r2: Administrative information - How useful do you find interactions focused on the following information with a pharmaceutical representative for Leqvio?",
+    "Answer_Options": "1=Never Useful,2=Rarely Useful,3=Sometimes Useful,4=Often Useful,5=Always Useful",
+    "ParentQuestion": "E9_1"
+  },
+  {
+    "Column": "E9_2r1",
+    "Description": "E9_2r1: Clinical information - How useful do you find interactions focused on the following information with a pharmaceutical representative for Repatha?",
+    "Answer_Options": "1=Never Useful,2=Rarely Useful,3=Sometimes Useful,4=Often Useful,5=Always Useful",
+    "ParentQuestion": "E9_2"
+  },
+  {
+    "Column": "E9_2r2",
+    "Description": "E9_2r2: Administrative information - How useful do you find interactions focused on the following information with a pharmaceutical representative for Repatha?",
+    "Answer_Options": "1=Never Useful,2=Rarely Useful,3=Sometimes Useful,4=Often Useful,5=Always Useful",
+    "ParentQuestion": "E9_2"
+  },
+  {
+    "Column": "E10r1",
+    "Description": "E10r1: Amgen - What is your overall impression of the following … ?",
+    "Answer_Options": "1=Extremely Unfavorable,2=Unfavorable,3=Neither favorable or unfavorable,4=Favorable,5=Extremely Favorable",
+    "ParentQuestion": "E10"
+  },
+  {
+    "Column": "E10r2",
+    "Description": "E10r2: Esperion - What is your overall impression of the following … ?",
+    "Answer_Options": "1=Extremely Unfavorable,2=Unfavorable,3=Neither favorable or unfavorable,4=Favorable,5=Extremely Favorable",
+    "ParentQuestion": "E10"
+  },
+  {
+    "Column": "E10r3",
+    "Description": "E10r3: Novartis - What is your overall impression of the following … ?",
+    "Answer_Options": "1=Extremely Unfavorable,2=Unfavorable,3=Neither favorable or unfavorable,4=Favorable,5=Extremely Favorable",
+    "ParentQuestion": "E10"
+  },
+  {
+    "Column": "E10r4",
+    "Description": "E10r4: Sanofi - What is your overall impression of the following … ?",
+    "Answer_Options": "1=Extremely Unfavorable,2=Unfavorable,3=Neither favorable or unfavorable,4=Favorable,5=Extremely Favorable",
+    "ParentQuestion": "E10"
+  },
+  {
+    "Column": "E11r1",
+    "Description": "E11r1: Doximity - In the past year, have you viewed information or participated in discussions related to cardiovascular disease on any of the following social networking platforms?",
+    "Answer_Options": "0=NO TO: Doximity,1=Doximity",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r2",
+    "Description": "E11r2: SERMO - In the past year, have you viewed information or participated in discussions related to cardiovascular disease on any of the following social networking platforms?",
+    "Answer_Options": "0=NO TO: SERMO,1=SERMO",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r3",
+    "Description": "E11r3: Twitter - In the past year, have you viewed information or participated in discussions related to cardiovascular disease on any of the following social networking platforms?",
+    "Answer_Options": "0=NO TO: Twitter,1=Twitter",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r4",
+    "Description": "E11r4: Facebook - In the past year, have you viewed information or participated in discussions related to cardiovascular disease on any of the following social networking platforms?",
+    "Answer_Options": "0=NO TO: Facebook,1=Facebook",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r5",
+    "Description": "E11r5: Instagram - In the past year, have you viewed information or participated in discussions related to cardiovascular disease on any of the following social networking platforms?",
+    "Answer_Options": "0=NO TO: Instagram,1=Instagram",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r6",
+    "Description": "E11r6: TikTok - In the past year, have you viewed information or participated in discussions related to cardiovascular disease on any of the following social networking platforms?",
+    "Answer_Options": "0=NO TO: TikTok,1=TikTok",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r7",
+    "Description": "E11r7: Youtube - In the past year, have you viewed information or participated in discussions related to cardiovascular disease on any of the following social networking platforms?",
+    "Answer_Options": "0=NO TO: Youtube,1=Youtube",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r8",
+    "Description": "E11r8: DocMatter - In the past year, have you viewed information or participated in discussions related to cardiovascular disease on any of the following social networking platforms?",
+    "Answer_Options": "0=NO TO: DocMatter,1=DocMatter",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r9",
+    "Description": "E11r9: LinkedIn - In the past year, have you viewed information or participated in discussions related to cardiovascular disease on any of the following social networking platforms?",
+    "Answer_Options": "0=NO TO: LinkedIn,1=LinkedIn",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r10",
+    "Description": "E11r10: Other healthcare professional social networking platform (specify) - In the past year, have you viewed information or participated in discussions related to cardiovascular disease on any of the following social networking platforms?",
+    "Answer_Options": "0=NO TO: Other healthcare professional social networking platform (specify),1=Other healthcare professional social networking platform (specify)",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r11",
+    "Description": "E11r11: No, I do not participate in social networks related to healthcare - In the past year, have you viewed information or participated in discussions related to cardiovascular disease on any of the following social networking platforms?",
+    "Answer_Options": "0=NO TO: No, I do not participate in social networks related to healthcare,1=No, I do not participate in social networks related to healthcare",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E11r10oe",
+    "Description": "E11r10oe: In the past year, have you viewed information or participated in discussions related to cardiovascular disease on any of the following social networking platforms? - Other healthcare professional social networking platform (specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E11"
+  },
+  {
+    "Column": "E12",
+    "Description": "E12: How often do you view information or participate in discussions related to healthcare on social networking platforms?",
+    "Answer_Options": "1=Daily,2=A few times per week,3=Once a week,4=A few times a month,5=Once a month or less"
+  },
+  {
+    "Column": "F1r1c1",
+    "Description": "F1r1c1: Office-based / out-patient setting - Approximately what % of your professional time is spent in each of the following settings?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1r2c1",
+    "Description": "F1r2c1: Hospital / in-patient setting - Approximately what % of your professional time is spent in each of the following settings?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1r3c1",
+    "Description": "F1r3c1: Clinic setting - Approximately what % of your professional time is spent in each of the following settings?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1r4c1",
+    "Description": "F1r4c1: Performing procedures (e.g., in Cath lab) - Approximately what % of your professional time is spent in each of the following settings?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F1r97c1",
+    "Description": "F1r97c1: Other - Approximately what % of your professional time is spent in each of the following settings?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F1"
+  },
+  {
+    "Column": "F2",
+    "Description": "F2: What is your gender identity?",
+    "Answer_Options": "1=Woman,2=Man,3=Transgender Woman,4=Transgender Man,5=Non-Binary,6=Prefer to self-describe:,7=Prefer not to answer"
+  },
+  {
+    "Column": "F2r6oe",
+    "Description": "F2r6oe: What is your gender identity? - Prefer to self-describe:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F2",
+    "Context": "F2: F2: What is your gender identity?"
+  },
+  {
+    "Column": "F3r1",
+    "Description": "F3r1: Asian - Which of the following best describes your race?",
+    "Answer_Options": "0=NO TO: Asian,1=Asian",
+    "ParentQuestion": "F3"
+  },
+  {
+    "Column": "F3r2",
+    "Description": "F3r2: Black or African American - Which of the following best describes your race?",
+    "Answer_Options": "0=NO TO: Black or African American,1=Black or African American",
+    "ParentQuestion": "F3"
+  },
+  {
+    "Column": "F3r3",
+    "Description": "F3r3: Native American or Alaskan Native - Which of the following best describes your race?",
+    "Answer_Options": "0=NO TO: Native American or Alaskan Native,1=Native American or Alaskan Native",
+    "ParentQuestion": "F3"
+  },
+  {
+    "Column": "F3r4",
+    "Description": "F3r4: Native Hawaiian or Other Pacific Islander - Which of the following best describes your race?",
+    "Answer_Options": "0=NO TO: Native Hawaiian or Other Pacific Islander,1=Native Hawaiian or Other Pacific Islander",
+    "ParentQuestion": "F3"
+  },
+  {
+    "Column": "F3r5",
+    "Description": "F3r5: White - Which of the following best describes your race?",
+    "Answer_Options": "0=NO TO: White,1=White",
+    "ParentQuestion": "F3"
+  },
+  {
+    "Column": "F3r6",
+    "Description": "F3r6: Prefer to self-describe: - Which of the following best describes your race?",
+    "Answer_Options": "0=NO TO: Prefer to self-describe:,1=Prefer to self-describe:",
+    "ParentQuestion": "F3"
+  },
+  {
+    "Column": "F3r7",
+    "Description": "F3r7: Prefer not to answer - Which of the following best describes your race?",
+    "Answer_Options": "0=NO TO: Prefer not to answer,1=Prefer not to answer",
+    "ParentQuestion": "F3"
+  },
+  {
+    "Column": "F3r6oe",
+    "Description": "F3r6oe: Which of the following best describes your race? - Prefer to self-describe:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F3"
+  },
+  {
+    "Column": "F3a",
+    "Description": "F3a: Are you of Hispanic, Latinx, or Spanish origin?",
+    "Answer_Options": "1=No, not of Hispanic, Latinx, or Spanish origin,2=Yes, of Hispanic, Latinx, or Spanish origin,3=Prefer not to answer"
+  },
+  {
+    "Column": "F4",
+    "Description": "F4: Which of the following best describes the setting in which you practice?",
+    "Answer_Options": "1=Urban,2=Suburban,3=Rural"
+  },
+  {
+    "Column": "F5",
+    "Description": "F5: How would you describe the organization that owns your practice?",
+    "Answer_Options": "1=Private Practice,2=Integrated Delivery Network / Integrated Delivery System,3=Accountable Care Organization (ACO),4=Health System / Hospital System,5=Independent Medical Group,6=Other, please specify"
+  },
+  {
+    "Column": "F5r6oe",
+    "Description": "F5r6oe: How would you describe the organization that owns your practice? - Other, please specify",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F5",
+    "Context": "F5: F5: How would you describe the organization that owns your practice?"
+  },
+  {
+    "Column": "HEALTHSYSTEM",
+    "Description": "HEALTHSYSTEM: Hidden in live for Health System",
+    "Answer_Options": "1=AFFLIIATED,2=NOT AFFLIATED"
+  },
+  {
+    "Column": "F6",
+    "Description": "F6: Do you have any direct ownership stake in your practice?",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "F7",
+    "Description": "F7: Approximately how many miles away is the closest academic hospital to your primary practice?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "F8r1",
+    "Description": "F8r1: Physicians - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F8"
+  },
+  {
+    "Column": "F8r2",
+    "Description": "F8r2: Nurses or Medical Assistants - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F8"
+  },
+  {
+    "Column": "F8r3",
+    "Description": "F8r3: Nurse Practitioners/Physicians Assistants - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F8"
+  },
+  {
+    "Column": "F8r4",
+    "Description": "F8r4: Administrative Staff - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F8"
+  },
+  {
+    "Column": "F9",
+    "Description": "F9: Do you have a special interest in or are you specialized in cardiology?",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "F10",
+    "Description": "F10: Do you have a special interest in or are you specialized in lipidology?",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "qtime",
+    "Description": "qtime: Total Interview Time",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "ipAddress",
+    "Description": "ipAddress: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "url",
+    "Description": "url: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "session",
+    "Description": "session: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "pagetime_D7a",
+    "Description": "pagetime_D7a: (D7a) Approximately what % of your patients at High Risk for CVD have each of the following comorbidities? - .",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "LeqvioTier",
+    "Description": "LeqvioTier: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Affiliation_Type",
+    "Description": "Affiliation_Type: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "PCSK_9_NRx",
+    "Description": "PCSK_9_NRx: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Specality_Grouping",
+    "Description": "Specality_Grouping: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Leqvio_Market_Access_Favorability",
+    "Description": "Leqvio_Market_Access_Favorability: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "VSS_proposed_flag",
+    "Description": "VSS_proposed_flag: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "NPP",
+    "Description": "NPP: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "RX_BENEFIT_FLAG",
+    "Description": "RX_BENEFIT_FLAG: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "MARKET_TRX_12M_ending_Mar_22",
+    "Description": "MARKET_TRX_12M_ending_Mar_22: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "EZETIMIBE_12M_ending_Mar_22_sum",
+    "Description": "EZETIMIBE_12M_ending_Mar_22_sum: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "NEXLETOL_NEXLITZET_12M_ending_Mar_22",
+    "Description": "NEXLETOL_NEXLITZET_12M_ending_Mar_22: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "PRALUENT_12M_ending_Mar_22_sum",
+    "Description": "PRALUENT_12M_ending_Mar_22_sum: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "REPATHA_12M_ending_Mar_22_sum",
+    "Description": "REPATHA_12M_ending_Mar_22_sum: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "STATIN_EZETIMIBE_COMBOS_12M_ending_Mar_22_sum",
+    "Description": "STATIN_EZETIMIBE_COMBOS_12M_ending_Mar_22_sum: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "STATIN_HIGH_12M_ending_Mar_22_sum",
+    "Description": "STATIN_HIGH_12M_ending_Mar_22_sum: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "STATIN_LOW_12M_ending_Mar_22_sum",
+    "Description": "STATIN_LOW_12M_ending_Mar_22_sum: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "STATIN_MID_12M_ending_Mar_22_sum",
+    "Description": "STATIN_MID_12M_ending_Mar_22_sum: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "YTD_Calls_ending_5_23",
+    "Description": "YTD_Calls_ending_5_23: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "FRM_FLAG",
+    "Description": "FRM_FLAG: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "ASSISTANCE_PERC_CLAIMS_max",
+    "Description": "ASSISTANCE_PERC_CLAIMS_max: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "COMMERCIAL_PERC_CLAIMS_max",
+    "Description": "COMMERCIAL_PERC_CLAIMS_max: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "MANAGED_MEDICAID_PERC_CLAIMS_max",
+    "Description": "MANAGED_MEDICAID_PERC_CLAIMS_max: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "MEDICARE_B_PERC_CLAIMS_max",
+    "Description": "MEDICARE_B_PERC_CLAIMS_max: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "hONLISTTIERSamp",
+    "Description": "hONLISTTIERSamp: on List Sample Data",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "npi_number",
+    "Description": "npi_number: on List Sample Data",
+    "Answer_Options": "NA"
+  }
+]

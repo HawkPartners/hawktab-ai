@@ -1,0 +1,56 @@
+[
+  {
+    "column": "S2",
+    "description": "S2: How old are you?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "S10",
+    "description": "S10: What is the age of [pipe: S9 upper]?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "HA3",
+    "description": "HA3: Number of current prescription antiseizure treatments",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "HA4",
+    "description": "HA4: Number of previously taken treatments",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "HA5",
+    "description": "HA5: Number of treatments ‘never prescribed’.",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "F1",
+    "description": "F1: How old was [pipe: S9 upper] at the time of their [pipe: hS3] diagnosis?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  }
+]

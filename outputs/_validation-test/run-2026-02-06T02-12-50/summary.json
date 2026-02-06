@@ -1,0 +1,234 @@
+{
+  "timestamp": "2026-02-06T02:13:24.793Z",
+  "passed": 25,
+  "failed": 0,
+  "skipped": 0,
+  "total": 25,
+  "datasets": {
+    "leqvio-monotherapy": {
+      "passed": true,
+      "variables": 192,
+      "loops": 0,
+      "errors": 0,
+      "warnings": 0,
+      "durationMs": 627,
+      "loopDetails": "none"
+    },
+    "titos": {
+      "passed": true,
+      "variables": 530,
+      "loops": 6,
+      "errors": 0,
+      "warnings": 6,
+      "durationMs": 6057,
+      "loopDetails": "A-N-_-N: 2 iters x 12 bases (24 vars); A-N-_-N-r-N-oe: 2 iters x 6 bases (12 vars); hCHANNEL-_-N-r-N: 2 iters x 5 bases (10 vars); A-N-_-N-r-N: 2 iters x 44 bases (88 vars); A-N-b-_-N-r-N: 2 iters x 5 bases (10 vars); pagetimeA-N-_-N: 2 iters x 17 bases (34 vars)"
+    },
+    "spravato": {
+      "passed": true,
+      "variables": 565,
+      "loops": 0,
+      "errors": 0,
+      "warnings": 0,
+      "durationMs": 589,
+      "loopDetails": "none"
+    },
+    "cart-segmentation": {
+      "passed": true,
+      "variables": 523,
+      "loops": 3,
+      "errors": 0,
+      "warnings": 3,
+      "durationMs": 1407,
+      "loopDetails": "A-N-a-_-N-r-N: 4 iters x 7 bases (28 vars); A-N-b-_-N-r-N: 4 iters x 8 bases (32 vars); hA-N-_-N-L-_-percentagesr-N: 2 iters x 9 bases (18 vars)"
+    },
+    "csb-w1": {
+      "passed": true,
+      "variables": 838,
+      "loops": 2,
+      "errors": 0,
+      "warnings": 2,
+      "durationMs": 1298,
+      "loopDetails": "C-N-_-N-r-N: 9 iters x 27 bases (138 vars); G-N-_-N-r-N: 7 iters x 17 bases (119 vars)"
+    },
+    "csb-w2": {
+      "passed": true,
+      "variables": 1096,
+      "loops": 5,
+      "errors": 0,
+      "warnings": 5,
+      "durationMs": 2741,
+      "loopDetails": "C-N-_-N-r-N: 9 iters x 27 bases (138 vars); C-N-a-_-N-r-N: 9 iters x 6 bases (54 vars); G-N-_-N-r-N: 7 iters x 17 bases (119 vars); I-N-ba-_-N-r-N: 3 iters x 13 bases (39 vars); I-N-c-_-N-r-N: 3 iters x 12 bases (36 vars)"
+    },
+    "gvhd": {
+      "passed": true,
+      "variables": 379,
+      "loops": 0,
+      "errors": 0,
+      "warnings": 0,
+      "durationMs": 511,
+      "loopDetails": "none"
+    },
+    "iptacopan": {
+      "passed": true,
+      "variables": 258,
+      "loops": 2,
+      "errors": 0,
+      "warnings": 2,
+      "durationMs": 1029,
+      "loopDetails": "B-N-a-_-N-r-N: 2 iters x 8 bases (16 vars); B-N-b-_-N-r-N: 2 iters x 8 bases (11 vars)"
+    },
+    "leqvio-demand-w1": {
+      "passed": true,
+      "variables": 383,
+      "loops": 1,
+      "errors": 0,
+      "warnings": 1,
+      "durationMs": 790,
+      "loopDetails": "B-N-_-N-r-N-c-N: 12 iters x 18 bases (216 vars)"
+    },
+    "leqvio-demand-w2": {
+      "passed": true,
+      "variables": 1172,
+      "loops": 2,
+      "errors": 0,
+      "warnings": 2,
+      "durationMs": 1277,
+      "loopDetails": "B-N-_-N-r-N-c-N: 12 iters x 22 bases (264 vars); B-N-_-N-r-N-dum-N: 12 iters x 55 bases (660 vars)"
+    },
+    "leqvio-demand-w3": {
+      "passed": true,
+      "variables": 1819,
+      "loops": 2,
+      "errors": 0,
+      "warnings": 2,
+      "durationMs": 1356,
+      "loopDetails": "B-N-_-N-r-N-c-N: 12 iters x 22 bases (264 vars); B-N-_-N-r-N-dum-N: 12 iters x 55 bases (660 vars)"
+    },
+    "leqvio-seg-hcp-w1": {
+      "passed": true,
+      "variables": 551,
+      "loops": 0,
+      "errors": 0,
+      "warnings": 0,
+      "durationMs": 569,
+      "loopDetails": "none"
+    },
+    "leqvio-seg-hcp-w2": {
+      "passed": true,
+      "variables": 448,
+      "loops": 1,
+      "errors": 0,
+      "warnings": 1,
+      "durationMs": 815,
+      "loopDetails": "B-N-_-N-r-N: 2 iters x 12 bases (24 vars)"
+    },
+    "leqvio-seg-patients": {
+      "passed": true,
+      "variables": 345,
+      "loops": 0,
+      "errors": 0,
+      "warnings": 0,
+      "durationMs": 539,
+      "loopDetails": "none"
+    },
+    "meningitis-vax": {
+      "passed": true,
+      "variables": 341,
+      "loops": 0,
+      "errors": 0,
+      "warnings": 0,
+      "durationMs": 601,
+      "loopDetails": "none"
+    },
+    "onc-ce-w2": {
+      "passed": true,
+      "variables": 1614,
+      "loops": 0,
+      "errors": 0,
+      "warnings": 0,
+      "durationMs": 917,
+      "loopDetails": "none"
+    },
+    "onc-ce-w3": {
+      "passed": true,
+      "variables": 1954,
+      "loops": 0,
+      "errors": 0,
+      "warnings": 0,
+      "durationMs": 955,
+      "loopDetails": "none"
+    },
+    "onc-ce-w4": {
+      "passed": true,
+      "variables": 1985,
+      "loops": 0,
+      "errors": 0,
+      "warnings": 0,
+      "durationMs": 932,
+      "loopDetails": "none"
+    },
+    "onc-ce-w5": {
+      "passed": true,
+      "variables": 2042,
+      "loops": 0,
+      "errors": 0,
+      "warnings": 0,
+      "durationMs": 981,
+      "loopDetails": "none"
+    },
+    "onc-ce-w6": {
+      "passed": true,
+      "variables": 1280,
+      "loops": 3,
+      "errors": 0,
+      "warnings": 3,
+      "durationMs": 1887,
+      "loopDetails": "Q-N-_-N-r-N: 16 iters x 22 bases (352 vars); Q-N-h-_-N-r-N: 3 iters x 8 bases (24 vars); Q-N-j-_-N-r-N: 3 iters x 4 bases (12 vars)"
+    },
+    "ucb-w1": {
+      "passed": true,
+      "variables": 633,
+      "loops": 2,
+      "errors": 0,
+      "warnings": 2,
+      "durationMs": 1214,
+      "loopDetails": "C-N-_-N-r-N: 2 iters x 17 bases (34 vars); C-N-_-N-r-N-c-N: 2 iters x 28 bases (56 vars)"
+    },
+    "ucb-w2": {
+      "passed": true,
+      "variables": 538,
+      "loops": 2,
+      "errors": 0,
+      "warnings": 2,
+      "durationMs": 1156,
+      "loopDetails": "C-N-_-N-r-N: 2 iters x 20 bases (40 vars); C-N-_-N-r-N-c-N: 2 iters x 28 bases (56 vars)"
+    },
+    "ucb-w4": {
+      "passed": true,
+      "variables": 676,
+      "loops": 4,
+      "errors": 0,
+      "warnings": 4,
+      "durationMs": 1824,
+      "loopDetails": "C-N-_-N-r-N: 2 iters x 20 bases (40 vars); C-N-_-N-r-N-c-N: 2 iters x 30 bases (60 vars); C-N-a-_-N-r-N: 2 iters x 22 bases (44 vars); E-N-a-_-N-r-N: 6 iters x 7 bases (42 vars)"
+    },
+    "ucb-w5": {
+      "passed": true,
+      "variables": 998,
+      "loops": 5,
+      "errors": 0,
+      "warnings": 5,
+      "durationMs": 2249,
+      "loopDetails": "C-N-_-N-r-N: 2 iters x 20 bases (40 vars); C-N-_-N-r-N-c-N: 2 iters x 30 bases (60 vars); C-N-a-_-N-r-N: 2 iters x 22 bases (44 vars); C-N-_-N: 2 iters x 3 bases (6 vars); E-N-a-_-N-r-N: 10 iters x 7 bases (68 vars)"
+    },
+    "ucb-w6": {
+      "passed": true,
+      "variables": 723,
+      "loops": 5,
+      "errors": 0,
+      "warnings": 5,
+      "durationMs": 2111,
+      "loopDetails": "Priority-_-N-r-N: 2 iters x 36 bases (72 vars); C-N-_-N-r-N: 2 iters x 20 bases (40 vars); C-N-_-N-r-N-c-N: 2 iters x 30 bases (60 vars); C-N-a-_-N-r-N: 2 iters x 22 bases (44 vars); E-N-a-_-N-r-N: 6 iters x 7 bases (42 vars)"
+    }
+  }
+}

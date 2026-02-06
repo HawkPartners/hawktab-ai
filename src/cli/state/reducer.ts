@@ -31,6 +31,7 @@ const MAX_RECENT_LOGS = 100;
 const MAX_LOGS_PER_TABLE = 50;
 const MAX_RECENT_COMPLETIONS = 10;
 const DEFAULT_CONCURRENCY = 3;
+const MAX_SYSTEM_LOGS = 300;
 
 // =============================================================================
 // Action Types
@@ -43,6 +44,7 @@ export type NavigationAction =
   | { type: 'nav:back' }
   | { type: 'nav:scroll-up' }
   | { type: 'nav:scroll-down' }
+  | { type: 'nav:logs' }
   | { type: 'nav:number'; number: number };
 
 export type ModeAction =
@@ -180,7 +182,11 @@ function pipelineReducer(state: PipelineState, event: PipelineEvent): PipelineSt
           },
         };
       }
-      return { ...state, stages };
+      const tableCount =
+        event.agentName === 'VerificationAgent'
+          ? Math.max(state.tableCount, event.completed)
+          : state.tableCount;
+      return { ...state, stages, tableCount };
     }
 
     case 'slot:start': {
@@ -274,6 +280,20 @@ function pipelineReducer(state: PipelineState, event: PipelineEvent): PipelineSt
       };
     }
 
+    case 'system:log': {
+      const logEntry: LogEntry = {
+        timestamp: event.timestamp,
+        source: event.stageName || '',
+        tableId: null,
+        action: event.level,
+        content: event.message,
+      };
+
+      const systemLogs = [logEntry, ...state.systemLogs].slice(0, MAX_SYSTEM_LOGS);
+
+      return { ...state, systemLogs };
+    }
+
     default:
       return state;
   }
@@ -308,6 +328,12 @@ function navigationReducer(
           logScrollOffset: Math.max(0, state.logScrollOffset - 1),
         };
       }
+      if (state.level === 'system') {
+        return {
+          ...state,
+          systemLogScrollOffset: Math.max(0, state.systemLogScrollOffset - 1),
+        };
+      }
       return state;
     }
 
@@ -330,6 +356,12 @@ function navigationReducer(
         return {
           ...state,
           logScrollOffset: state.logScrollOffset + 1,
+        };
+      }
+      if (state.level === 'system') {
+        return {
+          ...state,
+          systemLogScrollOffset: state.systemLogScrollOffset + 1,
         };
       }
       return state;
@@ -371,6 +403,12 @@ function navigationReducer(
           logScrollOffset: 0,
         };
       }
+      if (state.level === 'system') {
+        return {
+          ...state,
+          level: state.systemLogReturnLevel,
+        };
+      }
       if (state.level === 'stage') {
         return {
           ...state,
@@ -384,14 +422,35 @@ function navigationReducer(
     case 'nav:scroll-up': {
       return {
         ...state,
-        logScrollOffset: Math.max(0, state.logScrollOffset - 5),
+        logScrollOffset: state.level === 'log' ? Math.max(0, state.logScrollOffset - 5) : state.logScrollOffset,
+        systemLogScrollOffset: state.level === 'system'
+          ? Math.max(0, state.systemLogScrollOffset - 5)
+          : state.systemLogScrollOffset,
       };
     }
 
     case 'nav:scroll-down': {
       return {
         ...state,
-        logScrollOffset: state.logScrollOffset + 5,
+        logScrollOffset: state.level === 'log' ? state.logScrollOffset + 5 : state.logScrollOffset,
+        systemLogScrollOffset: state.level === 'system'
+          ? state.systemLogScrollOffset + 5
+          : state.systemLogScrollOffset,
+      };
+    }
+
+    case 'nav:logs': {
+      if (state.level !== 'system') {
+        return {
+          ...state,
+          level: 'system',
+          systemLogReturnLevel: state.level,
+          systemLogScrollOffset: 0,
+        };
+      }
+      return {
+        ...state,
+        level: state.systemLogReturnLevel || 'pipeline',
       };
     }
 

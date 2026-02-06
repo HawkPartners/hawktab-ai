@@ -298,6 +298,30 @@ export function App({ onExit, initialMode = 'menu', dataset, onStartPipeline, on
 
   // Determine which agent name to show in log view
   const currentAgentName = currentStage?.name || 'Unknown';
+  const stageModelName = (() => {
+    const agentName = currentStage?.name;
+    if (!agentName) return undefined;
+    const fromState = state.settings.agents.find((agent) => agent.agent === agentName)?.model;
+    if (fromState) return fromState;
+    try {
+      const config = getEnvironmentConfig();
+      switch (agentName) {
+        case 'BannerAgent':
+          return config.bannerModel;
+        case 'CrosstabAgent':
+          return config.crosstabModel;
+        case 'VerificationAgent':
+          return config.verificationModel;
+        case 'BaseFilterAgent':
+          return config.baseFilterModel;
+        default:
+          return undefined;
+      }
+    } catch {
+      return undefined;
+    }
+  })();
+  const systemLogs = state.pipeline.systemLogs;
 
   // Render based on mode
   return (
@@ -359,6 +383,7 @@ export function App({ onExit, initialMode = 'menu', dataset, onStartPipeline, on
                 stage={currentStage}
                 selectedSlotIndex={state.navigation.selectedSlot}
                 recentCompletions={state.pipeline.recentCompletions}
+                modelName={stageModelName}
               />
             )}
 
@@ -368,6 +393,15 @@ export function App({ onExit, initialMode = 'menu', dataset, onStartPipeline, on
                 agentName={currentAgentName}
                 logs={currentTableLogs}
                 scrollOffset={state.navigation.logScrollOffset}
+              />
+            )}
+
+            {state.navigation.level === 'system' && (
+              <LogView
+                title="System Logs"
+                subtitle="Pipeline + agent output"
+                logs={systemLogs}
+                scrollOffset={state.navigation.systemLogScrollOffset}
               />
             )}
           </>

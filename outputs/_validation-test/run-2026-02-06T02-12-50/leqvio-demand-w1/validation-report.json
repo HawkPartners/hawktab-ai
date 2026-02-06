@@ -1,0 +1,4321 @@
+{
+  "dataset": "Leqvio Demand W1",
+  "format": "sav",
+  "canProceed": true,
+  "durationMs": 790,
+  "variableCount": 383,
+  "enrichmentSummary": {
+    "total": 383,
+    "levels": {
+      "parent": 42,
+      "sub": 341
+    },
+    "subsWithContext": 2,
+    "normalizedTypes": {
+      "admin": 7,
+      "categorical_select": 44,
+      "text_open": 29,
+      "(none)": 303
+    }
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "stage": 3,
+      "stageName": "Loop Detection",
+      "message": "Loop detected: 12 iterations of 18 questions (pattern: B-N-_-N-r-N-c-N)"
+    }
+  ],
+  "loopDetection": {
+    "hasLoops": true,
+    "loops": [
+      {
+        "skeleton": "B-N-_-N-r-N-c-N",
+        "iteratorPosition": 3,
+        "iterations": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12"
+        ],
+        "bases": [
+          "B3_*r1c1",
+          "B3_*r1c2",
+          "B3_*r2c1",
+          "B3_*r2c2",
+          "B3_*r3c1",
+          "B3_*r3c2",
+          "B3_*r4c1",
+          "B3_*r4c2",
+          "B3_*r5c1",
+          "B3_*r5c2",
+          "B3_*r6c1",
+          "B3_*r6c2",
+          "B3_*r7c1",
+          "B3_*r7c2",
+          "B3_*r8c1",
+          "B3_*r8c2",
+          "B3_*r9c1",
+          "B3_*r9c2"
+        ],
+        "variables": [
+          "B3_1r1c1",
+          "B3_1r2c1",
+          "B3_1r3c1",
+          "B3_1r4c1",
+          "B3_1r5c1",
+          "B3_1r6c1",
+          "B3_1r7c1",
+          "B3_1r8c1",
+          "B3_1r9c1",
+          "B3_1r1c2",
+          "B3_1r2c2",
+          "B3_1r3c2",
+          "B3_1r4c2",
+          "B3_1r5c2",
+          "B3_1r6c2",
+          "B3_1r7c2",
+          "B3_1r8c2",
+          "B3_1r9c2",
+          "B3_2r1c1",
+          "B3_2r2c1",
+          "B3_2r3c1",
+          "B3_2r4c1",
+          "B3_2r5c1",
+          "B3_2r6c1",
+          "B3_2r7c1",
+          "B3_2r8c1",
+          "B3_2r9c1",
+          "B3_2r1c2",
+          "B3_2r2c2",
+          "B3_2r3c2",
+          "B3_2r4c2",
+          "B3_2r5c2",
+          "B3_2r6c2",
+          "B3_2r7c2",
+          "B3_2r8c2",
+          "B3_2r9c2",
+          "B3_3r1c1",
+          "B3_3r2c1",
+          "B3_3r3c1",
+          "B3_3r4c1",
+          "B3_3r5c1",
+          "B3_3r6c1",
+          "B3_3r7c1",
+          "B3_3r8c1",
+          "B3_3r9c1",
+          "B3_3r1c2",
+          "B3_3r2c2",
+          "B3_3r3c2",
+          "B3_3r4c2",
+          "B3_3r5c2",
+          "B3_3r6c2",
+          "B3_3r7c2",
+          "B3_3r8c2",
+          "B3_3r9c2",
+          "B3_4r1c1",
+          "B3_4r2c1",
+          "B3_4r3c1",
+          "B3_4r4c1",
+          "B3_4r5c1",
+          "B3_4r6c1",
+          "B3_4r7c1",
+          "B3_4r8c1",
+          "B3_4r9c1",
+          "B3_4r1c2",
+          "B3_4r2c2",
+          "B3_4r3c2",
+          "B3_4r4c2",
+          "B3_4r5c2",
+          "B3_4r6c2",
+          "B3_4r7c2",
+          "B3_4r8c2",
+          "B3_4r9c2",
+          "B3_5r1c1",
+          "B3_5r2c1",
+          "B3_5r3c1",
+          "B3_5r4c1",
+          "B3_5r5c1",
+          "B3_5r6c1",
+          "B3_5r7c1",
+          "B3_5r8c1",
+          "B3_5r9c1",
+          "B3_5r1c2",
+          "B3_5r2c2",
+          "B3_5r3c2",
+          "B3_5r4c2",
+          "B3_5r5c2",
+          "B3_5r6c2",
+          "B3_5r7c2",
+          "B3_5r8c2",
+          "B3_5r9c2",
+          "B3_6r1c1",
+          "B3_6r2c1",
+          "B3_6r3c1",
+          "B3_6r4c1",
+          "B3_6r5c1",
+          "B3_6r6c1",
+          "B3_6r7c1",
+          "B3_6r8c1",
+          "B3_6r9c1",
+          "B3_6r1c2",
+          "B3_6r2c2",
+          "B3_6r3c2",
+          "B3_6r4c2",
+          "B3_6r5c2",
+          "B3_6r6c2",
+          "B3_6r7c2",
+          "B3_6r8c2",
+          "B3_6r9c2",
+          "B3_7r1c1",
+          "B3_7r2c1",
+          "B3_7r3c1",
+          "B3_7r4c1",
+          "B3_7r5c1",
+          "B3_7r6c1",
+          "B3_7r7c1",
+          "B3_7r8c1",
+          "B3_7r9c1",
+          "B3_7r1c2",
+          "B3_7r2c2",
+          "B3_7r3c2",
+          "B3_7r4c2",
+          "B3_7r5c2",
+          "B3_7r6c2",
+          "B3_7r7c2",
+          "B3_7r8c2",
+          "B3_7r9c2",
+          "B3_8r1c1",
+          "B3_8r2c1",
+          "B3_8r3c1",
+          "B3_8r4c1",
+          "B3_8r5c1",
+          "B3_8r6c1",
+          "B3_8r7c1",
+          "B3_8r8c1",
+          "B3_8r9c1",
+          "B3_8r1c2",
+          "B3_8r2c2",
+          "B3_8r3c2",
+          "B3_8r4c2",
+          "B3_8r5c2",
+          "B3_8r6c2",
+          "B3_8r7c2",
+          "B3_8r8c2",
+          "B3_8r9c2",
+          "B3_9r1c1",
+          "B3_9r2c1",
+          "B3_9r3c1",
+          "B3_9r4c1",
+          "B3_9r5c1",
+          "B3_9r6c1",
+          "B3_9r7c1",
+          "B3_9r8c1",
+          "B3_9r9c1",
+          "B3_9r1c2",
+          "B3_9r2c2",
+          "B3_9r3c2",
+          "B3_9r4c2",
+          "B3_9r5c2",
+          "B3_9r6c2",
+          "B3_9r7c2",
+          "B3_9r8c2",
+          "B3_9r9c2",
+          "B3_10r1c1",
+          "B3_10r2c1",
+          "B3_10r3c1",
+          "B3_10r4c1",
+          "B3_10r5c1",
+          "B3_10r6c1",
+          "B3_10r7c1",
+          "B3_10r8c1",
+          "B3_10r9c1",
+          "B3_10r1c2",
+          "B3_10r2c2",
+          "B3_10r3c2",
+          "B3_10r4c2",
+          "B3_10r5c2",
+          "B3_10r6c2",
+          "B3_10r7c2",
+          "B3_10r8c2",
+          "B3_10r9c2",
+          "B3_11r1c1",
+          "B3_11r2c1",
+          "B3_11r3c1",
+          "B3_11r4c1",
+          "B3_11r5c1",
+          "B3_11r6c1",
+          "B3_11r7c1",
+          "B3_11r8c1",
+          "B3_11r9c1",
+          "B3_11r1c2",
+          "B3_11r2c2",
+          "B3_11r3c2",
+          "B3_11r4c2",
+          "B3_11r5c2",
+          "B3_11r6c2",
+          "B3_11r7c2",
+          "B3_11r8c2",
+          "B3_11r9c2",
+          "B3_12r1c1",
+          "B3_12r2c1",
+          "B3_12r3c1",
+          "B3_12r4c1",
+          "B3_12r5c1",
+          "B3_12r6c1",
+          "B3_12r7c1",
+          "B3_12r8c1",
+          "B3_12r9c1",
+          "B3_12r1c2",
+          "B3_12r2c2",
+          "B3_12r3c2",
+          "B3_12r4c2",
+          "B3_12r5c2",
+          "B3_12r6c2",
+          "B3_12r7c2",
+          "B3_12r8c2",
+          "B3_12r9c2"
+        ],
+        "diversity": 18
+      }
+    ],
+    "nonLoopVariables": [
+      "record",
+      "uuid",
+      "date",
+      "status",
+      "S1",
+      "S2",
+      "S2r7oe",
+      "S3a",
+      "S3b",
+      "S3c",
+      "S4",
+      "S5r1",
+      "S5r2",
+      "S5r3",
+      "S5r4",
+      "S5r5",
+      "S5r6",
+      "S5r7",
+      "S6",
+      "S7",
+      "S8r1c1",
+      "S8r2c1",
+      "S8r3c1",
+      "S8r4c1",
+      "S9",
+      "S10",
+      "S11",
+      "S12r1c1",
+      "S12r2c1",
+      "S12r3c1",
+      "S13r1c1",
+      "S13r1c2",
+      "S13r2c1",
+      "S13r2c2",
+      "S13r3c1",
+      "S13r3c2",
+      "A1",
+      "A1a",
+      "A1b",
+      "A1c",
+      "A3r1c1",
+      "A3r2c1",
+      "A3r3c1",
+      "A3r4c1",
+      "A3r5c1",
+      "A3r6c1",
+      "A3r7c1",
+      "A3r1c2",
+      "A3r2c2",
+      "A3r3c2",
+      "A3r4c2",
+      "A3r5c2",
+      "A3r6c2",
+      "A3r7c2",
+      "A5r1c1",
+      "A5r2c1",
+      "A5r3c1",
+      "A5r4c1",
+      "A5r5c1",
+      "A5r6c1",
+      "A5r7c1",
+      "A5r1c2",
+      "A5r2c2",
+      "A5r3c2",
+      "A5r4c2",
+      "A5r5c2",
+      "A5r6c2",
+      "A5r7c2",
+      "A5r1c3",
+      "A5r2c3",
+      "A5r3c3",
+      "A5r4c3",
+      "A5r5c3",
+      "A5r6c3",
+      "A5r7c3",
+      "A5r1c4",
+      "A5r2c4",
+      "A5r3c4",
+      "A5r4c4",
+      "A5r5c4",
+      "A5r6c4",
+      "A5r7c4",
+      "dumRanBlockBC",
+      "B1",
+      "B2",
+      "hConjVersion",
+      "C1c1",
+      "C1c2",
+      "C2c1",
+      "C2c2",
+      "C2ar1",
+      "C2ar2",
+      "C2ar3",
+      "C2ar4",
+      "C2ar5",
+      "C2ar6",
+      "C3r1",
+      "C3r2",
+      "C3r3",
+      "C3r4",
+      "C4c1",
+      "C4c2",
+      "C5r1",
+      "C5r2",
+      "C5r3",
+      "C5r4",
+      "C6",
+      "D1r1c1",
+      "D1r2c1",
+      "D1r3c1",
+      "D1r4c1",
+      "D1r1c2",
+      "D1r2c2",
+      "D1r3c2",
+      "D1r4c2",
+      "D2c1",
+      "D2c2",
+      "D2c3",
+      "D3r1c1",
+      "D3r2c1",
+      "D3r3c1",
+      "D3r4c1",
+      "D3r5c1",
+      "D3r6c1",
+      "D3r7c1",
+      "D3r8c1",
+      "D3r1c2",
+      "D3r2c2",
+      "D3r3c2",
+      "D3r4c2",
+      "D3r5c2",
+      "D3r6c2",
+      "D3r7c2",
+      "D3r8c2",
+      "D3r8oe",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D7r4oe",
+      "qtime",
+      "session",
+      "PCSK9_Flag",
+      "LEQVIO_TIER",
+      "ZIP_CD",
+      "STATE",
+      "CITY",
+      "ADDR_LINE_2",
+      "ADDR_LINE_1",
+      "LAST_NM",
+      "FRST_NM",
+      "NPI_NUM",
+      "IMS_NUM",
+      "Q_SampDatar1",
+      "Q_SampDatar2",
+      "Q_SampDatar3",
+      "Q_SampDatar4",
+      "Q_SampDatar5",
+      "Q_SampDatar6",
+      "Q_SampDatar7",
+      "Q_SampDatar8",
+      "Q_SampDatar9",
+      "Q_SampDatar10",
+      "Q_SampDatar11",
+      "Q_SampDatar12",
+      "AAID",
+      "AAID_dupe1"
+    ]
+  },
+  "dataFileStats": {
+    "rowCount": 256,
+    "columns": [
+      "record",
+      "uuid",
+      "date",
+      "status",
+      "S1",
+      "S2",
+      "S2r7oe",
+      "S3a",
+      "S3b",
+      "S3c",
+      "S4",
+      "S5r1",
+      "S5r2",
+      "S5r3",
+      "S5r4",
+      "S5r5",
+      "S5r6",
+      "S5r7",
+      "S6",
+      "S7",
+      "S8r1c1",
+      "S8r2c1",
+      "S8r3c1",
+      "S8r4c1",
+      "S9",
+      "S10",
+      "S11",
+      "S12r1c1",
+      "S12r2c1",
+      "S12r3c1",
+      "S13r1c1",
+      "S13r1c2",
+      "S13r2c1",
+      "S13r2c2",
+      "S13r3c1",
+      "S13r3c2",
+      "A1",
+      "A1a",
+      "A1b",
+      "A1c",
+      "A3r1c1",
+      "A3r2c1",
+      "A3r3c1",
+      "A3r4c1",
+      "A3r5c1",
+      "A3r6c1",
+      "A3r7c1",
+      "A3r1c2",
+      "A3r2c2",
+      "A3r3c2",
+      "A3r4c2",
+      "A3r5c2",
+      "A3r6c2",
+      "A3r7c2",
+      "A5r1c1",
+      "A5r2c1",
+      "A5r3c1",
+      "A5r4c1",
+      "A5r5c1",
+      "A5r6c1",
+      "A5r7c1",
+      "A5r1c2",
+      "A5r2c2",
+      "A5r3c2",
+      "A5r4c2",
+      "A5r5c2",
+      "A5r6c2",
+      "A5r7c2",
+      "A5r1c3",
+      "A5r2c3",
+      "A5r3c3",
+      "A5r4c3",
+      "A5r5c3",
+      "A5r6c3",
+      "A5r7c3",
+      "A5r1c4",
+      "A5r2c4",
+      "A5r3c4",
+      "A5r4c4",
+      "A5r5c4",
+      "A5r6c4",
+      "A5r7c4",
+      "dumRanBlockBC",
+      "B1",
+      "B2",
+      "hConjVersion",
+      "B3_1r1c1",
+      "B3_1r2c1",
+      "B3_1r3c1",
+      "B3_1r4c1",
+      "B3_1r5c1",
+      "B3_1r6c1",
+      "B3_1r7c1",
+      "B3_1r8c1",
+      "B3_1r9c1",
+      "B3_1r1c2",
+      "B3_1r2c2",
+      "B3_1r3c2",
+      "B3_1r4c2",
+      "B3_1r5c2",
+      "B3_1r6c2",
+      "B3_1r7c2",
+      "B3_1r8c2",
+      "B3_1r9c2",
+      "B3_2r1c1",
+      "B3_2r2c1",
+      "B3_2r3c1",
+      "B3_2r4c1",
+      "B3_2r5c1",
+      "B3_2r6c1",
+      "B3_2r7c1",
+      "B3_2r8c1",
+      "B3_2r9c1",
+      "B3_2r1c2",
+      "B3_2r2c2",
+      "B3_2r3c2",
+      "B3_2r4c2",
+      "B3_2r5c2",
+      "B3_2r6c2",
+      "B3_2r7c2",
+      "B3_2r8c2",
+      "B3_2r9c2",
+      "B3_3r1c1",
+      "B3_3r2c1",
+      "B3_3r3c1",
+      "B3_3r4c1",
+      "B3_3r5c1",
+      "B3_3r6c1",
+      "B3_3r7c1",
+      "B3_3r8c1",
+      "B3_3r9c1",
+      "B3_3r1c2",
+      "B3_3r2c2",
+      "B3_3r3c2",
+      "B3_3r4c2",
+      "B3_3r5c2",
+      "B3_3r6c2",
+      "B3_3r7c2",
+      "B3_3r8c2",
+      "B3_3r9c2",
+      "B3_4r1c1",
+      "B3_4r2c1",
+      "B3_4r3c1",
+      "B3_4r4c1",
+      "B3_4r5c1",
+      "B3_4r6c1",
+      "B3_4r7c1",
+      "B3_4r8c1",
+      "B3_4r9c1",
+      "B3_4r1c2",
+      "B3_4r2c2",
+      "B3_4r3c2",
+      "B3_4r4c2",
+      "B3_4r5c2",
+      "B3_4r6c2",
+      "B3_4r7c2",
+      "B3_4r8c2",
+      "B3_4r9c2",
+      "B3_5r1c1",
+      "B3_5r2c1",
+      "B3_5r3c1",
+      "B3_5r4c1",
+      "B3_5r5c1",
+      "B3_5r6c1",
+      "B3_5r7c1",
+      "B3_5r8c1",
+      "B3_5r9c1",
+      "B3_5r1c2",
+      "B3_5r2c2",
+      "B3_5r3c2",
+      "B3_5r4c2",
+      "B3_5r5c2",
+      "B3_5r6c2",
+      "B3_5r7c2",
+      "B3_5r8c2",
+      "B3_5r9c2",
+      "B3_6r1c1",
+      "B3_6r2c1",
+      "B3_6r3c1",
+      "B3_6r4c1",
+      "B3_6r5c1",
+      "B3_6r6c1",
+      "B3_6r7c1",
+      "B3_6r8c1",
+      "B3_6r9c1",
+      "B3_6r1c2",
+      "B3_6r2c2",
+      "B3_6r3c2",
+      "B3_6r4c2",
+      "B3_6r5c2",
+      "B3_6r6c2",
+      "B3_6r7c2",
+      "B3_6r8c2",
+      "B3_6r9c2",
+      "B3_7r1c1",
+      "B3_7r2c1",
+      "B3_7r3c1",
+      "B3_7r4c1",
+      "B3_7r5c1",
+      "B3_7r6c1",
+      "B3_7r7c1",
+      "B3_7r8c1",
+      "B3_7r9c1",
+      "B3_7r1c2",
+      "B3_7r2c2",
+      "B3_7r3c2",
+      "B3_7r4c2",
+      "B3_7r5c2",
+      "B3_7r6c2",
+      "B3_7r7c2",
+      "B3_7r8c2",
+      "B3_7r9c2",
+      "B3_8r1c1",
+      "B3_8r2c1",
+      "B3_8r3c1",
+      "B3_8r4c1",
+      "B3_8r5c1",
+      "B3_8r6c1",
+      "B3_8r7c1",
+      "B3_8r8c1",
+      "B3_8r9c1",
+      "B3_8r1c2",
+      "B3_8r2c2",
+      "B3_8r3c2",
+      "B3_8r4c2",
+      "B3_8r5c2",
+      "B3_8r6c2",
+      "B3_8r7c2",
+      "B3_8r8c2",
+      "B3_8r9c2",
+      "B3_9r1c1",
+      "B3_9r2c1",
+      "B3_9r3c1",
+      "B3_9r4c1",
+      "B3_9r5c1",
+      "B3_9r6c1",
+      "B3_9r7c1",
+      "B3_9r8c1",
+      "B3_9r9c1",
+      "B3_9r1c2",
+      "B3_9r2c2",
+      "B3_9r3c2",
+      "B3_9r4c2",
+      "B3_9r5c2",
+      "B3_9r6c2",
+      "B3_9r7c2",
+      "B3_9r8c2",
+      "B3_9r9c2",
+      "B3_10r1c1",
+      "B3_10r2c1",
+      "B3_10r3c1",
+      "B3_10r4c1",
+      "B3_10r5c1",
+      "B3_10r6c1",
+      "B3_10r7c1",
+      "B3_10r8c1",
+      "B3_10r9c1",
+      "B3_10r1c2",
+      "B3_10r2c2",
+      "B3_10r3c2",
+      "B3_10r4c2",
+      "B3_10r5c2",
+      "B3_10r6c2",
+      "B3_10r7c2",
+      "B3_10r8c2",
+      "B3_10r9c2",
+      "B3_11r1c1",
+      "B3_11r2c1",
+      "B3_11r3c1",
+      "B3_11r4c1",
+      "B3_11r5c1",
+      "B3_11r6c1",
+      "B3_11r7c1",
+      "B3_11r8c1",
+      "B3_11r9c1",
+      "B3_11r1c2",
+      "B3_11r2c2",
+      "B3_11r3c2",
+      "B3_11r4c2",
+      "B3_11r5c2",
+      "B3_11r6c2",
+      "B3_11r7c2",
+      "B3_11r8c2",
+      "B3_11r9c2",
+      "B3_12r1c1",
+      "B3_12r2c1",
+      "B3_12r3c1",
+      "B3_12r4c1",
+      "B3_12r5c1",
+      "B3_12r6c1",
+      "B3_12r7c1",
+      "B3_12r8c1",
+      "B3_12r9c1",
+      "B3_12r1c2",
+      "B3_12r2c2",
+      "B3_12r3c2",
+      "B3_12r4c2",
+      "B3_12r5c2",
+      "B3_12r6c2",
+      "B3_12r7c2",
+      "B3_12r8c2",
+      "B3_12r9c2",
+      "C1c1",
+      "C1c2",
+      "C2c1",
+      "C2c2",
+      "C2ar1",
+      "C2ar2",
+      "C2ar3",
+      "C2ar4",
+      "C2ar5",
+      "C2ar6",
+      "C3r1",
+      "C3r2",
+      "C3r3",
+      "C3r4",
+      "C4c1",
+      "C4c2",
+      "C5r1",
+      "C5r2",
+      "C5r3",
+      "C5r4",
+      "C6",
+      "D1r1c1",
+      "D1r2c1",
+      "D1r3c1",
+      "D1r4c1",
+      "D1r1c2",
+      "D1r2c2",
+      "D1r3c2",
+      "D1r4c2",
+      "D2c1",
+      "D2c2",
+      "D2c3",
+      "D3r1c1",
+      "D3r2c1",
+      "D3r3c1",
+      "D3r4c1",
+      "D3r5c1",
+      "D3r6c1",
+      "D3r7c1",
+      "D3r8c1",
+      "D3r1c2",
+      "D3r2c2",
+      "D3r3c2",
+      "D3r4c2",
+      "D3r5c2",
+      "D3r6c2",
+      "D3r7c2",
+      "D3r8c2",
+      "D3r8oe",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D7r4oe",
+      "qtime",
+      "session",
+      "PCSK9_Flag",
+      "LEQVIO_TIER",
+      "ZIP_CD",
+      "STATE",
+      "CITY",
+      "ADDR_LINE_2",
+      "ADDR_LINE_1",
+      "LAST_NM",
+      "FRST_NM",
+      "NPI_NUM",
+      "IMS_NUM",
+      "Q_SampDatar1",
+      "Q_SampDatar2",
+      "Q_SampDatar3",
+      "Q_SampDatar4",
+      "Q_SampDatar5",
+      "Q_SampDatar6",
+      "Q_SampDatar7",
+      "Q_SampDatar8",
+      "Q_SampDatar9",
+      "Q_SampDatar10",
+      "Q_SampDatar11",
+      "Q_SampDatar12",
+      "AAID",
+      "AAID_dupe1"
+    ],
+    "stackingColumns": [],
+    "variableMetadata": {
+      "record": {
+        "column": "record",
+        "label": "record: Record number",
+        "format": "F7.0",
+        "valueLabels": []
+      },
+      "uuid": {
+        "column": "uuid",
+        "label": "uuid: Participant identifier",
+        "format": "A16",
+        "valueLabels": []
+      },
+      "date": {
+        "column": "date",
+        "label": "date: Completion time and date",
+        "format": "DATETIME40",
+        "valueLabels": []
+      },
+      "status": {
+        "column": "status",
+        "label": "status: Participant status",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Terminated"
+          },
+          {
+            "value": "2",
+            "label": "Overquota"
+          },
+          {
+            "value": "3",
+            "label": "Qualified"
+          },
+          {
+            "value": "4",
+            "label": "Partial"
+          }
+        ]
+      },
+      "S1": {
+        "column": "S1",
+        "label": "S1: You are about to enter a market research survey. We are being asked to pass on to our client details of adverse events about individual patients or groups of patients and / or product complaints that are raised during the course of market research sur",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "I would like to proceed and protect my identity"
+          },
+          {
+            "value": "2",
+            "label": "I would like to proceed and give permission for my contact details to be passed on to the Drug Safety department of the"
+          },
+          {
+            "value": "3",
+            "label": "I don't want to proceed"
+          }
+        ]
+      },
+      "S2": {
+        "column": "S2",
+        "label": "S2: What is your primary specialty?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Cardiologist"
+          },
+          {
+            "value": "2",
+            "label": "Internal Medicine"
+          },
+          {
+            "value": "3",
+            "label": "General Practitioner / Primary Care Physician"
+          },
+          {
+            "value": "4",
+            "label": "Family Practice"
+          },
+          {
+            "value": "5",
+            "label": "Nephrologist"
+          },
+          {
+            "value": "6",
+            "label": "Endocrinologist"
+          },
+          {
+            "value": "7",
+            "label": "Other (specify):"
+          }
+        ]
+      },
+      "S2r7oe": {
+        "column": "S2r7oe",
+        "label": "S2r7oe: What is your primary specialty? - Other (specify):",
+        "format": "A60",
+        "valueLabels": []
+      },
+      "S3a": {
+        "column": "S3a",
+        "label": "S3a: What type of Cardiologist are you primarily?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Interventional Cardiologist"
+          },
+          {
+            "value": "2",
+            "label": "General Cardiologist"
+          },
+          {
+            "value": "3",
+            "label": "Preventative Cardiologist"
+          },
+          {
+            "value": "4",
+            "label": "Lipidologist"
+          }
+        ]
+      },
+      "S3b": {
+        "column": "S3b",
+        "label": "S3b: Do you have a special interest in or are you specialized in cardiology?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Yes"
+          },
+          {
+            "value": "2",
+            "label": "No"
+          }
+        ]
+      },
+      "S3c": {
+        "column": "S3c",
+        "label": "S3c: Do you have a special interest in or are you specialized in lipidology?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Yes"
+          },
+          {
+            "value": "2",
+            "label": "No"
+          }
+        ]
+      },
+      "S4": {
+        "column": "S4",
+        "label": "S4: Are you currently board certified or eligible in your specialty?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Board Eligible"
+          },
+          {
+            "value": "2",
+            "label": "Board Certified"
+          },
+          {
+            "value": "3",
+            "label": "Neither"
+          }
+        ]
+      },
+      "S5r1": {
+        "column": "S5r1",
+        "label": "S5r1: Advertising Agency - Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "0",
+            "label": "NO TO: Advertising Agency"
+          },
+          {
+            "value": "1",
+            "label": "Advertising Agency"
+          }
+        ]
+      },
+      "S5r2": {
+        "column": "S5r2",
+        "label": "S5r2: Marketing/Market Research Firm - Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "0",
+            "label": "NO TO: Marketing/Market Research Firm"
+          },
+          {
+            "value": "1",
+            "label": "Marketing/Market Research Firm"
+          }
+        ]
+      },
+      "S5r3": {
+        "column": "S5r3",
+        "label": "S5r3: Public Relations Firm - Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "0",
+            "label": "NO TO: Public Relations Firm"
+          },
+          {
+            "value": "1",
+            "label": "Public Relations Firm"
+          }
+        ]
+      },
+      "S5r4": {
+        "column": "S5r4",
+        "label": "S5r4: Any media company (Print, Radio, TV, Internet) - Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "0",
+            "label": "NO TO: Any media company (Print, Radio, TV, Internet)"
+          },
+          {
+            "value": "1",
+            "label": "Any media company (Print, Radio, TV, Internet)"
+          }
+        ]
+      },
+      "S5r5": {
+        "column": "S5r5",
+        "label": "S5r5: Pharmaceutical Drug / Device Manufacturer (outside of clinical trials) - Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "0",
+            "label": "NO TO: Pharmaceutical Drug / Device Manufacturer (outside of clinical trials)"
+          },
+          {
+            "value": "1",
+            "label": "Pharmaceutical Drug / Device Manufacturer (outside of clinical trials)"
+          }
+        ]
+      },
+      "S5r6": {
+        "column": "S5r6",
+        "label": "S5r6: Governmental Regulatory Agency (e.g., Food & Drug Administration (FDA) - Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "0",
+            "label": "NO TO: Governmental Regulatory Agency (e.g., Food & Drug Administration (FDA)"
+          },
+          {
+            "value": "1",
+            "label": "Governmental Regulatory Agency (e.g., Food & Drug Administration (FDA)"
+          }
+        ]
+      },
+      "S5r7": {
+        "column": "S5r7",
+        "label": "S5r7: None of these - Are you or is any member of your family currently employed by, or have a commercial affiliation with any of the following?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "0",
+            "label": "NO TO: None of these"
+          },
+          {
+            "value": "1",
+            "label": "None of these"
+          }
+        ]
+      },
+      "S6": {
+        "column": "S6",
+        "label": "S6: How many years have you been in clinical practice, post residency/training?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "S7": {
+        "column": "S7",
+        "label": "S7: And to confirm, are you currently practicing full-time (i.e. 40+ hours weekly across all settings) or part-time?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Full-Time"
+          },
+          {
+            "value": "2",
+            "label": "Part-Time"
+          }
+        ]
+      },
+      "S8r1c1": {
+        "column": "S8r1c1",
+        "label": "S8r1c1: Treating/Managing patients - Approximately what percentage of your professional time is spent performing each of the following activities?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "S8r2c1": {
+        "column": "S8r2c1",
+        "label": "S8r2c1: Performing academic functions (e.g. teaching, publishing) - Approximately what percentage of your professional time is spent performing each of the following activities?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "S8r3c1": {
+        "column": "S8r3c1",
+        "label": "S8r3c1: Participating in clinical research - Approximately what percentage of your professional time is spent performing each of the following activities?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "S8r4c1": {
+        "column": "S8r4c1",
+        "label": "S8r4c1: Performing other functions - Approximately what percentage of your professional time is spent performing each of the following activities?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "S9": {
+        "column": "S9",
+        "label": "S9: Which of the following best describes the clinical setting where you spend the majority of your time treating patients?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Solo Private Practice"
+          },
+          {
+            "value": "2",
+            "label": "Group Practice / Clinic (single specialty)"
+          },
+          {
+            "value": "3",
+            "label": "Group Practice / Clinic (multi-specialty)"
+          },
+          {
+            "value": "4",
+            "label": "Staff HMO"
+          },
+          {
+            "value": "5",
+            "label": "Hospital-based practice"
+          },
+          {
+            "value": "6",
+            "label": "VA Hospital"
+          },
+          {
+            "value": "7",
+            "label": "None of the above"
+          }
+        ]
+      },
+      "S10": {
+        "column": "S10",
+        "label": "S10: Using your best estimate, how many adult patients, age 18 or older, do you personally manage in your practice in a month?By 'personally', we mean patients for whom you are the primary decision maker for all therapeutic decisions concerning these pati",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "S11": {
+        "column": "S11",
+        "label": "S11: Of those [pipe: S10] adult patients, how may have a confirmed diagnosis of hypercholesterolemia?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "S12r1c1": {
+        "column": "S12r1c1",
+        "label": "S12r1c1: Atherosclerotic Cardiovascular Disease (ASCVD) - Of those [pipe: S10] adult patients, how many have been diagnosed with the following conditions?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "S12r2c1": {
+        "column": "S12r2c1",
+        "label": "S12r2c1: Familial Hypercholesterolemia (FH) - Of those [pipe: S10] adult patients, how many have been diagnosed with the following conditions?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "S12r3c1": {
+        "column": "S12r3c1",
+        "label": "S12r3c1: Other primary prevention related conditions that require prescription drug therapy to lower LDL-C - Of those [pipe: S10] adult patients, how many have been diagnosed with the following conditions?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "S13r1c1": {
+        "column": "S13r1c1",
+        "label": "S13r1c1: # of patients - Atherosclerotic Cardiovascular Disease (ASCVD) - Thinking of the adult patients who are currently on prescription drug therapy (oral or injectable) for the following conditions that you manage, how many of them did you personally",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "S13r1c2": {
+        "column": "S13r1c2",
+        "label": "S13r1c2: # of patients on prescription drug therapy that you personally prescribe - Atherosclerotic Cardiovascular Disease (ASCVD) - Thinking of the adult patients who are currently on prescription drug therapy (oral or injectable) for the following condi",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "S13r2c1": {
+        "column": "S13r2c1",
+        "label": "S13r2c1: # of patients - Familial Hypercholesterolemia (FH) - Thinking of the adult patients who are currently on prescription drug therapy (oral or injectable) for the following conditions that you manage, how many of them did you personally make the pre",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "S13r2c2": {
+        "column": "S13r2c2",
+        "label": "S13r2c2: # of patients on prescription drug therapy that you personally prescribe - Familial Hypercholesterolemia (FH) - Thinking of the adult patients who are currently on prescription drug therapy (oral or injectable) for the following conditions that y",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "S13r3c1": {
+        "column": "S13r3c1",
+        "label": "S13r3c1: # of patients - Other primary prevention related conditions that require prescription drug therapy to lower LDL-C - Thinking of the adult patients who are currently on prescription drug therapy (oral or injectable) for the following conditions th",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "S13r3c2": {
+        "column": "S13r3c2",
+        "label": "S13r3c2: # of patients on prescription drug therapy that you personally prescribe - Other primary prevention related conditions that require prescription drug therapy to lower LDL-C - Thinking of the adult patients who are currently on prescription drug t",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A1": {
+        "column": "A1",
+        "label": "A1: Approximately how many TOTAL adult patients do you have with (e.g., MI, stroke, or symptomatic PAD)?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A1a": {
+        "column": "A1a",
+        "label": "A1a: What percentage of your adult patients with require additional therapy on top of maximally tolerated statin therapy to lower LDL-C and/or to reduce the risk of future CV events?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A1b": {
+        "column": "A1b",
+        "label": "A1b: Approximately how many TOTAL adult patients do you have with ?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A1c": {
+        "column": "A1c",
+        "label": "A1c: What percentage of your adult patients with require additional lowering of LDL-C on top of maximally tolerated statin therapy?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A3r1c1": {
+        "column": "A3r1c1",
+        "label": "A3r1c1: Leqvio (inclisiran) - Adults with $ {res.established_CVD} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A3r2c1": {
+        "column": "A3r2c1",
+        "label": "A3r2c1: Praluent (alirocumab) - Adults with $ {res.established_CVD} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A3r3c1": {
+        "column": "A3r3c1",
+        "label": "A3r3c1: Repatha (evolocumab) - Adults with $ {res.established_CVD} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A3r4c1": {
+        "column": "A3r4c1",
+        "label": "A3r4c1: Zetia (ezetimibe) or generic - Adults with $ {res.established_CVD} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A3r5c1": {
+        "column": "A3r5c1",
+        "label": "A3r5c1: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Adults with $ {res.established_CVD} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top o",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A3r6c1": {
+        "column": "A3r6c1",
+        "label": "A3r6c1: Other - Adults with $ {res.established_CVD} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A3r7c1": {
+        "column": "A3r7c1",
+        "label": "A3r7c1: No additional therapy - Adults with $ {res.established_CVD} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A3r1c2": {
+        "column": "A3r1c2",
+        "label": "A3r1c2: Leqvio (inclisiran) - Adults with $ {res.risk_factors_for_CV} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A3r2c2": {
+        "column": "A3r2c2",
+        "label": "A3r2c2: Praluent (alirocumab) - Adults with $ {res.risk_factors_for_CV} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A3r3c2": {
+        "column": "A3r3c2",
+        "label": "A3r3c2: Repatha (evolocumab) - Adults with $ {res.risk_factors_for_CV} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A3r4c2": {
+        "column": "A3r4c2",
+        "label": "A3r4c2: Zetia (ezetimibe) or generic - Adults with $ {res.risk_factors_for_CV} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A3r5c2": {
+        "column": "A3r5c2",
+        "label": "A3r5c2: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Adults with $ {res.risk_factors_for_CV} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on t",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A3r6c2": {
+        "column": "A3r6c2",
+        "label": "A3r6c2: Other - Adults with $ {res.risk_factors_for_CV} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A3r7c2": {
+        "column": "A3r7c2",
+        "label": "A3r7c2: No additional therapy - Adults with $ {res.risk_factors_for_CV} - For your NEXT 100 patients in each of those groups, for how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r1c1": {
+        "column": "A5r1c1",
+        "label": "A5r1c1: Leqvio (inclisiran) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r2c1": {
+        "column": "A5r2c1",
+        "label": "A5r2c1: Praluent (alirocumab) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r3c1": {
+        "column": "A5r3c1",
+        "label": "A5r3c1: Repatha (evolocumab) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r4c1": {
+        "column": "A5r4c1",
+        "label": "A5r4c1: Zetia (ezetimibe) or generic - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy f",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r5c1": {
+        "column": "A5r5c1",
+        "label": "A5r5c1: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r6c1": {
+        "column": "A5r6c1",
+        "label": "A5r6c1: Other - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r7c1": {
+        "column": "A5r7c1",
+        "label": "A5r7c1: No additional therapy - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r1c2": {
+        "column": "A5r1c2",
+        "label": "A5r1c2: Leqvio (inclisiran) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r2c2": {
+        "column": "A5r2c2",
+        "label": "A5r2c2: Praluent (alirocumab) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerate",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r3c2": {
+        "column": "A5r3c2",
+        "label": "A5r3c2: Repatha (evolocumab) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r4c2": {
+        "column": "A5r4c2",
+        "label": "A5r4c2: Zetia (ezetimibe) or generic - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally t",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r5c2": {
+        "column": "A5r5c2",
+        "label": "A5r5c2: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following trea",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r6c2": {
+        "column": "A5r6c2",
+        "label": "A5r6c2: Other - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r7c2": {
+        "column": "A5r7c2",
+        "label": "A5r7c2: No additional therapy - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerate",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r1c3": {
+        "column": "A5r1c3",
+        "label": "A5r1c3: Leqvio (inclisiran) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r2c3": {
+        "column": "A5r2c3",
+        "label": "A5r2c3: Praluent (alirocumab) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r3c3": {
+        "column": "A5r3c3",
+        "label": "A5r3c3: Repatha (evolocumab) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r4c3": {
+        "column": "A5r4c3",
+        "label": "A5r4c3: Zetia (ezetimibe) or generic - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy f",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r5c3": {
+        "column": "A5r5c3",
+        "label": "A5r5c3: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r6c3": {
+        "column": "A5r6c3",
+        "label": "A5r6c3: Other - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r7c3": {
+        "column": "A5r7c3",
+        "label": "A5r7c3: No additional therapy - Current Prescribing - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r1c4": {
+        "column": "A5r1c4",
+        "label": "A5r1c4: Leqvio (inclisiran) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r2c4": {
+        "column": "A5r2c4",
+        "label": "A5r2c4: Praluent (alirocumab) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerate",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r3c4": {
+        "column": "A5r3c4",
+        "label": "A5r3c4: Repatha (evolocumab) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r4c4": {
+        "column": "A5r4c4",
+        "label": "A5r4c4: Zetia (ezetimibe) or generic - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally t",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r5c4": {
+        "column": "A5r5c4",
+        "label": "A5r5c4: Nexletol (bempedoic acid) or Nexlizet (bempedoic acid and ezetimibe) - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following trea",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r6c4": {
+        "column": "A5r6c4",
+        "label": "A5r6c4: Other - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerated statin therapy",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "A5r7c4": {
+        "column": "A5r7c4",
+        "label": "A5r7c4: No additional therapy - Near Future with any Leqvio issues addressed - With that in mind, for your NEXT 100 patients in each of the same groups, how many would you prescribe each of the following treatments? To be used on top of maximally tolerate",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "dumRanBlockBC": {
+        "column": "dumRanBlockBC",
+        "label": "dumRanBlockBC: Hidden for TPPs",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": ""
+          },
+          {
+            "value": "2",
+            "label": ""
+          }
+        ]
+      },
+      "B1": {
+        "column": "B1",
+        "label": "B1: You can click on the image to enlarge.[ORAL_PCSK9.png] What is your impression of this treatment?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Very unfavorable 1"
+          },
+          {
+            "value": "2",
+            "label": "2"
+          },
+          {
+            "value": "3",
+            "label": "3"
+          },
+          {
+            "value": "4",
+            "label": "4"
+          },
+          {
+            "value": "5",
+            "label": "5"
+          },
+          {
+            "value": "6",
+            "label": "6"
+          },
+          {
+            "value": "7",
+            "label": "Extremely favorable 7"
+          }
+        ]
+      },
+      "B2": {
+        "column": "B2",
+        "label": "B2: You can click on the image to enlarge.[CETP_INHIBITOR.png]What is your impression of this treatment?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Very unfavorable 1"
+          },
+          {
+            "value": "2",
+            "label": "2"
+          },
+          {
+            "value": "3",
+            "label": "3"
+          },
+          {
+            "value": "4",
+            "label": "4"
+          },
+          {
+            "value": "5",
+            "label": "5"
+          },
+          {
+            "value": "6",
+            "label": "6"
+          },
+          {
+            "value": "7",
+            "label": "Extremely favorable 7"
+          }
+        ]
+      },
+      "hConjVersion": {
+        "column": "hConjVersion",
+        "label": "hConjVersion: Conjoint Version",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Version 1"
+          },
+          {
+            "value": "2",
+            "label": "Version 2"
+          },
+          {
+            "value": "3",
+            "label": "Version 3"
+          },
+          {
+            "value": "4",
+            "label": "Version 4"
+          }
+        ]
+      },
+      "B3_1r1c1": {
+        "column": "B3_1r1c1",
+        "label": "B3_1r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r2c1": {
+        "column": "B3_1r2c1",
+        "label": "B3_1r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r3c1": {
+        "column": "B3_1r3c1",
+        "label": "B3_1r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r4c1": {
+        "column": "B3_1r4c1",
+        "label": "B3_1r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r5c1": {
+        "column": "B3_1r5c1",
+        "label": "B3_1r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r6c1": {
+        "column": "B3_1r6c1",
+        "label": "B3_1r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r7c1": {
+        "column": "B3_1r7c1",
+        "label": "B3_1r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r8c1": {
+        "column": "B3_1r8c1",
+        "label": "B3_1r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r9c1": {
+        "column": "B3_1r9c1",
+        "label": "B3_1r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r1c2": {
+        "column": "B3_1r1c2",
+        "label": "B3_1r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r2c2": {
+        "column": "B3_1r2c2",
+        "label": "B3_1r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r3c2": {
+        "column": "B3_1r3c2",
+        "label": "B3_1r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r4c2": {
+        "column": "B3_1r4c2",
+        "label": "B3_1r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r5c2": {
+        "column": "B3_1r5c2",
+        "label": "B3_1r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r6c2": {
+        "column": "B3_1r6c2",
+        "label": "B3_1r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r7c2": {
+        "column": "B3_1r7c2",
+        "label": "B3_1r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r8c2": {
+        "column": "B3_1r8c2",
+        "label": "B3_1r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_1r9c2": {
+        "column": "B3_1r9c2",
+        "label": "B3_1r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r1c1": {
+        "column": "B3_2r1c1",
+        "label": "B3_2r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r2c1": {
+        "column": "B3_2r2c1",
+        "label": "B3_2r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r3c1": {
+        "column": "B3_2r3c1",
+        "label": "B3_2r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r4c1": {
+        "column": "B3_2r4c1",
+        "label": "B3_2r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r5c1": {
+        "column": "B3_2r5c1",
+        "label": "B3_2r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r6c1": {
+        "column": "B3_2r6c1",
+        "label": "B3_2r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r7c1": {
+        "column": "B3_2r7c1",
+        "label": "B3_2r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r8c1": {
+        "column": "B3_2r8c1",
+        "label": "B3_2r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r9c1": {
+        "column": "B3_2r9c1",
+        "label": "B3_2r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r1c2": {
+        "column": "B3_2r1c2",
+        "label": "B3_2r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r2c2": {
+        "column": "B3_2r2c2",
+        "label": "B3_2r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r3c2": {
+        "column": "B3_2r3c2",
+        "label": "B3_2r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r4c2": {
+        "column": "B3_2r4c2",
+        "label": "B3_2r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r5c2": {
+        "column": "B3_2r5c2",
+        "label": "B3_2r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r6c2": {
+        "column": "B3_2r6c2",
+        "label": "B3_2r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r7c2": {
+        "column": "B3_2r7c2",
+        "label": "B3_2r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r8c2": {
+        "column": "B3_2r8c2",
+        "label": "B3_2r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_2r9c2": {
+        "column": "B3_2r9c2",
+        "label": "B3_2r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r1c1": {
+        "column": "B3_3r1c1",
+        "label": "B3_3r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r2c1": {
+        "column": "B3_3r2c1",
+        "label": "B3_3r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r3c1": {
+        "column": "B3_3r3c1",
+        "label": "B3_3r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r4c1": {
+        "column": "B3_3r4c1",
+        "label": "B3_3r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r5c1": {
+        "column": "B3_3r5c1",
+        "label": "B3_3r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r6c1": {
+        "column": "B3_3r6c1",
+        "label": "B3_3r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r7c1": {
+        "column": "B3_3r7c1",
+        "label": "B3_3r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r8c1": {
+        "column": "B3_3r8c1",
+        "label": "B3_3r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r9c1": {
+        "column": "B3_3r9c1",
+        "label": "B3_3r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r1c2": {
+        "column": "B3_3r1c2",
+        "label": "B3_3r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r2c2": {
+        "column": "B3_3r2c2",
+        "label": "B3_3r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r3c2": {
+        "column": "B3_3r3c2",
+        "label": "B3_3r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r4c2": {
+        "column": "B3_3r4c2",
+        "label": "B3_3r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r5c2": {
+        "column": "B3_3r5c2",
+        "label": "B3_3r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r6c2": {
+        "column": "B3_3r6c2",
+        "label": "B3_3r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r7c2": {
+        "column": "B3_3r7c2",
+        "label": "B3_3r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r8c2": {
+        "column": "B3_3r8c2",
+        "label": "B3_3r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_3r9c2": {
+        "column": "B3_3r9c2",
+        "label": "B3_3r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r1c1": {
+        "column": "B3_4r1c1",
+        "label": "B3_4r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r2c1": {
+        "column": "B3_4r2c1",
+        "label": "B3_4r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r3c1": {
+        "column": "B3_4r3c1",
+        "label": "B3_4r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r4c1": {
+        "column": "B3_4r4c1",
+        "label": "B3_4r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r5c1": {
+        "column": "B3_4r5c1",
+        "label": "B3_4r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r6c1": {
+        "column": "B3_4r6c1",
+        "label": "B3_4r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r7c1": {
+        "column": "B3_4r7c1",
+        "label": "B3_4r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r8c1": {
+        "column": "B3_4r8c1",
+        "label": "B3_4r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r9c1": {
+        "column": "B3_4r9c1",
+        "label": "B3_4r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r1c2": {
+        "column": "B3_4r1c2",
+        "label": "B3_4r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r2c2": {
+        "column": "B3_4r2c2",
+        "label": "B3_4r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r3c2": {
+        "column": "B3_4r3c2",
+        "label": "B3_4r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r4c2": {
+        "column": "B3_4r4c2",
+        "label": "B3_4r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r5c2": {
+        "column": "B3_4r5c2",
+        "label": "B3_4r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r6c2": {
+        "column": "B3_4r6c2",
+        "label": "B3_4r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r7c2": {
+        "column": "B3_4r7c2",
+        "label": "B3_4r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r8c2": {
+        "column": "B3_4r8c2",
+        "label": "B3_4r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_4r9c2": {
+        "column": "B3_4r9c2",
+        "label": "B3_4r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r1c1": {
+        "column": "B3_5r1c1",
+        "label": "B3_5r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r2c1": {
+        "column": "B3_5r2c1",
+        "label": "B3_5r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r3c1": {
+        "column": "B3_5r3c1",
+        "label": "B3_5r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r4c1": {
+        "column": "B3_5r4c1",
+        "label": "B3_5r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r5c1": {
+        "column": "B3_5r5c1",
+        "label": "B3_5r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r6c1": {
+        "column": "B3_5r6c1",
+        "label": "B3_5r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r7c1": {
+        "column": "B3_5r7c1",
+        "label": "B3_5r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r8c1": {
+        "column": "B3_5r8c1",
+        "label": "B3_5r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r9c1": {
+        "column": "B3_5r9c1",
+        "label": "B3_5r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r1c2": {
+        "column": "B3_5r1c2",
+        "label": "B3_5r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r2c2": {
+        "column": "B3_5r2c2",
+        "label": "B3_5r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r3c2": {
+        "column": "B3_5r3c2",
+        "label": "B3_5r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r4c2": {
+        "column": "B3_5r4c2",
+        "label": "B3_5r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r5c2": {
+        "column": "B3_5r5c2",
+        "label": "B3_5r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r6c2": {
+        "column": "B3_5r6c2",
+        "label": "B3_5r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r7c2": {
+        "column": "B3_5r7c2",
+        "label": "B3_5r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r8c2": {
+        "column": "B3_5r8c2",
+        "label": "B3_5r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_5r9c2": {
+        "column": "B3_5r9c2",
+        "label": "B3_5r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r1c1": {
+        "column": "B3_6r1c1",
+        "label": "B3_6r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r2c1": {
+        "column": "B3_6r2c1",
+        "label": "B3_6r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r3c1": {
+        "column": "B3_6r3c1",
+        "label": "B3_6r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r4c1": {
+        "column": "B3_6r4c1",
+        "label": "B3_6r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r5c1": {
+        "column": "B3_6r5c1",
+        "label": "B3_6r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r6c1": {
+        "column": "B3_6r6c1",
+        "label": "B3_6r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r7c1": {
+        "column": "B3_6r7c1",
+        "label": "B3_6r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r8c1": {
+        "column": "B3_6r8c1",
+        "label": "B3_6r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r9c1": {
+        "column": "B3_6r9c1",
+        "label": "B3_6r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r1c2": {
+        "column": "B3_6r1c2",
+        "label": "B3_6r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r2c2": {
+        "column": "B3_6r2c2",
+        "label": "B3_6r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r3c2": {
+        "column": "B3_6r3c2",
+        "label": "B3_6r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r4c2": {
+        "column": "B3_6r4c2",
+        "label": "B3_6r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r5c2": {
+        "column": "B3_6r5c2",
+        "label": "B3_6r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r6c2": {
+        "column": "B3_6r6c2",
+        "label": "B3_6r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r7c2": {
+        "column": "B3_6r7c2",
+        "label": "B3_6r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r8c2": {
+        "column": "B3_6r8c2",
+        "label": "B3_6r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_6r9c2": {
+        "column": "B3_6r9c2",
+        "label": "B3_6r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r1c1": {
+        "column": "B3_7r1c1",
+        "label": "B3_7r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r2c1": {
+        "column": "B3_7r2c1",
+        "label": "B3_7r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r3c1": {
+        "column": "B3_7r3c1",
+        "label": "B3_7r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r4c1": {
+        "column": "B3_7r4c1",
+        "label": "B3_7r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r5c1": {
+        "column": "B3_7r5c1",
+        "label": "B3_7r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r6c1": {
+        "column": "B3_7r6c1",
+        "label": "B3_7r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r7c1": {
+        "column": "B3_7r7c1",
+        "label": "B3_7r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r8c1": {
+        "column": "B3_7r8c1",
+        "label": "B3_7r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r9c1": {
+        "column": "B3_7r9c1",
+        "label": "B3_7r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r1c2": {
+        "column": "B3_7r1c2",
+        "label": "B3_7r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r2c2": {
+        "column": "B3_7r2c2",
+        "label": "B3_7r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r3c2": {
+        "column": "B3_7r3c2",
+        "label": "B3_7r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r4c2": {
+        "column": "B3_7r4c2",
+        "label": "B3_7r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r5c2": {
+        "column": "B3_7r5c2",
+        "label": "B3_7r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r6c2": {
+        "column": "B3_7r6c2",
+        "label": "B3_7r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r7c2": {
+        "column": "B3_7r7c2",
+        "label": "B3_7r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r8c2": {
+        "column": "B3_7r8c2",
+        "label": "B3_7r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_7r9c2": {
+        "column": "B3_7r9c2",
+        "label": "B3_7r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r1c1": {
+        "column": "B3_8r1c1",
+        "label": "B3_8r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r2c1": {
+        "column": "B3_8r2c1",
+        "label": "B3_8r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r3c1": {
+        "column": "B3_8r3c1",
+        "label": "B3_8r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r4c1": {
+        "column": "B3_8r4c1",
+        "label": "B3_8r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r5c1": {
+        "column": "B3_8r5c1",
+        "label": "B3_8r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r6c1": {
+        "column": "B3_8r6c1",
+        "label": "B3_8r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r7c1": {
+        "column": "B3_8r7c1",
+        "label": "B3_8r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r8c1": {
+        "column": "B3_8r8c1",
+        "label": "B3_8r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r9c1": {
+        "column": "B3_8r9c1",
+        "label": "B3_8r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r1c2": {
+        "column": "B3_8r1c2",
+        "label": "B3_8r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r2c2": {
+        "column": "B3_8r2c2",
+        "label": "B3_8r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r3c2": {
+        "column": "B3_8r3c2",
+        "label": "B3_8r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r4c2": {
+        "column": "B3_8r4c2",
+        "label": "B3_8r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r5c2": {
+        "column": "B3_8r5c2",
+        "label": "B3_8r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r6c2": {
+        "column": "B3_8r6c2",
+        "label": "B3_8r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r7c2": {
+        "column": "B3_8r7c2",
+        "label": "B3_8r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r8c2": {
+        "column": "B3_8r8c2",
+        "label": "B3_8r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_8r9c2": {
+        "column": "B3_8r9c2",
+        "label": "B3_8r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r1c1": {
+        "column": "B3_9r1c1",
+        "label": "B3_9r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r2c1": {
+        "column": "B3_9r2c1",
+        "label": "B3_9r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r3c1": {
+        "column": "B3_9r3c1",
+        "label": "B3_9r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r4c1": {
+        "column": "B3_9r4c1",
+        "label": "B3_9r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r5c1": {
+        "column": "B3_9r5c1",
+        "label": "B3_9r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r6c1": {
+        "column": "B3_9r6c1",
+        "label": "B3_9r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r7c1": {
+        "column": "B3_9r7c1",
+        "label": "B3_9r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r8c1": {
+        "column": "B3_9r8c1",
+        "label": "B3_9r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r9c1": {
+        "column": "B3_9r9c1",
+        "label": "B3_9r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r1c2": {
+        "column": "B3_9r1c2",
+        "label": "B3_9r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r2c2": {
+        "column": "B3_9r2c2",
+        "label": "B3_9r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r3c2": {
+        "column": "B3_9r3c2",
+        "label": "B3_9r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r4c2": {
+        "column": "B3_9r4c2",
+        "label": "B3_9r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r5c2": {
+        "column": "B3_9r5c2",
+        "label": "B3_9r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r6c2": {
+        "column": "B3_9r6c2",
+        "label": "B3_9r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r7c2": {
+        "column": "B3_9r7c2",
+        "label": "B3_9r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r8c2": {
+        "column": "B3_9r8c2",
+        "label": "B3_9r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_9r9c2": {
+        "column": "B3_9r9c2",
+        "label": "B3_9r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r1c1": {
+        "column": "B3_10r1c1",
+        "label": "B3_10r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r2c1": {
+        "column": "B3_10r2c1",
+        "label": "B3_10r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r3c1": {
+        "column": "B3_10r3c1",
+        "label": "B3_10r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r4c1": {
+        "column": "B3_10r4c1",
+        "label": "B3_10r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r5c1": {
+        "column": "B3_10r5c1",
+        "label": "B3_10r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r6c1": {
+        "column": "B3_10r6c1",
+        "label": "B3_10r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r7c1": {
+        "column": "B3_10r7c1",
+        "label": "B3_10r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r8c1": {
+        "column": "B3_10r8c1",
+        "label": "B3_10r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r9c1": {
+        "column": "B3_10r9c1",
+        "label": "B3_10r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r1c2": {
+        "column": "B3_10r1c2",
+        "label": "B3_10r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r2c2": {
+        "column": "B3_10r2c2",
+        "label": "B3_10r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r3c2": {
+        "column": "B3_10r3c2",
+        "label": "B3_10r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r4c2": {
+        "column": "B3_10r4c2",
+        "label": "B3_10r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r5c2": {
+        "column": "B3_10r5c2",
+        "label": "B3_10r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r6c2": {
+        "column": "B3_10r6c2",
+        "label": "B3_10r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r7c2": {
+        "column": "B3_10r7c2",
+        "label": "B3_10r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r8c2": {
+        "column": "B3_10r8c2",
+        "label": "B3_10r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_10r9c2": {
+        "column": "B3_10r9c2",
+        "label": "B3_10r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r1c1": {
+        "column": "B3_11r1c1",
+        "label": "B3_11r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r2c1": {
+        "column": "B3_11r2c1",
+        "label": "B3_11r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r3c1": {
+        "column": "B3_11r3c1",
+        "label": "B3_11r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r4c1": {
+        "column": "B3_11r4c1",
+        "label": "B3_11r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r5c1": {
+        "column": "B3_11r5c1",
+        "label": "B3_11r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r6c1": {
+        "column": "B3_11r6c1",
+        "label": "B3_11r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r7c1": {
+        "column": "B3_11r7c1",
+        "label": "B3_11r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r8c1": {
+        "column": "B3_11r8c1",
+        "label": "B3_11r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r9c1": {
+        "column": "B3_11r9c1",
+        "label": "B3_11r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r1c2": {
+        "column": "B3_11r1c2",
+        "label": "B3_11r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r2c2": {
+        "column": "B3_11r2c2",
+        "label": "B3_11r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r3c2": {
+        "column": "B3_11r3c2",
+        "label": "B3_11r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r4c2": {
+        "column": "B3_11r4c2",
+        "label": "B3_11r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r5c2": {
+        "column": "B3_11r5c2",
+        "label": "B3_11r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r6c2": {
+        "column": "B3_11r6c2",
+        "label": "B3_11r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r7c2": {
+        "column": "B3_11r7c2",
+        "label": "B3_11r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r8c2": {
+        "column": "B3_11r8c2",
+        "label": "B3_11r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_11r9c2": {
+        "column": "B3_11r9c2",
+        "label": "B3_11r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r1c1": {
+        "column": "B3_12r1c1",
+        "label": "B3_12r1c1: Leqvio - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r2c1": {
+        "column": "B3_12r2c1",
+        "label": "B3_12r2c1: Praluent - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r3c1": {
+        "column": "B3_12r3c1",
+        "label": "B3_12r3c1: Repatha - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r4c1": {
+        "column": "B3_12r4c1",
+        "label": "B3_12r4c1: Oral PCSK9 - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r5c1": {
+        "column": "B3_12r5c1",
+        "label": "B3_12r5c1: CETP Inhibitor - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r6c1": {
+        "column": "B3_12r6c1",
+        "label": "B3_12r6c1: Zetia (ezetimibe) - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r7c1": {
+        "column": "B3_12r7c1",
+        "label": "B3_12r7c1: Nexletol or Nexlizet - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r8c1": {
+        "column": "B3_12r8c1",
+        "label": "B3_12r8c1: Other Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r9c1": {
+        "column": "B3_12r9c1",
+        "label": "B3_12r9c1: No Additional Therapies - Original Allocation - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r1c2": {
+        "column": "B3_12r1c2",
+        "label": "B3_12r1c2: Leqvio - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r2c2": {
+        "column": "B3_12r2c2",
+        "label": "B3_12r2c2: Praluent - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r3c2": {
+        "column": "B3_12r3c2",
+        "label": "B3_12r3c2: Repatha - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r4c2": {
+        "column": "B3_12r4c2",
+        "label": "B3_12r4c2: Oral PCSK9 - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r5c2": {
+        "column": "B3_12r5c2",
+        "label": "B3_12r5c2: CETP Inhibitor - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r6c2": {
+        "column": "B3_12r6c2",
+        "label": "B3_12r6c2: Zetia (ezetimibe) - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r7c2": {
+        "column": "B3_12r7c2",
+        "label": "B3_12r7c2: Nexletol or Nexlizet - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r8c2": {
+        "column": "B3_12r8c2",
+        "label": "B3_12r8c2: Other Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "B3_12r9c2": {
+        "column": "B3_12r9c2",
+        "label": "B3_12r9c2: No Additional Therapies - Next 100 Patients - To be used on top of maximally tolerated statin therapy for: Red Text=differences from current clinical profile",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "C1c1": {
+        "column": "C1c1",
+        "label": "C1c1: Adults with $ {res.established_CVD} - Now, thinking about those same patient groups mentioned earlier in the survey, how soon after this product becomes available would you prescribe it? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "As soon as it is available"
+          },
+          {
+            "value": "2",
+            "label": "Within 6 months of it being available"
+          },
+          {
+            "value": "3",
+            "label": "Within 1 year of it being available"
+          },
+          {
+            "value": "4",
+            "label": "Within 2 years of it being available"
+          },
+          {
+            "value": "5",
+            "label": "After it has been available for at least 2 years"
+          }
+        ]
+      },
+      "C1c2": {
+        "column": "C1c2",
+        "label": "C1c2: Adults with $ {res.risk_factors_for_CV} - Now, thinking about those same patient groups mentioned earlier in the survey, how soon after this product becomes available would you prescribe it? To be used on top of maximally tolerated statin therapy fo",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "As soon as it is available"
+          },
+          {
+            "value": "2",
+            "label": "Within 6 months of it being available"
+          },
+          {
+            "value": "3",
+            "label": "Within 1 year of it being available"
+          },
+          {
+            "value": "4",
+            "label": "Within 2 years of it being available"
+          },
+          {
+            "value": "5",
+            "label": "After it has been available for at least 2 years"
+          }
+        ]
+      },
+      "C2c1": {
+        "column": "C2c1",
+        "label": "C2c1: Adults with $ {res.established_CVD} - Now, thinking about those same patient groups mentioned earlier in the survey, how soon after this product becomes available would you prescribe it? To be used on top of maximally tolerated statin therapy for:",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "As soon as it is available"
+          },
+          {
+            "value": "2",
+            "label": "Within 6 months of it being available"
+          },
+          {
+            "value": "3",
+            "label": "Within 1 year of it being available"
+          },
+          {
+            "value": "4",
+            "label": "Within 2 years of it being available"
+          },
+          {
+            "value": "5",
+            "label": "After it has been available for at least 2 years"
+          }
+        ]
+      },
+      "C2c2": {
+        "column": "C2c2",
+        "label": "C2c2: Adults with $ {res.risk_factors_for_CV} - Now, thinking about those same patient groups mentioned earlier in the survey, how soon after this product becomes available would you prescribe it? To be used on top of maximally tolerated statin therapy fo",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "As soon as it is available"
+          },
+          {
+            "value": "2",
+            "label": "Within 6 months of it being available"
+          },
+          {
+            "value": "3",
+            "label": "Within 1 year of it being available"
+          },
+          {
+            "value": "4",
+            "label": "Within 2 years of it being available"
+          },
+          {
+            "value": "5",
+            "label": "After it has been available for at least 2 years"
+          }
+        ]
+      },
+      "C2ar1": {
+        "column": "C2ar1",
+        "label": "C2ar1: A good indicator of the quality of care within a practice setting, would be the proportion of ASCVD patients in that practice who have a LDL-C level of less than <70 mg/dL. - Please indicate how much you agree or disagree with the statements below.",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Strongly disagree 1"
+          },
+          {
+            "value": "2",
+            "label": "2"
+          },
+          {
+            "value": "3",
+            "label": "3"
+          },
+          {
+            "value": "4",
+            "label": "4"
+          },
+          {
+            "value": "5",
+            "label": "5"
+          },
+          {
+            "value": "6",
+            "label": "6"
+          },
+          {
+            "value": "7",
+            "label": "Strongly agree 7"
+          },
+          {
+            "value": "8",
+            "label": "Don't know/ unsure"
+          }
+        ]
+      },
+      "C2ar2": {
+        "column": "C2ar2",
+        "label": "C2ar2: Providing a 'good quality of care' for hypercholesterolemia patients involves treating elevated LDL-C aggressively. - Please indicate how much you agree or disagree with the statements below.",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Strongly disagree 1"
+          },
+          {
+            "value": "2",
+            "label": "2"
+          },
+          {
+            "value": "3",
+            "label": "3"
+          },
+          {
+            "value": "4",
+            "label": "4"
+          },
+          {
+            "value": "5",
+            "label": "5"
+          },
+          {
+            "value": "6",
+            "label": "6"
+          },
+          {
+            "value": "7",
+            "label": "Strongly agree 7"
+          },
+          {
+            "value": "8",
+            "label": "Don't know/ unsure"
+          }
+        ]
+      },
+      "C2ar3": {
+        "column": "C2ar3",
+        "label": "C2ar3: For ASCVD patients, the ideal LDL-C level would be even lower than the current AHA/ACC guideline of 70mg/dL - Please indicate how much you agree or disagree with the statements below.",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Strongly disagree 1"
+          },
+          {
+            "value": "2",
+            "label": "2"
+          },
+          {
+            "value": "3",
+            "label": "3"
+          },
+          {
+            "value": "4",
+            "label": "4"
+          },
+          {
+            "value": "5",
+            "label": "5"
+          },
+          {
+            "value": "6",
+            "label": "6"
+          },
+          {
+            "value": "7",
+            "label": "Strongly agree 7"
+          },
+          {
+            "value": "8",
+            "label": "Don't know/ unsure"
+          }
+        ]
+      },
+      "C2ar4": {
+        "column": "C2ar4",
+        "label": "C2ar4: For ASCVD patients whose LDL-C is substantially above 70mg/dL, putting them at high risk of a recurrent event, I'm inclined to forgo ezetimibe and move directly to a more effective LDL-C lowering therapy instead - Please indicate how much you agree",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Strongly disagree 1"
+          },
+          {
+            "value": "2",
+            "label": "2"
+          },
+          {
+            "value": "3",
+            "label": "3"
+          },
+          {
+            "value": "4",
+            "label": "4"
+          },
+          {
+            "value": "5",
+            "label": "5"
+          },
+          {
+            "value": "6",
+            "label": "6"
+          },
+          {
+            "value": "7",
+            "label": "Strongly agree 7"
+          },
+          {
+            "value": "8",
+            "label": "Don't know/ unsure"
+          }
+        ]
+      },
+      "C2ar5": {
+        "column": "C2ar5",
+        "label": "C2ar5: My personal goal is to bring ALL my ASCVD patients to a LDL-C level of <70 mg/dL - Please indicate how much you agree or disagree with the statements below.",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Strongly disagree 1"
+          },
+          {
+            "value": "2",
+            "label": "2"
+          },
+          {
+            "value": "3",
+            "label": "3"
+          },
+          {
+            "value": "4",
+            "label": "4"
+          },
+          {
+            "value": "5",
+            "label": "5"
+          },
+          {
+            "value": "6",
+            "label": "6"
+          },
+          {
+            "value": "7",
+            "label": "Strongly agree 7"
+          },
+          {
+            "value": "8",
+            "label": "Don't know/ unsure"
+          }
+        ]
+      },
+      "C2ar6": {
+        "column": "C2ar6",
+        "label": "C2ar6: It's important to understand the complete risk profile of an ASCVD patient when devising a lipid treatment approach - Please indicate how much you agree or disagree with the statements below.",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Strongly disagree 1"
+          },
+          {
+            "value": "2",
+            "label": "2"
+          },
+          {
+            "value": "3",
+            "label": "3"
+          },
+          {
+            "value": "4",
+            "label": "4"
+          },
+          {
+            "value": "5",
+            "label": "5"
+          },
+          {
+            "value": "6",
+            "label": "6"
+          },
+          {
+            "value": "7",
+            "label": "Strongly agree 7"
+          },
+          {
+            "value": "8",
+            "label": "Don't know/ unsure"
+          }
+        ]
+      },
+      "C3r1": {
+        "column": "C3r1",
+        "label": "C3r1: Buy-and-bill: Healthcare provider directly purchases and stocks the medication, prescribes and administers the drug, and subsequently bills the payer or patient - HCP-administered medications may be acquired in many ways. Please indicate your degree",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Never utilize"
+          },
+          {
+            "value": "2",
+            "label": "Rarely utilize"
+          },
+          {
+            "value": "3",
+            "label": "Sometimes utilize"
+          },
+          {
+            "value": "4",
+            "label": "Often utilize"
+          },
+          {
+            "value": "5",
+            "label": "Always utilize"
+          }
+        ]
+      },
+      "C3r2": {
+        "column": "C3r2",
+        "label": "C3r2: Brown bagging: Medication is dispensed directly to the patient at the pharmacy (usually a specialty pharmacy) and is transported by the patient to the site of care (e.g., physician's office, hospital, or clinic, etc.) where it is then administered b",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Never utilize"
+          },
+          {
+            "value": "2",
+            "label": "Rarely utilize"
+          },
+          {
+            "value": "3",
+            "label": "Sometimes utilize"
+          },
+          {
+            "value": "4",
+            "label": "Often utilize"
+          },
+          {
+            "value": "5",
+            "label": "Always utilize"
+          }
+        ]
+      },
+      "C3r3": {
+        "column": "C3r3",
+        "label": "C3r3: White bagging: Medication is distributed from the pharmacy (usually a specialty pharmacy) directly to the site of care (e.g., physician's office, hospital, or clinic, etc.) where it is then administered by a healthcare provider - HCP-administered me",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Never utilize"
+          },
+          {
+            "value": "2",
+            "label": "Rarely utilize"
+          },
+          {
+            "value": "3",
+            "label": "Sometimes utilize"
+          },
+          {
+            "value": "4",
+            "label": "Often utilize"
+          },
+          {
+            "value": "5",
+            "label": "Always utilize"
+          }
+        ]
+      },
+      "C3r4": {
+        "column": "C3r4",
+        "label": "C3r4: Sending the patient to an alternate site of care, where medication(s) can be administered (for example by injection) by a healthcare professional within a setting designed to deliver injectable or infused medications - HCP-administered medications m",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Never utilize"
+          },
+          {
+            "value": "2",
+            "label": "Rarely utilize"
+          },
+          {
+            "value": "3",
+            "label": "Sometimes utilize"
+          },
+          {
+            "value": "4",
+            "label": "Often utilize"
+          },
+          {
+            "value": "5",
+            "label": "Always utilize"
+          }
+        ]
+      },
+      "C4c1": {
+        "column": "C4c1",
+        "label": "C4c1: Adopt a Buy & Bill Model - To what extent is your practice willing to do each of the following for HCP-administered medications:",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Not willing"
+          },
+          {
+            "value": "2",
+            "label": "Somewhat willing"
+          },
+          {
+            "value": "3",
+            "label": "Willing"
+          },
+          {
+            "value": "4",
+            "label": "Very willing"
+          },
+          {
+            "value": "5",
+            "label": "Already have adopted this approach"
+          }
+        ]
+      },
+      "C4c2": {
+        "column": "C4c2",
+        "label": "C4c2: Send Patients to an Alternate Site of Care - To what extent is your practice willing to do each of the following for HCP-administered medications:",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Not willing"
+          },
+          {
+            "value": "2",
+            "label": "Somewhat willing"
+          },
+          {
+            "value": "3",
+            "label": "Willing"
+          },
+          {
+            "value": "4",
+            "label": "Very willing"
+          },
+          {
+            "value": "5",
+            "label": "Already have adopted this approach"
+          }
+        ]
+      },
+      "C5r1": {
+        "column": "C5r1",
+        "label": "C5r1: Duration of action of 6 months - To what extent would each of the following increase your willingness to buy & bill a lipid lowering therapy?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "1 Not at all likely to increase willingness to buy & bill"
+          },
+          {
+            "value": "2",
+            "label": "2"
+          },
+          {
+            "value": "3",
+            "label": "3"
+          },
+          {
+            "value": "4",
+            "label": "4"
+          },
+          {
+            "value": "5",
+            "label": "5 Very likely to increase willingness to buy & bill"
+          }
+        ]
+      },
+      "C5r2": {
+        "column": "C5r2",
+        "label": "C5r2: Duration of action of 12 months - To what extent would each of the following increase your willingness to buy & bill a lipid lowering therapy?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "1 Not at all likely to increase willingness to buy & bill"
+          },
+          {
+            "value": "2",
+            "label": "2"
+          },
+          {
+            "value": "3",
+            "label": "3"
+          },
+          {
+            "value": "4",
+            "label": "4"
+          },
+          {
+            "value": "5",
+            "label": "5 Very likely to increase willingness to buy & bill"
+          }
+        ]
+      },
+      "C5r3": {
+        "column": "C5r3",
+        "label": "C5r3: Broad coverage (i.e., no/low risk of non-coverage) - To what extent would each of the following increase your willingness to buy & bill a lipid lowering therapy?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "1 Not at all likely to increase willingness to buy & bill"
+          },
+          {
+            "value": "2",
+            "label": "2"
+          },
+          {
+            "value": "3",
+            "label": "3"
+          },
+          {
+            "value": "4",
+            "label": "4"
+          },
+          {
+            "value": "5",
+            "label": "5 Very likely to increase willingness to buy & bill"
+          }
+        ]
+      },
+      "C5r4": {
+        "column": "C5r4",
+        "label": "C5r4: Eliminate administrative burden on office staff - To what extent would each of the following increase your willingness to buy & bill a lipid lowering therapy?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "1 Not at all likely to increase willingness to buy & bill"
+          },
+          {
+            "value": "2",
+            "label": "2"
+          },
+          {
+            "value": "3",
+            "label": "3"
+          },
+          {
+            "value": "4",
+            "label": "4"
+          },
+          {
+            "value": "5",
+            "label": "5 Very likely to increase willingness to buy & bill"
+          }
+        ]
+      },
+      "C6": {
+        "column": "C6",
+        "label": "C6: What is the one thing that would have to change for you to adopt a buy & bill model in your practice in the next 6 months?",
+        "format": "A255",
+        "valueLabels": []
+      },
+      "D1r1c1": {
+        "column": "D1r1c1",
+        "label": "D1r1c1: <70 mg/dL - Distribution of hypercholesterolemia patients based on *baseline LDL-C, prior to ANY prescription medication(s), including statins*\"BEFORE\" - Thank you for your time so far. Just a few more questions…For this next question, we'd like",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D1r2c1": {
+        "column": "D1r2c1",
+        "label": "D1r2c1: 70-100 mg/dL - Distribution of hypercholesterolemia patients based on *baseline LDL-C, prior to ANY prescription medication(s), including statins*\"BEFORE\" - Thank you for your time so far. Just a few more questions…For this next question, we'd l",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D1r3c1": {
+        "column": "D1r3c1",
+        "label": "D1r3c1: 101-130 mg/dL - Distribution of hypercholesterolemia patients based on *baseline LDL-C, prior to ANY prescription medication(s), including statins*\"BEFORE\" - Thank you for your time so far. Just a few more questions…For this next question, we'd",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D1r4c1": {
+        "column": "D1r4c1",
+        "label": "D1r4c1: >130 mg/dL - Distribution of hypercholesterolemia patients based on *baseline LDL-C, prior to ANY prescription medication(s), including statins*\"BEFORE\" - Thank you for your time so far. Just a few more questions…For this next question, we'd lik",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D1r1c2": {
+        "column": "D1r1c2",
+        "label": "D1r1c2: <70 mg/dL - Distribution of hypercholesterolemia patients based on *current LDL-C levels as a result of prescription medication(s)*\"AFTER\" - Thank you for your time so far. Just a few more questions…For this next question, we'd like to understan",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D1r2c2": {
+        "column": "D1r2c2",
+        "label": "D1r2c2: 70-100 mg/dL - Distribution of hypercholesterolemia patients based on *current LDL-C levels as a result of prescription medication(s)*\"AFTER\" - Thank you for your time so far. Just a few more questions…For this next question, we'd like to unders",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D1r3c2": {
+        "column": "D1r3c2",
+        "label": "D1r3c2: 101-130 mg/dL - Distribution of hypercholesterolemia patients based on *current LDL-C levels as a result of prescription medication(s)*\"AFTER\" - Thank you for your time so far. Just a few more questions…For this next question, we'd like to under",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D1r4c2": {
+        "column": "D1r4c2",
+        "label": "D1r4c2: >130 mg/dL - Distribution of hypercholesterolemia patients based on *current LDL-C levels as a result of prescription medication(s)*\"AFTER\" - Thank you for your time so far. Just a few more questions…For this next question, we'd like to understa",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D2c1": {
+        "column": "D2c1",
+        "label": "D2c1: Repatha (evolucumab) - Please indicate how long after each of the following medication(s) were approved as treatments for lowering LDL-C you waited to prescribe them for the first time. ",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Within 1 month"
+          },
+          {
+            "value": "2",
+            "label": "Within 1-3 months"
+          },
+          {
+            "value": "3",
+            "label": "Within 4-6 months"
+          },
+          {
+            "value": "4",
+            "label": "Within 7-12 months"
+          },
+          {
+            "value": "5",
+            "label": "Longer than 12 months or more"
+          },
+          {
+            "value": "6",
+            "label": "I am unsure"
+          },
+          {
+            "value": "7",
+            "label": "Have never prescribed"
+          }
+        ]
+      },
+      "D2c2": {
+        "column": "D2c2",
+        "label": "D2c2: Praluent (alirocumab) - Please indicate how long after each of the following medication(s) were approved as treatments for lowering LDL-C you waited to prescribe them for the first time. ",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Within 1 month"
+          },
+          {
+            "value": "2",
+            "label": "Within 1-3 months"
+          },
+          {
+            "value": "3",
+            "label": "Within 4-6 months"
+          },
+          {
+            "value": "4",
+            "label": "Within 7-12 months"
+          },
+          {
+            "value": "5",
+            "label": "Longer than 12 months or more"
+          },
+          {
+            "value": "6",
+            "label": "I am unsure"
+          },
+          {
+            "value": "7",
+            "label": "Have never prescribed"
+          }
+        ]
+      },
+      "D2c3": {
+        "column": "D2c3",
+        "label": "D2c3: Leqvio (inclisiran) - Please indicate how long after each of the following medication(s) were approved as treatments for lowering LDL-C you waited to prescribe them for the first time. ",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Within 1 month"
+          },
+          {
+            "value": "2",
+            "label": "Within 1-3 months"
+          },
+          {
+            "value": "3",
+            "label": "Within 4-6 months"
+          },
+          {
+            "value": "4",
+            "label": "Within 7-12 months"
+          },
+          {
+            "value": "5",
+            "label": "Longer than 12 months or more"
+          },
+          {
+            "value": "6",
+            "label": "I am unsure"
+          },
+          {
+            "value": "7",
+            "label": "Have never prescribed"
+          }
+        ]
+      },
+      "D3r1c1": {
+        "column": "D3r1c1",
+        "label": "D3r1c1: Not insured - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r2c1": {
+        "column": "D3r2c1",
+        "label": "D3r2c1: Private insurance provided by employer / purchased in exchange - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r3c1": {
+        "column": "D3r3c1",
+        "label": "D3r3c1: Traditional Medicare (Medicare Part B Fee for Service) - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r4c1": {
+        "column": "D3r4c1",
+        "label": "D3r4c1: Traditional Medicare with supplemental insurance - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r5c1": {
+        "column": "D3r5c1",
+        "label": "D3r5c1: Private Medicare (Medicare Advantage / Part C managed through Private payer) - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r6c1": {
+        "column": "D3r6c1",
+        "label": "D3r6c1: Medicaid - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r7c1": {
+        "column": "D3r7c1",
+        "label": "D3r7c1: Veterans Administration (VA) - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r8c1": {
+        "column": "D3r8c1",
+        "label": "D3r8c1: Other (Please Specify): - Adults with $ {res.established_CVD} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r1c2": {
+        "column": "D3r1c2",
+        "label": "D3r1c2: Not insured - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r2c2": {
+        "column": "D3r2c2",
+        "label": "D3r2c2: Private insurance provided by employer / purchased in exchange - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r3c2": {
+        "column": "D3r3c2",
+        "label": "D3r3c2: Traditional Medicare (Medicare Part B Fee for Service) - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r4c2": {
+        "column": "D3r4c2",
+        "label": "D3r4c2: Traditional Medicare with supplemental insurance - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r5c2": {
+        "column": "D3r5c2",
+        "label": "D3r5c2: Private Medicare (Medicare Advantage / Part C managed through Private payer) - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r6c2": {
+        "column": "D3r6c2",
+        "label": "D3r6c2: Medicaid - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r7c2": {
+        "column": "D3r7c2",
+        "label": "D3r7c2: Veterans Administration (VA) - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r8c2": {
+        "column": "D3r8c2",
+        "label": "D3r8c2: Other (Please Specify): - Adults with $ {res.risk_factors_for_CV} - What percentage of your current patients are covered by each type of insurance?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D3r8oe": {
+        "column": "D3r8oe",
+        "label": "D3r8oe: What percentage of your current patients are covered by each type of insurance? - Other (Please Specify):",
+        "format": "A60",
+        "valueLabels": []
+      },
+      "D4": {
+        "column": "D4",
+        "label": "D4: What is the zip code of your main practice location?",
+        "format": "A20",
+        "valueLabels": []
+      },
+      "D5": {
+        "column": "D5",
+        "label": "D5: Which of the following best describes where your primary practice is located?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Urban"
+          },
+          {
+            "value": "2",
+            "label": "Suburban"
+          },
+          {
+            "value": "3",
+            "label": "Rural"
+          }
+        ]
+      },
+      "D6": {
+        "column": "D6",
+        "label": "D6: How many physicians, including yourself, are in your practice?",
+        "format": "F19.0",
+        "valueLabels": []
+      },
+      "D7": {
+        "column": "D7",
+        "label": "D7: How do you identify?",
+        "format": "F1.0",
+        "valueLabels": [
+          {
+            "value": "1",
+            "label": "Man"
+          },
+          {
+            "value": "2",
+            "label": "Woman"
+          },
+          {
+            "value": "3",
+            "label": "Non-binary"
+          },
+          {
+            "value": "4",
+            "label": "Prefer to self-describe:"
+          },
+          {
+            "value": "5",
+            "label": "Prefer not to answer"
+          }
+        ]
+      },
+      "D7r4oe": {
+        "column": "D7r4oe",
+        "label": "D7r4oe: How do you identify? - Prefer to self-describe:",
+        "format": "A60",
+        "valueLabels": []
+      },
+      "qtime": {
+        "column": "qtime",
+        "label": "qtime: Total Interview Time",
+        "format": "F22.2",
+        "valueLabels": []
+      },
+      "session": {
+        "column": "session",
+        "label": "session: Captured variable",
+        "format": "A60",
+        "valueLabels": []
+      },
+      "PCSK9_Flag": {
+        "column": "PCSK9_Flag",
+        "label": "PCSK9_Flag: on List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "LEQVIO_TIER": {
+        "column": "LEQVIO_TIER",
+        "label": "LEQVIO_TIER: on List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "ZIP_CD": {
+        "column": "ZIP_CD",
+        "label": "ZIP_CD: on List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "STATE": {
+        "column": "STATE",
+        "label": "STATE: on List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "CITY": {
+        "column": "CITY",
+        "label": "CITY: on List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "ADDR_LINE_2": {
+        "column": "ADDR_LINE_2",
+        "label": "ADDR_LINE_2: on List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "ADDR_LINE_1": {
+        "column": "ADDR_LINE_1",
+        "label": "ADDR_LINE_1: on List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "LAST_NM": {
+        "column": "LAST_NM",
+        "label": "LAST_NM: on List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "FRST_NM": {
+        "column": "FRST_NM",
+        "label": "FRST_NM: on List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "NPI_NUM": {
+        "column": "NPI_NUM",
+        "label": "NPI_NUM: on List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "IMS_NUM": {
+        "column": "IMS_NUM",
+        "label": "IMS_NUM: on List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "Q_SampDatar1": {
+        "column": "Q_SampDatar1",
+        "label": "Q_SampDatar1: AAID - On List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "Q_SampDatar2": {
+        "column": "Q_SampDatar2",
+        "label": "Q_SampDatar2: IMS_NUM - On List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "Q_SampDatar3": {
+        "column": "Q_SampDatar3",
+        "label": "Q_SampDatar3: NPI_NUM - On List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "Q_SampDatar4": {
+        "column": "Q_SampDatar4",
+        "label": "Q_SampDatar4: FRST_NM - On List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "Q_SampDatar5": {
+        "column": "Q_SampDatar5",
+        "label": "Q_SampDatar5: LAST_NM - On List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "Q_SampDatar6": {
+        "column": "Q_SampDatar6",
+        "label": "Q_SampDatar6: ADDR_LINE_1 - On List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "Q_SampDatar7": {
+        "column": "Q_SampDatar7",
+        "label": "Q_SampDatar7: ADDR_LINE_2 - On List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "Q_SampDatar8": {
+        "column": "Q_SampDatar8",
+        "label": "Q_SampDatar8: CITY - On List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "Q_SampDatar9": {
+        "column": "Q_SampDatar9",
+        "label": "Q_SampDatar9: STATE - On List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "Q_SampDatar10": {
+        "column": "Q_SampDatar10",
+        "label": "Q_SampDatar10: ZIP_CD - On List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "Q_SampDatar11": {
+        "column": "Q_SampDatar11",
+        "label": "Q_SampDatar11: LEQVIO_TIER - On List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "Q_SampDatar12": {
+        "column": "Q_SampDatar12",
+        "label": "Q_SampDatar12: LEQVIO_TIER_RECODED - On List Sample Data",
+        "format": "A50",
+        "valueLabels": []
+      },
+      "AAID": {
+        "column": "AAID",
+        "label": "AAID: Captured variable",
+        "format": "A60",
+        "valueLabels": []
+      },
+      "AAID_dupe1": {
+        "column": "AAID_dupe1",
+        "label": "AAID_dupe1: Captured variable",
+        "format": "A60",
+        "valueLabels": []
+      }
+    }
+  },
+  "fillRateResults": [
+    {
+      "loopGroup": {
+        "skeleton": "B-N-_-N-r-N-c-N",
+        "iteratorPosition": 3,
+        "iterations": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12"
+        ],
+        "bases": [
+          "B3_*r1c1",
+          "B3_*r1c2",
+          "B3_*r2c1",
+          "B3_*r2c2",
+          "B3_*r3c1",
+          "B3_*r3c2",
+          "B3_*r4c1",
+          "B3_*r4c2",
+          "B3_*r5c1",
+          "B3_*r5c2",
+          "B3_*r6c1",
+          "B3_*r6c2",
+          "B3_*r7c1",
+          "B3_*r7c2",
+          "B3_*r8c1",
+          "B3_*r8c2",
+          "B3_*r9c1",
+          "B3_*r9c2"
+        ],
+        "variables": [
+          "B3_1r1c1",
+          "B3_1r2c1",
+          "B3_1r3c1",
+          "B3_1r4c1",
+          "B3_1r5c1",
+          "B3_1r6c1",
+          "B3_1r7c1",
+          "B3_1r8c1",
+          "B3_1r9c1",
+          "B3_1r1c2",
+          "B3_1r2c2",
+          "B3_1r3c2",
+          "B3_1r4c2",
+          "B3_1r5c2",
+          "B3_1r6c2",
+          "B3_1r7c2",
+          "B3_1r8c2",
+          "B3_1r9c2",
+          "B3_2r1c1",
+          "B3_2r2c1",
+          "B3_2r3c1",
+          "B3_2r4c1",
+          "B3_2r5c1",
+          "B3_2r6c1",
+          "B3_2r7c1",
+          "B3_2r8c1",
+          "B3_2r9c1",
+          "B3_2r1c2",
+          "B3_2r2c2",
+          "B3_2r3c2",
+          "B3_2r4c2",
+          "B3_2r5c2",
+          "B3_2r6c2",
+          "B3_2r7c2",
+          "B3_2r8c2",
+          "B3_2r9c2",
+          "B3_3r1c1",
+          "B3_3r2c1",
+          "B3_3r3c1",
+          "B3_3r4c1",
+          "B3_3r5c1",
+          "B3_3r6c1",
+          "B3_3r7c1",
+          "B3_3r8c1",
+          "B3_3r9c1",
+          "B3_3r1c2",
+          "B3_3r2c2",
+          "B3_3r3c2",
+          "B3_3r4c2",
+          "B3_3r5c2",
+          "B3_3r6c2",
+          "B3_3r7c2",
+          "B3_3r8c2",
+          "B3_3r9c2",
+          "B3_4r1c1",
+          "B3_4r2c1",
+          "B3_4r3c1",
+          "B3_4r4c1",
+          "B3_4r5c1",
+          "B3_4r6c1",
+          "B3_4r7c1",
+          "B3_4r8c1",
+          "B3_4r9c1",
+          "B3_4r1c2",
+          "B3_4r2c2",
+          "B3_4r3c2",
+          "B3_4r4c2",
+          "B3_4r5c2",
+          "B3_4r6c2",
+          "B3_4r7c2",
+          "B3_4r8c2",
+          "B3_4r9c2",
+          "B3_5r1c1",
+          "B3_5r2c1",
+          "B3_5r3c1",
+          "B3_5r4c1",
+          "B3_5r5c1",
+          "B3_5r6c1",
+          "B3_5r7c1",
+          "B3_5r8c1",
+          "B3_5r9c1",
+          "B3_5r1c2",
+          "B3_5r2c2",
+          "B3_5r3c2",
+          "B3_5r4c2",
+          "B3_5r5c2",
+          "B3_5r6c2",
+          "B3_5r7c2",
+          "B3_5r8c2",
+          "B3_5r9c2",
+          "B3_6r1c1",
+          "B3_6r2c1",
+          "B3_6r3c1",
+          "B3_6r4c1",
+          "B3_6r5c1",
+          "B3_6r6c1",
+          "B3_6r7c1",
+          "B3_6r8c1",
+          "B3_6r9c1",
+          "B3_6r1c2",
+          "B3_6r2c2",
+          "B3_6r3c2",
+          "B3_6r4c2",
+          "B3_6r5c2",
+          "B3_6r6c2",
+          "B3_6r7c2",
+          "B3_6r8c2",
+          "B3_6r9c2",
+          "B3_7r1c1",
+          "B3_7r2c1",
+          "B3_7r3c1",
+          "B3_7r4c1",
+          "B3_7r5c1",
+          "B3_7r6c1",
+          "B3_7r7c1",
+          "B3_7r8c1",
+          "B3_7r9c1",
+          "B3_7r1c2",
+          "B3_7r2c2",
+          "B3_7r3c2",
+          "B3_7r4c2",
+          "B3_7r5c2",
+          "B3_7r6c2",
+          "B3_7r7c2",
+          "B3_7r8c2",
+          "B3_7r9c2",
+          "B3_8r1c1",
+          "B3_8r2c1",
+          "B3_8r3c1",
+          "B3_8r4c1",
+          "B3_8r5c1",
+          "B3_8r6c1",
+          "B3_8r7c1",
+          "B3_8r8c1",
+          "B3_8r9c1",
+          "B3_8r1c2",
+          "B3_8r2c2",
+          "B3_8r3c2",
+          "B3_8r4c2",
+          "B3_8r5c2",
+          "B3_8r6c2",
+          "B3_8r7c2",
+          "B3_8r8c2",
+          "B3_8r9c2",
+          "B3_9r1c1",
+          "B3_9r2c1",
+          "B3_9r3c1",
+          "B3_9r4c1",
+          "B3_9r5c1",
+          "B3_9r6c1",
+          "B3_9r7c1",
+          "B3_9r8c1",
+          "B3_9r9c1",
+          "B3_9r1c2",
+          "B3_9r2c2",
+          "B3_9r3c2",
+          "B3_9r4c2",
+          "B3_9r5c2",
+          "B3_9r6c2",
+          "B3_9r7c2",
+          "B3_9r8c2",
+          "B3_9r9c2",
+          "B3_10r1c1",
+          "B3_10r2c1",
+          "B3_10r3c1",
+          "B3_10r4c1",
+          "B3_10r5c1",
+          "B3_10r6c1",
+          "B3_10r7c1",
+          "B3_10r8c1",
+          "B3_10r9c1",
+          "B3_10r1c2",
+          "B3_10r2c2",
+          "B3_10r3c2",
+          "B3_10r4c2",
+          "B3_10r5c2",
+          "B3_10r6c2",
+          "B3_10r7c2",
+          "B3_10r8c2",
+          "B3_10r9c2",
+          "B3_11r1c1",
+          "B3_11r2c1",
+          "B3_11r3c1",
+          "B3_11r4c1",
+          "B3_11r5c1",
+          "B3_11r6c1",
+          "B3_11r7c1",
+          "B3_11r8c1",
+          "B3_11r9c1",
+          "B3_11r1c2",
+          "B3_11r2c2",
+          "B3_11r3c2",
+          "B3_11r4c2",
+          "B3_11r5c2",
+          "B3_11r6c2",
+          "B3_11r7c2",
+          "B3_11r8c2",
+          "B3_11r9c2",
+          "B3_12r1c1",
+          "B3_12r2c1",
+          "B3_12r3c1",
+          "B3_12r4c1",
+          "B3_12r5c1",
+          "B3_12r6c1",
+          "B3_12r7c1",
+          "B3_12r8c1",
+          "B3_12r9c1",
+          "B3_12r1c2",
+          "B3_12r2c2",
+          "B3_12r3c2",
+          "B3_12r4c2",
+          "B3_12r5c2",
+          "B3_12r6c2",
+          "B3_12r7c2",
+          "B3_12r8c2",
+          "B3_12r9c2"
+        ],
+        "diversity": 18
+      },
+      "fillRates": {
+        "1": 0.8055555555555556,
+        "2": 0.8888888888888888
+      },
+      "pattern": "uncertain",
+      "explanation": "Fill rates: 81%, 89%, 0%, 0%, 0%, 0%, 0%, 0%, 0%, 0%, 0%, 0% — pattern unclear"
+    }
+  ]
+}

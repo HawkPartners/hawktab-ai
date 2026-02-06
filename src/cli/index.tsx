@@ -22,6 +22,8 @@ import '../lib/loadEnv';
 import React from 'react';
 import { render } from 'ink';
 import meow from 'meow';
+import { format as formatString } from 'util';
+import { Writable } from 'stream';
 import { App } from './App';
 import { getPipelineEventBus } from '../lib/events';
 import { runPipeline, DEFAULT_DATASET } from '../lib/pipeline';
@@ -100,14 +102,94 @@ const cli = meow(
 // Console Suppression for UI Mode
 // =============================================================================
 
+const originalConsole = {
+  log: console.log,
+  info: console.info,
+  warn: console.warn,
+  error: console.error,
+};
+
+const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+const originalStderrWrite = process.stderr.write.bind(process.stderr);
+
+function emitSystemLogLines(bus: ReturnType<typeof getPipelineEventBus>, level: 'info' | 'warn' | 'error' | 'debug', message: string): void {
+  const lines = message.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  for (const line of lines) {
+    const match = line.match(/^\[([^\]]+)\]\s*/);
+    const stageName = match ? match[1] : undefined;
+    const cleaned = match ? line.slice(match[0].length) : line;
+    const derivedLevel =
+      cleaned.toLowerCase().includes('stderr') && level === 'info' ? 'warn' : level;
+    bus.emitSystemLog(derivedLevel, cleaned, stageName);
+  }
+}
+
 function suppressConsole(): void {
-  // Suppress console output so it doesn't interfere with Ink UI
-  // The pipeline emits events that the UI listens to instead
-  const noop = () => {};
-  console.log = noop;
-  console.info = noop;
-  console.warn = noop;
-  // Keep console.error for critical errors
+  // Route console output to the event bus so UI can render logs.
+  const bus = getPipelineEventBus();
+  const emit = (level: 'info' | 'warn' | 'error' | 'debug', args: unknown[]) => {
+    const message = formatString(...args);
+    emitSystemLogLines(bus, level, message);
+  };
+
+  console.log = (...args: unknown[]) => emit('info', args);
+  console.info = (...args: unknown[]) => emit('info', args);
+  console.warn = (...args: unknown[]) => emit('warn', args);
+  console.error = (...args: unknown[]) => {
+    emit('error', args);
+    // Preserve original error output if event bus is disabled (non-UI mode)
+    if (!bus.isEnabled()) {
+      originalConsole.error(...args);
+    }
+  };
+}
+
+function installStdoutCapture(): typeof process.stdout {
+  const bus = getPipelineEventBus();
+  const isInkWrite = { current: false };
+
+  const inkStdout = new Writable({
+    write(chunk, encoding, callback) {
+      isInkWrite.current = true;
+      originalStdoutWrite(chunk as Buffer, encoding as BufferEncoding);
+      isInkWrite.current = false;
+      callback();
+    },
+  });
+
+  const captureWrite = (
+    level: 'info' | 'warn' | 'error',
+    originalWrite: typeof process.stdout.write
+  ) => {
+    return (chunk: string | Buffer, encoding?: BufferEncoding | ((err?: Error) => void), callback?: (err?: Error) => void): boolean => {
+      if (!bus.isEnabled()) {
+        return originalWrite(chunk as never, encoding as never, callback as never);
+      }
+
+      if (typeof encoding === 'function') {
+        callback = encoding;
+        encoding = undefined;
+      }
+
+      if (isInkWrite.current) {
+        return originalWrite(chunk as never, encoding as never, callback as never);
+      }
+
+      const text = Buffer.isBuffer(chunk)
+        ? chunk.toString(encoding || 'utf8')
+        : chunk;
+      emitSystemLogLines(bus, level, text);
+      callback?.();
+      return true;
+    };
+  };
+
+  process.stdout.write = captureWrite('info', originalStdoutWrite);
+  process.stderr.write = captureWrite('error', originalStderrWrite);
+
+  // Cast to WriteStream — Ink doesn't use TTY-specific methods, but its
+  // typings require it.  The Writable we hand it only proxies raw writes.
+  return inkStdout as unknown as typeof process.stdout;
 }
 
 // =============================================================================
@@ -124,6 +206,7 @@ async function main(): Promise<void> {
     bus.enable();
 
     suppressConsole();
+    const inkStdout = installStdoutCapture();
 
     // Track if pipeline has been started
     let pipelineStarted = false;
@@ -157,7 +240,7 @@ async function main(): Promise<void> {
             });
         }}
       />
-    );
+    , { stdout: inkStdout });
 
     await waitUntilExit();
     return;
@@ -172,6 +255,7 @@ async function main(): Promise<void> {
   // Handle demo command - show UI without running pipeline
   if (command === 'demo') {
     suppressConsole();
+    const inkStdout = installStdoutCapture();
 
     const { waitUntilExit, unmount } = render(
       <App
@@ -181,7 +265,7 @@ async function main(): Promise<void> {
           process.exit(0);
         }}
       />
-    );
+    , { stdout: inkStdout });
 
     await waitUntilExit();
     return;
@@ -249,6 +333,7 @@ async function main(): Promise<void> {
   // Suppress console output so it doesn't interfere with the UI
   // The pipeline emits events that the UI displays instead
   suppressConsole();
+  const inkStdout = installStdoutCapture();
 
   // Create a promise that resolves when the App is ready to receive events
   let resolveReady: () => void;
@@ -269,7 +354,7 @@ async function main(): Promise<void> {
         resolveReady();
       }}
     />
-  );
+  , { stdout: inkStdout });
 
   // Wait for App to be ready before starting pipeline
   // This ensures the event bus subscription is set up first

@@ -1,0 +1,488 @@
+[
+  {
+    "column": "S4",
+    "description": "S4: Since completing your residency, how many years have you practiced medicine?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "S10r1c1",
+    "description": "S10r1c1: Direct patient care - Approximately what percentage of your time is spent on each of the following?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S10",
+    "context": ""
+  },
+  {
+    "column": "S10r2c1",
+    "description": "S10r2c1: Teaching - Approximately what percentage of your time is spent on each of the following?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S10",
+    "context": ""
+  },
+  {
+    "column": "S10r3c1",
+    "description": "S10r3c1: Research and/or clinical trials - Approximately what percentage of your time is spent on each of the following?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S10",
+    "context": ""
+  },
+  {
+    "column": "S10r4c1",
+    "description": "S10r4c1: Administration / Other - Approximately what percentage of your time is spent on each of the following?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S10",
+    "context": ""
+  },
+  {
+    "column": "S11r1c1",
+    "description": "S11r1c1: Chronic Kidney Disease - Approximately, how many patients have you personally managed for each of the following conditions in the past 12 months?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S11",
+    "context": ""
+  },
+  {
+    "column": "S11r2c1",
+    "description": "S11r2c1: Polycystic Kidney Disease - Approximately, how many patients have you personally managed for each of the following conditions in the past 12 months?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S11",
+    "context": ""
+  },
+  {
+    "column": "S11r3c1",
+    "description": "S11r3c1: IgA Nephropathy - Approximately, how many patients have you personally managed for each of the following conditions in the past 12 months?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S11",
+    "context": ""
+  },
+  {
+    "column": "S11r4c1",
+    "description": "S11r4c1: C3G - Approximately, how many patients have you personally managed for each of the following conditions in the past 12 months?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S11",
+    "context": ""
+  },
+  {
+    "column": "S12",
+    "description": "S12: Of the IgA Nephropathy patients currently under your care, how many are actively being treated?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "S12a",
+    "description": "S12a: Of the C3G patients currently under your care, how many are actively being treated?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "S13r1c1",
+    "description": "S13r1c1: ACE Inhibitor (such as fosinopril, ramipril) - Of the IgAN patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "S13r2c1",
+    "description": "S13r2c1: Angiotension II Recepter Blockers/ARBs (such as losartan, valsartan) - Of the IgAN patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those th",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "S13r3c1",
+    "description": "S13r3c1: Tarpeyo (budesonide) - Of the IgAN patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "S13r4c1",
+    "description": "S13r4c1: SGLT-2s (such as dapagliflozin, empagliflozin) - Of the IgAN patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to yo",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "S13r5c1",
+    "description": "S13r5c1: Glucosteroids (such as dexamethasone, prednisone) - Of the IgAN patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "S13r6c1",
+    "description": "S13r6c1: Filspari (sparsentan) - Of the IgAN patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "S13r8c1",
+    "description": "S13r8c1: Other (Please specify) - Of the IgAN patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S13",
+    "context": ""
+  },
+  {
+    "column": "S14r1c1",
+    "description": "S14r1c1: ACE Inhibitor (such as fosinopril, ramipril) - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you a",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S14",
+    "context": ""
+  },
+  {
+    "column": "S14r2c1",
+    "description": "S14r2c1: Angiotension II Recepter Blockers/ARBs (such as losartan, valsartan) - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those tha",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S14",
+    "context": ""
+  },
+  {
+    "column": "S14r3c1",
+    "description": "S14r3c1: Cyclophosphamide - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S14",
+    "context": ""
+  },
+  {
+    "column": "S14r4c1",
+    "description": "S14r4c1: Glucosteroids (such as dexamethasone, prednisone) - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S14",
+    "context": ""
+  },
+  {
+    "column": "S14r5c1",
+    "description": "S14r5c1: Mycophenolate mofetil (MMF) - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatme",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S14",
+    "context": ""
+  },
+  {
+    "column": "S14r6c1",
+    "description": "S14r6c1: Soliris (eculizumab) - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S14",
+    "context": ""
+  },
+  {
+    "column": "S14r9c1",
+    "description": "S14r9c1: Ultomiris (ravulizumab) - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S14",
+    "context": ""
+  },
+  {
+    "column": "S14r7c1",
+    "description": "S14r7c1: Plasma infusion - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S14",
+    "context": ""
+  },
+  {
+    "column": "S14r98c1",
+    "description": "S14r98c1: Other (Please specify) - Of the C3G patients you are actively treating, how many have you treated with each of the following in the past 12 months? Please exclude clinical trial patients and those that were referred to you already on treatment.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "S14",
+    "context": ""
+  },
+  {
+    "column": "C4a",
+    "description": "C4a: Approximately how many hours per week do you spend obtaining coverage for medication for your patients?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "D2",
+    "description": "D2: In a typical week, approximately how many individual representatives do you see from pharmaceutical companies? Please think only about those representatives with whom you have some type of interaction, whether it is signing for samples or discussing a",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  },
+  {
+    "column": "D6r1c1",
+    "description": "D6r1c1: Insurance coverage and affordability - How much of a conversation with manufacturer representatives would you prefer to be focused on insurance coverage and affordability vs. clinical aspects of the medication?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D6",
+    "context": ""
+  },
+  {
+    "column": "D6r2c1",
+    "description": "D6r2c1: Clinical aspects of medication - How much of a conversation with manufacturer representatives would you prefer to be focused on insurance coverage and affordability vs. clinical aspects of the medication?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D6",
+    "context": ""
+  },
+  {
+    "column": "D6r3c1",
+    "description": "D6r3c1: Other (Please specify) - How much of a conversation with manufacturer representatives would you prefer to be focused on insurance coverage and affordability vs. clinical aspects of the medication?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D6",
+    "context": ""
+  },
+  {
+    "column": "D9r1",
+    "description": "D9r1: In-person rep visits - Please rank the following in terms of how you prefer to receive information from a manufacturer as it relates to medication insurance coverage. Click on the items below where the first item you select is your most preferred wa",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D9",
+    "context": ""
+  },
+  {
+    "column": "D9r5",
+    "description": "D9r5: Sales rep presentations - Please rank the following in terms of how you prefer to receive information from a manufacturer as it relates to medication insurance coverage. Click on the items below where the first item you select is your most preferred",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D9",
+    "context": ""
+  },
+  {
+    "column": "D9r2",
+    "description": "D9r2: Digital media - Please rank the following in terms of how you prefer to receive information from a manufacturer as it relates to medication insurance coverage. Click on the items below where the first item you select is your most preferred way to re",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D9",
+    "context": ""
+  },
+  {
+    "column": "D9r3",
+    "description": "D9r3: Print materials - Please rank the following in terms of how you prefer to receive information from a manufacturer as it relates to medication insurance coverage. Click on the items below where the first item you select is your most preferred way to",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D9",
+    "context": ""
+  },
+  {
+    "column": "D9r4",
+    "description": "D9r4: Emails - Please rank the following in terms of how you prefer to receive information from a manufacturer as it relates to medication insurance coverage. Click on the items below where the first item you select is your most preferred way to receive i",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D9",
+    "context": ""
+  },
+  {
+    "column": "D9r6",
+    "description": "D9r6: Field Reimbursement Manager - Please rank the following in terms of how you prefer to receive information from a manufacturer as it relates to medication insurance coverage. Click on the items below where the first item you select is your most prefe",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "D9",
+    "context": ""
+  },
+  {
+    "column": "E1r1c1",
+    "description": "E1r1c1: Commercial insurance (HMO, PPO, or other private insurance) - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E1",
+    "context": ""
+  },
+  {
+    "column": "E1r2c1",
+    "description": "E1r2c1: Traditional Medicare - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E1",
+    "context": ""
+  },
+  {
+    "column": "E1r3c1",
+    "description": "E1r3c1: Medicare Advantage - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E1",
+    "context": ""
+  },
+  {
+    "column": "E1r4c1",
+    "description": "E1r4c1: Medicaid / Public Aid - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E1",
+    "context": ""
+  },
+  {
+    "column": "E1r5c1",
+    "description": "E1r5c1: VA (Veteran's Administration) or - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E1",
+    "context": ""
+  },
+  {
+    "column": "E1r6c1",
+    "description": "E1r6c1: Department of Defense/Tri Care - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E1",
+    "context": ""
+  },
+  {
+    "column": "E1r7c1",
+    "description": "E1r7c1: No Coverage / Cash Paying - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E1",
+    "context": ""
+  },
+  {
+    "column": "E1r8c1",
+    "description": "E1r8c1: Other - Thinking about ALL of the patients you treat in your practice, what proportion of your patients have the following healthcare coverage?",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E1",
+    "context": ""
+  },
+  {
+    "column": "E2r1c1",
+    "description": "E2r1c1: Physicians - Please indicate the number of each of the following in your practice, including yourself.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r2c1",
+    "description": "E2r2c1: Nurse Practitioners/Physician's Assistants - Please indicate the number of each of the following in your practice, including yourself.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r3c1",
+    "description": "E2r3c1: Office Manager / Reception / Clerical - Please indicate the number of each of the following in your practice, including yourself.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r4c1",
+    "description": "E2r4c1: Nurses (LPN, RN) - Please indicate the number of each of the following in your practice, including yourself.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r5c1",
+    "description": "E2r5c1: Medical Assistants - Please indicate the number of each of the following in your practice, including yourself.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r6c1",
+    "description": "E2r6c1: Biologic Coordinators/Reimbursement Specialists (Specifically dedicated to obtaining coverage for medications) - Please indicate the number of each of the following in your practice, including yourself.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E2r7c1",
+    "description": "E2r7c1: Other - Please indicate the number of each of the following in your practice, including yourself.",
+    "level": "sub",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "E2",
+    "context": ""
+  },
+  {
+    "column": "E5",
+    "description": "E5: How many office locations does your practice have?",
+    "level": "parent",
+    "valueType": "",
+    "answerOptions": "NA",
+    "parentQuestion": "NA",
+    "context": ""
+  }
+]

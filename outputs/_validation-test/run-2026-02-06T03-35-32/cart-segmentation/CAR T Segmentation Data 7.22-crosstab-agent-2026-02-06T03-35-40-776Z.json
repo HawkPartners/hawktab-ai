@@ -1,0 +1,3027 @@
+[
+  {
+    "Column": "record",
+    "Description": "record: Record number",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "uuid",
+    "Description": "uuid: Participant identifier",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "date",
+    "Description": "date: Completion time and date",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "status",
+    "Description": "status: Participant status",
+    "Answer_Options": "1=Terminated,2=Overquota,3=Qualified,4=Partial"
+  },
+  {
+    "Column": "S1",
+    "Description": "S1: Thank you for your interest in participating in this research study. HawkPartners (“Agency”) is conducting a market research study on large B-cell lymphoma treatment dynamics (the “Research Study”). The Research Study is sponsored by a company",
+    "Answer_Options": "1=Please check this box if you DO agree to allow the Agency to share your contact information with the Sponsor if such dis,2=Please check this box if you DO NOT consent to having your contact information disclosed to the Sponsor in connection wi"
+  },
+  {
+    "Column": "S2",
+    "Description": "S2: The information in this Research Study is confidential. Through your Consent below, you agree that any information disclosed to you in connection with this Research Study is confidential and you agree not to disclose such information to any third part",
+    "Answer_Options": "1=I consent,2=I do not consent"
+  },
+  {
+    "Column": "S3",
+    "Description": "S3: Thank you for your willingness to participate in this market research study. In order to proceed with this research, we need you to agree to maintain the confidentiality of this research and your participation in this study. By doing so, you agree to",
+    "Answer_Options": "1=I agree,2=I do not agree"
+  },
+  {
+    "Column": "S4",
+    "Description": "S4: What is your primary specialty/role?",
+    "Answer_Options": "1=Physician,2=Nurse Practitioner,3=Physician Assistant,4=Nurse/Transplant Coordinator,5=Other (specify):"
+  },
+  {
+    "Column": "S4r9oe",
+    "Description": "S4r9oe: What is your primary specialty/role? - Other (specify):",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S4",
+    "Context": "S4: S4: What is your primary specialty/role?"
+  },
+  {
+    "Column": "S5",
+    "Description": "S5: What is your primary medical specialty?",
+    "Answer_Options": "1=Medical Oncology,2=Hematology/Oncology,3=Surgical Oncology,4=Other (specify):"
+  },
+  {
+    "Column": "S5r9oe",
+    "Description": "S5r9oe: What is your primary medical specialty? - Other (specify):",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S5",
+    "Context": "S5: S5: What is your primary medical specialty?"
+  },
+  {
+    "Column": "S6",
+    "Description": "S6: Are you currently board certified or eligible in your specialty?",
+    "Answer_Options": "1=Board Eligible,2=Board Certified,3=Neither"
+  },
+  {
+    "Column": "S7",
+    "Description": "S7: How many years have you been in clinical practice, post residency/training?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "S8",
+    "Description": "S8: Please provide the state in which your practice or the institution that you are affiliated with is located.",
+    "Answer_Options": "1=Alabama,2=Alaska,3=Arizona,4=Arkansas,5=California,6=Colorado,7=Connecticut,8=Delaware,9=District of Columbia,10=Florida,11=Georgia,12=Hawaii,13=Idaho,14=Illinois,15=Indiana,16=Iowa,17=Kansas,18=Kentucky,19=Louisiana,20=Maine,21=Maryland,22=Massachusetts,23=Michigan,24=Minnesota,25=Mississippi,26=Missouri,27=Montana,28=Nebraska,29=Nevada,30=New Hampshire,31=New Jersey,32=New Mexico,33=New York,34=North Carolina,35=North Dakota,36=Ohio,37=Oklahoma,38=Oregon,39=Pennsylvania,40=Rhode Island,41=South Carolina,42=South Dakota,43=Tennessee,44=Texas,45=Utah,46=Vermont,47=Virginia,48=Washington,49=West Virginia,50=Wisconsin,51=Wyoming,52=Puerto Rico"
+  },
+  {
+    "Column": "S9",
+    "Description": "S9: Which of the following best describes the practice setting where you spend the majority of your time?",
+    "Answer_Options": "1=Clinic/private practice,2=Main campus of Community Hospital,3=Satellite clinic of Community Hospital,4=Main campus of University / Academic Hospital,5=Satellite clinic of Academic Hospital,6=Government / VA Hospital,7=Other (specify):"
+  },
+  {
+    "Column": "S9r99oe",
+    "Description": "S9r99oe: Which of the following best describes the practice setting where you spend the majority of your time? - Other (specify):",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S9",
+    "Context": "S9: S9: Which of the following best describes the practice setting where you spend the majority of your time?"
+  },
+  {
+    "Column": "hS9",
+    "Description": "hS9: HIDDEN IN LIVE",
+    "Answer_Options": "1=COMMUNITY,2=ACADEMIC"
+  },
+  {
+    "Column": "S10",
+    "Description": "S10: Please select the institution/hospital system where you personally see most of your patients. If your institution isn’t listed here, please select “Other.” Note: This information is only to ensure we’re asking you relevant questions to you an",
+    "Answer_Options": "1=HOSPITAL ESPANOL AUXILIO MUTUO DE PUERTO RICO, INC,2=ROGER WILLIAMS CANCER CENTER,3=UNIVERSITY OF MISSISSIPPI MEDICAL CANCER CENTER AND RESEARCH INSTITUTE,4=JERSEY SHORE UNIVERSITY MEDICAL CENTER,5=UNIVERSITY OF MISSOURI HEALTH CARE ELLIS FISCHEL CANCER CENTER,6=TENNESSEE ONCOLOGY NASHVILLE MIDTOWN CENTER FOR BLOOD CANCERS,7=CITY OF HOPE - ATLANTA,8=PROVIDENCE CANCER INSTITUTE FRANZ CLINIC,9=GOOD SAMARITAN HOSPITAL,10=THE UNIVERSITY OF NEW MEXICO COMPREHENSIVE CANCER CENTER,11=NEBRASKA METHODIST HOSPITAL,12=CITY OF HOPE PHOENIX,13=UOFL HEALTH JAMES GRAHAM BROWN CANCER CENTER,14=GEISINGER MEDICAL CENTER,15=VIRGINIA ONCOLOGY ASSOCIATES,16=UNIVERSITY OF TENNESSEE MEDICAL CENTER (UTMC),17=SCRIPPS GREEN HOSPITAL,18=COREWELL HEALTH WILLIAM BEAUMONT UNIVERSITY HOSPITAL,19=MARSHFIELD CLINIC MARSHFIELD CENTER URGENT CARE,20=SANFORD ROGER MARIS CANCER CENTER,21=ORLANDO HEALTH CANCER INSTITUTE DOWNTOWN ORLANDO,22=BON SECOURS HEMATOLOGY AND ONCOLOGY,23=OCHSNER MEDICAL CENTER,24=UNIVERSITY OF VERMONT CHILDRENS HOSPITAL,25=NEW YORK ONCOLOGY HEMATOLOGY, PC,26=NOVANT HEALTH FORSYTH MEDICAL CENTER,27=TUFTS MEDICAL CENTER,28=MIAMI CANCER INSTITUTE,29=NORTHSHORE UNIVERSITY HEALTHSYSTEM,30=UNIVERSITY OF CALIFORNIA IRVINE MEDICAL CENTER,31=UCSF BENIOFF CHILDRENS HOSPITAL,32=BAYLOR SCOTT AND WHITE VASICEK CANCER TREATMENT CENTER TEMPLE,33=PRISMA HEALTH CANCER INSTITUTE,34=BOSTON MEDICAL CENTER MOAKLEY BUILDING,35=SAINT LUKES BOISE MEDICAL CENTER,36=UNIVERSITY OF MASSACHUSETTS MEDICAL CENTER PUBLIC HEALTH SERVICE,37=HONORHEALTH SCOTTSDALE SHEA MEDICAL CENTER,38=ATRIUM HEALTH WAKE FOREST BAPTIST,39=LOYOLA UNIVERSITY CHICAGO STRITCH SCHOOL OF MEDICINE,40=ACUTE REHABILITATION UNIT AT WESTCHESTER MEDICAL CENTER,41=NORTH SHORE UNIVERSITY HOSPITAL,42=MEMORIAL HOSPITAL WEST,43=BAPTIST MEMORIAL HOSPITAL MEMPHIS,44=USC NORRIS COMPREHENSIVE CANCER CENTER,45=AUGUSTA UNIVERSITY MEDICAL CENTER,46=SSM HEALTH SAINT LOUIS UNIVERSITY HOSPITAL,47=CHRISTIANA CARE HEALTH SERVICES,48=UNIVERSITY OF CINCINNATI MEDICAL CENTER,49=NYU LANGONE HEALTH PERLMUTTER CANCER CENTER 38TH STREET,50=NORTON CANCER INSTITUTE SAINT MATTHEWS,51=ASCENSION VIA CHRISTI SAINT FRANCIS,52=WEST VIRGINIA UNIVERSITY MEDICINE,53=UNIVERSITY OF VIRGINIA CANCER CENTER,54=AURORA CANCER CARE,55=JOHNS HOPKINS HOSPITAL HEMATOLOGY,56=NOVANT HEALTH PRESBYTERIAN MEDICAL CENTER,57=DARTMOUTH-HITCHCOCK MEDICAL CENTER,58=BANNER UNIVERSITY MEDICAL CENTER TUCSON CAMPUS,59=CEDARS SINAI SAMUEL OSCHIN CANCER CENTER,60=UI HEALTH COMPREHENSIVE CANCER CARE,61=ADVENT HEALTH MEDICAL GROUP BLOOD AND MARROW TRANSPLANT AT ORLANDO,62=CITY OF HOPE CHICAGO CANCER HOSPITAL,63=VA TENNESSEE VALLEY HEALTH CARE SYSTEM NASHVILLE CAMPUS,64=UNIVERSITY OF ARKANSAS FOR MEDICAL SCIENCES,65=HENRY FORD HOSPITAL,66=MEDICAL UNIVERSITY OF SOUTH CAROLINA,67=RUSH UNIVERSITY MEDICAL CENTER,68=OU HEALTH STEPHENSON CANCER CENTER,69=SAINT DAVIDS SOUTH AUSTIN MEDICAL CENTER,70=FRANCISCAN HEALTH INDIANAPOLIS,71=SWEDISH HOSPITAL CHERRY HILL CAMPUS,72=TRISTAR CENTENNIAL MEDICAL CENTER,73=UAB HOSPITAL ONCOLOGY,74=UH SEIDMAN CANCER CENTER,75=MEDSTAR GEORGETOWN UNIVERSITY HOSPITAL,76=AVERA CANCER INSTITUTE AT SIOUX FALLS,77=HOUSTON METHODIST HOSPITAL,78=MEDICAL CITY DALLAS HOSPITAL,79=ADVOCATE MEDICAL GROUP,80=YALE MEDICAL GROUP CANCER CENTER,81=UNIVERSITY OF NORTH CAROLINA CANCER CARE,82=COREWELL HEALTH LEMMEN HOLTON CANCER PAVILION,83=THE JEWISH HOSPITAL MERCY HEALTH,84=UF HEALTH SHANDS HOSPITAL BONE MARROW TRANSPLANT OUTPATIENT CLINIC,85=CARDIOVASCULAR INSTITUTE AT BETH ISRAEL DEACONESS MEDICAL CENTER,86=ALLEGHENY HEALTH NETWORK CANCER INSTITUTE AT ALLEGHENY GENERAL HOSPITAL,87=UNIVERSITY OF COLORADO HOSPITAL GI ONCOLOGY,88=INTERMOUNTAIN LDS HOSPITAL,89=SIDNEY KIMMEL CANCER CENTER AT JEFFERSON,90=SIDNEY KIMMEL CANCER – WASHINGTON TOWNSHIP,91=UNIVERSITY OF KENTUCKY MARKEY CANCER CENTER,92=RUTGERS CANCER INSTITUTE OF NEW JERSEY,93=UT SOUTHWESTERN MEDICAL CENTERS HAROLD C SIMMONS COMPREHENSIVE CANCER CENTER,94=UNIVERSITY OF CALIFORNIA DAVIS MEDICAL CENTER,95=FOX CHASE TEMPLE UNIVERSITY HOSPITAL BONE MARROW TRANSPLANT PROGRAM,96=THE MOUNT SINAI HOSPITAL,97=PENN STATE HERSHEY CANCER INSTITUTE,98=MAYO CLINIC,99=UNIVERSITY OF IOWA HOSPITALS AND CLINICS,100=NEWYORK PRESBYTERIAN COLUMBIA UNIVERSITY IRVING MEDICAL CENTER,101=IU HEALTH SIMON CANCER CENTER,102=NORTHSIDE HOSPITAL ATLANTA,103=VCU MASSEY CANCER CENTER,104=MONTEFIORE MEDICAL CENTER MOSES CAMPUS,105=M HEALTH FAIRVIEW UNIVERSITY OF MINNESOTA MEDICAL CENTER,106=MAYO CLINIC HOSPITAL JACKSONVILLE,107=UNIVERSITY OF CALIFORNIA SAN DIEGO MEDICAL CENTER HILLCREST,108=HUNTSMAN CANCER HOSPITAL,109=LEVINE CANCER INSTITUTE,110=UNIVERSITY OF MICHIGAN ROGEL CANCER CENTER,111=FROEDTERT HOSPITAL,112=NEWYORK PRESBYTERIAN WEILL CORNELL MEDICAL CENTER,113=NORTHWESTERN HEMATOPOIETIC STEM CELL TRANSPLANT PROGRAM,114=ROSWELL PARK COMPREHENSIVE CANCER CENTER,115=BANNER MD ANDERSON CANCER CENTER,116=METHODIST SPECIALTY AND TRANSPLANT HOSPITAL,117=UW CARBONE CANCER CENTER AND HEMATOLOGY,118=CLEVELAND CLINIC MOLL CANCER CENTER,119=EMORY UNIVERSITY HOSPITAL,120=UNIVERSITY OF CALIFORNIA SAN FRANCISCO MEDICAL CENTER AT MOUNT ZION,121=TEXAS ONCOLOGY BAYLOR CHARLES A SAMMONS CANCER CENTER,122=RONALD REAGAN UCLA MEDICAL CENTER,123=DUKE CANCER CENTER,124=NEBRASKA MEDICAL CENTER,125=HACKENSACK UNIVERSITY MEDICAL CENTER,126=UNIVERSITY OF MARYLAND GREENEBAUM CANCER CENTER,127=HOSPITAL OF THE UNIVERSITY OF PENNSYLVANIA,128=PRESBYTERIAN SAINT LUKES MEDICAL CENTER,129=UNIVERSITY OF PITTSBURGH MEDICAL CENTER HILLMAN CANCER CENTER,130=MEMORIAL SLOAN KETTERING CANCER CENTER,131=OREGON HEALTH AND SCIENCE UNIVERSITY SCHOOL OF MEDICINE,132=UNIVERSITY OF ROCHESTER MEDICAL CENTER,133=UNIVERSITY OF MIAMI HOSPITAL SYLVESTER COMPREHENSIVE CANCER CENTER,134=MAYO CLINIC,135=FRED HUTCHINSON CANCER CENTER,136=STANFORD MEDICINE - PALO ALTO,137=VANDERBILT UNIVERSITY MEDICAL CENTER,138=CITY OF HOPE COMPREHENSIVE CANCER CENTER,139=BARBARA ANN KARMANOS CANCER INSTITUTE,140=BARNES JEWISH HOSPITAL,141=THE OHIO STATE UNIVERSITY WEXNER MEDICAL CENTER,142=THE UNIVERSITY OF KANSAS HOSPITAL,143=MASSACHUSETTS GENERAL HOSPITAL,144=DANA FARBER CANCER INSTITUTE,145=THE UNIVERSITY OF CHICAGO MEDICINE,146=UNIVERSITY OF TEXAS MD ANDERSON CANCER CENTER STEM CELL TRANSPLANTATION CENTER,147=MOFFITT CANCER CENTER MAGNOLIA CAMPUS,148=CLEVELAND CLINIC CANCER CENTER,149=UCSD MOORES CANCER CENTER,150=PERLMUTTER CANCER CENTER,151=UNIVERSITY OF IOWA HEALTH CARE,152=RUTGERS CANCER INSTITUTE OF NEW JERSEY/ROBERTY WOOD JOHNSON UNIVERSITY,153=HMH JERSEY SHORE UNIVERSITY MEDICAL CENTER,154=Other, specify,155=Dummy option"
+  },
+  {
+    "Column": "S10S980oe",
+    "Description": "S10S980oe: Please select the institution/hospital system where you personally see most of your patients. If your institution isn’t listed here, please select “Other.” Note: This information is only to ensure we’re asking you relevant questions to",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "S11",
+    "Description": "S11: What percent of your time is spent in direct patient management as opposed to teaching, research, or administration?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "S13r1",
+    "Description": "S13r1: Monoclonal antibodies - Please indicate your level of familiarity with the following approved or investigational therapy classes for Relapsed / Refractory large B-cell lymphoma (LBCL).",
+    "Answer_Options": "1=Not at all Familiar,2=Slightly Familiar,3=Moderately Familiar,4=Very Familiar,5=Extremely Familiar",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S13r2",
+    "Description": "S13r2: Antibody conjugates - Please indicate your level of familiarity with the following approved or investigational therapy classes for Relapsed / Refractory large B-cell lymphoma (LBCL).",
+    "Answer_Options": "1=Not at all Familiar,2=Slightly Familiar,3=Moderately Familiar,4=Very Familiar,5=Extremely Familiar",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S13r3",
+    "Description": "S13r3: Bispecific T-cell engagers - Please indicate your level of familiarity with the following approved or investigational therapy classes for Relapsed / Refractory large B-cell lymphoma (LBCL).",
+    "Answer_Options": "1=Not at all Familiar,2=Slightly Familiar,3=Moderately Familiar,4=Very Familiar,5=Extremely Familiar",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S13r4",
+    "Description": "S13r4: Chimeric antigen receptor (CAR) T-cell therapy (CAR-T) - Please indicate your level of familiarity with the following approved or investigational therapy classes for Relapsed / Refractory large B-cell lymphoma (LBCL).",
+    "Answer_Options": "1=Not at all Familiar,2=Slightly Familiar,3=Moderately Familiar,4=Very Familiar,5=Extremely Familiar",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S13r5",
+    "Description": "S13r5: ASCT (Autologous Stem Cell Transplant) - Please indicate your level of familiarity with the following approved or investigational therapy classes for Relapsed / Refractory large B-cell lymphoma (LBCL).",
+    "Answer_Options": "1=Not at all Familiar,2=Slightly Familiar,3=Moderately Familiar,4=Very Familiar,5=Extremely Familiar",
+    "ParentQuestion": "S13"
+  },
+  {
+    "Column": "S12",
+    "Description": "S12: Within the past 12 months, which of the following best describes your role in your Relapsed / Refractory large B-cell lymphoma (LBCL) patients treated with CAR-T therapy?Please consider only commercially available CAR-T treatment outside of a clinica",
+    "Answer_Options": "1=I treated with CAR-T therapy or personally managed patients receiving CAR-T therapy within my own institution,2=I referred patients to another physician and team within my current institution for CAR-T consult / treatment,3=I referred patients to another institution for CAR-T therapy consult / treatment,4=I did not treat or refer patients for CAR-T therapy within the past 12 months"
+  },
+  {
+    "Column": "hS12",
+    "Description": "hS12: HIDDEN IN LIVE",
+    "Answer_Options": "1=TREATER,2=REFERRER"
+  },
+  {
+    "Column": "S12_FLAG",
+    "Description": "S12_FLAG: HIDDEN IN LIVE - QUALITY FLAG",
+    "Answer_Options": "0=NOT-FLAGGED,1=FLAGGED"
+  },
+  {
+    "Column": "hREFERRER",
+    "Description": "hREFERRER: HIDDEN IN LIVE",
+    "Answer_Options": "1=INTERNAL REFERRER,2=COMMUNITY REFERRER"
+  },
+  {
+    "Column": "h_Treaters_Referrers_quota",
+    "Description": "h_Treaters_Referrers_quota: HIDDEN IN LIVE",
+    "Answer_Options": "1=TREATER,2=Internal Referrers,3=Community Referrers"
+  },
+  {
+    "Column": "hSATELLITE",
+    "Description": "hSATELLITE: HIDDEN IN LIVE",
+    "Answer_Options": "1=SATELLITE REFERRER,2=NON-SATELLITE REFERRER"
+  },
+  {
+    "Column": "S14r1",
+    "Description": "S14r1: Monjuvi (tafasitamab), MorphoSys AG Antibody conjugates - Please indicate your level of comfort with these approved or investigational therapies for Relapsed / Refractory large B-cell lymphoma (LBCL).",
+    "Answer_Options": "1=Not at all Comfortable,2=Slightly Comfortable,3=Moderately Comfortable,4=Very Comfortable,5=Extremely Comfortable",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r2",
+    "Description": "S14r2: Polivy (polatuzumab vedotin piiq), Genentech/Roche - Please indicate your level of comfort with these approved or investigational therapies for Relapsed / Refractory large B-cell lymphoma (LBCL).",
+    "Answer_Options": "1=Not at all Comfortable,2=Slightly Comfortable,3=Moderately Comfortable,4=Very Comfortable,5=Extremely Comfortable",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r3",
+    "Description": "S14r3: Zynlonta (loncastuximab tesirine), ADC Therapeutics - Please indicate your level of comfort with these approved or investigational therapies for Relapsed / Refractory large B-cell lymphoma (LBCL).",
+    "Answer_Options": "1=Not at all Comfortable,2=Slightly Comfortable,3=Moderately Comfortable,4=Very Comfortable,5=Extremely Comfortable",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r4",
+    "Description": "S14r4: Yescarta (axicabtagene ciloleucel), Kite/Gilead - Please indicate your level of comfort with these approved or investigational therapies for Relapsed / Refractory large B-cell lymphoma (LBCL).",
+    "Answer_Options": "1=Not at all Comfortable,2=Slightly Comfortable,3=Moderately Comfortable,4=Very Comfortable,5=Extremely Comfortable",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r5",
+    "Description": "S14r5: Kymriah (tisagenlecleucel), Novartis - Please indicate your level of comfort with these approved or investigational therapies for Relapsed / Refractory large B-cell lymphoma (LBCL).",
+    "Answer_Options": "1=Not at all Comfortable,2=Slightly Comfortable,3=Moderately Comfortable,4=Very Comfortable,5=Extremely Comfortable",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r6",
+    "Description": "S14r6: Breyanzi (lisocabtagene maraleucel), Bristol Myers Squibb - Please indicate your level of comfort with these approved or investigational therapies for Relapsed / Refractory large B-cell lymphoma (LBCL).",
+    "Answer_Options": "1=Not at all Comfortable,2=Slightly Comfortable,3=Moderately Comfortable,4=Very Comfortable,5=Extremely Comfortable",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r7",
+    "Description": "S14r7: Epkinly (epcoritamab), Genmab/AbbVie - Please indicate your level of comfort with these approved or investigational therapies for Relapsed / Refractory large B-cell lymphoma (LBCL).",
+    "Answer_Options": "1=Not at all Comfortable,2=Slightly Comfortable,3=Moderately Comfortable,4=Very Comfortable,5=Extremely Comfortable",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r8",
+    "Description": "S14r8: Columvi (glofitamab), Genentech/Roche - Please indicate your level of comfort with these approved or investigational therapies for Relapsed / Refractory large B-cell lymphoma (LBCL).",
+    "Answer_Options": "1=Not at all Comfortable,2=Slightly Comfortable,3=Moderately Comfortable,4=Very Comfortable,5=Extremely Comfortable",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r9",
+    "Description": "S14r9: Odronextamab, Regeneron - Please indicate your level of comfort with these approved or investigational therapies for Relapsed / Refractory large B-cell lymphoma (LBCL).",
+    "Answer_Options": "1=Not at all Comfortable,2=Slightly Comfortable,3=Moderately Comfortable,4=Very Comfortable,5=Extremely Comfortable",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S14r10",
+    "Description": "S14r10: ASCT (Autologous Stem Cell Transplant) - Please indicate your level of comfort with these approved or investigational therapies for Relapsed / Refractory large B-cell lymphoma (LBCL).",
+    "Answer_Options": "1=Not at all Comfortable,2=Slightly Comfortable,3=Moderately Comfortable,4=Very Comfortable,5=Extremely Comfortable",
+    "ParentQuestion": "S14"
+  },
+  {
+    "Column": "S15",
+    "Description": "S15: Of the total individual cancer patients you managed in the past 12 months, how many were large B-cell lymphoma (LBCL) patients?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "S16r1c1",
+    "Description": "S16r1c1: First Line of Therapy (1L)(including patients who are actively receiving therapy, in remission, or are receiving maintenance therapy) - Of the LBCL patients you personally managed in the past 12 months, approximately how many patients were in the",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S16"
+  },
+  {
+    "Column": "S16r2c1",
+    "Description": "S16r2c1: Second Line of Therapy (2L)(including patients who have progressed from 1L but haven’t started next line of therapy) - Of the LBCL patients you personally managed in the past 12 months, approximately how many patients were in the following line",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S16"
+  },
+  {
+    "Column": "S16r3c1",
+    "Description": "S16r3c1: Third Line of Therapy (3L)(including patients who have progressed from 2L but haven’t started next line of therapy) - Of the LBCL patients you personally managed in the past 12 months, approximately how many patients were in the following lines",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S16"
+  },
+  {
+    "Column": "S16r4c1",
+    "Description": "S16r4c1: Fourth Line of Therapy or Beyond(including patients who have progressed from 3L but haven’t started next line of therapy) - Of the LBCL patients you personally managed in the past 12 months, approximately how many patients were in the following",
+    "Answer_Options": "NA",
+    "ParentQuestion": "S16"
+  },
+  {
+    "Column": "S17",
+    "Description": "S17: Are you currently affiliated with any pharmaceutical manufacturer, biotechnology manufacturer, or government agency as an employee, clinical researcher, paid consultant, member of a speaker panel, etc.?",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "A1",
+    "Description": "A1: Of the total LBCL patients you managed in the past 12 months, how many patients have you referred out to another physician team (within or outside of your institution) for management of their continued treatment of LBCL?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "A2r1c1",
+    "Description": "A2r1c1: Refractory(Absence of complete remission [CR] from 1L therapy) - Of the relapsed / refractory LBCL patients you managed in the past 12 months, how many fall in each of the following groups based on their response to 1L therapy? Your answers must s",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A2"
+  },
+  {
+    "Column": "A2r2c1",
+    "Description": "A2r2c1: Very Early Relapse (within 2 to 6 months)(Achieved CR, but relapsed within 2 to 6 months from end of 1L therapy) - Of the relapsed / refractory LBCL patients you managed in the past 12 months, how many fall in each of the following groups based on",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A2"
+  },
+  {
+    "Column": "A2r3c1",
+    "Description": "A2r3c1: Early Relapse (within 6 to 12 months)(Achieved CR, but relapsed within 6 to 12 months from end of 1L therapy) - Of the relapsed / refractory LBCL patients you managed in the past 12 months, how many fall in each of the following groups based on th",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A2"
+  },
+  {
+    "Column": "A2r4c1",
+    "Description": "A2r4c1: Late Relapse (after 12 months)(Achieved CR, but relapsed after 12 months from end of 1L therapy) - Of the relapsed / refractory LBCL patients you managed in the past 12 months, how many fall in each of the following groups based on their response",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A2"
+  },
+  {
+    "Column": "A3r1",
+    "Description": "A3r1: Colleagues seek my advice for managing relapsed / refractory LBCL patients/I seek advice from colleagues for managing relapsed / refractory LBCL patients - Please read the pairs of statements below and indicate which one you agree with more. You may",
+    "Answer_Options": "1=Much more - Statement A,2=More - Statement A,3=Equal,4=More - Statement B,5=Much more - Statement B",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r2",
+    "Description": "A3r2: I customize management for each relapsed / refractory LBCL patient, without necessarily adhering to guidelines or tumor board recommendations/I adhere to guidelines/protocols for managing relapsed / refractory LBCL patients - Please read the pairs o",
+    "Answer_Options": "1=Much more - Statement A,2=More - Statement A,3=Equal,4=More - Statement B,5=Much more - Statement B",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r3",
+    "Description": "A3r3: I present options with pros and cons of treatment options to my relapsed / refractory LBCL patients and include them in the decision/I select and recommend the one best treatment option to relapsed / refractory LBCL patients - Please read the pairs",
+    "Answer_Options": "1=Much more - Statement A,2=More - Statement A,3=Equal,4=More - Statement B,5=Much more - Statement B",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r4",
+    "Description": "A3r4: It is important to move my 2nd line LBCL patients to cell therapy (CAR-T or ASCT) as quickly as possible/There is limited downside to using other therapies at my disposal for 2nd line LBCL before moving patients to cell therapy - Please read the pai",
+    "Answer_Options": "1=Much more - Statement A,2=More - Statement A,3=Equal,4=More - Statement B,5=Much more - Statement B",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r5",
+    "Description": "A3r5: My 3RD and later line LBCL patients are best served continuing care through later lines of therapy with me/My 3rd and later line LBCL patients are best served continuing care through later lines of therapy with my network of colleagues - Please read",
+    "Answer_Options": "1=Much more - Statement A,2=More - Statement A,3=Equal,4=More - Statement B,5=Much more - Statement B",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r6",
+    "Description": "A3r6: I refer LBCL patients with a specific therapy in mind/I refer LBCL patients and leave treatment decision to my colleague - Please read the pairs of statements below and indicate which one you agree with more. You may feel that neither one is accurat",
+    "Answer_Options": "1=Much more - Statement A,2=More - Statement A,3=Equal,4=More - Statement B,5=Much more - Statement B",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A3r7",
+    "Description": "A3r7: I often prescribe a new treatment at the first opportunity - Please read the pairs of statements below and indicate which one you agree with more. You may feel that neither one is accurate, but please pick the one that is closest to your opinion.",
+    "Answer_Options": "1=Much more - Statement A,2=More - Statement A,3=Equal,4=More - Statement B,5=Much more - Statement B",
+    "ParentQuestion": "A3"
+  },
+  {
+    "Column": "A4r1",
+    "Description": "A4r1: I am comfortable referring my relapsed / refractory LBCL patients to other providers for more advanced care - How much do you agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r2",
+    "Description": "A4r2: I am willing to consider referring a relapsed / refractory LBCL patient to another provider for 2nd-line treatment - How much do you agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r3",
+    "Description": "A4r3: When choosing treatment options for my relapsed / refractory LBCL patients, I seek the most effective “curative” solution, regardless of non-clinical barriers such as cost, logistics, etc. - How much do you agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r4",
+    "Description": "A4r4: Overall survival is the most important metric when it comes to choosing a second-line therapy for relapsed / refractory LBCL - How much do you agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r5",
+    "Description": "A4r5: I am more aggressive than my peers in treating relapsed / refractory LBCL - How much do you agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r6",
+    "Description": "A4r6: I feel confident in managing adverse events across therapies for my relapsed / refractory LBCL patients - How much do you agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r7",
+    "Description": "A4r7: Therapies that do not involve cell therapy/transplant make it easier for my practice to effectively treat relapsed / refractory LBCL patients - How much do you agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r8",
+    "Description": "A4r8: My support & medical staff influence the treatments we consider for relapsed / refractory LBCL patients - How much do you agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r9",
+    "Description": "A4r9: Patient objections often affect my treatment choice for relapsed / refractory LBCL - How much do you agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r10",
+    "Description": "A4r10: I pre-emptively adjust my treatment choice for relapsed / refractory LBCL based on my understanding of the patient’s ability to handle non-clinical challenges (cost, logistics, etc.) - How much do you agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "A4r11",
+    "Description": "A4r11: Guidelines/institutional protocols play a significant role in my treatment choices for relapsed / refractory LBCL - How much do you agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "A4"
+  },
+  {
+    "Column": "FLAG_SL_A4",
+    "Description": "FLAG_SL_A4: FLAG_SL_A4 - HIDDEN IN LIVE",
+    "Answer_Options": "1=FLAGGED SL,2=NOT-FLAGGED"
+  },
+  {
+    "Column": "A5a_1r1",
+    "Description": "A5a_1r1: Monjuvi (tafasitamab) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2L), whe",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_1"
+  },
+  {
+    "Column": "A5a_1r2",
+    "Description": "A5a_1r2: Polivy (polatuzumab vedotin) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_1"
+  },
+  {
+    "Column": "A5a_1r3",
+    "Description": "A5a_1r3: Other antibody drug conjugates (not Polivy) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second lin",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_1"
+  },
+  {
+    "Column": "A5a_1r4",
+    "Description": "A5a_1r4: Commercially available CAR-T therapy (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank or",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_1"
+  },
+  {
+    "Column": "A5a_1r6",
+    "Description": "A5a_1r6: Autologous stem cell transplant (ASCT) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_1"
+  },
+  {
+    "Column": "A5a_1r8",
+    "Description": "A5a_1r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consid",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_1"
+  },
+  {
+    "Column": "A5a_1r7",
+    "Description": "A5a_1r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy bas",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_1"
+  },
+  {
+    "Column": "A5a_2r1",
+    "Description": "A5a_2r1: Monjuvi (tafasitamab) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2L), whe",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_2"
+  },
+  {
+    "Column": "A5a_2r2",
+    "Description": "A5a_2r2: Polivy (polatuzumab vedotin) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_2"
+  },
+  {
+    "Column": "A5a_2r3",
+    "Description": "A5a_2r3: Other antibody drug conjugates (not Polivy) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second lin",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_2"
+  },
+  {
+    "Column": "A5a_2r4",
+    "Description": "A5a_2r4: Commercially available CAR-T therapy (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank or",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_2"
+  },
+  {
+    "Column": "A5a_2r6",
+    "Description": "A5a_2r6: Autologous stem cell transplant (ASCT) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_2"
+  },
+  {
+    "Column": "A5a_2r8",
+    "Description": "A5a_2r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consid",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_2"
+  },
+  {
+    "Column": "A5a_2r7",
+    "Description": "A5a_2r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy bas",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_2"
+  },
+  {
+    "Column": "A5a_3r1",
+    "Description": "A5a_3r1: Monjuvi (tafasitamab) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2L), whe",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_3"
+  },
+  {
+    "Column": "A5a_3r2",
+    "Description": "A5a_3r2: Polivy (polatuzumab vedotin) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_3"
+  },
+  {
+    "Column": "A5a_3r3",
+    "Description": "A5a_3r3: Other antibody drug conjugates (not Polivy) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second lin",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_3"
+  },
+  {
+    "Column": "A5a_3r4",
+    "Description": "A5a_3r4: Commercially available CAR-T therapy (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank or",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_3"
+  },
+  {
+    "Column": "A5a_3r6",
+    "Description": "A5a_3r6: Autologous stem cell transplant (ASCT) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_3"
+  },
+  {
+    "Column": "A5a_3r8",
+    "Description": "A5a_3r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consid",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_3"
+  },
+  {
+    "Column": "A5a_3r7",
+    "Description": "A5a_3r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy bas",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_3"
+  },
+  {
+    "Column": "A5a_4r1",
+    "Description": "A5a_4r1: Monjuvi (tafasitamab) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2L), whe",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_4"
+  },
+  {
+    "Column": "A5a_4r2",
+    "Description": "A5a_4r2: Polivy (polatuzumab vedotin) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of therapy (2",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_4"
+  },
+  {
+    "Column": "A5a_4r3",
+    "Description": "A5a_4r3: Other antibody drug conjugates (not Polivy) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second lin",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_4"
+  },
+  {
+    "Column": "A5a_4r4",
+    "Description": "A5a_4r4: Commercially available CAR-T therapy (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank or",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_4"
+  },
+  {
+    "Column": "A5a_4r6",
+    "Description": "A5a_4r6: Autologous stem cell transplant (ASCT) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consider it as most appropriate second line of",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_4"
+  },
+  {
+    "Column": "A5a_4r8",
+    "Description": "A5a_4r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy based on your likelihood to consid",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_4"
+  },
+  {
+    "Column": "A5a_4r7",
+    "Description": "A5a_4r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Thinking about 2nd-line treatment for the patient type of relapsed / refractory LBCL patient shown below, rank order each therapy bas",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5a_4"
+  },
+  {
+    "Column": "A5b_1r1",
+    "Description": "A5b_1r1: Monjuvi (tafasitamab) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each therapy ba",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_1"
+  },
+  {
+    "Column": "A5b_1r2",
+    "Description": "A5b_1r2: Polivy (polatuzumab vedotin) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each the",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_1"
+  },
+  {
+    "Column": "A5b_1r3",
+    "Description": "A5b_1r3: Other antibody drug conjugates (not Polivy) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_1"
+  },
+  {
+    "Column": "A5b_1r4",
+    "Description": "A5b_1r4: Commercially available CAR-T therapy [Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type rece",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_1"
+  },
+  {
+    "Column": "A5b_1r5",
+    "Description": "A5b_1r5: Bispecifics [Columvi (glofitamab) or Epkinly (epcoritamab)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_1"
+  },
+  {
+    "Column": "A5b_1r6",
+    "Description": "A5b_1r6: Autologous stem cell transplant (ASCT) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank orde",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_1"
+  },
+  {
+    "Column": "A5b_1r8",
+    "Description": "A5b_1r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific trea",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_1"
+  },
+  {
+    "Column": "A5b_1r7",
+    "Description": "A5b_1r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_1"
+  },
+  {
+    "Column": "A5b_2r1",
+    "Description": "A5b_2r1: Monjuvi (tafasitamab) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each therapy ba",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_2"
+  },
+  {
+    "Column": "A5b_2r2",
+    "Description": "A5b_2r2: Polivy (polatuzumab vedotin) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each the",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_2"
+  },
+  {
+    "Column": "A5b_2r3",
+    "Description": "A5b_2r3: Other antibody drug conjugates (not Polivy) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_2"
+  },
+  {
+    "Column": "A5b_2r4",
+    "Description": "A5b_2r4: Commercially available CAR-T therapy [Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type rece",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_2"
+  },
+  {
+    "Column": "A5b_2r5",
+    "Description": "A5b_2r5: Bispecifics [Columvi (glofitamab) or Epkinly (epcoritamab)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_2"
+  },
+  {
+    "Column": "A5b_2r6",
+    "Description": "A5b_2r6: Autologous stem cell transplant (ASCT) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank orde",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_2"
+  },
+  {
+    "Column": "A5b_2r8",
+    "Description": "A5b_2r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific trea",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_2"
+  },
+  {
+    "Column": "A5b_2r7",
+    "Description": "A5b_2r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_2"
+  },
+  {
+    "Column": "A5b_3r1",
+    "Description": "A5b_3r1: Monjuvi (tafasitamab) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each therapy ba",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_3"
+  },
+  {
+    "Column": "A5b_3r2",
+    "Description": "A5b_3r2: Polivy (polatuzumab vedotin) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each the",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_3"
+  },
+  {
+    "Column": "A5b_3r3",
+    "Description": "A5b_3r3: Other antibody drug conjugates (not Polivy) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_3"
+  },
+  {
+    "Column": "A5b_3r4",
+    "Description": "A5b_3r4: Commercially available CAR-T therapy [Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type rece",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_3"
+  },
+  {
+    "Column": "A5b_3r5",
+    "Description": "A5b_3r5: Bispecifics [Columvi (glofitamab) or Epkinly (epcoritamab)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_3"
+  },
+  {
+    "Column": "A5b_3r6",
+    "Description": "A5b_3r6: Autologous stem cell transplant (ASCT) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank orde",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_3"
+  },
+  {
+    "Column": "A5b_3r8",
+    "Description": "A5b_3r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific trea",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_3"
+  },
+  {
+    "Column": "A5b_3r7",
+    "Description": "A5b_3r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_3"
+  },
+  {
+    "Column": "A5b_4r1",
+    "Description": "A5b_4r1: Monjuvi (tafasitamab) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each therapy ba",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_4"
+  },
+  {
+    "Column": "A5b_4r2",
+    "Description": "A5b_4r2: Polivy (polatuzumab vedotin) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank order each the",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_4"
+  },
+  {
+    "Column": "A5b_4r3",
+    "Description": "A5b_4r3: Other antibody drug conjugates (not Polivy) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_4"
+  },
+  {
+    "Column": "A5b_4r4",
+    "Description": "A5b_4r4: Commercially available CAR-T therapy [Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type rece",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_4"
+  },
+  {
+    "Column": "A5b_4r5",
+    "Description": "A5b_4r5: Bispecifics [Columvi (glofitamab) or Epkinly (epcoritamab)] - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_4"
+  },
+  {
+    "Column": "A5b_4r6",
+    "Description": "A5b_4r6: Autologous stem cell transplant (ASCT) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific treatments are available, as shown. Rank orde",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_4"
+  },
+  {
+    "Column": "A5b_4r8",
+    "Description": "A5b_4r8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice in 2nd line and bispecific trea",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_4"
+  },
+  {
+    "Column": "A5b_4r7",
+    "Description": "A5b_4r7: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - Now consider 3rd-line treatment of relapsed / refractory LBCL patients, assuming this patient type received your previous top choice",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A5b_4"
+  },
+  {
+    "Column": "A6r1c1",
+    "Description": "A6r1c1: Monjuvi (tafasitamab) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider all patients, including",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r2c1",
+    "Description": "A6r2c1: Polivy (polatuzumab vedotin) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider all patients, inc",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r3c1",
+    "Description": "A6r3c1: Other antibody drug conjugates (not Polivy) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider al",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r4c1",
+    "Description": "A6r4c1: Commercially available CAR-T therapy (Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the pas",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r5c1",
+    "Description": "A6r5c1: Bispecifics (Columvi (glofitamab) or Epkinly (epcoritamab)) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Pl",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r6c1",
+    "Description": "A6r6c1: Autologous stem cell transplant (ASCT) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider all pat",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r8c1",
+    "Description": "A6r8c1: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following ad",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r7c1",
+    "Description": "A6r7c1: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r98c1",
+    "Description": "A6r98c1: Other treatments - 2nd line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider all patients, including thos",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r1c2",
+    "Description": "A6r1c2: Monjuvi (tafasitamab) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider all patients,",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r2c2",
+    "Description": "A6r2c2: Polivy (polatuzumab vedotin) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider all pat",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r3c2",
+    "Description": "A6r3c2: Other antibody drug conjugates (not Polivy) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please c",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r4c2",
+    "Description": "A6r4c2: Commercially available CAR-T therapy (Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r5c2",
+    "Description": "A6r5c2: Bispecifics (Columvi (glofitamab) or Epkinly (epcoritamab)) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced the",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r6c2",
+    "Description": "A6r6c2: Autologous stem cell transplant (ASCT) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consid",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r8c2",
+    "Description": "A6r8c2: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the fo",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r7c2",
+    "Description": "A6r7c2: Clinical trials (including for CAR-T or any other available treatments/classes in trial for other indications) - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approxi",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6r98c2",
+    "Description": "A6r98c2: Other treatments - 3rd and later line - Now considering all the relapsed / refractory LBCL patients you personally managed in the past 12 months, approximately how many received the following advanced therapies? Please consider all patients, incl",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A6"
+  },
+  {
+    "Column": "A6_FLAG",
+    "Description": "A6_FLAG: HIDDEN IN LIVE - QUALITY FLAG",
+    "Answer_Options": "0=NOT-FLAGGED,1=FLAGGED"
+  },
+  {
+    "Column": "A7r1",
+    "Description": "A7r1: Monjuvi (tafasitamab) - For the following treatment options shown that you have not used in the past 12 months, please indicate whether you have ever personally used this treatment for your relapsed / refractory LBCL patients.",
+    "Answer_Options": "0=NO TO: Monjuvi (tafasitamab),1=Monjuvi (tafasitamab)",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r2",
+    "Description": "A7r2: Polivy (polatuzumab vedotin) - For the following treatment options shown that you have not used in the past 12 months, please indicate whether you have ever personally used this treatment for your relapsed / refractory LBCL patients.",
+    "Answer_Options": "0=NO TO: Polivy (polatuzumab vedotin),1=Polivy (polatuzumab vedotin)",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r3",
+    "Description": "A7r3: Other antibody drug conjugates (not Polivy) - For the following treatment options shown that you have not used in the past 12 months, please indicate whether you have ever personally used this treatment for your relapsed / refractory LBCL patients.",
+    "Answer_Options": "0=NO TO: Other antibody drug conjugates (not Polivy),1=Other antibody drug conjugates (not Polivy)",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r4",
+    "Description": "A7r4: Commercially available CAR-T therapy (Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)) - For the following treatment options shown that you have not used in the past 12 months, please indicate wh",
+    "Answer_Options": "0=NO TO: Commercially available CAR-T therapy (Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or,1=Commercially available CAR-T therapy (Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r5",
+    "Description": "A7r5: Bispecifics (Columvi (glofitamab) or Epkinly (epcoritamab)) - For the following treatment options shown that you have not used in the past 12 months, please indicate whether you have ever personally used this treatment for your relapsed / refractory",
+    "Answer_Options": "0=NO TO: Bispecifics (Columvi (glofitamab) or Epkinly (epcoritamab)),1=Bispecifics (Columvi (glofitamab) or Epkinly (epcoritamab))",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r6",
+    "Description": "A7r6: Autologous stem cell transplant (ASCT) - For the following treatment options shown that you have not used in the past 12 months, please indicate whether you have ever personally used this treatment for your relapsed / refractory LBCL patients.",
+    "Answer_Options": "0=NO TO: Autologous stem cell transplant (ASCT),1=Autologous stem cell transplant (ASCT)",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "A7r9",
+    "Description": "A7r9: Never used any of the above - For the following treatment options shown that you have not used in the past 12 months, please indicate whether you have ever personally used this treatment for your relapsed / refractory LBCL patients.",
+    "Answer_Options": "0=NO TO: Never used any of the above,1=Never used any of the above",
+    "ParentQuestion": "A7"
+  },
+  {
+    "Column": "hA7",
+    "Description": "hA7: CAR-T THERAPY autocode",
+    "Answer_Options": "1=CURENT USER,2=EVER USER,3=NEVER USER"
+  },
+  {
+    "Column": "A8",
+    "Description": "A8: In the past 12 months, for approximately what portion of your 1st line LBCL patients have you included Polivy in frontline treatment?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "A9r1c1",
+    "Description": "A9r1c1: Referred for CAR-T therapy - You previously indicated you referred LBCL patients out for continued treatment. Of these referred patients, how many did you refer with each of the following expectations?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A9"
+  },
+  {
+    "Column": "A9r2c1",
+    "Description": "A9r2c1: Referred for ASCT treatment - You previously indicated you referred LBCL patients out for continued treatment. Of these referred patients, how many did you refer with each of the following expectations?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A9"
+  },
+  {
+    "Column": "A9r3c1",
+    "Description": "A9r3c1: Referred for other advanced therapy - You previously indicated you referred LBCL patients out for continued treatment. Of these referred patients, how many did you refer with each of the following expectations?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A9"
+  },
+  {
+    "Column": "A9r4c1",
+    "Description": "A9r4c1: Referred without a specific therapy in mind(i.e., will let physician accepting referral decide) - You previously indicated you referred LBCL patients out for continued treatment. Of these referred patients, how many did you refer with each of the",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A9"
+  },
+  {
+    "Column": "A9b",
+    "Description": "A9b: When referring relapsed / refractory LBCL patients for CAR-T therapy, which of the following best describes who you refer to?",
+    "Answer_Options": "1=To a specific physician / treater who can administer CAR-T,2=To a larger institution or group enabled to administer CAR-T, not a specific physician,3=Other (specify)"
+  },
+  {
+    "Column": "A9br3oe",
+    "Description": "A9br3oe: When referring relapsed / refractory LBCL patients for CAR-T therapy, which of the following best describes who you refer to? - Other (specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A9b",
+    "Context": "A9b: A9b: When referring relapsed / refractory LBCL patients for CAR-T therapy, which of the following best describes who you refer to?"
+  },
+  {
+    "Column": "A10r1",
+    "Description": "A10r1: National Comprehensive Cancer Network (NCCN) based guidelines - Which of the following protocols, algorithms, or guidelines does your institution/practice implement for managing relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: National Comprehensive Cancer Network (NCCN) based guidelines,1=National Comprehensive Cancer Network (NCCN) based guidelines",
+    "ParentQuestion": "A10"
+  },
+  {
+    "Column": "A10r2",
+    "Description": "A10r2: American Society of Clinical Oncology (ASCO) based guidelines - Which of the following protocols, algorithms, or guidelines does your institution/practice implement for managing relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: American Society of Clinical Oncology (ASCO) based guidelines,1=American Society of Clinical Oncology (ASCO) based guidelines",
+    "ParentQuestion": "A10"
+  },
+  {
+    "Column": "A10r3",
+    "Description": "A10r3: Guidelines / pathways developed by my institution / health system / practice - Which of the following protocols, algorithms, or guidelines does your institution/practice implement for managing relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Guidelines / pathways developed by my institution / health system / practice,1=Guidelines / pathways developed by my institution / health system / practice",
+    "ParentQuestion": "A10"
+  },
+  {
+    "Column": "A10r98",
+    "Description": "A10r98: Other guidelines/protocols (Please specify) - Which of the following protocols, algorithms, or guidelines does your institution/practice implement for managing relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Other guidelines/protocols (Please specify),1=Other guidelines/protocols (Please specify)",
+    "ParentQuestion": "A10"
+  },
+  {
+    "Column": "A10r99",
+    "Description": "A10r99: My institution/practice does not have standardized protocols/algorithms for managing relapsed / refractory LBCL - Which of the following protocols, algorithms, or guidelines does your institution/practice implement for managing relapsed / refracto",
+    "Answer_Options": "0=NO TO: My institution/practice does not have standardized protocols/algorithms for managing relapsed / refractory LBCL,1=My institution/practice does not have standardized protocols/algorithms for managing relapsed / refractory LBCL",
+    "ParentQuestion": "A10"
+  },
+  {
+    "Column": "A10r98oe",
+    "Description": "A10r98oe: Which of the following protocols, algorithms, or guidelines does your institution/practice implement for managing relapsed / refractory LBCL patients? - Other guidelines/protocols (Please specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "A10"
+  },
+  {
+    "Column": "A11",
+    "Description": "A11: Which of the following best describes your approach to managing relapsed / refractory LBCL patients as it relates to your institution’s practice standards/guidelines?",
+    "Answer_Options": "1=I almost always follow my institution’s protocols / guidelines,2=I usually follow my institution’s protocols / guidelines with some exceptions,3=I have my own approach and rarely follow my institution’s protocols / guidelines"
+  },
+  {
+    "Column": "B1r1",
+    "Description": "B1r1: I reserve the recommendation of CAR-T therapy for 3rd or later lines of LBCL treatment / I recommend CAR-T therapy in 2nd line LBCL treatment whenever possible - Please read the pairs of statements below and indicate which one you agree with more. Y",
+    "Answer_Options": "1=Much more - Statement A,2=More - Statement A,3=Equal,4=More - Statement B,5=Much more - Statement B",
+    "ParentQuestion": "B1"
+  },
+  {
+    "Column": "B2r1",
+    "Description": "B2r1: I am familiar with the protocols of treating relapsed / refractory LBCL patients with CAR-T in an outpatient setting - How much do you agree with the following statements regarding cell therapies for relapsed / refractory LBCL patients?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B2"
+  },
+  {
+    "Column": "B2r2",
+    "Description": "B2r2: CAR-T therapy is appropriate for a very limited proportion of relapsed / refractory LBCL patients - How much do you agree with the following statements regarding cell therapies for relapsed / refractory LBCL patients?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B2"
+  },
+  {
+    "Column": "B2r3",
+    "Description": "B2r3: I am confident in my ability to identify relapsed / refractory LBCL patients for whom for CAR-T treatment is appropriate - How much do you agree with the following statements regarding cell therapies for relapsed / refractory LBCL patients?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B2"
+  },
+  {
+    "Column": "B2r4",
+    "Description": "B2r4: If I believe a relapsed / refractory LBCL patient is fit enough for CAR-T therapy, I recommend CAR-T - How much do you agree with the following statements regarding cell therapies for relapsed / refractory LBCL patients?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B2"
+  },
+  {
+    "Column": "B2r5",
+    "Description": "B2r5: Non-clinical barriers such as logistics, patient out-of-pocket costs, etc. are a significant barrier for relapsed / refractory LBCL patients to receive CAR-T therapy - How much do you agree with the following statements regarding cell therapies for",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B2"
+  },
+  {
+    "Column": "B2r6",
+    "Description": "B2r6: Non-clinical barriers such as logistics, patient out-of-pocket costs, etc. prevent CAR-T from being a viable option for many relapsed / refractory LBCL patients - How much do you agree with the following statements regarding cell therapies for relap",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B2"
+  },
+  {
+    "Column": "B2r7",
+    "Description": "B2r7: My practice has strong communication between referring doctors and CAR-T treaters for patients who receive CAR-T treatment - How much do you agree with the following statements regarding cell therapies for relapsed / refractory LBCL patients?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B2"
+  },
+  {
+    "Column": "B2r8",
+    "Description": "B2r8: As a treatment for relapsed / refractory LBCL, CAR-T is superior to autologous stem cell transplant - How much do you agree with the following statements regarding cell therapies for relapsed / refractory LBCL patients?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B2"
+  },
+  {
+    "Column": "B2r9",
+    "Description": "B2r9: If a LBCL bridging/holding therapy generates strong clinical response, I will delay or refrain from continuing a patient to cell therapy (CAR-T or ASCT) - How much do you agree with the following statements regarding cell therapies for relapsed / re",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B2"
+  },
+  {
+    "Column": "B2r10",
+    "Description": "B2r10: I have a team designated for educating and/or managing the treatment or referral of CAR-T eligible patients - How much do you agree with the following statements regarding cell therapies for relapsed / refractory LBCL patients?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B2"
+  },
+  {
+    "Column": "B2r11",
+    "Description": "B2r11: I hesitate to refer relapsed / refractory LBCL patients to CAR-T therapy because I do not want to lose the patient relationship - How much do you agree with the following statements regarding cell therapies for relapsed / refractory LBCL patients?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B2"
+  },
+  {
+    "Column": "B2r12",
+    "Description": "B2r12: I’m highly familiar with CAR-T side effect management processes for my relapsed / refractory LBCL patients - How much do you agree with the following statements regarding cell therapies for relapsed / refractory LBCL patients?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B2"
+  },
+  {
+    "Column": "FLAG_SL_B2",
+    "Description": "FLAG_SL_B2: FLAG_SL_B2 - HIDDEN IN LIVE",
+    "Answer_Options": "1=FLAGGED SL,2=NOT-FLAGGED"
+  },
+  {
+    "Column": "B3r1",
+    "Description": "B3r1: Yescarta (axicabtagene ciloleucel), Kite/Gilead - Thinking of the following CAR-T options, what is your overall impression of each of the following as a treatment for relapsed / refractory LBCL patients? If you do not have direct experience, please",
+    "Answer_Options": "1=Very unfavorable,2=Unfavorable,3=Neither favorable nor unfavorable,4=Favorable,5=Very favorable",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r2",
+    "Description": "B3r2: Kymriah (tisagenlecleucel), Novartis - Thinking of the following CAR-T options, what is your overall impression of each of the following as a treatment for relapsed / refractory LBCL patients? If you do not have direct experience, please answer base",
+    "Answer_Options": "1=Very unfavorable,2=Unfavorable,3=Neither favorable nor unfavorable,4=Favorable,5=Very favorable",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B3r3",
+    "Description": "B3r3: Breyanzi (lisocabtagene maraleucel), Bristol Myers Squibb - Thinking of the following CAR-T options, what is your overall impression of each of the following as a treatment for relapsed / refractory LBCL patients? If you do not have direct experienc",
+    "Answer_Options": "1=Very unfavorable,2=Unfavorable,3=Neither favorable nor unfavorable,4=Favorable,5=Very favorable",
+    "ParentQuestion": "B3"
+  },
+  {
+    "Column": "B4r1",
+    "Description": "B4r1: Yescarta (axicabtagene ciloleucel), Kite/Gilead - Of the relapsed / refractory LBCL patients you treated with CAR-T in the past 12 months, how many patients were treated with each of the following? Please consider both inpatient and outpatient. Your",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r2",
+    "Description": "B4r2: Kymriah (tisagenlecleucel), Novartis - Of the relapsed / refractory LBCL patients you treated with CAR-T in the past 12 months, how many patients were treated with each of the following? Please consider both inpatient and outpatient. Your answers mu",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "B4r3",
+    "Description": "B4r3: Breyanzi (lisocabtagene maraleucel), Bristol Myers Squibb - Of the relapsed / refractory LBCL patients you treated with CAR-T in the past 12 months, how many patients were treated with each of the following? Please consider both inpatient and outpat",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B4"
+  },
+  {
+    "Column": "vB4Calcr1",
+    "Description": "vB4Calcr1: Yescarta Loyalist - Calculate percents of total for each product: B4_X / TOTAL A6_4",
+    "Answer_Options": "NA",
+    "ParentQuestion": "vB4Calc"
+  },
+  {
+    "Column": "vB4Calcr2",
+    "Description": "vB4Calcr2: Breyanzi Loyalist - Calculate percents of total for each product: B4_X / TOTAL A6_4",
+    "Answer_Options": "NA",
+    "ParentQuestion": "vB4Calc"
+  },
+  {
+    "Column": "vB4Calcr3",
+    "Description": "vB4Calcr3: Kymriah Loyalist - Calculate percents of total for each product: B4_X / TOTAL A6_4",
+    "Answer_Options": "NA",
+    "ParentQuestion": "vB4Calc"
+  },
+  {
+    "Column": "CAR_T_TREATERS",
+    "Description": "CAR_T_TREATERS: HIDDEN VARIABLES FOR CAR-T TREATERS ONLY",
+    "Answer_Options": "1=Yescarta Loyalist,2=Breyanzi Loyalist,3=Kymriah Loyalist,4=Splitter"
+  },
+  {
+    "Column": "B5r1",
+    "Description": "B5r1: Received CAR-T in the outpatient setting - Of the relapsed / refractory LBCL patients you have treated and/or referred for treatment with CAR-T in the past 12 months, what percentage of these patients received CAR-T in an outpatient vs. inpatient se",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B5"
+  },
+  {
+    "Column": "B5r2",
+    "Description": "B5r2: Received CAR-T in the inpatient setting - Of the relapsed / refractory LBCL patients you have treated and/or referred for treatment with CAR-T in the past 12 months, what percentage of these patients received CAR-T in an outpatient vs. inpatient set",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B5"
+  },
+  {
+    "Column": "noanswerB5_r98",
+    "Description": "noanswerB5_r98: Of the $ {commaint(hA6_SUM.r4.ival)} relapsed / refractory LBCL patients you have treated and/or referred for treatment with CAR-T in the past 12 months, what percentage of these patients received CAR-T in an outpatient vs. inpatient setti",
+    "Answer_Options": "0=NO TO: Of the $ {commaint(hA6_SUM.r4.ival)} relapsed / refractory LBCL patients you have treated and/or referred for tre,1=Of the $ {commaint(hA6_SUM.r4.ival)} relapsed / refractory LBCL patients you have treated and/or referred for treatment",
+    "ParentQuestion": "noanswerB5_"
+  },
+  {
+    "Column": "noanswerB5_r99",
+    "Description": "noanswerB5_r99: Of the $ {commaint(hA6_SUM.r4.ival)} relapsed / refractory LBCL patients you have treated and/or referred for treatment with CAR-T in the past 12 months, what percentage of these patients received CAR-T in an outpatient vs. inpatient setti",
+    "Answer_Options": "0=NO TO: Of the $ {commaint(hA6_SUM.r4.ival)} relapsed / refractory LBCL patients you have treated and/or referred for tre,1=Of the $ {commaint(hA6_SUM.r4.ival)} relapsed / refractory LBCL patients you have treated and/or referred for treatment",
+    "ParentQuestion": "noanswerB5_"
+  },
+  {
+    "Column": "FLAG_B5",
+    "Description": "FLAG_B5: FLAG_B5 - Code 99",
+    "Answer_Options": "1=FLAGGED,2=NOT-FLAGGED"
+  },
+  {
+    "Column": "B5ar1c1",
+    "Description": "B5ar1c1: Yescarta (axicabtagene ciloleucel), Kite/Gilead - Of the relapsed / refractory LBCL patients you treated with CAR-T in the outpatient setting in the past 12 months, what percentage were treated with each of the following?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B5a"
+  },
+  {
+    "Column": "B5ar2c1",
+    "Description": "B5ar2c1: Kymriah (tisagenlecleucel), Novartis - Of the relapsed / refractory LBCL patients you treated with CAR-T in the outpatient setting in the past 12 months, what percentage were treated with each of the following?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B5a"
+  },
+  {
+    "Column": "B5ar3c1",
+    "Description": "B5ar3c1: Breyanzi (lisocabtagene maraleucel), Bristol Myers Squibb - Of the relapsed / refractory LBCL patients you treated with CAR-T in the outpatient setting in the past 12 months, what percentage were treated with each of the following?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B5a"
+  },
+  {
+    "Column": "OUTPATIENT_CAR_T_TREATERS",
+    "Description": "OUTPATIENT_CAR_T_TREATERS: HIDDEN VARIABLES FOR OUTPATIENT CAR-T TREATERS ONLY (B5A BASE)",
+    "Answer_Options": "1=Yescarta Loyalist,2=Breyanzi Loyalist,3=Kymriah Loyalist,4=Splitter"
+  },
+  {
+    "Column": "B5b",
+    "Description": "B5b: Which of the following best describes how you consider outpatient vs. inpatient CAR-T treatment for relapsed / refractory LBCL patients?",
+    "Answer_Options": "1=I consider CAR-T treatment in the outpatient setting for most or all patients,2=I consider CAR-T treatment in the outpatient setting for certain subgroups of patients,3=I do not or rarely consider CAR-T treatment in the outpatient setting"
+  },
+  {
+    "Column": "B6r1",
+    "Description": "B6r1: … provides a superior patient experience to inpatient CAR-T treatment - How much do you agree that outpatient CAR-T treatment for relapsed / refractory LBCL patients…",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r2",
+    "Description": "B6r2: … provides superior patient outcomes to inpatient CAR-T treatment - How much do you agree that outpatient CAR-T treatment for relapsed / refractory LBCL patients…",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r3",
+    "Description": "B6r3: … allows for many more patients to have access to CAR-T treatment - How much do you agree that outpatient CAR-T treatment for relapsed / refractory LBCL patients…",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r4",
+    "Description": "B6r4: … increases my likelihood of recommending CAR-T treatment - How much do you agree that outpatient CAR-T treatment for relapsed / refractory LBCL patients…",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "B6r5",
+    "Description": "B6r5: … is financially preferable than inpatient CAR-T treatment - How much do you agree that outpatient CAR-T treatment for relapsed / refractory LBCL patients…",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B6"
+  },
+  {
+    "Column": "FLAG_SL_B6",
+    "Description": "FLAG_SL_B6: FLAG_SL_B6 - HIDDEN IN LIVE",
+    "Answer_Options": "1=FLAGGED SL,2=NOT-FLAGGED"
+  },
+  {
+    "Column": "B7r1",
+    "Description": "B7r1: Our institutional logistics around CAR-T therapy for relapsed / refractory LBCL patients cause delays to treatment beyond the time needed to manufacture the treatment - How much do you agree with the following statements regarding CAR-T treatment fo",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r2",
+    "Description": "B7r2: There are minimal differences between CAR-T therapy options - How much do you agree with the following statements regarding CAR-T treatment for relapsed / refractory LBCL patients?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r3",
+    "Description": "B7r3: Multidisciplinary teams have a significant positive impact on treatment outcomes - How much do you agree with the following statements regarding CAR-T treatment for relapsed / refractory LBCL patients?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r4",
+    "Description": "B7r4: My institution has capacity to manage more CAR-T patients than our existing volume - How much do you agree with the following statements regarding CAR-T treatment for relapsed / refractory LBCL patients?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B7r5",
+    "Description": "B7r5: Guidelines within my institution affect my choice of a specific CAR-T treatment - How much do you agree with the following statements regarding CAR-T treatment for relapsed / refractory LBCL patients?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "B7"
+  },
+  {
+    "Column": "B8r1",
+    "Description": "B8r1: ECOG 0-1; No or few comorbidities - How likely are you to consider CAR-T treatment for the following patient types among relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=0 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Not at all likely to consider,1=1,2=2,3=3,4=4,5=5 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Moderately likely,6=6,7=7,8=8,9=9,10=10 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Extremely likely to consider",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r2",
+    "Description": "B8r2: ECOG 2-3; Few comorbidities - How likely are you to consider CAR-T treatment for the following patient types among relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=0 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Not at all likely to consider,1=1,2=2,3=3,4=4,5=5 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Moderately likely,6=6,7=7,8=8,9=9,10=10 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Extremely likely to consider",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r3",
+    "Description": "B8r3: ECOG 3-4; Many comorbidities - How likely are you to consider CAR-T treatment for the following patient types among relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=0 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Not at all likely to consider,1=1,2=2,3=3,4=4,5=5 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Moderately likely,6=6,7=7,8=8,9=9,10=10 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Extremely likely to consider",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r4",
+    "Description": "B8r4: Refractory - How likely are you to consider CAR-T treatment for the following patient types among relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=0 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Not at all likely to consider,1=1,2=2,3=3,4=4,5=5 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Moderately likely,6=6,7=7,8=8,9=9,10=10 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Extremely likely to consider",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r5",
+    "Description": "B8r5: Very early relapse (within 2-6 months) - How likely are you to consider CAR-T treatment for the following patient types among relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=0 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Not at all likely to consider,1=1,2=2,3=3,4=4,5=5 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Moderately likely,6=6,7=7,8=8,9=9,10=10 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Extremely likely to consider",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r6",
+    "Description": "B8r6: Early relapse (within 6-12 months) - How likely are you to consider CAR-T treatment for the following patient types among relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=0 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Not at all likely to consider,1=1,2=2,3=3,4=4,5=5 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Moderately likely,6=6,7=7,8=8,9=9,10=10 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Extremely likely to consider",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "B8r7",
+    "Description": "B8r7: Late relapse (after 1 year) - How likely are you to consider CAR-T treatment for the following patient types among relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=0 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Not at all likely to consider,1=1,2=2,3=3,4=4,5=5 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Moderately likely,6=6,7=7,8=8,9=9,10=10 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Extremely likely to consider",
+    "ParentQuestion": "B8"
+  },
+  {
+    "Column": "FLAG_SL_B8",
+    "Description": "FLAG_SL_B8: FLAG_SL_B8 - HIDDEN IN LIVE",
+    "Answer_Options": "1=FLAGGED SL,2=NOT-FLAGGED"
+  },
+  {
+    "Column": "B8b",
+    "Description": "B8b: Assuming an LBCL patient has an ECOG of 1, no comorbidities, and relapsed within 12 months, up to what age would you consider CAR-T treatment? That is, is there an age above which you would not consider CAR-T?",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "noanswerB8b_r98",
+    "Description": "noanswerB8b_r98: Assuming an LBCL patient has an ECOG of 1, no comorbidities, and relapsed within 12 months, up to what age would you consider $ {\"treating with\" if hS12.r1 else \"referring for\"} CAR-T treatment? That is, is there an age above which you wo",
+    "Answer_Options": "0=NO TO: Assuming an LBCL patient has an ECOG of 1, no comorbidities, and relapsed within 12 months, up to what age would,1=Assuming an LBCL patient has an ECOG of 1, no comorbidities, and relapsed within 12 months, up to what age would you con",
+    "ParentQuestion": "noanswerB8b_"
+  },
+  {
+    "Column": "B9r1",
+    "Description": "B9r1: ECOG 0-1; No or few comorbidities - In which line of therapy would you be most likely to consider CAR-T treatment for each of these types of relapsed / refractory LBCL patients?",
+    "Answer_Options": "2=2L,3=3L,4=4L+,9=I Would Not Consider CAR-T for this patient",
+    "ParentQuestion": "B9"
+  },
+  {
+    "Column": "B9r2",
+    "Description": "B9r2: ECOG 2-3; Few comorbidities - In which line of therapy would you be most likely to consider CAR-T treatment for each of these types of relapsed / refractory LBCL patients?",
+    "Answer_Options": "2=2L,3=3L,4=4L+,9=I Would Not Consider CAR-T for this patient",
+    "ParentQuestion": "B9"
+  },
+  {
+    "Column": "B9r3",
+    "Description": "B9r3: ECOG 3-4; Many comorbidities - In which line of therapy would you be most likely to consider CAR-T treatment for each of these types of relapsed / refractory LBCL patients?",
+    "Answer_Options": "2=2L,3=3L,4=4L+,9=I Would Not Consider CAR-T for this patient",
+    "ParentQuestion": "B9"
+  },
+  {
+    "Column": "B9r4",
+    "Description": "B9r4: Refractory - In which line of therapy would you be most likely to consider CAR-T treatment for each of these types of relapsed / refractory LBCL patients?",
+    "Answer_Options": "2=2L,3=3L,4=4L+,9=I Would Not Consider CAR-T for this patient",
+    "ParentQuestion": "B9"
+  },
+  {
+    "Column": "B9r5",
+    "Description": "B9r5: Very early relapse (within 2-6 months) - In which line of therapy would you be most likely to consider CAR-T treatment for each of these types of relapsed / refractory LBCL patients?",
+    "Answer_Options": "2=2L,3=3L,4=4L+,9=I Would Not Consider CAR-T for this patient",
+    "ParentQuestion": "B9"
+  },
+  {
+    "Column": "B9r6",
+    "Description": "B9r6: Early relapse (within 6-12 months) - In which line of therapy would you be most likely to consider CAR-T treatment for each of these types of relapsed / refractory LBCL patients?",
+    "Answer_Options": "2=2L,3=3L,4=4L+,9=I Would Not Consider CAR-T for this patient",
+    "ParentQuestion": "B9"
+  },
+  {
+    "Column": "B9r7",
+    "Description": "B9r7: Late relapse (after 1 year) - In which line of therapy would you be most likely to consider CAR-T treatment for each of these types of relapsed / refractory LBCL patients?",
+    "Answer_Options": "2=2L,3=3L,4=4L+,9=I Would Not Consider CAR-T for this patient",
+    "ParentQuestion": "B9"
+  },
+  {
+    "Column": "B10r1",
+    "Description": "B10r1: ECOG 0-1; No or few comorbidities - Which of the following specific CAR-T therapies would you prefer for each of these types of relapsed / refractory LBCL patients?",
+    "Answer_Options": "2=Yescarta,3=Breyanzi,4=Kymriah,9=No Preference",
+    "ParentQuestion": "B10"
+  },
+  {
+    "Column": "B10r2",
+    "Description": "B10r2: ECOG 2-3; Few comorbidities - Which of the following specific CAR-T therapies would you prefer for each of these types of relapsed / refractory LBCL patients?",
+    "Answer_Options": "2=Yescarta,3=Breyanzi,4=Kymriah,9=No Preference",
+    "ParentQuestion": "B10"
+  },
+  {
+    "Column": "B10r3",
+    "Description": "B10r3: ECOG 3-4; Many comorbidities - Which of the following specific CAR-T therapies would you prefer for each of these types of relapsed / refractory LBCL patients?",
+    "Answer_Options": "2=Yescarta,3=Breyanzi,4=Kymriah,9=No Preference",
+    "ParentQuestion": "B10"
+  },
+  {
+    "Column": "B10r4",
+    "Description": "B10r4: Refractory - Which of the following specific CAR-T therapies would you prefer for each of these types of relapsed / refractory LBCL patients?",
+    "Answer_Options": "2=Yescarta,3=Breyanzi,4=Kymriah,9=No Preference",
+    "ParentQuestion": "B10"
+  },
+  {
+    "Column": "B10r5",
+    "Description": "B10r5: Very early relapse (within 2-6 months) - Which of the following specific CAR-T therapies would you prefer for each of these types of relapsed / refractory LBCL patients?",
+    "Answer_Options": "2=Yescarta,3=Breyanzi,4=Kymriah,9=No Preference",
+    "ParentQuestion": "B10"
+  },
+  {
+    "Column": "B10r6",
+    "Description": "B10r6: Early relapse (within 6-12 months) - Which of the following specific CAR-T therapies would you prefer for each of these types of relapsed / refractory LBCL patients?",
+    "Answer_Options": "2=Yescarta,3=Breyanzi,4=Kymriah,9=No Preference",
+    "ParentQuestion": "B10"
+  },
+  {
+    "Column": "B10r7",
+    "Description": "B10r7: Late relapse (after 1 year) - Which of the following specific CAR-T therapies would you prefer for each of these types of relapsed / refractory LBCL patients?",
+    "Answer_Options": "2=Yescarta,3=Breyanzi,4=Kymriah,9=No Preference",
+    "ParentQuestion": "B10"
+  },
+  {
+    "Column": "B11r1c1",
+    "Description": "B11r1c1: Multiple Myeloma - Personally Treated with CAR-T - Which of the following conditions, if any, have you treated with and/or referred for CAR-T therapy?",
+    "Answer_Options": "0=NO TO: Multiple Myeloma,1=Multiple Myeloma",
+    "ParentQuestion": "B11"
+  },
+  {
+    "Column": "B11r2c1",
+    "Description": "B11r2c1: Follicular lymphoma - Personally Treated with CAR-T - Which of the following conditions, if any, have you treated with and/or referred for CAR-T therapy?",
+    "Answer_Options": "0=NO TO: Follicular lymphoma,1=Follicular lymphoma",
+    "ParentQuestion": "B11"
+  },
+  {
+    "Column": "B11r3c1",
+    "Description": "B11r3c1: Mantle cell lymphoma - Personally Treated with CAR-T - Which of the following conditions, if any, have you treated with and/or referred for CAR-T therapy?",
+    "Answer_Options": "0=NO TO: Mantle cell lymphoma,1=Mantle cell lymphoma",
+    "ParentQuestion": "B11"
+  },
+  {
+    "Column": "B11r4c1",
+    "Description": "B11r4c1: B-cell precursor ALL - Personally Treated with CAR-T - Which of the following conditions, if any, have you treated with and/or referred for CAR-T therapy?",
+    "Answer_Options": "0=NO TO: B-cell precursor ALL,1=B-cell precursor ALL",
+    "ParentQuestion": "B11"
+  },
+  {
+    "Column": "B11r5c1",
+    "Description": "B11r5c1: Other (specify) - Personally Treated with CAR-T - Which of the following conditions, if any, have you treated with and/or referred for CAR-T therapy?",
+    "Answer_Options": "0=NO TO: Other (specify),1=Other (specify)",
+    "ParentQuestion": "B11"
+  },
+  {
+    "Column": "B11r6c1",
+    "Description": "B11r6c1: None of the above - Personally Treated with CAR-T - Which of the following conditions, if any, have you treated with and/or referred for CAR-T therapy?",
+    "Answer_Options": "0=NO TO: None of the above,1=None of the above",
+    "ParentQuestion": "B11"
+  },
+  {
+    "Column": "B11r1c2",
+    "Description": "B11r1c2: Multiple Myeloma - Referred to Another HCP/Institution for CAR-T - Which of the following conditions, if any, have you treated with and/or referred for CAR-T therapy?",
+    "Answer_Options": "0=NO TO: Multiple Myeloma,1=Multiple Myeloma",
+    "ParentQuestion": "B11"
+  },
+  {
+    "Column": "B11r2c2",
+    "Description": "B11r2c2: Follicular lymphoma - Referred to Another HCP/Institution for CAR-T - Which of the following conditions, if any, have you treated with and/or referred for CAR-T therapy?",
+    "Answer_Options": "0=NO TO: Follicular lymphoma,1=Follicular lymphoma",
+    "ParentQuestion": "B11"
+  },
+  {
+    "Column": "B11r3c2",
+    "Description": "B11r3c2: Mantle cell lymphoma - Referred to Another HCP/Institution for CAR-T - Which of the following conditions, if any, have you treated with and/or referred for CAR-T therapy?",
+    "Answer_Options": "0=NO TO: Mantle cell lymphoma,1=Mantle cell lymphoma",
+    "ParentQuestion": "B11"
+  },
+  {
+    "Column": "B11r4c2",
+    "Description": "B11r4c2: B-cell precursor ALL - Referred to Another HCP/Institution for CAR-T - Which of the following conditions, if any, have you treated with and/or referred for CAR-T therapy?",
+    "Answer_Options": "0=NO TO: B-cell precursor ALL,1=B-cell precursor ALL",
+    "ParentQuestion": "B11"
+  },
+  {
+    "Column": "B11r5c2",
+    "Description": "B11r5c2: Other (specify) - Referred to Another HCP/Institution for CAR-T - Which of the following conditions, if any, have you treated with and/or referred for CAR-T therapy?",
+    "Answer_Options": "0=NO TO: Other (specify),1=Other (specify)",
+    "ParentQuestion": "B11"
+  },
+  {
+    "Column": "B11r6c2",
+    "Description": "B11r6c2: None of the above - Referred to Another HCP/Institution for CAR-T - Which of the following conditions, if any, have you treated with and/or referred for CAR-T therapy?",
+    "Answer_Options": "0=NO TO: None of the above,1=None of the above",
+    "ParentQuestion": "B11"
+  },
+  {
+    "Column": "B11r5oe",
+    "Description": "B11r5oe: Which of the following conditions, if any, have you treated with and/or referred for CAR-T therapy? - Other (specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "B11"
+  },
+  {
+    "Column": "B12",
+    "Description": "B12: For your relapsed / refractory LBCL patients undergoing CAR-T therapy, do you prescribe prophylactic corticosteroids?",
+    "Answer_Options": "1=Yes,2=No"
+  },
+  {
+    "Column": "C1",
+    "Description": "C1: Thinking about the next 12 months, approximately how many total LBCL patients (all lines of therapy) do you expect to manage? Your answer for the past 12 months is shown for reference.",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C2r1",
+    "Description": "C2r1: Monjuvi (tafasitamab) - Now only considering your treatment of relapsed / refractory LBCL patients over the next 12 months, how do you expect your usage or referral of each of the following treatments to your patients to change, if at all?",
+    "Answer_Options": "1=Decrease,2=Stay the same,3=Increase",
+    "ParentQuestion": "C2"
+  },
+  {
+    "Column": "C2r2",
+    "Description": "C2r2: Polivy (polatuzumab vedotin) - Now only considering your treatment of relapsed / refractory LBCL patients over the next 12 months, how do you expect your usage or referral of each of the following treatments to your patients to change, if at all?",
+    "Answer_Options": "1=Decrease,2=Stay the same,3=Increase",
+    "ParentQuestion": "C2"
+  },
+  {
+    "Column": "C2r3",
+    "Description": "C2r3: Other antibody drug conjugates (not Polivy) - Now only considering your treatment of relapsed / refractory LBCL patients over the next 12 months, how do you expect your usage or referral of each of the following treatments to your patients to change",
+    "Answer_Options": "1=Decrease,2=Stay the same,3=Increase",
+    "ParentQuestion": "C2"
+  },
+  {
+    "Column": "C2r4",
+    "Description": "C2r4: Commercially available CAR-T therapy (Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)) - Now only considering your treatment of relapsed / refractory LBCL patients over the next 12 months, how do",
+    "Answer_Options": "1=Decrease,2=Stay the same,3=Increase",
+    "ParentQuestion": "C2"
+  },
+  {
+    "Column": "C2r5",
+    "Description": "C2r5: Bispecifics Columvi (glofitamab) or Epkinly (epcoritamab) - Now only considering your treatment of relapsed / refractory LBCL patients over the next 12 months, how do you expect your usage or referral of each of the following treatments to your pati",
+    "Answer_Options": "1=Decrease,2=Stay the same,3=Increase",
+    "ParentQuestion": "C2"
+  },
+  {
+    "Column": "C2r6",
+    "Description": "C2r6: Autologous stem cell transplant (ASCT) - Now only considering your treatment of relapsed / refractory LBCL patients over the next 12 months, how do you expect your usage or referral of each of the following treatments to your patients to change, if",
+    "Answer_Options": "1=Decrease,2=Stay the same,3=Increase",
+    "ParentQuestion": "C2"
+  },
+  {
+    "Column": "C2ar1",
+    "Description": "C2ar1: Inpatient CAR-T treatment - You indicated that you expect your usage or recommendation of CAR-T for relapsed / refractory LBCL patients over the next 12 months to [pipe: pipe_C2a]. More specifically, how do you expect the usage of CAR-T to change i",
+    "Answer_Options": "1=Decrease,2=Stay the same,3=Increase,99=Don't Know",
+    "ParentQuestion": "C2a"
+  },
+  {
+    "Column": "C2ar2",
+    "Description": "C2ar2: Outpatient CAR-T treatment - You indicated that you expect your usage or recommendation of CAR-T for relapsed / refractory LBCL patients over the next 12 months to [pipe: pipe_C2a]. More specifically, how do you expect the usage of CAR-T to change",
+    "Answer_Options": "1=Decrease,2=Stay the same,3=Increase,99=Don't Know",
+    "ParentQuestion": "C2a"
+  },
+  {
+    "Column": "C2br1",
+    "Description": "C2br1: Yescarta (axicabtagene ciloleucel), Kite/Gilead - How do you expect your usage of the following specific CAR-T therapies for relapsed / refractory LBCL patients to change in the next 12 months?",
+    "Answer_Options": "1=Decrease,2=Stay the same,3=Increase",
+    "ParentQuestion": "C2b"
+  },
+  {
+    "Column": "C2br2",
+    "Description": "C2br2: Kymriah (tisagenlecleucel), Novartis - How do you expect your usage of the following specific CAR-T therapies for relapsed / refractory LBCL patients to change in the next 12 months?",
+    "Answer_Options": "1=Decrease,2=Stay the same,3=Increase",
+    "ParentQuestion": "C2b"
+  },
+  {
+    "Column": "C2br3",
+    "Description": "C2br3: Breyanzi (lisocabtagene maraleucel), Bristol Myers Squibb - How do you expect your usage of the following specific CAR-T therapies for relapsed / refractory LBCL patients to change in the next 12 months?",
+    "Answer_Options": "1=Decrease,2=Stay the same,3=Increase",
+    "ParentQuestion": "C2b"
+  },
+  {
+    "Column": "C3r1",
+    "Description": "C3r1: I expect greater availability of outpatient CAR-T treatment to lead to increased usage of CAR-T for relapsed / refractory LBCL patients - How much do you agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "C3"
+  },
+  {
+    "Column": "C3r2",
+    "Description": "C3r2: I expect CAR-T in second-line treatment for my LBCL patients to increase - How much do you agree with the following statements?",
+    "Answer_Options": "1=Do not agree at all,2=Slightly agree,3=Moderately agree,4=Strongly agree,5=Completely agree",
+    "ParentQuestion": "C3"
+  },
+  {
+    "Column": "C4r1",
+    "Description": "C4r1: Efficacy - Overall Survival - Now, to the best of your knowledge and experience, please rate the use of CAR-T therapy for relapsed / refractory LBCL patients relative to other treatment choices on each aspect. If you do not have direct experience, p",
+    "Answer_Options": "1=Much worse,2=Worse,3=No different,4=Better,5=Much better",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r2",
+    "Description": "C4r2: Efficacy - Progression/Event Free Survival - Now, to the best of your knowledge and experience, please rate the use of CAR-T therapy for relapsed / refractory LBCL patients relative to other treatment choices on each aspect. If you do not have direc",
+    "Answer_Options": "1=Much worse,2=Worse,3=No different,4=Better,5=Much better",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r3",
+    "Description": "C4r3: Safety - Now, to the best of your knowledge and experience, please rate the use of CAR-T therapy for relapsed / refractory LBCL patients relative to other treatment choices on each aspect. If you do not have direct experience, please answer based on",
+    "Answer_Options": "1=Much worse,2=Worse,3=No different,4=Better,5=Much better",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r4",
+    "Description": "C4r4: Time to treatment - Now, to the best of your knowledge and experience, please rate the use of CAR-T therapy for relapsed / refractory LBCL patients relative to other treatment choices on each aspect. If you do not have direct experience, please answ",
+    "Answer_Options": "1=Much worse,2=Worse,3=No different,4=Better,5=Much better",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r5",
+    "Description": "C4r5: Logistics of treatment & follow-up - Now, to the best of your knowledge and experience, please rate the use of CAR-T therapy for relapsed / refractory LBCL patients relative to other treatment choices on each aspect. If you do not have direct experi",
+    "Answer_Options": "1=Much worse,2=Worse,3=No different,4=Better,5=Much better",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r6",
+    "Description": "C4r6: Patient preference - Now, to the best of your knowledge and experience, please rate the use of CAR-T therapy for relapsed / refractory LBCL patients relative to other treatment choices on each aspect. If you do not have direct experience, please ans",
+    "Answer_Options": "1=Much worse,2=Worse,3=No different,4=Better,5=Much better",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r7",
+    "Description": "C4r7: Patient support programs - Now, to the best of your knowledge and experience, please rate the use of CAR-T therapy for relapsed / refractory LBCL patients relative to other treatment choices on each aspect. If you do not have direct experience, plea",
+    "Answer_Options": "1=Much worse,2=Worse,3=No different,4=Better,5=Much better",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r8",
+    "Description": "C4r8: Availability of the therapy for use - Now, to the best of your knowledge and experience, please rate the use of CAR-T therapy for relapsed / refractory LBCL patients relative to other treatment choices on each aspect. If you do not have direct exper",
+    "Answer_Options": "1=Much worse,2=Worse,3=No different,4=Better,5=Much better",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r9",
+    "Description": "C4r9: Guideline recommendations - Now, to the best of your knowledge and experience, please rate the use of CAR-T therapy for relapsed / refractory LBCL patients relative to other treatment choices on each aspect. If you do not have direct experience, ple",
+    "Answer_Options": "1=Much worse,2=Worse,3=No different,4=Better,5=Much better",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r10",
+    "Description": "C4r10: Financial impact to treating practice - Now, to the best of your knowledge and experience, please rate the use of CAR-T therapy for relapsed / refractory LBCL patients relative to other treatment choices on each aspect. If you do not have direct ex",
+    "Answer_Options": "1=Much worse,2=Worse,3=No different,4=Better,5=Much better",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "C4r11",
+    "Description": "C4r11: Availability of caregiver support - Now, to the best of your knowledge and experience, please rate the use of CAR-T therapy for relapsed / refractory LBCL patients relative to other treatment choices on each aspect. If you do not have direct experi",
+    "Answer_Options": "1=Much worse,2=Worse,3=No different,4=Better,5=Much better",
+    "ParentQuestion": "C4"
+  },
+  {
+    "Column": "FLAG_SL_C4",
+    "Description": "FLAG_SL_C4: FLAG_SL_C4 - HIDDEN IN LIVE",
+    "Answer_Options": "1=FLAGGED SL,2=NOT-FLAGGED",
+    "ParentQuestion": "FLAG_SL_"
+  },
+  {
+    "Column": "C5r1",
+    "Description": "C5r1: Time to treatment - Which of the following non-clinical aspects of CAR-T therapy would need to improve the most in order to increase your consideration of CAR-T for more patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Time to treatment,1=Time to treatment",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C5r2",
+    "Description": "C5r2: Logistics of treatment & follow-up - Which of the following non-clinical aspects of CAR-T therapy would need to improve the most in order to increase your consideration of CAR-T for more patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Logistics of treatment & follow-up,1=Logistics of treatment & follow-up",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C5r3",
+    "Description": "C5r3: Patient preference - Which of the following non-clinical aspects of CAR-T therapy would need to improve the most in order to increase your consideration of CAR-T for more patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Patient preference,1=Patient preference",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C5r4",
+    "Description": "C5r4: Patient support programs - Which of the following non-clinical aspects of CAR-T therapy would need to improve the most in order to increase your consideration of CAR-T for more patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Patient support programs,1=Patient support programs",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C5r5",
+    "Description": "C5r5: Availability of the therapy for use - Which of the following non-clinical aspects of CAR-T therapy would need to improve the most in order to increase your consideration of CAR-T for more patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Availability of the therapy for use,1=Availability of the therapy for use",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C5r6",
+    "Description": "C5r6: Guideline recommendations - Which of the following non-clinical aspects of CAR-T therapy would need to improve the most in order to increase your consideration of CAR-T for more patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Guideline recommendations,1=Guideline recommendations",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C5r7",
+    "Description": "C5r7: Financial impact to treating practice - Which of the following non-clinical aspects of CAR-T therapy would need to improve the most in order to increase your consideration of CAR-T for more patients or for earlier lines of therapy (e.g., second line",
+    "Answer_Options": "0=NO TO: Financial impact to treating practice,1=Financial impact to treating practice",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C5r8",
+    "Description": "C5r8: Availability of caregiver support - Which of the following non-clinical aspects of CAR-T therapy would need to improve the most in order to increase your consideration of CAR-T for more patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Availability of caregiver support,1=Availability of caregiver support",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C5r9",
+    "Description": "C5r9: Other (Specify): - Which of the following non-clinical aspects of CAR-T therapy would need to improve the most in order to increase your consideration of CAR-T for more patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Other (Specify):,1=Other (Specify):",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C5r99",
+    "Description": "C5r99: No non-clinical aspects of CAR-T therapy would need to improve - Which of the following non-clinical aspects of CAR-T therapy would need to improve the most in order to increase your consideration of CAR-T for more patients or for earlier lines of",
+    "Answer_Options": "0=NO TO: No non-clinical aspects of CAR-T therapy would need to improve,1=No non-clinical aspects of CAR-T therapy would need to improve",
+    "ParentQuestion": "C5"
+  },
+  {
+    "Column": "C5r9oe",
+    "Description": "C5r9oe: Which of the following non-clinical aspects of CAR-T therapy would need to improve the most in order to increase your consideration of CAR-T for more patients or for earlier lines of therapy (e.g., second line)? - Other (Specify):",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C6r1",
+    "Description": "C6r1: Efficacy - Overall Survival - Now we would like you to evaluate Yescarta and Breyanzi head-to-head on each of the following aspects in treating relapsed / refractory LBCL patients. If you do not have direct experience, please answer based on your cu",
+    "Answer_Options": "1=Breyanzi is superior,2=No difference,3=Yescarta is superior",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r2",
+    "Description": "C6r2: Efficacy - Progression/Event Free Survival - Now we would like you to evaluate Yescarta and Breyanzi head-to-head on each of the following aspects in treating relapsed / refractory LBCL patients. If you do not have direct experience, please answer b",
+    "Answer_Options": "1=Breyanzi is superior,2=No difference,3=Yescarta is superior",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r3",
+    "Description": "C6r3: Safety - Now we would like you to evaluate Yescarta and Breyanzi head-to-head on each of the following aspects in treating relapsed / refractory LBCL patients. If you do not have direct experience, please answer based on your current impressions.",
+    "Answer_Options": "1=Breyanzi is superior,2=No difference,3=Yescarta is superior",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r4",
+    "Description": "C6r4: Logistics of treatment & follow-up - Now we would like you to evaluate Yescarta and Breyanzi head-to-head on each of the following aspects in treating relapsed / refractory LBCL patients. If you do not have direct experience, please answer based on",
+    "Answer_Options": "1=Breyanzi is superior,2=No difference,3=Yescarta is superior",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r5",
+    "Description": "C6r5: Patient preference - Now we would like you to evaluate Yescarta and Breyanzi head-to-head on each of the following aspects in treating relapsed / refractory LBCL patients. If you do not have direct experience, please answer based on your current imp",
+    "Answer_Options": "1=Breyanzi is superior,2=No difference,3=Yescarta is superior",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r6",
+    "Description": "C6r6: Patient support programs - Now we would like you to evaluate Yescarta and Breyanzi head-to-head on each of the following aspects in treating relapsed / refractory LBCL patients. If you do not have direct experience, please answer based on your curre",
+    "Answer_Options": "1=Breyanzi is superior,2=No difference,3=Yescarta is superior",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r7",
+    "Description": "C6r7: Guideline recommendations - Now we would like you to evaluate Yescarta and Breyanzi head-to-head on each of the following aspects in treating relapsed / refractory LBCL patients. If you do not have direct experience, please answer based on your curr",
+    "Answer_Options": "1=Breyanzi is superior,2=No difference,3=Yescarta is superior",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r8",
+    "Description": "C6r8: Financial impact to my practice/institution - Now we would like you to evaluate Yescarta and Breyanzi head-to-head on each of the following aspects in treating relapsed / refractory LBCL patients. If you do not have direct experience, please answer",
+    "Answer_Options": "1=Breyanzi is superior,2=No difference,3=Yescarta is superior",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r9",
+    "Description": "C6r9: Out-of-pocket costs to the patient - Now we would like you to evaluate Yescarta and Breyanzi head-to-head on each of the following aspects in treating relapsed / refractory LBCL patients. If you do not have direct experience, please answer based on",
+    "Answer_Options": "1=Breyanzi is superior,2=No difference,3=Yescarta is superior",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r10",
+    "Description": "C6r10: Travel and lodging support - Now we would like you to evaluate Yescarta and Breyanzi head-to-head on each of the following aspects in treating relapsed / refractory LBCL patients. If you do not have direct experience, please answer based on your cu",
+    "Answer_Options": "1=Breyanzi is superior,2=No difference,3=Yescarta is superior",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r11",
+    "Description": "C6r11: Suitability for outpatient administration - Now we would like you to evaluate Yescarta and Breyanzi head-to-head on each of the following aspects in treating relapsed / refractory LBCL patients. If you do not have direct experience, please answer b",
+    "Answer_Options": "1=Breyanzi is superior,2=No difference,3=Yescarta is superior",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r12",
+    "Description": "C6r12: Breadth of appropriate/eligible patient types - Now we would like you to evaluate Yescarta and Breyanzi head-to-head on each of the following aspects in treating relapsed / refractory LBCL patients. If you do not have direct experience, please answ",
+    "Answer_Options": "1=Breyanzi is superior,2=No difference,3=Yescarta is superior",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r13",
+    "Description": "C6r13: Manufacturing reliability / success - Now we would like you to evaluate Yescarta and Breyanzi head-to-head on each of the following aspects in treating relapsed / refractory LBCL patients. If you do not have direct experience, please answer based o",
+    "Answer_Options": "1=Breyanzi is superior,2=No difference,3=Yescarta is superior",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C6r14",
+    "Description": "C6r14: Time to treatment (inc. manufacturing time) - Now we would like you to evaluate Yescarta and Breyanzi head-to-head on each of the following aspects in treating relapsed / refractory LBCL patients. If you do not have direct experience, please answer",
+    "Answer_Options": "1=Breyanzi is superior,2=No difference,3=Yescarta is superior",
+    "ParentQuestion": "C6"
+  },
+  {
+    "Column": "C7r1",
+    "Description": "C7r1: High patient out-of-pocket costs (including logistical costs) - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: High patient out-of-pocket costs (including logistical costs),1=High patient out-of-pocket costs (including logistical costs)",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r2",
+    "Description": "C7r2: Insurance coverage issues or reimbursement challenges - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Insurance coverage issues or reimbursement challenges,1=Insurance coverage issues or reimbursement challenges",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r3",
+    "Description": "C7r3: Limited access to treatment facilities - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Limited access to treatment facilities,1=Limited access to treatment facilities",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r4",
+    "Description": "C7r4: Limited bed or staff capacity at the treatment facility - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Limited bed or staff capacity at the treatment facility,1=Limited bed or staff capacity at the treatment facility",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r5",
+    "Description": "C7r5: Long time to treatment - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Long time to treatment,1=Long time to treatment",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r6",
+    "Description": "C7r6: Severe potential side effects (e.g., cytokine release syndrome, neurotoxicity) - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Severe potential side effects (e.g., cytokine release syndrome, neurotoxicity),1=Severe potential side effects (e.g., cytokine release syndrome, neurotoxicity)",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r7",
+    "Description": "C7r7: Uncertainty about long-term efficacy - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Uncertainty about long-term efficacy,1=Uncertainty about long-term efficacy",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r8",
+    "Description": "C7r8: Availability of alternative therapies - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Availability of alternative therapies,1=Availability of alternative therapies",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r9",
+    "Description": "C7r9: Need for prolonged post-treatment monitoring - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Need for prolonged post-treatment monitoring,1=Need for prolonged post-treatment monitoring",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r10",
+    "Description": "C7r10: Re-hospitalization concerns - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Re-hospitalization concerns,1=Re-hospitalization concerns",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r11",
+    "Description": "C7r11: Patient resistance to CAR-T - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Patient resistance to CAR-T,1=Patient resistance to CAR-T",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r12",
+    "Description": "C7r12: Lost revenue or financial constraints for my institution - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Lost revenue or financial constraints for my institution,1=Lost revenue or financial constraints for my institution",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r13",
+    "Description": "C7r13: Disruption of continuity of care - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Disruption of continuity of care,1=Disruption of continuity of care",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r14",
+    "Description": "C7r14: Risk of losing patients in follow-up - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Risk of losing patients in follow-up,1=Risk of losing patients in follow-up",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r15",
+    "Description": "C7r15: Lack of relationship with / direct referral pathway to a specific administering HCP - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Lack of relationship with / direct referral pathway to a specific administering HCP,1=Lack of relationship with / direct referral pathway to a specific administering HCP",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r16",
+    "Description": "C7r16: Other (Specify): - Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients?",
+    "Answer_Options": "0=NO TO: Other (Specify):,1=Other (Specify):",
+    "ParentQuestion": "C7"
+  },
+  {
+    "Column": "C7r16oe",
+    "Description": "C7r16oe: Which of the following are the greatest barriers to you considering CAR-T treatment for more relapsed / refractory LBCL patients? - Other (Specify):",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "C8r1",
+    "Description": "C8r1: High patient out-of-pocket costs (including logistical costs) - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of therapy (e.g., second",
+    "Answer_Options": "0=NO TO: High patient out-of-pocket costs (including logistical costs),1=High patient out-of-pocket costs (including logistical costs)",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r2",
+    "Description": "C8r2: Insurance coverage issues or reimbursement challenges - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Insurance coverage issues or reimbursement challenges,1=Insurance coverage issues or reimbursement challenges",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r3",
+    "Description": "C8r3: Limited access to treatment facilities - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Limited access to treatment facilities,1=Limited access to treatment facilities",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r4",
+    "Description": "C8r4: Limited bed or staff capacity at the treatment facility - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Limited bed or staff capacity at the treatment facility,1=Limited bed or staff capacity at the treatment facility",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r5",
+    "Description": "C8r5: Long time to treatment - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Long time to treatment,1=Long time to treatment",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r6",
+    "Description": "C8r6: Severe potential side effects (e.g., cytokine release syndrome, neurotoxicity) - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of thera",
+    "Answer_Options": "0=NO TO: Severe potential side effects (e.g., cytokine release syndrome, neurotoxicity),1=Severe potential side effects (e.g., cytokine release syndrome, neurotoxicity)",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r7",
+    "Description": "C8r7: Uncertainty about long-term efficacy - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Uncertainty about long-term efficacy,1=Uncertainty about long-term efficacy",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r8",
+    "Description": "C8r8: Availability of alternative therapies - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Availability of alternative therapies,1=Availability of alternative therapies",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r9",
+    "Description": "C8r9: Need for prolonged post-treatment monitoring - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Need for prolonged post-treatment monitoring,1=Need for prolonged post-treatment monitoring",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r10",
+    "Description": "C8r10: Re-hospitalization concerns - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Re-hospitalization concerns,1=Re-hospitalization concerns",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r11",
+    "Description": "C8r11: Patient resistance to CAR-T - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Patient resistance to CAR-T,1=Patient resistance to CAR-T",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r12",
+    "Description": "C8r12: Lost revenue or financial constraints for my institution - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of therapy (e.g., second line",
+    "Answer_Options": "0=NO TO: Lost revenue or financial constraints for my institution,1=Lost revenue or financial constraints for my institution",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r13",
+    "Description": "C8r13: Disruption of continuity of care - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Disruption of continuity of care,1=Disruption of continuity of care",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r14",
+    "Description": "C8r14: Risk of losing patients in follow-up - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Risk of losing patients in follow-up,1=Risk of losing patients in follow-up",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r15",
+    "Description": "C8r15: Strengthening / building a direct referral pathway to a specific administering HCP - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of",
+    "Answer_Options": "0=NO TO: Strengthening / building a direct referral pathway to a specific administering HCP,1=Strengthening / building a direct referral pathway to a specific administering HCP",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r16",
+    "Description": "C8r16: Other (Specify): - Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of therapy (e.g., second line)?",
+    "Answer_Options": "0=NO TO: Other (Specify):,1=Other (Specify):",
+    "ParentQuestion": "C8"
+  },
+  {
+    "Column": "C8r16oe",
+    "Description": "C8r16oe: Which of the following aspects of CAR-T therapy would need to improve the most increase your consideration of CAR-T for more LBCL patients or for earlier lines of therapy (e.g., second line)? - Other (Specify):",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "D1",
+    "Description": "D1: How important are patient support programs in your decision to recommend CAR-T therapy?",
+    "Answer_Options": "1=Not at all important,2=Slightly important,3=Moderately important,4=Strongly important,5=Extremely important"
+  },
+  {
+    "Column": "D2r1",
+    "Description": "D2r1: I have access to a system that makes it easy to navigate patients through support resources for CAR-T / I am on my own to direct and navigate any patients to support resources for CAR-T - Which of the following statements do you agree with more in t",
+    "Answer_Options": "1=Much more - Statement A,2=More - Statement A,3=No difference/ equal,4=More - Statement B,5=Much more - Statement B",
+    "ParentQuestion": "D2"
+  },
+  {
+    "Column": "D3r1",
+    "Description": "D3r1: Patient CAR-T Educational Materials - Which of the following support programs and resources have you heard of or used for CAR-T offered either by manufacturers or through third-party programs?",
+    "Answer_Options": "1=Never heard of,2=Heard of, but haven't used,3=Have used",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r2",
+    "Description": "D3r2: Patient Financial Support - Which of the following support programs and resources have you heard of or used for CAR-T offered either by manufacturers or through third-party programs?",
+    "Answer_Options": "1=Never heard of,2=Heard of, but haven't used,3=Have used",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r3",
+    "Description": "D3r3: Access & Reimbursement Tools/Support - Which of the following support programs and resources have you heard of or used for CAR-T offered either by manufacturers or through third-party programs?",
+    "Answer_Options": "1=Never heard of,2=Heard of, but haven't used,3=Have used",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r4",
+    "Description": "D3r4: Patient Lodging/Housing for Treatment - Which of the following support programs and resources have you heard of or used for CAR-T offered either by manufacturers or through third-party programs?",
+    "Answer_Options": "1=Never heard of,2=Heard of, but haven't used,3=Have used",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r5",
+    "Description": "D3r5: Patient Transportation for Treatment - Which of the following support programs and resources have you heard of or used for CAR-T offered either by manufacturers or through third-party programs?",
+    "Answer_Options": "1=Never heard of,2=Heard of, but haven't used,3=Have used",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r6",
+    "Description": "D3r6: Patient Meal Assistance during Treatment - Which of the following support programs and resources have you heard of or used for CAR-T offered either by manufacturers or through third-party programs?",
+    "Answer_Options": "1=Never heard of,2=Heard of, but haven't used,3=Have used",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r7",
+    "Description": "D3r7: Dedicated Patient Support Navigators - Which of the following support programs and resources have you heard of or used for CAR-T offered either by manufacturers or through third-party programs?",
+    "Answer_Options": "1=Never heard of,2=Heard of, but haven't used,3=Have used",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r8",
+    "Description": "D3r8: 24/7 Call Line Support for Patients and HCPs - Which of the following support programs and resources have you heard of or used for CAR-T offered either by manufacturers or through third-party programs?",
+    "Answer_Options": "1=Never heard of,2=Heard of, but haven't used,3=Have used",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r9",
+    "Description": "D3r9: HCP Training Programs (e.g., REMS Training) - Which of the following support programs and resources have you heard of or used for CAR-T offered either by manufacturers or through third-party programs?",
+    "Answer_Options": "1=Never heard of,2=Heard of, but haven't used,3=Have used",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r10",
+    "Description": "D3r10: Provision of a Patient Caregiver - Which of the following support programs and resources have you heard of or used for CAR-T offered either by manufacturers or through third-party programs?",
+    "Answer_Options": "1=Never heard of,2=Heard of, but haven't used,3=Have used",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D3r11",
+    "Description": "D3r11: Support for Household of Patient/Caregiver (e.g., housecleaning, child support, petsitting) - Which of the following support programs and resources have you heard of or used for CAR-T offered either by manufacturers or through third-party programs?",
+    "Answer_Options": "1=Never heard of,2=Heard of, but haven't used,3=Have used",
+    "ParentQuestion": "D3"
+  },
+  {
+    "Column": "D4r1",
+    "Description": "D4r1: Patient CAR-T Educational Materials - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r2",
+    "Description": "D4r2: Patient Financial Support - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r3",
+    "Description": "D4r3: Access & Reimbursement Tools/Support - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r4",
+    "Description": "D4r4: Patient Lodging/Housing for Treatment - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r5",
+    "Description": "D4r5: Patient Transportation for Treatment - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r6",
+    "Description": "D4r6: Patient Meal Assistance during Treatment - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r7",
+    "Description": "D4r7: Dedicated Patient Support Navigators - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r8",
+    "Description": "D4r8: 24/7 Call Line Support for Patients and HCPs - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r9",
+    "Description": "D4r9: HCP Training Programs (e.g., REMS Training) - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r10",
+    "Description": "D4r10: Provision of a Patient Caregiver - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "D4r11",
+    "Description": "D4r11: Support for Household of Patient/Caregiver (e.g., housecleaning, child support, petsitting) - Which of the following support programs and resources would you find most valuable in a decision to recommend CAR-T treatment for patients?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "D4"
+  },
+  {
+    "Column": "E0",
+    "Description": "E0: On average, how many hours per week in total do you spend on keeping abreast of medical developments or medical education, specifically related to Large B-cell Lymphoma? This would include any of the following activities: reading medical journals revi",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "E1r1",
+    "Description": "E1r1: Cancer advocacy / research non-profits (e.g., NCCN, Leukemia & Lymphoma Society (LLS)) - Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months?",
+    "Answer_Options": "0=NO TO: Cancer advocacy / research non-profits (e.g., NCCN, Leukemia & Lymphoma Society (LLS)),1=Cancer advocacy / research non-profits (e.g., NCCN, Leukemia & Lymphoma Society (LLS))",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r2",
+    "Description": "E1r2: Medical societies - Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months?",
+    "Answer_Options": "0=NO TO: Medical societies,1=Medical societies",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r3",
+    "Description": "E1r3: Key opinion leaders / influential peers or specialists in the field - Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months?",
+    "Answer_Options": "0=NO TO: Key opinion leaders / influential peers or specialists in the field,1=Key opinion leaders / influential peers or specialists in the field",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r4",
+    "Description": "E1r4: Congress or trade shows with manufacturer symposia - Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months?",
+    "Answer_Options": "0=NO TO: Congress or trade shows with manufacturer symposia,1=Congress or trade shows with manufacturer symposia",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r5",
+    "Description": "E1r5: Digital or print newsletters and journals (e.g., OncLive, Epocrates, Medscape) - Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months?",
+    "Answer_Options": "0=NO TO: Digital or print newsletters and journals (e.g., OncLive, Epocrates, Medscape),1=Digital or print newsletters and journals (e.g., OncLive, Epocrates, Medscape)",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r6",
+    "Description": "E1r6: Manufacturer field/sales representatives - Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months?",
+    "Answer_Options": "0=NO TO: Manufacturer field/sales representatives,1=Manufacturer field/sales representatives",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r7",
+    "Description": "E1r7: Manufacturer medical science liaisons - Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months?",
+    "Answer_Options": "0=NO TO: Manufacturer medical science liaisons,1=Manufacturer medical science liaisons",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r8",
+    "Description": "E1r8: Manufacturer sponsored advertisement on medical website - Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months?",
+    "Answer_Options": "0=NO TO: Manufacturer sponsored advertisement on medical website,1=Manufacturer sponsored advertisement on medical website",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r9",
+    "Description": "E1r9: Dinner meetings / roundtable discussions - Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months?",
+    "Answer_Options": "0=NO TO: Dinner meetings / roundtable discussions,1=Dinner meetings / roundtable discussions",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r10",
+    "Description": "E1r10: HCP educational platforms (e.g., VuMedi, Medscape) - Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months?",
+    "Answer_Options": "0=NO TO: HCP educational platforms (e.g., VuMedi, Medscape),1=HCP educational platforms (e.g., VuMedi, Medscape)",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r11",
+    "Description": "E1r11: Professional networking platforms (e.g., Doximity, LinkedIn) - Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months?",
+    "Answer_Options": "0=NO TO: Professional networking platforms (e.g., Doximity, LinkedIn),1=Professional networking platforms (e.g., Doximity, LinkedIn)",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r12",
+    "Description": "E1r12: Social media (e.g., Twitter, Facebook, Instagram) - Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months?",
+    "Answer_Options": "0=NO TO: Social media (e.g., Twitter, Facebook, Instagram),1=Social media (e.g., Twitter, Facebook, Instagram)",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r13",
+    "Description": "E1r13: Podcasts - Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months?",
+    "Answer_Options": "0=NO TO: Podcasts,1=Podcasts",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r14",
+    "Description": "E1r14: Medical & health websites (e.g., UptoDate) - Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months?",
+    "Answer_Options": "0=NO TO: Medical & health websites (e.g., UptoDate),1=Medical & health websites (e.g., UptoDate)",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r15",
+    "Description": "E1r15: Other: - Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months?",
+    "Answer_Options": "0=NO TO: Other:,1=Other:",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E1r15oe",
+    "Description": "E1r15oe: Which of the following information sources have you used to stay informed about treatment options in LBCL in the past 12 months? - Other:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E1"
+  },
+  {
+    "Column": "E2r1",
+    "Description": "E2r1: Cancer advocacy / research non-profits (e.g., NCCN, Leukemia & Lymphoma Society (LLS)) - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r2",
+    "Description": "E2r2: Medical societies - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r3",
+    "Description": "E2r3: Key opinion leaders / influential peers or specialists in the field - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r4",
+    "Description": "E2r4: Congress or trade shows with manufacturer symposia - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r5",
+    "Description": "E2r5: Digital or print newsletters and journals (e.g., OncLive, Epocrates, Medscape) - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r6",
+    "Description": "E2r6: Manufacturer field/sales representatives - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r7",
+    "Description": "E2r7: Manufacturer medical science liaisons - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r8",
+    "Description": "E2r8: Manufacturer sponsored advertisement on medical website - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r9",
+    "Description": "E2r9: Dinner meetings / roundtable discussions - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r10",
+    "Description": "E2r10: HCP educational platforms (e.g., VuMedi, Medscape) - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r11",
+    "Description": "E2r11: Professional networking platforms (e.g., Doximity, LinkedIn) - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r12",
+    "Description": "E2r12: Social media (e.g., Twitter, Facebook, Instagram) - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r13",
+    "Description": "E2r13: Podcasts - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r14",
+    "Description": "E2r14: Medical & health websites (e.g., UptoDate) - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r15",
+    "Description": "E2r15: Other: - From which of the following sources would you be most receptive to receiving information about CAR-T?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E2r15oe",
+    "Description": "E2r15oe: From which of the following sources would you be most receptive to receiving information about CAR-T? - Other:",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E2"
+  },
+  {
+    "Column": "E4",
+    "Description": "E4: Which of the following best describes your institution's policies on contact with pharmaceutical representatives?",
+    "Answer_Options": "1=Allow any type of rep visit/interaction,2=Allow limited visits/interactions,3=Do not allow office visits, but will have other interactions,4=Do not allow interactions of any kind"
+  },
+  {
+    "Column": "E5r1c1",
+    "Description": "E5r1c1: Kite/Gilead (Yescarta) - How many times in the past 12 months have you interacted with pharmaceutical representatives from the following manufacturers specifically to discuss LBCL treatments?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E5"
+  },
+  {
+    "Column": "E5r2c1",
+    "Description": "E5r2c1: BMS (Breyanzi) - How many times in the past 12 months have you interacted with pharmaceutical representatives from the following manufacturers specifically to discuss LBCL treatments?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E5"
+  },
+  {
+    "Column": "E5r3c1",
+    "Description": "E5r3c1: Novartis (Kymriah) - How many times in the past 12 months have you interacted with pharmaceutical representatives from the following manufacturers specifically to discuss LBCL treatments?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E5"
+  },
+  {
+    "Column": "E5r4c1",
+    "Description": "E5r4c1: Abbvie (Epkinly) - How many times in the past 12 months have you interacted with pharmaceutical representatives from the following manufacturers specifically to discuss LBCL treatments?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E5"
+  },
+  {
+    "Column": "E5r5c1",
+    "Description": "E5r5c1: Genentech (Columvi) - How many times in the past 12 months have you interacted with pharmaceutical representatives from the following manufacturers specifically to discuss LBCL treatments?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E5"
+  },
+  {
+    "Column": "E6r1",
+    "Description": "E6r1: Kite (Yescarta) - How satisfied are you with the interactions you have had with pharmaceutical representatives at each of the following companies?",
+    "Answer_Options": "1=Not at all satisfied,2=Slightly satisfied,3=Moderately satisfied,4=Very satisfied,5=Extremely satisfied",
+    "ParentQuestion": "E6"
+  },
+  {
+    "Column": "E6r2",
+    "Description": "E6r2: BMS (Breyanzi) - How satisfied are you with the interactions you have had with pharmaceutical representatives at each of the following companies?",
+    "Answer_Options": "1=Not at all satisfied,2=Slightly satisfied,3=Moderately satisfied,4=Very satisfied,5=Extremely satisfied",
+    "ParentQuestion": "E6"
+  },
+  {
+    "Column": "E6r3",
+    "Description": "E6r3: Novartis (Kymriah) - How satisfied are you with the interactions you have had with pharmaceutical representatives at each of the following companies?",
+    "Answer_Options": "1=Not at all satisfied,2=Slightly satisfied,3=Moderately satisfied,4=Very satisfied,5=Extremely satisfied",
+    "ParentQuestion": "E6"
+  },
+  {
+    "Column": "E6r4",
+    "Description": "E6r4: Abbvie (Epkinly) - How satisfied are you with the interactions you have had with pharmaceutical representatives at each of the following companies?",
+    "Answer_Options": "1=Not at all satisfied,2=Slightly satisfied,3=Moderately satisfied,4=Very satisfied,5=Extremely satisfied",
+    "ParentQuestion": "E6"
+  },
+  {
+    "Column": "E6r5",
+    "Description": "E6r5: Genentech (Columvi) - How satisfied are you with the interactions you have had with pharmaceutical representatives at each of the following companies?",
+    "Answer_Options": "1=Not at all satisfied,2=Slightly satisfied,3=Moderately satisfied,4=Very satisfied,5=Extremely satisfied",
+    "ParentQuestion": "E6"
+  },
+  {
+    "Column": "E8r1",
+    "Description": "E8r1: National/international conferences or seminars - In a typical year, approximately how many LBCL related medical conferences or seminars do you attend?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "E8r2",
+    "Description": "E8r2: Regional/local conferences or seminars - In a typical year, approximately how many LBCL related medical conferences or seminars do you attend?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "E8"
+  },
+  {
+    "Column": "F0a",
+    "Description": "F0a: Please select the institution you would refer patients to for CAR-T treatment. Note: This information is for research purposes only and will be kept strictly confidential.",
+    "Answer_Options": "1=HOSPITAL ESPANOL AUXILIO MUTUO DE PUERTO RICO, INC,2=ROGER WILLIAMS CANCER CENTER,3=UNIVERSITY OF MISSISSIPPI MEDICAL CANCER CENTER AND RESEARCH INSTITUTE,4=JERSEY SHORE UNIVERSITY MEDICAL CENTER,5=UNIVERSITY OF MISSOURI HEALTH CARE ELLIS FISCHEL CANCER CENTER,6=TENNESSEE ONCOLOGY NASHVILLE MIDTOWN CENTER FOR BLOOD CANCERS,7=CITY OF HOPE - ATLANTA,8=PROVIDENCE CANCER INSTITUTE FRANZ CLINIC,9=GOOD SAMARITAN HOSPITAL,10=THE UNIVERSITY OF NEW MEXICO COMPREHENSIVE CANCER CENTER,11=NEBRASKA METHODIST HOSPITAL,12=CITY OF HOPE PHOENIX,13=UOFL HEALTH JAMES GRAHAM BROWN CANCER CENTER,14=GEISINGER MEDICAL CENTER,15=VIRGINIA ONCOLOGY ASSOCIATES,16=UNIVERSITY OF TENNESSEE MEDICAL CENTER (UTMC),17=SCRIPPS GREEN HOSPITAL,18=COREWELL HEALTH WILLIAM BEAUMONT UNIVERSITY HOSPITAL,19=MARSHFIELD CLINIC MARSHFIELD CENTER URGENT CARE,20=SANFORD ROGER MARIS CANCER CENTER,21=ORLANDO HEALTH CANCER INSTITUTE DOWNTOWN ORLANDO,22=BON SECOURS HEMATOLOGY AND ONCOLOGY,23=OCHSNER MEDICAL CENTER,24=UNIVERSITY OF VERMONT CHILDRENS HOSPITAL,25=NEW YORK ONCOLOGY HEMATOLOGY, PC,26=NOVANT HEALTH FORSYTH MEDICAL CENTER,27=TUFTS MEDICAL CENTER,28=MIAMI CANCER INSTITUTE,29=NORTHSHORE UNIVERSITY HEALTHSYSTEM,30=UNIVERSITY OF CALIFORNIA IRVINE MEDICAL CENTER,31=UCSF BENIOFF CHILDRENS HOSPITAL,32=BAYLOR SCOTT AND WHITE VASICEK CANCER TREATMENT CENTER TEMPLE,33=PRISMA HEALTH CANCER INSTITUTE,34=BOSTON MEDICAL CENTER MOAKLEY BUILDING,35=SAINT LUKES BOISE MEDICAL CENTER,36=UNIVERSITY OF MASSACHUSETTS MEDICAL CENTER PUBLIC HEALTH SERVICE,37=HONORHEALTH SCOTTSDALE SHEA MEDICAL CENTER,38=ATRIUM HEALTH WAKE FOREST BAPTIST,39=LOYOLA UNIVERSITY CHICAGO STRITCH SCHOOL OF MEDICINE,40=ACUTE REHABILITATION UNIT AT WESTCHESTER MEDICAL CENTER,41=NORTH SHORE UNIVERSITY HOSPITAL,42=MEMORIAL HOSPITAL WEST,43=BAPTIST MEMORIAL HOSPITAL MEMPHIS,44=USC NORRIS COMPREHENSIVE CANCER CENTER,45=AUGUSTA UNIVERSITY MEDICAL CENTER,46=SSM HEALTH SAINT LOUIS UNIVERSITY HOSPITAL,47=CHRISTIANA CARE HEALTH SERVICES,48=UNIVERSITY OF CINCINNATI MEDICAL CENTER,49=NYU LANGONE HEALTH PERLMUTTER CANCER CENTER 38TH STREET,50=NORTON CANCER INSTITUTE SAINT MATTHEWS,51=ASCENSION VIA CHRISTI SAINT FRANCIS,52=WEST VIRGINIA UNIVERSITY MEDICINE,53=UNIVERSITY OF VIRGINIA CANCER CENTER,54=AURORA CANCER CARE,55=JOHNS HOPKINS HOSPITAL HEMATOLOGY,56=NOVANT HEALTH PRESBYTERIAN MEDICAL CENTER,57=DARTMOUTH-HITCHCOCK MEDICAL CENTER,58=BANNER UNIVERSITY MEDICAL CENTER TUCSON CAMPUS,59=CEDARS SINAI SAMUEL OSCHIN CANCER CENTER,60=UI HEALTH COMPREHENSIVE CANCER CARE,61=ADVENT HEALTH MEDICAL GROUP BLOOD AND MARROW TRANSPLANT AT ORLANDO,62=CITY OF HOPE CHICAGO CANCER HOSPITAL,63=VA TENNESSEE VALLEY HEALTH CARE SYSTEM NASHVILLE CAMPUS,64=UNIVERSITY OF ARKANSAS FOR MEDICAL SCIENCES,65=HENRY FORD HOSPITAL,66=MEDICAL UNIVERSITY OF SOUTH CAROLINA,67=RUSH UNIVERSITY MEDICAL CENTER,68=OU HEALTH STEPHENSON CANCER CENTER,69=SAINT DAVIDS SOUTH AUSTIN MEDICAL CENTER,70=FRANCISCAN HEALTH INDIANAPOLIS,71=SWEDISH HOSPITAL CHERRY HILL CAMPUS,72=TRISTAR CENTENNIAL MEDICAL CENTER,73=UAB HOSPITAL ONCOLOGY,74=UH SEIDMAN CANCER CENTER,75=MEDSTAR GEORGETOWN UNIVERSITY HOSPITAL,76=AVERA CANCER INSTITUTE AT SIOUX FALLS,77=HOUSTON METHODIST HOSPITAL,78=MEDICAL CITY DALLAS HOSPITAL,79=ADVOCATE MEDICAL GROUP,80=YALE MEDICAL GROUP CANCER CENTER,81=UNIVERSITY OF NORTH CAROLINA CANCER CARE,82=COREWELL HEALTH LEMMEN HOLTON CANCER PAVILION,83=THE JEWISH HOSPITAL MERCY HEALTH,84=UF HEALTH SHANDS HOSPITAL BONE MARROW TRANSPLANT OUTPATIENT CLINIC,85=CARDIOVASCULAR INSTITUTE AT BETH ISRAEL DEACONESS MEDICAL CENTER,86=ALLEGHENY HEALTH NETWORK CANCER INSTITUTE AT ALLEGHENY GENERAL HOSPITAL,87=UNIVERSITY OF COLORADO HOSPITAL GI ONCOLOGY,88=INTERMOUNTAIN LDS HOSPITAL,89=SIDNEY KIMMEL CANCER CENTER AT JEFFERSON,90=SIDNEY KIMMEL CANCER – WASHINGTON TOWNSHIP,91=UNIVERSITY OF KENTUCKY MARKEY CANCER CENTER,92=RUTGERS CANCER INSTITUTE OF NEW JERSEY,93=UT SOUTHWESTERN MEDICAL CENTERS HAROLD C SIMMONS COMPREHENSIVE CANCER CENTER,94=UNIVERSITY OF CALIFORNIA DAVIS MEDICAL CENTER,95=FOX CHASE TEMPLE UNIVERSITY HOSPITAL BONE MARROW TRANSPLANT PROGRAM,96=THE MOUNT SINAI HOSPITAL,97=PENN STATE HERSHEY CANCER INSTITUTE,98=MAYO CLINIC,99=UNIVERSITY OF IOWA HOSPITALS AND CLINICS,100=NEWYORK PRESBYTERIAN COLUMBIA UNIVERSITY IRVING MEDICAL CENTER,101=IU HEALTH SIMON CANCER CENTER,102=NORTHSIDE HOSPITAL ATLANTA,103=VCU MASSEY CANCER CENTER,104=MONTEFIORE MEDICAL CENTER MOSES CAMPUS,105=M HEALTH FAIRVIEW UNIVERSITY OF MINNESOTA MEDICAL CENTER,106=MAYO CLINIC HOSPITAL JACKSONVILLE,107=UNIVERSITY OF CALIFORNIA SAN DIEGO MEDICAL CENTER HILLCREST,108=HUNTSMAN CANCER HOSPITAL,109=LEVINE CANCER INSTITUTE,110=UNIVERSITY OF MICHIGAN ROGEL CANCER CENTER,111=FROEDTERT HOSPITAL,112=NEWYORK PRESBYTERIAN WEILL CORNELL MEDICAL CENTER,113=NORTHWESTERN HEMATOPOIETIC STEM CELL TRANSPLANT PROGRAM,114=ROSWELL PARK COMPREHENSIVE CANCER CENTER,115=BANNER MD ANDERSON CANCER CENTER,116=METHODIST SPECIALTY AND TRANSPLANT HOSPITAL,117=UW CARBONE CANCER CENTER AND HEMATOLOGY,118=CLEVELAND CLINIC MOLL CANCER CENTER,119=EMORY UNIVERSITY HOSPITAL,120=UNIVERSITY OF CALIFORNIA SAN FRANCISCO MEDICAL CENTER AT MOUNT ZION,121=TEXAS ONCOLOGY BAYLOR CHARLES A SAMMONS CANCER CENTER,122=RONALD REAGAN UCLA MEDICAL CENTER,123=DUKE CANCER CENTER,124=NEBRASKA MEDICAL CENTER,125=HACKENSACK UNIVERSITY MEDICAL CENTER,126=UNIVERSITY OF MARYLAND GREENEBAUM CANCER CENTER,127=HOSPITAL OF THE UNIVERSITY OF PENNSYLVANIA,128=PRESBYTERIAN SAINT LUKES MEDICAL CENTER,129=UNIVERSITY OF PITTSBURGH MEDICAL CENTER HILLMAN CANCER CENTER,130=MEMORIAL SLOAN KETTERING CANCER CENTER,131=OREGON HEALTH AND SCIENCE UNIVERSITY SCHOOL OF MEDICINE,132=UNIVERSITY OF ROCHESTER MEDICAL CENTER,133=UNIVERSITY OF MIAMI HOSPITAL SYLVESTER COMPREHENSIVE CANCER CENTER,134=MAYO CLINIC,135=FRED HUTCHINSON CANCER CENTER,136=STANFORD MEDICINE - PALO ALTO,137=VANDERBILT UNIVERSITY MEDICAL CENTER,138=CITY OF HOPE COMPREHENSIVE CANCER CENTER,139=BARBARA ANN KARMANOS CANCER INSTITUTE,140=BARNES JEWISH HOSPITAL,141=THE OHIO STATE UNIVERSITY WEXNER MEDICAL CENTER,142=THE UNIVERSITY OF KANSAS HOSPITAL,143=MASSACHUSETTS GENERAL HOSPITAL,144=DANA FARBER CANCER INSTITUTE,145=THE UNIVERSITY OF CHICAGO MEDICINE,146=UNIVERSITY OF TEXAS MD ANDERSON CANCER CENTER STEM CELL TRANSPLANTATION CENTER,147=MOFFITT CANCER CENTER MAGNOLIA CAMPUS,148=CLEVELAND CLINIC CANCER CENTER,149=UCSD MOORES CANCER CENTER,150=PERLMUTTER CANCER CENTER,151=UNIVERSITY OF IOWA HEALTH CARE,152=RUTGERS CANCER INSTITUTE OF NEW JERSEY/ROBERTY WOOD JOHNSON UNIVERSITY,153=HMH JERSEY SHORE UNIVERSITY MEDICAL CENTER,154=Other, specify,155=Dummy option"
+  },
+  {
+    "Column": "F0aS980oe",
+    "Description": "F0aS980oe: Please select the institution you would refer patients to for CAR-T treatment. Note: This information is for research purposes only and will be kept strictly confidential. - Other, specify",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "F0b",
+    "Description": "F0b: Approximately how close is the nearest institution you would refer patients to for CAR-T treatment to you?",
+    "Answer_Options": "1=Within a 1-hour journey by car or train,2=A 1-3 hour journey by car or train,3=>3 hours or inaccessible by car or train"
+  },
+  {
+    "Column": "F1",
+    "Description": "F1: How would you describe the organization that owns your practice?",
+    "Answer_Options": "1=Private Practice,2=Integrated Delivery Network / Integrated Delivery System,3=Accountable Care Organization (ACO),4=Health System / Hospital System,5=Independent Medical Group,6=Other (Specify)"
+  },
+  {
+    "Column": "F1r6oe",
+    "Description": "F1r6oe: How would you describe the organization that owns your practice? - Other (Specify)",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F1",
+    "Context": "F1: F1: How would you describe the organization that owns your practice?"
+  },
+  {
+    "Column": "F2",
+    "Description": "F2: Is your practice part of a group purchasing organization (GPO)/ Physician Buying Group (PBG) for treatment access & pricing? A GPO/PBG is an entity that leverages the purchasing power of a group of businesses/practices to obtain discounts from manufac",
+    "Answer_Options": "0=No,1=Yes,99=Don't know"
+  },
+  {
+    "Column": "F3r1",
+    "Description": "F3r1: I always try to choose therapies that will have the lowest cost to the patient - How much do you agree or disagree with the following statements?",
+    "Answer_Options": "0=0 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Disagree completely,1=1,2=2,3=3,4=4,5=5 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Neither agree nor disagree,6=6,7=7,8=8,9=9,10=10 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Agree completely",
+    "ParentQuestion": "F3"
+  },
+  {
+    "Column": "F3r2",
+    "Description": "F3r2: I'm willing to fight against cost and access issues to get my patients the best treatment possible - How much do you agree or disagree with the following statements?",
+    "Answer_Options": "0=0 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Disagree completely,1=1,2=2,3=3,4=4,5=5 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Neither agree nor disagree,6=6,7=7,8=8,9=9,10=10 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Agree completely",
+    "ParentQuestion": "F3"
+  },
+  {
+    "Column": "F3r3",
+    "Description": "F3r3: I always try to choose therapies that I'm confident my patients will have insurance coverage for - How much do you agree or disagree with the following statements?",
+    "Answer_Options": "0=0 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Disagree completely,1=1,2=2,3=3,4=4,5=5 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Neither agree nor disagree,6=6,7=7,8=8,9=9,10=10 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Agree completely",
+    "ParentQuestion": "F3"
+  },
+  {
+    "Column": "F3r4",
+    "Description": "F3r4: I am involved in overseeing the business/financial aspects of my institution/practice - How much do you agree or disagree with the following statements?",
+    "Answer_Options": "0=0 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Disagree completely,1=1,2=2,3=3,4=4,5=5 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Neither agree nor disagree,6=6,7=7,8=8,9=9,10=10 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Agree completely",
+    "ParentQuestion": "F3"
+  },
+  {
+    "Column": "F3r5",
+    "Description": "F3r5: I am very conscious of the financial implications of my treatment decisions on my institution/practice - How much do you agree or disagree with the following statements?",
+    "Answer_Options": "0=0 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Disagree completely,1=1,2=2,3=3,4=4,5=5 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Neither agree nor disagree,6=6,7=7,8=8,9=9,10=10 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Agree completely",
+    "ParentQuestion": "F3"
+  },
+  {
+    "Column": "F3r6",
+    "Description": "F3r6: Financial considerations for my institution/practice may affect the treatments I prescribe or recommend - How much do you agree or disagree with the following statements?",
+    "Answer_Options": "0=0 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Disagree completely,1=1,2=2,3=3,4=4,5=5 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Neither agree nor disagree,6=6,7=7,8=8,9=9,10=10 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Agree completely",
+    "ParentQuestion": "F3"
+  },
+  {
+    "Column": "F3r7",
+    "Description": "F3r7: Financial considerations make me reluctant to refer a patient for care with another provider - How much do you agree or disagree with the following statements?",
+    "Answer_Options": "0=0 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Disagree completely,1=1,2=2,3=3,4=4,5=5 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Neither agree nor disagree,6=6,7=7,8=8,9=9,10=10 $ {\" – \" if gv.request.device.isMobileDevice() else \"\"}Agree completely",
+    "ParentQuestion": "F3"
+  },
+  {
+    "Column": "FLAG_SL_F3",
+    "Description": "FLAG_SL_F3: FLAG_SL_F3 - HIDDEN IN LIVE",
+    "Answer_Options": "1=FLAGGED SL,2=NOT-FLAGGED"
+  },
+  {
+    "Column": "F4",
+    "Description": "F4: Do you have partial ownership of your practice/institution, or an incentive system based on the annual financial performance of your practice/institution?",
+    "Answer_Options": "0=No,1=Yes"
+  },
+  {
+    "Column": "F5",
+    "Description": "F5: Does your practice/institution have tumor board meetings / case study meetings?",
+    "Answer_Options": "0=No,1=Yes"
+  },
+  {
+    "Column": "F6",
+    "Description": "F6: In the past 12 months, have you participated in clinical trials for patients who would otherwise be eligible for CAR-T therapy?",
+    "Answer_Options": "0=No,1=Yes"
+  },
+  {
+    "Column": "F6ar1",
+    "Description": "F6ar1: Physicians - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice/institution?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F6a"
+  },
+  {
+    "Column": "F6ar2",
+    "Description": "F6ar2: Nurse Practitioners/Physicians Assistants - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice/institution?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F6a"
+  },
+  {
+    "Column": "F6ar3",
+    "Description": "F6ar3: Nurse Coordinators - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice/institution?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F6a"
+  },
+  {
+    "Column": "F6ar4",
+    "Description": "F6ar4: Nurses or Medical Assistants - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice/institution?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F6a"
+  },
+  {
+    "Column": "F6ar5",
+    "Description": "F6ar5: Other Support Staff - Including yourself, how many of each of the following types of healthcare professionals are in your primary practice/institution?",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F6a"
+  },
+  {
+    "Column": "F7r1",
+    "Description": "F7r1: Commercial health insurance - What percent of all your LBCL patients have the following types of health coverage? Your answers may sum to more than 100% to account for multiple coverage types.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F7"
+  },
+  {
+    "Column": "F7r2",
+    "Description": "F7r2: Medicare/Medicare/Military coverage - What percent of all your LBCL patients have the following types of health coverage? Your answers may sum to more than 100% to account for multiple coverage types.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F7"
+  },
+  {
+    "Column": "F7r3",
+    "Description": "F7r3: No insurance, cash only - What percent of all your LBCL patients have the following types of health coverage? Your answers may sum to more than 100% to account for multiple coverage types.",
+    "Answer_Options": "NA",
+    "ParentQuestion": "F7"
+  },
+  {
+    "Column": "qtime",
+    "Description": "qtime: Total Interview Time",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "May_22_Universal_List_Yearly_Data",
+    "Description": "May_22_Universal_List_Yearly_Data: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Universal_List_HCP_Segmentation_Claims_Data",
+    "Description": "Universal_List_HCP_Segmentation_Claims_Data: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Sales_Target_list_Refinement_Report_Summary_HAWK",
+    "Description": "Sales_Target_list_Refinement_Report_Summary_HAWK: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Data_Score",
+    "Description": "Data_Score: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "TOTAL_2L_PATIENTS",
+    "Description": "TOTAL_2L_PATIENTS: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "TREATMENTS",
+    "Description": "TREATMENTS: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "HCP_FIRST_NAME",
+    "Description": "HCP_FIRST_NAME: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "HCP_MIDDLE_NAME",
+    "Description": "HCP_MIDDLE_NAME: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "HCP_LAST_NAME",
+    "Description": "HCP_LAST_NAME: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "HCP_PRIMARY_SPECIALTY",
+    "Description": "HCP_PRIMARY_SPECIALTY: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "HCP_SECONDARY_SPECIALTY",
+    "Description": "HCP_SECONDARY_SPECIALTY: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "HCO_FLAG",
+    "Description": "HCO_FLAG: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "HCO_NAME",
+    "Description": "HCO_NAME: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "HCO_ADDRESS",
+    "Description": "HCO_ADDRESS: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "HCO_CITY",
+    "Description": "HCO_CITY: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "HCO_STATE",
+    "Description": "HCO_STATE: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "HCO_ZIP",
+    "Description": "HCO_ZIP: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "EID",
+    "Description": "EID: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "KITE_ID",
+    "Description": "KITE_ID: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "First_Name",
+    "Description": "First_Name: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Last_Name",
+    "Description": "Last_Name: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Terriory_ID",
+    "Description": "Terriory_ID: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Territory_Name",
+    "Description": "Territory_Name: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Region_ID",
+    "Description": "Region_ID: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Region_Name",
+    "Description": "Region_Name: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Primary_Address",
+    "Description": "Primary_Address: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Primary_City",
+    "Description": "Primary_City: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Primary_State",
+    "Description": "Primary_State: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Primary_Zip",
+    "Description": "Primary_Zip: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Primary_Affiliation_Address_1",
+    "Description": "Primary_Affiliation_Address_1: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Primary_Affiliation_Address_2",
+    "Description": "Primary_Affiliation_Address_2: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Primary_Affiliation_City",
+    "Description": "Primary_Affiliation_City: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Primary_Affiliation_State",
+    "Description": "Primary_Affiliation_State: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Primary_Affiliation_Zip",
+    "Description": "Primary_Affiliation_Zip: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Primary_Affiliation_Type",
+    "Description": "Primary_Affiliation_Type: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Q1_24_Target_Flag",
+    "Description": "Q1_24_Target_Flag: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Q1_24_Calls",
+    "Description": "Q1_24_Calls: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Q2_24_Target_Flag",
+    "Description": "Q2_24_Target_Flag: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Q2_24_Calls",
+    "Description": "Q2_24_Calls: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Inaccessible_Reason_Code",
+    "Description": "Inaccessible_Reason_Code: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Q1_24_HCP_Classification",
+    "Description": "Q1_24_HCP_Classification: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Q2_24_HCP_Classification",
+    "Description": "Q2_24_HCP_Classification: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Specialty",
+    "Description": "Specialty: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "TREATER_REFERRER_CATEGORY",
+    "Description": "TREATER_REFERRER_CATEGORY: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Hid_TREATER_REFERRER_CATEGORY",
+    "Description": "Hid_TREATER_REFERRER_CATEGORY: on List Sample Data for Hid_TREATER_REFERRER_CATEGORY",
+    "Answer_Options": "1=Both Treater and Referrer,2=Only Treaters,3=Only Referrers,4=Blank"
+  },
+  {
+    "Column": "Hid_Data_Score",
+    "Description": "Hid_Data_Score: on List Sample Data for Hid_Data_Score",
+    "Answer_Options": "1=0,2=1,3=2,4=3,5=Blank"
+  },
+  {
+    "Column": "RR_PATIENTS",
+    "Description": "RR_PATIENTS: HIDDEN IN LIVE - S16_R2 + S16_R3 + S16_R4",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "hA6_2L_percentagesr1",
+    "Description": "hA6_2L_percentagesr1: Monjuvi (tafasitamab) - A6 2nd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_2L_percentages"
+  },
+  {
+    "Column": "hA6_2L_percentagesr2",
+    "Description": "hA6_2L_percentagesr2: Polivy (polatuzumab vedotin) - A6 2nd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_2L_percentages"
+  },
+  {
+    "Column": "hA6_2L_percentagesr3",
+    "Description": "hA6_2L_percentagesr3: Other antibody drug conjugates (not Polivy) - A6 2nd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_2L_percentages"
+  },
+  {
+    "Column": "hA6_2L_percentagesr4",
+    "Description": "hA6_2L_percentagesr4: CAR-T therapy (Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)) - A6 2nd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_2L_percentages"
+  },
+  {
+    "Column": "hA6_2L_percentagesr5",
+    "Description": "hA6_2L_percentagesr5: Bispecifics (Columvi (glofitamab) or Epkinly (epcoritamab)) - A6 2nd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_2L_percentages"
+  },
+  {
+    "Column": "hA6_2L_percentagesr6",
+    "Description": "hA6_2L_percentagesr6: Autologous stem cell transplant (ASCT) - A6 2nd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_2L_percentages"
+  },
+  {
+    "Column": "hA6_2L_percentagesr7",
+    "Description": "hA6_2L_percentagesr7: Clinical trials - A6 2nd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_2L_percentages"
+  },
+  {
+    "Column": "hA6_2L_percentagesr8",
+    "Description": "hA6_2L_percentagesr8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - A6 2nd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_2L_percentages"
+  },
+  {
+    "Column": "hA6_2L_percentagesr98",
+    "Description": "hA6_2L_percentagesr98: Other treatments - A6 2nd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_2L_percentages"
+  },
+  {
+    "Column": "hA6_3L_percentagesr1",
+    "Description": "hA6_3L_percentagesr1: Monjuvi (tafasitamab) - A6 3rd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_3L_percentages"
+  },
+  {
+    "Column": "hA6_3L_percentagesr2",
+    "Description": "hA6_3L_percentagesr2: Polivy (polatuzumab vedotin) - A6 3rd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_3L_percentages"
+  },
+  {
+    "Column": "hA6_3L_percentagesr3",
+    "Description": "hA6_3L_percentagesr3: Other antibody drug conjugates (not Polivy) - A6 3rd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_3L_percentages"
+  },
+  {
+    "Column": "hA6_3L_percentagesr4",
+    "Description": "hA6_3L_percentagesr4: CAR-T therapy (Yescarta (axicabtagene ciloleucel), Breyanzi (lisocabtagene maraleucel) or Kymriah (tisagenlecleucel)) - A6 3rd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_3L_percentages"
+  },
+  {
+    "Column": "hA6_3L_percentagesr5",
+    "Description": "hA6_3L_percentagesr5: Bispecifics (Columvi (glofitamab) or Epkinly (epcoritamab)) - A6 3rd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_3L_percentages"
+  },
+  {
+    "Column": "hA6_3L_percentagesr6",
+    "Description": "hA6_3L_percentagesr6: Autologous stem cell transplant (ASCT) - A6 3rd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_3L_percentages"
+  },
+  {
+    "Column": "hA6_3L_percentagesr7",
+    "Description": "hA6_3L_percentagesr7: Clinical trials - A6 3rd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_3L_percentages"
+  },
+  {
+    "Column": "hA6_3L_percentagesr8",
+    "Description": "hA6_3L_percentagesr8: Chemo monotherapy or combination therapy (e.g., R-CHOP, Gemzar, R-ICE, R-EPOCH) - A6 3rd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_3L_percentages"
+  },
+  {
+    "Column": "hA6_3L_percentagesr98",
+    "Description": "hA6_3L_percentagesr98: Other treatments - A6 3rd line percentages",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_3L_percentages"
+  },
+  {
+    "Column": "hA6_SUMr1",
+    "Description": "hA6_SUMr1: Monjuvi SUM - HIDDEN IN LIVE",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_SUM"
+  },
+  {
+    "Column": "hA6_SUMr2",
+    "Description": "hA6_SUMr2: Polivy SUM - HIDDEN IN LIVE",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_SUM"
+  },
+  {
+    "Column": "hA6_SUMr3",
+    "Description": "hA6_SUMr3: Other ADC SUM - HIDDEN IN LIVE",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_SUM"
+  },
+  {
+    "Column": "hA6_SUMr4",
+    "Description": "hA6_SUMr4: CAR-T SUM - HIDDEN IN LIVE",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_SUM"
+  },
+  {
+    "Column": "hA6_SUMr5",
+    "Description": "hA6_SUMr5: BISP SUM - HIDDEN IN LIVE",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_SUM"
+  },
+  {
+    "Column": "hA6_SUMr6",
+    "Description": "hA6_SUMr6: ASCT SUM - HIDDEN IN LIVE",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_SUM"
+  },
+  {
+    "Column": "hA6_SUMr7",
+    "Description": "hA6_SUMr7: CLINICAL TRIAL SUM - HIDDEN IN LIVE",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_SUM"
+  },
+  {
+    "Column": "hA6_SUMr8",
+    "Description": "hA6_SUMr8: CHEMO SUM - HIDDEN IN LIVE",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_SUM"
+  },
+  {
+    "Column": "hA6_SUMr98",
+    "Description": "hA6_SUMr98: OTHER SUM - HIDDEN IN LIVE",
+    "Answer_Options": "NA",
+    "ParentQuestion": "hA6_SUM"
+  },
+  {
+    "Column": "TREATER_SUB_SEGMENT",
+    "Description": "TREATER_SUB_SEGMENT: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "REFERRER_SUB_SEGMENT",
+    "Description": "REFERRER_SUB_SEGMENT: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Orig_Patients_Prescribed_Tx",
+    "Description": "Orig_Patients_Prescribed_Tx: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "June_2L_Patients",
+    "Description": "June_2L_Patients: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "June_Patients_Prescribed_Tx",
+    "Description": "June_Patients_Prescribed_Tx: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "June_Data_Score",
+    "Description": "June_Data_Score: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "Hid_June_Data_Score",
+    "Description": "Hid_June_Data_Score: on List Sample Data for Hid_June_Data_Score",
+    "Answer_Options": "1=0,2=1,3=2,4=3,5=N/a,6=Blank"
+  },
+  {
+    "Column": "h_juneDATA_SCORE_LIST",
+    "Description": "h_juneDATA_SCORE_LIST: on List Sample Data for DATA SCORE_LIST",
+    "Answer_Options": "1=0,2=1,3=2,4=3,5=N/a,6=Blank"
+  },
+  {
+    "Column": "S10_Recode",
+    "Description": "S10_Recode: Please select the institution/hospital system where you personally see most of your patients. If your institution isn’t listed here, please select “Other.” Note: This information is only to ensure we’re asking you relevant questions to",
+    "Answer_Options": "1=HOSPITAL ESPANOL AUXILIO MUTUO DE PUERTO RICO, INC,2=ROGER WILLIAMS CANCER CENTER,3=UNIVERSITY OF MISSISSIPPI MEDICAL CANCER CENTER AND RESEARCH INSTITUTE,4=JERSEY SHORE UNIVERSITY MEDICAL CENTER,5=UNIVERSITY OF MISSOURI HEALTH CARE ELLIS FISCHEL CANCER CENTER,6=TENNESSEE ONCOLOGY NASHVILLE MIDTOWN CENTER FOR BLOOD CANCERS,7=CITY OF HOPE - ATLANTA,8=PROVIDENCE CANCER INSTITUTE FRANZ CLINIC,9=GOOD SAMARITAN HOSPITAL,10=THE UNIVERSITY OF NEW MEXICO COMPREHENSIVE CANCER CENTER,11=NEBRASKA METHODIST HOSPITAL,12=CITY OF HOPE PHOENIX,13=UOFL HEALTH JAMES GRAHAM BROWN CANCER CENTER,14=GEISINGER MEDICAL CENTER,15=VIRGINIA ONCOLOGY ASSOCIATES,16=UNIVERSITY OF TENNESSEE MEDICAL CENTER (UTMC),17=SCRIPPS GREEN HOSPITAL,18=COREWELL HEALTH WILLIAM BEAUMONT UNIVERSITY HOSPITAL,19=MARSHFIELD CLINIC MARSHFIELD CENTER URGENT CARE,20=SANFORD ROGER MARIS CANCER CENTER,21=ORLANDO HEALTH CANCER INSTITUTE DOWNTOWN ORLANDO,22=BON SECOURS HEMATOLOGY AND ONCOLOGY,23=OCHSNER MEDICAL CENTER,24=UNIVERSITY OF VERMONT CHILDRENS HOSPITAL,25=NEW YORK ONCOLOGY HEMATOLOGY, PC,26=NOVANT HEALTH FORSYTH MEDICAL CENTER,27=TUFTS MEDICAL CENTER,28=MIAMI CANCER INSTITUTE,29=NORTHSHORE UNIVERSITY HEALTHSYSTEM,30=UNIVERSITY OF CALIFORNIA IRVINE MEDICAL CENTER,31=UCSF BENIOFF CHILDRENS HOSPITAL,32=BAYLOR SCOTT AND WHITE VASICEK CANCER TREATMENT CENTER TEMPLE,33=PRISMA HEALTH CANCER INSTITUTE,34=BOSTON MEDICAL CENTER MOAKLEY BUILDING,35=SAINT LUKES BOISE MEDICAL CENTER,36=UNIVERSITY OF MASSACHUSETTS MEDICAL CENTER PUBLIC HEALTH SERVICE,37=HONORHEALTH SCOTTSDALE SHEA MEDICAL CENTER,38=ATRIUM HEALTH WAKE FOREST BAPTIST,39=LOYOLA UNIVERSITY CHICAGO STRITCH SCHOOL OF MEDICINE,40=ACUTE REHABILITATION UNIT AT WESTCHESTER MEDICAL CENTER,41=NORTH SHORE UNIVERSITY HOSPITAL,42=MEMORIAL HOSPITAL WEST,43=BAPTIST MEMORIAL HOSPITAL MEMPHIS,44=USC NORRIS COMPREHENSIVE CANCER CENTER,45=AUGUSTA UNIVERSITY MEDICAL CENTER,46=SSM HEALTH SAINT LOUIS UNIVERSITY HOSPITAL,47=CHRISTIANA CARE HEALTH SERVICES,48=UNIVERSITY OF CINCINNATI MEDICAL CENTER,49=NYU LANGONE HEALTH PERLMUTTER CANCER CENTER 38TH STREET,50=NORTON CANCER INSTITUTE SAINT MATTHEWS,51=ASCENSION VIA CHRISTI SAINT FRANCIS,52=WEST VIRGINIA UNIVERSITY MEDICINE,53=UNIVERSITY OF VIRGINIA CANCER CENTER,54=AURORA CANCER CARE,55=JOHNS HOPKINS HOSPITAL HEMATOLOGY,56=NOVANT HEALTH PRESBYTERIAN MEDICAL CENTER,57=DARTMOUTH-HITCHCOCK MEDICAL CENTER,58=BANNER UNIVERSITY MEDICAL CENTER TUCSON CAMPUS,59=CEDARS SINAI SAMUEL OSCHIN CANCER CENTER,60=UI HEALTH COMPREHENSIVE CANCER CARE,61=ADVENT HEALTH MEDICAL GROUP BLOOD AND MARROW TRANSPLANT AT ORLANDO,62=CITY OF HOPE CHICAGO CANCER HOSPITAL,63=VA TENNESSEE VALLEY HEALTH CARE SYSTEM NASHVILLE CAMPUS,64=UNIVERSITY OF ARKANSAS FOR MEDICAL SCIENCES,65=HENRY FORD HOSPITAL,66=MEDICAL UNIVERSITY OF SOUTH CAROLINA,67=RUSH UNIVERSITY MEDICAL CENTER,68=OU HEALTH STEPHENSON CANCER CENTER,69=SAINT DAVIDS SOUTH AUSTIN MEDICAL CENTER,70=FRANCISCAN HEALTH INDIANAPOLIS,71=SWEDISH HOSPITAL CHERRY HILL CAMPUS,72=TRISTAR CENTENNIAL MEDICAL CENTER,73=UAB HOSPITAL ONCOLOGY,74=UH SEIDMAN CANCER CENTER,75=MEDSTAR GEORGETOWN UNIVERSITY HOSPITAL,76=AVERA CANCER INSTITUTE AT SIOUX FALLS,77=HOUSTON METHODIST HOSPITAL,78=MEDICAL CITY DALLAS HOSPITAL,79=ADVOCATE MEDICAL GROUP,80=YALE MEDICAL GROUP CANCER CENTER,81=UNIVERSITY OF NORTH CAROLINA CANCER CARE,82=COREWELL HEALTH LEMMEN HOLTON CANCER PAVILION,83=THE JEWISH HOSPITAL MERCY HEALTH,84=UF HEALTH SHANDS HOSPITAL BONE MARROW TRANSPLANT OUTPATIENT CLINIC,85=CARDIOVASCULAR INSTITUTE AT BETH ISRAEL DEACONESS MEDICAL CENTER,86=ALLEGHENY HEALTH NETWORK CANCER INSTITUTE AT ALLEGHENY GENERAL HOSPITAL,87=UNIVERSITY OF COLORADO HOSPITAL GI ONCOLOGY,88=INTERMOUNTAIN LDS HOSPITAL,89=SIDNEY KIMMEL CANCER CENTER AT JEFFERSON,90=SIDNEY KIMMEL CANCER – WASHINGTON TOWNSHIP,91=UNIVERSITY OF KENTUCKY MARKEY CANCER CENTER,92=RUTGERS CANCER INSTITUTE OF NEW JERSEY,93=UT SOUTHWESTERN MEDICAL CENTERS HAROLD C SIMMONS COMPREHENSIVE CANCER CENTER,94=UNIVERSITY OF CALIFORNIA DAVIS MEDICAL CENTER,95=FOX CHASE TEMPLE UNIVERSITY HOSPITAL BONE MARROW TRANSPLANT PROGRAM,96=THE MOUNT SINAI HOSPITAL,97=PENN STATE HERSHEY CANCER INSTITUTE,98=MAYO CLINIC,99=UNIVERSITY OF IOWA HOSPITALS AND CLINICS,100=NEWYORK PRESBYTERIAN COLUMBIA UNIVERSITY IRVING MEDICAL CENTER,101=IU HEALTH SIMON CANCER CENTER,102=NORTHSIDE HOSPITAL ATLANTA,103=VCU MASSEY CANCER CENTER,104=MONTEFIORE MEDICAL CENTER MOSES CAMPUS,105=M HEALTH FAIRVIEW UNIVERSITY OF MINNESOTA MEDICAL CENTER,106=MAYO CLINIC HOSPITAL JACKSONVILLE,107=UNIVERSITY OF CALIFORNIA SAN DIEGO MEDICAL CENTER HILLCREST,108=HUNTSMAN CANCER HOSPITAL,109=LEVINE CANCER INSTITUTE,110=UNIVERSITY OF MICHIGAN ROGEL CANCER CENTER,111=FROEDTERT HOSPITAL,112=NEWYORK PRESBYTERIAN WEILL CORNELL MEDICAL CENTER,113=NORTHWESTERN HEMATOPOIETIC STEM CELL TRANSPLANT PROGRAM,114=ROSWELL PARK COMPREHENSIVE CANCER CENTER,115=BANNER MD ANDERSON CANCER CENTER,116=METHODIST SPECIALTY AND TRANSPLANT HOSPITAL,117=UW CARBONE CANCER CENTER AND HEMATOLOGY,118=CLEVELAND CLINIC MOLL CANCER CENTER,119=EMORY UNIVERSITY HOSPITAL,120=UNIVERSITY OF CALIFORNIA SAN FRANCISCO MEDICAL CENTER AT MOUNT ZION,121=TEXAS ONCOLOGY BAYLOR CHARLES A SAMMONS CANCER CENTER,122=RONALD REAGAN UCLA MEDICAL CENTER,123=DUKE CANCER CENTER,124=NEBRASKA MEDICAL CENTER,125=HACKENSACK UNIVERSITY MEDICAL CENTER,126=UNIVERSITY OF MARYLAND GREENEBAUM CANCER CENTER,127=HOSPITAL OF THE UNIVERSITY OF PENNSYLVANIA,128=PRESBYTERIAN SAINT LUKES MEDICAL CENTER,129=UNIVERSITY OF PITTSBURGH MEDICAL CENTER HILLMAN CANCER CENTER,130=MEMORIAL SLOAN KETTERING CANCER CENTER,131=OREGON HEALTH AND SCIENCE UNIVERSITY SCHOOL OF MEDICINE,132=UNIVERSITY OF ROCHESTER MEDICAL CENTER,133=UNIVERSITY OF MIAMI HOSPITAL SYLVESTER COMPREHENSIVE CANCER CENTER,134=MAYO CLINIC,135=FRED HUTCHINSON CANCER CENTER,136=STANFORD MEDICINE - PALO ALTO,137=VANDERBILT UNIVERSITY MEDICAL CENTER,138=CITY OF HOPE COMPREHENSIVE CANCER CENTER,139=BARBARA ANN KARMANOS CANCER INSTITUTE,140=BARNES JEWISH HOSPITAL,141=THE OHIO STATE UNIVERSITY WEXNER MEDICAL CENTER,142=THE UNIVERSITY OF KANSAS HOSPITAL,143=MASSACHUSETTS GENERAL HOSPITAL,144=DANA FARBER CANCER INSTITUTE,145=THE UNIVERSITY OF CHICAGO MEDICINE,146=UNIVERSITY OF TEXAS MD ANDERSON CANCER CENTER STEM CELL TRANSPLANTATION CENTER,147=MOFFITT CANCER CENTER MAGNOLIA CAMPUS,148=CLEVELAND CLINIC CANCER CENTER,149=UCSD MOORES CANCER CENTER,150=PERLMUTTER CANCER CENTER,151=UNIVERSITY OF IOWA HEALTH CARE,152=RUTGERS CANCER INSTITUTE OF NEW JERSEY/ROBERTY WOOD JOHNSON UNIVERSITY,153=HMH JERSEY SHORE UNIVERSITY MEDICAL CENTER,154=Other, specify"
+  },
+  {
+    "Column": "S10_RecodeS980oe",
+    "Description": "S10_RecodeS980oe: Please select the institution/hospital system where you personally see most of your patients. If your institution isn’t listed here, please select “Other.” Note: This information is only to ensure we’re asking you relevant questi",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "hS12_Recode",
+    "Description": "hS12_Recode: HIDDEN IN LIVE",
+    "Answer_Options": "1=Treater,2=Community Referrer"
+  },
+  {
+    "Column": "NPI",
+    "Description": "NPI: Captured variable",
+    "Answer_Options": "NA"
+  },
+  {
+    "Column": "AAID",
+    "Description": "AAID: Captured variable",
+    "Answer_Options": "NA"
+  }
+]

@@ -86,13 +86,21 @@ interface StageDetailProps {
   stage: StageState;
   selectedSlotIndex: number;
   recentCompletions: CompletedTable[];
+  modelName?: string;
 }
 
-export function StageDetail({ stage, selectedSlotIndex, recentCompletions }: StageDetailProps): React.ReactElement {
+export function StageDetail({
+  stage,
+  selectedSlotIndex,
+  recentCompletions,
+  modelName,
+}: StageDetailProps): React.ReactElement {
   // Calculate progress string
   const progressStr = stage.progress
     ? `${stage.progress.completed}/${stage.progress.total} tables`
     : '';
+
+  const concurrencyDisplay = stage.slots.length > 0 ? stage.slots.length : 1;
 
   return (
     <Box flexDirection="column">
@@ -106,12 +114,19 @@ export function StageDetail({ stage, selectedSlotIndex, recentCompletions }: Sta
       {/* Stage Info */}
       <Box paddingY={1} paddingX={1} borderStyle="single" borderColor="gray">
         <Text color="gray">Model: </Text>
-        <Text color="cyan">gpt-5-mini</Text>
+        <Text color="cyan">{modelName || 'Unknown'}</Text>
         <Text color="gray">  │  Concurrency: </Text>
-        <Text color="cyan">{stage.slots.length || 3}</Text>
+        <Text color="cyan">{concurrencyDisplay}</Text>
         <Text color="gray">  │  Cost: </Text>
         <Cost costUsd={stage.costUsd} />
       </Box>
+
+      {stage.status === 'failed' && stage.error && (
+        <Box paddingY={1} paddingX={1} borderStyle="single" borderColor="red">
+          <Text color="red">Error: </Text>
+          <Text color="red" wrap="wrap">{stage.error}</Text>
+        </Box>
+      )}
 
       {/* Active Slots */}
       <Box flexDirection="column" paddingY={1}>
