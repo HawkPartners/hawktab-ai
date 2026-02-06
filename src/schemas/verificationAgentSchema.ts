@@ -155,6 +155,18 @@ export const ExtendedTableDefinitionSchema = z.object({
    * Used for debugging and review to trace responsibility.
    */
   lastModifiedBy: z.enum(['VerificationAgent', 'BaseFilterAgent']),
+
+  // =========================================================================
+  // Loop/Stacking Support
+  // =========================================================================
+
+  /**
+   * R data frame name to use for this table's calculations.
+   * Empty string = use default 'data' frame (non-loop tables).
+   * Non-empty = use named stacked frame (e.g., 'stacked_loop_1').
+   * Set by infrastructure code after agent processing, not by agents.
+   */
+  loopDataFrame: z.string().default(''),
 });
 
 export type ExtendedTableDefinition = z.infer<typeof ExtendedTableDefinitionSchema>;
@@ -301,6 +313,8 @@ export function toExtendedTable(
     splitFromTableId: '',
     // Provenance tracking (set by infrastructure, not agents)
     lastModifiedBy: 'VerificationAgent',
+    // Loop/stacking support
+    loopDataFrame: '',
   };
 }
 

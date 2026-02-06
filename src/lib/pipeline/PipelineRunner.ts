@@ -35,6 +35,8 @@ import { DEFAULT_PIPELINE_OPTIONS } from './types';
 import type { VerboseDataMapType } from '../../schemas/processingSchemas';
 import type { ExtendedTableDefinition } from '../../schemas/verificationAgentSchema';
 import { validate as runValidation } from '../validation/ValidationRunner';
+import { collapseLoopVariables } from '../validation/LoopCollapser';
+import type { LoopGroupMapping } from '../validation/LoopCollapser';
 
 const execAsync = promisify(exec);
 
@@ -226,8 +228,47 @@ export async function runPipeline(
     eventBus.emitStageStart(1, STAGE_NAMES[1]);
 
     const dataMapResult = validationResult.processingResult!;
-    const verboseDataMap = dataMapResult.verbose as VerboseDataMapType[];
+    let verboseDataMap = dataMapResult.verbose as VerboseDataMapType[];
     log(`  ${verboseDataMap.length} variables from .sav`, 'green');
+
+    // Collapse loop variables if loops detected
+    let loopMappings: LoopGroupMapping[] = [];
+    let baseNameToLoopIndex: Map<string, number> = new Map();
+    if (validationResult.loopDetection?.hasLoops) {
+      // Block if data appears already stacked
+      const hasStackedPattern = validationResult.fillRateResults.some(
+        fr => fr.pattern === 'likely_stacked'
+      );
+      if (hasStackedPattern) {
+        const msg = 'Data appears to be already stacked. Please upload the original wide-format data.';
+        log(`  ${msg}`, 'red');
+        eventBus.emitPipelineFailed(files.name, msg);
+        return {
+          success: false,
+          dataset: files.name,
+          outputDir,
+          durationMs: Date.now() - startTime,
+          tableCount: 0,
+          totalCostUsd: 0,
+          error: msg,
+        };
+      }
+
+      const collapseResult = collapseLoopVariables(
+        verboseDataMap,
+        validationResult.loopDetection,
+      );
+      verboseDataMap = collapseResult.collapsedDataMap as VerboseDataMapType[];
+      loopMappings = collapseResult.loopMappings;
+      baseNameToLoopIndex = collapseResult.baseNameToLoopIndex;
+
+      log(`  Collapsed loops: ${collapseResult.collapsedVariableNames.size} iteration vars → ${loopMappings.reduce((s, m) => s + m.variables.length, 0)} base vars`, 'green');
+      for (const m of loopMappings) {
+        log(`    ${m.stackedFrameName}: ${m.variables.length} vars x ${m.iterations.length} iterations (${m.skeleton})`, 'dim');
+      }
+    }
+
+    log(`  Effective datamap: ${verboseDataMap.length} variables`, 'green');
     log(`  Duration: ${Date.now() - stepStart1}ms`, 'dim');
     eventBus.emitStageComplete(1, STAGE_NAMES[1], Date.now() - stepStart1);
     log('', 'reset');
@@ -492,6 +533,25 @@ export async function runPipeline(
     log(`  Duration: ${Date.now() - stepStart6}ms`, 'dim');
     log('', 'reset');
 
+    // Tag tables with loop data frame (if loops detected)
+    if (loopMappings.length > 0) {
+      let loopTableCount = 0;
+      for (const table of filteredTables) {
+        // Check if any row variable is a loop base name
+        for (const row of table.rows) {
+          const loopIdx = baseNameToLoopIndex.get(row.variable);
+          if (loopIdx !== undefined) {
+            table.loopDataFrame = loopMappings[loopIdx].stackedFrameName;
+            loopTableCount++;
+            break;
+          }
+        }
+      }
+      if (loopTableCount > 0) {
+        log(`  Tagged ${loopTableCount} tables with loop data frames`, 'green');
+      }
+    }
+
     // -------------------------------------------------------------------------
     // Step 7: R Validation with Retry
     // -------------------------------------------------------------------------
@@ -552,6 +612,7 @@ export async function runPipeline(
         cuts: cutsSpec.cuts,
         statTestingConfig: effectiveStatConfig,
         significanceThresholds: effectiveStatConfig.thresholds,
+        loopMappings: loopMappings.length > 0 ? loopMappings : undefined,
       },
       { sessionId: outputFolder, outputDir: 'results' }
     );

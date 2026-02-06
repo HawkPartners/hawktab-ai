@@ -18,6 +18,7 @@
 import type { ExtendedTableDefinition, ExtendedTableRow } from '../../schemas/verificationAgentSchema';
 import type { CutDefinition, CutGroup } from '../tables/CutsSpec';
 import type { StatTestingConfig } from '../env';
+import type { LoopGroupMapping } from '../validation/LoopCollapser';
 
 // =============================================================================
 // Types
@@ -47,6 +48,7 @@ export interface RScriptV2Input {
   totalRespondents?: number;        // Total qualified respondents (for base description)
   bannerGroups?: BannerGroup[];     // Banner structure for Excel formatter
   statTestingConfig?: StatTestingConfig;  // Full stat testing configuration
+  loopMappings?: LoopGroupMapping[];     // Loop stacking mappings (from LoopCollapser)
 }
 
 export interface RScriptV2Options {
@@ -242,6 +244,7 @@ export function generateRScriptV2WithValidation(
     totalRespondents,
     bannerGroups = [],
     statTestingConfig,
+    loopMappings = [],
   } = input;
 
   // Extract stat testing config values (use explicit params if provided, else config, else defaults)
@@ -316,6 +319,13 @@ export function generateRScriptV2WithValidation(
   lines.push(`data <- read_sav("${dataFilePath}")`);
   lines.push('print(paste("Loaded", nrow(data), "rows and", ncol(data), "columns"))');
   lines.push('');
+
+  // -------------------------------------------------------------------------
+  // Loop Stacking Preamble (if any loop groups detected)
+  // -------------------------------------------------------------------------
+  if (loopMappings.length > 0) {
+    generateStackingPreamble(lines, loopMappings, cuts);
+  }
 
   // -------------------------------------------------------------------------
   // Significance Thresholds
@@ -426,6 +436,97 @@ export function generateRScriptV2(
 ): string {
   const result = generateRScriptV2WithValidation(input, options);
   return result.script;
+}
+
+// =============================================================================
+// Loop Stacking Preamble
+// =============================================================================
+
+/**
+ * Generate R code to create stacked data frames for loop groups.
+ * Each loop group gets its own stacked frame via dplyr::bind_rows + rename.
+ * Cuts are also pre-computed for each stacked frame.
+ */
+function generateStackingPreamble(
+  lines: string[],
+  loopMappings: LoopGroupMapping[],
+  cuts: CutDefinition[],
+): void {
+  lines.push('# =============================================================================');
+  lines.push('# Loop Stacking: Create stacked data frames for looped questions');
+  lines.push(`# ${loopMappings.length} loop group(s) detected`);
+  lines.push('# =============================================================================');
+  lines.push('');
+
+  for (const mapping of loopMappings) {
+    const frameName = mapping.stackedFrameName;
+
+    lines.push(`# --- ${frameName}: ${mapping.variables.length} variables x ${mapping.iterations.length} iterations ---`);
+    lines.push(`# Skeleton: ${mapping.skeleton}`);
+    lines.push(`# Iterations: ${mapping.iterations.join(', ')}`);
+    lines.push('');
+
+    // Generate bind_rows with one rename per iteration
+    lines.push(`${frameName} <- dplyr::bind_rows(`);
+
+    for (let i = 0; i < mapping.iterations.length; i++) {
+      const iter = mapping.iterations[i];
+      const isLast = i === mapping.iterations.length - 1;
+
+      // Build rename pairs: baseName = originalCol
+      const renamePairs = mapping.variables
+        .map(v => {
+          const origCol = v.iterationColumns[iter];
+          if (!origCol) return null;
+          // Only need rename if base differs from original
+          if (v.baseName === origCol) return null;
+          return `${sanitizeRColumnName(v.baseName)} = ${sanitizeRColumnName(origCol)}`;
+        })
+        .filter(Boolean);
+
+      if (renamePairs.length > 0) {
+        lines.push(`  data %>% dplyr::rename(${renamePairs.join(', ')}) %>% dplyr::mutate(.loop_iter = ${iter})${isLast ? '' : ','}`);
+      } else {
+        lines.push(`  data %>% dplyr::mutate(.loop_iter = ${iter})${isLast ? '' : ','}`);
+      }
+    }
+
+    lines.push(')');
+    lines.push(`print(paste("Created ${frameName}:", nrow(${frameName}), "rows (", nrow(data), "x", ${mapping.iterations.length}, "iterations)"))`);
+    lines.push('');
+
+    // Pre-compute cuts for this stacked frame
+    lines.push(`# Cuts for ${frameName}`);
+    lines.push(`cuts_${frameName} <- list(`);
+    lines.push(`  Total = rep(TRUE, nrow(${frameName}))`);
+
+    for (const cut of cuts) {
+      const expr = cut.rExpression.replace(/^\s*#.*$/gm, '').trim();
+      if (expr && !expr.startsWith('#')) {
+        const safeName = cut.name.replace(/`/g, "'");
+        lines.push(`,  \`${safeName}\` = with(${frameName}, ${expr})`);
+      }
+    }
+
+    lines.push(')');
+    lines.push('');
+
+    // Stat letters for stacked cuts (same as main)
+    lines.push(`cut_stat_letters_${frameName} <- cut_stat_letters`);
+    lines.push('');
+  }
+}
+
+/**
+ * Sanitize a column name for use in R dplyr::rename().
+ * Wraps in backticks if the name contains special characters.
+ */
+function sanitizeRColumnName(name: string): string {
+  // If it's a simple alphanumeric + underscore name, no backticks needed
+  if (/^[a-zA-Z][a-zA-Z0-9_.]*$/.test(name)) {
+    return name;
+  }
+  return `\`${name}\``;
 }
 
 // =============================================================================
@@ -808,11 +909,16 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
   const tableId = escapeRString(table.tableId);
   const questionText = escapeRString(table.questionText);
 
+  // Determine data frame and cuts variable for this table
+  const frameName = table.loopDataFrame || 'data';
+  const cutsName = table.loopDataFrame ? `cuts_${table.loopDataFrame}` : 'cuts';
+  const isLoopTable = !!table.loopDataFrame;
+
   // Sanitize questionText for R comments (replace newlines with spaces)
   const commentSafeQuestion = table.questionText.replace(/[\r\n]+/g, ' ').trim();
 
   lines.push(`# -----------------------------------------------------------------------------`);
-  lines.push(`# Table: ${table.tableId} (frequency)${table.isDerived ? ' [DERIVED]' : ''}`);
+  lines.push(`# Table: ${table.tableId} (frequency)${table.isDerived ? ' [DERIVED]' : ''}${isLoopTable ? ` [LOOP: ${frameName}]` : ''}`);
   lines.push(`# Question: ${commentSafeQuestion}`);
   lines.push(`# Rows: ${table.rows.length}`);
   if (table.sourceTableId) {
@@ -847,8 +953,8 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
   lines.push(')');
   lines.push('');
 
-  lines.push('for (cut_name in names(cuts)) {');
-  lines.push('  cut_data <- apply_cut(data, cuts[[cut_name]])');
+  lines.push(`for (cut_name in names(${cutsName})) {`);
+  lines.push(`  cut_data <- apply_cut(${frameName}, ${cutsName}[[cut_name]])`);
 
   // Apply additional table-level filter if specified (skip logic from BaseFilterAgent)
   const hasAdditionalFilter = table.additionalFilter && table.additionalFilter.trim().length > 0;
@@ -994,11 +1100,17 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
 function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition): void {
   const tableId = escapeRString(table.tableId);
   const questionText = escapeRString(table.questionText);
+
+  // Determine data frame and cuts variable for this table
+  const frameName = table.loopDataFrame || 'data';
+  const cutsName = table.loopDataFrame ? `cuts_${table.loopDataFrame}` : 'cuts';
+  const isLoopTable = !!table.loopDataFrame;
+
   // Sanitize questionText for R comments (replace newlines with spaces)
   const commentSafeQuestion = table.questionText.replace(/[\r\n]+/g, ' ').trim();
 
   lines.push(`# -----------------------------------------------------------------------------`);
-  lines.push(`# Table: ${table.tableId} (mean_rows)${table.isDerived ? ' [DERIVED]' : ''}`);
+  lines.push(`# Table: ${table.tableId} (mean_rows)${table.isDerived ? ' [DERIVED]' : ''}${isLoopTable ? ` [LOOP: ${frameName}]` : ''}`);
   lines.push(`# Question: ${commentSafeQuestion}`);
   lines.push(`# Rows: ${table.rows.length}`);
   if (table.sourceTableId) {
@@ -1032,8 +1144,8 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
   lines.push(')');
   lines.push('');
 
-  lines.push('for (cut_name in names(cuts)) {');
-  lines.push('  cut_data <- apply_cut(data, cuts[[cut_name]])');
+  lines.push(`for (cut_name in names(${cutsName})) {`);
+  lines.push(`  cut_data <- apply_cut(${frameName}, ${cutsName}[[cut_name]])`);
 
   // Apply additional table-level filter if specified (skip logic from BaseFilterAgent)
   const hasAdditionalFilterMean = table.additionalFilter && table.additionalFilter.trim().length > 0;
@@ -1539,9 +1651,11 @@ export {
   generateMeanRowsTable,
   generateSignificanceTesting,
   generateJsonOutput,
+  generateStackingPreamble,
   // Utilities
   escapeRString,
   sanitizeVarName,
+  sanitizeRColumnName,
   buildBannerGroupsFromCuts,
   buildComparisonGroups,
 };

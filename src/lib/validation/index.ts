@@ -2,6 +2,12 @@ export { tokenize, createSkeleton, detectLoops } from './LoopDetector';
 export { classifyLoopFillRates } from './FillRateValidator';
 export { getDataFileStats, getColumnFillRates, checkRAvailability, hasStructuralSuffix, convertToRawVariables } from './RDataReader';
 export { validate } from './ValidationRunner';
+export { collapseLoopVariables, deriveBaseName, resolveBaseToColumn, cleanLabel } from './LoopCollapser';
+export type {
+  LoopVariableMapping,
+  LoopGroupMapping,
+  LoopCollapseResult,
+} from './LoopCollapser';
 export type {
   DataMapFormat,
   Token,
