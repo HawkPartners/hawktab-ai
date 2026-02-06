@@ -1,8 +1,18 @@
 /**
  * Context Builder
- * Purpose: Transform banner + raw data map into dual outputs and Zod-typed agent context
- * Reads: data map file path (CSV), optional SPSS path; banner extraction structures
- * Writes (dev): session `*-verbose-<ts>.json`, `*-agent-<ts>.json`
+ *
+ * DEPRECATED: Most functions in this file are dead code from the pre-.sav-forward era.
+ * The pipeline no longer uses CSV datamaps — ValidationRunner handles everything via .sav.
+ *
+ * STILL LIVE (type exports only — used by BannerAgent):
+ *   - VerboseBannerPlan, AgentBannerGroup, VerboseBannerGroup
+ *
+ * DEAD (not imported anywhere — safe to delete when web UI is updated):
+ *   - generateDualOutputs, generateBasicDualOutputs, convertToDataMapSchema,
+ *     convertToBannerPlanSchema, prepareAgentContext, createGroupContext, validateContextSize
+ *
+ * Can't delete the file yet because BannerAgent imports the type definitions.
+ * TODO: Move the 3 live type exports to a shared types file, then delete this file.
  */
 
 import { DataMapType } from '../schemas/dataMapSchema';
@@ -99,16 +109,29 @@ export const generateDualOutputs = async (rawBanner: unknown, dataMapFilePath: s
     console.log(`[ContextBuilder] Using legacy banner data - ${agentBanner.length} groups`);
   }
 
-  // Use sophisticated DataMapProcessor for data map processing
-  console.log(`[ContextBuilder] Processing data map with state machine: ${dataMapFilePath}`);
-  if (spssFilePath) {
-    console.log(`[ContextBuilder] SPSS validation will use: ${spssFilePath}`);
+  // Use validation runner to read .sav and enrich variables
+  console.log(`[ContextBuilder] Processing data via .sav: ${spssFilePath || dataMapFilePath}`);
+
+  const { validate } = await import('./validation/ValidationRunner');
+
+  let processingResult;
+  if (spssFilePath && outputFolder) {
+    const validationResult = await validate({ spssPath: spssFilePath, outputDir: outputFolder });
+    processingResult = validationResult.processingResult || {
+      success: false, verbose: [], agent: [], validationPassed: false, confidence: 0,
+      errors: ['Validation failed'], warnings: [],
+    };
+  } else {
+    // Fallback: use DataMapProcessor directly with empty data
+    const dataMapProcessor = new DataMapProcessor();
+    const enriched = dataMapProcessor.enrichVariables([]);
+    processingResult = {
+      success: true, verbose: enriched.verbose, agent: enriched.agent,
+      validationPassed: true, confidence: 1.0, errors: [] as string[], warnings: [] as string[],
+    };
   }
-  
-  const dataMapProcessor = new DataMapProcessor();
-  const processingResult = await dataMapProcessor.processDataMap(dataMapFilePath, spssFilePath, outputFolder);
-  
-  console.log(`[ContextBuilder] Data map processing completed - Success: ${processingResult.success}, Confidence: ${processingResult.confidence.toFixed(2)}`);
+
+  console.log(`[ContextBuilder] Data processing completed - Success: ${processingResult.success}`);
   
   return {
     verboseBanner: bannerData,

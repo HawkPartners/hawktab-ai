@@ -59,7 +59,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 
 // Processors and agents
-import { DataMapProcessor } from '../src/lib/processors/DataMapProcessor';
+import { validate } from '../src/lib/validation/ValidationRunner';
 import { BannerAgent } from '../src/agents/BannerAgent';
 import { processAllGroups as processCrosstabGroups } from '../src/agents/CrosstabAgent';
 import { groupDataMap } from '../src/lib/tables/DataMapGrouper';
@@ -293,8 +293,11 @@ async function runPipeline(datasetFolder: string) {
   const stepStart1 = Date.now();
   eventBus.emitStageStart(1, STAGE_NAMES[1]);
 
-  const dataMapProcessor = new DataMapProcessor();
-  const dataMapResult = await dataMapProcessor.processDataMap(files.datamap, files.spss, outputDir);
+  const validationReport = await validate({ spssPath: files.spss, outputDir });
+  if (!validationReport.canProceed || !validationReport.processingResult) {
+    throw new Error(`Validation failed: ${validationReport.errors.map(e => e.message).join(', ')}`);
+  }
+  const dataMapResult = validationReport.processingResult;
   const verboseDataMap = dataMapResult.verbose as VerboseDataMapType[];
   log(`  Processed ${verboseDataMap.length} variables`, 'green');
   log(`  Duration: ${Date.now() - stepStart1}ms`, 'dim');

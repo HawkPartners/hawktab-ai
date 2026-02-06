@@ -1,19 +1,27 @@
 import '../src/lib/loadEnv';
-import { DataMapProcessor } from '../src/lib/processors/DataMapProcessor';
+import path from 'path';
+import fs from 'fs/promises';
+import { validate } from '../src/lib/validation/ValidationRunner';
 
-async function testParser(filePath: string, name: string) {
-  const processor = new DataMapProcessor();
+async function testParser(spssPath: string, name: string) {
   console.log(`\n${'='.repeat(60)}`);
   console.log(`TESTING: ${name}`);
   console.log(`${'='.repeat(60)}`);
 
-  try {
-    const result = await processor.processDataMap(filePath);
+  // Create a temp output dir for validation
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const outputDir = path.join(process.cwd(), 'temp-outputs', `parser-analysis-${timestamp}`);
+  await fs.mkdir(outputDir, { recursive: true });
 
-    if (!result.success) {
-      console.log(`FAILED: ${result.errors.join(', ')}`);
+  try {
+    const report = await validate({ spssPath, outputDir });
+
+    if (!report.canProceed || !report.processingResult) {
+      console.log(`FAILED: ${report.errors.map(e => e.message).join(', ')}`);
       return;
     }
+
+    const result = report.processingResult;
 
     // Analyze what was extracted
     const verbose = result.verbose;
@@ -58,6 +66,15 @@ async function testParser(filePath: string, name: string) {
       console.log(`  Sample missing context: ${subsNoContext.slice(0, 3).map(v => v.column).join(', ')}`);
     }
 
+    // Loop detection summary
+    if (report.loopDetection?.hasLoops) {
+      console.log(`\nLoop Detection:`);
+      console.log(`  Loops found: ${report.loopDetection.loops.length}`);
+      for (const loop of report.loopDetection.loops) {
+        console.log(`  Pattern: ${loop.skeleton}, ${loop.iterations.length} iterations`);
+      }
+    }
+
   } catch (error) {
     console.log(`ERROR: ${error instanceof Error ? error.message : error}`);
   }
@@ -66,20 +83,20 @@ async function testParser(filePath: string, name: string) {
 async function main() {
   // Test Leqvio
   await testParser(
-    'data/leqvio-monotherapy-demand-NOV217/inputs/leqvio-monotherapy-demand-datamap.csv',
+    'data/leqvio-monotherapy-demand-NOV217/inputs/leqvio-monotherapy-demand-data.sav',
     'Leqvio Monotherapy Demand'
   );
 
   // Test Titos
   await testParser(
-    'data/test-data/titos-growth-strategy/original-datamap.csv',
+    'data/test-data/titos-growth-strategy/250800.sav',
     'Titos Growth Strategy'
   );
 
-  // Test SPSS format (expect failure or poor results)
+  // Test Spravato
   await testParser(
-    'data/test-data/Spravato_4.23.25/Spravato 4.23.25__Sheet1.csv',
-    'Spravato (SPSS format)'
+    'data/test-data/Spravato_4.23.25/Spravato 4.23.25.sav',
+    'Spravato'
   );
 }
 

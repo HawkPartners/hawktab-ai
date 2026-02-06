@@ -33,7 +33,7 @@ import '../src/lib/loadEnv';
 import fs from 'fs/promises';
 import path from 'path';
 import { processDataMap, groupDataMapByParent, EXCLUDED_NORMALIZED_TYPES } from '../src/agents/TableAgent';
-import { DataMapProcessor } from '../src/lib/processors/DataMapProcessor';
+import { validate } from '../src/lib/validation/ValidationRunner';
 import { VerboseDataMapType } from '../src/schemas/processingSchemas';
 
 // =============================================================================
@@ -65,6 +65,7 @@ function log(message: string, color: keyof typeof colors = 'reset') {
 interface InputInfo {
   type: 'csv' | 'json';
   path: string;
+  spssPath: string;  // .sav file for validation runner
   name: string;
 }
 
@@ -80,7 +81,7 @@ async function resolveInput(inputArg?: string): Promise<InputInfo> {
     throw new Error(`Input not found: ${input}`);
   }
 
-  // If it's a directory, look for datamap CSV
+  // If it's a directory, look for .sav file
   if (stat.isDirectory()) {
     // Check for nested structure (inputs/ subfolder)
     let inputsFolder = absPath;
@@ -90,37 +91,42 @@ async function resolveInput(inputArg?: string): Promise<InputInfo> {
     }
 
     const files = await fs.readdir(inputsFolder);
-    const csvFile = files.find(f =>
-      f.toLowerCase().includes('datamap') && f.endsWith('.csv')
-    );
-    if (!csvFile) {
-      throw new Error(`No *datamap*.csv found in ${input}`);
+    const savFile = files.find(f => f.endsWith('.sav'));
+    if (!savFile) {
+      throw new Error(`No .sav file found in ${input}`);
     }
     return {
       type: 'csv',
-      path: path.join(inputsFolder, csvFile),
+      path: path.join(inputsFolder, savFile),
+      spssPath: path.join(inputsFolder, savFile),
       name: path.basename(absPath),
     };
   }
 
   // It's a file
-  if (input.endsWith('.csv')) {
+  if (input.endsWith('.sav')) {
     return {
       type: 'csv',
       path: absPath,
+      spssPath: absPath,
       name: path.basename(path.dirname(absPath)),
     };
   }
 
   if (input.endsWith('.json')) {
+    // For JSON input, try to find a .sav in the same directory
+    const dir = path.dirname(absPath);
+    const files = await fs.readdir(dir);
+    const savFile = files.find(f => f.endsWith('.sav'));
     return {
       type: 'json',
       path: absPath,
+      spssPath: savFile ? path.join(dir, savFile) : '',
       name: path.basename(path.dirname(absPath)),
     };
   }
 
-  throw new Error(`Unsupported file type: ${input}. Expected .csv or .json`);
+  throw new Error(`Unsupported file type: ${input}. Expected .sav or .json`);
 }
 
 // =============================================================================
@@ -129,11 +135,13 @@ async function resolveInput(inputArg?: string): Promise<InputInfo> {
 
 async function loadDataMap(input: InputInfo, outputFolder: string): Promise<VerboseDataMapType[]> {
   if (input.type === 'csv') {
-    log(`Processing CSV: ${path.basename(input.path)}`, 'blue');
-    const processor = new DataMapProcessor();
-    const result = await processor.processDataMap(input.path, undefined, outputFolder);
-    log(`  Generated ${result.verbose.length} variables`, 'green');
-    return result.verbose as VerboseDataMapType[];
+    log(`Processing .sav: ${path.basename(input.spssPath)}`, 'blue');
+    const report = await validate({ spssPath: input.spssPath, outputDir: outputFolder });
+    if (!report.canProceed || !report.processingResult) {
+      throw new Error(`Validation failed: ${report.errors.map(e => e.message).join(', ')}`);
+    }
+    log(`  Generated ${report.processingResult.verbose.length} variables`, 'green');
+    return report.processingResult.verbose as VerboseDataMapType[];
   }
 
   // JSON file

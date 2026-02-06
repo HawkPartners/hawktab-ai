@@ -1,20 +1,18 @@
 /**
- * DataMapProcessor.ts - Consolidated State Machine
- * 
- * ALL-IN-ONE processor combining:
- * - State machine CSV parsing (from csv-parser.ts)
- * - Parent inference (from parent-inference.ts) 
- * - Context enrichment (from context-enrichment.ts)
- * - Internal validation
- * 
- * Workflow: CSV Upload → processDataMap() → Dual Outputs + Validation
+ * DataMapProcessor.ts - Variable Enrichment Pipeline
+ *
+ * Enriches raw variables (from .sav) with:
+ * - Parent inference (S8r1 → parent S8)
+ * - Parent context (S8r1 gets S8's description)
+ * - Type normalization (→ normalizedType)
+ * - Dual output generation (verbose + agent formats)
+ *
+ * Entry point: enrichVariables(rawVariables) → { verbose, agent }
  */
 
+import { groupDataMapByParent } from '@/agents/TableAgent';
 import fs from 'fs/promises';
 import path from 'path';
-import { DataMapValidator } from './DataMapValidator';
-import { groupDataMapByParent } from '@/agents/TableAgent';
-import { parseAntaresFile } from './AntaresParser';
 
 // ===== TYPES & INTERFACES =====
 
@@ -32,8 +30,8 @@ export interface ProcessedDataMapVariable extends RawDataMapVariable {
   context?: string;
   confidence?: number;
   // Enrichment fields for normalized typing
-  normalizedType?: 'numeric_range' | 'percentage_per_option' | 'ordinal_scale' | 
-                   'matrix_single_choice' | 'binary_flag' | 'categorical_select' | 
+  normalizedType?: 'numeric_range' | 'percentage_per_option' | 'ordinal_scale' |
+                   'matrix_single_choice' | 'binary_flag' | 'categorical_select' |
                    'text_open' | 'admin';
   rangeMin?: number;
   rangeMax?: number;
@@ -68,110 +66,42 @@ export interface ProcessingResult {
 // ===== MAIN PROCESSOR CLASS =====
 
 export class DataMapProcessor {
-  private validator = new DataMapValidator();
 
   /**
-   * Main entry point - complete workflow
-   * CSV Upload → Parse → Inference → Enrichment → Validation → Dual Outputs
+   * PRIMARY entry point for .sav-forward flow.
+   * Full enrichment: parent inference → parent context → type normalization.
+   * Pure function — no file I/O, no SPSS validation.
    */
-  async processDataMap(filePath: string, spssFilePath?: string, outputDir?: string): Promise<ProcessingResult> {
-    try {
-      // Step 1: State machine parsing (using extracted AntaresParser)
-      console.log(`[DataMapProcessor] Starting CSV parsing: ${path.basename(filePath)}`);
-      const rawVariables = await parseAntaresFile(filePath);
-      console.log(`[DataMapProcessor] Parsed ${rawVariables.length} raw variables`);
-
-      // Steps 2-5: Enrichment pipeline
-      return await this.processFromRawVariables(rawVariables, filePath, spssFilePath, outputDir);
-
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown processing error';
-      console.error(`[DataMapProcessor] Error:`, errorMessage);
-
-      return {
-        success: false,
-        verbose: [],
-        agent: [],
-        validationPassed: false,
-        confidence: 0,
-        errors: [errorMessage],
-        warnings: []
-      };
-    }
+  enrichVariables(rawVariables: RawDataMapVariable[]): {
+    verbose: VerboseDataMap[];
+    agent: AgentDataMap[];
+  } {
+    const withParents = this.addParentRelationships(rawVariables);
+    const withContext = this.addParentContext(withParents);
+    const normalized = this.normalizeVariableTypes(withContext);
+    return this.generateDualOutputs(normalized);
   }
 
   /**
-   * Process from pre-parsed raw variables (used by both Antares and SPSS parsers).
-   * Runs only the enrichment pipeline: parent inference → context → type normalization → validation → dual outputs.
+   * Add parent context to sub-variables by looking up the parent's description
+   * from the same array. Pure function — no file I/O.
    */
-  async processFromRawVariables(
-    rawVariables: RawDataMapVariable[],
-    filePath: string,
-    spssFilePath?: string,
-    outputDir?: string
-  ): Promise<ProcessingResult> {
-    const errors: string[] = [];
-    const warnings: string[] = [];
-
-    try {
-      // Step 2: Parent inference
-      console.log(`[DataMapProcessor] Adding parent relationships`);
-      const withParents = this.addParentRelationships(rawVariables);
-      const parentCount = withParents.filter(v => v.parentQuestion !== 'NA').length;
-      console.log(`[DataMapProcessor] Added parent relationships for ${parentCount} variables`);
-
-      // Step 3: Context enrichment
-      console.log(`[DataMapProcessor] Enriching context from original file`);
-      const enriched = await this.addContextInformation(withParents, filePath);
-      const contextCount = enriched.filter(v => v.context).length;
-      console.log(`[DataMapProcessor] Added context for ${contextCount} variables`);
-
-      // Step 3.5: Type normalization and pattern detection
-      console.log(`[DataMapProcessor] Normalizing types and detecting patterns`);
-      const normalized = this.normalizeVariableTypes(enriched);
-      const normalizedCount = normalized.filter(v => v.normalizedType).length;
-      console.log(`[DataMapProcessor] Normalized ${normalizedCount} variables`);
-
-      // Step 4: Internal validation
-      console.log(`[DataMapProcessor] Running validation`);
-      const validationResult = await this.validateProcessedData(normalized, spssFilePath);
-      console.log(`[DataMapProcessor] Validation confidence: ${validationResult.confidence.toFixed(2)}`);
-
-      // Step 5: Generate dual outputs
-      const dualOutputs = this.generateDualOutputs(normalized);
-
-      // Save outputs (always save for MVP)
-      if (outputDir) {
-        await this.saveDevelopmentOutputs(dualOutputs, path.basename(filePath), outputDir);
+  private addParentContext(variables: ProcessedDataMapVariable[]): ProcessedDataMapVariable[] {
+    return variables.map(variable => {
+      if (variable.level === 'sub' && variable.parentQuestion !== 'NA') {
+        const parentVar = variables.find(v => v.column === variable.parentQuestion);
+        if (parentVar && parentVar.description) {
+          return {
+            ...variable,
+            context: `${parentVar.column}: ${parentVar.description}`,
+          };
+        }
       }
-
-      return {
-        success: true,
-        verbose: dualOutputs.verbose,
-        agent: dualOutputs.agent,
-        validationPassed: validationResult.passed,
-        confidence: validationResult.confidence,
-        errors,
-        warnings
-      };
-
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown processing error';
-      console.error(`[DataMapProcessor] Error:`, errorMessage);
-
-      return {
-        success: false,
-        verbose: [],
-        agent: [],
-        validationPassed: false,
-        confidence: 0,
-        errors: [errorMessage],
-        warnings
-      };
-    }
+      return variable;
+    });
   }
 
-  // ===== STEP 2: PARENT INFERENCE =====
+  // ===== PARENT INFERENCE =====
 
   private addParentRelationships(variables: RawDataMapVariable[]): ProcessedDataMapVariable[] {
     return variables.map(variable => {
@@ -182,7 +112,7 @@ export class DataMapProcessor {
           parentQuestion: parentCode
         };
       }
-      
+
       // Parent variables have no parent question
       return {
         ...variable,
@@ -219,25 +149,25 @@ export class DataMapProcessor {
     return parent;
   }
 
-  // ===== STEP 3.5: TYPE NORMALIZATION =====
+  // ===== TYPE NORMALIZATION =====
 
   private normalizeVariableTypes(variables: ProcessedDataMapVariable[]): ProcessedDataMapVariable[] {
     const normalized = variables.map((variable) => {
       const enriched = { ...variable };
-      
+
       // Skip admin fields
       if (this.isAdminField(variable.column)) {
         enriched.normalizedType = 'admin';
         return enriched;
       }
-      
+
       // Check for open text responses
       if (variable.valueType?.toLowerCase().includes('open text') ||
           variable.valueType?.toLowerCase().includes('open numeric')) {
         enriched.normalizedType = 'text_open';
         return enriched;
       }
-      
+
       // Detect binary flags (0/1 Unchecked/Checked) - special case for multi-select checkboxes
       // Check by exact string match OR by 0-1 range pattern
       if (variable.answerOptions === '0=Unchecked,1=Checked' ||
@@ -289,26 +219,26 @@ export class DataMapProcessor {
         }
         return enriched;
       }
-      
+
       return enriched;
     });
-    
+
     // Second pass: detect dependencies
     return this.detectDependencies(normalized);
   }
-  
+
   private isAdminField(column: string): boolean {
     const col = column.toLowerCase();
-    return col === 'record' || col === 'uuid' || col === 'date' || 
+    return col === 'record' || col === 'uuid' || col === 'date' ||
            col === 'status' || col.includes('time') || col.includes('_id') ||
-           col.startsWith('ims_') || col.startsWith('npi_') || 
+           col.startsWith('ims_') || col.startsWith('npi_') ||
            col.includes('captured') || col === 'qtime';
   }
-  
+
   private parseScaleLabels(answerOptions: string): { value: number | string; label: string }[] {
     const labels: { value: number | string; label: string }[] = [];
     const parts = answerOptions.split(',');
-    
+
     for (const part of parts) {
       const match = part.match(/^(\d+)\s*=\s*(.+)$/);
       if (match) {
@@ -318,28 +248,28 @@ export class DataMapProcessor {
         });
       }
     }
-    
+
     return labels;
   }
-  
+
   private extractAllowedValues(answerOptions: string): (number | string)[] {
     const values: (number | string)[] = [];
     const parts = answerOptions.split(',');
-    
+
     for (const part of parts) {
       const match = part.match(/^(\d+)\s*=/);
       if (match) {
         values.push(parseInt(match[1], 10));
       }
     }
-    
+
     return values;
   }
-  
+
   private detectDependencies(variables: ProcessedDataMapVariable[]): ProcessedDataMapVariable[] {
     return variables.map((variable) => {
       const enriched = { ...variable };
-      
+
       // Check for "Of those..." pattern indicating dependency
       if (variable.description?.toLowerCase().includes('of those') ||
           variable.description?.toLowerCase().includes('of these')) {
@@ -348,14 +278,14 @@ export class DataMapProcessor {
         if (currentCode) {
           const prefix = currentCode[1];
           const num = parseInt(currentCode[2], 10);
-          
+
           // Look for previous question (e.g., S11 before S12)
           const prevCode = `${prefix}${num - 1}`;
           const prevVar = variables.find(v => v.column === prevCode);
-          
+
           if (prevVar) {
             enriched.dependentOn = prevCode;
-            
+
             // For numeric ranges, upper bound often equals previous question
             if (enriched.normalizedType === 'numeric_range' && prevVar.normalizedType === 'numeric_range') {
               enriched.dependentRule = `upperBoundEquals(${prevCode})`;
@@ -363,258 +293,12 @@ export class DataMapProcessor {
           }
         }
       }
-      
+
       return enriched;
     });
   }
 
-  // ===== STEP 3: CONTEXT ENRICHMENT =====
-
-  private async addContextInformation(variables: ProcessedDataMapVariable[], originalFilePath: string): Promise<ProcessedDataMapVariable[]> {
-    // Read the original data map file to search for parent question text
-    const fileContent = await fs.readFile(originalFilePath, 'utf-8');
-    const lines = fileContent.trim().split('\n');
-
-    // First pass: try to find context using parent question codes
-    let processedVariables = variables.map(variable => {
-      if (variable.level === 'sub' && variable.parentQuestion !== 'NA') {
-        const parentCode = variable.parentQuestion;
-        
-        // Search through the raw data map for the parent question
-        const context = this.findParentQuestionInRawData(lines, parentCode);
-        
-        if (context) {
-          return {
-            ...variable,
-            context
-          };
-        }
-      }
-      
-      return variable;
-    });
-
-    // Second pass: fallback for sub-questions still missing context
-    processedVariables = processedVariables.map(variable => {
-      if (variable.level === 'sub' && !variable.context) {
-        const context = this.findContextFromColumnName(lines, variable.column);
-        
-        if (context) {
-          return {
-            ...variable,
-            context
-          };
-        }
-      }
-      
-      return variable;
-    });
-
-    // Third pass: similarity-based fallback for complex multi-dimensional questions
-    processedVariables = processedVariables.map(variable => {
-      if (variable.level === 'sub' && !variable.context) {
-        const context = this.findBestContextMatch(lines, variable.column);
-
-        if (context) {
-          return {
-            ...variable,
-            context
-          };
-        }
-      }
-
-      return variable;
-    });
-
-    // Fourth pass: look up parent description from parsed variables
-    // This handles SPSS format where context isn't in Antares-style file structure
-    // but a standalone parent variable (e.g., S8) may exist with its description
-    processedVariables = processedVariables.map(variable => {
-      if (variable.level === 'sub' && !variable.context && variable.parentQuestion !== 'NA') {
-        const parentVar = processedVariables.find(v => v.column === variable.parentQuestion);
-        if (parentVar && parentVar.description) {
-          return {
-            ...variable,
-            context: `${parentVar.column}: ${parentVar.description}`
-          };
-        }
-      }
-
-      return variable;
-    });
-
-    return processedVariables;
-  }
-
-  private findParentQuestionInRawData(lines: string[], parentCode: string): string | null {
-    // Look for parent question text using multiple patterns
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      
-      // Skip empty lines
-      if (!line) continue;
-      
-      // Pattern 1: Lines starting with quotes and containing parent code with colon
-      if (line.startsWith('"') && line.includes(`${parentCode}:`)) {
-        const match = line.match(/^"(.+)"(,.*)?$/);
-        if (match) {
-          return match[1]; // Return the content inside quotes
-        }
-      }
-      
-      // Pattern 2: Lines starting with parent code and colon (no quotes)
-      if (line.startsWith(`${parentCode}:`)) {
-        const match = line.match(/^[^:]+:\s*(.+?)(,,.*)?$/);
-        if (match) {
-          return `${parentCode}: ${match[1]}`;
-        }
-      }
-      
-      // Pattern 3: Lines with bracketed parent code
-      if (line.startsWith(`"[${parentCode}]:`)) {
-        const match = line.match(/^"\[[^\]]+\]:\s*(.+?)"(,.*)?$/);
-        if (match) {
-          return `${parentCode}: ${match[1]}`;
-        }
-      }
-    }
-    
-    return null;
-  }
-
-  private findContextFromColumnName(lines: string[], columnName: string): string | null {
-    // Extract the base question code by removing suffix after the last 'c'
-    const baseCode = this.extractBaseCodeFromColumn(columnName);
-    
-    if (!baseCode) {
-      return null;
-    }
-    
-    // Look for lines that start with the base code followed by a colon
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      
-      if (!line) continue;
-      
-      // Look for lines starting with quotes and containing the base code with colon
-      if (line.startsWith('"') && line.includes(`${baseCode}:`)) {
-        const match = line.match(/^"(.+)"(,.*)?$/);
-        if (match) {
-          return match[1];
-        }
-      }
-      
-      // Also check for lines without quotes but starting with the base code
-      if (line.startsWith(`${baseCode}:`)) {
-        const match = line.match(/^[^:]+:\s*(.+?)(,,.*)?$/);
-        if (match) {
-          return `${baseCode}: ${match[1]}`;
-        }
-      }
-    }
-    
-    return null;
-  }
-
-  private extractBaseCodeFromColumn(columnName: string): string | null {
-    // Go from right to left, find the first 'c', and remove everything from that 'c' onwards
-    for (let i = columnName.length - 1; i >= 0; i--) {
-      if (columnName[i].toLowerCase() === 'c') {
-        // Check if this 'c' is followed by digits (indicating it's a suffix)
-        const afterC = columnName.substring(i + 1);
-        if (/^\d+$/.test(afterC)) {
-          return columnName.substring(0, i);
-        }
-      }
-    }
-    
-    // If no 'c' with digits found, return the original column name
-    return columnName;
-  }
-
-  private findBestContextMatch(lines: string[], columnName: string): string | null {
-    // Extract key parts from column name for similarity matching
-    const keyParts = this.extractKeyParts(columnName);
-    
-    if (!keyParts.base || !keyParts.suffix) {
-      return null;
-    }
-    
-    // Look for lines containing both the base code and suffix
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      
-      if (!line) continue;
-      
-      // Check if line contains both base and suffix (case insensitive)
-      const lowerLine = line.toLowerCase();
-      const lowerBase = keyParts.base.toLowerCase();
-      const lowerSuffix = keyParts.suffix.toLowerCase();
-      
-      if (lowerLine.includes(lowerBase) && lowerLine.includes(lowerSuffix)) {
-        // Extract question text from quoted lines
-        if (line.startsWith('"')) {
-          const match = line.match(/^"(.+)"(,.*)?$/);
-          if (match) {
-            return match[1];
-          }
-        }
-        
-        // Extract question text from non-quoted lines with colon
-        if (line.includes(':')) {
-          const match = line.match(/^[^:]+:\s*(.+?)(,,.*)?$/);
-          if (match) {
-            return match[1];
-          }
-        }
-      }
-    }
-    
-    return null;
-  }
-
-  private extractKeyParts(columnName: string): { base: string | null, suffix: string | null } {
-    // Extract base and suffix for similarity matching
-    const baseMatch = columnName.match(/^([A-Za-z]+\d*)/);
-    const base = baseMatch ? baseMatch[1] : null;
-    
-    const suffixMatch = columnName.match(/(c\d+)$/i);
-    const suffix = suffixMatch ? suffixMatch[1] : null;
-    
-    return { base, suffix };
-  }
-
-  // ===== STEP 4: VALIDATION =====
-
-  private async validateProcessedData(variables: ProcessedDataMapVariable[], spssFilePath?: string): Promise<{
-    passed: boolean;
-    confidence: number;
-  }> {
-    // Call our separate validator
-    const confidence = this.validator.calculateOverallConfidence(variables);
-    
-    // SPSS validation using provided SPSS file path
-    console.log(`[DataMapProcessor] Using SPSS file: ${spssFilePath || 'None provided'}`);
-    const spssValidation = await this.validator.validateAgainstSPSS(variables, spssFilePath);
-    
-    // Combine data map confidence with SPSS validation confidence
-    const combinedConfidence = spssValidation.passed 
-      ? (confidence + spssValidation.confidence) / 2  // Average if SPSS validation passes
-      : confidence * 0.8;  // Reduce confidence if SPSS validation fails
-    
-    // Use combined confidence for final result  
-    const finalPassed = this.validator.meetsConfidenceThreshold(combinedConfidence) && spssValidation.passed;
-    
-    console.log(`[DataMapProcessor] Validation - Data Map Confidence: ${confidence.toFixed(2)}, SPSS Match: ${spssValidation.confidence.toFixed(2)}, Combined: ${combinedConfidence.toFixed(2)}, Passed: ${finalPassed}`);
-    
-    if (spssValidation.fullValidation) {
-      console.log(`[DataMapProcessor] SPSS Details: ${spssValidation.fullValidation.summary}`);
-    }
-    
-    return { passed: finalPassed, confidence: combinedConfidence };
-  }
-
-  // ===== STEP 5: DUAL OUTPUT GENERATION =====
+  // ===== DUAL OUTPUT GENERATION =====
 
   private generateDualOutputs(variables: ProcessedDataMapVariable[]): {
     verbose: VerboseDataMap[];
@@ -656,7 +340,7 @@ export class DataMapProcessor {
 
   // ===== DEVELOPMENT OUTPUT =====
 
-  private async saveDevelopmentOutputs(outputs: { verbose: VerboseDataMap[]; agent: AgentDataMap[] }, filename: string, outputDir: string): Promise<void> {
+  async saveDevelopmentOutputs(outputs: { verbose: VerboseDataMap[]; agent: AgentDataMap[] }, filename: string, outputDir: string): Promise<void> {
     try {
       await fs.mkdir(outputDir, { recursive: true });
 

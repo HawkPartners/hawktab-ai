@@ -32,7 +32,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { verifyAllTables, getIncludedTables, getExcludedTables } from '../src/agents/VerificationAgent';
 import { processSurvey, getSurveyStats } from '../src/lib/processors/SurveyProcessor';
-import { DataMapProcessor } from '../src/lib/processors/DataMapProcessor';
+import { validate } from '../src/lib/validation/ValidationRunner';
 import { TableAgentOutput } from '../src/schemas/tableAgentSchema';
 import { VerboseDataMapType } from '../src/schemas/processingSchemas';
 
@@ -70,6 +70,7 @@ interface ResolvedPaths {
   surveyDoc: string | null;
   dataMapCsv: string | null;
   dataMapVerbose: string | null;
+  spssPath: string | null;
 }
 
 async function findMostRecentPipelineRun(datasetName: string = DEFAULT_DATASET_NAME): Promise<string | null> {
@@ -194,12 +195,36 @@ async function resolveInputPaths(inputArg?: string): Promise<ResolvedPaths> {
     }
   }
 
+  // Find .sav file - check folder then default dataset
+  let spssPath: string | null = null;
+  const savInFolder = files.find((f) => f.endsWith('.sav'));
+  if (savInFolder) {
+    spssPath = path.join(folder, savInFolder);
+  } else {
+    // Check default dataset folder (supports inputs/ subfolder)
+    const defaultDatasetPath = path.join(process.cwd(), DEFAULT_DATASET);
+    try {
+      const datasetContents = await fs.readdir(defaultDatasetPath);
+      const inputsPath = datasetContents.includes('inputs')
+        ? path.join(defaultDatasetPath, 'inputs')
+        : defaultDatasetPath;
+      const inputFiles = await fs.readdir(inputsPath);
+      const datasetSav = inputFiles.find((f) => f.endsWith('.sav'));
+      if (datasetSav) {
+        spssPath = path.join(inputsPath, datasetSav);
+      }
+    } catch {
+      // Ignore if default dataset doesn't exist
+    }
+  }
+
   return {
     folder,
     tableOutput: path.join(folder, tableOutputFile),
     surveyDoc: surveyPath,
     dataMapCsv,
     dataMapVerbose,
+    spssPath,
   };
 }
 
@@ -226,7 +251,7 @@ async function loadTableAgentOutput(filePath: string): Promise<TableAgentOutput[
 
 async function loadVerboseDataMap(
   verbosePath: string | null,
-  csvPath: string | null,
+  spssPath: string | null,
   outputDir: string
 ): Promise<VerboseDataMapType[]> {
   // Try verbose JSON first
@@ -238,18 +263,20 @@ async function loadVerboseDataMap(
       if (data.variables && Array.isArray(data.variables)) return data.variables;
       if (data.verbose && Array.isArray(data.verbose)) return data.verbose;
     } catch {
-      // Fall through to CSV
+      // Fall through to .sav
     }
   }
 
-  // Try processing CSV
-  if (csvPath) {
+  // Try processing .sav via validation runner
+  if (spssPath) {
     try {
-      const processor = new DataMapProcessor();
-      const result = await processor.processDataMap(csvPath, undefined, outputDir);
-      return result.verbose as VerboseDataMapType[];
+      const report = await validate({ spssPath, outputDir });
+      if (report.canProceed && report.processingResult) {
+        return report.processingResult.verbose as VerboseDataMapType[];
+      }
+      log(`Warning: Validation failed: ${report.errors.map(e => e.message).join(', ')}`, 'yellow');
     } catch (error) {
-      log(`Warning: Could not process datamap CSV: ${error}`, 'yellow');
+      log(`Warning: Could not process .sav file: ${error}`, 'yellow');
     }
   }
 
@@ -287,7 +314,7 @@ async function main() {
   log(`Folder:       ${paths.folder}`, 'blue');
   log(`Table Output: ${path.basename(paths.tableOutput)}`, 'dim');
   log(`Survey Doc:   ${paths.surveyDoc ? path.basename(paths.surveyDoc) : '(not found)'}`, paths.surveyDoc ? 'dim' : 'yellow');
-  log(`DataMap:      ${paths.dataMapCsv ? path.basename(paths.dataMapCsv) : paths.dataMapVerbose ? path.basename(paths.dataMapVerbose) : '(not found)'}`, 'dim');
+  log(`DataMap:      ${paths.spssPath ? path.basename(paths.spssPath) : paths.dataMapVerbose ? path.basename(paths.dataMapVerbose) : '(not found)'}`, 'dim');
   log('', 'reset');
 
   // Load table agent output
@@ -319,7 +346,7 @@ async function main() {
 
   // Load datamap
   log('Loading datamap...', 'blue');
-  const dataMap = await loadVerboseDataMap(paths.dataMapVerbose, paths.dataMapCsv, outputPath);
+  const dataMap = await loadVerboseDataMap(paths.dataMapVerbose, paths.spssPath, outputPath);
   log(`  Loaded ${dataMap.length} variables`, dataMap.length > 0 ? 'green' : 'yellow');
 
   // Process survey document

@@ -20,7 +20,7 @@ import { verifyAllTablesParallel } from '../../../agents/VerificationAgent';
 import { groupDataMap } from '../../../lib/tables/DataMapGrouper';
 import { generateTables, convertToLegacyFormat } from '../../../lib/tables/TableGenerator';
 import { processSurvey } from '../../../lib/processors/SurveyProcessor';
-import { DataMapProcessor } from '../../../lib/processors/DataMapProcessor';
+// DataMapProcessor no longer needed — .sav validation produces ProcessingResult
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { exec } from 'child_process';
@@ -611,8 +611,14 @@ export async function POST(request: NextRequest) {
         });
         console.log('[API] Step 1: Processing data map...');
 
-        const dataMapProcessor = new DataMapProcessor();
-        const dataMapResult = await dataMapProcessor.processDataMap(dataMapPath, spssPath, outputDir);
+        // Use validation runner (.sav as source of truth)
+        const { validate: runValidation } = await import('../../../lib/validation/ValidationRunner');
+        const validationResult = await runValidation({ spssPath, outputDir });
+        const dataMapResult = validationResult.processingResult || {
+          success: false, verbose: [], agent: [],
+          validationPassed: false, confidence: 0,
+          errors: ['Validation failed'], warnings: [],
+        };
         const verboseDataMap = dataMapResult.verbose as VerboseDataMapType[];
         console.log(`[API] Processed ${verboseDataMap.length} variables`);
 

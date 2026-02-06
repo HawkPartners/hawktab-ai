@@ -8,13 +8,7 @@
 // Format Detection
 // =============================================================================
 
-export type DataMapFormat = 'antares' | 'spss_variable_info' | 'spss_values_only' | 'unknown';
-
-export interface FormatDetectionResult {
-  format: DataMapFormat;
-  confidence: number;
-  signals: string[];
-}
+export type DataMapFormat = 'sav';
 
 // =============================================================================
 // Loop Detection

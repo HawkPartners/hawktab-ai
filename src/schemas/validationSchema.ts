@@ -12,10 +12,7 @@ import { z } from 'zod';
 // =============================================================================
 
 export const DataMapFormatSchema = z.enum([
-  'antares',
-  'spss_variable_info',
-  'spss_values_only',
-  'unknown',
+  'sav',
 ]);
 
 export const ValidationSeveritySchema = z.enum(['error', 'warning', 'info']);

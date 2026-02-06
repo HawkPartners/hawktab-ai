@@ -12,7 +12,7 @@ import type { StatTestingConfig } from '../env';
 // =============================================================================
 
 export interface DatasetFiles {
-  datamap: string;
+  datamap: string | null;  // Optional — .sav is the source of truth
   banner: string;
   spss: string;
   survey: string | null;  // Optional - needed for VerificationAgent

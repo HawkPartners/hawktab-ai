@@ -35,13 +35,11 @@ export async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
 
   const files = await fs.readdir(inputsFolder);
 
-  // Find datamap CSV
-  const datamap = files.find(f =>
+  // Find datamap CSV (optional — .sav is the source of truth)
+  const datamapFile = files.find(f =>
     f.toLowerCase().includes('datamap') && f.endsWith('.csv')
   );
-  if (!datamap) {
-    throw new Error(`No datamap CSV found in ${folder}. Expected file containing "datamap" with .csv extension.`);
-  }
+  const datamap = datamapFile ? path.join(inputsFolder, datamapFile) : null;
 
   // Find banner plan (prefer 'adjusted' > 'clean' > original)
   let banner = files.find(f =>
@@ -90,7 +88,7 @@ export async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
   const name = path.basename(absFolder);
 
   return {
-    datamap: path.join(inputsFolder, datamap),
+    datamap,
     banner: path.join(inputsFolder, banner),
     spss: path.join(inputsFolder, spss),
     survey: survey ? path.join(inputsFolder, survey) : null,

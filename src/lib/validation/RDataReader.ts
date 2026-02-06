@@ -1,19 +1,24 @@
 /**
  * RDataReader.ts
  *
- * Reads SPSS data files via R subprocess.
- * Follows the exact pattern from DistributionCalculator.ts:136-199.
+ * Primary data source: reads .sav files via R subprocess.
+ * The .sav file is the single source of truth — no CSV datamaps needed.
  *
  * Uses haven::read_sav() + jsonlite::toJSON() to extract:
  * - Column names and row count
- * - Stacking indicator columns (LOOP, ITERATION, etc.)
+ * - Variable labels (question text), value labels (answer options)
+ * - SPSS format (data types), stacking indicators
  * - Fill rates for specific columns (loop detection)
+ *
+ * Also provides convertToRawVariables() to bridge .sav metadata
+ * into the DataMapProcessor's enrichment pipeline.
  */
 
 import { spawn } from 'child_process';
 import { writeFileSync, unlinkSync, existsSync } from 'fs';
 import path from 'path';
-import type { DataFileStats } from './types';
+import type { DataFileStats, SavVariableMetadata } from './types';
+import type { RawDataMapVariable } from '../processors/DataMapProcessor';
 
 // =============================================================================
 // R Path Discovery
@@ -206,4 +211,81 @@ export async function checkRAvailability(outputDir: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+// =============================================================================
+// Structural Suffix Detection (moved from spss-utils.ts)
+// =============================================================================
+
+/**
+ * Detect structural suffixes that indicate a sub-variable.
+ *
+ * Patterns (order matters — check most specific first):
+ * - r\d+c\d+   → grid cell (S13r1c1)
+ * - r\d+oe     → open-ended row (S2r98oe)
+ * - r\d+       → row item (S8r1)
+ * - c\d+       → column item (standalone column index)
+ */
+export function hasStructuralSuffix(varName: string): boolean {
+  const lower = varName.toLowerCase();
+  if (['record', 'uuid', 'date', 'status'].includes(lower)) return false;
+
+  return /r\d+c\d+$/i.test(varName) ||
+         /r\d+oe$/i.test(varName) ||
+         /r\d+$/i.test(varName) ||
+         /c\d+$/i.test(varName);
+}
+
+// =============================================================================
+// .sav → RawDataMapVariable Conversion
+// =============================================================================
+
+/**
+ * Convert DataFileStats (from .sav via R) into RawDataMapVariable[] for
+ * the DataMapProcessor enrichment pipeline.
+ *
+ * Maps:
+ * - column name → column
+ * - variable label → description
+ * - value labels → answerOptions (e.g., "1=Yes,2=No")
+ * - SPSS format → valueType (Open Text for A-format, Values: min-max for numeric)
+ * - structural suffix → level (parent vs sub)
+ */
+export function convertToRawVariables(stats: DataFileStats): RawDataMapVariable[] {
+  return stats.columns.map((col) => {
+    const meta: SavVariableMetadata | undefined = stats.variableMetadata?.[col];
+
+    // Answer options from value labels
+    let answerOptions = 'NA';
+    if (meta?.valueLabels && meta.valueLabels.length > 0) {
+      answerOptions = meta.valueLabels
+        .map((vl) => `${vl.value}=${vl.label}`)
+        .join(',');
+    }
+
+    // Value type from SPSS format
+    let valueType = '';
+    if (meta?.format) {
+      if (meta.format.startsWith('A')) {
+        valueType = 'Open Text';
+      } else if (meta.valueLabels && meta.valueLabels.length > 0) {
+        const values = meta.valueLabels.map((vl) => parseFloat(vl.value));
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        valueType = `Values: ${min}-${max}`;
+      }
+    }
+
+    const level = hasStructuralSuffix(col) ? 'sub' as const : 'parent' as const;
+    const description = meta?.label || '';
+
+    return {
+      level,
+      column: col,
+      description,
+      valueType,
+      answerOptions,
+      parentQuestion: 'NA',
+    };
+  });
 }

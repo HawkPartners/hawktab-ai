@@ -10,7 +10,6 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 
 // Processors and agents
-import { DataMapProcessor } from '../processors/DataMapProcessor';
 import { BannerAgent } from '../../agents/BannerAgent';
 import { processAllGroups as processCrosstabGroups } from '../../agents/CrosstabAgent';
 import { groupDataMap } from '../tables/DataMapGrouper';
@@ -136,7 +135,7 @@ export async function runPipeline(
     };
   }
 
-  log(`  Datamap: ${path.basename(files.datamap)}`, 'dim');
+  log(`  Datamap: ${files.datamap ? path.basename(files.datamap) : '(not used — .sav is source of truth)'}`, 'dim');
   log(`  Banner:  ${path.basename(files.banner)}`, 'dim');
   log(`  SPSS:    ${path.basename(files.spss)}`, 'dim');
   log(`  Survey:  ${files.survey ? path.basename(files.survey) : '(not found - VerificationAgent will use passthrough)'}`, 'dim');
@@ -179,7 +178,6 @@ export async function runPipeline(
     const validationStart = Date.now();
 
     const validationResult = await runValidation({
-      dataMapPath: files.datamap,
       spssPath: files.spss,
       outputDir,
     });
@@ -221,24 +219,15 @@ export async function runPipeline(
     log('', 'reset');
 
     // -------------------------------------------------------------------------
-    // Step 1: DataMapProcessor (reuse validation result if available)
+    // Step 1: Variable data (from validation)
     // -------------------------------------------------------------------------
-    logStep(1, totalSteps, 'Processing datamap CSV...');
+    logStep(1, totalSteps, 'Loading variable data from .sav...');
     const stepStart1 = Date.now();
     eventBus.emitStageStart(1, STAGE_NAMES[1]);
 
-    let dataMapResult;
-    if (validationResult.processingResult && validationResult.processingResult.success) {
-      // Reuse the already-parsed result from validation (no double-parsing)
-      dataMapResult = validationResult.processingResult;
-      log(`  Reused validation result (${dataMapResult.verbose.length} variables)`, 'green');
-    } else {
-      // Fallback: parse fresh
-      const dataMapProcessor = new DataMapProcessor();
-      dataMapResult = await dataMapProcessor.processDataMap(files.datamap, files.spss, outputDir);
-    }
+    const dataMapResult = validationResult.processingResult!;
     const verboseDataMap = dataMapResult.verbose as VerboseDataMapType[];
-    log(`  Processed ${verboseDataMap.length} variables`, 'green');
+    log(`  ${verboseDataMap.length} variables from .sav`, 'green');
     log(`  Duration: ${Date.now() - stepStart1}ms`, 'dim');
     eventBus.emitStageComplete(1, STAGE_NAMES[1], Date.now() - stepStart1);
     log('', 'reset');
@@ -751,7 +740,7 @@ export async function runPipeline(
           effectiveStatConfig.thresholds[0] !== effectiveStatConfig.thresholds[1],
       },
       inputs: {
-        datamap: path.basename(files.datamap),
+        datamap: files.datamap ? path.basename(files.datamap) : null,
         banner: path.basename(files.banner),
         spss: path.basename(files.spss),
         survey: files.survey ? path.basename(files.survey) : null,
