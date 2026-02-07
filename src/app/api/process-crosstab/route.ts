@@ -32,7 +32,7 @@ import { validateAndFixTables } from '../../../lib/r/ValidationOrchestrator';
 import { extractStreamlinedData } from '../../../lib/data/extractStreamlinedData';
 import { resetMetricsCollector, getMetricsCollector, getPipelineCostSummary } from '../../../lib/observability';
 import { ExcelFormatter } from '../../../lib/excel/ExcelFormatter';
-import { toExtendedTable, type ExtendedTableDefinition } from '../../../schemas/verificationAgentSchema';
+import { toExtendedTable, type ExtendedTableDefinition, type TableWithLoopFrame } from '../../../schemas/verificationAgentSchema';
 import type { TableAgentOutput } from '../../../schemas/tableAgentSchema';
 import type { VerboseDataMapType } from '../../../schemas/processingSchemas';
 import type { BannerProcessingResult } from '../../../agents/BannerAgent';
@@ -940,9 +940,12 @@ export async function POST(request: NextRequest) {
 
         const cutsSpec = buildCutsSpec(crosstabResult!.result);
 
+        // Add loopDataFrame (infrastructure field not set by agents)
+        const tablesWithLoopFrame: TableWithLoopFrame[] = sortedTables.map(t => ({ ...t, loopDataFrame: '' }));
+
         // Run per-table R validation with retry loop
         const { validTables, excludedTables: newlyExcluded, validationReport: rValidationReport } = await validateAndFixTables(
-          sortedTables,
+          tablesWithLoopFrame,
           cutsSpec.cuts,
           surveyMarkdown || '',
           verboseDataMap,

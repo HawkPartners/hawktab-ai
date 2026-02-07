@@ -458,8 +458,7 @@ STRUCTURE PER TABLE:
   "additionalFilter": "string",  // "" unless BaseFilter logic applies
   "filterReviewRequired": boolean,
   "splitFromTableId": "string",  // "" unless BaseFilter split
-  "lastModifiedBy": "VerificationAgent",
-  "loopDataFrame": ""            // "" unless loop table (system fills later)
+  "lastModifiedBy": "VerificationAgent"
 }
 
 COMPLETE OUTPUT:

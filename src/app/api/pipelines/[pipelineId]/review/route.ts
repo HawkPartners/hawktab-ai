@@ -22,7 +22,7 @@ import { generateRScriptV2WithValidation } from '@/lib/r/RScriptGeneratorV2';
 import { ExcelFormatter } from '@/lib/excel/ExcelFormatter';
 import { formatDuration } from '@/lib/utils/formatDuration';
 import type { BannerProcessingResult } from '@/agents/BannerAgent';
-import type { ExtendedTableDefinition } from '@/schemas/verificationAgentSchema';
+import type { ExtendedTableDefinition, TableWithLoopFrame } from '@/schemas/verificationAgentSchema';
 import type { TableAgentOutput } from '@/schemas/tableAgentSchema';
 import type { ValidationResultType, ValidatedGroupType } from '@/schemas/agentOutputSchema';
 
@@ -325,8 +325,10 @@ async function completePipeline(
     const rDir = path.join(outputDir, 'r');
     await fs.mkdir(rDir, { recursive: true });
 
+    // Add loopDataFrame (infrastructure field not set by agents — defaults to '' for non-loop tables)
+    const tablesForR: TableWithLoopFrame[] = sortedTables.map(t => ({ ...t, loopDataFrame: '' }));
     const { script: masterScript, validation: validationReport } = generateRScriptV2WithValidation(
-      { tables: sortedTables, cuts: cutsSpec.cuts },
+      { tables: tablesForR, cuts: cutsSpec.cuts },
       { sessionId: pipelineId, outputDir: 'results' }
     );
 

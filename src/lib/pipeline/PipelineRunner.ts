@@ -34,7 +34,7 @@ import { findDatasetFiles, DEFAULT_DATASET } from './FileDiscovery';
 import type { PipelineOptions, PipelineResult, DatasetFiles } from './types';
 import { DEFAULT_PIPELINE_OPTIONS } from './types';
 import type { VerboseDataMapType } from '../../schemas/processingSchemas';
-import type { ExtendedTableDefinition } from '../../schemas/verificationAgentSchema';
+import type { ExtendedTableDefinition, TableWithLoopFrame } from '../../schemas/verificationAgentSchema';
 import { validate as runValidation } from '../validation/ValidationRunner';
 import { collapseLoopVariables } from '../validation/LoopCollapser';
 import type { LoopGroupMapping } from '../validation/LoopCollapser';
@@ -615,23 +615,24 @@ export async function runPipeline(
     // Use sortedTables as our filtered output (filters were already applied before verification)
     const filteredTables = sortedTables;
 
-    // Tag tables with loop data frame (if loops detected)
-    if (loopMappings.length > 0) {
-      let loopTableCount = 0;
-      for (const table of filteredTables) {
-        // Check if any row variable is a loop base name
+    // Attach loopDataFrame to each table (infrastructure-only field, not set by agents)
+    let loopTableCount = 0;
+    const tablesWithLoopFrame: TableWithLoopFrame[] = filteredTables.map(table => {
+      let loopDataFrame = '';
+      if (loopMappings.length > 0) {
         for (const row of table.rows) {
           const loopIdx = baseNameToLoopIndex.get(row.variable);
           if (loopIdx !== undefined) {
-            table.loopDataFrame = loopMappings[loopIdx].stackedFrameName;
+            loopDataFrame = loopMappings[loopIdx].stackedFrameName;
             loopTableCount++;
             break;
           }
         }
       }
-      if (loopTableCount > 0) {
-        log(`  Tagged ${loopTableCount} tables with loop data frames`, 'green');
-      }
+      return { ...table, loopDataFrame };
+    });
+    if (loopTableCount > 0) {
+      log(`  Tagged ${loopTableCount} tables with loop data frames`, 'green');
     }
 
     // -------------------------------------------------------------------------
@@ -645,7 +646,7 @@ export async function runPipeline(
 
     // Run per-table R validation with retry loop
     const { validTables, excludedTables: newlyExcluded, validationReport: rValidationReport } = await validateAndFixTables(
-      filteredTables,
+      tablesWithLoopFrame,
       cutsSpec.cuts,
       surveyMarkdown || '',
       verboseDataMap,
@@ -659,7 +660,7 @@ export async function runPipeline(
     );
 
     // Calculate pre-excluded vs failed-validation counts
-    const preExcludedCount = filteredTables.filter(t => t.exclude).length;
+    const preExcludedCount = tablesWithLoopFrame.filter(t => t.exclude).length;
     const failedValidationCount = rValidationReport.excluded - preExcludedCount;
 
     log(`  Passed first time: ${rValidationReport.passedFirstTime}`, 'green');

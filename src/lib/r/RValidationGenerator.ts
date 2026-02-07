@@ -10,7 +10,7 @@
  * - Enables targeted retries for failed tables only
  */
 
-import type { ExtendedTableDefinition, ExtendedTableRow } from '../../schemas/verificationAgentSchema';
+import type { ExtendedTableRow, TableWithLoopFrame } from '../../schemas/verificationAgentSchema';
 import type { CutDefinition } from '../tables/CutsSpec';
 import {
   escapeRString,
@@ -42,7 +42,7 @@ export interface SingleTableValidationResult {
  * Each table is tested independently, and results are written to validation-results.json.
  */
 export function generateValidationScript(
-  tables: ExtendedTableDefinition[],
+  tables: TableWithLoopFrame[],
   cuts: CutDefinition[],
   dataFilePath: string = 'dataFile.sav',
   outputPath: string = 'validation-results.json',
@@ -143,7 +143,7 @@ export function generateValidationScript(
  * This is a minimal script that only tests one table.
  */
 export function generateSingleTableValidationScript(
-  table: ExtendedTableDefinition,
+  table: TableWithLoopFrame,
   cuts: CutDefinition[],
   dataFilePath: string = 'dataFile.sav',
   outputPath: string = 'single-validation-result.json',
@@ -216,7 +216,7 @@ export function generateSingleTableValidationScript(
 // Table Validation Generator
 // =============================================================================
 
-function generateTableValidation(lines: string[], table: ExtendedTableDefinition): void {
+function generateTableValidation(lines: string[], table: TableWithLoopFrame): void {
   const tableId = escapeRString(table.tableId);
   const varName = sanitizeVarName(table.tableId);
   const frameName = table.loopDataFrame || 'data';
@@ -248,7 +248,7 @@ function generateTableValidation(lines: string[], table: ExtendedTableDefinition
 
 function generateFrequencyTableValidation(
   lines: string[],
-  table: ExtendedTableDefinition,
+  table: TableWithLoopFrame,
   _varName: string,
   frameName: string = 'data'
 ): void {
@@ -302,7 +302,7 @@ function generateFrequencyTableValidation(
 
 function generateMeanRowsTableValidation(
   lines: string[],
-  table: ExtendedTableDefinition,
+  table: TableWithLoopFrame,
   _varName: string,
   frameName: string = 'data'
 ): void {

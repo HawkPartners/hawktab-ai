@@ -18,7 +18,7 @@ import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
 
-import type { ExtendedTableDefinition } from '../../schemas/verificationAgentSchema';
+import type { TableWithLoopFrame } from '../../schemas/verificationAgentSchema';
 import type { CutDefinition } from '../tables/CutsSpec';
 import type { VerboseDataMapType } from '../../schemas/processingSchemas';
 import type { LoopGroupMapping } from '../validation/LoopCollapser';
@@ -71,8 +71,8 @@ export interface ValidationReport {
 }
 
 export interface ValidateAndFixResult {
-  validTables: ExtendedTableDefinition[];
-  excludedTables: ExtendedTableDefinition[];
+  validTables: TableWithLoopFrame[];
+  excludedTables: TableWithLoopFrame[];
   validationReport: ValidationReport;
 }
 
@@ -84,7 +84,7 @@ export interface ValidateAndFixResult {
  * Validate tables through R execution and retry failures with VerificationAgent.
  */
 export async function validateAndFixTables(
-  tables: ExtendedTableDefinition[],
+  tables: TableWithLoopFrame[],
   cuts: CutDefinition[],
   surveyMarkdown: string,
   verboseDataMap: VerboseDataMapType[],
@@ -130,7 +130,7 @@ export async function validateAndFixTables(
   let fixedAfterRetry = 0;
 
   // Maps to track tables through the process
-  const tableMap = new Map<string, ExtendedTableDefinition>();
+  const tableMap = new Map<string, TableWithLoopFrame>();
   for (const table of tablesToValidate) {
     tableMap.set(table.tableId, table);
   }
@@ -195,7 +195,7 @@ export async function validateAndFixTables(
     log(`Retrying table ${tableId}: ${error}`);
 
     let fixed = false;
-    let fixedTable: ExtendedTableDefinition | null = null;
+    let fixedTable: TableWithLoopFrame | null = null;
     let lastError = error;
 
     for (let attempt = 1; attempt <= maxRetries && !fixed; attempt++) {
@@ -240,7 +240,11 @@ export async function validateAndFixTables(
 
         // Get the first table from the result (assuming no splits for retry)
         if (result.tables.length > 0) {
-          const candidateTable = result.tables[0];
+          // Re-attach loopDataFrame from original table (agent doesn't see this field)
+          const candidateTable: TableWithLoopFrame = {
+            ...result.tables[0],
+            loopDataFrame: originalTable.loopDataFrame,
+          };
 
           // Validate just this table
           const singleValidationResult = await validateSingleTable(
@@ -288,7 +292,7 @@ export async function validateAndFixTables(
       tableMap.set(tableId, fixedTable);
     } else {
       // Mark as excluded
-      const excludedTable: ExtendedTableDefinition = {
+      const excludedTable: TableWithLoopFrame = {
         ...originalTable,
         exclude: true,
         excludeReason: `R validation failed after ${maxRetries} retries: ${lastError}`,
@@ -308,8 +312,8 @@ export async function validateAndFixTables(
   // -------------------------------------------------------------------------
   // Step 3: Build Final Results
   // -------------------------------------------------------------------------
-  const validTables: ExtendedTableDefinition[] = [];
-  const excludedTables: ExtendedTableDefinition[] = [];
+  const validTables: TableWithLoopFrame[] = [];
+  const excludedTables: TableWithLoopFrame[] = [];
 
   for (const table of tableMap.values()) {
     if (table.exclude) {
@@ -407,7 +411,7 @@ async function executeValidationScript(
  * Validate a single table after retry.
  */
 async function validateSingleTable(
-  table: ExtendedTableDefinition,
+  table: TableWithLoopFrame,
   cuts: CutDefinition[],
   dataFilePath: string,
   validationDir: string,
@@ -455,7 +459,7 @@ async function validateSingleTable(
  * Get formatted datamap context for variables in a table.
  */
 function getDatamapContextForTable(
-  table: ExtendedTableDefinition,
+  table: TableWithLoopFrame,
   datamapByColumn: Map<string, VerboseDataMapType>
 ): string {
   const variables = new Set<string>();

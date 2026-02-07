@@ -29,6 +29,8 @@ This document outlines the path from HawkTab AI's current state (reliable local 
 
 ## Phase 2: Feature Completeness
 
+NOTE: Can we render the full decimal values for the percents and frequencies? So instead of showing 11% show 10.5678%?
+
 Features needed before external users can rely on the system for real projects.
 
 ### 2.1 Output Format Options

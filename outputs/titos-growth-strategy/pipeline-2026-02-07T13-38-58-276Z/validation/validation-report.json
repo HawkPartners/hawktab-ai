@@ -1,0 +1,325 @@
+{
+  "totalTables": 63,
+  "passedFirstTime": 63,
+  "fixedAfterRetry": 0,
+  "excluded": 0,
+  "entries": [
+    {
+      "tableId": "s1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s2",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s2_bins",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s3",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s5",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s6",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s6a",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s7",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s8",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s8_binned",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s9",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s10a",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s10b",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s10c",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s11a",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s11b",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s11c",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a2",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a3",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a4",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a5",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a6",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a8",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a10",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a10_dist_bins",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a11",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a13",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a15",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a18",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a20",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a21",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_casamigos_column_",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_casamigos_column_c5_",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_don_julio_column_",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_don_julio_column_c6_",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_grey_goose_column_",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_grey_goose_column_c2_",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_ketel_one_column_",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_ketel_one_column_c3_",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_maker_s_mark_column_",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_maker_s_mark_column_c4_",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_none_of_the_above_column_c7_",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_tito_s_column_",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_tito_s_column_c1_",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_casamigos",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_don_julio",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_grey_goose",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_ketel_one",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_maker_s_mark",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_tito_s_handmade_vodka",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "c3",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a13a_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a13a_2",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a13b_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a14a_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a14a_2",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a14b_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a14b_2",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a16_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a17_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a19_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a7_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a9_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    }
+  ],
+  "timestamp": "2026-02-07T13:49:36.390Z",
+  "durationMs": 1388
+}

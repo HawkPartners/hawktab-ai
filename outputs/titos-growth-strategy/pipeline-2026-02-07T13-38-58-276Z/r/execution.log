@@ -1,0 +1,101 @@
+R Execution Log
+===============
+Timestamp: 2026-02-07T13:50:00.135Z
+Status: SUCCESS
+
+--- STDOUT ---
+[1] "Loaded 5098 rows and 530 columns"
+[1] "Created stacked_loop_1: 10196 rows ( 5098 x 2 iterations)"
+[1] "Defined 21 cuts in 3 groups"
+[1] "Generated demo table: _demo_banner_x_banner"
+[1] "Generated frequency table: s1"
+[1] "Generated mean_rows table: s2"
+[1] "Generated frequency table: s2_bins"
+[1] "Generated frequency table: s3"
+[1] "Generated frequency table: s5"
+[1] "Generated frequency table: s6"
+[1] "Generated frequency table: s6a"
+[1] "Generated frequency table: s7"
+[1] "Generated mean_rows table: s8"
+[1] "Generated frequency table: s8_binned"
+[1] "Generated mean_rows table: s9"
+[1] "Generated frequency table: s10a"
+[1] "Generated frequency table: s10b"
+[1] "Generated frequency table: s10c"
+[1] "Generated frequency table: s11a"
+[1] "Generated frequency table: s11b"
+[1] "Generated frequency table: s11c"
+[1] "Generated frequency table: a2"
+[1] "Generated frequency table: a3"
+[1] "Generated frequency table: a4"
+[1] "Generated frequency table: a5"
+[1] "Generated frequency table: a6"
+[1] "Generated frequency table: a8"
+[1] "Generated mean_rows table: a10"
+[1] "Generated frequency table: a10_dist_bins"
+[1] "Generated frequency table: a11"
+[1] "Generated frequency table: a13"
+[1] "Generated frequency table: a15"
+[1] "Generated frequency table: a18"
+[1] "Generated frequency table: a20"
+[1] "Generated frequency table: a21"
+[1] "Generated frequency table: a22_casamigos_column_"
+[1] "Generated frequency table: a22_casamigos_column_c5_"
+[1] "Generated frequency table: a22_don_julio_column_"
+[1] "Generated frequency table: a22_don_julio_column_c6_"
+[1] "Generated frequency table: a22_grey_goose_column_"
+[1] "Generated frequency table: a22_grey_goose_column_c2_"
+[1] "Generated frequency table: a22_ketel_one_column_"
+[1] "Generated frequency table: a22_ketel_one_column_c3_"
+[1] "Generated frequency table: a22_maker_s_mark_column_"
+[1] "Generated frequency table: a22_maker_s_mark_column_c4_"
+[1] "Generated frequency table: a22_none_of_the_above_column_c7_"
+[1] "Generated frequency table: a22_tito_s_column_"
+[1] "Generated frequency table: a22_tito_s_column_c1_"
+[1] "Generated frequency table: a23_casamigos"
+[1] "Generated frequency table: a23_don_julio"
+[1] "Generated frequency table: a23_grey_goose"
+[1] "Generated frequency table: a23_ketel_one"
+[1] "Generated frequency table: a23_maker_s_mark"
+[1] "Generated frequency table: a23_tito_s_handmade_vodka"
+[1] "Generated frequency table: c3"
+[1] "Generated frequency table: a13a_1"
+[1] "Generated frequency table: a13a_2"
+[1] "Generated frequency table: a13b_1"
+[1] "Generated frequency table: a14a_1"
+[1] "Generated frequency table: a14a_2"
+[1] "Generated frequency table: a14b_1"
+[1] "Generated frequency table: a14b_2"
+[1] "Generated frequency table: a16_1"
+[1] "Generated frequency table: a17_1"
+[1] "Generated frequency table: a19_1"
+[1] "Generated frequency table: a7_1"
+[1] "Generated frequency table: a9_1"
+[1] "Running significance testing..."
+[1] "Significance testing complete"
+[1] "JSON output saved to: results/tables.json"
+[1] "============================================================"
+[1] "SUMMARY"
+[1] "  Tables generated: 64"
+[1] "  Cuts applied: 21"
+[1] "  Significance level: 0.1"
+[1] "  Output: results/tables.json"
+[1] "============================================================"
+
+
+--- STDERR ---
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Warning message:
+`..1$A18` and `..2$A18` have conflicting value labels.
+ℹ Labels for these values will be taken from `..1$A18`.
+✖ Values: 4 

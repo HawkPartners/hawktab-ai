@@ -15,7 +15,7 @@
  * Note: Derived tables (T2B, Top 3) are now created by VerificationAgent, not here.
  */
 
-import type { ExtendedTableDefinition, ExtendedTableRow } from '../../schemas/verificationAgentSchema';
+import type { ExtendedTableDefinition, ExtendedTableRow, TableWithLoopFrame } from '../../schemas/verificationAgentSchema';
 import type { CutDefinition, CutGroup } from '../tables/CutsSpec';
 import type { StatTestingConfig } from '../env';
 import type { LoopGroupMapping } from '../validation/LoopCollapser';
@@ -38,7 +38,7 @@ export interface BannerGroup {
 }
 
 export interface RScriptV2Input {
-  tables: ExtendedTableDefinition[];  // From VerificationAgent (or converted TableAgent output)
+  tables: TableWithLoopFrame[];  // Tables with loopDataFrame attached by PipelineRunner
   cuts: CutDefinition[];
   cutGroups?: CutGroup[];           // Group structure for within-group stat testing
   totalStatLetter?: string | null;  // Letter for Total column (usually "T")
@@ -174,10 +174,10 @@ export function validateTable(table: ExtendedTableDefinition): TableValidationRe
  * Validate all tables and return a validation report.
  * Invalid tables will be filtered out with logged warnings.
  */
-export function validateAllTables(
-  tables: ExtendedTableDefinition[]
-): { validTables: ExtendedTableDefinition[]; report: ValidationReport } {
-  const validTables: ExtendedTableDefinition[] = [];
+export function validateAllTables<T extends ExtendedTableDefinition>(
+  tables: T[]
+): { validTables: T[]; report: ValidationReport } {
+  const validTables: T[] = [];
   const skippedTables: TableValidationResult[] = [];
   const tablesWithWarnings: TableValidationResult[] = [];
 
@@ -912,7 +912,7 @@ function generateHelperFunctions(lines: string[]): void {
 // Frequency Table Generator
 // =============================================================================
 
-function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition): void {
+function generateFrequencyTable(lines: string[], table: TableWithLoopFrame): void {
   const tableId = escapeRString(table.tableId);
   const questionText = escapeRString(table.questionText);
 
@@ -1104,7 +1104,7 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
 // Mean Rows Table Generator
 // =============================================================================
 
-function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition): void {
+function generateMeanRowsTable(lines: string[], table: TableWithLoopFrame): void {
   const tableId = escapeRString(table.tableId);
   const questionText = escapeRString(table.questionText);
 

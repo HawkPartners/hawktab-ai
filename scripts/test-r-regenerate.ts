@@ -39,7 +39,7 @@ import { generateRScriptV2 } from '../src/lib/r/RScriptGeneratorV2';
 import { validateAndFixTables } from '../src/lib/r/ValidationOrchestrator';
 import { formatTablesFileToBuffer } from '../src/lib/excel/ExcelFormatter';
 import { processSurvey } from '../src/lib/processors/SurveyProcessor';
-import type { ExtendedTableDefinition } from '../src/schemas/verificationAgentSchema';
+import type { ExtendedTableDefinition, TableWithLoopFrame } from '../src/schemas/verificationAgentSchema';
 import type { CutDefinition, CutGroup } from '../src/lib/tables/CutsSpec';
 import type { VerboseDataMapType } from '../src/schemas/processingSchemas';
 
@@ -444,12 +444,14 @@ async function main() {
   }
 
   // Load tables based on source
-  let tables: ExtendedTableDefinition[];
+  let tables: TableWithLoopFrame[];
   const rawData = JSON.parse(await fs.readFile(tablesFile, 'utf-8'));
 
   {
     // Verification format: { tables: [...] }
-    tables = rawData.tables || [];
+    // Add loopDataFrame (infrastructure field, not in agent output)
+    const rawTables: ExtendedTableDefinition[] = rawData.tables || [];
+    tables = rawTables.map(t => ({ ...t, loopDataFrame: '' }));
     log(`  Loaded ${tables.length} tables from verification`, 'green');
   }
 

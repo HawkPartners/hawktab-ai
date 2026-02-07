@@ -156,20 +156,25 @@ export const ExtendedTableDefinitionSchema = z.object({
    */
   lastModifiedBy: z.enum(['VerificationAgent', 'FilterApplicator']),
 
-  // =========================================================================
-  // Loop/Stacking Support
-  // =========================================================================
-
-  /**
-   * R data frame name to use for this table's calculations.
-   * Empty string = use default 'data' frame (non-loop tables).
-   * Non-empty = use named stacked frame (e.g., 'stacked_loop_1').
-   * Set by infrastructure code after agent processing, not by agents.
-   */
-  loopDataFrame: z.string(),
 });
 
 export type ExtendedTableDefinition = z.infer<typeof ExtendedTableDefinitionSchema>;
+
+// =============================================================================
+// Loop/Stacking Runtime Type
+// =============================================================================
+
+/**
+ * ExtendedTableDefinition with loopDataFrame attached by infrastructure.
+ *
+ * loopDataFrame is NOT part of the AI-facing schema — agents should never
+ * see or set this value. PipelineRunner attaches it after verification
+ * based on which row variables are loop base names.
+ *
+ * Empty string = use default 'data' frame (non-loop tables).
+ * Non-empty = use named stacked frame (e.g., 'stacked_loop_1').
+ */
+export type TableWithLoopFrame = ExtendedTableDefinition & { loopDataFrame: string };
 
 // =============================================================================
 // Verification Agent Output Schema
@@ -313,8 +318,6 @@ export function toExtendedTable(
     splitFromTableId: '',
     // Provenance tracking (set by infrastructure, not agents)
     lastModifiedBy: 'VerificationAgent',
-    // Loop/stacking support
-    loopDataFrame: '',
   };
 }
 
