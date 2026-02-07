@@ -956,7 +956,7 @@ function generateFrequencyTable(lines: string[], table: ExtendedTableDefinition)
   lines.push(`for (cut_name in names(${cutsName})) {`);
   lines.push(`  cut_data <- apply_cut(${frameName}, ${cutsName}[[cut_name]])`);
 
-  // Apply additional table-level filter if specified (skip logic from BaseFilterAgent)
+  // Apply additional table-level filter if specified (skip logic from FilterApplicator)
   const hasAdditionalFilter = table.additionalFilter && table.additionalFilter.trim().length > 0;
   if (hasAdditionalFilter) {
     const filterExpr = escapeRString(table.additionalFilter);
@@ -1147,7 +1147,7 @@ function generateMeanRowsTable(lines: string[], table: ExtendedTableDefinition):
   lines.push(`for (cut_name in names(${cutsName})) {`);
   lines.push(`  cut_data <- apply_cut(${frameName}, ${cutsName}[[cut_name]])`);
 
-  // Apply additional table-level filter if specified (skip logic from BaseFilterAgent)
+  // Apply additional table-level filter if specified (skip logic from FilterApplicator)
   const hasAdditionalFilterMean = table.additionalFilter && table.additionalFilter.trim().length > 0;
   if (hasAdditionalFilterMean) {
     const filterExprMean = escapeRString(table.additionalFilter);

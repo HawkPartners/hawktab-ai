@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Skip Logic Schemas
  *
  * Purpose: Define input/output structures for the SkipLogicAgent and FilterTranslatorAgent
- * that replace the BaseFilterAgent's per-table AI calls with a two-step extraction approach.
+ * that handle skip/show logic with a two-step extraction approach.
  *
  * Flow:
  * 1. SkipLogicAgent reads survey once → extracts all skip/show rules

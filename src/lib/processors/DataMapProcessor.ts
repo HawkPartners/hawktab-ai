@@ -10,7 +10,6 @@
  * Entry point: enrichVariables(rawVariables) → { verbose, agent }
  */
 
-import { groupDataMapByParent } from '@/agents/TableAgent';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -369,13 +368,6 @@ export class DataMapProcessor {
       const crosstabAgentFile = path.join(outputDir, `${baseName}-crosstab-agent-${timestamp}.json`);
       await fs.writeFile(crosstabAgentFile, JSON.stringify(outputs.agent, null, 2));
       console.log(`[DataMapProcessor] Development output saved: ${baseName}-crosstab-agent-${timestamp}.json`);
-
-      // Save table-agent output (grouped by parent for TableAgent)
-      // Cast verbose to the VerboseDataMapType expected by groupDataMapByParent
-      const tableAgentGroups = groupDataMapByParent(outputs.verbose as Parameters<typeof groupDataMapByParent>[0]);
-      const tableAgentFile = path.join(outputDir, `${baseName}-table-agent-${timestamp}.json`);
-      await fs.writeFile(tableAgentFile, JSON.stringify(tableAgentGroups, null, 2));
-      console.log(`[DataMapProcessor] Development output saved: ${baseName}-table-agent-${timestamp}.json`);
 
     } catch (error) {
       console.error('[DataMapProcessor] Failed to save development outputs:', error);

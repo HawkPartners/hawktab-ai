@@ -74,10 +74,10 @@ NEXT TEST DATA: `data/stacked-data-example/` (Tito's Future Growth - loops + wei
 
 <pipeline_architecture>
 ```
-.sav Validation → Banner → Crosstab → TableGenerator → Verification → BaseFilter → R Validation → R Script → Excel
-      ↓              ↓         ↓            ↓              ↓             ↓              ↓            ↓          ↓
-   R+haven        PDF/DOCX   DataMap     DataMap        Survey        Survey       Catch errors  tables.json  .xlsx
-   → DataMap      → Cuts    → R expr    → Tables      → Enhanced    → Bases       before run   (calculated)
+.sav Validation → Banner → Crosstab → TableGenerator → SkipLogic → FilterApplicator → Verification → R Validation → R Script → Excel
+      ↓              ↓         ↓            ↓              ↓             ↓                  ↓              ↓            ↓          ↓
+   R+haven        PDF/DOCX   DataMap     DataMap        Survey      Tables+Rules        Survey+Tables  Catch errors  tables.json  .xlsx
+   → DataMap      → Cuts    → R expr    → Tables      → Rules      → Filtered        → Enhanced      before run   (calculated)
 ```
 
 DATA SOURCE: The .sav file is the single source of truth. No CSV datamaps needed.
@@ -85,20 +85,22 @@ DATA SOURCE: The .sav file is the single source of truth. No CSV datamaps needed
 - R also extracts: rClass, nUnique, observedMin, observedMax from actual data
 - DataMapProcessor enriches: parent inference, context, type normalization
 
-THE FOUR AI AGENTS:
+THE AI AGENTS:
 | Agent | Input | Output | Purpose |
 |-------|-------|--------|---------|
 | BannerAgent | PDF/DOCX | Banner groups, cuts | Extract banner structure |
 | CrosstabAgent | DataMap | R expressions | Validate and generate cut syntax |
+| SkipLogicAgent | Survey | Skip/show rules | Extract skip logic from survey |
+| FilterTranslatorAgent | Rules + DataMap | R filter expressions | Translate rules to R code |
 | VerificationAgent | Tables + Survey | ExtendedTables | Add NETs, T2B, fix labels |
-| BaseFilterAgent | Tables + Survey | Filtered tables | Detect skip/show, apply bases |
 
-TableGenerator is NOT an agent—it's deterministic code that builds tables from datamap structure.
+TableGenerator is deterministic code that builds tables from datamap structure.
+FilterApplicator is deterministic code that applies filter expressions to tables.
 
 PROVENANCE TRACKING:
 - `sourceTableId` → Original TableGenerator tableId
-- `splitFromTableId` → VerificationAgent tableId (if BaseFilterAgent split it)
-- `lastModifiedBy` → Which agent to adjust when output is wrong
+- `splitFromTableId` → Table ID before FilterApplicator split it
+- `lastModifiedBy` → Which agent/processor to adjust when output is wrong
 </pipeline_architecture>
 
 <running_the_pipeline>
@@ -126,7 +128,7 @@ OUTPUT LOCATION: `outputs/<dataset>/pipeline-<timestamp>/`
 - `results/tables.json` - Calculated tables
 - `results/crosstabs.xlsx` - Excel output
 - `scratchpad-*.md` - Agent reasoning traces (check these when debugging)
-- `basefilter/`, `verification/` - Per-agent outputs
+- `skiplogic/`, `verification/` - Per-agent outputs
 </running_the_pipeline>
 
 <code_patterns>
@@ -279,7 +281,8 @@ hawktab-ai/
 │   │   ├── BannerAgent.ts
 │   │   ├── CrosstabAgent.ts
 │   │   ├── VerificationAgent.ts
-│   │   └── BaseFilterAgent.ts
+│   │   ├── SkipLogicAgent.ts
+│   │   └── FilterTranslatorAgent.ts
 │   ├── lib/
 │   │   ├── env.ts                 # Per-agent model config
 │   │   ├── loadEnv.ts             # Environment loading
@@ -326,7 +329,7 @@ When tuning agent prompts:
    `outputs/*/scratchpad-*.md` shows agent reasoning.
 
 3. USE lastModifiedBy
-   Know which agent to adjust: 'VerificationAgent' or 'BaseFilterAgent'.
+   Know which agent to adjust: 'VerificationAgent' or 'FilterApplicator'.
 
 4. TEST SPECIFIC CASES FIRST
    Before full pipeline, run isolated agent tests.
@@ -334,7 +337,8 @@ When tuning agent prompts:
 PROMPT FILE LOCATIONS:
 - `src/prompts/verification/production.ts` (conservative)
 - `src/prompts/verification/alternative.ts` (aggressive)
-- `src/prompts/basefilter/production.ts`
+- `src/prompts/skiplogic/` (skip logic extraction)
+- `src/prompts/filtertranslator/` (filter translation)
 - `src/prompts/crosstabAgentPrompt.ts`
 - `src/prompts/bannerAgentPrompt.ts`
 </prompt_iteration>

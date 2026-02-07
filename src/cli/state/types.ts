@@ -151,7 +151,7 @@ export interface StageState {
     completed: number;
     total: number;
   } | null;
-  /** Parallel slots (for VerificationAgent, BaseFilterAgent) */
+  /** Parallel slots (for VerificationAgent) */
   slots: SlotState[];
 }
 

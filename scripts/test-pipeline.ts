@@ -42,11 +42,10 @@
  *   3. CrosstabAgent → Validation with cuts
  *   4. TableGenerator → Table definitions (deterministic)
  *   5. VerificationAgent → Enhanced tables with NETs, T2B, labels
- *   6. BaseFilterAgent → Skip/show logic, base filters
- *   7. R Validation → Per-table R code validation with retry
- *   8. RScriptGeneratorV2 → master.R
- *   9. R execution → results/tables.json
- *   10. ExcelFormatter → results/crosstabs.xlsx
+ *   6. R Validation → Per-table R code validation with retry
+ *   7. RScriptGeneratorV2 → master.R
+ *   8. R execution → results/tables.json
+ *   9. ExcelFormatter → results/crosstabs.xlsx
  *
  * Output:
  *   outputs/<dataset>/pipeline-<timestamp>/
@@ -67,8 +66,6 @@ import { processAllGroups as processCrosstabGroups } from '../src/agents/Crossta
 import { groupDataMap } from '../src/lib/tables/DataMapGrouper';
 import { generateTables, convertToLegacyFormat, getGeneratorStats } from '../src/lib/tables/TableGenerator';
 import { verifyAllTablesParallel } from '../src/agents/VerificationAgent';
-import { analyzeAllTableBasesParallel } from '../src/agents/BaseFilterAgent';
-import { summarizeBaseFilterResults } from '../src/schemas/baseFilterAgentSchema';
 import { processSurvey } from '../src/lib/processors/SurveyProcessor';
 import { generateRScriptV2WithValidation, type ValidationReport } from '../src/lib/r/RScriptGeneratorV2';
 import { validateAndFixTables } from '../src/lib/r/ValidationOrchestrator';
@@ -225,7 +222,7 @@ async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
 
 async function runPipeline(datasetFolder: string) {
   const startTime = Date.now();
-  const totalSteps = stopAfterVerification ? 5 : 10;  // Fewer steps if stopping early (added BaseFilterAgent step)
+  const totalSteps = stopAfterVerification ? 5 : 9;
 
   // Reset metrics collector for this pipeline run
   resetMetricsCollector();
@@ -252,7 +249,6 @@ async function runPipeline(datasetFolder: string) {
   log('Prompt Versions:', 'blue');
   log(`  Banner:        ${promptVersions.bannerPromptVersion}`, 'dim');
   log(`  Crosstab:      ${promptVersions.crosstabPromptVersion}`, 'dim');
-  log(`  Table:         ${promptVersions.tablePromptVersion}`, 'dim');
   log(`  Verification:  ${promptVersions.verificationPromptVersion}`, 'dim');
   log('', 'reset');
 
@@ -509,7 +505,6 @@ async function runPipeline(datasetFolder: string) {
       promptVersions: {
         banner: promptVersions.bannerPromptVersion,
         crosstab: promptVersions.crosstabPromptVersion,
-        table: promptVersions.tablePromptVersion,
         verification: promptVersions.verificationPromptVersion,
       },
       inputs: {
@@ -561,48 +556,11 @@ async function runPipeline(datasetFolder: string) {
   log(`  Sorted ${sortedTables.length} tables`, 'green');
   log('', 'reset');
 
-  // -------------------------------------------------------------------------
-  // Step 6: BaseFilterAgent - Detect skip/show logic
-  // -------------------------------------------------------------------------
-  logStep(6, totalSteps, 'Analyzing table bases for skip logic...');
-  const stepStart6 = Date.now();
-  eventBus.emitStageStart(6, STAGE_NAMES[6]);
-
-  let filteredTables: ExtendedTableDefinition[];
-  if (surveyMarkdown) {
-    const baseFilterResult = await analyzeAllTableBasesParallel(
-      sortedTables,
-      surveyMarkdown,
-      verboseDataMap,
-      { outputDir, concurrency: 3 }
-    );
-
-    // Flatten results (each input table may become 1+ output tables)
-    filteredTables = baseFilterResult.results.flatMap(r => r.tables);
-    const baseFilterSummary = summarizeBaseFilterResults(baseFilterResult.results);
-
-    log(`  Analyzed ${sortedTables.length} tables:`, 'green');
-    log(`    Pass: ${baseFilterSummary.passCount}`, 'dim');
-    if (baseFilterSummary.filterCount > 0) {
-      log(`    Filter: ${baseFilterSummary.filterCount}`, 'yellow');
-    }
-    if (baseFilterSummary.splitCount > 0) {
-      log(`    Split: ${baseFilterSummary.splitCount}`, 'yellow');
-    }
-    if (baseFilterSummary.reviewRequiredCount > 0) {
-      log(`    Review required: ${baseFilterSummary.reviewRequiredCount}`, 'yellow');
-    }
-    log(`  Output: ${filteredTables.length} tables`, 'green');
-  } else {
-    log(`  No survey - skipping base filter analysis`, 'yellow');
-    filteredTables = sortedTables;
-  }
-  eventBus.emitStageComplete(6, STAGE_NAMES[6], Date.now() - stepStart6);
-  log(`  Duration: ${Date.now() - stepStart6}ms`, 'dim');
-  log('', 'reset');
+  // Use sorted tables directly (filters are applied before VerificationAgent in the main pipeline)
+  const filteredTables = sortedTables;
 
   // -------------------------------------------------------------------------
-  // Step 7: R Validation with Retry
+  // Step 6: R Validation with Retry
   // -------------------------------------------------------------------------
   logStep(7, totalSteps, 'Validating R code per table...');
   const stepStart7 = Date.now();
@@ -864,7 +822,6 @@ async function runPipeline(datasetFolder: string) {
     promptVersions: {
       banner: promptVersions.bannerPromptVersion,
       crosstab: promptVersions.crosstabPromptVersion,
-      table: promptVersions.tablePromptVersion,
       verification: promptVersions.verificationPromptVersion,
     },
     statTesting: {

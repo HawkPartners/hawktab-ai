@@ -1,10 +1,9 @@
 /**
  * Shared filter utilities
  *
- * Functions extracted from BaseFilterAgent for reuse by:
+ * Used by:
  * - FilterTranslatorAgent (validating translated expressions)
  * - FilterApplicator (validating before applying)
- * - BaseFilterAgent (backward compatibility)
  */
 
 import type { VerboseDataMapType } from '../../schemas/processingSchemas';

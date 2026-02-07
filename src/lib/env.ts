@@ -7,7 +7,6 @@
  * Per-Agent Configuration Pattern:
  * - CROSSTAB_MODEL, CROSSTAB_MODEL_TOKENS, CROSSTAB_PROMPT_VERSION, CROSSTAB_REASONING_EFFORT
  * - BANNER_MODEL, BANNER_MODEL_TOKENS, BANNER_PROMPT_VERSION, BANNER_REASONING_EFFORT
- * - TABLE_MODEL, TABLE_MODEL_TOKENS, TABLE_PROMPT_VERSION, TABLE_REASONING_EFFORT
  * - VERIFICATION_MODEL, VERIFICATION_MODEL_TOKENS, VERIFICATION_PROMPT_VERSION, VERIFICATION_REASONING_EFFORT
  */
 
@@ -115,9 +114,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   // Each agent has its own model configuration for flexibility
   const crosstabModel = process.env.CROSSTAB_MODEL || process.env.REASONING_MODEL || 'o4-mini';
   const bannerModel = process.env.BANNER_MODEL || process.env.BASE_MODEL || 'gpt-5-nano';
-  const tableModel = process.env.TABLE_MODEL || 'gpt-5-nano';
   const verificationModel = process.env.VERIFICATION_MODEL || process.env.TABLE_MODEL || 'gpt-5-mini';
-  const baseFilterModel = process.env.BASEFILTER_MODEL || verificationModel;
   const skipLogicModel = process.env.SKIPLOGIC_MODEL || verificationModel;
   const filterTranslatorModel = process.env.FILTERTRANSLATOR_MODEL || crosstabModel;
 
@@ -129,9 +126,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   // Defaults to 'medium' (AI SDK default) if not specified
   const crosstabReasoningEffort = parseReasoningEffort(process.env.CROSSTAB_REASONING_EFFORT, 'CROSSTAB');
   const bannerReasoningEffort = parseReasoningEffort(process.env.BANNER_REASONING_EFFORT, 'BANNER');
-  const tableReasoningEffort = parseReasoningEffort(process.env.TABLE_REASONING_EFFORT, 'TABLE');
   const verificationReasoningEffort = parseReasoningEffort(process.env.VERIFICATION_REASONING_EFFORT, 'VERIFICATION');
-  const baseFilterReasoningEffort = parseReasoningEffort(process.env.BASEFILTER_REASONING_EFFORT, 'BASEFILTER');
   const skipLogicReasoningEffort = parseReasoningEffort(process.env.SKIPLOGIC_REASONING_EFFORT, 'SKIPLOGIC');
   const filterTranslatorReasoningEffort = parseReasoningEffort(process.env.FILTERTRANSLATOR_REASONING_EFFORT, 'FILTERTRANSLATOR');
 
@@ -149,9 +144,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
     // Per-agent model configuration
     crosstabModel,
     bannerModel,
-    tableModel,
     verificationModel,
-    baseFilterModel,
     skipLogicModel,
     filterTranslatorModel,
 
@@ -160,13 +153,10 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
 
     nodeEnv,
     tracingEnabled: process.env.TRACING_ENABLED !== 'false',  // Default: enabled
-    tableAgentOnly: process.env.TABLE_AGENT_ONLY === 'true',  // Stop after TableAgent, skip R generation
     promptVersions: {
       crosstabPromptVersion: process.env.CROSSTAB_PROMPT_VERSION || 'production',
       bannerPromptVersion: process.env.BANNER_PROMPT_VERSION || 'production',
-      tablePromptVersion: process.env.TABLE_PROMPT_VERSION || 'production',
       verificationPromptVersion: process.env.VERIFICATION_PROMPT_VERSION || 'production',
-      baseFilterPromptVersion: process.env.BASEFILTER_PROMPT_VERSION || 'production',
       skipLogicPromptVersion: process.env.SKIPLOGIC_PROMPT_VERSION || 'production',
       filterTranslatorPromptVersion: process.env.FILTERTRANSLATOR_PROMPT_VERSION || 'production',
     },
@@ -179,18 +169,14 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
       // Per-agent token limits
       crosstabModelTokens: parseInt(process.env.CROSSTAB_MODEL_TOKENS || process.env.REASONING_MODEL_TOKENS || '100000'),
       bannerModelTokens: parseInt(process.env.BANNER_MODEL_TOKENS || process.env.BASE_MODEL_TOKENS || '128000'),
-      tableModelTokens: parseInt(process.env.TABLE_MODEL_TOKENS || '128000'),
       verificationModelTokens: parseInt(process.env.VERIFICATION_MODEL_TOKENS || process.env.TABLE_MODEL_TOKENS || '128000'),
-      baseFilterModelTokens: parseInt(process.env.BASEFILTER_MODEL_TOKENS || process.env.VERIFICATION_MODEL_TOKENS || '128000'),
       skipLogicModelTokens: parseInt(process.env.SKIPLOGIC_MODEL_TOKENS || process.env.VERIFICATION_MODEL_TOKENS || '128000'),
       filterTranslatorModelTokens: parseInt(process.env.FILTERTRANSLATOR_MODEL_TOKENS || process.env.CROSSTAB_MODEL_TOKENS || '100000'),
     },
     reasoningConfig: {
       crosstabReasoningEffort,
       bannerReasoningEffort,
-      tableReasoningEffort,
       verificationReasoningEffort,
-      baseFilterReasoningEffort,
       skipLogicReasoningEffort,
       filterTranslatorReasoningEffort,
     },
@@ -202,7 +188,6 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
  * Each agent has its own model configuration for flexibility:
  * - CrosstabAgent: Complex validation, R syntax generation (requires reasoning)
  * - BannerAgent: Vision/extraction tasks (requires multimodal support)
- * - TableAgent: Table definition generation (new agent)
  *
  * NOTE: Using .chat() for Chat Completions API instead of Responses API
  * The Responses API (default in AI SDK v6) may not be available on all Azure deployments
@@ -229,33 +214,13 @@ export const getBannerModel = () => {
 };
 
 /**
- * Get TableAgent model for table definition generation
- * Used by: TableAgent (generates table definitions from datamap + survey)
- */
-export const getTableModel = () => {
-  const config = getEnvironmentConfig();
-  const provider = getAzureProvider();
-  return provider.chat(config.tableModel);
-};
-
-/**
  * Get VerificationAgent model for survey-aware table enhancement
- * Used by: VerificationAgent (enhances TableAgent output using survey document)
+ * Used by: VerificationAgent (enhances table output using survey document)
  */
 export const getVerificationModel = () => {
   const config = getEnvironmentConfig();
   const provider = getAzureProvider();
   return provider.chat(config.verificationModel);
-};
-
-/**
- * Get BaseFilterAgent model for skip logic detection
- * Used by: BaseFilterAgent (detects skip/show logic and applies filters)
- */
-export const getBaseFilterModel = () => {
-  const config = getEnvironmentConfig();
-  const provider = getAzureProvider();
-  return provider.chat(config.baseFilterModel);
 };
 
 /**
@@ -291,19 +256,9 @@ export const getBannerModelName = (): string => {
   return `azure/${config.bannerModel}`;
 };
 
-export const getTableModelName = (): string => {
-  const config = getEnvironmentConfig();
-  return `azure/${config.tableModel}`;
-};
-
 export const getVerificationModelName = (): string => {
   const config = getEnvironmentConfig();
   return `azure/${config.verificationModel}`;
-};
-
-export const getBaseFilterModelName = (): string => {
-  const config = getEnvironmentConfig();
-  return `azure/${config.baseFilterModel}`;
 };
 
 export const getSkipLogicModelName = (): string => {
@@ -329,19 +284,9 @@ export const getBannerModelTokenLimit = (): number => {
   return config.processingLimits.bannerModelTokens;
 };
 
-export const getTableModelTokenLimit = (): number => {
-  const config = getEnvironmentConfig();
-  return config.processingLimits.tableModelTokens;
-};
-
 export const getVerificationModelTokenLimit = (): number => {
   const config = getEnvironmentConfig();
   return config.processingLimits.verificationModelTokens;
-};
-
-export const getBaseFilterModelTokenLimit = (): number => {
-  const config = getEnvironmentConfig();
-  return config.processingLimits.baseFilterModelTokens;
 };
 
 export const getSkipLogicModelTokenLimit = (): number => {
@@ -374,19 +319,9 @@ export const getBannerReasoningEffort = (): ReasoningEffort => {
   return config.reasoningConfig.bannerReasoningEffort;
 };
 
-export const getTableReasoningEffort = (): ReasoningEffort => {
-  const config = getEnvironmentConfig();
-  return config.reasoningConfig.tableReasoningEffort;
-};
-
 export const getVerificationReasoningEffort = (): ReasoningEffort => {
   const config = getEnvironmentConfig();
   return config.reasoningConfig.verificationReasoningEffort;
-};
-
-export const getBaseFilterReasoningEffort = (): ReasoningEffort => {
-  const config = getEnvironmentConfig();
-  return config.reasoningConfig.baseFilterReasoningEffort;
 };
 
 export const getSkipLogicReasoningEffort = (): ReasoningEffort => {
@@ -585,16 +520,6 @@ export const getPromptVersions = () => {
   return config.promptVersions;
 };
 
-/**
- * Check if TABLE_AGENT_ONLY mode is enabled
- * When true, API stops after TableAgent processing and returns JSON definitions
- * instead of triggering R script generation
- */
-export const isTableAgentOnlyMode = (): boolean => {
-  const config = getEnvironmentConfig();
-  return config.tableAgentOnly;
-};
-
 export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
   const errors: string[] = [];
 
@@ -638,16 +563,8 @@ export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
       errors.push('BANNER_MODEL_TOKENS must be at least 1000');
     }
 
-    if (config.processingLimits.tableModelTokens < 1000) {
-      errors.push('TABLE_MODEL_TOKENS must be at least 1000');
-    }
-
     if (config.processingLimits.verificationModelTokens < 1000) {
       errors.push('VERIFICATION_MODEL_TOKENS must be at least 1000');
-    }
-
-    if (config.processingLimits.baseFilterModelTokens < 1000) {
-      errors.push('BASEFILTER_MODEL_TOKENS must be at least 1000');
     }
 
     // Validate stat testing config

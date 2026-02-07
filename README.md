@@ -62,7 +62,7 @@ An AI-powered system that:
 | **CrossTab Agent** | Production | Expression validation with confidence scoring |
 | **Table Generator** | Production | Deterministic table structure from datamap (frequency vs mean) |
 | **Verification Agent** | Production | Survey-aware label cleanup, NET rows, T2B, table splitting |
-| **BaseFilter Agent** | Production | Skip/show logic detection, base filters, table splits |
+| **SkipLogic + FilterTranslator** | Production | Skip/show logic extraction and R filter translation |
 | **R Validation** | Production | Per-table validation, retry with error context |
 | **R Script V2** | Production | JSON output with NET rows, derived tables, significance testing |
 | **Excel Formatter** | Production | Antares-style output with NET row styling and indentation |
@@ -72,7 +72,7 @@ An AI-powered system that:
 ### Key Achievements
 - **TableGenerator**: Deterministic table structure based on `normalizedType` (no AI needed)
 - **VerificationAgent**: Uses survey document to fix labels, add NETs, create T2B/B2B tables
-- **BaseFilterAgent**: Detects skip/show logic, applies base filters, splits tables when rows need different bases
+- **SkipLogicAgent + FilterTranslatorAgent**: Extract skip/show rules from survey, translate to R filters, apply deterministically
 - **RScriptGeneratorV2**: JSON output with `ExtendedTableDefinition` support (NET rows, indentation)
 - **ExcelFormatter**: Bold NET rows, indented component rows, full banner group styling
 - **Provenance Tracking**: `lastModifiedBy` field shows which agent created each table
@@ -146,9 +146,6 @@ Copy `.env.example` to `.env.local` and fill in your Azure credentials.
 CROSSTAB_MODEL=gpt-5-mini
 CROSSTAB_MODEL_TOKENS=128000
 CROSSTAB_REASONING_EFFORT=medium    # none | minimal | low | medium | high | xhigh
-
-TABLE_MODEL=gpt-5-mini
-TABLE_REASONING_EFFORT=high
 
 VERIFICATION_MODEL=gpt-5-mini
 VERIFICATION_REASONING_EFFORT=high
@@ -225,17 +222,18 @@ npx tsx scripts/export-excel.ts [sessionId]        # Uses specific session
 - `results/crosstabs.xlsx` - Formatted Excel workbook
 - `pipeline-summary.json` - Run metadata and timing
 
-The pipeline runs 10 steps (4 AI agents + 6 deterministic steps):
+The pipeline runs 11 steps (4 AI agents + 7 deterministic steps):
 1. **ValidationRunner** - Validate .sav and build verbose datamap
 2. **BannerAgent** *(AI)* - Extract banner structure from PDF/DOCX
 3. **CrosstabAgent** *(AI)* - Validate and generate R expressions for cuts
 4. **TableGenerator** - Build table definitions from datamap (deterministic)
-5. **VerificationAgent** *(AI)* - Enhance tables using survey document (fix labels, add NETs, T2B)
-6. **BaseFilterAgent** *(AI)* - Detect skip/show logic, apply base filters, split tables as needed
-7. **R Validation** - Validate each table's R code before full script run
-8. **RScriptGeneratorV2** - Generate R script with derived tables
-9. **R Execution** - Run R script to calculate tables with significance testing
-10. **ExcelFormatter** - Format tables.json into Excel workbook
+5. **SkipLogicAgent** *(AI)* - Extract skip/show rules from survey
+6. **FilterTranslatorAgent** *(AI)* + **FilterApplicator** - Translate rules to R, apply filters to tables
+7. **VerificationAgent** *(AI)* - Enhance tables using survey document (fix labels, add NETs, T2B)
+8. **R Validation** - Validate each table's R code before full script run
+9. **RScriptGeneratorV2** - Generate R script with derived tables
+10. **R Execution** - Run R script to calculate tables with significance testing
+11. **ExcelFormatter** - Format tables.json into Excel workbook
 
 ### Testing (UI)
 
@@ -251,7 +249,7 @@ Upload files via http://localhost:3000:
 ```
 hawktab-ai/
 ├── src/
-│   ├── agents/           # AI agents (Banner, Crosstab, Verification, BaseFilter)
+│   ├── agents/           # AI agents (Banner, Crosstab, Verification, SkipLogic, FilterTranslator)
 │   ├── app/api/          # API endpoints
 │   ├── lib/
 │   │   ├── excel/        # ExcelFormatter and table renderers

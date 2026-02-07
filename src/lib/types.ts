@@ -20,9 +20,7 @@ export type ReasoningEffort = 'none' | 'minimal' | 'low' | 'medium' | 'high' | '
 export interface AgentReasoningConfig {
   crosstabReasoningEffort: ReasoningEffort;
   bannerReasoningEffort: ReasoningEffort;
-  tableReasoningEffort: ReasoningEffort;
   verificationReasoningEffort: ReasoningEffort;
-  baseFilterReasoningEffort: ReasoningEffort;
   skipLogicReasoningEffort: ReasoningEffort;
   filterTranslatorReasoningEffort: ReasoningEffort;
 }
@@ -36,9 +34,7 @@ export interface ProcessingLimits {
   // Per-agent token limits
   crosstabModelTokens: number;
   bannerModelTokens: number;
-  tableModelTokens: number;
   verificationModelTokens: number;
-  baseFilterModelTokens: number;
   skipLogicModelTokens: number;
   filterTranslatorModelTokens: number;
 }
@@ -46,9 +42,7 @@ export interface ProcessingLimits {
 export interface PromptVersions {
   crosstabPromptVersion: string;
   bannerPromptVersion: string;
-  tablePromptVersion: string;
   verificationPromptVersion: string;
-  baseFilterPromptVersion: string;
   skipLogicPromptVersion: string;
   filterTranslatorPromptVersion: string;
 }
@@ -66,9 +60,7 @@ export interface EnvironmentConfig {
   // Per-agent model configuration (Azure deployment names)
   crosstabModel: string;   // e.g., 'o4-mini' - used by CrosstabAgent (complex validation)
   bannerModel: string;     // e.g., 'gpt-5-nano' - used by BannerAgent (vision/extraction)
-  tableModel: string;      // e.g., 'gpt-5-nano' - used by TableAgent (table definitions)
   verificationModel: string; // e.g., 'gpt-5-mini' - used by VerificationAgent (survey enhancement)
-  baseFilterModel: string;   // e.g., 'gpt-5-mini' - used by BaseFilterAgent (skip logic detection)
   skipLogicModel: string;    // e.g., 'gpt-5-mini' - used by SkipLogicAgent (survey rule extraction)
   filterTranslatorModel: string; // e.g., 'o4-mini' - used by FilterTranslatorAgent (R expression translation)
 
@@ -77,7 +69,6 @@ export interface EnvironmentConfig {
 
   nodeEnv: 'development' | 'production';
   tracingEnabled: boolean;  // Renamed from tracingDisabled (positive naming)
-  tableAgentOnly: boolean;  // Stop after TableAgent, skip R generation (for testing)
   promptVersions: PromptVersions;
   processingLimits: ProcessingLimits;
   reasoningConfig: AgentReasoningConfig;

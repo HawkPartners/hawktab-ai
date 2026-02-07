@@ -149,7 +149,6 @@ export async function runPipeline(
   log('Prompt Versions:', 'blue');
   log(`  Banner:        ${promptVersions.bannerPromptVersion}`, 'dim');
   log(`  Crosstab:      ${promptVersions.crosstabPromptVersion}`, 'dim');
-  log(`  Table:         ${promptVersions.tablePromptVersion}`, 'dim');
   log(`  Verification:  ${promptVersions.verificationPromptVersion}`, 'dim');
   log('', 'reset');
 
@@ -356,7 +355,6 @@ export async function runPipeline(
       log(`  [Path B] Starting TableGenerator...`, 'cyan');
       eventBus.emitStageStart(4, STAGE_NAMES[4]);
 
-      // Replace TableAgent (LLM) with TableGenerator (deterministic)
       const groups = groupDataMap(verboseDataMap);
       const generatedOutputs = generateTables(groups);
       let tableAgentResults = convertToLegacyFormat(generatedOutputs);
@@ -845,7 +843,6 @@ export async function runPipeline(
       promptVersions: {
         banner: promptVersions.bannerPromptVersion,
         crosstab: promptVersions.crosstabPromptVersion,
-        table: promptVersions.tablePromptVersion,
         verification: promptVersions.verificationPromptVersion,
       },
       statTesting: {

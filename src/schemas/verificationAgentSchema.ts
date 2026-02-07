@@ -121,7 +121,7 @@ export const ExtendedTableDefinitionSchema = z.object({
   tableSubtitle: z.string(),
 
   // =========================================================================
-  // Phase 3: BaseFilterAgent Fields (skip/show logic handling)
+  // Phase 3: Filter Fields (skip/show logic handling via FilterApplicator)
   // =========================================================================
 
   /**
@@ -154,7 +154,7 @@ export const ExtendedTableDefinitionSchema = z.object({
    * Set by infrastructure code, not by agents themselves.
    * Used for debugging and review to trace responsibility.
    */
-  lastModifiedBy: z.enum(['VerificationAgent', 'BaseFilterAgent', 'FilterApplicator']),
+  lastModifiedBy: z.enum(['VerificationAgent', 'FilterApplicator']),
 
   // =========================================================================
   // Loop/Stacking Support

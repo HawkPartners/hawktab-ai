@@ -64,10 +64,8 @@ export function createScratchpadTool(agentName: string) {
 
 // Pre-created tools for each agent (for convenience)
 export const crosstabScratchpadTool = createScratchpadTool('CrosstabAgent');
-export const tableScratchpadTool = createScratchpadTool('TableAgent');
 export const bannerScratchpadTool = createScratchpadTool('BannerAgent');
 export const verificationScratchpadTool = createScratchpadTool('VerificationAgent');
-export const baseFilterScratchpadTool = createScratchpadTool('BaseFilterAgent');
 export const skipLogicScratchpadTool = createScratchpadTool('SkipLogicAgent');
 export const filterTranslatorScratchpadTool = createScratchpadTool('FilterTranslatorAgent');
 

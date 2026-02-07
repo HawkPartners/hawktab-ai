@@ -15,24 +15,6 @@ export {
 export { BannerAgent } from './BannerAgent';
 export type { BannerProcessingResult, ProcessedImage } from './BannerAgent';
 
-// Table Agent exports (decides how to display data as tables)
-export {
-  processDataMap,
-  processQuestionGroup,
-  processAllGroups as processTableGroups,
-  groupDataMapByParent,
-  getAllTableDefinitions,
-  calculateOverallConfidence,
-  EXCLUDED_NORMALIZED_TYPES,
-} from './TableAgent';
-
-// BaseFilter Agent exports (detects skip/show logic for base calculations)
-export {
-  analyzeTableBase,
-  analyzeAllTableBases,
-  analyzeAllTableBasesParallel,
-} from './BaseFilterAgent';
-
 // Tool exports
 export { scratchpadTool } from './tools/scratchpad';
 

@@ -851,7 +851,7 @@ function handleSettingsNavigation(state: AppState, action: NavigationAction): Ap
 // =============================================================================
 
 function isParallelAgent(stageName: string): boolean {
-  return stageName === 'VerificationAgent' || stageName === 'BaseFilterAgent';
+  return stageName === 'VerificationAgent';
 }
 
 function createInitialSlots(count: number): SlotState[] {
@@ -876,8 +876,6 @@ function getStageIndexForAgent(agentName: string): number {
       return 2; // Stage 3
     case 'VerificationAgent':
       return 4; // Stage 5
-    case 'BaseFilterAgent':
-      return 5; // Stage 6
     default:
       return -1;
   }

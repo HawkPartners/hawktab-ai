@@ -250,7 +250,7 @@ export async function validateAndFixTables(
           if (singleValidationResult.success) {
             log(`  Table ${tableId} fixed on attempt ${attempt}`);
             fixed = true;
-            // Preserve BaseFilterAgent's work (not affected by VerificationAgent retry)
+            // Preserve FilterApplicator's work (not affected by VerificationAgent retry)
             // These fields were set before retry and should persist
             fixedTable = {
               ...candidateTable,

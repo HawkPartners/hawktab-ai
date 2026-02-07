@@ -134,13 +134,6 @@ export function App({ onExit, initialMode = 'menu', dataset, onStartPipeline, on
             reasoningEffort: config.reasoningConfig.verificationReasoningEffort,
             promptVersion: promptVersions.verificationPromptVersion,
           },
-          {
-            agent: 'BaseFilterAgent',
-            model: config.baseFilterModel,
-            tokenLimit: config.processingLimits.baseFilterModelTokens,
-            reasoningEffort: config.reasoningConfig.baseFilterReasoningEffort,
-            promptVersion: promptVersions.baseFilterPromptVersion || 'production',
-          },
         ];
 
         dispatch({
@@ -312,8 +305,6 @@ export function App({ onExit, initialMode = 'menu', dataset, onStartPipeline, on
           return config.crosstabModel;
         case 'VerificationAgent':
           return config.verificationModel;
-        case 'BaseFilterAgent':
-          return config.baseFilterModel;
         default:
           return undefined;
       }

@@ -51,7 +51,7 @@ Runs the full crosstab automation pipeline on the current dataset.
 2. Extracts banner structure from PDF/DOCX
 3. Generates table definitions
 4. Enhances tables with survey context (VerificationAgent)
-5. Applies base filters and skip logic (BaseFilterAgent)
+5. Extracts skip logic and applies filters (SkipLogicAgent + FilterApplicator)
 6. Validates R syntax
 7. Executes R script to calculate statistics
 8. Generates Excel output
@@ -220,10 +220,6 @@ View the current model configuration (read-only).
     Model: gpt-5-mini  |  Tokens: 128,000
     Reasoning: high  |  Prompt: alternative
 
-  BaseFilterAgent
-    Model: gpt-5-mini  |  Tokens: 128,000
-    Reasoning: high  |  Prompt: production
-
   Testing Configuration
 
   Statistical Testing
@@ -322,7 +318,6 @@ Key settings you can configure in `.env.local`:
 | `VERIFICATION_MODEL` | Model for VerificationAgent | `gpt-5-mini` |
 | `VERIFICATION_REASONING_EFFORT` | Reasoning depth | `medium` |
 | `VERIFICATION_PROMPT_VERSION` | Prompt version | `production` |
-| `BASEFILTER_MODEL` | Model for BaseFilterAgent | Same as verification |
 | `STAT_THRESHOLDS` | Significance levels | `0.10` |
 | `STAT_MIN_BASE` | Min base for testing | `0` |
 
