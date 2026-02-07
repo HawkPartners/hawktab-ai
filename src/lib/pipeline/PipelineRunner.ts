@@ -513,24 +513,12 @@ export async function runPipeline(
     if (surveyMarkdown) {
       try {
         const verificationResult = await verifyAllTablesParallel(
-          tableAgentResults,
+          extendedTables,
           surveyMarkdown,
           verboseDataMap,
           { outputDir, concurrency }
         );
         verifiedTables = verificationResult.tables;
-
-        // Re-apply filters to verified tables (VerificationAgent may have changed structure)
-        if (filterResult && filterResult.translation.filters.length > 0) {
-          const reappliedResult = applyFilters(
-            verifiedTables,
-            filterResult.translation,
-            skipLogicResult?.extraction.noRuleQuestions || [],
-            validVariables,
-          );
-          verifiedTables = reappliedResult.tables;
-          log(`  Re-applied filters after verification: ${reappliedResult.summary.filterCount} filtered, ${reappliedResult.summary.splitCount} split`, 'dim');
-        }
 
         log(`  VerificationAgent: ${verifiedTables.length} tables (${verificationResult.metadata.tablesModified} modified)`, 'green');
         eventBus.emitStageComplete(7, STAGE_NAMES[7], Date.now() - stepStart7);

@@ -460,6 +460,16 @@ GUIDELINES - USE JUDGMENT:
    If a NET would be trivial, don't create it. Look for meaningful sub-groupings instead.
 </constraints>
 
+<pre_applied_filters>
+SPLIT TABLES:
+Some tables arrive already split by an upstream process. These tables have a "splitFromTableId" value indicating the original parent table. The rows shown are the relevant subset for this split.
+
+When you see a split table:
+- Treat it as a normal table (fix labels, add NETs/T2B as appropriate)
+- Do NOT try to add rows from the parent table — the split is intentional
+- The split table may have fewer rows than you'd expect from the survey — this is correct
+</pre_applied_filters>
+
 <output_specifications>
 STRUCTURE PER TABLE:
 

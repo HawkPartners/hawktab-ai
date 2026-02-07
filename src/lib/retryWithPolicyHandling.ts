@@ -44,6 +44,26 @@ const POLICY_ERROR_PATTERNS = [
 ];
 
 /**
+ * Patterns that indicate a transient/retryable error (not policy, but still worth retrying).
+ * Includes null output, timeouts, and server errors.
+ */
+const RETRYABLE_ERROR_PATTERNS = [
+  'invalid output',
+  'no output',
+  'timeout',
+  'econnreset',
+  'econnrefused',
+  'socket hang up',
+  'network error',
+  '502',
+  '503',
+  '504',
+  'service unavailable',
+  'bad gateway',
+  'gateway timeout',
+];
+
+/**
  * Check if an error is a content policy/moderation error.
  */
 export function isPolicyError(error: unknown): boolean {
@@ -54,6 +74,20 @@ export function isPolicyError(error: unknown): boolean {
     : String(error).toLowerCase();
 
   return POLICY_ERROR_PATTERNS.some(pattern => message.includes(pattern));
+}
+
+/**
+ * Check if an error is retryable (policy error OR transient error).
+ */
+export function isRetryableError(error: unknown): boolean {
+  if (isPolicyError(error)) return true;
+  if (!error) return false;
+
+  const message = error instanceof Error
+    ? error.message.toLowerCase()
+    : String(error).toLowerCase();
+
+  return RETRYABLE_ERROR_PATTERNS.some(pattern => message.includes(pattern));
 }
 
 /**
@@ -135,14 +169,15 @@ export async function retryWithPolicyHandling<T>(
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
       wasPolicyError = isPolicyError(error);
+      const retryable = isRetryableError(error);
 
-      // Only retry on policy errors
-      if (!wasPolicyError) {
+      // Only retry on retryable errors (policy errors, transient failures, null output)
+      if (!retryable) {
         return {
           success: false,
           error: lastError.message,
           attempts: attempt,
-          wasPolicyError: false,
+          wasPolicyError,
         };
       }
 

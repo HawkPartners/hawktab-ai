@@ -79,6 +79,13 @@ export interface VerificationInput {
   datamapContext: string;
   /** R validation error context for retry attempts (optional) */
   rValidationError?: RValidationError;
+  /** Pre-applied filter fields to preserve through verification */
+  filterContext?: {
+    additionalFilter: string;
+    baseText: string;
+    splitFromTableId: string;
+    filterReviewRequired: boolean;
+  };
 }
 
 export interface VerificationProcessingOptions {
@@ -144,6 +151,13 @@ ${JSON.stringify(input.table, null, 2)}
 
 Analyze the table against the survey document. Fix labels, split if needed, add NETs if appropriate, create T2B if it's a scale, or flag for exclusion if low value. Output the tables array representing the desired end state.
 `;
+
+  // Append split context if this table was pre-filtered by upstream FilterApplicator
+  if (input.filterContext?.splitFromTableId) {
+    userPrompt += `
+Note: This table was split from "${input.filterContext.splitFromTableId}" by an upstream filter process that applies per-row base logic. The rows shown are the relevant subset for this split. Treat it as a normal table.
+`;
+  }
 
   // Append retry error context at the bottom if this is a retry attempt
   if (input.rValidationError) {
@@ -230,6 +244,19 @@ Please carefully review the error message and the datamap context above, then re
   );
 
   if (retryResult.success && retryResult.result) {
+    // Preserve filter fields from upstream FilterApplicator
+    if (input.filterContext) {
+      for (const t of retryResult.result.tables) {
+        t.additionalFilter = input.filterContext.additionalFilter;
+        t.splitFromTableId = input.filterContext.splitFromTableId;
+        t.filterReviewRequired = input.filterContext.filterReviewRequired;
+        // Preserve FilterApplicator's baseText if set; otherwise keep agent's
+        if (input.filterContext.baseText) {
+          t.baseText = input.filterContext.baseText;
+        }
+      }
+    }
+
     console.log(
       `[VerificationAgent] Table ${input.table.tableId} processed - ${retryResult.result.tables.length} tables, ${retryResult.result.changes.length} changes, confidence: ${retryResult.result.confidence.toFixed(2)}`
     );
@@ -426,10 +453,19 @@ export async function verifyAllTables(
 // =============================================================================
 
 /**
- * Process all tables in parallel with configurable concurrency
+ * Detect whether input is ExtendedTableDefinition[] (from FilterApplicator)
+ * vs TableAgentOutput[] (original format from TableGenerator).
+ */
+function isExtendedTableArray(input: unknown[]): input is ExtendedTableDefinition[] {
+  return input.length > 0 && typeof input[0] === 'object' && input[0] !== null && 'additionalFilter' in input[0];
+}
+
+/**
+ * Process all tables in parallel with configurable concurrency.
+ * Accepts either TableAgentOutput[] (legacy) or ExtendedTableDefinition[] (filtered).
  */
 export async function verifyAllTablesParallel(
-  tableAgentOutput: TableAgentOutput[],
+  tableInput: TableAgentOutput[] | ExtendedTableDefinition[],
   surveyMarkdown: string,
   verboseDataMap: VerboseDataMapType[],
   options: VerificationProcessingOptions & { concurrency?: number } = {}
@@ -464,16 +500,53 @@ export async function verifyAllTablesParallel(
     questionId: string;
     questionText: string;
     index: number;
+    filterContext?: VerificationInput['filterContext'];
   }> = [];
 
-  for (const questionGroup of tableAgentOutput) {
-    for (const table of questionGroup.tables) {
+  if (isExtendedTableArray(tableInput)) {
+    // ExtendedTableDefinition[] from FilterApplicator — flat array with filter fields
+    for (const extTable of tableInput) {
+      // Extract filter context if table has been filtered/split
+      const hasFilterContext = extTable.additionalFilter || extTable.splitFromTableId || extTable.filterReviewRequired;
+      const filterContext = hasFilterContext ? {
+        additionalFilter: extTable.additionalFilter,
+        baseText: extTable.baseText,
+        splitFromTableId: extTable.splitFromTableId,
+        filterReviewRequired: extTable.filterReviewRequired,
+      } : undefined;
+
+      // Convert ExtendedTableDefinition back to TableDefinition for the agent
+      const table: TableDefinition = {
+        tableId: extTable.tableId,
+        questionText: extTable.questionText,
+        tableType: extTable.tableType,
+        rows: extTable.rows.map(r => ({
+          variable: r.variable,
+          label: r.label,
+          filterValue: r.filterValue,
+        })),
+        hints: [],
+      };
+
       allTables.push({
         table,
-        questionId: questionGroup.questionId,
-        questionText: questionGroup.questionText,
+        questionId: extTable.questionId,
+        questionText: extTable.questionText,
         index: allTables.length,
+        filterContext,
       });
+    }
+  } else {
+    // TableAgentOutput[] — legacy format (grouped by question)
+    for (const questionGroup of tableInput) {
+      for (const table of questionGroup.tables) {
+        allTables.push({
+          table,
+          questionId: questionGroup.questionId,
+          questionText: questionGroup.questionText,
+          index: allTables.length,
+        });
+      }
     }
   }
 
@@ -486,9 +559,19 @@ export async function verifyAllTablesParallel(
   if (passthrough || !surveyMarkdown || surveyMarkdown.trim() === '') {
     logEntry(`[VerificationAgent] Passthrough mode - returning tables unchanged`);
     const { toExtendedTable } = await import('../schemas/verificationAgentSchema');
-    const passthroughTables = allTables.map(({ table, questionId }) =>
-      toExtendedTable(table, questionId)
-    );
+    const passthroughTables = allTables.map(({ table, questionId, filterContext }) => {
+      const ext = toExtendedTable(table, questionId);
+      // Preserve filter fields from upstream FilterApplicator
+      if (filterContext) {
+        ext.additionalFilter = filterContext.additionalFilter;
+        ext.splitFromTableId = filterContext.splitFromTableId;
+        ext.filterReviewRequired = filterContext.filterReviewRequired;
+        if (filterContext.baseText) {
+          ext.baseText = filterContext.baseText;
+        }
+      }
+      return ext;
+    });
 
     return {
       tables: passthroughTables,
@@ -513,7 +596,7 @@ export async function verifyAllTablesParallel(
   let nextSlotIndex = 0;
 
   // Process in parallel with limit
-  const resultPromises = allTables.map(({ table, questionId, questionText, index }) =>
+  const resultPromises = allTables.map(({ table, questionId, questionText, index, filterContext }) =>
     limit(async () => {
       if (abortSignal?.aborted) {
         throw new DOMException('VerificationAgent aborted', 'AbortError');
@@ -536,6 +619,7 @@ export async function verifyAllTablesParallel(
         questionText,
         surveyMarkdown,
         datamapContext,
+        filterContext,
       };
 
       // Use context-specific scratchpad
