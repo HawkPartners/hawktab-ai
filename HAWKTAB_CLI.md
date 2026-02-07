@@ -1,6 +1,13 @@
 # HawkTab CLI Guide
 
-A guide to using the HawkTab command-line interface.
+> **DEPRECATED**: The interactive CLI (`hawktab`) is deprecated. Use plain scripts instead:
+> ```bash
+> npx tsx scripts/test-pipeline.ts                              # Default dataset
+> npx tsx scripts/test-pipeline.ts data/test-data/some-dataset  # Specific dataset
+> npx tsx scripts/test-pipeline.ts --format=antares             # With options
+> ```
+
+A guide to using the HawkTab command-line interface (kept for reference).
 
 ## Quick Start
 

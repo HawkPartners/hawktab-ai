@@ -1,0 +1,315 @@
+{
+  "totalTables": 61,
+  "passedFirstTime": 61,
+  "fixedAfterRetry": 0,
+  "excluded": 1,
+  "entries": [
+    {
+      "tableId": "s1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s2",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s3",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s5",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s6",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s6a",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s7",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s8",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s8_binned",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s9",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s10a",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s10b",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s10c",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s11a",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s11b",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s11c",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a2",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a3",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a4",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a5",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a6",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a8",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a10",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a10_bins",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a11",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a13",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a15",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a18",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a20",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a20__nets",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a21",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_attribute_approachable",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_attribute_authentic",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_attribute_bold",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_attribute_downtoearth",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_attribute_edgy",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_attribute_generous",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_attribute_independent",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_attribute_premium",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_attribute_reliable",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_attribute_sophisticated",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_overview_excluded",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_casamigos",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_don_julio",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_grey_goose",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_ketel_one",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_maker_s_mark",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_tito_s_handmade_vodka",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "c3",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a13a_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a13a_2",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a13b_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a14a_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a14a_2",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a14b_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a14b_2",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a16_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a17_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a19_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a7_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a9_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    }
+  ],
+  "timestamp": "2026-02-07T06:24:50.175Z",
+  "durationMs": 1930
+}

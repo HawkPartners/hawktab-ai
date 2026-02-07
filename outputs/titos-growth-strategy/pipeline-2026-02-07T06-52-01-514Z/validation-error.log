@@ -1,0 +1,60 @@
+ERROR:
+Command failed: cd "/Users/jasongraydon01/HawkPartners/hawktab-ai/outputs/titos-growth-strategy/pipeline-2026-02-07T06-52-01-514Z" && /opt/homebrew/bin/Rscript "/Users/jasongraydon01/HawkPartners/hawktab-ai/outputs/titos-growth-strategy/pipeline-2026-02-07T06-52-01-514Z/validation/validation.R"
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Warning message:
+`..1$A18` and `..2$A18` have conflicting value labels.
+ℹ Labels for these values will be taken from `..1$A18`.
+✖ Values: 4 
+Error: unexpected numeric constant in:
+"  # Row 2: S10b == 1
+  if (!("S10b" %in% names(Location 1"
+Execution halted
+
+
+STDOUT:
+[1] "Loaded 5098 rows and 530 columns"
+[1] "Created stacked_loop_1: 10196 rows ( 5098 x 2 iterations)"
+[1] "Validated: s1 - PASS"
+[1] "Validated: s2 - PASS"
+[1] "Validated: s2_bins - PASS"
+[1] "Validated: s3 - PASS"
+[1] "Validated: s5 - PASS"
+[1] "Validated: s6 - PASS"
+[1] "Validated: s6a - PASS"
+[1] "Validated: s7 - PASS"
+[1] "Validated: s8 - PASS"
+[1] "Validated: s8_binned - PASS"
+[1] "Validated: s9 - PASS"
+[1] "Validated: s10a - PASS"
+
+
+STDERR:
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Warning message:
+`..1$A18` and `..2$A18` have conflicting value labels.
+ℹ Labels for these values will be taken from `..1$A18`.
+✖ Values: 4 
+Error: unexpected numeric constant in:
+"  # Row 2: S10b == 1
+  if (!("S10b" %in% names(Location 1"
+Execution halted

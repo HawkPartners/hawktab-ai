@@ -1,0 +1,481 @@
+{
+  "filters": [
+    {
+      "ruleId": "rule_s2a_ask_if_s2_6_or_7",
+      "questionId": "S2a",
+      "action": "filter",
+      "filterExpression": "S2 %in% c(6, 7)",
+      "baseText": "Respondents who indicated Nurse Practitioner (S2 = 6) or Physician’s Assistant (S2 = 7)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "S2 == 6 | S2 == 7",
+          "confidence": 0.95,
+          "reason": "Explicit OR form; functionally equivalent to the primary expression."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "The datamap shows S2 includes values 6 = Nurse Practitioner and 7 = Physician’s Assistant. The rule explicitly requires S2 = 6 OR S2 = 7. The minimal additional constraint is S2 %in% c(6, 7).",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_s3a_ask_if_s2_1",
+      "questionId": "S3a",
+      "action": "filter",
+      "filterExpression": "S2 == 1",
+      "baseText": "Respondents who selected 'Cardiologist' at S2 (S2 = 1)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "S2 %in% c(1)",
+          "confidence": 0.8,
+          "reason": "Equivalent to S2 == 1; some pipelines prefer %in% for single/multiple-value checks."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "S2 exists in the datamap as a categorical_select and value 1 is labeled 'Cardiologist'. The rule explicitly shows S3a only when S2 = 1. The minimal additional constraint is S2 == 1 (the pipeline already handles non-NA for the target question).",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_s4_ask_if_s2_1to5_or_s2a_1",
+      "questionId": "S4",
+      "action": "filter",
+      "filterExpression": "(S2 %in% c(1, 2, 3, 4, 5)) | (S2 %in% c(6, 7) & S2a == 1)",
+      "baseText": "Respondents who are specialty physicians (S2 = 1-5) OR nurse practitioners / physician assistants (S2 = 6 or 7) who work in a Cardiologist office (S2a = 1).",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "(S2 %in% 1:5) | (S2 %in% c(6,7) & S2a == 1)",
+          "confidence": 0.85,
+          "reason": "Equivalent shorthand using 1:5 for the range 1-5; identical logic but slightly less explicit."
+        },
+        {
+          "expression": "(S2 <= 5) | (S2 %in% c(6,7) & S2a == 1)",
+          "confidence": 0.7,
+          "reason": "Uses numeric comparison for the 1-5 range. Correct given current datamap but slightly less explicit (relies on contiguous coding and no other low numeric codes)."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "S2 and S2a exist in the datamap with the expected value labels. The rule clearly specifies S2 in {1,2,3,4,5} OR (S2 in {6,7} AND S2a == 1). The provided expression is the minimal additional constraint on top of the default base (banner cut + non-NA for S4).",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a3a_row_show_if_a3_gt0",
+      "questionId": "A3a",
+      "action": "split",
+      "filterExpression": "",
+      "baseText": "Show each A3a therapy row only when the corresponding A3 count for that therapy is > 0.",
+      "splits": [
+        {
+          "rowVariables": [
+            "A3ar1c1",
+            "A3ar1c2"
+          ],
+          "filterExpression": "A3r2 > 0",
+          "baseText": "Respondents who prescribed Leqvio (A3r2) to more than 0 of their last 100 patients",
+          "splitLabel": "Leqvio (inclisiran)"
+        },
+        {
+          "rowVariables": [
+            "A3ar2c1",
+            "A3ar2c2"
+          ],
+          "filterExpression": "A3r3 > 0",
+          "baseText": "Respondents who prescribed Praluent (A3r3) to more than 0 of their last 100 patients",
+          "splitLabel": "Praluent (alirocumab)"
+        },
+        {
+          "rowVariables": [
+            "A3ar3c1",
+            "A3ar3c2"
+          ],
+          "filterExpression": "A3r4 > 0",
+          "baseText": "Respondents who prescribed Repatha (A3r4) to more than 0 of their last 100 patients",
+          "splitLabel": "Repatha (evolocumab)"
+        },
+        {
+          "rowVariables": [
+            "A3ar4c1",
+            "A3ar4c2"
+          ],
+          "filterExpression": "A3r5 > 0",
+          "baseText": "Respondents who prescribed Zetia (A3r5) to more than 0 of their last 100 patients",
+          "splitLabel": "Zetia (ezetimibe)"
+        },
+        {
+          "rowVariables": [
+            "A3ar5c1",
+            "A3ar5c2"
+          ],
+          "filterExpression": "A3r6 > 0",
+          "baseText": "Respondents who prescribed Nexletol/Nexlizet (A3r6) to more than 0 of their last 100 patients",
+          "splitLabel": "Nexletol / Nexlizet (bempedoic acid)"
+        }
+      ],
+      "alternatives": [
+        {
+          "expression": "A3r2 >= 1",
+          "confidence": 0.8,
+          "reason": "Equivalent for integer counts; use >= 1 instead of > 0. (Apply same pattern to A3r3..A3r6.)"
+        },
+        {
+          "expression": "!is.na(A3r2) & A3r2 > 0",
+          "confidence": 0.65,
+          "reason": "Explicitly guards against NA in the A3 count. More conservative but usually unnecessary since > 0 excludes zeros; apply similarly to A3r3..A3r6 if an explicit NA check is desired."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Datamap contains A3r2..A3r6 which are the A3 counts for Leqvio, Praluent, Repatha, Zetia, and Nexletol respectively. A3a row variables (A3ar1c1/A3ar1c2 ... A3ar5c1/A3ar5c2) correspond to those therapies in the same order (A3ar1 → Leqvio → A3r2, A3ar2 → Praluent → A3r3, A3ar3 → Repatha → A3r4, A3ar4 → Zetia → A3r5, A3ar5 → Nexletol → A3r6). Therefore each row split uses the minimal additional constraint that the matching A3r# value is > 0. A3r1 (Statin only) and A3r7 (Other) exist in the datamap but do not have corresponding A3a row variables, so they are not included here.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a3b_table_show_if_any_a3a_colb_gt0",
+      "questionId": "A3b",
+      "action": "filter",
+      "filterExpression": "(A3ar1c2 > 0 | A3ar2c2 > 0 | A3ar3c2 > 0 | A3ar4c2 > 0 | A3ar5c2 > 0)",
+      "baseText": "Respondents with any A3a 'Without a statin' (column B) percentage > 0 for at least one therapy",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "(A3ar1c2 >= 1 | A3ar2c2 >= 1 | A3ar3c2 >= 1 | A3ar4c2 >= 1 | A3ar5c2 >= 1)",
+          "confidence": 0.85,
+          "reason": "If A3a percentages are integer counts/percentages, >= 1 is equivalent to > 0 but may match implementations that use integers."
+        },
+        {
+          "expression": "((!is.na(A3ar1c2) & A3ar1c2 > 0) | (!is.na(A3ar2c2) & A3ar2c2 > 0) | (!is.na(A3ar3c2) & A3ar3c2 > 0) | (!is.na(A3ar4c2) & A3ar4c2 > 0) | (!is.na(A3ar5c2) & A3ar5c2 > 0))",
+          "confidence": 0.8,
+          "reason": "Explicitly guards against NA values so a single NA won't yield NA for the whole expression."
+        },
+        {
+          "expression": "rowSums(cbind(A3ar1c2, A3ar2c2, A3ar3c2, A3ar4c2, A3ar5c2) > 0, na.rm = TRUE) > 0",
+          "confidence": 0.7,
+          "reason": "A compact, NA-robust alternative using rowSums; depends on accepting cbind/rowSums in the filter environment."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Datamap contains A3ar1c2..A3ar5c2 which are the 'Without a statin' (column B) A3a items (numeric_range 0-100). The rule asks to show A3b if any of those column-B values > 0; the minimal translation is an OR across those exact variables. Note: A3r6/A3r7 exist as A3r6/A3r7 rows in the datamap but there are no corresponding A3ar6c2/A3ar7c2 variables — if additional 'Without a statin' rows were intended, confirm the exact variable names. Human review not required for this translation.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a3b_row_show_if_a3a_colb_gt0",
+      "questionId": "A3b",
+      "action": "split",
+      "filterExpression": "",
+      "baseText": "Show each A3b therapy row only for respondents who reported > 0 in the corresponding A3a 'Without a statin' (column B) entry.",
+      "splits": [
+        {
+          "rowVariables": [
+            "A3br1c1",
+            "A3br1c2"
+          ],
+          "filterExpression": "A3ar1c2 > 0",
+          "baseText": "Those who reported > 0 'Without a statin' for Leqvio (A3a column B).",
+          "splitLabel": "Leqvio (inclisiran)"
+        },
+        {
+          "rowVariables": [
+            "A3br2c1",
+            "A3br2c2"
+          ],
+          "filterExpression": "A3ar2c2 > 0",
+          "baseText": "Those who reported > 0 'Without a statin' for Praluent (A3a column B).",
+          "splitLabel": "Praluent (alirocumab)"
+        },
+        {
+          "rowVariables": [
+            "A3br3c1",
+            "A3br3c2"
+          ],
+          "filterExpression": "A3ar3c2 > 0",
+          "baseText": "Those who reported > 0 'Without a statin' for Repatha (A3a column B).",
+          "splitLabel": "Repatha (evolocumab)"
+        },
+        {
+          "rowVariables": [
+            "A3br4c1",
+            "A3br4c2"
+          ],
+          "filterExpression": "A3ar4c2 > 0",
+          "baseText": "Those who reported > 0 'Without a statin' for Zetia (A3a column B).",
+          "splitLabel": "Zetia (ezetimibe)"
+        },
+        {
+          "rowVariables": [
+            "A3br5c1",
+            "A3br5c2"
+          ],
+          "filterExpression": "A3ar5c2 > 0",
+          "baseText": "Those who reported > 0 'Without a statin' for Nexletol/Nexlizet (A3a column B).",
+          "splitLabel": "Nexletol / Nexlizet (bempedoic acid)"
+        }
+      ],
+      "alternatives": [
+        {
+          "expression": "A3ar1c2 >= 1",
+          "confidence": 0.8,
+          "reason": "If A3ar1c2 is integer counts, >= 1 is equivalent to > 0."
+        },
+        {
+          "expression": "A3ar2c2 >= 1",
+          "confidence": 0.8,
+          "reason": "If A3ar2c2 is integer counts, >= 1 is equivalent to > 0."
+        },
+        {
+          "expression": "A3ar3c2 >= 1",
+          "confidence": 0.8,
+          "reason": "If A3ar3c2 is integer counts, >= 1 is equivalent to > 0."
+        },
+        {
+          "expression": "A3ar4c2 >= 1",
+          "confidence": 0.8,
+          "reason": "If A3ar4c2 is integer counts, >= 1 is equivalent to > 0."
+        },
+        {
+          "expression": "A3ar5c2 >= 1",
+          "confidence": 0.8,
+          "reason": "If A3ar5c2 is integer counts, >= 1 is equivalent to > 0."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Datamap contains A3b row variables (A3br1c1..A3br5c2) and corresponding A3a 'Without a statin' variables (A3ar1c2..A3ar5c2). The rule requests per-row show if the corresponding A3a column B value is > 0 — translated directly to A3ar#c2 > 0 for each therapy. This is a minimal constraint (only checks the referenced A3a value).",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a4a_row_show_if_a4_gt0",
+      "questionId": "A4a",
+      "action": "split",
+      "filterExpression": "",
+      "baseText": "Show each A4a therapy row only if the respondent indicated > 0 patients for that therapy in A4 (NEXT 100).",
+      "splits": [
+        {
+          "rowVariables": [
+            "A4ar1c1",
+            "A4ar1c2"
+          ],
+          "filterExpression": "A4r2c2 > 0",
+          "baseText": "Respondents who indicated >0 NEXT-100 patients for Leqvio in A4",
+          "splitLabel": "Leqvio (inclisiran)"
+        },
+        {
+          "rowVariables": [
+            "A4ar2c1",
+            "A4ar2c2"
+          ],
+          "filterExpression": "A4r3c2 > 0",
+          "baseText": "Respondents who indicated >0 NEXT-100 patients for Praluent in A4",
+          "splitLabel": "Praluent (alirocumab)"
+        },
+        {
+          "rowVariables": [
+            "A4ar3c1",
+            "A4ar3c2"
+          ],
+          "filterExpression": "A4r4c2 > 0",
+          "baseText": "Respondents who indicated >0 NEXT-100 patients for Repatha in A4",
+          "splitLabel": "Repatha (evolocumab)"
+        },
+        {
+          "rowVariables": [
+            "A4ar4c1",
+            "A4ar4c2"
+          ],
+          "filterExpression": "A4r5c2 > 0",
+          "baseText": "Respondents who indicated >0 NEXT-100 patients for Zetia in A4",
+          "splitLabel": "Zetia (ezetimibe)"
+        },
+        {
+          "rowVariables": [
+            "A4ar5c1",
+            "A4ar5c2"
+          ],
+          "filterExpression": "A4r6c2 > 0",
+          "baseText": "Respondents who indicated >0 NEXT-100 patients for Nexletol in A4",
+          "splitLabel": "Nexletol (bempedoic acid)"
+        }
+      ],
+      "alternatives": [
+        {
+          "expression": "A4r2c2 >= 1",
+          "confidence": 0.8,
+          "reason": "Equivalent to > 0 for integer counts (Leqvio). Minor syntactic variant."
+        },
+        {
+          "expression": "A4r3c2 >= 1",
+          "confidence": 0.8,
+          "reason": "Equivalent to > 0 for integer counts (Praluent). Minor syntactic variant."
+        },
+        {
+          "expression": "A4r4c2 >= 1",
+          "confidence": 0.8,
+          "reason": "Equivalent to > 0 for integer counts (Repatha). Minor syntactic variant."
+        },
+        {
+          "expression": "A4r5c2 >= 1",
+          "confidence": 0.8,
+          "reason": "Equivalent to > 0 for integer counts (Zetia). Minor syntactic variant."
+        },
+        {
+          "expression": "A4r6c2 >= 1",
+          "confidence": 0.8,
+          "reason": "Equivalent to > 0 for integer counts (Nexletol). Minor syntactic variant."
+        },
+        {
+          "expression": "A4r2c1 > 0",
+          "confidence": 0.55,
+          "reason": "If the rule's reference to 'A4' mistakenly meant the 'LAST 100' column (A4r#c1) rather than the NEXT 100 column (A4r#c2). Less likely given A4a works on NEXT 100."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Each A4a row variable (A4ar#c1 & A4ar#c2) was mapped to the A4 count variable for the same therapy by matching therapy names in the datamap. The NEXT-100 counts are A4r2c2..A4r6c2; using > 0 is the minimal constraint to show a row only when the respondent indicated at least one NEXT-100 patient for that therapy. All referenced variables exist in the datamap.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a4b_table_show_if_any_a4a_colb_gt0",
+      "questionId": "A4b",
+      "action": "filter",
+      "filterExpression": "(A4ar1c2 > 0 | A4ar2c2 > 0 | A4ar3c2 > 0 | A4ar4c2 > 0 | A4ar5c2 > 0)",
+      "baseText": "Those for whom at least one A4a 'Without a statin' (column B) value is > 0 across the listed therapies",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "(A4ar1c2 >= 1 | A4ar2c2 >= 1 | A4ar3c2 >= 1 | A4ar4c2 >= 1 | A4ar5c2 >= 1)",
+          "confidence": 0.8,
+          "reason": "If percentages are stored as integers and the intent is 'at least 1%'; equivalent to > 0 for integer data."
+        },
+        {
+          "expression": "(!is.na(A4ar1c2) & A4ar1c2 > 0) | (!is.na(A4ar2c2) & A4ar2c2 > 0) | (!is.na(A4ar3c2) & A4ar3c2 > 0) | (!is.na(A4ar4c2) & A4ar4c2 > 0) | (!is.na(A4ar5c2) & A4ar5c2 > 0)",
+          "confidence": 0.75,
+          "reason": "Explicitly guards against NA values so an NA in one cell doesn't make the whole expression NA in some R evaluation contexts."
+        },
+        {
+          "expression": "rowSums(cbind(A4ar1c2, A4ar2c2, A4ar3c2, A4ar4c2, A4ar5c2), na.rm = TRUE) > 0",
+          "confidence": 0.85,
+          "reason": "Compact approach: sums the 'without a statin' columns and checks if total > 0; handles NAs via na.rm = TRUE."
+        }
+      ],
+      "confidence": 0.9,
+      "reasoning": "The datamap contains A4ar1c2, A4ar2c2, A4ar3c2, A4ar4c2, A4ar5c2 which are the A4a 'Without a statin' (column B) percentage responses for the therapies. The rule requires showing A4b if any of those > 0, so the minimal additional constraint is to check those five variables for > 0. Alternatives provided to handle integer interpretation or NA behavior.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a4b_row_show_if_a4a_colb_gt0",
+      "questionId": "A4b",
+      "action": "split",
+      "filterExpression": "",
+      "baseText": "Show each A4b therapy row only when the corresponding A4a 'Without a statin' (column B) value is > 0.",
+      "splits": [
+        {
+          "rowVariables": [
+            "A4br1c1",
+            "A4br1c2"
+          ],
+          "filterExpression": "A4ar1c2 > 0",
+          "baseText": "Those who indicated > 0% Would prescribe Leqvio (inclisiran) without a statin (A4a col B > 0).",
+          "splitLabel": "Leqvio (inclisiran)"
+        },
+        {
+          "rowVariables": [
+            "A4br2c1",
+            "A4br2c2"
+          ],
+          "filterExpression": "A4ar2c2 > 0",
+          "baseText": "Those who indicated > 0% Would prescribe Praluent (alirocumab) without a statin (A4a col B > 0).",
+          "splitLabel": "Praluent (alirocumab)"
+        },
+        {
+          "rowVariables": [
+            "A4br3c1",
+            "A4br3c2"
+          ],
+          "filterExpression": "A4ar3c2 > 0",
+          "baseText": "Those who indicated > 0% Would prescribe Repatha (evolocumab) without a statin (A4a col B > 0).",
+          "splitLabel": "Repatha (evolocumab)"
+        },
+        {
+          "rowVariables": [
+            "A4br4c1",
+            "A4br4c2"
+          ],
+          "filterExpression": "A4ar4c2 > 0",
+          "baseText": "Those who indicated > 0% Would prescribe Zetia (ezetimibe) without a statin (A4a col B > 0).",
+          "splitLabel": "Zetia (ezetimibe)"
+        },
+        {
+          "rowVariables": [
+            "A4br5c1",
+            "A4br5c2"
+          ],
+          "filterExpression": "A4ar5c2 > 0",
+          "baseText": "Those who indicated > 0% Would prescribe Nexletol (bempedoic acid) / Nexlizet without a statin (A4a col B > 0).",
+          "splitLabel": "Nexletol / Nexlizet"
+        }
+      ],
+      "alternatives": [
+        {
+          "expression": "A4ar1c2 >= 1  # (and analogous for A4ar2c2..A4ar5c2)",
+          "confidence": 0.75,
+          "reason": "If the intent was to require at least 1% (integers) rather than any small positive value. For integer percent fields >=1 is equivalent to >0."
+        },
+        {
+          "expression": "!is.na(A4ar1c2) & A4ar1c2 > 0  # (apply same pattern for A4ar2c2..A4ar5c2)",
+          "confidence": 0.6,
+          "reason": "Explicitly exclude missing condition values. The pipeline already applies non-NA to the target question (A4b) but not to the condition (A4a); adding !is.na increases strictness."
+        }
+      ],
+      "confidence": 0.9,
+      "reasoning": "Mapped A4b row variables (A4br1c1/A4br1c2 .. A4br5c1/A4br5c2) to the corresponding A4a 'Without a statin' column variables (A4ar1c2 .. A4ar5c2). All referenced variables exist in the datamap and are numeric percentage fields (0-100). The rule text asks to show A4b rows only when the corresponding A4a column B value is > 0, so the minimal additional constraint is A4arXc2 > 0 per row. Alternatives provided for >=1 or explicit non-missing checks in case of different interpretations.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a5_ask_if_a4_differs_from_a3_for_pcsk9s",
+      "questionId": "A5",
+      "action": "filter",
+      "filterExpression": "(A4r2c1 != A3r2) | (A4r3c1 != A3r3) | (A4r4c1 != A3r4)",
+      "baseText": "Respondents whose prescribing for Leqvio, Praluent, or Repatha in A4 differs from their A3 value (i.e., prescribing changed for any of those three therapies).",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "((A4r2c1 > A3r2) | (A4r2c1 < A3r2)) | ((A4r3c1 > A3r3) | (A4r3c1 < A3r3)) | ((A4r4c1 > A3r4) | (A4r4c1 < A3r4))",
+          "confidence": 0.9,
+          "reason": "Equivalent to != but written explicitly as greater-than OR less-than for clarity."
+        },
+        {
+          "expression": "(!is.na(A4r2c1) & !is.na(A3r2) & A4r2c1 != A3r2) | (!is.na(A4r3c1) & !is.na(A3r3) & A4r3c1 != A3r3) | (!is.na(A4r4c1) & !is.na(A3r4) & A4r4c1 != A3r4)",
+          "confidence": 0.8,
+          "reason": "Safer handling of missing data — only treats a pair as a 'change' when both A3 and A4 values are present. Slightly more restrictive but avoids NA propagation."
+        },
+        {
+          "expression": "(A4r2c2 != A3r2) | (A4r3c2 != A3r3) | (A4r4c2 != A3r4)",
+          "confidence": 0.6,
+          "reason": "Alternate interpretation if the rule meant to compare A3 (LAST 100) to the A4 'NEXT 100' column (c2) instead of the A4 'LAST 100' column (c1). The datamap contains both c1 (LAST 100) and c2 (NEXT 100) for A4; which column is intended is ambiguous."
+        },
+        {
+          "expression": "((A4r2c1 != A3r2) | (A4r2c2 != A3r2)) | ((A4r3c1 != A3r3) | (A4r3c2 != A3r3)) | ((A4r4c1 != A3r4) | (A4r4c2 != A3r4))",
+          "confidence": 0.5,
+          "reason": "Broader interpretation: treat A4 as changed if either A4 column (c1 or c2) differs from A3. This may over-include respondents and is not minimal; include only if specification expects any A4 column difference to trigger A5."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "A3r2/A3r3/A3r4 are the A3 responses (Leqvio, Praluent, Repatha). The corresponding A4 'LAST 100' variables are A4r2c1/A4r3c1/A4r4c1 in the datamap. The rule asks to show A5 when A4 is greater or less than A3 for any of those rows — equivalent to A4 != A3. Variables used exist exactly in the datamap. The primary expression is minimal (just the necessary inequality checks ORed together).",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_b5_ask_if_s2_2",
+      "questionId": "B5",
+      "action": "filter",
+      "filterExpression": "S2 == 2",
+      "baseText": "Respondents who selected Internal Medicine / General Practitioner / Primary Care / Family Practice (S2 = 2).",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "S2 %in% c(2)",
+          "confidence": 0.6,
+          "reason": "Equivalent formulation using %in% for a single value; functionally the same as S2 == 2."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "S2 exists in the datamap and value 2 corresponds exactly to 'Internal Medicine / General Practitioner / Primary Care / Family Practice'. The minimal additional constraint is S2 == 2.",
+      "humanReviewRequired": false
+    }
+  ]
+}

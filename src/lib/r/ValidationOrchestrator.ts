@@ -21,6 +21,7 @@ import path from 'path';
 import type { ExtendedTableDefinition } from '../../schemas/verificationAgentSchema';
 import type { CutDefinition } from '../tables/CutsSpec';
 import type { VerboseDataMapType } from '../../schemas/processingSchemas';
+import type { LoopGroupMapping } from '../validation/LoopCollapser';
 import { generateValidationScript, generateSingleTableValidationScript } from './RValidationGenerator';
 import { verifyTable, type VerificationInput } from '../../agents/VerificationAgent';
 
@@ -39,6 +40,8 @@ export interface ValidationOptions {
   dataFilePath?: string;
   /** Verbose logging */
   verbose?: boolean;
+  /** Loop group mappings for stacked data frame creation */
+  loopMappings?: LoopGroupMapping[];
 }
 
 export interface TableValidationResult {
@@ -93,6 +96,7 @@ export async function validateAndFixTables(
     maxRetries = 3,
     dataFilePath = 'dataFile.sav',
     verbose = false,
+    loopMappings = [],
   } = options;
 
   const log = (msg: string) => {
@@ -141,7 +145,8 @@ export async function validateAndFixTables(
     tablesToValidate,
     cuts,
     dataFilePath,
-    'validation/validation-results.json'  // Relative to outputDir
+    'validation/validation-results.json',  // Relative to outputDir
+    loopMappings
   );
 
   const validationScriptPath = path.join(validationDir, 'validation.R');
@@ -244,7 +249,8 @@ export async function validateAndFixTables(
             dataFilePath,
             validationDir,
             rWorkingDir,  // R runs from outputDir
-            log
+            log,
+            loopMappings
           );
 
           if (singleValidationResult.success) {
@@ -406,7 +412,8 @@ async function validateSingleTable(
   dataFilePath: string,
   validationDir: string,
   rWorkingDir: string,  // R runs from here (outputDir where dataFile.sav is)
-  log: (msg: string) => void
+  log: (msg: string) => void,
+  loopMappings: LoopGroupMapping[] = []
 ): Promise<TableValidationResult> {
   const tableIdForFile = table.tableId;
   // Results path relative to rWorkingDir
@@ -416,7 +423,8 @@ async function validateSingleTable(
     table,
     cuts,
     dataFilePath,
-    resultsRelativePath
+    resultsRelativePath,
+    loopMappings
   );
 
   const scriptPath = path.join(validationDir, `single-${tableIdForFile}.R`);

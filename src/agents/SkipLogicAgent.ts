@@ -129,7 +129,7 @@ Output the complete list of rules and no-rule questions.`;
         if (err instanceof DOMException && err.name === 'AbortError') {
           throw err;
         }
-        console.warn(`[SkipLogicAgent] Retry ${attempt}/3: ${err.message}`);
+        console.warn(`[SkipLogicAgent] Retry ${attempt}/3: ${err.message.substring(0, 120)}`);
       },
     }
   );

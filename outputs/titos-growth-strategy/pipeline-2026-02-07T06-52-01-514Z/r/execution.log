@@ -1,0 +1,42 @@
+R Execution Log
+===============
+Timestamp: 2026-02-07T07:05:09.060Z
+Status: FAILED
+
+--- STDOUT ---
+[1] "Loaded 5098 rows and 530 columns"
+[1] "Created stacked_loop_1: 10196 rows ( 5098 x 2 iterations)"
+[1] "Defined 21 cuts in 3 groups"
+[1] "Generated demo table: _demo_banner_x_banner"
+[1] "Generated frequency table: s1"
+[1] "Generated mean_rows table: s2"
+[1] "Generated frequency table: s2_bins"
+[1] "Generated frequency table: s3"
+[1] "Generated frequency table: s5"
+[1] "Generated frequency table: s6"
+[1] "Generated frequency table: s6a"
+[1] "Generated frequency table: s7"
+[1] "Generated mean_rows table: s8"
+[1] "Generated frequency table: s8_binned"
+[1] "Generated mean_rows table: s9"
+[1] "Generated frequency table: s10a"
+
+
+--- STDERR ---
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Warning message:
+`..1$A18` and `..2$A18` have conflicting value labels.
+ℹ Labels for these values will be taken from `..1$A18`.
+✖ Values: 4 
+Error: unexpected numeric constant in "for (cut_name in names(cuts_Location 1"
+Execution halted

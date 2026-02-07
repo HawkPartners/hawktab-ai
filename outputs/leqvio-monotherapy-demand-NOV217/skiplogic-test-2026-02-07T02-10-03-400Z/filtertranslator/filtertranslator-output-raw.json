@@ -1,0 +1,589 @@
+{
+  "filters": [
+    {
+      "ruleId": "rule_s2a_show_if",
+      "questionId": "S2a",
+      "action": "filter",
+      "filterExpression": "S2 %in% c(6, 7)",
+      "baseText": "Those who answered Nurse Practitioner (6) or Physician’s Assistant (7) at S2",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "S2 == 6 | S2 == 7",
+          "confidence": 0.8,
+          "reason": "Equivalent expression using explicit OR rather than %in%. Identical logic."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "S2 exists in the datamap and its values include 6 (Nurse Practitioner) and 7 (Physician’s Assistant). The rule text is explicit.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_s3a_show_if",
+      "questionId": "S3a",
+      "action": "filter",
+      "filterExpression": "S2 == 1",
+      "baseText": "Those who answered Cardiologist (1) at S2",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.95,
+      "reasoning": "S2 exists and value 1 maps to Cardiologist in the datamap; rule explicitly requires S2==1.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_s4_show_if",
+      "questionId": "S4",
+      "action": "filter",
+      "filterExpression": "S2 %in% c(1, 2, 3, 4, 5)",
+      "baseText": "Those whose primary specialty (S2) is one of options 1–5 (Cardiologist, Internal Medicine/GP/PCP/Family Practice, Nephrologist, Endocrinologist, Lipidologist)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "S2 >= 1 & S2 <= 5",
+          "confidence": 0.8,
+          "reason": "Numeric range check is equivalent given contiguous values 1–5."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "S2 exists and has values 1–5 matching the listed specialties; the rule is an explicit inclusion of that set.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_b5_show_if",
+      "questionId": "B5",
+      "action": "filter",
+      "filterExpression": "S2 == 2",
+      "baseText": "Those who answered Internal Medicine / GP / Primary Care / Family Practice (2) at S2",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.95,
+      "reasoning": "S2 exists and value 2 maps to Internal Medicine/GP/PCP/Family Practice in the datamap; rule is explicit.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "A1",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r1) & is.na(S5r2) & is.na(S5r3) & is.na(S5r4) & is.na(S5r5) & is.na(S5r6) | (S5r1 == 0 & S5r2 == 0 & S5r3 == 0 & S5r4 == 0 & S5r5 == 0 & S5r6 == 0)) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+          "confidence": 0.7,
+          "reason": "Alternative for handling S5: require that none of the terminating affiliation flags (S5r1..S5r6) are selected (all 0) instead of checking S5r7==1. Useful if 'None of these' flag isn't used or missing."
+        },
+        {
+          "expression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a %in% c(1)) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & (is.na(S6) | (S6 >= 3 & S6 <= 35)) & (is.na(S7) | S7 == 1) & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & (is.na(S10) | S10 >= 50) & (is.na(S11) | S11 >= 10) & (is.na(S12r4) | S12r4 > 0)",
+          "confidence": 0.6,
+          "reason": "More permissive alternative that allows missing screener variables to pass (guards with is.na). Use if some screener variables may legitimately be absent; less strict about missing data."
+        }
+      ],
+      "confidence": 0.7,
+      "reasoning": "All referenced variables exist in the datamap (S1, S2, S2a, S4, S5r1..S5r7, S6, S7, S8r1, S9, S10, S11, S12r4). However, the screener text contains some ambiguities (e.g., exactly which S2a options terminate and whether to require S5r7==1 or to require all other S5r* == 0). To avoid silently over- or under-filtering, this translation uses conservative guards (is.na(...) | condition) where the screener says 'if shown' and flags the S2a / S5 interpretation as an area for review.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "A2a",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "A2b",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "A3",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "A3a",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "A3b",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "A4",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "A4a",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "A4b",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "A5",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "A6",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "A7",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "A8",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "A9",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "A10",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "B1",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "B2",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "B3",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "B4",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_full_screener_qualification_for_sectionA_and_B",
+      "questionId": "B5",
+      "action": "filter",
+      "filterExpression": "S1 != 3 & S2 != 99 & (is.na(S2a) | S2a == 1) & (is.na(S4) | S4 == 2) & (is.na(S5r7) | S5r7 == 1) & S6 >= 3 & S6 <= 35 & S7 == 1 & (is.na(S8r1) | S8r1 >= 70) & (is.na(S9) | S9 != 7) & S10 >= 50 & S11 >= 10 & (is.na(S12r4) | S12r4 > 0)",
+      "baseText": "Respondents who passed screener qualification (did not select disqualifying screener options and met numeric thresholds as specified)",
+      "splits": [],
+      "alternatives": [],
+      "confidence": 0.7,
+      "reasoning": "Same composite qualification filter as provided for A1; see main reasoning and noted ambiguities.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_a3a_show_rows_where_a3_gt_0",
+      "questionId": "A3a",
+      "action": "split",
+      "filterExpression": "",
+      "baseText": "Show each A3a therapy row only if the corresponding A3 count for that therapy is > 0",
+      "splits": [
+        {
+          "rowVariables": [
+            "A3ar1c1",
+            "A3ar1c2"
+          ],
+          "filterExpression": "A3r2 > 0",
+          "baseText": "Leqvio: show row when Leqvio (A3r2) > 0",
+          "splitLabel": "Leqvio"
+        },
+        {
+          "rowVariables": [
+            "A3ar2c1",
+            "A3ar2c2"
+          ],
+          "filterExpression": "A3r3 > 0",
+          "baseText": "Praluent: show row when Praluent (A3r3) > 0",
+          "splitLabel": "Praluent"
+        },
+        {
+          "rowVariables": [
+            "A3ar3c1",
+            "A3ar3c2"
+          ],
+          "filterExpression": "A3r4 > 0",
+          "baseText": "Repatha: show row when Repatha (A3r4) > 0",
+          "splitLabel": "Repatha"
+        },
+        {
+          "rowVariables": [
+            "A3ar4c1",
+            "A3ar4c2"
+          ],
+          "filterExpression": "A3r5 > 0",
+          "baseText": "Zetia (ezetimibe): show row when Zetia (A3r5) > 0",
+          "splitLabel": "Zetia"
+        },
+        {
+          "rowVariables": [
+            "A3ar5c1",
+            "A3ar5c2"
+          ],
+          "filterExpression": "A3r6 > 0",
+          "baseText": "Nexletol/Nexlizet: show row when Nexletol (A3r6) > 0",
+          "splitLabel": "Nexletol/Nexlizet"
+        }
+      ],
+      "alternatives": [
+        {
+          "expression": "A3r2 >= 1 (and similarly >=1 for others)",
+          "confidence": 0.85,
+          "reason": "For integer counts, >0 and >=1 are equivalent; use >=1 if you prefer inclusive integer check."
+        }
+      ],
+      "confidence": 0.85,
+      "reasoning": "Datamap contains A3r2..A3r6 counts for therapies and A3ar1..A3ar5 columns for A3a rows. Mapping uses the explicit therapy labels in the datamap (A3ar1 corresponds to Leqvio, etc.).",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a3b_show_rows_where_a3a_colb_gt_0",
+      "questionId": "A3b",
+      "action": "split",
+      "filterExpression": "",
+      "baseText": "Show each A3b therapy row only if the corresponding A3a 'Without a statin' column (column B) for that therapy is > 0",
+      "splits": [
+        {
+          "rowVariables": [
+            "A3br1c1",
+            "A3br1c2"
+          ],
+          "filterExpression": "A3ar1c2 > 0",
+          "baseText": "Leqvio: show A3b row when A3a column B for Leqvio (A3ar1c2) > 0",
+          "splitLabel": "Leqvio"
+        },
+        {
+          "rowVariables": [
+            "A3br2c1",
+            "A3br2c2"
+          ],
+          "filterExpression": "A3ar2c2 > 0",
+          "baseText": "Praluent: show A3b row when A3a column B for Praluent (A3ar2c2) > 0",
+          "splitLabel": "Praluent"
+        },
+        {
+          "rowVariables": [
+            "A3br3c1",
+            "A3br3c2"
+          ],
+          "filterExpression": "A3ar3c2 > 0",
+          "baseText": "Repatha: show A3b row when A3a column B for Repatha (A3ar3c2) > 0",
+          "splitLabel": "Repatha"
+        },
+        {
+          "rowVariables": [
+            "A3br4c1",
+            "A3br4c2"
+          ],
+          "filterExpression": "A3ar4c2 > 0",
+          "baseText": "Zetia: show A3b row when A3a column B for Zetia (A3ar4c2) > 0",
+          "splitLabel": "Zetia"
+        },
+        {
+          "rowVariables": [
+            "A3br5c1",
+            "A3br5c2"
+          ],
+          "filterExpression": "A3ar5c2 > 0",
+          "baseText": "Nexletol/Nexlizet: show A3b row when A3a column B for Nexletol (A3ar5c2) > 0",
+          "splitLabel": "Nexletol/Nexlizet"
+        }
+      ],
+      "alternatives": [
+        {
+          "expression": "A3ar1c2 >= 1 (and similarly >=1 for others)",
+          "confidence": 0.85,
+          "reason": "Alternate integer-safe check using >=1. Equivalent for integer percentage values >0."
+        }
+      ],
+      "confidence": 0.9,
+      "reasoning": "Datamap contains A3ar#c2 fields representing the 'Without a statin' column (column B) for each therapy and A3br# rows for A3b. Mapping is direct by therapy label.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a4a_show_rows_where_a4_gt_0",
+      "questionId": "A4a",
+      "action": "split",
+      "filterExpression": "",
+      "baseText": "Show each A4a therapy row only if the corresponding A4 value for that therapy is > 0",
+      "splits": [
+        {
+          "rowVariables": [
+            "A4ar1c1",
+            "A4ar1c2"
+          ],
+          "filterExpression": "",
+          "baseText": "Leqvio: show row when Leqvio (A4r2) > 0",
+          "splitLabel": "Leqvio"
+        },
+        {
+          "rowVariables": [
+            "A4ar2c1",
+            "A4ar2c2"
+          ],
+          "filterExpression": "",
+          "baseText": "Praluent: show row when Praluent (A4r3) > 0",
+          "splitLabel": "Praluent"
+        },
+        {
+          "rowVariables": [
+            "A4ar3c1",
+            "A4ar3c2"
+          ],
+          "filterExpression": "",
+          "baseText": "Repatha: show row when Repatha (A4r4) > 0",
+          "splitLabel": "Repatha"
+        },
+        {
+          "rowVariables": [
+            "A4ar4c1",
+            "A4ar4c2"
+          ],
+          "filterExpression": "",
+          "baseText": "Zetia: show row when Zetia (A4r5) > 0",
+          "splitLabel": "Zetia"
+        },
+        {
+          "rowVariables": [
+            "A4ar5c1",
+            "A4ar5c2"
+          ],
+          "filterExpression": "",
+          "baseText": "Nexletol/Nexlizet: show row when Nexletol (A4r6) > 0",
+          "splitLabel": "Nexletol/Nexlizet"
+        }
+      ],
+      "alternatives": [
+        {
+          "expression": "A4r2 >= 1 (and similarly >=1 for others)",
+          "confidence": 0.85,
+          "reason": "For integer counts, >=1 is equivalent to >0."
+        }
+      ],
+      "confidence": 0.85,
+      "reasoning": "Datamap contains A4r2..A4r6 therapy counts and corresponding A4ar rows. Mapping follows therapy labels. [VALIDATION: Some split expressions had non-existent variables.]",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_a4b_show_rows_where_a4a_colb_gt_0",
+      "questionId": "A4b",
+      "action": "split",
+      "filterExpression": "",
+      "baseText": "Show each A4b therapy row only if the corresponding A4a 'Without a statin' column (column B) for that therapy is > 0",
+      "splits": [
+        {
+          "rowVariables": [
+            "A4br1c1",
+            "A4br1c2"
+          ],
+          "filterExpression": "A4ar1c2 > 0",
+          "baseText": "Leqvio: show A4b row when A4a column B for Leqvio (A4ar1c2) > 0",
+          "splitLabel": "Leqvio"
+        },
+        {
+          "rowVariables": [
+            "A4br2c1",
+            "A4br2c2"
+          ],
+          "filterExpression": "A4ar2c2 > 0",
+          "baseText": "Praluent: show A4b row when A4a column B for Praluent (A4ar2c2) > 0",
+          "splitLabel": "Praluent"
+        },
+        {
+          "rowVariables": [
+            "A4br3c1",
+            "A4br3c2"
+          ],
+          "filterExpression": "A4ar3c2 > 0",
+          "baseText": "Repatha: show A4b row when A4a column B for Repatha (A4ar3c2) > 0",
+          "splitLabel": "Repatha"
+        },
+        {
+          "rowVariables": [
+            "A4br4c1",
+            "A4br4c2"
+          ],
+          "filterExpression": "A4ar4c2 > 0",
+          "baseText": "Zetia: show A4b row when A4a column B for Zetia (A4ar4c2) > 0",
+          "splitLabel": "Zetia"
+        },
+        {
+          "rowVariables": [
+            "A4br5c1",
+            "A4br5c2"
+          ],
+          "filterExpression": "A4ar5c2 > 0",
+          "baseText": "Nexletol/Nexlizet: show A4b row when A4a column B for Nexletol (A4ar5c2) > 0",
+          "splitLabel": "Nexletol/Nexlizet"
+        }
+      ],
+      "alternatives": [
+        {
+          "expression": "A4ar1c2 >= 1 (and similarly >=1 for others)",
+          "confidence": 0.85,
+          "reason": "Alternate integer-safe condition using >=1; equivalent for integer percentage values."
+        }
+      ],
+      "confidence": 0.9,
+      "reasoning": "Datamap contains A4ar#c2 fields representing the 'Without a statin' column and A4br# rows for A4b. Mapping is direct by therapy label.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a5_show_if_prescribing_changed",
+      "questionId": "A5",
+      "action": "filter",
+      "filterExpression": "",
+      "baseText": "Those for whom prescribing in A4 differs from A3 for at least one of Leqvio (row 2), Praluent (row 3) or Repatha (row 4)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "((A4r2 > A3r2) | (A4r2 < A3r2) | (A4r3 > A3r3) | (A4r3 < A3r3) | (A4r4 > A3r4) | (A4r4 < A3r4))",
+          "confidence": 0.8,
+          "reason": "Equivalent to != but expressed as explicit greater/less checks. Less safe if any comparison involves NA values (would yield NA)."
+        }
+      ],
+      "confidence": 0.9,
+      "reasoning": "A3r2..A3r4 and A4r2..A4r4 exist in the datamap and correspond to Leqvio (2), Praluent (3) and Repatha (4). The rule is satisfied when any of these pairs differ; guard against NA by requiring both sides be non-missing before comparing. [VALIDATION: Variables A4r2, A4r3, A4r4 not found in datamap.]",
+      "humanReviewRequired": true
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "a10_distribution": {
+    "success": false,
+    "tableId": "a10_distribution",
+    "error": "Variable 'A10' not found"
+  }
+}

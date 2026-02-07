@@ -1,0 +1,347 @@
+{
+  "bannerCuts": [
+    {
+      "groupName": "Needs State",
+      "columns": [
+        {
+          "name": "Connection / Belonging",
+          "adjusted": "(S10a == 1 | S11a == 1)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with matching value labels where 1 = Connection/Belonging → Mapped to OR of S10a == 1 and S11a == 1.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Status / Image",
+          "adjusted": "(S10a == 2 | S11a == 2)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with matching value labels where 2 = Status/Image → Mapped to OR of S10a == 2 and S11a == 2.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Exploration / Discovery",
+          "adjusted": "(S10a == 3 | S11a == 3)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with matching value labels where 3 = Exploration/Discovery → Mapped to OR of S10a == 3 and S11a == 3.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Celebration",
+          "adjusted": "(S10a == 4 | S11a == 4)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with matching value labels where 4 = Celebration → Mapped to OR of S10a == 4 and S11a == 4.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Indulgence",
+          "adjusted": "(S10a == 5 | S11a == 5)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with matching value labels where 5 = Indulgence → Mapped to OR of S10a == 5 and S11a == 5.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Escape / Relief",
+          "adjusted": "(S10a == 6 | S11a == 6)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with matching value labels where 6 = Escape/Relief → Mapped to OR of S10a == 6 and S11a == 6.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Performance",
+          "adjusted": "(S10a == 7 | S11a == 7)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with matching value labels where 7 = Performance → Mapped to OR of S10a == 7 and S11a == 7.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Tradition",
+          "adjusted": "(S10a == 8 | S11a == 8)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with matching value labels where 8 = Tradition → Mapped to OR of S10a == 8 and S11a == 8.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        }
+      ]
+    },
+    {
+      "groupName": "Location",
+      "columns": [
+        {
+          "name": "Own Home",
+          "adjusted": "hLOCATION1 == 1",
+          "confidence": 0.75,
+          "reason": "Found hLOCATION1 with value labels mapping 1='At your home'. Selected hLOCATION1 as the primary assigned-location variable for S9_1 because it explicitly contains the assignment codes.",
+          "alternatives": [
+            {
+              "expression": "hLOCATION2 == 1",
+              "confidence": 0.65,
+              "reason": "hLOCATION2 also exists and uses the same value coding for assigned locations; may be the alternate assignment arm."
+            },
+            {
+              "expression": "hLOCATIONr1 == 1",
+              "confidence": 0.6,
+              "reason": "hLOCATIONr1 is a binary hidden flag for HOME (0/1) and directly marks HOME selection but is a different representation (binary) rather than the assignment code."
+            }
+          ],
+          "uncertainties": [
+            "Confirm whether 'Assigned S9_1' should map to hLOCATION1 (assignment code) or to the binary flag hLOCATIONr1; mapping chosen to hLOCATION1 may not match the banner's intended assignment arm if hLOCATION2 is used instead."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Others' Home",
+          "adjusted": "hLOCATION1 == 2",
+          "confidence": 0.75,
+          "reason": "Found hLOCATION1 with value label 2='At someone else's home'. Selected hLOCATION1 as the primary assigned-location variable for S9_2 because it explicitly contains the assignment codes.",
+          "alternatives": [
+            {
+              "expression": "hLOCATION2 == 2",
+              "confidence": 0.65,
+              "reason": "hLOCATION2 uses the same coding and may be the alternate assignment variable."
+            },
+            {
+              "expression": "dLOCATIONr2 == 1",
+              "confidence": 0.6,
+              "reason": "dLOCATIONr2 is a hidden binary flag for 'At someone else's home' (0/1) and could be used if a binary indicator is preferred."
+            }
+          ],
+          "uncertainties": [
+            "Confirm whether to use hLOCATION1 (assignment code) or binary flags like dLOCATIONr2/hLOCATIONr2; clarify whether the banner should include either assignment arm (hLOCATION2)."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Work / Office",
+          "adjusted": "hLOCATION1 == 3",
+          "confidence": 0.75,
+          "reason": "Found hLOCATION1 with value label 3='At work/office'. Selected hLOCATION1 as the primary assigned-location variable for S9_3 because it contains the assignment codes.",
+          "alternatives": [
+            {
+              "expression": "hLOCATION2 == 3",
+              "confidence": 0.65,
+              "reason": "hLOCATION2 has the same coding and may represent the alternate assignment arm."
+            },
+            {
+              "expression": "dLOCATIONr3 == 1",
+              "confidence": 0.6,
+              "reason": "dLOCATIONr3 is a binary hidden flag for 'At work/office' and could be used instead of assignment code."
+            }
+          ],
+          "uncertainties": [
+            "Confirm whether banner mapping should use hLOCATION1 or hLOCATION2 (assignment arm) or binary dLOCATIONr3/hLOCATIONr3 flags."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "College Dorm",
+          "adjusted": "hLOCATION1 == 4",
+          "confidence": 0.75,
+          "reason": "Found hLOCATION1 with value label 4='At college/university dorm or apartment'. Selected hLOCATION1 as the primary assigned-location variable for S9_4 because it explicitly contains the assignment codes.",
+          "alternatives": [
+            {
+              "expression": "hLOCATION2 == 4",
+              "confidence": 0.65,
+              "reason": "hLOCATION2 may represent the alternate assignment and uses the same coding."
+            },
+            {
+              "expression": "dLOCATIONr4 == 1",
+              "confidence": 0.6,
+              "reason": "dLOCATIONr4 is a binary hidden flag for the college dorm location and could be used if binary indicators are desired."
+            }
+          ],
+          "uncertainties": [
+            "Confirm whether 'Assigned S9_4' refers to hLOCATION1 or the alternate hLOCATION2, or to a binary indicator."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Dining",
+          "adjusted": "hLOCATION1 %in% c(5,6,7)",
+          "confidence": 0.75,
+          "reason": "Found hLOCATION1 value labels 5='At a casual dining restaurant', 6='At a upscale casual dining restaurant', 7='At a fine dining restaurant'; combined these codes to represent the banner 'Dining' grouping (S9_5 OR S9_6 OR S9_7).",
+          "alternatives": [
+            {
+              "expression": "hLOCATION2 %in% c(5,6,7)",
+              "confidence": 0.65,
+              "reason": "hLOCATION2 may be the alternate assignment variable and uses identical coding."
+            },
+            {
+              "expression": "dLOCATIONr5 == 1 | dLOCATIONr6 == 1 | dLOCATIONr7 == 1",
+              "confidence": 0.6,
+              "reason": "Binary hidden flags dLOCATIONr5/dLOCATIONr6/dLOCATIONr7 each mark the respective dining location and could be used to form the OR grouping."
+            }
+          ],
+          "uncertainties": [
+            "Confirm whether dining should be based on assignment code (hLOCATION1/hLOCATION2) or binary selection flags (dLOCATIONr5/6/7)."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Bar / Nightclub",
+          "adjusted": "hLOCATION1 %in% c(8,9,10,11)",
+          "confidence": 0.75,
+          "reason": "Found hLOCATION1 value labels 8='At a local sports bar or pub', 9='At a craft cocktail bar', 10='At a premium bar or upscale lounge', 11='At a nightclub'; combined these codes to represent the banner grouping S9_8 OR S9_9 OR S9_10 OR S9_11.",
+          "alternatives": [
+            {
+              "expression": "hLOCATION2 %in% c(8,9,10,11)",
+              "confidence": 0.65,
+              "reason": "hLOCATION2 may represent the alternate assignment arm with same coding."
+            },
+            {
+              "expression": "dLOCATIONr8 == 1 | dLOCATIONr9 == 1 | dLOCATIONr10 == 1 | dLOCATIONr11 == 1",
+              "confidence": 0.6,
+              "reason": "Binary hidden flags for specific bar/nightclub locations could be used to form the OR grouping instead of assignment codes."
+            }
+          ],
+          "uncertainties": [
+            "Confirm whether to use assignment code variable (hLOCATION1/hLOCATION2) or binary dLOCATIONr* flags for the banner grouping."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Hotel / Motel",
+          "adjusted": "hLOCATION1 == 12",
+          "confidence": 0.75,
+          "reason": "Found hLOCATION1 value label 12='At a hotel or motel'. Selected hLOCATION1 as the primary assigned-location variable for S9_12 because it contains the assignment codes.",
+          "alternatives": [
+            {
+              "expression": "hLOCATION2 == 12",
+              "confidence": 0.65,
+              "reason": "hLOCATION2 uses same coding and may be the alternate assignment variable."
+            },
+            {
+              "expression": "dLOCATIONr12 == 1",
+              "confidence": 0.6,
+              "reason": "dLOCATIONr12 is a binary hidden flag that marks the hotel/motel location."
+            }
+          ],
+          "uncertainties": [
+            "Confirm which assignment variable (hLOCATION1 or hLOCATION2) the banner uses, or whether binary flags are preferred."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Recreation / Entertainment / Concession",
+          "adjusted": "hLOCATION1 %in% c(13,14)",
+          "confidence": 0.75,
+          "reason": "Found hLOCATION1 value labels 13='At a recreation or entertainment venue' and 14='At a concession stand or festival'; combined these codes to represent the banner grouping (S9_13 OR S9_14).",
+          "alternatives": [
+            {
+              "expression": "hLOCATION2 %in% c(13,14)",
+              "confidence": 0.65,
+              "reason": "hLOCATION2 may be the alternate assignment variable with identical coding."
+            },
+            {
+              "expression": "dLOCATIONr13 == 1 | dLOCATIONr14 == 1",
+              "confidence": 0.6,
+              "reason": "Binary hidden flags for the two locations could be used to represent this grouping instead of assignment codes."
+            }
+          ],
+          "uncertainties": [
+            "Confirm whether the banner should pull from hLOCATION1/hLOCATION2 assignment codes or from binary dLOCATIONr13/dLOCATIONr14 flags."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Outdoor Gathering",
+          "adjusted": "hLOCATION1 == 15",
+          "confidence": 0.75,
+          "reason": "Found hLOCATION1 value label 15='At an outdoor gathering (e.g., BBQ, picnic, tailgate)'. Selected hLOCATION1 as primary assigned-location variable for S9_15 because it contains the assignment codes.",
+          "alternatives": [
+            {
+              "expression": "hLOCATION2 == 15",
+              "confidence": 0.65,
+              "reason": "hLOCATION2 may be the alternate assignment variable with same coding."
+            },
+            {
+              "expression": "dLOCATIONr15 == 1",
+              "confidence": 0.6,
+              "reason": "dLOCATIONr15 is the binary hidden flag for the outdoor gathering location."
+            }
+          ],
+          "uncertainties": [
+            "Confirm whether to use hLOCATION1 or hLOCATION2 for assignment mapping or the binary dLOCATIONr15 flag."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Airport / Transit Location",
+          "adjusted": "hLOCATION1 == 16",
+          "confidence": 0.75,
+          "reason": "Found hLOCATION1 value label 16='At airport or other transit location'. Selected hLOCATION1 as the primary assigned-location variable for S9_16 because it explicitly contains the assignment codes.",
+          "alternatives": [
+            {
+              "expression": "hLOCATION2 == 16",
+              "confidence": 0.65,
+              "reason": "hLOCATION2 may represent the alternate assignment arm using the same coding."
+            },
+            {
+              "expression": "dLOCATIONr16 == 1",
+              "confidence": 0.6,
+              "reason": "dLOCATIONr16 is a binary hidden flag for airport/transit location and could be used instead of assignment codes."
+            }
+          ],
+          "uncertainties": [
+            "Confirm whether the banner expects hLOCATION1 or hLOCATION2 (assignment arm) or a binary flag for airport/transit location."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Other",
+          "adjusted": "hLOCATION1 == 99",
+          "confidence": 0.75,
+          "reason": "Found hLOCATION1 value label 99 referencing the open-text 'Other' option. Selected hLOCATION1 as primary because it contains the assignment code for S9_99.",
+          "alternatives": [
+            {
+              "expression": "hLOCATION2 == 99",
+              "confidence": 0.65,
+              "reason": "hLOCATION2 also includes the 'Other' code and may be the alternate assignment variable."
+            },
+            {
+              "expression": "dLOCATIONr99 == 1",
+              "confidence": 0.6,
+              "reason": "dLOCATIONr99 is the binary hidden flag indicating the 'Other' location was selected and could be used instead of the assignment code."
+            }
+          ],
+          "uncertainties": [
+            "Confirm whether 'Assigned S9_99' should map to hLOCATION1 or hLOCATION2 or to the binary dLOCATIONr99 flag, and whether the open-text field (LOCATION1r1/2 or LOCATION1r2 values) should be included for 'Other' details."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        }
+      ]
+    }
+  ]
+}

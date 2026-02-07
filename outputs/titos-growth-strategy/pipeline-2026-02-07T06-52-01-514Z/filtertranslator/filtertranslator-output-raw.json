@@ -1,0 +1,613 @@
+{
+  "filters": [
+    {
+      "ruleId": "rule_s6a_hispanic_filter",
+      "questionId": "S6a",
+      "action": "filter",
+      "filterExpression": "S6 == 1",
+      "baseText": "Respondents who answered 'Yes' (Hispanic or Latino) at S6",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "S6 %in% c(1)",
+          "confidence": 0.75,
+          "reason": "Equivalent formulation using %in% for a single value; no change in intent."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Datamap contains S6 with values 1=Yes, 2=No. The rule explicitly requires S6 = 1, so the minimal additional constraint is S6 == 1. The default pipeline already applies non-NA for S6a, so no NA checks are added.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a5_form_of_drink_filter",
+      "questionId": "A5",
+      "action": "filter",
+      "filterExpression": "A4 %in% c(7, 8, 9, 10, 11, 12, 13)",
+      "baseText": "Those who selected A4 = 7, 8, 9, 10, 11, 12, or 13 (specified spirit/cordial/cognac categories)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "A4 == 7 | A4 == 8 | A4 == 9 | A4 == 10 | A4 == 11 | A4 == 12 | A4 == 13",
+          "confidence": 0.85,
+          "reason": "Equivalent explicit OR form; slightly more verbose but exact."
+        },
+        {
+          "expression": "A4 >= 7 & A4 <= 13",
+          "confidence": 0.6,
+          "reason": "Covers the numeric range 7–13 inclusive. This is shorter but assumes the codes are contiguous and that no other codes in the range should be excluded; less explicit than listing values."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "A4 exists in the datamap with allowed values 1–15. The rule explicitly lists values 7,8,9,10,11,12,13, so using A4 %in% c(...) is a minimal, exact translation that matches the intent without over-filtering.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a6_on_premise_filter",
+      "questionId": "A6",
+      "action": "filter",
+      "filterExpression": "hPREMISE1 == 1",
+      "baseText": "Respondents reporting about a location that is on‑premise (LOCATION1)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "hPREMISE2 == 1",
+          "confidence": 0.55,
+          "reason": "If A6 in this context refers to the second looped occasion (LOCATION2) instead of LOCATION1. Datamap contains hPREMISE2 for the second location."
+        },
+        {
+          "expression": "(hPREMISE1 == 1 | hPREMISE2 == 1)",
+          "confidence": 0.5,
+          "reason": "If A6 is asked for either location and should be shown when the corresponding selected location (either LOCATION1 or LOCATION2) is on‑premise. This is broader and may over‑include if A6 is only the LOCATION1 instance."
+        }
+      ],
+      "confidence": 0.7,
+      "reasoning": "Datamap contains hPREMISE1 and hPREMISE2 (hidden flags) which appear to indicate whether the assigned LOCATION1/LOCATION2 is on‑premise (values 1-2). The minimal mapping for A6 (which in the datamap appears tied to the first loop/location) is hPREMISE1 == 1. There is some ambiguity about whether A6 here refers to LOCATION1 or LOCATION2 or both, so alternatives are provided.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_a10_not_alone_filter",
+      "questionId": "A10",
+      "action": "filter",
+      "filterExpression": "A9r1 == 0",
+      "baseText": "Those who did NOT select \"I was alone\" on A9 (i.e., not alone)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "A9r1 != 1",
+          "confidence": 0.85,
+          "reason": "Equivalent logical interpretation for a binary flag (captures non-1 including 0 and any unexpected values)."
+        },
+        {
+          "expression": "!is.na(A9r1) & A9r1 == 0",
+          "confidence": 0.7,
+          "reason": "Stricter: explicitly excludes records where A9r1 is missing. The pipeline already applies non-NA for A10, so this is likely unnecessary but provided as a conservative alternative."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Datamap shows A9r1 is the binary flag for 'I was alone' with allowed values 0 (not selected) and 1 (selected). The minimal additional constraint to show A10 only when respondent was not alone is A9r1 == 0.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a13_brand_filter",
+      "questionId": "A13",
+      "action": "filter",
+      "filterExpression": "A4 %in% c(4, 5, 7, 8, 9, 10, 11, 12, 13)",
+      "baseText": "Respondents who selected A4 = 4, 5, 7, 8, 9, 10, 11, 12, or 13 (those drink types listed in the skip condition)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "A4 %in% c(4, 5, 7:13)",
+          "confidence": 0.8,
+          "reason": "Shorthand using a sequence for 7 through 13; equivalent for integers but slightly less explicit about the exact enumerated list."
+        },
+        {
+          "expression": "A4 == 4 | A4 == 5 | A4 == 7 | A4 == 8 | A4 == 9 | A4 == 10 | A4 == 11 | A4 == 12 | A4 == 13",
+          "confidence": 0.85,
+          "reason": "Fully explicit OR-list equivalent to the primary expression; same logic but more verbose."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "A4 exists in the datamap (categorical_select, values 1-15). The rule explicitly lists values 4,5,7,8,9,10,11,12,13 — translated directly to an R membership test. This adds the minimal constraint on top of the default banner cut + non-NA for A13.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a13b_additional_drinks_filter",
+      "questionId": "A13b",
+      "action": "filter",
+      "filterExpression": "A13a_1 == 1",
+      "baseText": "Those who said Yes to having other drinks (A13a = 1)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "A13a_2 == 1",
+          "confidence": 0.7,
+          "reason": "If the A13a instance referenced by the rule corresponds to the second location/version (A13a_2) rather than A13a_1."
+        },
+        {
+          "expression": "(A13a_1 == 1 | A13a_2 == 1)",
+          "confidence": 0.65,
+          "reason": "If A13b is asked when a respondent indicated additional drinks for either location (either A13a_1 or A13a_2). This is more inclusive but may be broader than the original single-question rule."
+        }
+      ],
+      "confidence": 0.8,
+      "reasoning": "Datamap contains A13a_1 and A13a_2 (categorical_select: 1=Yes, 2=No) and A13b is represented as a multi-checkbox set (A13br1..A13br5) tied to the 'other drinks' follow-up. The rule text references A13a (unsuffixed). The most likely mapping is A13a_1 == 1 (first instance). There is ambiguity whether the rule targets A13a_1, A13a_2, or either; provided alternatives reflect those interpretations.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_off_premise_block_filter",
+      "questionId": "A14a",
+      "action": "filter",
+      "filterExpression": "",
+      "baseText": "Respondents whose selected LOCATION (LOCATION1 or LOCATION2 loop) is an off‑premise location (only then show A14a)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "hLOCATION1 %in% c(...) | hLOCATION2 %in% c(...)",
+          "confidence": 0.3,
+          "reason": "Possible mapping: hLOCATION1/hLOCATION2 exist and encode the location type; would need the specific codes that represent 'off‑premise' to build a concrete expression. Datamap does not document which values indicate 'off‑premise'."
+        },
+        {
+          "expression": "dLOCATIONrX == 1 (for the appropriate r# that maps to the off‑premise location)",
+          "confidence": 0.25,
+          "reason": "dLOCATIONr* variables exist per S9 locations (admin 0/1). If the survey used one of these dLOCATIONr* flags to mark the selected looped location as 'off‑premise', that could be used; however the datamap does not show which dLOCATIONr corresponds to 'off‑premise' or which one is assigned for LOCATION1 vs LOCATION2."
+        }
+      ],
+      "confidence": 0.2,
+      "reasoning": "The rule requires checking whether the looped occasion location is 'off‑premise'. The datamap contains many location-related hidden variables (hLOCATION1, hLOCATION2, hLOCATIONSr*, dLOCATIONr*), but there is no explicit variable documented that clearly equals a boolean 'is_off_premise' for LOCATION1/LOCATION2 or a clear mapping of codes to 'off‑premise' vs 'on‑premise'. Because the exact variable and value(s) that indicate 'off‑premise' cannot be determined from the datamap, I cannot produce a safe, minimal R filter. Human review is required to identify the exact variable (e.g., specific hLOCATION1/hLOCATION2 codes or a particular dLOCATIONr flag) and the values that denote off‑premise.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_off_premise_block_filter",
+      "questionId": "A14b",
+      "action": "filter",
+      "filterExpression": "",
+      "baseText": "Show A14b only when the occasion location is off‑premise AND the respondent selected 'I went to the store/made the purchase myself' at A14a (A14a = 1)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "A14a == 1 & (hLOCATION1 %in% c(...) | hLOCATION2 %in% c(...))",
+          "confidence": 0.3,
+          "reason": "A14a exists and A14a == 1 is the nested condition. The off‑premise location piece requires identifying which hLOCATION1/hLOCATION2 values indicate 'off‑premise'."
+        },
+        {
+          "expression": "A14a == 1 & dLOCATIONrX == 1",
+          "confidence": 0.25,
+          "reason": "If a dLOCATIONr flag marks the selected looped location as off‑premise, use that. Need mapping from loop instance to the correct dLOCATIONr variable."
+        }
+      ],
+      "confidence": 0.2,
+      "reasoning": "Nested condition A14a == 1 is explicit in the rule and A14a exists in the datamap. However, the table‑level off‑premise condition (which LOCATION is off‑premise) cannot be mapped to a single documented variable/value from the datamap without additional metadata on how 'off‑premise' is encoded for LOCATION1/LOCATION2. Leave expression empty pending human review.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_off_premise_block_filter",
+      "questionId": "A15",
+      "action": "filter",
+      "filterExpression": "",
+      "baseText": "Show A15 only when the occasion location is off‑premise AND A4 = 7 AND A14a = 1",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "A14a == 1 & A4 == 7 & (hLOCATION1 %in% c(...) | hLOCATION2 %in% c(...))",
+          "confidence": 0.45,
+          "reason": "A4 and A14a exist in the datamap. The nested conditions A4 == 7 and A14a == 1 are explicit. The off‑premise location still needs concrete mapping to hLOCATION1/hLOCATION2 codes; if those codes are known this is the minimal filter addition."
+        },
+        {
+          "expression": "A14a == 1 & A4 == 7 & dLOCATIONrX == 1",
+          "confidence": 0.25,
+          "reason": "Alternative using a dLOCATIONr flag if that indicates the chosen location is off‑premise; requires identifying correct dLOCATIONr variable for the loop instance."
+        }
+      ],
+      "confidence": 0.25,
+      "reasoning": "A4 and A14a variables exist and the nested numeric values are in the datamap (A4 has values 1–15, A14a has 1–4). The rule also requires an 'off‑premise location' check — but the datamap does not unambiguously provide which variable/value indicates 'off‑premise' for LOCATION1/LOCATION2. Because of that missing mapping, I cannot produce a safe concrete R expression; I provide likely alternatives but mark for human review.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_off_premise_block_filter",
+      "questionId": "A16",
+      "action": "filter",
+      "filterExpression": "",
+      "baseText": "Show A16 only when the occasion location is off‑premise AND A14a = 1 (respondent was purchaser)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "A14a == 1 & (hLOCATION1 %in% c(...) | hLOCATION2 %in% c(...))",
+          "confidence": 0.3,
+          "reason": "A14a exists and A14a == 1 is explicit; off‑premise mapping needs the specific location codes."
+        },
+        {
+          "expression": "A14a == 1 & dLOCATIONrX == 1",
+          "confidence": 0.25,
+          "reason": "Alternative if a dLOCATIONr flag denotes selected off‑premise location; requires mapping to the correct dLOCATIONr variable."
+        }
+      ],
+      "confidence": 0.2,
+      "reasoning": "A14a is available in the datamap so the nested 'purchaser' condition can be expressed as A14a == 1. However the top‑level 'off‑premise location' condition cannot be mapped to a concrete variable/value from the datamap with certainty. Human review needed to identify which variable and values denote off‑premise for LOCATION1/LOCATION2.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_off_premise_block_filter",
+      "questionId": "A17",
+      "action": "filter",
+      "filterExpression": "",
+      "baseText": "Show A17 only when the occasion location is off‑premise AND A14a = 1 (respondent was purchaser)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "A14a == 1 & (hLOCATION1 %in% c(...) | hLOCATION2 %in% c(...))",
+          "confidence": 0.3,
+          "reason": "Same rationale: A14a condition clear; need off‑premise location code mapping."
+        }
+      ],
+      "confidence": 0.2,
+      "reasoning": "A17 depends on A14a == 1 which is present in the datamap; but the off‑premise indicator for the appropriate looped location is not unambiguously documented, so cannot produce a concrete minimal filter without review.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_off_premise_block_filter",
+      "questionId": "A18",
+      "action": "filter",
+      "filterExpression": "",
+      "baseText": "Show A18 only when the occasion location is off‑premise AND A14a = 1 (respondent was purchaser)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "A14a == 1 & (hLOCATION1 %in% c(...) | hLOCATION2 %in% c(...))",
+          "confidence": 0.3,
+          "reason": "A14a condition is explicit; off‑premise mapping unknown in datamap."
+        }
+      ],
+      "confidence": 0.2,
+      "reasoning": "The nested purchaser condition (A14a == 1) is clear and mappable. The missing piece is identification of the variable/value that indicates the looped occasion is 'off‑premise' for LOCATION1/LOCATION2. Datamap contains hLOCATION1/hLOCATION2 and many dLOCATIONr/hLOCATIONSr variables but no explicit mapping of codes to 'off‑premise'. Human review required.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_off_premise_block_filter",
+      "questionId": "A19",
+      "action": "filter",
+      "filterExpression": "",
+      "baseText": "Show A19 only when the occasion location is off‑premise AND A14a = 1 (respondent was purchaser)",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "A14a == 1 & (hLOCATION1 %in% c(...) | hLOCATION2 %in% c(...))",
+          "confidence": 0.3,
+          "reason": "A14a condition exists; off‑premise identification still needs specific code/value mapping from the survey implementation."
+        }
+      ],
+      "confidence": 0.2,
+      "reasoning": "As for the other questions in this block: A14a == 1 is a concrete nested condition present in the datamap. The high‑level condition 'location is off‑premise' cannot be reliably translated because the datamap does not specify which variable/value marks an off‑premise location for LOCATION1/LOCATION2. To avoid silently over‑ or under‑filtering, I leave the expression blank and request human review to identify the exact field(s) and values to use.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_a15_vodka_size_filter",
+      "questionId": "A15",
+      "action": "filter",
+      "filterExpression": "A4 == 7 & A14a_1 == 1",
+      "baseText": "Respondents who selected Vodka at A4 and indicated they purchased it themselves (A14a_1 = 1).",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "A4 == 7 & A14a_2 == 1",
+          "confidence": 0.55,
+          "reason": "If A15 is sometimes asked for Location 2 (purchase role captured in A14a_2). Datamap contains A14a_2 but no separate A4_2 variable name; use with caution."
+        },
+        {
+          "expression": "(A4 == 7 & A14a_1 == 1) | (A4 == 7 & A14a_2 == 1)",
+          "confidence": 0.45,
+          "reason": "Liberal interpretation: ask A15 when Vodka was selected and respondent indicated 'purchased it themselves' at either location. This may over-include if A4 here only applies to Location 1 in the datamap."
+        }
+      ],
+      "confidence": 0.9,
+      "reasoning": "Datamap includes A4 (values 1-15, where 7 = Vodka) and A14a_1 (values 1-4). A15 is the size question tied to the purchase at location 1, so the minimal and correct additional constraint is A4 == 7 & A14a_1 == 1.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a16_a17_a18_a19_purchaser_filters",
+      "questionId": "A16",
+      "action": "filter",
+      "filterExpression": "A14a_1 == 1",
+      "baseText": "Respondents who indicated they purchased the drink themselves (A14a = 1) — location 1",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "A14a_2 == 1",
+          "confidence": 0.7,
+          "reason": "If this instance of A16 refers to the second location's purchase block instead of the first. Datamap includes A14a_1 and A14a_2 (both 1=I went to the store/made the purchase myself)."
+        },
+        {
+          "expression": "(A14a_1 == 1) & (hPREMISE1 == 2)",
+          "confidence": 0.5,
+          "reason": "If the rule requires additionally that the location be 'off-premise' and hPREMISE1 encodes premise (unknown coding). This is speculative because the datamap doesn't document which hPREMISE value means off-premise."
+        }
+      ],
+      "confidence": 0.7,
+      "reasoning": "Datamap has A14a_1 and A14a_2 where value 1 = respondent purchased the drink themselves. The rule states A14a = 1 is required. The survey text references both location 1 and 2; which location maps to this table-level question is ambiguous. Minimal safe translation uses A14a_1 == 1. Because the rule also mentions 'off-premise block' but the datamap does not clearly document the encoding for off/on premise (only hPREMISE1/hPREMISE2 exist), I provide alternatives and flag for review.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_a16_a17_a18_a19_purchaser_filters",
+      "questionId": "A17",
+      "action": "filter",
+      "filterExpression": "A14a_1 == 1",
+      "baseText": "Respondents who indicated they purchased the drink themselves (A14a = 1) — location 1",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "A14a_2 == 1",
+          "confidence": 0.7,
+          "reason": "If A17 refers to the second location's purchase block instead of the first."
+        },
+        {
+          "expression": "(A14a_1 == 1) & (hPREMISE1 == 2)",
+          "confidence": 0.5,
+          "reason": "Optional addition of an 'off-premise' requirement using hPREMISE1; encoding for off-premise is not documented in the datamap so this is speculative."
+        }
+      ],
+      "confidence": 0.7,
+      "reasoning": "A17 is only asked when respondent purchased the drink (A14a = 1). Datamap contains A14a_1 and A14a_2. Minimal constraint is A14a_1 == 1. The 'off-premise block' requirement is unclear in datamap (hPREMISE* exist but values not documented), so alternatives are provided and human review is recommended.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_a16_a17_a18_a19_purchaser_filters",
+      "questionId": "A18",
+      "action": "filter",
+      "filterExpression": "A14a_1 == 1",
+      "baseText": "Respondents who indicated they purchased the drink themselves (A14a = 1) — location 1",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "A14a_2 == 1",
+          "confidence": 0.7,
+          "reason": "If A18 refers to the second location's purchase block instead of the first."
+        },
+        {
+          "expression": "(A14a_1 == 1) & (hPREMISE1 == 2)",
+          "confidence": 0.5,
+          "reason": "Adds an 'off-premise' constraint via hPREMISE1; datamap does not define which value represents off-premise so this is speculative."
+        }
+      ],
+      "confidence": 0.7,
+      "reasoning": "A18 is nested under A14a = 1 per the rule. The datamap shows A14a_1 and A14a_2; minimal defensible filter is A14a_1 == 1. Because the rule also references 'off-premise block' but the encoding is ambiguous, I include alternatives and request human review.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_a16_a17_a18_a19_purchaser_filters",
+      "questionId": "A19",
+      "action": "filter",
+      "filterExpression": "A14a_1 == 1",
+      "baseText": "Respondents who indicated they purchased the drink themselves (A14a = 1) — location 1",
+      "splits": [],
+      "alternatives": [
+        {
+          "expression": "A14a_2 == 1",
+          "confidence": 0.7,
+          "reason": "If A19 refers to the second location's purchase block instead of the first."
+        },
+        {
+          "expression": "(A14a_1 == 1) & (hPREMISE1 == 2)",
+          "confidence": 0.5,
+          "reason": "Optional addition of an 'off-premise' requirement using hPREMISE1; the datamap does not document the exact coding for off-premise."
+        }
+      ],
+      "confidence": 0.7,
+      "reasoning": "A19 is only asked when respondent was the purchaser (A14a = 1). Datamap contains A14a_1 and A14a_2; minimal filter uses A14a_1 == 1. The 'off-premise' aspect is ambiguous in the datamap (hPREMISE1/hPREMISE2 exist but coding unknown), so alternatives are provided and human review is recommended.",
+      "humanReviewRequired": true
+    },
+    {
+      "ruleId": "rule_a22_brand_attribute_filter",
+      "questionId": "A22",
+      "action": "filter",
+      "filterExpression": "(A21r1 == 1 | A21r2 == 1 | A21r3 == 1 | A21r4 == 1 | A21r5 == 1 | A21r6 == 1)",
+      "baseText": "Respondents who selected at least one brand in A21",
+      "splits": [
+        {
+          "rowVariables": [
+            "A22r1c1",
+            "A22r2c1",
+            "A22r3c1",
+            "A22r4c1",
+            "A22r5c1",
+            "A22r6c1",
+            "A22r7c1",
+            "A22r8c1",
+            "A22r9c1",
+            "A22r10c1"
+          ],
+          "filterExpression": "A21r1 == 1",
+          "baseText": "Show Tito's (brands selected in A21)",
+          "splitLabel": "Tito's Handmade Vodka"
+        },
+        {
+          "rowVariables": [
+            "A22r1c2",
+            "A22r2c2",
+            "A22r3c2",
+            "A22r4c2",
+            "A22r5c2",
+            "A22r6c2",
+            "A22r7c2",
+            "A22r8c2",
+            "A22r9c2",
+            "A22r10c2"
+          ],
+          "filterExpression": "A21r2 == 1",
+          "baseText": "Show Grey Goose (brands selected in A21)",
+          "splitLabel": "Grey Goose"
+        },
+        {
+          "rowVariables": [
+            "A22r1c3",
+            "A22r2c3",
+            "A22r3c3",
+            "A22r4c3",
+            "A22r5c3",
+            "A22r6c3",
+            "A22r7c3",
+            "A22r8c3",
+            "A22r9c3",
+            "A22r10c3"
+          ],
+          "filterExpression": "A21r3 == 1",
+          "baseText": "Show Ketel One (brands selected in A21)",
+          "splitLabel": "Ketel One"
+        },
+        {
+          "rowVariables": [
+            "A22r1c4",
+            "A22r2c4",
+            "A22r3c4",
+            "A22r4c4",
+            "A22r5c4",
+            "A22r6c4",
+            "A22r7c4",
+            "A22r8c4",
+            "A22r9c4",
+            "A22r10c4"
+          ],
+          "filterExpression": "A21r4 == 1",
+          "baseText": "Show Maker's Mark (brands selected in A21)",
+          "splitLabel": "Maker's Mark"
+        },
+        {
+          "rowVariables": [
+            "A22r1c5",
+            "A22r2c5",
+            "A22r3c5",
+            "A22r4c5",
+            "A22r5c5",
+            "A22r6c5",
+            "A22r7c5",
+            "A22r8c5",
+            "A22r9c5",
+            "A22r10c5"
+          ],
+          "filterExpression": "A21r5 == 1",
+          "baseText": "Show Casamigos (brands selected in A21)",
+          "splitLabel": "Casamigos"
+        },
+        {
+          "rowVariables": [
+            "A22r1c6",
+            "A22r2c6",
+            "A22r3c6",
+            "A22r4c6",
+            "A22r5c6",
+            "A22r6c6",
+            "A22r7c6",
+            "A22r8c6",
+            "A22r9c6",
+            "A22r10c6"
+          ],
+          "filterExpression": "A21r6 == 1",
+          "baseText": "Show Don Julio (brands selected in A21)",
+          "splitLabel": "Don Julio"
+        },
+        {
+          "rowVariables": [
+            "A22r1c7",
+            "A22r2c7",
+            "A22r3c7",
+            "A22r4c7",
+            "A22r5c7",
+            "A22r6c7",
+            "A22r7c7",
+            "A22r8c7",
+            "A22r9c7",
+            "A22r10c7"
+          ],
+          "filterExpression": "A21r7 == 1",
+          "baseText": "Show 'None of the above' column when selected in A21",
+          "splitLabel": "None of the above"
+        }
+      ],
+      "alternatives": [
+        {
+          "expression": "(A21r1 == 1 | A21r2 == 1 | A21r3 == 1 | A21r4 == 1 | A21r5 == 1 | A21r6 == 1 | A21r7 == 1)",
+          "confidence": 0.75,
+          "reason": "Less strict interpretation: treat A21r7 ('None of the above') as a valid 'selection' that could trigger A22. Usually 'None' means no brand selected, so primary excludes it."
+        },
+        {
+          "expression": "(A21r1 + A21r2 + A21r3 + A21r4 + A21r5 + A21r6) > 0",
+          "confidence": 0.8,
+          "reason": "Equivalent numeric-sum check; more concise but relies on treating binary flags as numeric. Some pipelines prefer explicit ORs."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Datamap contains A21r1..A21r7 (binary flags for brands including 'None of the above') and A22 grid variables A22r1c1..A22r10c7. The table-level requirement 'respondent selected at least one brand in A21' is best implemented as at least one of A21r1..A21r6 == 1 (exclude 'None of the above'). Row-level behavior is represented via splits mapping each A22 column (c1..c7) to the corresponding A21 flag. Expressions use exact variable names from the datamap.",
+      "humanReviewRequired": false
+    },
+    {
+      "ruleId": "rule_a23_consideration_rowlevel",
+      "questionId": "A23",
+      "action": "split",
+      "filterExpression": "",
+      "baseText": "Show each brand row only for respondents who selected that brand in A21",
+      "splits": [
+        {
+          "rowVariables": [
+            "A23r1"
+          ],
+          "filterExpression": "A21r1 == 1",
+          "baseText": "Those who selected Tito's Handmade Vodka at A21",
+          "splitLabel": "Tito's Handmade Vodka"
+        },
+        {
+          "rowVariables": [
+            "A23r2"
+          ],
+          "filterExpression": "A21r2 == 1",
+          "baseText": "Those who selected Grey Goose at A21",
+          "splitLabel": "Grey Goose"
+        },
+        {
+          "rowVariables": [
+            "A23r3"
+          ],
+          "filterExpression": "A21r3 == 1",
+          "baseText": "Those who selected Ketel One at A21",
+          "splitLabel": "Ketel One"
+        },
+        {
+          "rowVariables": [
+            "A23r4"
+          ],
+          "filterExpression": "A21r4 == 1",
+          "baseText": "Those who selected Maker's Mark at A21",
+          "splitLabel": "Maker's Mark"
+        },
+        {
+          "rowVariables": [
+            "A23r5"
+          ],
+          "filterExpression": "A21r5 == 1",
+          "baseText": "Those who selected Casamigos at A21",
+          "splitLabel": "Casamigos"
+        },
+        {
+          "rowVariables": [
+            "A23r6"
+          ],
+          "filterExpression": "A21r6 == 1",
+          "baseText": "Those who selected Don Julio at A21",
+          "splitLabel": "Don Julio"
+        }
+      ],
+      "alternatives": [
+        {
+          "expression": "A21r1 > 0",
+          "confidence": 0.8,
+          "reason": "Equivalent for integer binary flags (0/1); some pipelines prefer > 0 for 'selected' checks."
+        },
+        {
+          "expression": "A21r1 %in% c(1)",
+          "confidence": 0.7,
+          "reason": "Syntactically equivalent but more verbose; shown as an alternative pattern."
+        }
+      ],
+      "confidence": 0.95,
+      "reasoning": "Datamap contains A23r1..A23r6 (rows) and corresponding A21r1..A21r6 binary_flag variables (0/1). The minimal, precise condition is to show each A23 row when its matching A21rX == 1. The rule also implies that if A21r7 (None of the above) is selected, none of the brand rows will be shown — this is naturally handled because none of A21r1..A21r6 would be 1.",
+      "humanReviewRequired": false
+    }
+  ]
+}

@@ -356,6 +356,14 @@ export function generateRScriptV2WithValidation(
   // -------------------------------------------------------------------------
   generateCutsDefinition(lines, cuts, cutGroups, totalStatLetter);
 
+  // Copy stat letters for stacked loop frames (must come AFTER cut_stat_letters is defined)
+  if (loopMappings.length > 0) {
+    for (const mapping of loopMappings) {
+      lines.push(`cut_stat_letters_${mapping.stackedFrameName} <- cut_stat_letters`);
+    }
+    lines.push('');
+  }
+
   // -------------------------------------------------------------------------
   // Helper Functions
   // -------------------------------------------------------------------------
@@ -511,8 +519,7 @@ function generateStackingPreamble(
     lines.push(')');
     lines.push('');
 
-    // Stat letters for stacked cuts (same as main)
-    lines.push(`cut_stat_letters_${frameName} <- cut_stat_letters`);
+    // NOTE: cut_stat_letters_${frameName} is assigned AFTER cut_stat_letters is defined (see below)
     lines.push('');
   }
 }

@@ -11,7 +11,7 @@
  * Pure functions, no I/O.
  */
 
-import type { LoopDetectionResult } from './types';
+import type { LoopDetectionResult, LoopGroup } from './types';
 import type { VerboseDataMap } from '../processors/DataMapProcessor';
 
 // =============================================================================
@@ -102,6 +102,41 @@ export function cleanLabel(label: string, originalVarName: string): string {
 }
 
 /**
+ * Merge LoopGroups that share identical iteration values into unified groups.
+ * Different skeletons (A-N-_-N vs A-N-_-N-r-N) are fine — they all stack the
+ * same way once you know the iterator position. The skeleton-level detection is
+ * an internal detail; the output should be one group per unique iteration set.
+ */
+export function mergeLoopGroups(loops: LoopGroup[]): LoopGroup[] {
+  // Group by sorted iteration values (e.g., "1,2")
+  const byIterations = new Map<string, LoopGroup[]>();
+  for (const loop of loops) {
+    const key = [...loop.iterations].sort((a, b) => +a - +b).join(',');
+    const existing = byIterations.get(key) || [];
+    existing.push(loop);
+    byIterations.set(key, existing);
+  }
+
+  // Merge groups with same iterations
+  const merged: LoopGroup[] = [];
+  for (const [, groups] of byIterations) {
+    if (groups.length === 1) {
+      merged.push(groups[0]);
+    } else {
+      merged.push({
+        skeleton: groups.map(g => g.skeleton).join(' + '),  // Informational only
+        iteratorPosition: groups[0].iteratorPosition,        // Not used downstream
+        iterations: groups[0].iterations,                    // Same for all
+        bases: groups.flatMap(g => g.bases),
+        variables: groups.flatMap(g => g.variables),
+        diversity: groups.reduce((sum, g) => sum + g.diversity, 0),
+      });
+    }
+  }
+  return merged;
+}
+
+/**
  * Collapse loop variables in the datamap into single base entries.
  *
  * For each LoopGroup detected by LoopDetector:
@@ -126,6 +161,9 @@ export function collapseLoopVariables(
     };
   }
 
+  // Merge skeleton-based groups that share the same iteration values
+  const mergedLoops = mergeLoopGroups(loopDetection.loops);
+
   // Build lookup: column name → verbose variable
   const varByColumn = new Map<string, VerboseDataMap>();
   for (const v of verboseDataMap) {
@@ -137,9 +175,9 @@ export function collapseLoopVariables(
   const baseNameToLoopIndex = new Map<string, number>();
   const loopMappings: LoopGroupMapping[] = [];
 
-  // Process each loop group
-  for (let loopIdx = 0; loopIdx < loopDetection.loops.length; loopIdx++) {
-    const loop = loopDetection.loops[loopIdx];
+  // Process each (merged) loop group
+  for (let loopIdx = 0; loopIdx < mergedLoops.length; loopIdx++) {
+    const loop = mergedLoops[loopIdx];
     const stackedFrameName = `stacked_loop_${loopIdx + 1}`;
 
     const variableMappings: LoopVariableMapping[] = [];

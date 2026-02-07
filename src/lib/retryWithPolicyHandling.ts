@@ -8,8 +8,10 @@
 export interface RetryOptions {
   /** Maximum number of attempts (default: 3) */
   maxAttempts?: number;
-  /** Delay between retries in milliseconds (default: 2000) */
+  /** Delay between retries in milliseconds (default: 2000, rate limits use 15000) */
   delayMs?: number;
+  /** Delay for rate limit errors in milliseconds (default: 15000) */
+  rateLimitDelayMs?: number;
   /** Callback invoked on each retry attempt */
   onRetry?: (attempt: number, error: Error) => void;
   /** AbortSignal to cancel retries */
@@ -45,7 +47,7 @@ const POLICY_ERROR_PATTERNS = [
 
 /**
  * Patterns that indicate a transient/retryable error (not policy, but still worth retrying).
- * Includes null output, timeouts, and server errors.
+ * Includes null output, timeouts, rate limits, and server errors.
  */
 const RETRYABLE_ERROR_PATTERNS = [
   'invalid output',
@@ -55,6 +57,10 @@ const RETRYABLE_ERROR_PATTERNS = [
   'econnrefused',
   'socket hang up',
   'network error',
+  '429',
+  'rate limit',
+  'too many requests',
+  'throttl',
   '502',
   '503',
   '504',
@@ -62,6 +68,17 @@ const RETRYABLE_ERROR_PATTERNS = [
   'bad gateway',
   'gateway timeout',
 ];
+
+/**
+ * Check if an error is a rate limit error (needs longer backoff).
+ */
+export function isRateLimitError(error: unknown): boolean {
+  if (!error) return false;
+  const message = error instanceof Error
+    ? error.message.toLowerCase()
+    : String(error).toLowerCase();
+  return message.includes('429') || message.includes('rate limit') || message.includes('too many requests') || message.includes('throttl');
+}
 
 /**
  * Check if an error is a content policy/moderation error.
@@ -140,7 +157,8 @@ export async function retryWithPolicyHandling<T>(
   options?: RetryOptions
 ): Promise<RetryResult<T>> {
   const maxAttempts = options?.maxAttempts ?? 3;
-  const delayMs = options?.delayMs ?? 2000;
+  const baseDelayMs = options?.delayMs ?? 2000;
+  const rateLimitDelayMs = options?.rateLimitDelayMs ?? 15000;
   const onRetry = options?.onRetry;
   const abortSignal = options?.abortSignal;
 
@@ -171,7 +189,7 @@ export async function retryWithPolicyHandling<T>(
       wasPolicyError = isPolicyError(error);
       const retryable = isRetryableError(error);
 
-      // Only retry on retryable errors (policy errors, transient failures, null output)
+      // Only retry on retryable errors (policy errors, transient failures, rate limits)
       if (!retryable) {
         return {
           success: false,
@@ -188,6 +206,12 @@ export async function retryWithPolicyHandling<T>(
 
       // Notify about retry
       onRetry?.(attempt, lastError);
+
+      // Use longer delay for rate limits, exponential backoff for others
+      const rateLimit = isRateLimitError(error);
+      const delayMs = rateLimit
+        ? rateLimitDelayMs * attempt  // 15s, 30s, 45s for rate limits
+        : baseDelayMs * attempt;      // 2s, 4s, 6s for others
 
       // Wait before retrying
       try {

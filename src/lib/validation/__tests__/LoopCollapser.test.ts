@@ -4,6 +4,7 @@ import {
   resolveBaseToColumn,
   cleanLabel,
   collapseLoopVariables,
+  mergeLoopGroups,
 } from '../LoopCollapser';
 import type { LoopDetectionResult } from '../types';
 import type { VerboseDataMap } from '../../processors/DataMapProcessor';
@@ -342,5 +343,173 @@ describe('collapseLoopVariables', () => {
     const collapsedA1 = result.collapsedDataMap.find(v => v.column === 'A1')!;
     expect(collapsedA1.answerOptions).toBe('1=Poor, 2=Fair, 3=Good, 4=Excellent');
     expect(collapsedA1.normalizedType).toBe('ordinal_scale');
+  });
+
+  it('merges skeleton groups with same iterations into one stacked frame', () => {
+    // Simulates Tito's dataset: 3 different skeleton patterns, all with iterations ['1', '2']
+    const vars = [
+      // Skeleton 1: A-N-_-N (simple loop vars like A1_1, A1_2)
+      makeVar('A1_1', 'Rate drink 1'), makeVar('A2_1', 'Describe drink 1'),
+      makeVar('A3_1', 'Score drink 1'),
+      makeVar('A1_2', 'Rate drink 2'), makeVar('A2_2', 'Describe drink 2'),
+      makeVar('A3_2', 'Score drink 2'),
+      // Skeleton 2: A-N-_-N-r-N (grid+loop vars like A9_1r1, A9_2r1)
+      makeVar('A9_1r1', 'A9_1r1: Grid attr 1'), makeVar('A9_1r2', 'A9_1r2: Grid attr 2'),
+      makeVar('A9_1r3', 'A9_1r3: Grid attr 3'),
+      makeVar('A9_2r1', 'A9_2r1: Grid attr 1'), makeVar('A9_2r2', 'A9_2r2: Grid attr 2'),
+      makeVar('A9_2r3', 'A9_2r3: Grid attr 3'),
+      // Skeleton 3: hCHANNEL-_-N-r-N (named prefix)
+      makeVar('hCHANNEL_1r1', 'Channel 1 attr 1'), makeVar('hCHANNEL_1r2', 'Channel 1 attr 2'),
+      makeVar('hCHANNEL_1r3', 'Channel 1 attr 3'),
+      makeVar('hCHANNEL_2r1', 'Channel 2 attr 1'), makeVar('hCHANNEL_2r2', 'Channel 2 attr 2'),
+      makeVar('hCHANNEL_2r3', 'Channel 2 attr 3'),
+    ];
+
+    const detection: LoopDetectionResult = {
+      hasLoops: true,
+      loops: [
+        {
+          skeleton: 'A-N-_-N',
+          iteratorPosition: 3,
+          iterations: ['1', '2'],
+          bases: ['A1_*', 'A2_*', 'A3_*'],
+          variables: ['A1_1', 'A2_1', 'A3_1', 'A1_2', 'A2_2', 'A3_2'],
+          diversity: 3,
+        },
+        {
+          skeleton: 'A-N-_-N-r-N',
+          iteratorPosition: 3,
+          iterations: ['1', '2'],
+          bases: ['A9_*r1', 'A9_*r2', 'A9_*r3'],
+          variables: ['A9_1r1', 'A9_1r2', 'A9_1r3', 'A9_2r1', 'A9_2r2', 'A9_2r3'],
+          diversity: 3,
+        },
+        {
+          skeleton: 'hCHANNEL-_-N-r-N',
+          iteratorPosition: 3,
+          iterations: ['1', '2'],
+          bases: ['hCHANNEL_*r1', 'hCHANNEL_*r2', 'hCHANNEL_*r3'],
+          variables: ['hCHANNEL_1r1', 'hCHANNEL_1r2', 'hCHANNEL_1r3', 'hCHANNEL_2r1', 'hCHANNEL_2r2', 'hCHANNEL_2r3'],
+          diversity: 3,
+        },
+      ],
+      nonLoopVariables: [],
+    };
+
+    const result = collapseLoopVariables(vars, detection);
+
+    // All 3 skeleton groups share iterations ['1', '2'] → merged into 1 stacked frame
+    expect(result.loopMappings).toHaveLength(1);
+    expect(result.loopMappings[0].stackedFrameName).toBe('stacked_loop_1');
+    expect(result.loopMappings[0].iterations).toEqual(['1', '2']);
+
+    // Should have 9 collapsed variables (A1, A2, A3, A9r1, A9r2, A9r3, hCHANNELr1, hCHANNELr2, hCHANNELr3)
+    expect(result.loopMappings[0].variables).toHaveLength(9);
+
+    // All base names should map to loop index 0
+    expect(result.baseNameToLoopIndex.get('A1')).toBe(0);
+    expect(result.baseNameToLoopIndex.get('A9r1')).toBe(0);
+    expect(result.baseNameToLoopIndex.get('hCHANNELr1')).toBe(0);
+
+    // Skeleton is combined for debugging
+    expect(result.loopMappings[0].skeleton).toContain(' + ');
+
+    // Collapsed datamap should have 9 entries
+    expect(result.collapsedDataMap).toHaveLength(9);
+  });
+
+  it('keeps groups with different iterations separate', () => {
+    const vars = [
+      // Group 1: iterations ['1', '2']
+      makeVar('A1_1', 'Q1 iter 1'), makeVar('A2_1', 'Q2 iter 1'),
+      makeVar('A3_1', 'Q3 iter 1'),
+      makeVar('A1_2', 'Q1 iter 2'), makeVar('A2_2', 'Q2 iter 2'),
+      makeVar('A3_2', 'Q3 iter 2'),
+      // Group 2: iterations ['1', '2', '3']
+      makeVar('B1_1', 'B1 iter 1'), makeVar('B2_1', 'B2 iter 1'),
+      makeVar('B3_1', 'B3 iter 1'),
+      makeVar('B1_2', 'B1 iter 2'), makeVar('B2_2', 'B2 iter 2'),
+      makeVar('B3_2', 'B3 iter 2'),
+      makeVar('B1_3', 'B1 iter 3'), makeVar('B2_3', 'B2 iter 3'),
+      makeVar('B3_3', 'B3 iter 3'),
+    ];
+
+    const detection: LoopDetectionResult = {
+      hasLoops: true,
+      loops: [
+        {
+          skeleton: 'A-N-_-N',
+          iteratorPosition: 3,
+          iterations: ['1', '2'],
+          bases: ['A1_*', 'A2_*', 'A3_*'],
+          variables: ['A1_1', 'A2_1', 'A3_1', 'A1_2', 'A2_2', 'A3_2'],
+          diversity: 3,
+        },
+        {
+          skeleton: 'B-N-_-N',
+          iteratorPosition: 3,
+          iterations: ['1', '2', '3'],
+          bases: ['B1_*', 'B2_*', 'B3_*'],
+          variables: ['B1_1', 'B2_1', 'B3_1', 'B1_2', 'B2_2', 'B3_2', 'B1_3', 'B2_3', 'B3_3'],
+          diversity: 3,
+        },
+      ],
+      nonLoopVariables: [],
+    };
+
+    const result = collapseLoopVariables(vars, detection);
+
+    // Different iteration sets → stay as 2 separate stacked frames
+    expect(result.loopMappings).toHaveLength(2);
+    expect(result.loopMappings[0].stackedFrameName).toBe('stacked_loop_1');
+    expect(result.loopMappings[1].stackedFrameName).toBe('stacked_loop_2');
+    expect(result.loopMappings[0].iterations).toEqual(['1', '2']);
+    expect(result.loopMappings[1].iterations).toEqual(['1', '2', '3']);
+  });
+});
+
+// =============================================================================
+// mergeLoopGroups (unit tests)
+// =============================================================================
+
+describe('mergeLoopGroups', () => {
+  it('merges groups with identical iterations', () => {
+    const loops: import('../types').LoopGroup[] = [
+      { skeleton: 'A-N-_-N', iteratorPosition: 3, iterations: ['1', '2'], bases: ['A1_*', 'A2_*'], variables: ['A1_1', 'A2_1', 'A1_2', 'A2_2'], diversity: 2 },
+      { skeleton: 'A-N-_-N-r-N', iteratorPosition: 3, iterations: ['1', '2'], bases: ['A9_*r1'], variables: ['A9_1r1', 'A9_2r1'], diversity: 1 },
+      { skeleton: 'hCHANNEL-_-N-r-N', iteratorPosition: 3, iterations: ['1', '2'], bases: ['hCHANNEL_*r1'], variables: ['hCHANNEL_1r1', 'hCHANNEL_2r1'], diversity: 1 },
+    ];
+
+    const merged = mergeLoopGroups(loops);
+    expect(merged).toHaveLength(1);
+    expect(merged[0].bases).toHaveLength(4); // A1_*, A2_*, A9_*r1, hCHANNEL_*r1
+    expect(merged[0].variables).toHaveLength(8); // 4 + 2 + 2
+    expect(merged[0].iterations).toEqual(['1', '2']);
+    expect(merged[0].skeleton).toBe('A-N-_-N + A-N-_-N-r-N + hCHANNEL-_-N-r-N');
+    expect(merged[0].diversity).toBe(4); // 2 + 1 + 1
+  });
+
+  it('leaves groups with different iterations separate', () => {
+    const loops: import('../types').LoopGroup[] = [
+      { skeleton: 'A-N-_-N', iteratorPosition: 3, iterations: ['1', '2'], bases: ['A1_*'], variables: ['A1_1', 'A1_2'], diversity: 1 },
+      { skeleton: 'B-N-_-N', iteratorPosition: 3, iterations: ['1', '2', '3'], bases: ['B1_*'], variables: ['B1_1', 'B1_2', 'B1_3'], diversity: 1 },
+    ];
+
+    const merged = mergeLoopGroups(loops);
+    expect(merged).toHaveLength(2);
+  });
+
+  it('returns single group unchanged', () => {
+    const loops: import('../types').LoopGroup[] = [
+      { skeleton: 'A-N-_-N', iteratorPosition: 3, iterations: ['1', '2'], bases: ['A1_*'], variables: ['A1_1', 'A1_2'], diversity: 1 },
+    ];
+
+    const merged = mergeLoopGroups(loops);
+    expect(merged).toHaveLength(1);
+    expect(merged[0]).toBe(loops[0]); // Same reference, not copied
+  });
+
+  it('returns empty array for empty input', () => {
+    expect(mergeLoopGroups([])).toEqual([]);
   });
 });

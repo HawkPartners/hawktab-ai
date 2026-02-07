@@ -1,0 +1,356 @@
+{
+  "totalTables": 62,
+  "passedFirstTime": 44,
+  "fixedAfterRetry": 0,
+  "excluded": 19,
+  "entries": [
+    {
+      "tableId": "s1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s2",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s2_binned",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s3",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s5",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s6",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s6a",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s7",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s8",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s8_dist_binned",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s9",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s10a",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s10b",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s10c",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s11a",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s11b",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "s11c",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a20",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a21",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_approachable",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_authentic",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_bold",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_down_to_earth",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_edgy",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_generous",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_independent",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_premium",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_reliable",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a22_sophisticated_refined",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_casamigos",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_don_julio",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_grey_goose",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_grey_goose_detail_keep_original",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_ketel_one",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_maker_s_mark",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a23_tito_s_handmade_vodka",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "c3",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a13a_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a13a_2",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a14a_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a14a_2",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a14b_1",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a14b_2",
+      "retryAttempts": 0,
+      "finalStatus": "passed"
+    },
+    {
+      "tableId": "a2",
+      "originalError": "Variable 'A2' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "Variable 'A2' not found"
+    },
+    {
+      "tableId": "a3",
+      "originalError": "Variable 'A3' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "Variable 'A3' not found"
+    },
+    {
+      "tableId": "a4",
+      "originalError": "Variable 'A4' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "Variable 'A4' not found"
+    },
+    {
+      "tableId": "a5",
+      "originalError": "Variable 'A5' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "Variable 'A5' not found"
+    },
+    {
+      "tableId": "a6",
+      "originalError": "Variable 'A6' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "Variable 'A6' not found"
+    },
+    {
+      "tableId": "a8",
+      "originalError": "Variable 'A8' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "Variable 'A8' not found"
+    },
+    {
+      "tableId": "a10",
+      "originalError": "Variable 'A10' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "Variable 'A10' not found"
+    },
+    {
+      "tableId": "a10_distribution",
+      "originalError": "Variable 'A10' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "Variable 'A10' not found"
+    },
+    {
+      "tableId": "a11",
+      "originalError": "Variable 'A11' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "Variable 'A11' not found"
+    },
+    {
+      "tableId": "a13",
+      "originalError": "Variable 'A13' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "Variable 'A13' not found"
+    },
+    {
+      "tableId": "a15",
+      "originalError": "Variable 'A15' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "Variable 'A15' not found"
+    },
+    {
+      "tableId": "a18",
+      "originalError": "Variable 'A18' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "Variable 'A18' not found"
+    },
+    {
+      "tableId": "a13b_1",
+      "originalError": "NET component variable 'A13br1' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "NET component variable 'A13br1' not found"
+    },
+    {
+      "tableId": "a16_1",
+      "originalError": "NET component variable 'A16r1' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "NET component variable 'A16r1' not found"
+    },
+    {
+      "tableId": "a17_1",
+      "originalError": "NET component variable 'A17r1' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "NET component variable 'A17r1' not found"
+    },
+    {
+      "tableId": "a19_1",
+      "originalError": "NET component variable 'A19r1' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "NET component variable 'A19r1' not found"
+    },
+    {
+      "tableId": "a7_1",
+      "originalError": "NET component variable 'A7r1' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "NET component variable 'A7r1' not found"
+    },
+    {
+      "tableId": "a9_1",
+      "originalError": "Variable 'A9r1' not found",
+      "retryAttempts": 3,
+      "finalStatus": "excluded",
+      "excludeReason": "Variable 'A9r1' not found"
+    }
+  ],
+  "timestamp": "2026-02-07T04:25:07.849Z",
+  "durationMs": 927456
+}

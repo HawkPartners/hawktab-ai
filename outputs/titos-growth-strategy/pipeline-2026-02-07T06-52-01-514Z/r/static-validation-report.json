@@ -1,0 +1,38 @@
+{
+  "totalTables": 60,
+  "validTables": 60,
+  "invalidTables": 0,
+  "skippedTables": [],
+  "warnings": [
+    {
+      "tableId": "s10b",
+      "valid": true,
+      "errors": [],
+      "warnings": [
+        "Row 6: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\".",
+        "Row 11: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\".",
+        "Row 16: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\".",
+        "Row 20: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\".",
+        "Row 24: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\".",
+        "Row 29: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\".",
+        "Row 33: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\".",
+        "Row 38: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\"."
+      ]
+    },
+    {
+      "tableId": "s11b",
+      "valid": true,
+      "errors": [],
+      "warnings": [
+        "Row 6: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\".",
+        "Row 11: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\".",
+        "Row 16: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\".",
+        "Row 20: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\".",
+        "Row 23: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\".",
+        "Row 28: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\".",
+        "Row 32: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\".",
+        "Row 38: Duplicate variable/filterValue combination \"_CAT_:_HEADER_\"."
+      ]
+    }
+  ]
+}

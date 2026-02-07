@@ -10,6 +10,13 @@
  * 3. Group variables by skeleton
  * 4. For each numeric position, compute diversity (unique bases per iteration value)
  * 5. Iterator = position with highest diversity (>= 3 unique bases, >= 2 iterations)
+ *
+ * NOTE: The detector groups by skeleton pattern (naming structure). These
+ * skeleton-based groups are INTERNAL — they help identify the iterator
+ * position for each naming pattern. LoopCollapser.mergeLoopGroups() then
+ * merges groups with the same iteration values into a single unified group
+ * for R script generation. Do NOT rely on skeleton groups as the final
+ * loop structure.
  */
 
 import type { Token, LoopGroup, LoopDetectionResult } from './types';

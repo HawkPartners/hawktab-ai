@@ -15,7 +15,9 @@ import type { CutDefinition } from '../tables/CutsSpec';
 import {
   escapeRString,
   sanitizeVarName,
+  generateStackingPreamble,
 } from './RScriptGeneratorV2';
+import type { LoopGroupMapping } from '../validation/LoopCollapser';
 
 // =============================================================================
 // Types
@@ -43,7 +45,8 @@ export function generateValidationScript(
   tables: ExtendedTableDefinition[],
   cuts: CutDefinition[],
   dataFilePath: string = 'dataFile.sav',
-  outputPath: string = 'validation-results.json'
+  outputPath: string = 'validation-results.json',
+  loopMappings: LoopGroupMapping[] = []
 ): ValidationScriptResult {
   const lines: string[] = [];
   const tableIds: string[] = [];
@@ -76,6 +79,13 @@ export function generateValidationScript(
   lines.push(`data <- read_sav("${dataFilePath}")`);
   lines.push('print(paste("Loaded", nrow(data), "rows and", ncol(data), "columns"))');
   lines.push('');
+
+  // -------------------------------------------------------------------------
+  // Loop Stacking (if loops detected)
+  // -------------------------------------------------------------------------
+  if (loopMappings.length > 0) {
+    generateStackingPreamble(lines, loopMappings, cuts);
+  }
 
   // -------------------------------------------------------------------------
   // Cuts Definition
@@ -136,7 +146,8 @@ export function generateSingleTableValidationScript(
   table: ExtendedTableDefinition,
   cuts: CutDefinition[],
   dataFilePath: string = 'dataFile.sav',
-  outputPath: string = 'single-validation-result.json'
+  outputPath: string = 'single-validation-result.json',
+  loopMappings: LoopGroupMapping[] = []
 ): SingleTableValidationResult {
   const lines: string[] = [];
 
@@ -161,6 +172,17 @@ export function generateSingleTableValidationScript(
   // -------------------------------------------------------------------------
   lines.push(`data <- read_sav("${dataFilePath}")`);
   lines.push('');
+
+  // -------------------------------------------------------------------------
+  // Loop Stacking (if this table uses a loop frame)
+  // -------------------------------------------------------------------------
+  if (table.loopDataFrame && loopMappings.length > 0) {
+    // Only generate stacking for the specific loop group this table needs
+    const neededMapping = loopMappings.find(m => m.stackedFrameName === table.loopDataFrame);
+    if (neededMapping) {
+      generateStackingPreamble(lines, [neededMapping], cuts);
+    }
+  }
 
   // -------------------------------------------------------------------------
   // Cuts Definition (minimal)
@@ -197,9 +219,10 @@ export function generateSingleTableValidationScript(
 function generateTableValidation(lines: string[], table: ExtendedTableDefinition): void {
   const tableId = escapeRString(table.tableId);
   const varName = sanitizeVarName(table.tableId);
+  const frameName = table.loopDataFrame || 'data';
 
   lines.push(`# -----------------------------------------------------------------------------`);
-  lines.push(`# Table: ${table.tableId} (${table.tableType})`);
+  lines.push(`# Table: ${table.tableId} (${table.tableType})${table.loopDataFrame ? ` [loop: ${table.loopDataFrame}]` : ''}`);
   lines.push(`# -----------------------------------------------------------------------------`);
   lines.push('');
 
@@ -207,9 +230,9 @@ function generateTableValidation(lines: string[], table: ExtendedTableDefinition
   lines.push('');
 
   if (table.tableType === 'frequency') {
-    generateFrequencyTableValidation(lines, table, varName);
+    generateFrequencyTableValidation(lines, table, varName, frameName);
   } else if (table.tableType === 'mean_rows') {
-    generateMeanRowsTableValidation(lines, table, varName);
+    generateMeanRowsTableValidation(lines, table, varName, frameName);
   }
 
   lines.push('');
@@ -226,7 +249,8 @@ function generateTableValidation(lines: string[], table: ExtendedTableDefinition
 function generateFrequencyTableValidation(
   lines: string[],
   table: ExtendedTableDefinition,
-  _varName: string
+  _varName: string,
+  frameName: string = 'data'
 ): void {
   // For each row, validate that the variable exists and filterValue works
   for (let i = 0; i < table.rows.length; i++) {
@@ -248,12 +272,12 @@ function generateFrequencyTableValidation(
       lines.push(`  # Row ${i + 1}: NET - ${row.label}`);
       for (const comp of row.netComponents) {
         const compEscaped = escapeRString(comp);
-        lines.push(`  if (!("${compEscaped}" %in% names(data))) stop("NET component variable '${compEscaped}' not found")`);
+        lines.push(`  if (!("${compEscaped}" %in% names(${frameName}))) stop("NET component variable '${compEscaped}' not found")`);
       }
     } else {
       // Standard row: validate variable exists and filterValue is valid
       lines.push(`  # Row ${i + 1}: ${row.variable} == ${filterValue}`);
-      lines.push(`  if (!("${varNameEscaped}" %in% names(data))) stop("Variable '${varNameEscaped}' not found")`);
+      lines.push(`  if (!("${varNameEscaped}" %in% names(${frameName}))) stop("Variable '${varNameEscaped}' not found")`);
 
       // Check for range pattern (e.g., "0-4", "10-35")
       const rangeMatch = filterValue.match(/^(\d+)-(\d+)$/);
@@ -264,13 +288,13 @@ function generateFrequencyTableValidation(
       if (rangeMatch) {
         // Range validation
         const [, minVal, maxVal] = rangeMatch;
-        lines.push(`  test_val <- sum(as.numeric(data[["${varNameEscaped}"]]) >= ${minVal} & as.numeric(data[["${varNameEscaped}"]]) <= ${maxVal}, na.rm = TRUE)`);
+        lines.push(`  test_val <- sum(as.numeric(${frameName}[["${varNameEscaped}"]]) >= ${minVal} & as.numeric(${frameName}[["${varNameEscaped}"]]) <= ${maxVal}, na.rm = TRUE)`);
       } else if (hasMultipleValues) {
         // Multiple values validation
-        lines.push(`  test_val <- sum(as.numeric(data[["${varNameEscaped}"]]) %in% c(${filterValues.join(', ')}), na.rm = TRUE)`);
+        lines.push(`  test_val <- sum(as.numeric(${frameName}[["${varNameEscaped}"]]) %in% c(${filterValues.join(', ')}), na.rm = TRUE)`);
       } else if (filterValue && filterValue.trim() !== '') {
         // Single value validation - try numeric conversion
-        lines.push(`  test_val <- sum(as.numeric(data[["${varNameEscaped}"]]) == ${filterValue}, na.rm = TRUE)`);
+        lines.push(`  test_val <- sum(as.numeric(${frameName}[["${varNameEscaped}"]]) == ${filterValue}, na.rm = TRUE)`);
       }
     }
   }
@@ -279,7 +303,8 @@ function generateFrequencyTableValidation(
 function generateMeanRowsTableValidation(
   lines: string[],
   table: ExtendedTableDefinition,
-  _varName: string
+  _varName: string,
+  frameName: string = 'data'
 ): void {
   // For mean_rows, validate that all variables exist and are numeric-like
   for (let i = 0; i < table.rows.length; i++) {
@@ -294,8 +319,8 @@ function generateMeanRowsTableValidation(
       lines.push(`  # Row ${i + 1}: NET - ${row.label} (sum of component means)`);
       for (const comp of row.netComponents) {
         const compEscaped = escapeRString(comp);
-        lines.push(`  if (!("${compEscaped}" %in% names(data))) stop("NET component variable '${compEscaped}' not found")`);
-        lines.push(`  test_vals <- data[["${compEscaped}"]]`);
+        lines.push(`  if (!("${compEscaped}" %in% names(${frameName}))) stop("NET component variable '${compEscaped}' not found")`);
+        lines.push(`  test_vals <- ${frameName}[["${compEscaped}"]]`);
         lines.push(`  if (!is.numeric(test_vals) && !inherits(test_vals, "haven_labelled")) {`);
         lines.push(`    stop("NET component '${compEscaped}' is not numeric (type: ", class(test_vals)[1], ")")`);
         lines.push(`  }`);
@@ -303,8 +328,8 @@ function generateMeanRowsTableValidation(
     } else {
       // Standard row: validate variable exists and is numeric
       lines.push(`  # Row ${i + 1}: ${row.variable} (mean)`);
-      lines.push(`  if (!("${varNameEscaped}" %in% names(data))) stop("Variable '${varNameEscaped}' not found")`);
-      lines.push(`  test_vals <- data[["${varNameEscaped}"]]`);
+      lines.push(`  if (!("${varNameEscaped}" %in% names(${frameName}))) stop("Variable '${varNameEscaped}' not found")`);
+      lines.push(`  test_vals <- ${frameName}[["${varNameEscaped}"]]`);
       lines.push(`  if (!is.numeric(test_vals) && !inherits(test_vals, "haven_labelled")) {`);
       lines.push(`    stop("Variable '${varNameEscaped}' is not numeric (type: ", class(test_vals)[1], ")")`);
       lines.push(`  }`);

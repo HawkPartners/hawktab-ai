@@ -238,7 +238,7 @@ Please carefully review the error message and the datamap context above, then re
         if (checkAbortError(err)) {
           throw err;
         }
-        console.warn(`[VerificationAgent] Retry ${attempt}/3 for table "${input.table.tableId}": ${err.message}`);
+        console.warn(`[VerificationAgent] Retry ${attempt}/3 for table "${input.table.tableId}": ${err.message.substring(0, 120)}`);
       },
     }
   );

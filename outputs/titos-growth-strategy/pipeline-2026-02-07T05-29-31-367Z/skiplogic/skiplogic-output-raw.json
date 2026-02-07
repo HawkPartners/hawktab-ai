@@ -1,0 +1,236 @@
+{
+  "rules": [
+    {
+      "ruleId": "rule_s6a_hispanic_filter",
+      "surveyText": "**ASK IF S6=1**\n\nFamily Origin\n\nS6a. Which of the following best describes your family’s country or region of origin? _Select all that apply._",
+      "appliesTo": [
+        "S6a"
+      ],
+      "plainTextRule": "Only ask S6a (Family Origin) of respondents who answered \"Yes\" to S6 (Are you of Hispanic or Latino origin?).",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent must have answered S6 = 1 (Yes).",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_s10b_subcategory_filter",
+      "surveyText": "JTBD1\n\nS10b. You said your reason for having a drink **[INSERT LOCATION 1]** in the past week was best described as **[INSERT S10a WITH LOWERCASE “a” AT THE BEGGINNING OF THE ANSWER CHOICE]**. More specifically, what best describes that moment? _Select one._\n\n**PN: SHOW RESPONSES BASED ON S10a SELECTION. DO NOT SHOW HEADERS.** **RANDOMIZE** **KEEPING SUBCATEGORIES WITHIN A HEADING TOGETHER**",
+      "appliesTo": [
+        "S10b"
+      ],
+      "plainTextRule": "Show only the S10b response options that correspond to the category the respondent selected in S10a. (S10b is a follow-up with subcategory choices filtered by the S10a selection.)",
+      "ruleType": "row-level",
+      "conditionDescription": "Each S10b item is shown only when that item belongs to the subcategory selected at S10a.",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_s11b_subcategory_filter",
+      "surveyText": "JTB2\n\nS11b. You said your reason for having a drink **[INSERT LOCATION 2]** in the past week was primarily described as **[INSERT S11a WITH LOWERCASE “a” AT BEGINNING OF ANSWER CHOICE]**. More specifically, how would you describe that moment? _Select one._\n\n**PN: SHOW RESPONSES BASED ON S11a SELECTION (SAME LIST PROVIDED AT S10B). DO NOT SHOW HEADERS.** **RANDOMIZE** **KEEPING SUBCATEGORIES WITHIN A HEADING TOGETHER**",
+      "appliesTo": [
+        "S11b"
+      ],
+      "plainTextRule": "Show only the S11b response options that correspond to the category the respondent selected in S11a. (S11b is a follow-up with subcategory choices filtered by the S11a selection.)",
+      "ruleType": "row-level",
+      "conditionDescription": "Each S11b item is shown only when that item belongs to the subcategory selected at S11a.",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_a4_match_prior_beverage_category",
+      "surveyText": "A4. What type of drink did you have? _Select one._\n\n... (answer options)\n\n1.  Beer **TERMINATE IF S10C / S11C <> 1**\n2.  Cider **TERMINATE IF S10C / S11C <> 5**\n3.  Wine **TERMINATE IF S10C / S11C <> 2**\n4.  Sparkling Wine / Champagne **TERMINATE IF S10C / S11C <> 2 OR 5**\n5.  Hard Seltzer (e.g., White Claw, Truly) **TERMINATE IF S10C / S11C <> 3, 4, OR 5**\n6.  Ready-to-Drink Cocktail (e.g., High Noon, Cutwater, On The Rocks) **TERMINATE IF S10C / S11C <> 3**\n7.  Vodka **TERMINATE IF S10C / S11C <> 4**\n8.  Whiskey / Bourbon **TERMINATE IF S10C / S11C <> 4**\n9.  Tequila / Mezcal **TERMINATE IF S10C / S11C <> 4**\n10.  Rum **TERMINATE IF S10C / S11C <> 4**\n11.  Gin **TERMINATE IF S10C / S11C <> 4**\n12.  Cordial **TERMINATE IF S10C / S11C <> 4 OR 5**\n13.  Cognac **TERMINATE IF S10C / S11C <> 4 OR 5**\n14.  Aperol **TERMINATE IF S10C / S11C <> 4 OR 5**\n15.  Other alcoholic drinks (please specify) **TERMINATE IF S10C / S11C <> 5**",
+      "appliesTo": [
+        "A4"
+      ],
+      "plainTextRule": "Constrain A4 options to be consistent with the prior beverage category reported at S10c (for Location 1) or S11c (for Location 2). Only the A4 options that map to the S10c/S11c value should be shown/available for that loop instance.",
+      "ruleType": "table-level",
+      "conditionDescription": "The respondent's previously selected beverage category (S10c or S11c for the corresponding loop) must match the A4 option being shown. (E.g., show 'Beer' only if S10c/S11c = 1.)",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_a5_spirit_form_filter",
+      "surveyText": "**ASK IF A4=7,8,9,10, 11, 12, OR 13**\n\nForm of drink 1 and 2\n\nA5. When you had the **[INSERT A4]**, which of the following reflects the form of the drink?",
+      "appliesTo": [
+        "A5"
+      ],
+      "plainTextRule": "Only ask A5 (Form of drink) when the selected A4 is one of the spirit/liquor options (A4 = 7,8,9,10,11,12,13).",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent must have selected A4 in {7,8,9,10,11,12,13}.",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_a6_on_premise_only",
+      "surveyText": "**ASK IF LOCATION 1/LOCATION 2 IS ON-PREMISE**\n\nWhen decided on drink 1 and 2\n\nA6. Which of the following reflect why you drank **[INSERT A4]**?",
+      "appliesTo": [
+        "A6"
+      ],
+      "plainTextRule": "Only ask A6 (reasons for choosing the drink) when the occasion's location is on-premise (i.e., the S9 location maps to ON-PREMISE).",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent's current loop location must be classified as ON-PREMISE based on S9 mapping.",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_a10_not_alone_only",
+      "surveyText": "**ASK IF A9 DOES NOT EQUAL 1**\n\nNumber of people 1 and 2\n\nA10. Including yourself, how many people were with you when you had this drink? _Enter a whole number_.",
+      "appliesTo": [
+        "A10"
+      ],
+      "plainTextRule": "Only ask A10 (number of people) if the respondent did NOT indicate they were alone at A9 (i.e., A9 is not option 1).",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent must have selected any A9 option other than 'I was alone'.",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_a13_brand_question_filter",
+      "surveyText": "**ASK IF A4=4,5,7,8,9,10, 11, 12, OR 13**\n\nBrand Occasion 1 and 2\n\nA13. What brand of **[INSERT A4]** did you have? _Select one_.",
+      "appliesTo": [
+        "A13"
+      ],
+      "plainTextRule": "Only ask A13 (brand) when A4 is one of the listed types (A4 = 4,5,7-13).",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent must have selected A4 in the set {4,5,7,8,9,10,11,12,13}.",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_a13b_followup_if_multiple_drinks",
+      "surveyText": "**ASK A13b IF A13a=1**\n\nA13b. What other drinks did you have in addition to **[INSERT A4]**? Select all that apply.",
+      "appliesTo": [
+        "A13b"
+      ],
+      "plainTextRule": "Only ask A13b (which other drinks were had) if the respondent answered 'Yes' to A13a (they had one or more drinks in addition to A4).",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent must have A13a = 1 (Yes).",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_a14a_off_premise_only",
+      "surveyText": "**ASK A14a-A19 IF LOCATION 1/LOCATION 2 IS OFF-PREMISE**\n\nPurchaser of Alcohol\n\nA14a. When you recently had a drink **[LOCATION 1/LOCATION 2]**, which of the following best describes your role in the original purchase of **[INSERT A4]** for it? _Select one._",
+      "appliesTo": [
+        "A14a"
+      ],
+      "plainTextRule": "Only ask A14a (purchaser role) when the loop location is off-premise (i.e., the S9 location maps to OFF-PREMISE).",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent's current loop location must be classified as OFF-PREMISE based on S9 mapping.",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_a14b_if_purchased_self",
+      "surveyText": "**ASK IF A14a=1**\n\nLocation of Purchase 1 and 2\n\nA14b. Given you purchased the **[INSERT A4]** for the drink you recently had **[LOCATION 1/LOCATION 2]**, where did you originally make the purchase?",
+      "appliesTo": [
+        "A14b"
+      ],
+      "plainTextRule": "Only ask A14b (where the purchase was made) when the respondent selected A14a = 1 (They went to the store/made the purchase themselves).",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent must have A14a = 1.",
+      "dependsOn": [
+        "rule_a14a_off_premise_only"
+      ]
+    },
+    {
+      "ruleId": "rule_a15_vodka_size_if_vodka_and_purchased",
+      "surveyText": "**ASK IF A4=7 WAS CHOSEN FOR LOCATION 1/LOCATION 2 AND A14a=1**\n\nVodka Size 1 and 2\n\nA15. What size was the bottle of vodka you purchased at **[INSERT A14b ANSWER WITHOUT PARENTHESES]**?",
+      "appliesTo": [
+        "A15"
+      ],
+      "plainTextRule": "Only ask A15 (vodka bottle size) when the respondent selected A4 = 7 (Vodka) AND A14a = 1 (they purchased it themselves).",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent must have A4 = 7 and A14a = 1.",
+      "dependsOn": [
+        "rule_a14b_if_purchased_self",
+        "rule_a4_match_prior_beverage_category"
+      ]
+    },
+    {
+      "ruleId": "rule_a16_to_a19_if_purchased",
+      "surveyText": "**A14a=1**\n\nA16. Which of the following best describes why you decided to purchase **[INSERT A4]**? ...\n\nA17. Earlier you said you purchased **[INSERT A4]** from **[INSERT A14b WITHOUT PARENTHESIS]**. Which of the following best describes why you purchased from **[INSERT A14]** instead of another location? ...\n\nA18. Which of the following best describes why you chose to buy **[INSERT A4]** instead of another type of alcohol? ...\n\nA19. When you purchased the **[INSERT A4]**, which of the following best describes why you chose **[INSERT BRAND FROM A13; IF A13=99: that brand]**? ...",
+      "appliesTo": [
+        "A16",
+        "A17",
+        "A18",
+        "A19"
+      ],
+      "plainTextRule": "Only ask A16–A19 when A14a = 1 (the respondent purchased the alcohol themselves).",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent must have A14a = 1.",
+      "dependsOn": [
+        "rule_a14a_off_premise_only"
+      ]
+    },
+    {
+      "ruleId": "rule_a13b_if_a13a_yes",
+      "surveyText": "**ASK A13b IF A13a=1**\n\nA13b. What other drinks did you have in addition to **[INSERT A4]**? Select all that apply._",
+      "appliesTo": [
+        "A13b"
+      ],
+      "plainTextRule": "Only ask A13b when A13a = 1 (respondent had additional drinks in addition to A4).",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent must have answered A13a = 1.",
+      "dependsOn": [
+        "rule_a13_brand_question_filter"
+      ]
+    },
+    {
+      "ruleId": "rule_a22_if_any_brand_selected",
+      "surveyText": "**ASK IF ANY BRAND SELECTED IN A21**\n\nA22. Which of the following brands do you associate with the following attribute: [INSERT ATTRIBUTE]? _Select all that apply._\n\n**PN: ASK A22 ONCE FOR EACH ATTRIBUTE—RANDOMIZE ATTRIBUTE ORDER; SHOW BRANDS SELECTED IN A21**",
+      "appliesTo": [
+        "A22"
+      ],
+      "plainTextRule": "Only ask A22 (brand-attribute association) if the respondent selected at least one brand in A21 (awareness question).",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent must have one or more selections in A21 (brand awareness).",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_a22_row_level_show_brands",
+      "surveyText": "**PN: ASK A22 ONCE FOR EACH ATTRIBUTE—RANDOMIZE ATTRIBUTE ORDER; SHOW BRANDS SELECTED IN A21**\n\nA22. Which of the following brands do you associate with the following attribute: ...",
+      "appliesTo": [
+        "A22"
+      ],
+      "plainTextRule": "When asking A22 for a given attribute, only show the brand options that the respondent selected in A21. (Per-attribute, show only previously selected brands.)",
+      "ruleType": "row-level",
+      "conditionDescription": "Each brand option in A22 is shown only if that brand was selected at A21 for that respondent.",
+      "dependsOn": [
+        "rule_a22_if_any_brand_selected"
+      ]
+    },
+    {
+      "ruleId": "rule_a23_show_only_brands_selected",
+      "surveyText": "A23. How likely are you to consider the following brands the next time you have a drink? _Select one._\n\n**PN: SHOW BRANDS SELECTED IN A21—RANDOMIZE BRAND LIST**",
+      "appliesTo": [
+        "A23"
+      ],
+      "plainTextRule": "In A23, show only the brands that the respondent selected in A21 (brand awareness) — the likelihood rating is asked only for brands they indicated awareness of.",
+      "ruleType": "row-level",
+      "conditionDescription": "Each brand row in A23 is shown only if that brand was selected in A21.",
+      "dependsOn": [
+        "rule_a22_if_any_brand_selected"
+      ]
+    }
+  ],
+  "noRuleQuestions": [
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "S5",
+    "S7",
+    "S8",
+    "S9",
+    "S10a",
+    "S10c",
+    "S11a",
+    "S11c",
+    "hQual_Text",
+    "A1",
+    "A2",
+    "A3",
+    "A7",
+    "A8",
+    "A9",
+    "A11",
+    "A13a",
+    "A20",
+    "A21",
+    "C1",
+    "C2",
+    "C3",
+    "C4"
+  ]
+}

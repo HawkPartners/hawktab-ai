@@ -33,7 +33,7 @@ import {
 } from './tools/scratchpad';
 import { getFilterTranslatorPrompt } from '../prompts';
 import { formatFullDatamapContext, validateFilterVariables } from '../lib/filters/filterUtils';
-import { retryWithPolicyHandling } from '../lib/retryWithPolicyHandling';
+import { retryWithPolicyHandling, isRateLimitError } from '../lib/retryWithPolicyHandling';
 import { recordAgentMetrics } from '../lib/observability';
 import fs from 'fs/promises';
 import path from 'path';
@@ -180,7 +180,8 @@ Create a separate filter entry for each questionId in the rule's appliesTo list:
               if (err instanceof DOMException && err.name === 'AbortError') {
                 throw err;
               }
-              console.warn(`[FilterTranslatorAgent] Retry ${attempt}/3 for rule ${rule.ruleId}: ${err.message}`);
+              const retryType = isRateLimitError(err) ? 'rate limit' : 'error';
+              console.warn(`[FilterTranslatorAgent] Retry ${attempt}/3 for rule ${rule.ruleId} (${retryType}): ${err.message.substring(0, 120)}`);
             },
           }
         );

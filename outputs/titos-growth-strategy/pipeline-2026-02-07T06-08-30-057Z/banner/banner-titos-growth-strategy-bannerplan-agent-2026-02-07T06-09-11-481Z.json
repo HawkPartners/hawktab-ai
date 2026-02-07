@@ -1,0 +1,88 @@
+[
+  {
+    "groupName": "Needs State",
+    "columns": [
+      {
+        "name": "Connection / Belonging",
+        "original": "S10a=1 OR S11a=1"
+      },
+      {
+        "name": "Status / Image",
+        "original": "S10a=2 OR S11a=2"
+      },
+      {
+        "name": "Exploration / Discovery",
+        "original": "S10a=3 OR S11a=3"
+      },
+      {
+        "name": "Celebration",
+        "original": "S10a=4 OR S11a=4"
+      },
+      {
+        "name": "Indulgence",
+        "original": "S10a=5 OR S11a=5"
+      },
+      {
+        "name": "Escape / Relief",
+        "original": "S10a=6 OR S11a=6"
+      },
+      {
+        "name": "Performance",
+        "original": "S10a=7 OR S11a=7"
+      },
+      {
+        "name": "Tradition",
+        "original": "S10a=8 OR S11a=8"
+      }
+    ]
+  },
+  {
+    "groupName": "Location",
+    "columns": [
+      {
+        "name": "Own Home",
+        "original": "Assigned S9_1"
+      },
+      {
+        "name": "Others' Home",
+        "original": "Assigned S9_2"
+      },
+      {
+        "name": "Work / Office",
+        "original": "Assigned S9_3"
+      },
+      {
+        "name": "College Dorm",
+        "original": "Assigned S9_4"
+      },
+      {
+        "name": "Dining",
+        "original": "Assigned S9_5 OR S9_6 OR S9_7"
+      },
+      {
+        "name": "Bar / Nightclub",
+        "original": "Assigned S9_8 OR S9_9 OR S9_10 OR S9_11"
+      },
+      {
+        "name": "Hotel / Motel",
+        "original": "Assigned S9_12"
+      },
+      {
+        "name": "Recreation / Entertainment / Concession",
+        "original": "Assigned S9_13 OR S9_14"
+      },
+      {
+        "name": "Outdoor Gathering",
+        "original": "Assigned S9_15"
+      },
+      {
+        "name": "Airport / Transit Location",
+        "original": "Assigned S9_16"
+      },
+      {
+        "name": "Other",
+        "original": "Assigned S9_99"
+      }
+    ]
+  }
+]

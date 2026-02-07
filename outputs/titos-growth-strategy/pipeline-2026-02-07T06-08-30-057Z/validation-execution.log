@@ -1,0 +1,89 @@
+STDOUT:
+[1] "Loaded 5098 rows and 530 columns"
+[1] "Created stacked_loop_1: 10196 rows ( 5098 x 2 iterations)"
+[1] "Created stacked_loop_2: 10196 rows ( 5098 x 2 iterations)"
+[1] "Created stacked_loop_3: 10196 rows ( 5098 x 2 iterations)"
+[1] "Created stacked_loop_4: 10196 rows ( 5098 x 2 iterations)"
+[1] "Created stacked_loop_5: 10196 rows ( 5098 x 2 iterations)"
+[1] "Created stacked_loop_6: 10196 rows ( 5098 x 2 iterations)"
+[1] "Validated: s1 - PASS"
+[1] "Validated: s2 - PASS"
+[1] "Validated: s3 - PASS"
+[1] "Validated: s5 - PASS"
+[1] "Validated: s6 - PASS"
+[1] "Validated: s6a - PASS"
+[1] "Validated: s7 - PASS"
+[1] "Validated: s8 - PASS"
+[1] "Validated: s8_binned - PASS"
+[1] "Validated: s9 - PASS"
+[1] "Validated: s10a - PASS"
+[1] "Validated: s10b - PASS"
+[1] "Validated: s10c - PASS"
+[1] "Validated: s11a - PASS"
+[1] "Validated: s11b - PASS"
+[1] "Validated: s11c - PASS"
+[1] "Validated: a2 - PASS"
+[1] "Validated: a3 - PASS"
+[1] "Validated: a4 - PASS"
+[1] "Validated: a5 - PASS"
+[1] "Validated: a6 - PASS"
+[1] "Validated: a8 - PASS"
+[1] "Validated: a10 - PASS"
+[1] "Validated: a10_bins - PASS"
+[1] "Validated: a11 - PASS"
+[1] "Validated: a13 - PASS"
+[1] "Validated: a15 - PASS"
+[1] "Validated: a18 - PASS"
+[1] "Validated: a20 - PASS"
+[1] "Validated: a20__nets - PASS"
+[1] "Validated: a21 - PASS"
+[1] "Validated: a22_attribute_approachable - PASS"
+[1] "Validated: a22_attribute_authentic - PASS"
+[1] "Validated: a22_attribute_bold - PASS"
+[1] "Validated: a22_attribute_downtoearth - PASS"
+[1] "Validated: a22_attribute_edgy - PASS"
+[1] "Validated: a22_attribute_generous - PASS"
+[1] "Validated: a22_attribute_independent - PASS"
+[1] "Validated: a22_attribute_premium - PASS"
+[1] "Validated: a22_attribute_reliable - PASS"
+[1] "Validated: a22_attribute_sophisticated - PASS"
+[1] "Validated: a22_overview_excluded - PASS"
+[1] "Validated: a23_casamigos - PASS"
+[1] "Validated: a23_don_julio - PASS"
+[1] "Validated: a23_grey_goose - PASS"
+[1] "Validated: a23_ketel_one - PASS"
+[1] "Validated: a23_maker_s_mark - PASS"
+[1] "Validated: a23_tito_s_handmade_vodka - PASS"
+[1] "Validated: c3 - PASS"
+[1] "Validated: a13a_1 - PASS"
+[1] "Validated: a13a_2 - PASS"
+[1] "Validated: a13b_1 - PASS"
+[1] "Validated: a14a_1 - PASS"
+[1] "Validated: a14a_2 - PASS"
+[1] "Validated: a14b_1 - PASS"
+[1] "Validated: a14b_2 - PASS"
+[1] "Validated: a16_1 - PASS"
+[1] "Validated: a17_1 - PASS"
+[1] "Validated: a19_1 - PASS"
+[1] "Validated: a7_1 - PASS"
+[1] "Validated: a9_1 - PASS"
+[1] "Validation results written to: validation/validation-results.json"
+[1] "Validation complete: 61 passed, 0 failed"
+
+
+STDERR:
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Warning message:
+`..1$A18` and `..2$A18` have conflicting value labels.
+ℹ Labels for these values will be taken from `..1$A18`.
+✖ Values: 4 

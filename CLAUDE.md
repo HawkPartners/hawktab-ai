@@ -104,24 +104,26 @@ PROVENANCE TRACKING:
 </pipeline_architecture>
 
 <running_the_pipeline>
-THREE WAYS TO RUN:
+HOW TO RUN:
 
 ```bash
-# 1. HawkTab CLI (recommended for development)
-hawktab              # Show help
-hawktab run          # Run with interactive UI
-hawktab run --no-ui  # Plain console output
-hawktab demo         # Preview UI without running
+# Full pipeline (primary method)
+npx tsx scripts/test-pipeline.ts                              # Default dataset (Leqvio)
+npx tsx scripts/test-pipeline.ts data/test-data/some-dataset  # Specific dataset
+npx tsx scripts/test-pipeline.ts --format=antares             # Antares Excel format
+npx tsx scripts/test-pipeline.ts --stop-after-verification    # Skip R/Excel
 
-# 2. Test scripts (for isolated testing)
-npx tsx scripts/test-verification-agent.ts   # Fast, safe to run
-npx tsx scripts/test-table-generator.ts       # Fast, safe to run
+# Isolated agent tests (fast, safe to run)
+npx tsx scripts/test-verification-agent.ts
+npx tsx scripts/test-table-generator.ts
 
-# 3. Web UI
+# Web UI (for upload-based testing)
 npm run dev          # http://localhost:3000
 ```
 
-CRITICAL: The full pipeline takes 45-60 minutes. NEVER run `hawktab run` or `npx tsx scripts/test-pipeline.ts` yourself. Let the user run it.
+NOTE: The `hawktab` CLI (Ink-based interactive UI) is deprecated. Use the scripts above instead.
+
+CRITICAL: The full pipeline takes 45-60 minutes. NEVER run `npx tsx scripts/test-pipeline.ts` yourself. Let the user run it.
 
 OUTPUT LOCATION: `outputs/<dataset>/pipeline-<timestamp>/`
 - `r/master.R` - Generated R script
@@ -217,7 +219,7 @@ Getters: `getVerificationModel()`, `getVerificationModelName()`, `getVerificatio
 RULES - NEVER VIOLATE:
 
 1. NEVER run full pipeline yourself
-   `hawktab run` and `test-pipeline.ts` take 45-60 minutes. Let the user run it.
+   `npx tsx scripts/test-pipeline.ts` takes 45-60 minutes. Let the user run it.
 
 2. NEVER forget metrics recording
    Every agent call needs `recordAgentMetrics()` or pipeline cost summary breaks.
@@ -265,18 +267,15 @@ THINGS THAT WILL BREAK IF YOU FORGET:
 6. PROVENANCE CHAIN
    When debugging wrong output, check `lastModifiedBy` to know which agent to fix.
 
-7. CONSOLE SUPPRESSION IN CLI
-   `hawktab run` suppresses console.log. Processor logs won't appear—use event bus instead.
+7. CONSOLE SUPPRESSION IN CLI (deprecated)
+   The Ink-based CLI (`hawktab run`) suppresses console.log. Use plain scripts instead.
 </gotchas>
 
 <directory_structure>
 ```
 hawktab-ai/
-├── bin/hawktab                    # CLI wrapper
 ├── src/
-│   ├── cli/                       # HawkTab CLI (Ink-based)
-│   │   ├── index.tsx              # Entry point
-│   │   └── App.tsx                # Main component
+│   ├── cli/                       # HawkTab CLI (deprecated — use scripts/ instead)
 │   ├── agents/                    # AI agents
 │   │   ├── BannerAgent.ts
 │   │   ├── CrosstabAgent.ts
@@ -308,9 +307,8 @@ hawktab-ai/
 <quick_reference>
 | Task | Command/Location |
 |------|------------------|
-| Run pipeline (UI) | `hawktab run` (user runs this) |
-| Run pipeline (plain) | `hawktab run --no-ui` |
-| Preview CLI | `hawktab demo` |
+| Run pipeline | `npx tsx scripts/test-pipeline.ts` (user runs this) |
+| Run pipeline (specific dataset) | `npx tsx scripts/test-pipeline.ts data/test-data/some-dataset` |
 | Test VerificationAgent | `npx tsx scripts/test-verification-agent.ts` |
 | Check agent reasoning | `outputs/*/scratchpad-*.md` |
 | Compare to Joe | `data/leqvio-monotherapy-demand-NOV217/tabs/*.xlsx` |

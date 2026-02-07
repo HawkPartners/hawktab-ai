@@ -1,0 +1,163 @@
+{
+  "rules": [
+    {
+      "ruleId": "rule_s2a_ask_if_s2_6_or_7",
+      "surveyText": "[ASK IF S2=6 OR 7]\n\nS2a. In what type of doctor’s office do you work?\n\n1\n\nCardiologist\n\n**CONTINUE TO S4**\n\n2\n\nInternal Medicine / General Practitioner / Primary Care / Family Practice\n\n**TERMINATE**\n\n3\n\nOther\n\n**TERMINATE**",
+      "appliesTo": [
+        "S2a"
+      ],
+      "plainTextRule": "Show S2a only to respondents who selected Nurse Practitioner (6) or Physician's Assistant (7) at S2.",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent must have answered S2 = 6 (Nurse Practitioner) OR S2 = 7 (Physician's Assistant).",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_s3a_ask_if_s2_1",
+      "surveyText": "[ASK IF S2=1]\n\nS3a. What type of Cardiologist are you primarily?\n\n1\n\nInterventional Cardiologist\n\n2\n\nGeneral Cardiologist\n\n3\n\nPreventative Cardiologist\n\n**[INFORMATIONAL, TRACK DURING FIELDING]**",
+      "appliesTo": [
+        "S3a"
+      ],
+      "plainTextRule": "Show S3a only to respondents who selected Cardiologist (S2 = 1).",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent must have answered S2 = 1 (Cardiologist).",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_s4_ask_if_s2_1to5_or_s2a_1",
+      "surveyText": "[ASK IF S2=1-5]\n\nS4. Are you currently board certified or eligible in your specialty?\n\nBoard Eligible\n\n**TERMINATE**\n\nBoard Certified\n\nNeither\n\n**TERMINATE**\n\n\n(Also: from S2a: option 1 Cardiologist = **CONTINUE TO S4**)",
+      "appliesTo": [
+        "S4"
+      ],
+      "plainTextRule": "Show S4 to respondents who indicate they are specialty physicians (S2 = 1-5). Also show S4 to NP/PAs (S2 = 6 or 7) who answered S2a = 1 (i.e., work in a Cardiologist office).",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent must have S2 in {1,2,3,4,5} OR (S2 in {6,7} AND S2a = 1).",
+      "dependsOn": [
+        "rule_s2a_ask_if_s2_6_or_7"
+      ]
+    },
+    {
+      "ruleId": "rule_a3a_row_show_if_a3_gt0",
+      "surveyText": "A3a. For each treatment, approximately what % of those **LAST** 100 patients received that therapy in addition to a statin vs. without a statin? Each row must add to 100%.\n\n**RANDOMIZE IN SAME ORDER AS A3.** **ONLY SHOW THERAPY WHERE A3>0**",
+      "appliesTo": [
+        "A3a"
+      ],
+      "plainTextRule": "Within A3a, show a row for a given therapy only if the respondent entered a value > 0 for that therapy in A3 (i.e., A3 > 0 for that therapy).",
+      "ruleType": "row-level",
+      "conditionDescription": "Per therapy row: A3 (corresponding therapy) must be greater than 0.",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_a3b_table_show_if_any_a3a_colb_gt0",
+      "surveyText": "IF COL B (WITHOUT A STATIN) IN A3a FOR ANY ROW > 0. ONLY SHOW THERAPY WHERE A3>0\n\nA3b. For each treatment you just indicated that you prescribe without a statin, approximately what % of those patients who received that therapy without a statin did so…",
+      "appliesTo": [
+        "A3b"
+      ],
+      "plainTextRule": "Show the A3b question only if at least one A3a 'Without a statin' (column B) value is greater than 0 across the therapy rows.",
+      "ruleType": "table-level",
+      "conditionDescription": "At least one A3a row has column B (Without a statin) > 0.",
+      "dependsOn": [
+        "rule_a3a_row_show_if_a3_gt0"
+      ]
+    },
+    {
+      "ruleId": "rule_a3b_row_show_if_a3a_colb_gt0",
+      "surveyText": "A3b. ...\n\n**ONLY SHOW ROWS FOR WHICH A3a COL B > 0**",
+      "appliesTo": [
+        "A3b"
+      ],
+      "plainTextRule": "Within A3b, show only the therapy rows where the corresponding A3a 'Without a statin' (column B) entry is > 0.",
+      "ruleType": "row-level",
+      "conditionDescription": "Per therapy row: A3a column B (Without a statin) must be greater than 0.",
+      "dependsOn": [
+        "rule_a3a_row_show_if_a3_gt0"
+      ]
+    },
+    {
+      "ruleId": "rule_a4a_row_show_if_a4_gt0",
+      "surveyText": "A4a. For each treatment, for approximately what % of those **NEXT** 100 patients would you expect to prescribe that therapy in addition to a statin vs. without a statin? Each row must add to 100%.\n\n**RANDOMIZE IN SAME ORDER AS A3.** **ONLY SHOW THERAPY WHERE A4>0**",
+      "appliesTo": [
+        "A4a"
+      ],
+      "plainTextRule": "Within A4a, show a row for a given therapy only if the respondent entered a value > 0 for that therapy in A4 (i.e., A4 > 0 for that therapy).",
+      "ruleType": "row-level",
+      "conditionDescription": "Per therapy row: A4 (corresponding therapy) must be greater than 0.",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_a4b_table_show_if_any_a4a_colb_gt0",
+      "surveyText": "IF COL B (WITHOUT A STATIN) IN A4a FOR ANY ROW > 0. ONLY SHOW THERAPY WHERE A4>0\n\nA4b. For each treatment you just indicated that you would expect to prescribe without a statin, approximately what % of those patients who would receive that therapy without a statin would do so…",
+      "appliesTo": [
+        "A4b"
+      ],
+      "plainTextRule": "Show the A4b question only if at least one A4a 'Without a statin' (column B) value is greater than 0 across the therapy rows.",
+      "ruleType": "table-level",
+      "conditionDescription": "At least one A4a row has column B (Without a statin) > 0.",
+      "dependsOn": [
+        "rule_a4a_row_show_if_a4_gt0"
+      ]
+    },
+    {
+      "ruleId": "rule_a4b_row_show_if_a4a_colb_gt0",
+      "surveyText": "A4b. ...\n\n**ONLY SHOW ROWS FOR WHICH A4a COL B > 0**",
+      "appliesTo": [
+        "A4b"
+      ],
+      "plainTextRule": "Within A4b, show only the therapy rows where the corresponding A4a 'Without a statin' (column B) entry is > 0.",
+      "ruleType": "row-level",
+      "conditionDescription": "Per therapy row: A4a column B (Without a statin) must be greater than 0.",
+      "dependsOn": [
+        "rule_a4a_row_show_if_a4_gt0"
+      ]
+    },
+    {
+      "ruleId": "rule_a5_ask_if_a4_differs_from_a3_for_pcsk9s",
+      "surveyText": "[ASK IF PRESCRIBING IN A4 is > or < A3 FOR ROWS 2, 3, OR 4 (LEQVIO, REPATHA, OR PRALUENT)]\n\nA5. How quickly might you expect to change your prescribing of PCSK9 inhibitors based on this indication change? _Select one_",
+      "appliesTo": [
+        "A5"
+      ],
+      "plainTextRule": "Show A5 only to respondents who report a change in prescribing for any of the PCSK9 products (Leqvio, Praluent, Repatha) when comparing A4 to A3 (i.e., A4 value is greater than OR less than the A3 value for rows 2, 3 or 4).",
+      "ruleType": "table-level",
+      "conditionDescription": "For any of the therapies Leqvio (row 2), Praluent (row 3), or Repatha (row 4): A4 value != A3 value (A4 > A3 or A4 < A3).",
+      "dependsOn": []
+    },
+    {
+      "ruleId": "rule_b5_ask_if_s2_2",
+      "surveyText": "[ASK IF S2=2]\n\nB5. How would you describe your specialty/training? Select all that apply.",
+      "appliesTo": [
+        "B5"
+      ],
+      "plainTextRule": "Show B5 only to respondents who selected Internal Medicine / General Practitioner / Primary Care / Family Practice (S2 = 2).",
+      "ruleType": "table-level",
+      "conditionDescription": "Respondent must have answered S2 = 2.",
+      "dependsOn": []
+    }
+  ],
+  "noRuleQuestions": [
+    "S1",
+    "S2",
+    "S5",
+    "S6",
+    "S7",
+    "S8",
+    "S9",
+    "S10",
+    "S11",
+    "S12",
+    "A1",
+    "A2a",
+    "A2b",
+    "A3",
+    "A4",
+    "A6",
+    "A7",
+    "A8",
+    "A9",
+    "A10",
+    "B1",
+    "B2",
+    "B3",
+    "B4",
+    "CONSENT",
+    "FINAL SCREEN"
+  ]
+}

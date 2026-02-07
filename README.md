@@ -162,37 +162,22 @@ npm run lint     # ESLint checks
 npx tsc --noEmit # TypeScript type checking
 ```
 
-### HawkTab CLI
-
-The project includes an interactive CLI for running the pipeline:
+### Running the Pipeline
 
 ```bash
-# Install globally (from project root)
-npm link
+# Full pipeline (default dataset: Leqvio)
+npx tsx scripts/test-pipeline.ts
 
-# Or run directly with npx
-npx tsx src/cli/index.tsx
+# Specific dataset
+npx tsx scripts/test-pipeline.ts data/test-data/titos-growth-strategy
+
+# With options
+npx tsx scripts/test-pipeline.ts --format=antares --display=both
+npx tsx scripts/test-pipeline.ts --stop-after-verification
+npx tsx scripts/test-pipeline.ts --concurrency=5
 ```
 
-**Commands:**
-
-| Command | Description |
-|---------|-------------|
-| `hawktab` | Show help |
-| `hawktab run` | Run pipeline with interactive UI |
-| `hawktab run [dataset]` | Run pipeline on specific dataset |
-| `hawktab run --no-ui` | Run pipeline with plain console output |
-| `hawktab demo` | Show UI in demo mode (no pipeline) |
-
-**Options:**
-- `--format=joe|antares` - Excel format (default: joe)
-- `--display=frequency|counts|both` - Display mode (default: frequency)
-- `--concurrency=N` - Parallel processing limit (default: 3)
-- `--stop-after-verification` - Stop before R/Excel generation
-
-The CLI provides a real-time view of pipeline progress with stage-by-stage status, cost tracking, and elapsed time.
-
-### Test Scripts
+### Other Scripts
 
 ```bash
 # Full pipeline: .sav → Banner → Crosstab → Tables → Verification → R → Excel

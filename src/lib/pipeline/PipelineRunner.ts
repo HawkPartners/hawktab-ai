@@ -188,14 +188,11 @@ export async function runPipeline(
     log(`  Format: ${validationResult.format}`, 'dim');
     log(`  Errors: ${validationResult.errors.length}, Warnings: ${validationResult.warnings.length}`, 'dim');
 
-    if (validationResult.loopDetection?.hasLoops) {
-      for (const loop of validationResult.loopDetection.loops) {
-        log(`  Loop: ${loop.iterations.length} iterations x ${loop.diversity} questions`, 'yellow');
-      }
-    }
-
+    // Log non-loop warnings (loop info is logged separately below in the collapse step)
     for (const w of validationResult.warnings) {
-      log(`  Warning: ${w.message}`, 'yellow');
+      if (!w.message.startsWith('Loop detected:')) {
+        log(`  Warning: ${w.message}`, 'yellow');
+      }
     }
 
     if (!validationResult.canProceed) {
@@ -262,10 +259,40 @@ export async function runPipeline(
       loopMappings = collapseResult.loopMappings;
       baseNameToLoopIndex = collapseResult.baseNameToLoopIndex;
 
-      log(`  Collapsed loops: ${collapseResult.collapsedVariableNames.size} iteration vars → ${loopMappings.reduce((s, m) => s + m.variables.length, 0)} base vars`, 'green');
+      log(`  Loops detected: ${loopMappings.length} groups, ${collapseResult.collapsedVariableNames.size} iteration vars collapsed → ${loopMappings.reduce((s, m) => s + m.variables.length, 0)} base vars`, 'green');
       for (const m of loopMappings) {
         log(`    ${m.stackedFrameName}: ${m.variables.length} vars x ${m.iterations.length} iterations (${m.skeleton})`, 'dim');
       }
+
+      // Save loop summary to output directory for debugging
+      const loopSummary = {
+        totalLoopGroups: loopMappings.length,
+        totalIterationVars: collapseResult.collapsedVariableNames.size,
+        totalBaseVars: loopMappings.reduce((s, m) => s + m.variables.length, 0),
+        fillRateResults: validationResult.fillRateResults.map(fr => ({
+          skeleton: fr.loopGroup.skeleton,
+          pattern: fr.pattern,
+          explanation: fr.explanation,
+          fillRates: fr.fillRates,
+        })),
+        groups: loopMappings.map(m => ({
+          stackedFrameName: m.stackedFrameName,
+          skeleton: m.skeleton,
+          iterations: m.iterations,
+          variableCount: m.variables.length,
+          variables: m.variables.map(v => ({
+            baseName: v.baseName,
+            label: v.label,
+            iterationColumns: v.iterationColumns,
+          })),
+        })),
+      };
+      await fs.writeFile(
+        path.join(outputDir, 'loop-summary.json'),
+        JSON.stringify(loopSummary, null, 2),
+        'utf-8'
+      );
+      log(`  Loop summary saved to loop-summary.json`, 'dim');
     }
 
     log(`  Effective datamap: ${verboseDataMap.length} variables`, 'green');
@@ -627,6 +654,7 @@ export async function runPipeline(
         maxRetries: 3,
         dataFilePath: 'dataFile.sav',
         verbose: !quiet,
+        loopMappings: loopMappings.length > 0 ? loopMappings : undefined,
       }
     );
 

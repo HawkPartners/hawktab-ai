@@ -1,0 +1,34 @@
+{
+  "dataset": "leqvio-monotherapy-demand-NOV217",
+  "timestamp": "2026-02-07T02:51:34.377Z",
+  "duration": {
+    "totalMs": 207168,
+    "step1_datamap": 610,
+    "step2_survey": 2289,
+    "step3_tableGenerator": 2,
+    "step4a_skipLogic": 204259,
+    "step4b_filterTranslator": 0,
+    "step5_filterApplicator": 0
+  },
+  "datamap": {
+    "variables": 192,
+    "groups": 42
+  },
+  "tables": {
+    "beforeFilter": 42,
+    "afterFilter": 42
+  },
+  "skipLogic": {
+    "surveyAvailable": true,
+    "rulesExtracted": 0,
+    "noRuleQuestions": 0
+  },
+  "filterApplicator": {
+    "totalInputTables": 42,
+    "totalOutputTables": 42,
+    "passCount": 42,
+    "filterCount": 0,
+    "splitCount": 0,
+    "reviewRequiredCount": 0
+  }
+}

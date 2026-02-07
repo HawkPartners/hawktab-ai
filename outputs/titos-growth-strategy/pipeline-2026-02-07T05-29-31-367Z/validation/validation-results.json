@@ -1,0 +1,357 @@
+{
+  "s1": {
+    "success": true,
+    "tableId": "s1",
+    "rowCount": 9
+  },
+  "s2": {
+    "success": true,
+    "tableId": "s2",
+    "rowCount": 1
+  },
+  "s2_bins": {
+    "success": true,
+    "tableId": "s2_bins",
+    "rowCount": 6
+  },
+  "s3": {
+    "success": true,
+    "tableId": "s3",
+    "rowCount": 4
+  },
+  "s5": {
+    "success": true,
+    "tableId": "s5",
+    "rowCount": 13
+  },
+  "s6": {
+    "success": true,
+    "tableId": "s6",
+    "rowCount": 2
+  },
+  "s6a": {
+    "success": true,
+    "tableId": "s6a",
+    "rowCount": 9
+  },
+  "s7": {
+    "success": true,
+    "tableId": "s7",
+    "rowCount": 6
+  },
+  "s8": {
+    "success": true,
+    "tableId": "s8",
+    "rowCount": 1
+  },
+  "s8_bins": {
+    "success": true,
+    "tableId": "s8_bins",
+    "rowCount": 6
+  },
+  "s9": {
+    "success": true,
+    "tableId": "s9",
+    "rowCount": 17
+  },
+  "s10a": {
+    "success": true,
+    "tableId": "s10a",
+    "rowCount": 8
+  },
+  "s10b_s10a_1_subcategory": {
+    "success": true,
+    "tableId": "s10b_s10a_1_subcategory",
+    "rowCount": 38
+  },
+  "s10b_s10a_2_subcategory": {
+    "success": true,
+    "tableId": "s10b_s10a_2_subcategory",
+    "rowCount": 37
+  },
+  "s10b_s10a_3_subcategory": {
+    "success": true,
+    "tableId": "s10b_s10a_3_subcategory",
+    "rowCount": 38
+  },
+  "s10b_s10a_4_subcategory": {
+    "success": true,
+    "tableId": "s10b_s10a_4_subcategory",
+    "rowCount": 37
+  },
+  "s10b_s10a_5_subcategory": {
+    "success": true,
+    "tableId": "s10b_s10a_5_subcategory",
+    "rowCount": 38
+  },
+  "s10b_s10a_6_subcategory": {
+    "success": true,
+    "tableId": "s10b_s10a_6_subcategory",
+    "rowCount": 13
+  },
+  "s10b_s10a_7_subcategory": {
+    "success": true,
+    "tableId": "s10b_s10a_7_subcategory",
+    "rowCount": 37
+  },
+  "s10b_s10a_8_subcategory": {
+    "success": true,
+    "tableId": "s10b_s10a_8_subcategory",
+    "rowCount": 48
+  },
+  "s10c": {
+    "success": true,
+    "tableId": "s10c",
+    "rowCount": 5
+  },
+  "s11a": {
+    "success": true,
+    "tableId": "s11a",
+    "rowCount": 8
+  },
+  "s11b_s11a_1": {
+    "success": true,
+    "tableId": "s11b_s11a_1",
+    "rowCount": 37
+  },
+  "s11b_s11a_2": {
+    "success": true,
+    "tableId": "s11b_s11a_2",
+    "rowCount": 37
+  },
+  "s11b_s11a_3": {
+    "success": true,
+    "tableId": "s11b_s11a_3",
+    "rowCount": 37
+  },
+  "s11b_s11a_4": {
+    "success": true,
+    "tableId": "s11b_s11a_4",
+    "rowCount": 37
+  },
+  "s11b_s11a_5": {
+    "success": true,
+    "tableId": "s11b_s11a_5",
+    "rowCount": 37
+  },
+  "s11b_s11a_6": {
+    "success": true,
+    "tableId": "s11b_s11a_6",
+    "rowCount": 37
+  },
+  "s11b_s11a_7": {
+    "success": true,
+    "tableId": "s11b_s11a_7",
+    "rowCount": 38
+  },
+  "s11b_s11a_8": {
+    "success": true,
+    "tableId": "s11b_s11a_8",
+    "rowCount": 37
+  },
+  "s11c": {
+    "success": true,
+    "tableId": "s11c",
+    "rowCount": 5
+  },
+  "a2": {
+    "success": false,
+    "tableId": "a2",
+    "error": "Variable 'A2' not found"
+  },
+  "a3": {
+    "success": false,
+    "tableId": "a3",
+    "error": "Variable 'A3' not found"
+  },
+  "a4": {
+    "success": false,
+    "tableId": "a4",
+    "error": "Variable 'A4' not found"
+  },
+  "a5": {
+    "success": false,
+    "tableId": "a5",
+    "error": "Variable 'A5' not found"
+  },
+  "a6": {
+    "success": false,
+    "tableId": "a6",
+    "error": "Variable 'A6' not found"
+  },
+  "a8": {
+    "success": false,
+    "tableId": "a8",
+    "error": "Variable 'A8' not found"
+  },
+  "a10": {
+    "success": false,
+    "tableId": "a10",
+    "error": "Variable 'A10' not found"
+  },
+  "a10_bins": {
+    "success": false,
+    "tableId": "a10_bins",
+    "error": "Variable 'A10' not found"
+  },
+  "a11": {
+    "success": false,
+    "tableId": "a11",
+    "error": "Variable 'A11' not found"
+  },
+  "a13": {
+    "success": false,
+    "tableId": "a13",
+    "error": "Variable 'A13' not found"
+  },
+  "a15": {
+    "success": false,
+    "tableId": "a15",
+    "error": "Variable 'A15' not found"
+  },
+  "a18": {
+    "success": false,
+    "tableId": "a18",
+    "error": "Variable 'A18' not found"
+  },
+  "a20": {
+    "success": true,
+    "tableId": "a20",
+    "rowCount": 7
+  },
+  "a21": {
+    "success": true,
+    "tableId": "a21",
+    "rowCount": 8
+  },
+  "a22_casamigos": {
+    "success": true,
+    "tableId": "a22_casamigos",
+    "rowCount": 2
+  },
+  "a22_don_julio": {
+    "success": true,
+    "tableId": "a22_don_julio",
+    "rowCount": 1
+  },
+  "a22_grey_goose": {
+    "success": true,
+    "tableId": "a22_grey_goose",
+    "rowCount": 1
+  },
+  "a22_ketel_one": {
+    "success": true,
+    "tableId": "a22_ketel_one",
+    "rowCount": 2
+  },
+  "a22_maker_s_mark": {
+    "success": true,
+    "tableId": "a22_maker_s_mark",
+    "rowCount": 2
+  },
+  "a22_none_of_the_above": {
+    "success": true,
+    "tableId": "a22_none_of_the_above",
+    "rowCount": 1
+  },
+  "a22_tito_s_handmade_vodka": {
+    "success": true,
+    "tableId": "a22_tito_s_handmade_vodka",
+    "rowCount": 1
+  },
+  "a23_casamigos": {
+    "success": true,
+    "tableId": "a23_casamigos",
+    "rowCount": 7
+  },
+  "a23_don_julio": {
+    "success": true,
+    "tableId": "a23_don_julio",
+    "rowCount": 7
+  },
+  "a23_grey_goose": {
+    "success": true,
+    "tableId": "a23_grey_goose",
+    "rowCount": 6
+  },
+  "a23_ketel_one": {
+    "success": true,
+    "tableId": "a23_ketel_one",
+    "rowCount": 7
+  },
+  "a23_maker_s_mark": {
+    "success": true,
+    "tableId": "a23_maker_s_mark",
+    "rowCount": 7
+  },
+  "a23_tito_s_handmade_vodka": {
+    "success": true,
+    "tableId": "a23_tito_s_handmade_vodka",
+    "rowCount": 7
+  },
+  "c3": {
+    "success": true,
+    "tableId": "c3",
+    "rowCount": 13
+  },
+  "a13a_1": {
+    "success": true,
+    "tableId": "a13a_1",
+    "rowCount": 2
+  },
+  "a13a_2": {
+    "success": true,
+    "tableId": "a13a_2",
+    "rowCount": 2
+  },
+  "a13b_1": {
+    "success": false,
+    "tableId": "a13b_1",
+    "error": "NET component variable 'A13br1' not found"
+  },
+  "a14a_1": {
+    "success": true,
+    "tableId": "a14a_1",
+    "rowCount": 4
+  },
+  "a14a_2": {
+    "success": true,
+    "tableId": "a14a_2",
+    "rowCount": 4
+  },
+  "a14b_1": {
+    "success": true,
+    "tableId": "a14b_1",
+    "rowCount": 15
+  },
+  "a14b_2": {
+    "success": true,
+    "tableId": "a14b_2",
+    "rowCount": 14
+  },
+  "a16_1": {
+    "success": false,
+    "tableId": "a16_1",
+    "error": "NET component variable 'A16r1' not found"
+  },
+  "a17_1": {
+    "success": false,
+    "tableId": "a17_1",
+    "error": "NET component variable 'A17r1' not found"
+  },
+  "a19_1": {
+    "success": false,
+    "tableId": "a19_1",
+    "error": "NET component variable 'A19r1' not found"
+  },
+  "a7_1": {
+    "success": false,
+    "tableId": "a7_1",
+    "error": "NET component variable 'A7r1' not found"
+  },
+  "a9_1": {
+    "success": false,
+    "tableId": "a9_1",
+    "error": "Variable 'A9r1' not found"
+  }
+}

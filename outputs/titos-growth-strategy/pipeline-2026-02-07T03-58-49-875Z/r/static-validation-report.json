@@ -1,0 +1,17 @@
+{
+  "totalTables": 62,
+  "validTables": 43,
+  "invalidTables": 0,
+  "skippedTables": [],
+  "warnings": [
+    {
+      "tableId": "c3",
+      "valid": true,
+      "errors": [],
+      "warnings": [
+        "Row 2: Duplicate variable/filterValue combination \"C3r2:1\".",
+        "Row 6: Duplicate variable/filterValue combination \"C3r6:1\"."
+      ]
+    }
+  ]
+}

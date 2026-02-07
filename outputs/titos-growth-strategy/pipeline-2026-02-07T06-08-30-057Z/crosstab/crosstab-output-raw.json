@@ -1,0 +1,347 @@
+{
+  "bannerCuts": [
+    {
+      "groupName": "Needs State",
+      "columns": [
+        {
+          "name": "Connection / Belonging",
+          "adjusted": "(S10a == 1 | S11a == 1)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with identical answer options where 1 = Connection/Belonging; used both variables explicitly to match the OR logic.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Status / Image",
+          "adjusted": "(S10a == 2 | S11a == 2)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with identical answer options where 2 = Status/Image; used both variables explicitly to match the OR logic.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Exploration / Discovery",
+          "adjusted": "(S10a == 3 | S11a == 3)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with identical answer options where 3 = Exploration/Discovery; used both variables explicitly to match the OR logic.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Celebration",
+          "adjusted": "(S10a == 4 | S11a == 4)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with identical answer options where 4 = Celebration; used both variables explicitly to match the OR logic.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Indulgence",
+          "adjusted": "(S10a == 5 | S11a == 5)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with identical answer options where 5 = Indulgence; used both variables explicitly to match the OR logic.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Escape / Relief",
+          "adjusted": "(S10a == 6 | S11a == 6)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with identical answer options where 6 = Escape/Relief; used both variables explicitly to match the OR logic.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Performance",
+          "adjusted": "(S10a == 7 | S11a == 7)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with identical answer options where 7 = Performance; used both variables explicitly to match the OR logic.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Tradition",
+          "adjusted": "(S10a == 8 | S11a == 8)",
+          "confidence": 0.95,
+          "reason": "Found S10a and S11a with identical answer options where 8 = Tradition; used both variables explicitly to match the OR logic.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        }
+      ]
+    },
+    {
+      "groupName": "Location",
+      "columns": [
+        {
+          "name": "Own Home",
+          "adjusted": "S9r1 == 1",
+          "confidence": 0.75,
+          "reason": "Found S9r1 ('At your home') in the data map; selected S9r1 == 1 because the original expression 'Assigned S9_1' maps to the S9 row variable indicating selection.",
+          "alternatives": [
+            {
+              "expression": "hLOCATIONr1 == 1",
+              "confidence": 0.65,
+              "reason": "Hidden variable hLOCATIONr1 exists ('HOME') and uses 0/1 selection coding; may be used for assigned locations."
+            },
+            {
+              "expression": "hLOCATION1 == 1",
+              "confidence": 0.65,
+              "reason": "hLOCATION1 maps assigned location code (1=At your home); if assignment uses the summary code rather than per-item flags, this is a plausible alternative."
+            }
+          ],
+          "uncertainties": [
+            "Multiple variables map to the same concept: S9r1 (visible selection), hLOCATIONr1 (hidden per-item flag), and hLOCATION1 (summary assigned location). Please confirm which variable the banner intends to use (S9r1 vs hidden variables)."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Others' Home",
+          "adjusted": "S9r2 == 1",
+          "confidence": 0.75,
+          "reason": "Found S9r2 ('At someone else's home') in the data map; selected S9r2 == 1 to match 'Assigned S9_2'.",
+          "alternatives": [
+            {
+              "expression": "hLOCATIONr2 == 1",
+              "confidence": 0.65,
+              "reason": "Hidden variable hLOCATIONr2 exists ('RESTAURANT' style pattern) and uses 0/1 selection coding; may be used for assigned locations."
+            },
+            {
+              "expression": "hLOCATION1 == 2",
+              "confidence": 0.65,
+              "reason": "hLOCATION1 code 2 = 'At someone else's home' is a plausible summary alternative if assignment used a single code variable."
+            }
+          ],
+          "uncertainties": [
+            "Confirm whether banner expects the per-item S9r2 flag or the hidden summary hLOCATION1/hLOCATIONr2 variable."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Work / Office",
+          "adjusted": "S9r3 == 1",
+          "confidence": 0.75,
+          "reason": "Found S9r3 ('At work/office') in the data map; selected S9r3 == 1 to implement 'Assigned S9_3'.",
+          "alternatives": [
+            {
+              "expression": "hLOCATIONr3 == 1",
+              "confidence": 0.65,
+              "reason": "Hidden per-item flag hLOCATIONr3 exists for 'WORK/OFFICE' and could be used instead of S9r3."
+            },
+            {
+              "expression": "hLOCATION1 == 3",
+              "confidence": 0.65,
+              "reason": "hLOCATION1 code 3 = 'At work/office' as a summary assignment alternative."
+            }
+          ],
+          "uncertainties": [
+            "Multiple candidate variables: confirm whether to use S9r3 (visible selection) or hidden assignment variables."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "College Dorm",
+          "adjusted": "S9r4 == 1",
+          "confidence": 0.75,
+          "reason": "Found S9r4 ('At college/university dorm or apartment') in the data map; selected S9r4 == 1 to reflect 'Assigned S9_4'.",
+          "alternatives": [
+            {
+              "expression": "hLOCATIONr4 == 1",
+              "confidence": 0.65,
+              "reason": "Hidden per-item flag hLOCATIONr4 exists for college/university dorm/apartment and could be the intended assigned variable."
+            },
+            {
+              "expression": "hLOCATION1 == 4",
+              "confidence": 0.65,
+              "reason": "hLOCATION1 code 4 = 'At college/university dorm or apartment' is a plausible summary variable alternative."
+            }
+          ],
+          "uncertainties": [
+            "Please confirm use of S9r4 vs hidden hLOCATION variables for assigned location."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Dining",
+          "adjusted": "(S9r5 == 1 | S9r6 == 1 | S9r7 == 1)",
+          "confidence": 0.75,
+          "reason": "Original expression listed 'Assigned S9_5 OR S9_6 OR S9_7' — mapped to S9r5, S9r6, S9r7 (casual dining, upscale casual, fine dining) using OR logic with selection == 1.",
+          "alternatives": [
+            {
+              "expression": "(hLOCATIONr5 == 1 | hLOCATIONr6 == 1 | hLOCATIONr7 == 1)",
+              "confidence": 0.65,
+              "reason": "Hidden per-item flags hLOCATIONr5/hLOCATIONr6/hLOCATIONr7 correspond to those dining location options and could be used as alternatives."
+            },
+            {
+              "expression": "(hLOCATION1 %in% c(5,6,7))",
+              "confidence": 0.65,
+              "reason": "hLOCATION1 codes 5/6/7 represent dining-related assigned codes; if assignment is in hLOCATION1, this summary approach may be preferred."
+            }
+          ],
+          "uncertainties": [
+            "Confirm whether banner expects combining visible S9r5/6/7 flags or a hidden summary (hLOCATION1) representing these codes."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Bar / Nightclub",
+          "adjusted": "(S9r8 == 1 | S9r9 == 1 | S9r10 == 1 | S9r11 == 1)",
+          "confidence": 0.75,
+          "reason": "Original expression listed 'Assigned S9_8 OR S9_9 OR S9_10 OR S9_11' — mapped to S9r8..S9r11 (sports bar, craft cocktail, premium bar, nightclub) using OR logic.",
+          "alternatives": [
+            {
+              "expression": "(hLOCATIONr8 == 1 | hLOCATIONr9 == 1 | hLOCATIONr10 == 1 | hLOCATIONr11 == 1)",
+              "confidence": 0.65,
+              "reason": "Hidden per-item flags hLOCATIONr8..hLOCATIONr11 correspond to bar/nightclub types; may be used if hidden variables are the assigned source."
+            },
+            {
+              "expression": "(hLOCATION1 %in% c(8,9,10,11))",
+              "confidence": 0.65,
+              "reason": "hLOCATION1 codes for those location categories could be a concise summary alternative."
+            }
+          ],
+          "uncertainties": [
+            "Multiple candidate variables for bar/nightclub grouping — verify whether to use S9r8..11 or hidden hLOCATION variables."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Hotel / Motel",
+          "adjusted": "S9r12 == 1",
+          "confidence": 0.75,
+          "reason": "Found S9r12 ('At a hotel or motel') in the data map; selected S9r12 == 1 to match 'Assigned S9_12'.",
+          "alternatives": [
+            {
+              "expression": "hLOCATIONr12 == 1",
+              "confidence": 0.65,
+              "reason": "Hidden per-item flag hLOCATIONr12 exists and may be the assigned variable."
+            },
+            {
+              "expression": "hLOCATION1 == 12",
+              "confidence": 0.65,
+              "reason": "hLOCATION1 code 12 = 'At a hotel or motel' as a summary assignment alternative."
+            }
+          ],
+          "uncertainties": [
+            "Confirm whether to use visible S9r12 or hidden assignment variables for hotel/motel."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Recreation / Entertainment / Concession",
+          "adjusted": "(S9r13 == 1 | S9r14 == 1)",
+          "confidence": 0.75,
+          "reason": "Original expression 'Assigned S9_13 OR S9_14' mapped to S9r13 and S9r14 (recreation/entertainment and concession stand) combined with OR using selection == 1.",
+          "alternatives": [
+            {
+              "expression": "(hLOCATIONr13 == 1 | hLOCATIONr14 == 1)",
+              "confidence": 0.65,
+              "reason": "Hidden per-item flags hLOCATIONr13/hLOCATIONr14 correspond to these locations and could be used."
+            },
+            {
+              "expression": "(hLOCATION1 %in% c(13,14))",
+              "confidence": 0.65,
+              "reason": "hLOCATION1 codes 13/14 represent these categories as a summary alternative."
+            }
+          ],
+          "uncertainties": [
+            "Please confirm preference for S9r13/14 vs hidden variables for recreation/entertainment/concession mapping."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Outdoor Gathering",
+          "adjusted": "S9r15 == 1",
+          "confidence": 0.75,
+          "reason": "Found S9r15 ('At an outdoor gathering') in the data map; selected S9r15 == 1 to represent 'Assigned S9_15'.",
+          "alternatives": [
+            {
+              "expression": "hLOCATIONr15 == 1",
+              "confidence": 0.65,
+              "reason": "Hidden per-item flag hLOCATIONr15 exists for outdoor gathering and could be used as an alternative."
+            },
+            {
+              "expression": "hLOCATION1 == 15",
+              "confidence": 0.65,
+              "reason": "hLOCATION1 code 15 = 'At an outdoor gathering' as a summary alternative."
+            }
+          ],
+          "uncertainties": [
+            "Confirm whether banner should use S9r15 or hidden assignment variables for outdoor gatherings."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Airport / Transit Location",
+          "adjusted": "S9r16 == 1",
+          "confidence": 0.75,
+          "reason": "Found S9r16 ('At airport or other transit location') in the data map; selected S9r16 == 1 to implement 'Assigned S9_16'.",
+          "alternatives": [
+            {
+              "expression": "hLOCATIONr16 == 1",
+              "confidence": 0.65,
+              "reason": "Hidden per-item flag hLOCATIONr16 exists and may represent assignment."
+            },
+            {
+              "expression": "hLOCATION1 == 16",
+              "confidence": 0.65,
+              "reason": "hLOCATION1 code 16 corresponds to airport/transit as a summary assignment alternative."
+            }
+          ],
+          "uncertainties": [
+            "Multiple variables correspond to airport/transit location — please confirm intended source variable."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Other",
+          "adjusted": "S9r99 == 1",
+          "confidence": 0.75,
+          "reason": "Found S9r99 ('Other (specify)') in the data map; selected S9r99 == 1 to map 'Assigned S9_99'.",
+          "alternatives": [
+            {
+              "expression": "hLOCATIONr99 == 1",
+              "confidence": 0.65,
+              "reason": "Hidden per-item flag hLOCATIONr99 exists and could be used if the banner expects hidden assignments."
+            },
+            {
+              "expression": "hLOCATION1 == 99",
+              "confidence": 0.65,
+              "reason": "hLOCATION1 code 99 corresponds to the 'Other' open response and may be used as a summary variable."
+            }
+          ],
+          "uncertainties": [
+            "Confirm whether to use S9r99 (visible flag) or a hidden summary variable for the 'Other' category; if using S9r99, check whether to also include S9r99oe text presence (!is.na(S9r99oe)) when needed."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "direct_variable"
+        }
+      ]
+    }
+  ]
+}
