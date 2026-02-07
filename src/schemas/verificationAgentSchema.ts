@@ -154,7 +154,7 @@ export const ExtendedTableDefinitionSchema = z.object({
    * Set by infrastructure code, not by agents themselves.
    * Used for debugging and review to trace responsibility.
    */
-  lastModifiedBy: z.enum(['VerificationAgent', 'BaseFilterAgent']),
+  lastModifiedBy: z.enum(['VerificationAgent', 'BaseFilterAgent', 'FilterApplicator']),
 
   // =========================================================================
   // Loop/Stacking Support

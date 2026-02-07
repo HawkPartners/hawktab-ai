@@ -15,8 +15,9 @@ import { processAllGroups as processCrosstabGroups } from '../../agents/Crosstab
 import { groupDataMap } from '../tables/DataMapGrouper';
 import { generateTables, convertToLegacyFormat, getGeneratorStats } from '../tables/TableGenerator';
 import { verifyAllTablesParallel } from '../../agents/VerificationAgent';
-import { analyzeAllTableBasesParallel } from '../../agents/BaseFilterAgent';
-import { summarizeBaseFilterResults } from '../../schemas/baseFilterAgentSchema';
+import { extractSkipLogic } from '../../agents/SkipLogicAgent';
+import { translateSkipRules } from '../../agents/FilterTranslatorAgent';
+import { applyFilters } from '../filters/FilterApplicator';
 import { processSurvey } from '../processors/SurveyProcessor';
 import { generateRScriptV2WithValidation } from '../r/RScriptGeneratorV2';
 import { validateAndFixTables } from '../r/ValidationOrchestrator';
@@ -104,7 +105,7 @@ export async function runPipeline(
   const { log, logStep } = logger;
 
   const startTime = Date.now();
-  const totalSteps = stopAfterVerification ? 5 : 10;
+  const totalSteps = stopAfterVerification ? 5 : 11;
 
   // Reset metrics collector for this pipeline run
   resetMetricsCollector();
@@ -274,12 +275,29 @@ export async function runPipeline(
     log('', 'reset');
 
     // -------------------------------------------------------------------------
+    // Pre-parallel: Survey processing
+    // -------------------------------------------------------------------------
+    let surveyMarkdown: string | null = null;
+    if (files.survey) {
+      log(`Processing survey: ${path.basename(files.survey)}`, 'cyan');
+      const surveyResult = await processSurvey(files.survey, outputDir);
+      surveyMarkdown = surveyResult.markdown;
+      if (surveyMarkdown) {
+        log(`  Survey: ${surveyMarkdown.length} characters`, 'green');
+      } else {
+        log(`  Survey processing failed: ${surveyResult.warnings.join(', ')}`, 'yellow');
+      }
+    }
+    log('', 'reset');
+
+    // -------------------------------------------------------------------------
     // Steps 2-5: Parallel Path Execution
     // -------------------------------------------------------------------------
     log('', 'reset');
     logStep(2, totalSteps, 'Starting parallel paths...');
     log(`  Path A: BannerAgent → CrosstabAgent`, 'dim');
-    log(`  Path B: TableGenerator → VerificationAgent`, 'dim');
+    log(`  Path B: TableGenerator → tables + distribution stats`, 'dim');
+    log(`  Path C: SkipLogicAgent → FilterTranslatorAgent → filters`, 'dim');
     log('', 'reset');
 
     const parallelStartTime = Date.now();
@@ -332,7 +350,7 @@ export async function runPipeline(
       return { bannerResult, crosstabResult, agentBanner, groupCount, columnCount };
     })();
 
-    // Path B: TableGenerator → Survey → VerificationAgent (Parallel)
+    // Path B: TableGenerator → tables + distribution stats (VerificationAgent moved to sequential)
     const pathBPromise = (async () => {
       const pathBStart = Date.now();
       log(`  [Path B] Starting TableGenerator...`, 'cyan');
@@ -364,69 +382,55 @@ export async function runPipeline(
         log(`  [Path B] Distribution stats skipped: ${distError instanceof Error ? distError.message : String(distError)}`, 'yellow');
       }
 
-      // Survey processing
-      let surveyMarkdown: string | null = null;
-      if (files.survey) {
-        log(`  [Path B] Processing survey: ${path.basename(files.survey)}`, 'cyan');
-        const surveyResult = await processSurvey(files.survey, outputDir);
-        surveyMarkdown = surveyResult.markdown;
-        if (surveyMarkdown) {
-          log(`  [Path B] Survey: ${surveyMarkdown.length} characters`, 'green');
-        } else {
-          log(`  [Path B] Survey processing failed: ${surveyResult.warnings.join(', ')}`, 'yellow');
-        }
-      }
-
-      // VerificationAgent (Parallel)
-      let verifiedTables: ExtendedTableDefinition[];
-      const { toExtendedTable } = await import('../../schemas/verificationAgentSchema');
-
-      if (surveyMarkdown) {
-        log(`  [Path B] Starting VerificationAgent (parallel, concurrency: ${concurrency})...`, 'cyan');
-        const verificationStart = Date.now();
-        eventBus.emitStageStart(5, STAGE_NAMES[5]);
-        try {
-          const verificationResult = await verifyAllTablesParallel(
-            tableAgentResults,
-            surveyMarkdown,
-            verboseDataMap,
-            { outputDir, concurrency }
-          );
-          verifiedTables = verificationResult.tables;
-          log(`  [Path B] VerificationAgent: ${verifiedTables.length} tables (${verificationResult.metadata.tablesModified} modified)`, 'green');
-          eventBus.emitStageComplete(5, STAGE_NAMES[5], Date.now() - verificationStart);
-        } catch (verifyError) {
-          log(`  [Path B] VerificationAgent failed: ${verifyError instanceof Error ? verifyError.message : String(verifyError)}`, 'yellow');
-          eventBus.emitStageFailed(5, STAGE_NAMES[5], verifyError instanceof Error ? verifyError.message : String(verifyError));
-          verifiedTables = tableAgentResults.flatMap(group =>
-            group.tables.map(t => toExtendedTable(t, group.questionId))
-          );
-        }
-      } else {
-        log(`  [Path B] No survey - using TableGenerator output directly`, 'yellow');
-        eventBus.emitStageStart(5, STAGE_NAMES[5]);
-        verifiedTables = tableAgentResults.flatMap(group =>
-          group.tables.map(t => toExtendedTable(t, group.questionId))
-        );
-        eventBus.emitStageComplete(5, STAGE_NAMES[5], 0);
-
-        // Create verification folder with passthrough output
-        const verificationDir = path.join(outputDir, 'verification');
-        await fs.mkdir(verificationDir, { recursive: true });
-        await fs.writeFile(
-          path.join(verificationDir, 'verification-output-raw.json'),
-          JSON.stringify({ tables: verifiedTables }, null, 2),
-          'utf-8'
-        );
-      }
-
       log(`  [Path B] Complete in ${((Date.now() - pathBStart) / 1000).toFixed(1)}s`, 'dim');
 
-      return { tableAgentResults, verifiedTables, surveyMarkdown };
+      return { tableAgentResults };
     })();
 
-    // Wait for both paths
-    const [pathAResult, pathBResult] = await Promise.allSettled([pathAPromise, pathBPromise]);
+    // Path C: SkipLogicAgent → FilterTranslatorAgent (NEW)
+    const pathCPromise = (async () => {
+      if (!surveyMarkdown) {
+        log(`  [Path C] No survey — skipping skip logic extraction`, 'yellow');
+        return { skipLogicResult: null, filterResult: null };
+      }
+
+      const pathCStart = Date.now();
+      log(`  [Path C] Starting SkipLogicAgent...`, 'cyan');
+      eventBus.emitStageStart(5, STAGE_NAMES[5]);
+
+      try {
+        const skipLogicResult = await extractSkipLogic(surveyMarkdown, { outputDir });
+        log(`  [Path C] SkipLogicAgent: ${skipLogicResult.metadata.rulesExtracted} rules, ${skipLogicResult.metadata.noRuleQuestions} no-rule questions`, 'green');
+        eventBus.emitStageComplete(5, STAGE_NAMES[5], Date.now() - pathCStart);
+
+        // FilterTranslatorAgent (chained after SkipLogicAgent)
+        if (skipLogicResult.extraction.rules.length > 0) {
+          log(`  [Path C] Starting FilterTranslatorAgent...`, 'cyan');
+
+          const filterResult = await translateSkipRules(
+            skipLogicResult.extraction.rules,
+            verboseDataMap,
+            { outputDir }
+          );
+
+          log(`  [Path C] FilterTranslatorAgent: ${filterResult.metadata.filtersTranslated} filters (${filterResult.metadata.highConfidenceCount} high confidence)`, 'green');
+          log(`  [Path C] Complete in ${((Date.now() - pathCStart) / 1000).toFixed(1)}s`, 'dim');
+
+          return { skipLogicResult, filterResult };
+        } else {
+          log(`  [Path C] No rules to translate`, 'dim');
+          return { skipLogicResult, filterResult: null };
+        }
+      } catch (pathCError) {
+        const errorMsg = pathCError instanceof Error ? pathCError.message : String(pathCError);
+        log(`  [Path C] Skip logic extraction failed: ${errorMsg}`, 'yellow');
+        eventBus.emitStageFailed(5, STAGE_NAMES[5], errorMsg);
+        return { skipLogicResult: null, filterResult: null };
+      }
+    })();
+
+    // Wait for all three paths
+    const [pathAResult, pathBResult, pathCResult] = await Promise.allSettled([pathAPromise, pathBPromise, pathCPromise]);
 
     const parallelDuration = Date.now() - parallelStartTime;
     log('', 'reset');
@@ -439,16 +443,118 @@ export async function runPipeline(
     }
     if (pathBResult.status === 'rejected') {
       const errorMsg = pathBResult.reason instanceof Error ? pathBResult.reason.message : String(pathBResult.reason);
-      throw new Error(`Path B (Table/Verification) failed: ${errorMsg}`);
+      throw new Error(`Path B (TableGenerator) failed: ${errorMsg}`);
     }
+    // Path C failure is graceful — tables pass through without filters
 
     // Extract results
     const { crosstabResult, groupCount, columnCount } = pathAResult.value;
-    const { tableAgentResults, verifiedTables, surveyMarkdown } = pathBResult.value;
+    const { tableAgentResults } = pathBResult.value;
     const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
 
+    // Path C results (may be null if failed or no survey)
+    const pathCValue = pathCResult.status === 'fulfilled' ? pathCResult.value : { skipLogicResult: null, filterResult: null };
+    const { skipLogicResult, filterResult } = pathCValue;
+
     log(`  Path A: ${groupCount} groups, ${columnCount} columns, ${crosstabResult.result.bannerCuts.length} validated`, 'dim');
-    log(`  Path B: ${tableAgentTables.length} table definitions, ${verifiedTables.length} verified`, 'dim');
+    log(`  Path B: ${tableAgentTables.length} table definitions`, 'dim');
+    if (skipLogicResult) {
+      log(`  Path C: ${skipLogicResult.metadata.rulesExtracted} rules → ${filterResult?.metadata.filtersTranslated || 0} filters`, 'dim');
+    } else {
+      log(`  Path C: skipped (no survey or failed)`, 'dim');
+    }
+    log('', 'reset');
+
+    // -------------------------------------------------------------------------
+    // Sequential: Convert tables → FilterApplicator → VerificationAgent
+    // -------------------------------------------------------------------------
+
+    // Convert TableGenerator output to ExtendedTableDefinition[]
+    const { toExtendedTable } = await import('../../schemas/verificationAgentSchema');
+    let extendedTables: ExtendedTableDefinition[] = tableAgentResults.flatMap(group =>
+      group.tables.map(t => toExtendedTable(t, group.questionId))
+    );
+
+    // Step 6: FilterApplicator (deterministic, instant)
+    logStep(6, totalSteps, 'Applying pre-computed filters...');
+    const stepStart6 = Date.now();
+    eventBus.emitStageStart(6, STAGE_NAMES[6]);
+
+    const validVariables = new Set<string>(verboseDataMap.map(v => v.column));
+
+    if (filterResult && filterResult.translation.filters.length > 0) {
+      const filterApplicatorResult = applyFilters(
+        extendedTables,
+        filterResult.translation,
+        skipLogicResult?.extraction.noRuleQuestions || [],
+        validVariables,
+      );
+
+      extendedTables = filterApplicatorResult.tables;
+      log(`  Filtered: ${filterApplicatorResult.summary.totalInputTables} → ${filterApplicatorResult.summary.totalOutputTables} tables`, 'green');
+      log(`    Pass: ${filterApplicatorResult.summary.passCount}, Filter: ${filterApplicatorResult.summary.filterCount}, Split: ${filterApplicatorResult.summary.splitCount}`, 'dim');
+      if (filterApplicatorResult.summary.reviewRequiredCount > 0) {
+        log(`    Review required: ${filterApplicatorResult.summary.reviewRequiredCount}`, 'yellow');
+      }
+    } else {
+      log(`  No filters to apply — tables pass through unchanged`, 'dim');
+    }
+
+    eventBus.emitStageComplete(6, STAGE_NAMES[6], Date.now() - stepStart6);
+    log(`  Duration: ${Date.now() - stepStart6}ms`, 'dim');
+    log('', 'reset');
+
+    // Step 7: VerificationAgent (now sequential, sees pre-filtered tables)
+    let verifiedTables: ExtendedTableDefinition[];
+    logStep(7, totalSteps, 'Running VerificationAgent...');
+    const stepStart7 = Date.now();
+    eventBus.emitStageStart(7, STAGE_NAMES[7]);
+
+    if (surveyMarkdown) {
+      try {
+        const verificationResult = await verifyAllTablesParallel(
+          tableAgentResults,
+          surveyMarkdown,
+          verboseDataMap,
+          { outputDir, concurrency }
+        );
+        verifiedTables = verificationResult.tables;
+
+        // Re-apply filters to verified tables (VerificationAgent may have changed structure)
+        if (filterResult && filterResult.translation.filters.length > 0) {
+          const reappliedResult = applyFilters(
+            verifiedTables,
+            filterResult.translation,
+            skipLogicResult?.extraction.noRuleQuestions || [],
+            validVariables,
+          );
+          verifiedTables = reappliedResult.tables;
+          log(`  Re-applied filters after verification: ${reappliedResult.summary.filterCount} filtered, ${reappliedResult.summary.splitCount} split`, 'dim');
+        }
+
+        log(`  VerificationAgent: ${verifiedTables.length} tables (${verificationResult.metadata.tablesModified} modified)`, 'green');
+        eventBus.emitStageComplete(7, STAGE_NAMES[7], Date.now() - stepStart7);
+      } catch (verifyError) {
+        log(`  VerificationAgent failed: ${verifyError instanceof Error ? verifyError.message : String(verifyError)}`, 'yellow');
+        eventBus.emitStageFailed(7, STAGE_NAMES[7], verifyError instanceof Error ? verifyError.message : String(verifyError));
+        verifiedTables = extendedTables;
+      }
+    } else {
+      log(`  No survey — using filtered TableGenerator output directly`, 'yellow');
+      verifiedTables = extendedTables;
+      eventBus.emitStageComplete(7, STAGE_NAMES[7], 0);
+
+      // Create verification folder with passthrough output
+      const verificationDir = path.join(outputDir, 'verification');
+      await fs.mkdir(verificationDir, { recursive: true });
+      await fs.writeFile(
+        path.join(verificationDir, 'verification-output-raw.json'),
+        JSON.stringify({ tables: verifiedTables }, null, 2),
+        'utf-8'
+      );
+    }
+
+    log(`  Duration: ${Date.now() - stepStart7}ms`, 'dim');
     log('', 'reset');
 
     // -------------------------------------------------------------------------
@@ -493,45 +599,8 @@ export async function runPipeline(
     log(`  Sorted ${sortedTables.length} tables`, 'green');
     log('', 'reset');
 
-    // -------------------------------------------------------------------------
-    // Step 6: BaseFilterAgent - Detect skip/show logic
-    // -------------------------------------------------------------------------
-    logStep(6, totalSteps, 'Analyzing table bases for skip logic...');
-    const stepStart6 = Date.now();
-    eventBus.emitStageStart(6, STAGE_NAMES[6]);
-
-    let filteredTables: ExtendedTableDefinition[];
-    if (surveyMarkdown) {
-      const baseFilterResult = await analyzeAllTableBasesParallel(
-        sortedTables,
-        surveyMarkdown,
-        verboseDataMap,
-        { outputDir, concurrency }
-      );
-
-      // Flatten results (each input table may become 1+ output tables)
-      filteredTables = baseFilterResult.results.flatMap(r => r.tables);
-      const baseFilterSummary = summarizeBaseFilterResults(baseFilterResult.results);
-
-      log(`  Analyzed ${sortedTables.length} tables:`, 'green');
-      log(`    Pass: ${baseFilterSummary.passCount}`, 'dim');
-      if (baseFilterSummary.filterCount > 0) {
-        log(`    Filter: ${baseFilterSummary.filterCount}`, 'yellow');
-      }
-      if (baseFilterSummary.splitCount > 0) {
-        log(`    Split: ${baseFilterSummary.splitCount}`, 'yellow');
-      }
-      if (baseFilterSummary.reviewRequiredCount > 0) {
-        log(`    Review required: ${baseFilterSummary.reviewRequiredCount}`, 'yellow');
-      }
-      log(`  Output: ${filteredTables.length} tables`, 'green');
-    } else {
-      log(`  No survey - skipping base filter analysis`, 'yellow');
-      filteredTables = sortedTables;
-    }
-    eventBus.emitStageComplete(6, STAGE_NAMES[6], Date.now() - stepStart6);
-    log(`  Duration: ${Date.now() - stepStart6}ms`, 'dim');
-    log('', 'reset');
+    // Use sortedTables as our filtered output (filters were already applied before verification)
+    const filteredTables = sortedTables;
 
     // Tag tables with loop data frame (if loops detected)
     if (loopMappings.length > 0) {
@@ -553,11 +622,11 @@ export async function runPipeline(
     }
 
     // -------------------------------------------------------------------------
-    // Step 7: R Validation with Retry
+    // Step 8: R Validation with Retry
     // -------------------------------------------------------------------------
-    logStep(7, totalSteps, 'Validating R code per table...');
-    const stepStart7 = Date.now();
-    eventBus.emitStageStart(7, STAGE_NAMES[7]);
+    logStep(8, totalSteps, 'Validating R code per table...');
+    const stepStart8 = Date.now();
+    eventBus.emitStageStart(8, STAGE_NAMES[8]);
 
     const cutsSpec = buildCutsSpec(crosstabResult.result);
 
@@ -589,8 +658,8 @@ export async function runPipeline(
     if (failedValidationCount > 0) {
       log(`  Failed R validation: ${failedValidationCount}`, 'red');
     }
-    eventBus.emitStageComplete(7, STAGE_NAMES[7], Date.now() - stepStart7);
-    log(`  Duration: ${Date.now() - stepStart7}ms`, 'dim');
+    eventBus.emitStageComplete(8, STAGE_NAMES[8], Date.now() - stepStart8);
+    log(`  Duration: ${Date.now() - stepStart8}ms`, 'dim');
     log('', 'reset');
 
     // Combine valid + excluded tables for R script generation
@@ -598,11 +667,11 @@ export async function runPipeline(
     log(`  Tables for R script: ${validTables.length} valid + ${newlyExcluded.length} excluded = ${allTablesForR.length} total`, 'dim');
 
     // -------------------------------------------------------------------------
-    // Step 8: RScriptGeneratorV2
+    // Step 9: RScriptGeneratorV2
     // -------------------------------------------------------------------------
-    logStep(8, totalSteps, 'Generating R script...');
-    const stepStart8 = Date.now();
-    eventBus.emitStageStart(8, STAGE_NAMES[8]);
+    logStep(9, totalSteps, 'Generating R script...');
+    const stepStart9 = Date.now();
+    eventBus.emitStageStart(9, STAGE_NAMES[9]);
     const rDir = path.join(outputDir, 'r');
     await fs.mkdir(rDir, { recursive: true });
 
@@ -628,16 +697,16 @@ export async function runPipeline(
 
     log(`  Generated R script (${Math.round(masterScript.length / 1024)} KB)`, 'green');
     log(`  Tables in script: ${allTablesForR.length} (${validTables.length} valid, ${newlyExcluded.length} excluded)`, 'green');
-    eventBus.emitStageComplete(8, STAGE_NAMES[8], Date.now() - stepStart8);
-    log(`  Duration: ${Date.now() - stepStart8}ms`, 'dim');
+    eventBus.emitStageComplete(9, STAGE_NAMES[9], Date.now() - stepStart9);
+    log(`  Duration: ${Date.now() - stepStart9}ms`, 'dim');
     log('', 'reset');
 
     // -------------------------------------------------------------------------
-    // Step 9: R Execution
+    // Step 10: R Execution
     // -------------------------------------------------------------------------
-    logStep(9, totalSteps, 'Executing R script...');
-    const stepStart9 = Date.now();
-    eventBus.emitStageStart(9, STAGE_NAMES[9]);
+    logStep(10, totalSteps, 'Executing R script...');
+    const stepStart10 = Date.now();
+    eventBus.emitStageStart(10, STAGE_NAMES[10]);
 
     const resultsDir = path.join(outputDir, 'results');
     await fs.mkdir(resultsDir, { recursive: true });
@@ -701,15 +770,15 @@ export async function runPipeline(
         log(`  WARNING: No tables.json generated`, 'yellow');
       }
 
-      eventBus.emitStageComplete(9, STAGE_NAMES[9], Date.now() - stepStart9);
-      log(`  Duration: ${Date.now() - stepStart9}ms`, 'dim');
+      eventBus.emitStageComplete(10, STAGE_NAMES[10], Date.now() - stepStart10);
+      log(`  Duration: ${Date.now() - stepStart10}ms`, 'dim');
 
       // -------------------------------------------------------------------------
-      // Step 10: Excel Export
+      // Step 11: Excel Export
       // -------------------------------------------------------------------------
-      logStep(10, totalSteps, 'Generating Excel workbook...');
-      const stepStart10 = Date.now();
-      eventBus.emitStageStart(10, STAGE_NAMES[10]);
+      logStep(11, totalSteps, 'Generating Excel workbook...');
+      const stepStart11 = Date.now();
+      eventBus.emitStageStart(11, STAGE_NAMES[11]);
 
       const tablesJsonPath = path.join(resultsDir, 'tables.json');
       const excelPath = path.join(resultsDir, 'crosstabs.xlsx');
@@ -723,11 +792,11 @@ export async function runPipeline(
         await formatter.saveToFile(excelPath);
 
         log(`  Generated crosstabs.xlsx (format: ${format}, display: ${displayMode})`, 'green');
-        eventBus.emitStageComplete(10, STAGE_NAMES[10], Date.now() - stepStart10);
-        log(`  Duration: ${Date.now() - stepStart10}ms`, 'dim');
+        eventBus.emitStageComplete(11, STAGE_NAMES[11], Date.now() - stepStart11);
+        log(`  Duration: ${Date.now() - stepStart11}ms`, 'dim');
       } catch (excelError) {
         log(`  Excel generation failed: ${excelError instanceof Error ? excelError.message : String(excelError)}`, 'red');
-        eventBus.emitStageFailed(10, STAGE_NAMES[10], excelError instanceof Error ? excelError.message : String(excelError));
+        eventBus.emitStageFailed(11, STAGE_NAMES[11], excelError instanceof Error ? excelError.message : String(excelError));
       }
 
     } catch (rError) {
@@ -744,10 +813,10 @@ export async function runPipeline(
 
       if (errorMsg.includes('command not found') && !errorMsg.includes('Error in')) {
         log(`  R not installed - script saved for manual execution`, 'yellow');
-        eventBus.emitStageFailed(9, STAGE_NAMES[9], 'R not installed');
+        eventBus.emitStageFailed(10, STAGE_NAMES[10], 'R not installed');
       } else {
         log(`  R execution failed:`, 'red');
-        eventBus.emitStageFailed(9, STAGE_NAMES[9], errorMsg.substring(0, 200));
+        eventBus.emitStageFailed(10, STAGE_NAMES[10], errorMsg.substring(0, 200));
         if (stderr) {
           const stderrTail = stderr.length > 500 ? '...' + stderr.slice(-500) : stderr;
           log(`  ${stderrTail}`, 'dim');

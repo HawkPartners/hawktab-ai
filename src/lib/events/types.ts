@@ -277,12 +277,13 @@ export const STAGE_NAMES: Record<number, string> = {
   2: 'BannerAgent',
   3: 'CrosstabAgent',
   4: 'TableGenerator',
-  5: 'VerificationAgent',
-  6: 'BaseFilterAgent',
-  7: 'R Validation',
-  8: 'R Script Generation',
-  9: 'R Execution',
-  10: 'Excel Export',
+  5: 'SkipLogicAgent',
+  6: 'FilterApplicator',
+  7: 'VerificationAgent',
+  8: 'R Validation',
+  9: 'R Script Generation',
+  10: 'R Execution',
+  11: 'Excel Export',
 };
 
-export const TOTAL_STAGES = 10;
+export const TOTAL_STAGES = 11;

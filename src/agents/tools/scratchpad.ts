@@ -56,6 +56,8 @@ export const tableScratchpadTool = createScratchpadTool('TableAgent');
 export const bannerScratchpadTool = createScratchpadTool('BannerAgent');
 export const verificationScratchpadTool = createScratchpadTool('VerificationAgent');
 export const baseFilterScratchpadTool = createScratchpadTool('BaseFilterAgent');
+export const skipLogicScratchpadTool = createScratchpadTool('SkipLogicAgent');
+export const filterTranslatorScratchpadTool = createScratchpadTool('FilterTranslatorAgent');
 
 // Legacy export for backward compatibility
 // TODO: Migrate existing agents to use agent-specific tools

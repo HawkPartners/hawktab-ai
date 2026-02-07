@@ -1,0 +1,14 @@
+// FilterTranslator Agent prompt selector
+import { FILTER_TRANSLATOR_AGENT_INSTRUCTIONS_PRODUCTION } from './production';
+
+export const getFilterTranslatorPrompt = (version?: string): string => {
+  const promptVersion = version || process.env.FILTERTRANSLATOR_PROMPT_VERSION || 'production';
+
+  switch (promptVersion) {
+    case 'production':
+    default:
+      return FILTER_TRANSLATOR_AGENT_INSTRUCTIONS_PRODUCTION;
+  }
+};
+
+export { FILTER_TRANSLATOR_AGENT_INSTRUCTIONS_PRODUCTION };

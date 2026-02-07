@@ -2,6 +2,10 @@ import { z } from 'zod';
 import { ExtendedTableDefinitionSchema } from './verificationAgentSchema';
 
 /**
+ * @deprecated Replaced by SkipLogicAgent + FilterTranslatorAgent + FilterApplicator.
+ * This file is kept only for backward compatibility with existing pipeline outputs.
+ * Do not add new features here. See src/schemas/skipLogicSchema.ts.
+ *
  * BaseFilterAgent Schemas
  *
  * Purpose: Define input/output structures for the BaseFilterAgent that detects

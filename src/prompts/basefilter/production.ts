@@ -1,4 +1,8 @@
 /**
+ * @deprecated Replaced by SkipLogicAgent + FilterTranslatorAgent + FilterApplicator.
+ * This file is kept only for backward compatibility with existing pipeline outputs.
+ * Do not add new features here. See src/prompts/skiplogic/ and src/prompts/filtertranslator/.
+ *
  * BaseFilterAgent Production Prompt
  *
  * Purpose: Detect skip/show logic in survey questions and determine appropriate

@@ -23,6 +23,8 @@ export interface AgentReasoningConfig {
   tableReasoningEffort: ReasoningEffort;
   verificationReasoningEffort: ReasoningEffort;
   baseFilterReasoningEffort: ReasoningEffort;
+  skipLogicReasoningEffort: ReasoningEffort;
+  filterTranslatorReasoningEffort: ReasoningEffort;
 }
 
 export interface ProcessingLimits {
@@ -37,6 +39,8 @@ export interface ProcessingLimits {
   tableModelTokens: number;
   verificationModelTokens: number;
   baseFilterModelTokens: number;
+  skipLogicModelTokens: number;
+  filterTranslatorModelTokens: number;
 }
 
 export interface PromptVersions {
@@ -45,6 +49,8 @@ export interface PromptVersions {
   tablePromptVersion: string;
   verificationPromptVersion: string;
   baseFilterPromptVersion: string;
+  skipLogicPromptVersion: string;
+  filterTranslatorPromptVersion: string;
 }
 
 export interface EnvironmentConfig {
@@ -63,6 +69,8 @@ export interface EnvironmentConfig {
   tableModel: string;      // e.g., 'gpt-5-nano' - used by TableAgent (table definitions)
   verificationModel: string; // e.g., 'gpt-5-mini' - used by VerificationAgent (survey enhancement)
   baseFilterModel: string;   // e.g., 'gpt-5-mini' - used by BaseFilterAgent (skip logic detection)
+  skipLogicModel: string;    // e.g., 'gpt-5-mini' - used by SkipLogicAgent (survey rule extraction)
+  filterTranslatorModel: string; // e.g., 'o4-mini' - used by FilterTranslatorAgent (R expression translation)
 
   // Deprecated (optional, for rollback purposes)
   openaiApiKey?: string;

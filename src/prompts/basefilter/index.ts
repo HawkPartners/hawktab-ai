@@ -1,3 +1,8 @@
+/**
+ * @deprecated Replaced by SkipLogicAgent + FilterTranslatorAgent + FilterApplicator.
+ * This file is kept only for backward compatibility with existing pipeline outputs.
+ * Do not add new features here. See src/prompts/skiplogic/ and src/prompts/filtertranslator/.
+ */
 // BaseFilter Agent prompt selector
 import { BASEFILTER_AGENT_INSTRUCTIONS_PRODUCTION } from './production';
 

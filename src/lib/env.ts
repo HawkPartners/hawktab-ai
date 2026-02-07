@@ -118,6 +118,8 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   const tableModel = process.env.TABLE_MODEL || 'gpt-5-nano';
   const verificationModel = process.env.VERIFICATION_MODEL || process.env.TABLE_MODEL || 'gpt-5-mini';
   const baseFilterModel = process.env.BASEFILTER_MODEL || verificationModel;
+  const skipLogicModel = process.env.SKIPLOGIC_MODEL || verificationModel;
+  const filterTranslatorModel = process.env.FILTERTRANSLATOR_MODEL || crosstabModel;
 
   // Legacy model aliases (for backward compatibility)
   const reasoningModel = process.env.REASONING_MODEL || crosstabModel;
@@ -130,6 +132,8 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   const tableReasoningEffort = parseReasoningEffort(process.env.TABLE_REASONING_EFFORT, 'TABLE');
   const verificationReasoningEffort = parseReasoningEffort(process.env.VERIFICATION_REASONING_EFFORT, 'VERIFICATION');
   const baseFilterReasoningEffort = parseReasoningEffort(process.env.BASEFILTER_REASONING_EFFORT, 'BASEFILTER');
+  const skipLogicReasoningEffort = parseReasoningEffort(process.env.SKIPLOGIC_REASONING_EFFORT, 'SKIPLOGIC');
+  const filterTranslatorReasoningEffort = parseReasoningEffort(process.env.FILTERTRANSLATOR_REASONING_EFFORT, 'FILTERTRANSLATOR');
 
   const nodeEnv = (process.env.NODE_ENV as 'development' | 'production') || 'development';
 
@@ -148,6 +152,8 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
     tableModel,
     verificationModel,
     baseFilterModel,
+    skipLogicModel,
+    filterTranslatorModel,
 
     // Deprecated
     openaiApiKey: process.env.OPENAI_API_KEY,  // Optional, deprecated
@@ -161,6 +167,8 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
       tablePromptVersion: process.env.TABLE_PROMPT_VERSION || 'production',
       verificationPromptVersion: process.env.VERIFICATION_PROMPT_VERSION || 'production',
       baseFilterPromptVersion: process.env.BASEFILTER_PROMPT_VERSION || 'production',
+      skipLogicPromptVersion: process.env.SKIPLOGIC_PROMPT_VERSION || 'production',
+      filterTranslatorPromptVersion: process.env.FILTERTRANSLATOR_PROMPT_VERSION || 'production',
     },
     processingLimits: {
       maxDataMapVariables: parseInt(process.env.MAX_DATA_MAP_VARIABLES || '1000'),
@@ -174,6 +182,8 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
       tableModelTokens: parseInt(process.env.TABLE_MODEL_TOKENS || '128000'),
       verificationModelTokens: parseInt(process.env.VERIFICATION_MODEL_TOKENS || process.env.TABLE_MODEL_TOKENS || '128000'),
       baseFilterModelTokens: parseInt(process.env.BASEFILTER_MODEL_TOKENS || process.env.VERIFICATION_MODEL_TOKENS || '128000'),
+      skipLogicModelTokens: parseInt(process.env.SKIPLOGIC_MODEL_TOKENS || process.env.VERIFICATION_MODEL_TOKENS || '128000'),
+      filterTranslatorModelTokens: parseInt(process.env.FILTERTRANSLATOR_MODEL_TOKENS || process.env.CROSSTAB_MODEL_TOKENS || '100000'),
     },
     reasoningConfig: {
       crosstabReasoningEffort,
@@ -181,6 +191,8 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
       tableReasoningEffort,
       verificationReasoningEffort,
       baseFilterReasoningEffort,
+      skipLogicReasoningEffort,
+      filterTranslatorReasoningEffort,
     },
   };
 };
@@ -247,6 +259,26 @@ export const getBaseFilterModel = () => {
 };
 
 /**
+ * Get SkipLogicAgent model for survey rule extraction
+ * Used by: SkipLogicAgent (reads survey, extracts skip/show rules)
+ */
+export const getSkipLogicModel = () => {
+  const config = getEnvironmentConfig();
+  const provider = getAzureProvider();
+  return provider.chat(config.skipLogicModel);
+};
+
+/**
+ * Get FilterTranslatorAgent model for R expression translation
+ * Used by: FilterTranslatorAgent (translates rules to R using datamap)
+ */
+export const getFilterTranslatorModel = () => {
+  const config = getEnvironmentConfig();
+  const provider = getAzureProvider();
+  return provider.chat(config.filterTranslatorModel);
+};
+
+/**
  * Get per-agent model name strings (for logging)
  */
 export const getCrosstabModelName = (): string => {
@@ -272,6 +304,16 @@ export const getVerificationModelName = (): string => {
 export const getBaseFilterModelName = (): string => {
   const config = getEnvironmentConfig();
   return `azure/${config.baseFilterModel}`;
+};
+
+export const getSkipLogicModelName = (): string => {
+  const config = getEnvironmentConfig();
+  return `azure/${config.skipLogicModel}`;
+};
+
+export const getFilterTranslatorModelName = (): string => {
+  const config = getEnvironmentConfig();
+  return `azure/${config.filterTranslatorModel}`;
 };
 
 /**
@@ -300,6 +342,16 @@ export const getVerificationModelTokenLimit = (): number => {
 export const getBaseFilterModelTokenLimit = (): number => {
   const config = getEnvironmentConfig();
   return config.processingLimits.baseFilterModelTokens;
+};
+
+export const getSkipLogicModelTokenLimit = (): number => {
+  const config = getEnvironmentConfig();
+  return config.processingLimits.skipLogicModelTokens;
+};
+
+export const getFilterTranslatorModelTokenLimit = (): number => {
+  const config = getEnvironmentConfig();
+  return config.processingLimits.filterTranslatorModelTokens;
 };
 
 // =============================================================================
@@ -335,6 +387,16 @@ export const getVerificationReasoningEffort = (): ReasoningEffort => {
 export const getBaseFilterReasoningEffort = (): ReasoningEffort => {
   const config = getEnvironmentConfig();
   return config.reasoningConfig.baseFilterReasoningEffort;
+};
+
+export const getSkipLogicReasoningEffort = (): ReasoningEffort => {
+  const config = getEnvironmentConfig();
+  return config.reasoningConfig.skipLogicReasoningEffort;
+};
+
+export const getFilterTranslatorReasoningEffort = (): ReasoningEffort => {
+  const config = getEnvironmentConfig();
+  return config.reasoningConfig.filterTranslatorReasoningEffort;
 };
 
 /**
