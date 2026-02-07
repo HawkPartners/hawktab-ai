@@ -228,6 +228,7 @@ for (var in vars) {
   if (var %in% names(data)) {
     vals <- data[[var]]
     vals <- vals[!is.na(vals)]
+    if (inherits(vals, "POSIXt") || inherits(vals, "difftime")) next
     if (length(vals) > 0) {
       stats_list[[var]] <- list(
         n = length(vals),

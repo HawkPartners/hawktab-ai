@@ -198,25 +198,12 @@ export class DataMapProcessor {
         return enriched;
       }
 
-      // No labels but has range - use threshold to determine type
-      // Fielding partners use small ranges (1-5, 1-53) for categorical/scales
-      // and large ranges (0-99, 0-100) for true numeric open-ends
+      // No labels + has numeric range → numeric open-end
+      // If SPSS had coded categories, they'd have value labels (caught above).
+      // Absence of labels means the respondent entered a free number (e.g., "how many drinks?").
       if (enriched.rangeMin !== undefined && enriched.rangeMax !== undefined) {
-        const CATEGORICAL_THRESHOLD = 60; // Captures US states (1-53), scales, etc.
-
-        if (enriched.rangeMax <= CATEGORICAL_THRESHOLD) {
-          // Small range = categorical (scales, state codes, small option sets)
-          enriched.normalizedType = 'categorical_select';
-          // Generate allowedValues from the range
-          enriched.allowedValues = [];
-          for (let i = enriched.rangeMin; i <= enriched.rangeMax; i++) {
-            enriched.allowedValues.push(i);
-          }
-        } else {
-          // Large range = true numeric (years, patient counts, percentages)
-          enriched.normalizedType = 'numeric_range';
-          enriched.rangeStep = 1;
-        }
+        enriched.normalizedType = 'numeric_range';
+        enriched.rangeStep = 1;
         return enriched;
       }
 
@@ -229,10 +216,36 @@ export class DataMapProcessor {
 
   private isAdminField(column: string): boolean {
     const col = column.toLowerCase();
-    return col === 'record' || col === 'uuid' || col === 'date' ||
-           col === 'status' || col.includes('time') || col.includes('_id') ||
-           col.startsWith('ims_') || col.startsWith('npi_') ||
-           col.includes('captured') || col === 'qtime';
+
+    // Exact matches for common admin columns
+    if (col === 'record' || col === 'uuid' || col === 'date' ||
+        col === 'status' || col === 'qtime' || col === 'start_date') {
+      return true;
+    }
+
+    // Substring patterns (admin metadata baked into column names)
+    if (col.includes('time') || col.includes('_id') || col.includes('captured')) {
+      return true;
+    }
+
+    // Prefix patterns from fielding platforms:
+    // h* = hidden variables (flags, recodes, groupings) — lowercase h followed by uppercase
+    // hid* = explicitly hidden (speeder, laggard, device, changelog)
+    // v* = system metadata (browser, OS, mobile, dropout) — lowercase v followed by lowercase
+    // pipe_* = piping logic tracking
+    // d* = derived variables — lowercase d followed by uppercase
+    if (/^h[A-Z]/.test(column) || col.startsWith('hid') ||
+        /^v[a-z]/.test(column) || col.startsWith('pipe_') ||
+        /^d[A-Z]/.test(column)) {
+      return true;
+    }
+
+    // Vendor-specific prefixes
+    if (col.startsWith('ims_') || col.startsWith('npi_')) {
+      return true;
+    }
+
+    return false;
   }
 
   private parseScaleLabels(answerOptions: string): { value: number | string; label: string }[] {
