@@ -22,13 +22,25 @@ let scratchpadEntries: Array<{
  */
 export function createScratchpadTool(agentName: string) {
   return tool({
-    description: 'Enhanced thinking space for reasoning models to show validation steps and reasoning. Use this to document your analysis process.',
+    description: 'Enhanced thinking space for reasoning models to show validation steps and reasoning. Use "add" to document your analysis, "read" to retrieve all previous entries (useful before producing final output), or "review" to add review notes.',
     inputSchema: z.object({
-      action: z.enum(['add', 'review']).describe('Action to perform: add new thoughts or review current analysis'),
-      content: z.string().describe('Content to add or review in the thinking space')
+      action: z.enum(['add', 'review', 'read']).describe('Action: "add" new thoughts, "read" to retrieve all accumulated entries, or "review" to add review notes'),
+      content: z.string().describe('Content to add (for "add"/"review"). For "read", pass empty string or a brief note about why you are reading.')
     }),
     execute: async ({ action, content }) => {
       const timestamp = new Date().toISOString();
+
+      // For "read" action, return all accumulated entries without adding a new one
+      if (action === 'read') {
+        const entries = scratchpadEntries.filter(e => e.agentName === agentName);
+        if (entries.length === 0) {
+          return '[Read] No entries recorded yet.';
+        }
+        const formatted = entries.map((e, i) =>
+          `[${i + 1}] (${e.action}) ${e.content}`
+        ).join('\n\n');
+        return `[Read] ${entries.length} entries:\n\n${formatted}`;
+      }
 
       // Accumulate entry with agent attribution
       scratchpadEntries.push({ timestamp, agentName, action, content });
@@ -121,13 +133,25 @@ const contextScratchpads = new Map<string, Array<{
  */
 export function createContextScratchpadTool(agentName: string, contextId: string) {
   return tool({
-    description: 'Enhanced thinking space for reasoning models to show validation steps and reasoning. Use this to document your analysis process.',
+    description: 'Enhanced thinking space for reasoning models to show validation steps and reasoning. Use "add" to document your analysis, "read" to retrieve all previous entries, or "review" to add review notes.',
     inputSchema: z.object({
-      action: z.enum(['add', 'review']).describe('Action to perform: add new thoughts or review current analysis'),
-      content: z.string().describe('Content to add or review in the thinking space')
+      action: z.enum(['add', 'review', 'read']).describe('Action: "add" new thoughts, "read" to retrieve all accumulated entries, or "review" to add review notes'),
+      content: z.string().describe('Content to add (for "add"/"review"). For "read", pass empty string or a brief note.')
     }),
     execute: async ({ action, content }) => {
       const timestamp = new Date().toISOString();
+
+      // For "read" action, return all accumulated entries for this context
+      if (action === 'read') {
+        const entries = contextScratchpads.get(contextId) || [];
+        if (entries.length === 0) {
+          return '[Read] No entries recorded yet.';
+        }
+        const formatted = entries.map((e, i) =>
+          `[${i + 1}] (${e.action}) ${e.content}`
+        ).join('\n\n');
+        return `[Read] ${entries.length} entries:\n\n${formatted}`;
+      }
 
       // Get or create context-specific array
       if (!contextScratchpads.has(contextId)) {

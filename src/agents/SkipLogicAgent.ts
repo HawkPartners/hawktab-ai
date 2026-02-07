@@ -77,7 +77,9 @@ ${surveyMarkdown}
 </survey>
 `;
 
-  const userPrompt = `Read the entire survey document above and extract every skip/show/filter rule. Also list all questions that have no skip/show logic.
+  const userPrompt = `Read the entire survey document above and extract skip/show/filter rules that define who should be included in a question's analytic base (i.e., rules that could require additional constraints beyond the default base of "banner cut + non-NA").
+
+Be conservative: if you cannot point to clear evidence in the survey that the default base would be wrong, do NOT create a rule. Put that question in noRuleQuestions instead.
 
 Walk through the survey systematically, section by section. Use the scratchpad to document your analysis for each question.
 
