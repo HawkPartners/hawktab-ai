@@ -81,6 +81,12 @@ LOOPS / STACKED DATA NOTE:
 - Some pipelines convert loops into stacked records (each loop iteration becomes its own respondent record).
 - DO NOT create a rule *just because* a question is within a loop.
 - Only extract rules where the survey text indicates an additional eligibility condition beyond "this loop exists".
+- LOOP-GATING CONDITIONS ARE NOT RULES: Programming notes like "SHOW [questions] IF respondent
+  had 2+ [loop items/locations]" are loop-inherent eligibility conditions. When data is stacked,
+  questions in loop iteration 2+ can ONLY exist for respondents who have 2+ items — the stacking
+  handles this automatically. DO NOT create a rule for these. They are equivalent to "this loop exists."
+  Example: "PN: SHOW S11A, S11B, S11C IF RESPONDENT HAD A DRINK AT 2+ LOCATIONS" → This is NOT a rule.
+  S11a/b/c are in the Location 2 loop — respondents only have Location 2 data if they had 2+ locations.
 - However, DO extract rules for conditions WITHIN loop iterations (e.g., "within each loop,
   show Q21 only if Q20=1 for that iteration"). See NESTED CONDITIONS WITHIN LOOPS below.
 
@@ -298,6 +304,13 @@ Survey text: "Loop: For each brand, ask Q10"
 No additional eligibility text.
 → Do NOT create a rule. Looping/stacking mechanics are handled elsewhere.
 
+EXAMPLE 9b: LOOP-GATING CONDITION (ALSO NOT A RULE)
+Survey text: "PN: SHOW S11A, S11B, S11C IF RESPONDENT HAD A DRINK AT 2+ LOCATIONS IN S9"
+S11a/b/c are questions within the Location 2 loop iteration.
+→ Do NOT create a rule. The "2+ locations" condition is loop-inherent — respondents only
+  have Location 2 data if they visited 2+ locations. The stacked data structure handles this.
+  Applying this as a filter would incorrectly double-filter the data.
+
 EXAMPLE 10: CASCADING ROW-LEVEL LOGIC
 Survey structure:
 - Q9: "How many items do you use for each product?" (grid: Product A, B, C)
@@ -454,18 +467,23 @@ RULES FOR OUTPUT:
 <scratchpad_protocol>
 USE THE SCRATCHPAD TO DOCUMENT YOUR ANALYSIS:
 
-Walk through the survey systematically. For each question or section:
+IMPORTANT: Make ONE scratchpad entry per question or small group of related questions.
+Do NOT cram your entire analysis into one or two giant entries — that leads to rushed reasoning and contradictions.
+Take your time. You have plenty of turns. Be methodical.
+
+Walk through the survey systematically, top to bottom. For each question or section:
 1. Note the question ID and any skip/show instructions
 2. Classify as table-level, row-level, or no rule
 3. Explicitly answer: "Is the default base likely sufficient?" If yes, mark no rule
-4. If unclear, document why and do NOT create a rule unless evidence is strong
-5. Note any coding tables, hidden variable definitions, or mapping tables you encounter —
+4. For loop questions: ask "Is this condition loop-inherent (handled by the stacking)?" If yes, no rule.
+5. If unclear, document why and do NOT create a rule unless evidence is strong
+6. Note any coding tables, hidden variable definitions, or mapping tables you encounter —
    these should be captured in translationContext for relevant rules
 
 When you find a rule, add a concise summary to the scratchpad so you can recall it later.
 
 BEFORE PRODUCING YOUR FINAL OUTPUT:
-Use the scratchpad "read" action to retrieve all your accumulated notes. This ensures you don't forget any rules you identified during your walkthrough. Review the full list, then produce your output.
+Use the scratchpad "read" action to retrieve all your accumulated notes. This ensures you don't forget any rules you identified during your walkthrough. Review the full list and CHECK FOR CONTRADICTIONS — if you noted "no rule" for a question in your scratchpad, do NOT include it in a rule's appliesTo. Then produce your output.
 
 FORMAT:
 "[QuestionID]: [Found/No] skip logic

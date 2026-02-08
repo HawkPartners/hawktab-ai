@@ -31,7 +31,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 | 9 | Missing location distribution table (hidden variable gap) | Medium | Architecture | Missing tables |
 | 10 | Verification agent creating non-base "base" text | Low | Prompt fix | Formatting |
 | 11 | We report S11a/b/c, Joe doesn't (loop philosophy) | Conceptual | Design decision | Loop / stacking |
-| 12 | S11b/c base filtered to 68 (skip logic overzealous) | High | Investigation + fix | Wrong numbers |
+| 12 | ~~S11b/c base filtered to 68 (skip logic overzealous)~~ | ~~High~~ | ~~Investigation + fix~~ | COMPLETE |
 | 13 | Table sort order broken (C3 between A-series) | Medium | Deterministic fix | Formatting |
 | 14 | Inconsistent section label cleanup | Low | Deterministic post-pass | Formatting |
 | 15 | Dual-base reporting for skip logic questions (A10) | Conceptual | Future enhancement | Product quality |
@@ -43,7 +43,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 
 **Deterministic fixes first** (wrong numbers, missing tables, broken sorting):
 - ~~Issue 8: S9 NET base computation bug~~ COMPLETE
-- Issue 12: S11b/c base filtering investigation
+- ~~Issue 12: S11b/c base filtering investigation~~ COMPLETE
 - Issue 17: C1/C2/C4 tables being silently dropped
 - Issue 16: LoopDetector diversity threshold for sparse patterns
 - Issue 13: Table sort order
@@ -425,39 +425,13 @@ This is purely conceptual — parking it here for the broader loop philosophy co
 
 ---
 
-#### Issue 12: S11b/S11c Base Incorrectly Filtered to 68 (Skip Logic Overzealous)
+#### Issue 12: S11b/S11c Base Incorrectly Filtered to 68 — COMPLETE
 
-**Severity:** High | **Agent:** SkipLogicAgent + FilterTranslator | **Priority:** Investigation + fix
+**Problem:** S11b/c showed a base of 68 instead of ~2,322. The SkipLogicAgent created a `rule_s11_if_multiple_locations` filter (`(S9r1 > 0) + ... >= 2`) for S11a/b/c, but this is a loop-inherent condition — respondents in the Location 2 loop already had 2+ locations by definition. The filter was redundant and produced wrong results in stacked data. S11a was accidentally protected by the `noRuleQuestions` mechanism, but S11b was not.
 
-**What happened:** S11b and S11c show a base of 68, with the base text: "Respondents who had drinks at two or more distinct locations in S9." This is drastically lower than expected — S11b should have a base closer to the S11a respondent pool (those assigned to location 2).
-
-**The skip logic agent's extraction is technically correct.** The survey says:
-> PN SHOW BELOW DISPLAY TEXT, S11A, S11B, S11C IF RESPONDENT HAD A DRINK AT 2+ LOCATIONS IN S9
-
-So the agent correctly extracted: "Only ask S11a, S11b, S11c when respondent had drinks at 2+ locations in S9." That rule IS in the survey.
-
-**But the resulting filter is likely wrong or over-applied.** A base of 68 out of 5098 means only ~1.3% of respondents qualify, which seems far too aggressive. Possible problems:
-
-1. **Translation issue:** How was "2+ locations in S9" translated to an R expression? If it's counting non-zero S9 entries literally from the raw data, it might be applying the wrong threshold or counting the wrong variables.
-2. **The rule applies to S11a/S11b/S11c together**, but S11b and S11c may have additional implicit filtering (S11b depends on S11a selection, S11c depends on S11b). The 68 could be a cascading filter effect.
-3. **The "2+ locations" condition may interact badly with loop semantics.** In stacked data, each row represents one occasion — so "2+ locations" needs to be evaluated at the respondent level, not the row level.
-
-**Needs deep investigation:** Look at:
-- The filter translator output for this rule — what R expression was generated?
-- Whether the R expression is evaluated correctly on stacked vs unstacked data
-- Whether 68 is plausible (what % of respondents actually had drinks at 2+ locations?)
-
-**Broader pattern — skip logic agent overzealousness:** This connects to the Issue 8 observation. The skip logic agent is extracting rules that are technically present in the survey text but may be:
-- Redundant with system-level filtering (loop assignment already handles this)
-- Too literally interpreted (programmer notes vs actual skip logic)
-- Applied at the wrong data level (respondent-level rule applied to stacked rows)
-
-**Prompt improvement ideas:**
-- Tell the agent that hidden variables and loop assignments handle certain conditions automatically — the agent shouldn't re-derive filters that the system already enforces
-- Be more conservative: when in doubt, don't filter. An unfiltered table with all respondents is less wrong than an over-filtered table missing valid data
-- Consider whether the agent needs to understand the distinction between "programmer notes about survey flow" (handled at fielding time) vs "analytical skip logic" (needs a filter in the crosstab)
-
-**Note on prioritization:** Per the user's guidance — address tactical issues (wrong bases, wrong filters) before the philosophical/conceptual ones (loop reporting, overlap weighting). The conceptual stuff can wait; broken filters produce wrong numbers.
+**Fix (two changes):**
+1. **SkipLogicAgent step count: 15 → 25** (`src/agents/SkipLogicAgent.ts`). The agent was cramming analysis into 2 giant scratchpad entries, leading to rushed reasoning and contradictory output. More turns allow systematic one-entry-per-question analysis.
+2. **Prompt updates** (`src/prompts/skiplogic/production.ts`): Added explicit guidance that loop-gating conditions (e.g., "show Q if respondent has 2+ loop items") are loop-inherent and should NOT become rules. Added Example 9b showing the exact pattern. Updated scratchpad protocol to encourage methodical per-question entries and contradiction-checking before final output.
 
 ---
 

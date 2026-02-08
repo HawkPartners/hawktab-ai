@@ -124,7 +124,7 @@ NOTE: This is a retry attempt. You have already documented analysis for ${scratc
           tools: {
             scratchpad: skipLogicScratchpadTool,
           },
-          stopWhen: stepCountIs(15),
+          stopWhen: stepCountIs(25),
           maxOutputTokens: Math.min(getSkipLogicModelTokenLimit(), 100000),
           providerOptions: {
             openai: {
