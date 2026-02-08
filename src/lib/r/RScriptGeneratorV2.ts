@@ -21,6 +21,7 @@ import type { StatTestingConfig } from '../env';
 import type { LoopGroupMapping } from '../validation/LoopCollapser';
 import type { LoopSemanticsPolicy, BannerGroupPolicy } from '../../schemas/loopSemanticsPolicySchema';
 import { transformCutForAlias } from './transformStackedCuts';
+import { sortTables } from '../tables/sortTables';
 
 // =============================================================================
 // Types
@@ -269,8 +270,9 @@ export function generateRScriptV2WithValidation(
   const hasMultipleThresholds = effectiveThresholds.length >= 2
     && effectiveThresholds[0] !== effectiveThresholds[1];  // Same values = treat as single
 
-  // Validate all tables first
-  const { validTables, report } = validateAllTables(tables);
+  // Validate all tables first, then sort to ensure consistent output order
+  const { validTables: unsortedValid, report } = validateAllTables(tables);
+  const validTables = sortTables(unsortedValid) as TableWithLoopFrame[];
 
   // Log summary
   if (report.invalidTables > 0) {
@@ -1627,7 +1629,9 @@ function generateLoopPolicyValidation(
     lines.push(`${varName}_total <- nrow(${frameName})`);
     lines.push(`${varName}_bases <- sapply(${varName}_masks, function(m) sum(m, na.rm = TRUE))`);
     lines.push(`${varName}_sum_bases <- sum(${varName}_bases)`);
-    lines.push(`${varName}_na_count <- ${varName}_total - sum(sapply(${varName}_masks, function(m) sum(!is.na(m))))`);
+    // NA count: all masks share the same alias column, so NA pattern is identical across masks.
+    // Just check the first mask's NA count.
+    lines.push(`${varName}_na_count <- sum(is.na(${varName}_masks[[1]]))`);
     lines.push('');
 
     // Pairwise overlap check

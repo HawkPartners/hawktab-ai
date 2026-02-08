@@ -19,14 +19,14 @@
             "variable": "S11a"
           }
         ],
-        "notes": "Cuts use an OR across two parallel variables (S10a | S11a). Deterministic and datamap evidence indicate these are the same question asked for two loop positions (location1/location2). Create an alias that picks S10a when .loop_iter='1' and S11a when .loop_iter='2', then apply the categorical cuts against the alias."
+        "notes": "Create an alias that picks S10a for .loop_iter==1 and S11a for .loop_iter==2; stacked-frame cuts should use the alias (e.g. .hawktab_needs_state == 1) instead of OR-ing S10a|S11a."
       },
       "confidence": 0.95,
       "evidence": [
-        "Cuts are written as (S10a == X | S11a == X) — OR across two variables is a classic sign of parallel iteration variables (same concept for different iterations).",
-        "Datamap shows S10a and S11a are the same categorical question asked per location/iteration (reason for having a drink), indicating the two variables correspond to different loop iterations.",
-        "pagetime and hidden field tokens (pagetimeS10a / pagetimeS11a, hS10a / hS11a) in the datamap tie these questions to LOCATION1 / LOCATION2, supporting iteration linkage.",
-        "Answer options are single-select, mutually exclusive categories → shouldPartition = true."
+        "Cuts use OR between S10a and S11a for the same categorical options (e.g. S10a == 1 | S11a == 1) — classic pattern of the same concept recorded separately for each iteration.",
+        "Datamap shows S10a and S11a are the same question (reason for having a drink) for different presented locations.",
+        "pagetime variables (pagetimeS10a -> iteration 1, pagetimeS11a -> iteration 2) provide deterministic evidence that S10a/S11a map to different loop iterations.",
+        "Answer options are a single-select categorical question (mutually exclusive), so each entity should belong to exactly one cut (shouldPartition=true)."
       ]
     },
     {
@@ -38,21 +38,20 @@
         "strategy": "none",
         "aliasName": "",
         "sourcesByIteration": [],
-        "notes": "Cuts reference separate binary/admin flag variables (hLOCATIONr1,hLOCATIONr2,hLOCATIONr3, ...) that represent distinct location types (Own Home, Others' Home, Work, etc.). These are best interpreted as respondent-level flags (which locations the respondent had drinks in), so no per-iteration aliasing is required. Apply the cuts as-is on the stacked frame (they will evaluate identically for every row of the same respondent)."
+        "notes": "Use the listed hLOCATIONr* variables as-is (no per-iteration aliasing). These appear to be binary flags for many different location types (different concepts), not parallel per-iteration variables that require aliasing."
       },
-      "confidence": 0.7,
+      "confidence": 0.6,
       "evidence": [
-        "Datamap descriptions show hLOCATIONr1..hLOCATIONr16 are hidden/admin flags describing specific location types (e.g., at your home, at someone else's home, at work) with Options 0/1 — these are conceptually different categories rather than the same question repeated across iterations.",
-        "Cuts reference one variable per location category (not an OR across parallel per-iteration variables), which matches the common multi-flag respondent-level pattern (respondent can have multiple location flags true).",
-        "The variables are binary flags for distinct location concepts (multi-select possible), so entities/rows could match multiple cuts → shouldPartition = false.",
-        "Confidence lowered because deterministic_findings includes some similarly named variables (e.g., hLOCATIONr1 → iteration 1, hLOCATIONr2 → iteration 2) that could be interpreted as iteration-linked; however the datamap language and the structure of the Location cuts strongly suggest these are respondent-level flags for location categories rather than per-iteration parallel variables."
+        "Datamap describes hLOCATIONr1..hLOCATIONr16 as separate hidden binary flags for different location types (e.g., 'at your home', 'at someone else's home', 'at work/office', etc.), which matches the banner's mapping of each cut to a different hLOCATIONrN variable.",
+        "The cuts map each location type to a distinct flag (hLOCATIONr1 == 1, hLOCATIONr2 == 1, hLOCATIONr3 == 1, ...). This is analogous to multi-select / multiple binary flags for different concepts (respondent-level assignment) rather than OR-ing parallel per-iteration variables for the same concept.",
+        "There is ambiguity because deterministic findings include some hLOCATION* and related variables mapped to specific iterations (e.g., hLOCATIONr1/hLOCATIONr2 appear in the iteration-linked list). That deterministic evidence introduces uncertainty about whether these particular hLOCATIONrN variables are iteration-linked in this dataset or are respondent-level flags."
       ]
     }
   ],
   "humanReviewRequired": true,
   "warnings": [
-    "There is a naming/mapping ambiguity for some location-related variables: deterministic_findings flagged a small set of similarly named variables (e.g., hLOCATIONr1 → iteration 1, hLOCATIONr2 → iteration 2). However, the datamap and the structure of the Location banner (one variable per distinct location category) strongly imply these are respondent-level binary flags. Because of this conflicting signal, human review is recommended to confirm that hLOCATIONr1..hLOCATIONr16 in the banner correspond to respondent-level location flags (and are not per-iteration variables mistakenly identified).",
-    "If any hLOCATIONr* variables actually have per-iteration siblings (e.g., suffixed with _1/_2) rather than representing distinct location concepts, the Location group would need to be reclassified to entity-anchored and alias columns created."
+    "The 'Location' group is ambiguous: datamap text indicates hLOCATIONr1..hLOCATIONr16 are binary flags representing different location TYPES (which argues for respondent-anchored), but deterministic findings include some hLOCATION*/hLOCATIONS* variables mapped to specific iterations (which argues for entity-anchored). I classified 'Location' as respondent-anchored and left no alias, but this should be reviewed by a human to confirm whether the hLOCATIONrN variables are per-iteration or per-respondent in the final stacked data.",
+    "If any of the hLOCATIONr* variables are actually iteration-specific (i.e., there is one hLOCATION variable per loop-iteration in the wide source), the group should be converted to entity-anchored and an alias column must be created mapping each .loop_iter to the correct hLOCATION variable. Do not proceed without human confirmation."
   ],
-  "reasoning": "Applied deterministic resolver and datamap evidence first. Needs State uses an OR across S10a and S11a which map to location1/location2 instances of the same categorical question — strong signal for entity anchoring; create an alias mapping iteration '1' -> S10a and '2' -> S11a. Location cuts enumerate distinct hLOCATIONrN binary flags (each flag is a different location concept), which matches the respondent-anchored multi-flag pattern; no alias column needed. Because deterministic findings show some potentially conflicting iteration mappings for location-named variables, flagged humanReviewRequired for confirmation."
+  "reasoning": "Needs State: clear OR pattern S10a | S11a for identical categorical options plus pagetime mapping -> entity-anchored; created alias .hawktab_needs_state mapping S10a→iter1 and S11a→iter2. Location: variables named hLOCATIONr1..r16 look like distinct binary flags for different location types (respondent-level); cuts reference different flags rather than OR-ing parallel per-iteration variables, so I treated it as respondent-anchored. However deterministic findings include some hLOCATION* variables linked to iterations, producing ambiguity — flagged for human review."
 }

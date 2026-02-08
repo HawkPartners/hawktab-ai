@@ -25,6 +25,31 @@ This document outlines the path from HawkTab AI's current state (reliable local 
 
 **Exit Criteria**: 5 datasets producing consistent output across 3 runs each, output quality acceptable for report writing.
 
+### 1.5 Pipeline Confidence Pre-Flight (Reject Early)
+
+**Priority: High — candidate for Phase 1 or early Phase 2.**
+
+Before burning 45+ minutes of pipeline time, the system should assess its own confidence in producing accurate output for a given dataset and flag issues upfront.
+
+**Why this matters:** It's a trust-building feature, not a limitation. Most AI products confidently produce garbage. A system that says "I can't do this reliably" is one users will trust when it says "I can."
+
+**Signals already available:**
+- Loop detection: iteration counts, fill rates, variable family completeness
+- Deterministic resolver: how many iteration-linked variables found, confidence scores
+- Data map quality: percentage of variables with value labels, description completeness
+- Variable count and complexity: number of hidden/admin variables, naming consistency
+
+**Three-tier output:**
+| Tier | Signal | User message |
+|------|--------|--------------|
+| Green | Strong deterministic evidence, clean loop detection, high fill rates | "This dataset looks good. Proceeding with high confidence." |
+| Yellow | Partial evidence, some ambiguous variables, mixed naming patterns | "We can process this, but some banner cuts may need your review." |
+| Red | No deterministic evidence for loops, irregular naming, nested loops detected | "This dataset has characteristics we can't handle reliably. Here's what we found: [specifics]." |
+
+**Implementation:** Aggregation function that runs after validation + loop detection + deterministic resolver (all fast, pre-agent steps). Returns a confidence assessment before any LLM calls. The yellow tier proceeds but sets `humanReviewRequired` on the policy agent. The red tier halts with an explanation.
+
+**Level of Effort**: Low-Medium (signals exist, just need aggregation logic and UX)
+
 ---
 
 ## Phase 2: Feature Completeness
@@ -109,6 +134,50 @@ Loop tables have within-respondent correlation — the same person contributes 2
 - Most MR tools (WinCross, SPSS Tables, Q) don't do this — they treat stacked rows as independent. So this is a future differentiator, not a current correctness gap vs industry standard.
 
 **Level of Effort**: Medium-High (new R stat functions, testing infrastructure changes)
+
+---
+
+### 2.4c Crosstab Agent Variable Selection Persistence
+
+**Problem:** The crosstab agent's variable selection is non-deterministic. On two runs of the same dataset, it might pick `hLOCATIONr1` (correct) one time and `S9r1` (wrong) the next. The hidden variable hint helps steer it, but doesn't guarantee consistency.
+
+**Solution: Lock in confirmed selections.**
+
+Once a user confirms a variable mapping via HITL — or once a run succeeds and the user accepts the output — save those selections as project-level overrides. Future re-runs of the same dataset load the confirmed mappings instead of re-rolling the dice.
+
+**What gets saved:**
+- Banner group name → variable mappings (e.g., "Own Home" → `hLOCATIONr1 == 1`)
+- Confirmation source: "user_confirmed" or "accepted_from_run_N"
+- The crosstab agent receives these as hard constraints, not hints
+
+**Implementation:** JSON artifact in the project folder (`confirmed-cuts.json`). The crosstab agent prompt includes a "locked selections" section — variables in this list are not re-evaluated. Only unmapped or low-confidence cuts go through the full matching process.
+
+**Why this matters:** Eliminates the "it worked last time but not this time" problem. Builds toward the broader pattern of accumulating project-level knowledge across runs.
+
+**Level of Effort**: Low (JSON persistence + prompt section, no architectural changes)
+
+---
+
+### 2.4d Dual-Mode Loop Semantics Prompt
+
+**Context:** The Loop Semantics Policy Agent currently uses a single prompt regardless of how much deterministic evidence is available. When the resolver finds strong evidence (label tokens, suffix patterns), the prompt works well — the LLM has structured data to anchor on. When there's no deterministic evidence, the LLM has to work from cut patterns and datamap descriptions alone, which is harder and less reliable.
+
+**Solution: Two prompt variants, selected automatically.**
+
+| Mode | Trigger | Prompt focus |
+|------|---------|-------------|
+| **High-evidence** | Deterministic resolver found iteration-linked variables | "Here's what the resolver found. Use this as primary evidence. Classify accordingly." |
+| **Low-evidence** | Resolver found nothing (empty result) | "We have no metadata evidence. You must infer from cut expression patterns, datamap descriptions, and variable naming. Be extra cautious. Flag uncertainty aggressively." |
+
+The low-evidence prompt would include:
+- More explicit pattern-matching guidance for OR expressions
+- Stronger emphasis on datamap description analysis
+- Lower confidence thresholds for triggering `humanReviewRequired`
+- Additional few-shot examples showing ambiguous cases
+
+**Selection logic:** If `deterministicFindings.iterationLinkedVariables.length === 0`, use low-evidence prompt. Otherwise, use high-evidence prompt.
+
+**Level of Effort**: Low (second prompt file + selection logic in agent)
 
 ---
 
@@ -614,8 +683,68 @@ What makes HawkTab unique is the **validated data foundation**. Every crosstab r
 
 But that only matters if the core system is reliable. That's what we're focused on now.
 
+### Configurable Assumptions & Regeneration
+
+HawkTab makes defensible statistical assumptions when generating crosstabs — particularly for looped/stacked data. These assumptions are specific choices from a finite set of valid approaches:
+
+**Example: Needs State on stacked occasion tables**
+
+The system defaults to entity-anchored aliasing — each occasion is evaluated against its own needs state variable, producing a clean partition (852 C/B occasions, not the inflated 1,409 from naive OR logic). But there are other defensible approaches:
+
+| Approach | What it does | When you'd want it |
+|----------|-------------|-------------------|
+| **Entity-anchored alias** (our default) | Each occasion checks only its own needs state | You want occasion-level precision — "what happens during C/B occasions" |
+| **First-iteration only** (Joe's approach) | Only use S10a (occasion 1) for all cuts | You want simplicity and are okay losing occasion 2 data |
+| **Respondent-level OR** (naive approach) | `(S10a == 1 \| S11a == 1)` on stacked frame | You want "all occasions from respondents who had ANY C/B occasion" — different question, still valid if intentional |
+
+None of these are wrong in absolute terms. They answer different questions. The problem is when the system silently uses one approach and the user assumes another.
+
+**The vision:** Users receive crosstabs generated with our defaults (which we believe are the most statistically precise). Alongside the output, a Methodology sheet documents every assumption. If a user disagrees with an assumption, they can select an alternative from the finite set of defensible options and regenerate. The system re-runs R with the new configuration — no re-running agents, just swapping the alias/cut strategy.
+
+**What this requires:**
+- Assumptions surfaced in plain language (Methodology sheet — see 2.4b context)
+- A mapping of each assumption to its alternatives (schema-driven, not free-form)
+- A regeneration path that re-runs R script generation + execution without re-running the full pipeline
+- The resume script (`test-loop-semantics-resume.ts`) is already a prototype of this pattern
+
+**Why this matters commercially:** No other tool in this space surfaces its assumptions, let alone lets you change them. WinCross, SPSS Tables, and Q all make implicit choices that users can't inspect or override. Making assumptions explicit and configurable is a differentiator that builds trust with sophisticated research buyers.
+
+This is a long-term feature — the foundation (correct defaults + validation proof) comes first.
+
+---
+
+## Known Gaps & Limitations
+
+Documented as of February 2026. These are areas where the system has known limitations — some with mitigation paths already identified, others that may define the boundary of what HawkTab can handle. Even where solutions exist, it's important to be aware of these when communicating capabilities externally or testing against new datasets.
+
+### Loop Semantics
+
+| Gap | Severity | Mitigation | Status |
+|-----|----------|------------|--------|
+| **No deterministic evidence** — SPSS file has no label tokens, suffix patterns, or sibling descriptions. LLM must infer entirely from cut patterns and datamap context. | Medium | Dual-mode prompt (2.4d). Pre-flight confidence check (1.5). If confidence is too low, reject early. | Identified, not implemented |
+| **Irregular parallel variable naming** — Occasion 1 uses Q5a, occasion 2 uses Q7b, occasion 3 uses Q12. No naming relationship. Resolver can't match. | Medium | LLM prompt must handle this from datamap descriptions. Few-shot examples for irregular naming. Some surveys may be unfixable without user hints. | Partially mitigated by LLM |
+| **Complex expression transformation** — `transformCutForAlias` handles `==`, `%in%`, and OR patterns. Expressions with `&` conditions, nested logic, or negations could break transformation. | Low-Medium | Expand transformer for common compound patterns. Flag untransformable expressions for human review. | Common cases handled |
+| **Multiple independent loop groups** — Dataset with both an occasion loop AND a brand loop. Architecturally supported but never tested. | Low | Schema and pipeline support N loop groups. Needs integration testing with a real multi-loop dataset. | Untested |
+| **Nested loops** — A brand loop inside an occasion loop. Not handled. | Low | Not supported. Pre-flight check (1.5) should detect and flag this as a red-tier limitation. | Not supported |
+| **Weighted stacked data** — Weights exist in the data but aren't applied during stacking or computation. | High | Next priority after loop semantics. R's `svydesign` handles weighted calculations natively. | Not implemented |
+
+### Crosstab Agent
+
+| Gap | Severity | Mitigation | Status |
+|-----|----------|------------|--------|
+| **Non-deterministic variable selection** — Same dataset can produce different variable mappings across runs. | Medium | Hidden variable hints help steer. Variable selection persistence (2.4c) locks in confirmed choices. HITL for low-confidence cuts. | Partially mitigated |
+| **Hidden variable conventions vary by platform** — h-prefix and d-prefix patterns are Decipher/FocusVision conventions. Other platforms (Qualtrics, SurveyMonkey, Confirmit) use different naming. | Low-Medium | Expand hint patterns as we encounter new platforms. The datamap description is platform-agnostic and usually contains enough signal. | Platform-specific hints added |
+
+### General Pipeline
+
+| Gap | Severity | Mitigation | Status |
+|-----|----------|------------|--------|
+| **No pre-flight confidence assessment** — Pipeline runs for 45+ minutes before discovering it can't handle a dataset reliably. | Medium-High | Pre-flight check (1.5) using signals from validation, loop detection, and resolver. Three-tier go/no-go. | Identified, not implemented |
+| **No methodology documentation in output** — Users receive numbers without explanation of how they were computed. Assumptions are implicit. | Medium | Methodology sheet in Excel (Configurable Assumptions vision). Policy agent + validation results provide the content. | Planned |
+| **No project-level knowledge accumulation** — Each pipeline run starts fresh. Confirmed variable mappings, user preferences, and past decisions aren't carried forward. | Low-Medium | Variable selection persistence (2.4c) is the first step. Longer-term: project-level config that accumulates across runs. | Identified |
+
 ---
 
 *Created: January 22, 2026*
-*Updated: January 29, 2026*
+*Updated: February 8, 2026*
 *Status: Planning*

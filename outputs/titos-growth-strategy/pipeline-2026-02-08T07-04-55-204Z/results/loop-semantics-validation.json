@@ -5,8 +5,8 @@
     "shouldPartition": true,
     "totalBase": 10196,
     "sumOfBases": 7420,
-    "naCount": -49164,
-    "partitionValid": false,
+    "naCount": 2776,
+    "partitionValid": true,
     "bases": {
       "Connection / Belonging": 852,
       "Status / Image": 212,
