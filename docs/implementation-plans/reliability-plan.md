@@ -58,7 +58,7 @@ This plan tracks the work to make HawkTab AI reliably produce publication-qualit
 1. **Wide format only** — We don't process already-stacked data. If we detect stacking, we ask users for the original wide format.
 2. **SPSS Variable Info parser** — Build parser for the 81% of datamaps in SPSS format. Unlocks broader testing.
 3. **Gemini's diversity approach for loop detection** — More robust than regex patterns. Uses tokenization and "internal diversity" to distinguish loops from grids.
-4. **Fill-rate validation** — Confirms data matches format. If `_2` columns are empty but `_1` has data, the data is likely already stacked.
+4. **Fill-rate validation** — A useful signal, but not a perfect test. If `_2` columns are *near-empty* while `_1` has substantial data, the data may be already stacked — but some true-wide “up to N” loops also have legitimately low `_2` fill. Treat this as a warning + cross-check, not a single definitive rule.
 5. **R + Haven for all data reading** — Consistency with pipeline. No JavaScript SPSS readers.
 6. **Weights deferred** — Weight detection is out of scope. Moved to Part 5.
 
@@ -95,8 +95,10 @@ After detecting loop patterns, validate data format:
 | `_1` Fill Rate | `_2` Fill Rate | Interpretation |
 |----------------|----------------|----------------|
 | 85% | 60% | Valid wide format → Proceed |
-| 85% | <1% | Already stacked → Ask for wide |
+| 85% | <1% | **High suspicion** already stacked → Ask for wide (but confirm via additional signals) |
 | Varies | N/A | No loop / uncertain → Confirm |
+
+**Note:** low later-iteration fill can be real (expected dropout), not necessarily “already stacked”. Prefer checking the pattern across many loop variables (most bases should show a similar drop pattern if it’s real) and/or ask the user to confirm.
 
 ### Success Criteria
 
