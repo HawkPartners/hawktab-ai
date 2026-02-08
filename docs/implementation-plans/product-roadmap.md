@@ -91,6 +91,27 @@ sigTestConfig: {
 
 ---
 
+### 2.4b Advanced Stat Testing for Loop Tables
+
+**Context**: When loop/stacked data is present, standard within-group stat testing can be invalid for two reasons: (1) banner groups may overlap on the stacked frame, and (2) multiple rows per respondent creates within-respondent correlation.
+
+Phase 1-2 of the loop semantics implementation (`loop-semantics-implementation-plan.md`) handles the immediate problem: detecting overlap and suppressing invalid within-group stat letters. The items below are future enhancements that go beyond suppression to provide alternative valid testing.
+
+**vs-Complement Testing**
+
+For overlapping banner groups on loop tables, instead of comparing A-vs-B (invalid when groups overlap), compute A-vs-not-A (segment vs complement). This is always statistically valid regardless of overlap. Requires changes to `generateSignificanceTesting()` in `RScriptGeneratorV2.ts` to support a second comparison mode alongside the existing within-group mode.
+
+**Clustered Inference**
+
+Loop tables have within-respondent correlation — the same person contributes 2+ stacked rows. Standard stat tests assume every row is independent, which overstates the effective sample size and makes differences look more significant than they are. Clustered standard errors account for this by grouping rows by respondent and adjusting confidence intervals. This requires:
+- Stacked frame includes a stable respondent ID column
+- R stat testing functions support a cluster-robust mode
+- Most MR tools (WinCross, SPSS Tables, Q) don't do this — they treat stacked rows as independent. So this is a future differentiator, not a current correctness gap vs industry standard.
+
+**Level of Effort**: Medium-High (new R stat functions, testing infrastructure changes)
+
+---
+
 ### 2.5a Input Format Flexibility
 
 Normalize inputs before they hit the pipeline agents.
