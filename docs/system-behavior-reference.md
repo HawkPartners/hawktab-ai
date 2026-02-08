@@ -169,6 +169,53 @@ HawkTab automatically detects looped survey structures by analyzing variable nam
 
 ---
 
+## Loop Reporting Philosophy
+
+When a survey contains looped questions (e.g., two occasions, two medications), HawkTab makes two key decisions that affect what appears in the output. Both are defensible defaults. Neither produces wrong data — they answer different questions than an alternative approach would.
+
+### Decision 1: Report all loops
+
+**Default:** HawkTab reports tables for all loop iterations — not just loop 1.
+
+If a survey asks the same questions for Occasion 1 and Occasion 2, the output includes tables for both. Silently dropping loop 2 data would be a bigger surprise than including everything. The user's expectation when they don't specify anything is "give me all the data."
+
+**Alternative approach:** Some analysts report only loop 1 (the primary iteration). This is a deliberate simplification — fewer tables, non-overlapping groups, easier to read. It is not wrong; it answers a narrower question.
+
+**Future:** This will be configurable. Users who want loop-1-only reporting can enable it. The default remains "report all loops."
+
+### Decision 2: Inclusive banner groups (binary flags)
+
+**Default:** When a banner group references a looped variable (e.g., "Assigned Location: Home"), HawkTab uses the inclusive approach — capturing all respondents who matched that condition in **any** loop iteration.
+
+This means banner groups can overlap. A respondent assigned to "Home" in loop 1 and "Bar" in loop 2 appears in both the "Home" and "Bar" banner columns. The base sizes may be larger than a first-loop-only approach, and groups are not mutually exclusive.
+
+**Alternative approach:** Use the loop assignment variable to produce non-overlapping groups (each respondent counted once per loop, in exactly one group). This is standard for how loop-assignment banners are typically cut in traditional market research.
+
+**Why the inclusive approach is our default:**
+- More data is better than less data as a starting point
+- Analysts can always filter down; they can't recover data that was silently excluded
+- The overlap is real — these respondents genuinely experienced both conditions
+- vs-Total stat testing remains valid regardless of overlap
+
+**Trade-off:** Within-group stat testing (A-vs-B) can be invalid when groups overlap, because the same respondents contribute to both sides. HawkTab detects overlap on loop tables and will suppress invalid within-group stat letters when overlap is present. vs-Total comparisons remain valid.
+
+**Future:** This will be configurable. Users who want non-overlapping, assignment-variable-based groups can switch to that mode. The default gives you everything.
+
+### Known discrepancy vs. other analysts
+
+These defaults mean HawkTab's output may differ from an analyst who uses first-loop-only reporting with assignment variables. The differences are:
+
+| What differs | HawkTab default | Alternative approach |
+|-------------|----------------|---------------------|
+| Loop tables reported | All iterations | Loop 1 only |
+| Banner group overlap | Groups can overlap | Groups are mutually exclusive |
+| Base sizes | May be larger (inclusive) | Smaller (one loop only) |
+| Within-group stat testing | Suppressed when overlap detected | Valid (non-overlapping) |
+
+Neither approach is wrong. They answer different questions. HawkTab's defaults prioritize completeness and transparency; the alternative prioritizes simplicity and traditional convention. Both are statistically valid.
+
+---
+
 ## Excel Output Formats
 
 | Format | Layout | Use Case |

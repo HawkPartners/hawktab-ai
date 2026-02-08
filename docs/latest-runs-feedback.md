@@ -22,7 +22,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 |---|---|---|---|---|
 | 1 | ~~Banner agent confidence penalty for low group count~~ | ~~Low~~ | ~~Prompt + code fix~~ | COMPLETE |
 | 2 | ~~Crosstab agent prompt overfitting + confidence penalty~~ | ~~Medium~~ | ~~Prompt refactor~~ | COMPLETE |
-| 3 | Location variable selection philosophy (binary flag vs assignment) | High | Architectural decision | Loop / stacking |
+| 3 | ~~Location variable selection philosophy (binary flag vs assignment)~~ | ~~High~~ | ~~Architectural decision~~ | COMPLETE (documented in system-behavior-reference.md) |
 | 4 | ~~Table formatting: deterministic post-pass + sub-issues~~ | ~~Medium~~ | ~~Prompt + deterministic post-pass~~ | COMPLETE |
 | 5 | ~~Missing S4 state-from-zip table~~ | ~~Low~~ | ~~New feature~~ | COMPLETE |
 | 6 | ~~Unnecessary NET on single-select questions (S6a)~~ | ~~Medium~~ | ~~Prompt rule + post-pass~~ | COMPLETE |
@@ -30,7 +30,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 | 8 | ~~S9 NET base incorrectly filtered to 1993~~ | ~~High~~ | ~~Bug fix~~ | COMPLETE |
 | 9 | ~~Missing location distribution table (hidden variable gap)~~ | ~~Medium~~ | ~~Architecture~~ | DEFERRED (moved to product roadmap) |
 | 10 | ~~Verification agent creating non-base "base" text~~ | ~~Low~~ | ~~Prompt rule + post-pass warning~~ | COMPLETE |
-| 11 | We report S11a/b/c, Joe doesn't (loop philosophy) | Conceptual | Design decision | Loop / stacking |
+| 11 | ~~We report S11a/b/c, Joe doesn't (loop philosophy)~~ | ~~Conceptual~~ | ~~Design decision~~ | COMPLETE (documented in system-behavior-reference.md) |
 | 12 | ~~S11b/c base filtered to 68 (skip logic overzealous)~~ | ~~High~~ | ~~Investigation + fix~~ | COMPLETE |
 | 13 | ~~Table sort order broken (C3 between A-series)~~ | ~~Medium~~ | ~~Deterministic fix~~ | COMPLETE |
 | 14 | ~~Inconsistent section label cleanup~~ | ~~Low~~ | ~~Deterministic post-pass~~ | COMPLETE |
@@ -56,9 +56,9 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 - ~~Issue 4: All sub-issues resolved (4b: dash for zero-count rows, 4c: routing label cleanup)~~ COMPLETE
 
 **Then document our assumptions:**
-- Issue 3/11: Loop reporting philosophy — document the default, make it configurable
-- Issue 7: Outlier trimming method → add to system-behavior-reference.md
-- Surface loop/stacking assumptions in every output so users know what they're getting
+- ~~Issue 3/11: Loop reporting philosophy~~ COMPLETE — documented in system-behavior-reference.md
+- ~~Issue 7: Outlier trimming method~~ COMPLETE — documented in system-behavior-reference.md
+- Surface loop/stacking assumptions in every output so users know what they're getting (future: Methodology sheet)
 
 ---
 
@@ -89,118 +89,9 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 
 ---
 
-#### Issue 3: Location Variable Selection — Which Variable Is "Correct"?
+#### Issue 3: Location Variable Selection — COMPLETE
 
-**Severity:** High | **Agent:** CrosstabAgent | **Priority:** Philosophical / architectural decision
-
-This is the core issue from the Tito's run. It's not a bug — the agent did a reasonable job — but it surfaces a fundamental question about how HawkTab should handle ambiguous variable mappings in looped/stacked data.
-
-##### The setup
-
-The banner plan says "Assigned S9_1" (meaning: respondents assigned to location 1 = "At your home"). But the data contains **5 families of location variables**, all plausible:
-
-| Variable family | Example | Type | What it represents |
-|---|---|---|---|
-| `hLOCATIONrX` | `hLOCATIONr1 == 1` | Binary flag (0/1) | Did respondent select this location? (any loop) |
-| `dLOCATIONrX` | `dLOCATIONr1 == 1` | Binary flag (0/1) | Appears identical to hLOCATIONrX (unknown why duplicated) |
-| `hLOCATIONSrX` | `hLOCATIONSr1 == 1` | Binary flag (0/1) | Coded group flag (HOME/BAR/RESTAURANT/etc.) |
-| `hLOCATION1` | `hLOCATION1 == 1` | Numeric (1-16, 99) | Which location was assigned in **loop 1** |
-| `hLOCATION2` | `hLOCATION2 == 1` | Numeric (1-16, 99) | Which location was assigned in **loop 2** |
-
-**The agent chose:** `hLOCATIONrX == 1` (binary flag — "anyone who selected this location in any loop")
-**Joe used:** `hLOCATION1 == X` (assignment variable — "respondents assigned this location in loop 1 only")
-
-##### The base-size discrepancy
-
-| Location | HawkTab (hLOCATIONrX) | Joe (hLOCATION1) | Match? |
-|---|---|---|---|
-| Own Home | 3,018 | 3,018 | Yes |
-| Others' Home | 681 | 426 | No — HawkTab higher |
-
-"Own Home" matches because it's the most common assignment and most respondents had it in loop 1. "Others' Home" diverges because our binary-flag approach captures respondents who selected it in **either** loop, while Joe's approach only captures loop 1 assignments.
-
-##### The philosophical question
-
-Both approaches are defensible:
-
-**Our approach (binary flag `hLOCATIONrX`):**
-- More inclusive — captures all respondents who experienced that location across any loop
-- More intuitive — "everyone who selected home" is a cleaner concept
-- But groups can overlap (a respondent could be in both "Home" and "Bar" if assigned to different locations across loops)
-
-**Joe's approach (assignment variable `hLOCATION1`):**
-- Produces non-overlapping groups (each respondent assigned to exactly one location per loop)
-- Standard for how loop-assignment banners are typically cut in market research
-- But misses loop 2 assignments entirely — potentially under-counting
-
-**Neither is wrong.** But we need a consistent philosophy.
-
-##### Open questions
-
-1. **Can the banner agent provide richer context to the crosstab agent?** Similar to how the skip logic agent provides hints, the banner agent could pass along: question structure (multi-select vs. single-select vs. assignment), whether the variable references a loop, and the original survey question text. This would help the crosstab agent disambiguate.
-
-2. **Can the datamap help?** If we can detect that `hLOCATIONrX` is a binary flag while `hLOCATION1` is a numeric assignment variable, we could encode a preference: "for 'Assigned' cuts, prefer the assignment variable over binary flags."
-
-3. **Does loop semantics resolve this?** If our stacked-data pipeline already handles loop assignment correctly, the choice of variable may produce the same result in the final output regardless. Need to verify.
-
-4. **What should HawkTab's default be?** When the banner says "Assigned S9_X" and multiple variable families exist, should we default to:
-   - The assignment variable (matches Joe, produces non-overlapping groups)?
-   - The binary flag (more inclusive, simpler concept)?
-   - Present both options to the user with a clear explanation?
-
-##### Connected issue: Stat testing and overlap weighting
-
-This variable-selection question is directly connected to how we handle stat testing for overlapping groups. If we go with the binary-flag approach (our current default), groups can overlap — and we need stat testing that accounts for that.
-
-**What we already have:**
-- Full stat testing infrastructure in `RScriptGeneratorV2.ts`: z-tests for proportions, Welch's t-tests for means, dual thresholds (95%/90%), within-group comparisons, and vs-Total comparisons
-- Overlap detection in loop semantics validation: pairwise overlaps are detected and logged to `loop-semantics-validation.json`
-- Stat letter assignment in `CutsSpec.ts`, output schema fields (`sig_higher_than`, `sig_vs_total`) in `verificationAgentSchema.ts`
-
-**What we don't have:**
-- **Overlap-aware stat testing**: When groups overlap (A-vs-B is invalid), we need A-vs-not-A (segment vs complement) comparisons. The roadmap mentions this but it's not implemented. Would require changes to `generateSignificanceTesting()` in `RScriptGeneratorV2.ts`.
-- **Survey weighting**: The Tito's data has weight variables but we don't apply them. R's `svydesign` could handle this natively. Listed as high priority in roadmap after loop semantics.
-- **Surfacing stat testing in output**: Need to verify stat testing is actually making it into the Excel output for these runs, not just computed silently.
-
-**HawkTab's philosophy (proposed default):**
-
-The most statistically rigorous output should be the default. Concretely:
-
-1. **Include all the data.** Use the inclusive approach (binary flags) so analysts see the full picture. Don't pre-filter or under-count.
-2. **Always provide stat testing.** Even when groups overlap, compute and display significance — vs-Total at minimum, and overlap-aware within-group where possible.
-3. **Let analysts decide what to report.** An analyst can choose to ignore sig letters on overlapping groups, but they should have the option. Withholding data is worse than providing it with context.
-4. **Make it configurable later.** The default is "maximum rigor." Users who want non-overlapping groups (Joe's approach) can switch to assignment-variable mode. But the default gives you everything.
-
-This means: even if two location groups share respondents, the stat test says "this difference vs Total is significant" — that's real, useful information. The overlap doesn't invalidate the comparison against Total; it only complicates pairwise within-group comparisons (which is where A-vs-not-A matters).
-
-**Implementation priority:** Not MVP-blocking. Stat testing infrastructure exists and works for non-overlapping groups. The overlap-aware extension (A-vs-not-A) and survey weighting are post-MVP enhancements. For now, memorializing this so we address it when we circle back to the reliability plan Part 3/4.
-
-##### Reference: Crosstab agent output for "Own Home"
-
-```json
-{
-  "name": "Own Home",
-  "adjusted": "hLOCATIONr1 == 1",
-  "confidence": 0.65,
-  "reason": "Found hLOCATIONr1 ('HOME - HIDDEN: LOCATIONS') → Selected because its name and description directly correspond to an assignment of S9_1.",
-  "alternatives": [
-    { "expression": "dLOCATIONr1 == 1", "confidence": 0.6 },
-    { "expression": "hLOCATIONSr1 == 1", "confidence": 0.6 },
-    { "expression": "hLOCATION1 == 1", "confidence": 0.6 },
-    { "expression": "hLOCATION2 == 1", "confidence": 0.6 }
-  ],
-  "humanReviewRequired": true
-}
-```
-
-##### Reference: Variable families in the data
-
-```
-hLOCATIONSr1-r7    → Coded group flags (HOME, OTHER, RESTAURANT, BAR, HOTEL/MOTEL, etc.)
-dLOCATIONr1-r16,r99 → Binary flags per individual location (appears same as hLOCATIONrX)
-hLOCATIONr1-r16,r99 → Binary flags per individual location
-hLOCATION1, hLOCATION2 → Numeric loop-assignment variables (which location in loop 1/2)
-```
+**Resolution:** Documented in `docs/system-behavior-reference.md` under "Loop Reporting Philosophy — Decision 2: Inclusive banner groups." HawkTab defaults to the inclusive approach (binary flags, groups can overlap). This produces different base sizes than a first-loop-only assignment approach — neither is wrong, they answer different questions. Will be configurable in the future. See system behavior reference for the full rationale and comparison table.
 
 ---
 
@@ -295,21 +186,9 @@ Verification agent was appending survey routing instructions like "(TERMINATE)",
 
 ---
 
-#### Issue 11: We Report S11a/S11b/S11c — Joe Doesn't (Loop Reporting Philosophy)
+#### Issue 11: We Report S11a/S11b/S11c — Joe Doesn't — COMPLETE
 
-**Severity:** Conceptual | **Component:** Pipeline architecture | **Priority:** Post-MVP, configurable option
-
-**What happened:** Our output includes tables for S11a, S11b, and S11c (the loop 2 versions of S10a/S10b/S10c). Joe's output doesn't — he only reports on loop 1 questions.
-
-**This is a philosophical difference, not a bug.** Our pipeline reports on all loops by default because we detect loops and stack data. Joe only reports on loop 1, which is a deliberate simplification.
-
-**Our approach is more defensible as a default.** If someone gives you a survey with two loops and you silently drop loop 2 data, that's a bigger surprise than including everything. The user's expectation when they don't specify anything is "give me all the data."
-
-**Future enhancement:** Since we already do loop detection, we could give users the option:
-- **Default:** Report on all loops (our current behavior)
-- **Option:** "Report only on loop 1" — for users who want to match Joe's convention or want non-overlapping groups
-
-This is purely conceptual — parking it here for the broader loop philosophy conversation. Prioritize tactical fixes first.
+**Resolution:** Documented in `docs/system-behavior-reference.md` under "Loop Reporting Philosophy — Decision 1: Report all loops." HawkTab reports tables for all loop iterations by default. Joe reports loop 1 only. Neither is wrong — our approach prioritizes completeness. Will be configurable in the future.
 
 ---
 
