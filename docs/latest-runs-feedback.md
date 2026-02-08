@@ -32,7 +32,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 | 10 | Verification agent creating non-base "base" text | Low | Prompt fix | Formatting |
 | 11 | We report S11a/b/c, Joe doesn't (loop philosophy) | Conceptual | Design decision | Loop / stacking |
 | 12 | ~~S11b/c base filtered to 68 (skip logic overzealous)~~ | ~~High~~ | ~~Investigation + fix~~ | COMPLETE |
-| 13 | Table sort order broken (C3 between A-series) | Medium | Deterministic fix | Formatting |
+| 13 | ~~Table sort order broken (C3 between A-series)~~ | ~~Medium~~ | ~~Deterministic fix~~ | COMPLETE |
 | 14 | Inconsistent section label cleanup | Low | Deterministic post-pass | Formatting |
 | 15 | Dual-base reporting for skip logic questions (A10) | Conceptual | Future enhancement | Product quality |
 | 16 | ~~Loop variables not collapsed (A13a, A14a, A14b)~~ | ~~Medium~~ | ~~LoopDetector fix~~ | COMPLETE |
@@ -46,7 +46,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 - ~~Issue 12: S11b/c base filtering investigation~~ COMPLETE
 - ~~Issue 17: C1/C2/C4 tables being silently dropped~~ COMPLETE
 - ~~Issue 16: LoopDetector diversity threshold for sparse patterns~~ COMPLETE
-- Issue 13: Table sort order
+- ~~Issue 13: Table sort order~~ COMPLETE
 
 **Then prompt/formatting consistency:**
 - Issue 6: NET suppression on single-select (recurring)
@@ -435,23 +435,18 @@ This is purely conceptual — parking it here for the broader loop philosophy co
 
 ---
 
-#### Issue 13: Table Sort Order Broken (C3 Appearing Between A-Series Tables)
+#### Issue 13: Table Sort Order Broken (C3 Appearing Between A-Series Tables) — COMPLETE
 
-**Severity:** Medium | **Component:** TableGenerator or Excel formatter (deterministic) | **Priority:** Fix
+**Problem:** The `parseQuestionId()` regex in `sortTables.ts` — `/^([A-Za-z]+)(\d+)([A-Za-z]?)$/` — failed on any questionId with underscores (`A7_1`, `A13a_1`) or multi-character suffixes (`A3DK`). Failed matches fell into `category: 'other'` and sorted to the bottom, causing C3 to appear between A-series tables and loop variants to scatter unpredictably.
 
-**What happened:** Tables are not sorted correctly in the output. Tables like A7_1, A23, etc. are interspersed with C3, which should appear after all A-section tables. The expected order follows the survey structure: all S-series, then all A-series, then B-series, then C-series, etc.
+**Fix (one file: `src/lib/tables/sortTables.ts`):**
+1. **Expanded regex** to `([A-Za-z]*)(?:_(\d+))?$` — `[A-Za-z]*` allows multi-char suffixes (DK), `(?:_(\d+))?` captures loop iteration numbers.
+2. **Added `loopIteration` to `ParsedQuestion`** — sort step 5: base question (no loop) first, then `_1`, `_2`, etc.
+3. **Added `isDerived` sorting** — step 6: non-derived tables before T2B/binned/brand-split variants.
+4. **Added `extractQuestionIdFromTableId()`** helper for derived table proximity sorting.
+5. **Updated `sortTables()` and `getSortingMetadata()`** to pass `isDerived` and `sourceTableId` from table definitions.
 
-**The problem:** The sorting logic likely does a naive alphanumeric sort or doesn't account for:
-- Section prefixes (S, A, B, C) as primary sort keys
-- Numeric suffixes with underscores (A7_1 should come before A8, not after A70)
-- Loop variants (A7_1, A7_2 should be adjacent)
-
-**Action item:** Implement a more robust table sort that:
-1. Sorts by section prefix first (S < A < B < C < ...)
-2. Then by question number (numeric, not string — so A2 < A10)
-3. Then by loop suffix (_1, _2) or sub-question letter (a, b, c)
-
-This is a deterministic fix — no agent involvement needed.
+Now `A7_1` → (A, 7, "", loop=1), `A13a_1` → (A, 13, "a", loop=1) instead of "other". Unstructured names (`US_State`, `Region`) still correctly fall to "other".
 
 ---
 
