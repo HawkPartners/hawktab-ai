@@ -54,6 +54,7 @@ PASS A: CLASSIFY + PLAN (scratchpad entry 1)
 □ A1: LOCATE IN SURVEY
   Find the question in the survey document. Note question text, answer options, and special instructions.
   Update questionText if the survey has a cleaner version. If not found, note "Not in survey" and keep original.
+  NOTE: Some tables come from derived/hidden variables (e.g., state from zip code, region, demographics) that won't appear in the survey. These are still valid tables — keep them, use the labels from the data, and do NOT exclude them just because they're not in the survey.
 
 □ A2: CHECK LABELS
   Compare each row label to survey answer text. Update any unclear labels (e.g., "Value 1" → actual text).

@@ -154,10 +154,15 @@ export class DataMapProcessor {
     const normalized = variables.map((variable) => {
       const enriched = { ...variable };
 
-      // Skip admin fields
+      // Skip admin fields — but rescue geographic demographics (state, region, division)
+      // that are hidden variables with real value labels
       if (this.isAdminField(variable.column)) {
-        enriched.normalizedType = 'admin';
-        return enriched;
+        if (this.isGeographicDemographic(variable)) {
+          // Don't mark as admin — let it flow through to normal type classification
+        } else {
+          enriched.normalizedType = 'admin';
+          return enriched;
+        }
       }
 
       // Check for open text responses
@@ -211,6 +216,23 @@ export class DataMapProcessor {
 
     // Second pass: detect dependencies
     return this.detectDependencies(normalized);
+  }
+
+  /**
+   * Detect hidden variables that represent geographic demographics (state, region, division).
+   * These are analytically meaningful and should produce tables despite being hidden/admin.
+   * Requires both: a geographic keyword AND real value labels (not just "NA").
+   */
+  private isGeographicDemographic(variable: ProcessedDataMapVariable): boolean {
+    const col = variable.column.toLowerCase();
+    const desc = (variable.description || '').toLowerCase();
+
+    // Must have value labels — raw admin fields won't have them
+    if (!variable.answerOptions || variable.answerOptions === 'NA') return false;
+
+    // Check column name or description for geographic keywords
+    const geoPatterns = /\b(state|region|division|census|territory|metro|dma)\b/i;
+    return geoPatterns.test(col) || geoPatterns.test(desc);
   }
 
   private isAdminField(column: string): boolean {

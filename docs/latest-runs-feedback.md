@@ -24,7 +24,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 | 2 | ~~Crosstab agent prompt overfitting + confidence penalty~~ | ~~Medium~~ | ~~Prompt refactor~~ | COMPLETE |
 | 3 | Location variable selection philosophy (binary flag vs assignment) | High | Architectural decision | Loop / stacking |
 | 4 | ~~Table formatting: deterministic post-pass + sub-issues~~ | ~~Medium~~ | ~~Prompt + deterministic post-pass~~ | COMPLETE |
-| 5 | Missing S4 state-from-zip table | Low | New feature | Missing tables |
+| 5 | ~~Missing S4 state-from-zip table~~ | ~~Low~~ | ~~New feature~~ | COMPLETE |
 | 6 | ~~Unnecessary NET on single-select questions (S6a)~~ | ~~Medium~~ | ~~Prompt rule + post-pass~~ | COMPLETE |
 | 7 | ~~Mean outlier trimming discrepancy vs Joe (S8)~~ | ~~Low~~ | ~~Investigate + document~~ | COMPLETE |
 | 8 | ~~S9 NET base incorrectly filtered to 1993~~ | ~~High~~ | ~~Bug fix~~ | COMPLETE |
@@ -223,22 +223,13 @@ Verification agent was appending survey routing instructions like "(TERMINATE)",
 
 ---
 
-#### Issue 5: Missing S4 (State from Zip Code) — Open-Text / Admin Variable Support
+#### Issue 5: Missing S4 (State from Zip Code) — COMPLETE
 
-**Severity:** Low | **Component:** TableGenerator (deterministic) | **Priority:** Post-MVP
+**Problem:** State/region tables were missing because geographic hidden variables (`hSTATE`, `hRegion4`, `hRegion9`) were classified as `admin` due to the `h` prefix and excluded from table generation. The raw zip code (`S4`) is correctly excluded as `text_open`, but the SPSS file already contains pre-computed state and region variables with full value labels — no zip-to-state conversion needed.
 
-**What happened:** Our output is missing S4, which is a state variable derived from the respondent's zip code. This is likely because S4 is a text/open-ended or administrative variable, and our deterministic table generator pipeline doesn't generate tables for non-numeric variables.
-
-**Why this is reasonable for now:** Open-text variables generally shouldn't produce crosstab tables — there's nothing to cross-tabulate. The pipeline is correct to skip them.
-
-**The exception:** State-from-zip is the one type of open-text/admin variable that routinely appears in crosstabs. It's a standard demographic cut (e.g., "Region" or "State" derived from zip code). Joe includes it.
-
-**Future solution:** Detect when a text variable represents a zip-to-state classification and handle it:
-1. Recognize zip code / state variables (likely identifiable from variable name, label, or value patterns — e.g., 2-letter state codes, 5-digit zips)
-2. Apply a zip-to-state (or zip-to-region) lookup on the backend
-3. Generate the crosstab table as if it were a categorical variable
-
-This is a straightforward lookup implementation — not architecturally complex. But it's clearly post-MVP since it requires a new variable classification pathway.
+**Fix (two changes):**
+1. **`src/lib/processors/DataMapProcessor.ts`**: Added `isGeographicDemographic()` method that detects hidden variables with geographic keywords (state, region, division, census, metro, dma) AND real value labels. These get rescued from `admin` classification and flow through to normal type detection as `categorical_select`.
+2. **`src/prompts/verification/alternative.ts`**: Added note in A1 LOCATE IN SURVEY that some tables come from derived/hidden variables not in the survey — keep them, use data labels, don't exclude.
 
 ---
 
