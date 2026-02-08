@@ -34,7 +34,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 | 12 | ~~S11b/c base filtered to 68 (skip logic overzealous)~~ | ~~High~~ | ~~Investigation + fix~~ | COMPLETE |
 | 13 | ~~Table sort order broken (C3 between A-series)~~ | ~~Medium~~ | ~~Deterministic fix~~ | COMPLETE |
 | 14 | ~~Inconsistent section label cleanup~~ | ~~Low~~ | ~~Deterministic post-pass~~ | COMPLETE |
-| 15 | Dual-base reporting for skip logic questions (A10) | Conceptual | Future enhancement | Product quality |
+| 15 | ~~Dual-base reporting for skip logic questions (A10)~~ | ~~Conceptual~~ | ~~Future enhancement~~ | DEFERRED (moved to product roadmap) |
 | 16 | ~~Loop variables not collapsed (A13a, A14a, A14b)~~ | ~~Medium~~ | ~~LoopDetector fix~~ | COMPLETE |
 | 17 | ~~Section C tables missing (C1, C2, C4 dropped)~~ | ~~High~~ | ~~Bug fix~~ | COMPLETE |
 | WIN | Skip logic agent caught strikethrough text on A13 | — | — | Validation |
@@ -352,31 +352,6 @@ Now `A7_1` → (A, 7, "", loop=1), `A13a_1` → (A, 13, "a", loop=1) instead of 
 **Problem:** Section labels like "SECTION A: OCCASION LOOP" appeared inconsistently across tables because each parallel verification agent instance handled cleanup differently.
 
 **Fix** (`src/lib/tables/TablePostProcessor.ts`): `cleanSurveySection` rule strips "SECTION X:" prefixes (with or without number/letter), forces ALL CAPS, and trims whitespace — applied deterministically to every table after all agent instances finish.
-
----
-
-#### Issue 15: Dual-Base Reporting for Skip Logic Questions (A10 / "Joe's Nuance")
-
-**Severity:** Conceptual | **Component:** Pipeline philosophy | **Priority:** Post-MVP enhancement
-
-**What happened:** A10 ("How many people were with you?") has skip logic: "ASK IF A9 DOES NOT EQUAL 1" (i.e., only asked if the respondent was not alone). Our system correctly applies the filter — the base is "those who were not alone."
-
-**What Joe does differently:** Joe, as a human analyst, recognizes that it's useful to report A10 **twice**:
-1. With the skip logic filter applied (base = those not alone) — the "correct" analytical cut
-2. With all respondents as the base — so you can see what percentage of *everyone* gave each answer, even though some were skipped
-
-Both tables are valid and useful. The filtered version tells you "among people who were with others, here's the group size distribution." The unfiltered version tells you "out of everyone, what share had 2 people, 3 people, etc." — which implicitly also shows you the share who were alone (they'd be the missing base).
-
-**Why this matters:** This is the kind of analyst judgment that separates "tabs that answer the question asked" from "tabs that tell a story." Joe's ability to do this is one of the reasons his output feels higher-quality — he's not just mechanically applying skip logic, he's thinking about what the reader needs.
-
-**This is not a bug or a blocking issue.** Our system does the right thing by applying the skip logic. But it surfaces a future capability worth capturing:
-
-**Possible future feature: "Also report unfiltered" flag.**
-- When the verification agent (or a future review step) encounters a skip logic question, it could flag: "This table might also be useful with an all-respondents base."
-- The system could then generate both versions, with clear base text distinguishing them.
-- This would be opt-in or configurable — not every skip logic question benefits from dual reporting.
-
-**For now:** Note as an aspiration. The current behavior (apply skip logic, report filtered base) is correct and defensible.
 
 ---
 
