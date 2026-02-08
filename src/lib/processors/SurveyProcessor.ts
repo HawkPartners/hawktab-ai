@@ -4,8 +4,10 @@
  * Converts survey DOCX documents to markdown for agent consumption.
  * Uses LibreOffice for DOCX → HTML conversion, then turndown for HTML → Markdown.
  *
- * Preserves critical formatting like strikethrough (converted to ~~text~~) which is
- * essential for skip logic extraction (struck-through values indicate excluded conditions).
+ * Preserves critical formatting:
+ * - Strikethrough (converted to ~~text~~) - essential for skip logic extraction
+ * - Tables (converted to proper Markdown table syntax via GFM plugin) - preserves
+ *   row/column structure for complex survey grids
  *
  * Part of VerificationAgent and SkipLogicAgent pipelines - provides survey context.
  */
@@ -15,6 +17,7 @@ import { promisify } from 'util';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import TurndownService from 'turndown';
+import { gfm } from 'turndown-plugin-gfm';
 
 const execAsync = promisify(exec);
 
@@ -109,17 +112,13 @@ export async function processSurvey(
       bulletListMarker: '-',
     });
 
-    // Customize turndown to preserve tables
-    turndown.addRule('tables', {
-      filter: ['table'],
-      replacement: function (content, _node) {
-        // Keep tables as-is in a simple format
-        return '\n\n' + content + '\n\n';
-      },
-    });
+    // Use GFM plugin for proper table conversion (converts HTML tables to Markdown table syntax)
+    turndown.use(gfm);
 
     // Preserve strikethrough formatting (critical for skip logic extraction)
     // LibreOffice converts DOCX strikethrough to <del>, <s>, or <strike> tags
+    // Note: GFM plugin also handles strikethrough, but we keep this custom rule to ensure
+    // all three tag types (DEL, S, STRIKE) are properly converted
     turndown.addRule('strikethrough', {
       filter: function (node) {
         return (
