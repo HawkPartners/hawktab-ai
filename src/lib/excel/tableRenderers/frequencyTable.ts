@@ -231,6 +231,24 @@ export function renderFrequencyTable(
   currentRow++;
 
   // -------------------------------------------------------------------------
+  // Pre-scan: detect rows with count=0 across ALL cuts (terminate options)
+  // These get rendered as "-" instead of "0%" / "0"
+  // -------------------------------------------------------------------------
+  const allZeroRows = new Set<string>();
+  for (const rowKey of rowKeys) {
+    let allZero = true;
+    for (const { name } of cutOrder) {
+      const cutData = table.data[name];
+      const rowData = cutData?.[rowKey] as FrequencyRowData | undefined;
+      if (rowData?.count !== 0) {
+        allZero = false;
+        break;
+      }
+    }
+    if (allZero) allZeroRows.add(rowKey);
+  }
+
+  // -------------------------------------------------------------------------
   // Data rows: 3 rows per answer option (count, percent, significance)
   // -------------------------------------------------------------------------
   for (const rowKey of rowKeys) {
@@ -258,11 +276,16 @@ export function renderFrequencyTable(
       const rowData = cutData?.[rowKey] as FrequencyRowData | undefined;
 
       const cell = worksheet.getCell(currentRow, i + 2);
-      const count = rowData?.count;
-      if (count !== undefined && count !== null) {
-        cell.value = count;  // Store as number
-      } else {
+      const isAllZeroRow = allZeroRows.has(rowKey);
+      if (isAllZeroRow) {
         cell.value = '-';
+      } else {
+        const count = rowData?.count;
+        if (count !== undefined && count !== null) {
+          cell.value = count;  // Store as number
+        } else {
+          cell.value = '-';
+        }
       }
       cell.font = FONTS.data;
       cell.fill = FILLS.data;
@@ -283,12 +306,16 @@ export function renderFrequencyTable(
       const rowData = cutData?.[rowKey] as FrequencyRowData | undefined;
 
       const cell = worksheet.getCell(currentRow, i + 2);
-      const pct = rowData?.pct;
-      if (pct !== undefined && pct !== null) {
-        cell.value = pct / 100;  // Store as decimal (0.25 for 25%)
-        cell.numFmt = '0%';       // Display as "25%"
-      } else {
+      if (allZeroRows.has(rowKey)) {
         cell.value = '-';
+      } else {
+        const pct = rowData?.pct;
+        if (pct !== undefined && pct !== null) {
+          cell.value = pct / 100;  // Store as decimal (0.25 for 25%)
+          cell.numFmt = '0%';       // Display as "25%"
+        } else {
+          cell.value = '-';
+        }
       }
       cell.font = FONTS.data;
       cell.fill = FILLS.data;

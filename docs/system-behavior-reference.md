@@ -97,6 +97,36 @@ NET rows are indented to show parent-child relationships. Their components are e
 
 ---
 
+## Outlier Trimming (Mean Minus Outliers)
+
+Mean tables include a "Mean (minus outliers)" row that excludes extreme values using the **Tukey fence / IQR method** — a standard, well-documented statistical approach.
+
+### Method
+
+1. Compute Q1 (25th percentile) and Q3 (75th percentile) of the non-missing values
+2. Compute IQR = Q3 − Q1
+3. Set lower fence = Q1 − 1.5 × IQR, upper fence = Q3 + 1.5 × IQR
+4. Exclude any values below the lower fence or above the upper fence
+5. Compute the mean of the remaining values
+
+### Configuration
+
+| Setting | Value | Notes |
+|---------|-------|-------|
+| Multiplier | 1.5× IQR | Standard Tukey fence. Not currently configurable. |
+| Minimum sample | 4 valid (non-NA) values | Fewer than 4 → trimmed mean is NA (not enough data for stable IQR) |
+| Zero remaining | If all values are classified as outliers → NA | Does not fall back to untrimmed mean |
+
+### Why 1.5× IQR?
+
+This is the default in Tukey's original definition (1977) and the most widely used threshold in statistics. It flags values that are "unusually far" from the middle 50% of the distribution. A higher multiplier (e.g., 2.0× or 3.0×) would trim fewer values and produce a trimmed mean closer to the overall mean.
+
+### Known discrepancy
+
+Different analysts may use different outlier methods (percentile trimming, standard deviation cutoffs, different IQR multipliers). If HawkTab's trimmed mean differs from another source, the method difference — not a bug — is the most likely explanation. The untrimmed mean ("Mean (overall)") is always reported alongside for comparison.
+
+---
+
 ## Skip Logic and Table Filters
 
 When a question has skip logic (e.g., "asked only of those who selected Brand X"), the system:

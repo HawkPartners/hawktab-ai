@@ -23,10 +23,10 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 | 1 | ~~Banner agent confidence penalty for low group count~~ | ~~Low~~ | ~~Prompt + code fix~~ | COMPLETE |
 | 2 | ~~Crosstab agent prompt overfitting + confidence penalty~~ | ~~Medium~~ | ~~Prompt refactor~~ | COMPLETE |
 | 3 | Location variable selection philosophy (binary flag vs assignment) | High | Architectural decision | Loop / stacking |
-| 4 | Table formatting: deterministic post-pass (**done**), sub-issues 4a-4e open | Medium | Prompt + deterministic post-pass | PARTIAL |
+| 4 | ~~Table formatting: deterministic post-pass + sub-issues~~ | ~~Medium~~ | ~~Prompt + deterministic post-pass~~ | COMPLETE |
 | 5 | Missing S4 state-from-zip table | Low | New feature | Missing tables |
 | 6 | ~~Unnecessary NET on single-select questions (S6a)~~ | ~~Medium~~ | ~~Prompt rule + post-pass~~ | COMPLETE |
-| 7 | Mean outlier trimming discrepancy vs Joe (S8) | Low | Investigate + document | Documentation |
+| 7 | ~~Mean outlier trimming discrepancy vs Joe (S8)~~ | ~~Low~~ | ~~Investigate + document~~ | COMPLETE |
 | 8 | ~~S9 NET base incorrectly filtered to 1993~~ | ~~High~~ | ~~Bug fix~~ | COMPLETE |
 | 9 | Missing location distribution table (hidden variable gap) | Medium | Architecture | Missing tables |
 | 10 | ~~Verification agent creating non-base "base" text~~ | ~~Low~~ | ~~Prompt rule + post-pass warning~~ | COMPLETE |
@@ -53,7 +53,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 - ~~Issue 14: Deterministic post-pass for formatting~~ COMPLETE
 - ~~Issue 10: Base text vs question description~~ COMPLETE
 - ~~Issues 1, 2: Banner and crosstab agent prompt tweaks~~ COMPLETE
-- Issue 4 sub-issues still open: 4a (context/notes formatting), 4b (terminate rows: dash vs 0%), 4c (TERMINATE label clutter), 4d (screener NET suppression), 4e (row sort order)
+- ~~Issue 4: All sub-issues resolved (4b: dash for zero-count rows, 4c: routing label cleanup)~~ COMPLETE
 
 **Then document our assumptions:**
 - Issue 3/11: Loop reporting philosophy — document the default, make it configurable
@@ -204,7 +204,7 @@ hLOCATION1, hLOCATION2 → Numeric loop-assignment variables (which location in 
 
 ---
 
-#### Issue 4: Table Formatting Consistency — PARTIALLY COMPLETE
+#### Issue 4: Table Formatting Consistency — COMPLETE
 
 **Severity:** Medium | **Agent:** VerificationAgent + ExcelFormatter
 
@@ -212,22 +212,14 @@ hLOCATION1, hLOCATION2 → Numeric loop-assignment variables (which location in 
 
 **What the post-pass handles:** empty field normalization, section label cleanup (Issue 14), base text validation (Issue 10), trivial NET removal (Issue 6), source ID casing, duplicate row detection, orphan indent reset. Pipeline integration saves `postpass/postpass-report.json` with all actions.
 
-**Sub-issues still open (not blocking, but worth capturing for future polish):**
+**All sub-issues resolved:**
 
-##### 4a. Context column / notes formatting
-Source ID casing (`[s1]` → `[S1]`) is fixed by the post-pass. Remaining: internal metadata clutter ("Options 1–3 were programmed to terminate the respondent") should be suppressed; analyst-facing notes ("Multiple answers accepted") should be added. Mix of verification prompt + Excel formatter work.
+##### 4b. Terminate rows: 0% vs dash — COMPLETE
+Terminate options showed `0%` instead of `-` (dash). Fixed in Excel formatters (both Joe and Antares styles): pre-scan detects rows with count=0 across ALL banner cuts, then renders `-` instead of `0%`/`0`. No new data flow needed — the R output already contains the signal. Files: `joeStyleFrequency.ts`, `frequencyTable.ts`.
 
-##### 4b. Terminate rows: 0% vs dash
-Terminate options show `0%` instead of `-` (dash). Requires: propagating terminate metadata from skip logic agent through to R script/Excel formatter. Not architecturally complex but needs a new data flow.
+##### 4c. "(TERMINATE)" label clutter — COMPLETE
+Verification agent was appending survey routing instructions like "(TERMINATE)", "(CONTINUE TO S4)" to row labels. Fixed with: (1) prompt rule in A2 CHECK LABELS telling the agent to strip all routing instructions from labels, and (2) deterministic post-pass Rule 8 (`stripRoutingInstructions`) as backup — regex strips parenthesized routing patterns from any label the agent misses.
 
-##### 4c. "(TERMINATE)" label clutter
-If 4b is implemented (dashes for terminators), the "(TERMINATE)" suffix can be removed from row labels. Depends on 4b.
-
-##### 4d. NET rows on screener/terminate tables
-A NET on a screener table where most options are terminators adds noise. Consider verification agent or post-pass logic to suppress NETs when the table's primary purpose is screening.
-
-##### 4e. Row sort order
-Joe sorts rows in descending rank order; we use survey order. Survey order is a defensible default. Could be made configurable (client preference).
 
 ---
 
@@ -260,7 +252,7 @@ This is a straightforward lookup implementation — not architecturally complex.
 
 ---
 
-#### Issue 7: Mean Outlier Trimming — Discrepancy vs Joe on S8 (Investigation, Not a Bug)
+#### Issue 7: Mean Outlier Trimming — Discrepancy vs Joe on S8 — COMPLETE
 
 **Severity:** Low | **Component:** RScriptGeneratorV2 (deterministic) | **Priority:** Investigate + document
 
@@ -284,7 +276,7 @@ This is a straightforward lookup implementation — not architecturally complex.
 
 **Key principle:** Whatever method we choose, it should be documented and defensible. Users should be able to point to our system behavior reference and say "HawkTab uses 1.5x IQR Tukey fences for outlier trimming" — and that's a perfectly standard, well-known statistical method.
 
-**Documentation action:** Add an "Outlier Trimming" section to `docs/system-behavior-reference.md` explaining the method, threshold, and when it applies.
+**Resolution:** Added "Outlier Trimming (Mean Minus Outliers)" section to `docs/system-behavior-reference.md` documenting the 1.5× IQR Tukey fence method, minimum sample requirement (4 values), and the known discrepancy explanation. The untrimmed mean is always reported alongside for comparison. If Joe's method is later identified, we can make the multiplier configurable — but our default is standard and defensible.
 
 ---
 

@@ -502,6 +502,26 @@ export function renderJoeStyleFrequencyTable(
   currentRow++;
 
   // -------------------------------------------------------------------------
+  // Pre-scan: detect rows with count=0 across ALL cuts (terminate options)
+  // These get rendered as "-" instead of "0%" / "0"
+  // -------------------------------------------------------------------------
+  const allZeroRows = new Set<string>();
+  for (const rowKey of rowKeys) {
+    const totalRowData = totalCutData?.[rowKey] as FrequencyRowData | undefined;
+    if (totalRowData?.isCategoryHeader) continue;
+    let allZero = true;
+    for (const cut of cuts) {
+      const cutData = table.data[cut.name];
+      const rowData = cutData?.[rowKey] as FrequencyRowData | undefined;
+      if (rowData?.count !== 0) {
+        allZero = false;
+        break;
+      }
+    }
+    if (allZero) allZeroRows.add(rowKey);
+  }
+
+  // -------------------------------------------------------------------------
   // Data rows: 1 row per answer option, alternating colors within table
   // -------------------------------------------------------------------------
   for (let rowIdx = 0; rowIdx < rowKeys.length; rowIdx++) {
@@ -540,10 +560,14 @@ export function renderJoeStyleFrequencyTable(
       const groupFill = getGroupFill(cut.groupIndex, rowIdx);
 
       // Value column (percent or count)
+      // Rows with count=0 across all cuts (terminate options) show "-" instead of 0%/0
       const valCell = worksheet.getCell(currentRow, cut.valueCol);
+      const isAllZeroRow = allZeroRows.has(rowKey);
       if (isCategoryHeader) {
         // Category header: empty cell, no data
         valCell.value = '';
+      } else if (isAllZeroRow) {
+        valCell.value = '-';
       } else if (valueType === 'percent') {
         const pct = rowData?.pct;
         if (pct !== undefined && pct !== null) {

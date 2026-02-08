@@ -57,6 +57,7 @@ PASS A: CLASSIFY + PLAN (scratchpad entry 1)
 
 □ A2: CHECK LABELS
   Compare each row label to survey answer text. Update any unclear labels (e.g., "Value 1" → actual text).
+  RULE: Labels must contain ONLY the answer text. Strip all survey routing instructions — (TERMINATE), (CONTINUE), (ASK Q5), (SKIP TO S4), (END SURVEY), (SCREEN OUT), etc. These are internal survey programming notes, not labels analysts should see.
 
 □ A3: IDENTIFY QUESTION TYPE AND ENRICH
   - SCALE (satisfaction, likelihood, agreement, importance) → Add box score rollups

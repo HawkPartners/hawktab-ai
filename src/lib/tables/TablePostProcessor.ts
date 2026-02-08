@@ -318,6 +318,39 @@ function checkOrphanIndent(table: ExtendedTableDefinition, actions: PostPassActi
   return table;
 }
 
+/**
+ * Rule 8: Strip survey routing instructions from row labels.
+ * Removes (TERMINATE), (CONTINUE), (ASK Q5), (SKIP TO S4), (END SURVEY), (SCREEN OUT), etc.
+ */
+function stripRoutingInstructions(table: ExtendedTableDefinition, actions: PostPassAction[]): ExtendedTableDefinition {
+  // Match parenthesized routing instructions at the end of labels or standalone
+  // Covers: (TERMINATE), (CONTINUE TO S4), (ASK S3a), (SKIP TO Q5), (END SURVEY), (SCREEN OUT), (GO TO S2)
+  const routingPattern = /\s*\((?:TERMINATE|CONTINUE(?:\s+TO\s+\S+)?|ASK\s+\S+|SKIP\s+TO\s+\S+|END\s+SURVEY|SCREEN\s*OUT|GO\s+TO\s+\S+)\)\s*/gi;
+
+  let modified = false;
+  const rows = table.rows.map(row => {
+    if (!routingPattern.test(row.label)) return row;
+
+    const cleaned = row.label.replace(routingPattern, '').trim();
+    if (cleaned !== row.label) {
+      modified = true;
+      actions.push({
+        tableId: table.tableId,
+        rule: 'routing_instruction_stripped',
+        severity: 'fix',
+        detail: `Row label: "${row.label}" → "${cleaned}"`,
+      });
+      return { ...row, label: cleaned };
+    }
+    return row;
+  });
+
+  if (modified) {
+    return { ...table, rows };
+  }
+  return table;
+}
+
 // ─── Orchestrator ────────────────────────────────────────────────────────────
 
 /**
@@ -337,6 +370,7 @@ export function normalizePostPass(tables: ExtendedTableDefinition[]): PostPassRe
     t = cleanSurveySection(t, actions);
     t = validateBaseText(t, actions);
     t = normalizeSourceIdCasing(t, actions);
+    t = stripRoutingInstructions(t, actions);
 
     // Phase 3: Structural fixes (depend on clean fields)
     t = checkTrivialNets(t, actions);
