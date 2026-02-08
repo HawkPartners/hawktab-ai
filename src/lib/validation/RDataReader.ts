@@ -240,7 +240,7 @@ export async function checkRAvailability(outputDir: string): Promise<boolean> {
  * - r\d+c\d+   → grid cell (S13r1c1)
  * - r\d+oe     → open-ended row (S2r98oe)
  * - r\d+       → row item (S8r1)
- * - c\d+       → column item (standalone column index)
+ * - [a-z0-9]c\d+ → column item (requires preceding char to avoid matching standalone C1, C2, etc.)
  */
 export function hasStructuralSuffix(varName: string): boolean {
   const lower = varName.toLowerCase();
@@ -249,7 +249,7 @@ export function hasStructuralSuffix(varName: string): boolean {
   return /r\d+c\d+$/i.test(varName) ||
          /r\d+oe$/i.test(varName) ||
          /r\d+$/i.test(varName) ||
-         /c\d+$/i.test(varName);
+         /[a-z0-9]c\d+$/i.test(varName);
 }
 
 // =============================================================================

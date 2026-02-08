@@ -527,6 +527,27 @@ export async function runPipeline(
       group.tables.map(t => toExtendedTable(t, group.questionId))
     );
 
+    // Save TableGenerator output (pre-filter, pre-verification) for debugging
+    try {
+      const tableGenDir = path.join(outputDir, 'tablegenerator');
+      await fs.mkdir(tableGenDir, { recursive: true });
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      await fs.writeFile(
+        path.join(tableGenDir, `tablegenerator-output-${timestamp}.json`),
+        JSON.stringify({
+          tables: extendedTables,
+          summary: {
+            totalTables: extendedTables.length,
+            tableIds: extendedTables.map(t => t.tableId),
+          },
+        }, null, 2),
+        'utf-8'
+      );
+      log(`  TableGenerator output saved: ${extendedTables.length} tables`, 'dim');
+    } catch (saveError) {
+      log(`  Failed to save TableGenerator output: ${saveError instanceof Error ? saveError.message : String(saveError)}`, 'yellow');
+    }
+
     // Step 6: FilterApplicator (deterministic, instant)
     logStep(6, totalSteps, 'Applying pre-computed filters...');
     const stepStart6 = Date.now();

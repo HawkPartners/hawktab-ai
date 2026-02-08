@@ -134,8 +134,8 @@ export class DataMapProcessor {
     // Remove r\d+oe (like r98oe — open-ended row)
     parent = parent.replace(/r\d+oe$/i, '');
 
-    // Remove c\d+ (like c1, c2, c3)
-    parent = parent.replace(/c\d+$/i, '');
+    // Remove c\d+ (like c1, c2, c3) — only if preceded by another char (avoid stripping standalone C1, C2)
+    parent = parent.replace(/(?<=[a-z0-9])c\d+$/i, '');
 
     // Remove r\d+ (like r1, r2, r3)
     parent = parent.replace(/r\d+$/i, '');

@@ -36,7 +36,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 | 14 | Inconsistent section label cleanup | Low | Deterministic post-pass | Formatting |
 | 15 | Dual-base reporting for skip logic questions (A10) | Conceptual | Future enhancement | Product quality |
 | 16 | Loop variables not collapsed (A13a, A14a, A14b) | Medium | LoopDetector fix | Loop / stacking |
-| 17 | Section C tables missing (C1, C2, C4 dropped) | High | Bug fix | Missing tables |
+| 17 | ~~Section C tables missing (C1, C2, C4 dropped)~~ | ~~High~~ | ~~Bug fix~~ | COMPLETE |
 | WIN | Skip logic agent caught strikethrough text on A13 | — | — | Validation |
 
 ### Where to focus next
@@ -44,7 +44,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 **Deterministic fixes first** (wrong numbers, missing tables, broken sorting):
 - ~~Issue 8: S9 NET base computation bug~~ COMPLETE
 - ~~Issue 12: S11b/c base filtering investigation~~ COMPLETE
-- Issue 17: C1/C2/C4 tables being silently dropped
+- ~~Issue 17: C1/C2/C4 tables being silently dropped~~ COMPLETE
 - Issue 16: LoopDetector diversity threshold for sparse patterns
 - Issue 13: Table sort order
 
@@ -536,28 +536,13 @@ The threshold exists to prevent false positives — you need enough repetition a
 
 ---
 
-#### Issue 17: Section C Tables Missing — C1, C2, C4 Dropped from Output
+#### Issue 17: Section C Tables Missing — C1, C2, C4 Dropped from Output — COMPLETE
 
-**Severity:** High | **Component:** TableGenerator or VerificationAgent | **Priority:** Bug fix
+**Problem:** C1, C2, C4 (standalone categorical demographics) were silently dropped while C3 (multi-row binary_flag matrix) was included. Root cause: `hasStructuralSuffix()` in `RDataReader.ts` used regex `/c\d+$/i` to detect grid column suffixes (like `A5c1`), but it matched standalone question codes `C1`, `C2`, `C4`. This misclassified them as `level: "sub"` with `parentQuestion: "NA"`, and the DataMapGrouper silently skipped orphaned subs.
 
-**What happened:** Only C3 appears in the output. C1 (Marital Status), C2 (Education), and C4 (Urban/Rural) are all missing despite being valid categorical variables in the data.
-
-**All four variables exist and are correctly classified:**
-
-| Variable | Type | Description | In Output? |
-|---|---|---|---|
-| C1 | categorical_select | Marital Status (6 options) | No |
-| C2 | categorical_select | Education (6 options) | No |
-| C3 | binary_flag matrix | Employment Status (C3r1–C3r11, 11 rows) | Yes |
-| C4 | categorical_select | Urban/Rural (3 options) | No |
-
-**The pattern:** C3 is a multi-row matrix (11 binary flag sub-variables), while C1/C2/C4 are single-row categorical questions. Something in the pipeline is filtering out "flat" single-value demographics while keeping multi-row matrices.
-
-**Where to investigate:**
-1. **TableGenerator** — does the table generation logic skip variables that don't have child rows (i.e., no `r1`, `r2`, etc. sub-variables)? If it only generates tables for grouped/parent variables with children, single-row categoricals would be silently dropped.
-2. **DataMap grouping** — does `groupDataMap()` fail to create a table entry for standalone categorical variables that don't have a parent-child structure?
-3. **VerificationAgent** — does the agent receive C1/C2/C4 as input but exclude them during verification?
-
-**Action item:** Trace C1 through the pipeline stage by stage — datamap → table generator → verification — and identify where it gets dropped. Single-row categorical variables are some of the most common demographic tables in market research; they absolutely need to produce tables.
+**Fix (three changes):**
+1. **`src/lib/validation/RDataReader.ts`**: Changed `/c\d+$/i` to `/[a-z0-9]c\d+$/i` — requires a preceding character, so `A5c1` still matches but standalone `C1` does not.
+2. **`src/lib/processors/DataMapProcessor.ts`**: Safety net — `inferParentFromSubVariable` now uses `/(?<=[a-z0-9])c\d+$/i` so it won't strip a standalone question code to empty.
+3. **`src/lib/pipeline/PipelineRunner.ts`**: Added TableGenerator output saving to `tablegenerator/` directory for pipeline debugging visibility.
 
 
