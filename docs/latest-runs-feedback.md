@@ -28,7 +28,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 | 6 | ~~Unnecessary NET on single-select questions (S6a)~~ | ~~Medium~~ | ~~Prompt rule + post-pass~~ | COMPLETE |
 | 7 | ~~Mean outlier trimming discrepancy vs Joe (S8)~~ | ~~Low~~ | ~~Investigate + document~~ | COMPLETE |
 | 8 | ~~S9 NET base incorrectly filtered to 1993~~ | ~~High~~ | ~~Bug fix~~ | COMPLETE |
-| 9 | Missing location distribution table (hidden variable gap) | Medium | Architecture | Missing tables |
+| 9 | ~~Missing location distribution table (hidden variable gap)~~ | ~~Medium~~ | ~~Architecture~~ | DEFERRED (moved to product roadmap) |
 | 10 | ~~Verification agent creating non-base "base" text~~ | ~~Low~~ | ~~Prompt rule + post-pass warning~~ | COMPLETE |
 | 11 | We report S11a/b/c, Joe doesn't (loop philosophy) | Conceptual | Design decision | Loop / stacking |
 | 12 | ~~S11b/c base filtered to 68 (skip logic overzealous)~~ | ~~High~~ | ~~Investigation + fix~~ | COMPLETE |
@@ -291,25 +291,6 @@ This is a straightforward lookup implementation — not architecturally complex.
 **Also removed `dependsOn` and `noRuleQuestions`** from the skip logic schema — these were advisory fields that added output tokens without being used by any downstream code.
 
 **Validation:** `scripts/audit-net-base-risk.ts` and `scripts/validate-net-base-fix.ts` confirm the fix across all test datasets. Tito's S9: base 4287 → 5098, mean 13.2 → 6.1.
-
----
-
-#### Issue 9: Missing Location Distribution Table (Hidden Variable Gap)
-
-**Severity:** Medium | **Component:** Pipeline architecture (TableGenerator + DataMapProcessor) | **Priority:** Post-MVP, worth capturing
-
-**What happened:** Joe's output includes a frequency distribution table for S9 showing the percentage of respondents assigned to each location (At your home: 59%, At someone else's home: 8%, etc.). Our output doesn't have this table at all.
-
-**Why we're missing it:** S9's location assignment is handled via hidden variables (hLOCATIONr1–r16, hLOCATION1/hLOCATION2, etc.). We currently exclude hidden variables from table generation to keep things simple and avoid cluttering output with internal coding variables. That's generally the right call — but in this case it backfires because the hidden variable IS the analytically meaningful table. Joe's table shows the distribution of location assignments, which is useful context for everything downstream.
-
-**The challenge:** Even if we un-hid these variables, the system would need to know which hidden variables relate to which visible question. A standalone `hLOCATIONr1` table isn't useful without the context that it's the assignment variable for S9. So this isn't just "show hidden variables" — it's "relate hidden variables back to their parent question and present them as a coherent distribution table."
-
-**Possible approaches (future):**
-1. **Parent-variable linking in the datamap.** If DataMapProcessor can detect that `hLOCATIONr1–r16` are child variables of S9 (via naming patterns or metadata), we could auto-generate a distribution table.
-2. **Verification agent awareness.** The verification agent could be told "these hidden variables exist and relate to S9" and decide whether a distribution table is warranted.
-3. **Accept the gap for now.** This is a niche case (hidden assignment variables that produce meaningful tables). Document it as a known limitation.
-
-**Current decision:** Not blocking. Capture for future work. The system correctly hides internal coding variables; this is an edge case where that heuristic misses something useful.
 
 ---
 

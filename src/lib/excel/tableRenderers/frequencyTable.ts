@@ -312,7 +312,7 @@ export function renderFrequencyTable(
         const pct = rowData?.pct;
         if (pct !== undefined && pct !== null) {
           cell.value = pct / 100;  // Store as decimal (0.25 for 25%)
-          cell.numFmt = '0%';       // Display as "25%"
+          cell.numFmt = '0%';       // Display as "25%" — full precision stored in cell value
         } else {
           cell.value = '-';
         }

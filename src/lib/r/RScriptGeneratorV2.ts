@@ -802,7 +802,7 @@ function generateDemoTable(
   lines.push(`  # Row: Total`);
   lines.push('  total_count <- nrow(cut_data)');
   lines.push('  base_n <- nrow(cut_data)');
-  lines.push('  pct <- if (base_n > 0) round_half_up(total_count / base_n * 100) else 0');
+  lines.push('  pct <- if (base_n > 0) total_count / base_n * 100 else 0');
   lines.push('');
   lines.push(`  table__demo_banner_x_banner$data[[cut_name]][["row_${rowIndex}_Total"]] <- list(`);
   lines.push('    label = "Total",');
@@ -832,7 +832,7 @@ function generateDemoTable(
       lines.push('    combined_mask <- cuts[[cut_name]] & row_cut_mask');
       lines.push('    combined_mask[is.na(combined_mask)] <- FALSE');
       lines.push('    row_count <- sum(combined_mask)');
-      lines.push('    row_pct <- if (base_n > 0) round_half_up(row_count / base_n * 100) else 0');
+      lines.push('    row_pct <- if (base_n > 0) row_count / base_n * 100 else 0');
       lines.push('');
       lines.push(`    table__demo_banner_x_banner$data[[cut_name]][["${rowKey}"]] <- list(`);
       lines.push(`      label = "${safeCutName}",`);
@@ -1148,7 +1148,7 @@ function generateFrequencyTable(lines: string[], table: TableWithLoopFrame): voi
       lines.push('  # Base = table base (all qualified respondents in this cut)');
       lines.push('  base_n <- nrow(cut_data)');
       lines.push('  count <- sum(net_respondents, na.rm = TRUE)');
-      lines.push('  pct <- if (base_n > 0) round_half_up(count / base_n * 100) else 0');
+      lines.push('  pct <- if (base_n > 0) count / base_n * 100 else 0');
     } else if (rangeMatch) {
       // Range filter value (e.g., "0-4" for binned distributions)
       const [, minVal, maxVal] = rangeMatch;
@@ -1157,7 +1157,7 @@ function generateFrequencyTable(lines: string[], table: TableWithLoopFrame): voi
       lines.push('  if (!is.null(var_col)) {');
       lines.push('    base_n <- sum(!is.na(var_col))');
       lines.push(`    count <- sum(as.numeric(var_col) >= ${minVal} & as.numeric(var_col) <= ${maxVal}, na.rm = TRUE)`);
-      lines.push('    pct <- if (base_n > 0) round_half_up(count / base_n * 100) else 0');
+      lines.push('    pct <- if (base_n > 0) count / base_n * 100 else 0');
     } else if (hasMultipleValues) {
       // Multiple filter values (e.g., T2B "4,5")
       lines.push(`  # Row ${i + 1}: ${row.variable} IN (${filterValues.join(', ')})`);
@@ -1165,7 +1165,7 @@ function generateFrequencyTable(lines: string[], table: TableWithLoopFrame): voi
       lines.push('  if (!is.null(var_col)) {');
       lines.push('    base_n <- sum(!is.na(var_col))');
       lines.push(`    count <- sum(as.numeric(var_col) %in% c(${filterValues.join(', ')}), na.rm = TRUE)`);
-      lines.push('    pct <- if (base_n > 0) round_half_up(count / base_n * 100) else 0');
+      lines.push('    pct <- if (base_n > 0) count / base_n * 100 else 0');
     } else {
       // Standard single filter value
       lines.push(`  # Row ${i + 1}: ${row.variable} == ${filterValue}`);
@@ -1173,7 +1173,7 @@ function generateFrequencyTable(lines: string[], table: TableWithLoopFrame): voi
       lines.push('  if (!is.null(var_col)) {');
       lines.push('    base_n <- sum(!is.na(var_col))');
       lines.push(`    count <- sum(as.numeric(var_col) == ${filterValue}, na.rm = TRUE)`);
-      lines.push('    pct <- if (base_n > 0) round_half_up(count / base_n * 100) else 0');
+      lines.push('    pct <- if (base_n > 0) count / base_n * 100 else 0');
     }
 
     lines.push('');
