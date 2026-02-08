@@ -1145,8 +1145,8 @@ function generateFrequencyTable(lines: string[], table: TableWithLoopFrame): voi
       lines.push('      net_respondents <- net_respondents | (!is.na(var_col) & var_col > 0)');
       lines.push('    }');
       lines.push('  }');
-      lines.push('  # Base = anyone who answered any component question');
-      lines.push('  base_n <- sum(!is.na(safe_get_var(cut_data, net_vars[1])))');
+      lines.push('  # Base = table base (all qualified respondents in this cut)');
+      lines.push('  base_n <- nrow(cut_data)');
       lines.push('  count <- sum(net_respondents, na.rm = TRUE)');
       lines.push('  pct <- if (base_n > 0) round_half_up(count / base_n * 100) else 0');
     } else if (rangeMatch) {
@@ -1298,20 +1298,23 @@ function generateMeanRowsTable(lines: string[], table: TableWithLoopFrame): void
     const isNetWithComponents = isNet && row.netComponents && row.netComponents.length > 0;
 
     if (isNetWithComponents) {
-      // NET row: sum the means of component variables
-      // This is valid for allocation questions where percentages can be summed
-      lines.push(`  # Row ${i + 1}: NET - ${row.label} (sum of component means)`);
+      // NET row: mean of per-respondent row-sums across component variables
+      lines.push(`  # Row ${i + 1}: NET - ${row.label} (mean of per-respondent row-sums)`);
       const componentVars = row.netComponents.map(v => `"${escapeRString(v)}"`).join(', ');
       lines.push(`  net_vars <- c(${componentVars})`);
-      lines.push('  component_means <- sapply(net_vars, function(v) {');
+      lines.push('  # Build matrix of component columns, compute row-sum per respondent');
+      lines.push('  net_cols <- lapply(net_vars, function(v) {');
       lines.push('    col <- safe_get_var(cut_data, v)');
-      lines.push('    if (!is.null(col)) mean(col, na.rm = TRUE) else NA');
+      lines.push('    if (!is.null(col)) as.numeric(col) else rep(NA_real_, nrow(cut_data))');
       lines.push('  })');
-      lines.push('  # Sum component means (valid for allocation/share questions)');
-      lines.push('  net_mean <- if (all(is.na(component_means))) NA else round_half_up(sum(component_means, na.rm = TRUE), 1)');
-      lines.push('  # Use n from first component as representative base');
-      lines.push('  first_col <- safe_get_var(cut_data, net_vars[1])');
-      lines.push('  n <- if (!is.null(first_col)) sum(!is.na(first_col)) else 0');
+      lines.push('  net_matrix <- do.call(cbind, net_cols)');
+      lines.push('  # Row-sum: NA only if ALL components are NA for that respondent');
+      lines.push('  row_all_na <- apply(net_matrix, 1, function(r) all(is.na(r)))');
+      lines.push('  row_sums <- rowSums(net_matrix, na.rm = TRUE)');
+      lines.push('  row_sums[row_all_na] <- NA');
+      lines.push('  net_mean <- if (all(is.na(row_sums))) NA else round_half_up(mean(row_sums, na.rm = TRUE), 1)');
+      lines.push('  # Base = table base (all qualified respondents in this cut)');
+      lines.push('  n <- nrow(cut_data)');
       lines.push('');
       lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
       lines.push(`    label = "${label}",`);

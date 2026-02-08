@@ -188,7 +188,6 @@ async function main() {
   // Step 4: SkipLogicAgent → FilterTranslatorAgent
   // =========================================================================
   let skipLogicRulesCount = 0;
-  let noRuleQuestionsCount = 0;
   let filtersTranslated = 0;
   let skipLogicDuration = 0;
   let translatorDuration = 0;
@@ -205,10 +204,8 @@ async function main() {
     skipLogicResult = await extractSkipLogic(surveyMarkdown, { outputDir });
     skipLogicDuration = Date.now() - step4aStart;
     skipLogicRulesCount = skipLogicResult.metadata.rulesExtracted;
-    noRuleQuestionsCount = skipLogicResult.metadata.noRuleQuestions;
 
     log(`  Rules extracted: ${skipLogicRulesCount}`, 'green');
-    log(`  No-rule questions: ${noRuleQuestionsCount}`, 'green');
     log(`  Duration: ${(skipLogicDuration / 1000).toFixed(1)}s`, 'dim');
     log('', 'reset');
 
@@ -276,7 +273,6 @@ async function main() {
     const applicatorResult = applyFilters(
       extendedTables,
       filterResult.translation,
-      skipLogicResult?.extraction.noRuleQuestions || [],
       validVariables,
     );
     filteredTables = applicatorResult.tables;
@@ -376,7 +372,6 @@ async function main() {
     skipLogic: {
       surveyAvailable: !!surveyMarkdown,
       rulesExtracted: skipLogicRulesCount,
-      noRuleQuestions: noRuleQuestionsCount,
     },
     filterApplicator: filterSummary,
   };

@@ -452,7 +452,7 @@ export async function runPipeline(
 
       try {
         const skipLogicResult = await extractSkipLogic(surveyMarkdown, { outputDir });
-        log(`  [Path C] SkipLogicAgent: ${skipLogicResult.metadata.rulesExtracted} rules, ${skipLogicResult.metadata.noRuleQuestions} no-rule questions`, 'green');
+        log(`  [Path C] SkipLogicAgent: ${skipLogicResult.metadata.rulesExtracted} rules`, 'green');
         eventBus.emitStageComplete(5, STAGE_NAMES[5], Date.now() - pathCStart);
 
         // FilterTranslatorAgent (chained after SkipLogicAgent)
@@ -538,7 +538,6 @@ export async function runPipeline(
       const filterApplicatorResult = applyFilters(
         extendedTables,
         filterResult.translation,
-        skipLogicResult?.extraction.noRuleQuestions || [],
         validVariables,
       );
 

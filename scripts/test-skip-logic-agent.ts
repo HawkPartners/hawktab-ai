@@ -143,7 +143,6 @@ async function main() {
   const skipLogicDuration = Date.now() - skipLogicStart;
 
   log(`  Rules extracted: ${skipLogicResult.metadata.rulesExtracted}`, 'green');
-  log(`  No-rule questions: ${skipLogicResult.metadata.noRuleQuestions}`, 'green');
   log(`  Duration: ${(skipLogicDuration / 1000).toFixed(1)}s`, 'dim');
   log('', 'reset');
 
@@ -196,7 +195,6 @@ async function main() {
       },
       skipLogic: {
         rulesExtracted: skipLogicResult.metadata.rulesExtracted,
-        noRuleQuestions: skipLogicResult.metadata.noRuleQuestions,
         rulesByType: {
           tableLevel: skipLogicResult.extraction.rules.filter(r => r.ruleType === 'table-level').length,
           rowLevel: skipLogicResult.extraction.rules.filter(r => r.ruleType === 'row-level').length,

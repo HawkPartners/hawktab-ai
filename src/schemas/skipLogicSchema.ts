@@ -39,9 +39,6 @@ export const SkipRuleSchema = z.object({
   /** Description of what the condition checks (e.g., "respondent must be aware of Brand X") */
   conditionDescription: z.string(),
 
-  /** Other ruleIds this rule depends on (empty array if none) */
-  dependsOn: z.array(z.string()),
-
   /** Translation context: coding tables, hidden variable references, or survey-specific context
    * that helps FilterTranslatorAgent resolve this rule to actual data variables.
    * Must always be present (use empty string "" if no additional context needed). */
@@ -57,9 +54,6 @@ export type SkipRule = z.infer<typeof SkipRuleSchema>;
 export const SkipLogicExtractionOutputSchema = z.object({
   /** All skip/show rules extracted from the survey */
   rules: z.array(SkipRuleSchema),
-
-  /** Question IDs that are guaranteed to have no skip/show logic (PASS) */
-  noRuleQuestions: z.array(z.string()),
 });
 
 export type SkipLogicExtractionOutput = z.infer<typeof SkipLogicExtractionOutputSchema>;
@@ -179,7 +173,6 @@ export interface SkipLogicResult {
   /** Processing metadata */
   metadata: {
     rulesExtracted: number;
-    noRuleQuestions: number;
     durationMs: number;
   };
 }

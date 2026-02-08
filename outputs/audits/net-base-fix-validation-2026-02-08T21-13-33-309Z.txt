@@ -1,0 +1,257 @@
+NET Base Fix Validation Report
+======================================================================
+Date: 2026-02-08T21:13:33.311Z
+Duration: 41.8s
+
+SUMMARY
+----------------------------------------
+Datasets tested:             24
+Total mean_rows tables:      233
+Tables where fix changes base: 107
+Tables already correct:        126
+
+FIX DESCRIPTION
+----------------------------------------
+Point 1: NET base = nrow(cut_data) instead of sum(!is.na(first_component))
+Point 2: NET mean = mean of per-respondent row-sums instead of sum of component means
+
+DETAIL BY DATASET
+----------------------------------------
+[FIXED] CART-Segmentation-Data_7.22.24_v2: 16/22 tables had wrong base (N=133)
+          a5a_1 (A5a_1): base 47 → 133 | mean: 15 → 6
+            worst component: A5a_1r3 = 13/133 non-NA
+          a5a_2 (A5a_2): base 46 → 133 | mean: 15.2 → 6
+            worst component: A5a_2r3 = 17/133 non-NA
+          a5a_3 (A5a_3): base 49 → 133 | mean: 15.1 → 6
+            worst component: A5a_3r3 = 18/133 non-NA
+          a5a_4 (A5a_4): base 49 → 133 | mean: 14.7 → 6
+            worst component: A5a_4r3 = 13/133 non-NA
+          a5b_1 (A5b_1): base 59 → 133 | mean: 17.1 → 6
+            worst component: A5b_1r3 = 16/133 non-NA
+          a5b_2 (A5b_2): base 55 → 133 | mean: 17.2 → 6
+            worst component: A5b_2r3 = 24/133 non-NA
+          a5b_3 (A5b_3): base 53 → 133 | mean: 17.1 → 6
+            worst component: A5b_3r3 = 19/133 non-NA
+          a5b_4 (A5b_4): base 39 → 133 | mean: 17.4 → 6
+            worst component: A5b_4r3 = 13/133 non-NA
+          a9 (A9): base 69 → 133 | mean: 8.7 → 8.7
+            worst component: A9r4c1 = 69/133 non-NA
+          b4 (B4): base 60 → 133 | mean: 10.7 → 10.7
+            worst component: B4r3 = 60/133 non-NA
+          vb4calc (vB4Calc): base 60 → 133 | mean: 100 → 100
+            worst component: vB4Calcr3 = 60/133 non-NA
+          b5 (B5): base 59 → 133 | mean: 100 → 100
+            worst component: B5r2 = 59/133 non-NA
+          b5a (B5a): base 32 → 133 | mean: 100 → 100
+            worst component: B5ar3c1 = 32/133 non-NA
+          d4 (D4): base 34 → 133 | mean: 29.8 → 10.5
+            worst component: D4r6 = 14/133 non-NA
+          e2 (E2): base 70 → 133 | mean: 41.6 → 9.5
+            worst component: E2r15 = 2/133 non-NA
+          e5 (E5): base 116 → 133 | mean: 4.9 → 4.9
+            worst component: E5r5c1 = 116/133 non-NA
+[FIXED] GVHD-Data_12.27.22: 7/12 tables had wrong base (N=101)
+          a7 (A7): base 98 → 101 | mean: 82.8 → 61.1
+            worst component: A7r98c1 = 3/101 non-NA
+          a12 (A12): base 43 → 101 | mean: 9.8 → 9.8
+            worst component: A12r2 = 43/101 non-NA
+          a13 (A13): base 8 → 101 | mean: 44.9 → 42.1
+            worst component: A13r2c2 = 6/101 non-NA
+          b3 (B3): base 98 → 101 | mean: 168.7 → 121.1
+            worst component: B3r98c1 = 3/101 non-NA
+          b14 (B14): base 28 → 101 | mean: 10.3 → 10.3
+            worst component: B14r2 = 28/101 non-NA
+          b15 (B15): base 4 → 101 | mean: 27.5 → 27.5
+            worst component: B15r2c4 = 4/101 non-NA
+          b21 (B21): base 72 → 101 | mean: 11.1 → 5.3
+            worst component: B21r98 = 2/101 non-NA
+[FIXED] Iptacopan-Data_2.23.24: 2/8 tables had wrong base (N=126)
+          s14 (S14): base 48 → 126 | mean: 10.1 → 9.6
+            worst component: S14r98c1 = 2/126 non-NA
+          d9 (D9): base 123 → 126 | mean: 21 → 21
+            worst component: D9r6 = 123/126 non-NA
+[OK]    Leqvio-Demand-W1_3.13.23: 19 tables, all bases correct (N=256)
+[FIXED] Leqvio-Demand-W2_8.16.24 v2: 1/24 tables had wrong base (N=231)
+          a5 (A5): base 0 → 231
+            worst component: A5r7c4 = 0/231 non-NA
+[FIXED] Leqvio-Demand-W3_5.16.25: 7/25 tables had wrong base (N=220)
+          s12 (S12): base 0 → 220
+            worst component: S12r3c1 = 0/220 non-NA
+          s13 (S13): base 0 → 220
+            worst component: S13r3c2 = 0/220 non-NA
+          a1da (A1da): base 219 → 220 | mean: 100 → 100
+            worst component: A1dar2 = 219/220 non-NA
+          a1f (A1f): base 219 → 220 | mean: 113.3 → 113.3
+            worst component: A1fr3 = 219/220 non-NA
+          a5 (A5): base 0 → 220
+            worst component: A5r7c4 = 0/220 non-NA
+          c5a (C5a): base 0 → 220
+            worst component: C5ar1c2 = 0/220 non-NA
+          d1 (D1): base 0 → 220
+            worst component: D1r4c2 = 0/220 non-NA
+[FIXED] Leqvio-Segmentation-Data-HCP-W1_7.11.23: 4/18 tables had wrong base (N=301)
+          b6 (B6): base 98 → 301 | mean: 36 → 24.8
+            worst component: B6r2c2 = 89/301 non-NA
+          d7a (D7a): base 272 → 301 | mean: 291.9 → 286.4
+            worst component: D7ar9c1 = 72/301 non-NA
+          e7 (E7): base 268 → 301 | mean: 5 → 5
+            worst component: E7r3 = 268/301 non-NA
+          e8 (E8): base 192 → 301 | mean: 6.5 → 4.8
+            worst component: E8r3c2 = 17/301 non-NA
+[FIXED] Leqvio-Segmentation-Data-HCP-W2_2.21.2025: 6/18 tables had wrong base (N=400)
+          a1 (A1): base 304 → 400 | mean: 21.1 → 10
+            worst component: A1r8 = 59/400 non-NA
+          b7_1 (B7_1): base 318 → 400 | mean: 59.5 → 24.6
+            worst component: B7_1r12 = 93/400 non-NA
+          b7_2 (B7_2): base 276 → 400 | mean: 55.5 → 21.3
+            worst component: B7_2r9 = 78/400 non-NA
+          f4 (F4): base 110 → 400 | mean: 60.3 → 11.9
+            worst component: F4r21 = 5/400 non-NA
+          f7 (F7): base 352 → 400 | mean: 6.5 → 6.5
+            worst component: F7r3 = 352/400 non-NA
+          f8 (F8): base 256 → 400 | mean: 9.8 → 7.4
+            worst component: F8r3c2 = 169/400 non-NA
+[FIXED] Leqvio-Segmentation-Patients-Data_7.7.23: 1/4 tables had wrong base (N=600)
+          a10 (A10): base 599 → 600 | mean: 9.6 → 9.6
+            worst component: A10r1c1 = 599/600 non-NA
+[OK]    Meningitis-Vax-Data_10.14.22: 1 tables, all bases correct (N=1508)
+[FIXED] Onc-CE-W2-Data_5.10.20: 7/9 tables had wrong base (N=247)
+          s7_h (S7_H): base 76 → 247 | mean: 267.5 → 267.5
+            worst component: S7_Hr6c1 = 76/247 non-NA
+          s7a_h (S7a_H): base 76 → 247 | mean: 186.6 → 186.6
+            worst component: S7a_Hr6c1 = 76/247 non-NA
+          s7_o (S7_O): base 70 → 247 | mean: 325.5 → 325.5
+            worst component: S7_Or6c1 = 70/247 non-NA
+          s7a_o (S7a_O): base 70 → 247 | mean: 251.3 → 251.3
+            worst component: S7a_Or6c1 = 70/247 non-NA
+          s7_u (S7_U): base 50 → 247 | mean: 473.8 → 473.8
+            worst component: S7_Ur4c1 = 50/247 non-NA
+          s7a_u (S7a_U): base 50 → 247 | mean: 317.8 → 317.8
+            worst component: S7a_Ur4c1 = 50/247 non-NA
+          s9 (S9): base 44 → 247 | mean: 99.1 → 29.1
+            worst component: S9r8c1 = 11/247 non-NA
+[FIXED] Onc-CE-W3-Data_5.13.21: 8/9 tables had wrong base (N=248)
+          s7_h (S7_H): base 98 → 248 | mean: 233 → 233
+            worst component: S7_Hr6c1 = 98/248 non-NA
+          s7a_h (S7a_H): base 98 → 248 | mean: 166.1 → 166.1
+            worst component: S7a_Hr6c1 = 98/248 non-NA
+          s7_o (S7_O): base 70 → 248 | mean: 316.5 → 316.5
+            worst component: S7_Or6c1 = 70/248 non-NA
+          s7a_o (S7a_O): base 70 → 248 | mean: 241.3 → 241.3
+            worst component: S7a_Or6c1 = 70/248 non-NA
+          s7_u (S7_U): base 50 → 248 | mean: 488.6 → 488.6
+            worst component: S7_Ur4c1 = 50/248 non-NA
+          s7a_u (S7a_U): base 50 → 248 | mean: 330.9 → 330.9
+            worst component: S7a_Ur4c1 = 50/248 non-NA
+          s9 (S9): base 43 → 248 | mean: 91.7 → 25.8
+            worst component: S9r8c1 = 8/248 non-NA
+          q1 (Q1): base 196 → 248 | mean: 58.4 → 12.3
+            worst component: Q1r1c10 = 0/248 non-NA
+[FIXED] Onc-CE-W4-Data_3.11.22: 8/10 tables had wrong base (N=199)
+          s7_h (S7_H): base 74 → 199 | mean: 307.9 → 307.9
+            worst component: S7_Hr6c1 = 74/199 non-NA
+          s7a_h (S7a_H): base 74 → 199 | mean: 235.6 → 235.6
+            worst component: S7a_Hr6c1 = 74/199 non-NA
+          s7_o (S7_O): base 45 → 199 | mean: 336.7 → 336.7
+            worst component: S7_Or6c1 = 45/199 non-NA
+          s7a_o (S7a_O): base 45 → 199 | mean: 267.8 → 267.8
+            worst component: S7a_Or6c1 = 45/199 non-NA
+          s7_u (S7_U): base 50 → 199 | mean: 611 → 611
+            worst component: S7_Ur4c1 = 50/199 non-NA
+          s7a_u (S7a_U): base 50 → 199 | mean: 499.9 → 499.9
+            worst component: S7a_Ur4c1 = 50/199 non-NA
+          s9 (S9): base 39 → 199 | mean: 96 → 27
+            worst component: S9r8c1 = 5/199 non-NA
+          prog_q11_pc_loop_order (Prog_Q11_PC_Loop_Order): base 188 → 199 | mean: 10 → 10
+            worst component: Prog_Q11_PC_Loop_Orderr8 = 0/199 non-NA
+[FIXED] Onc-CE-W5-Data_2.7.23: 8/10 tables had wrong base (N=205)
+          s7_h (S7_H): base 76 → 205 | mean: 275.2 → 275.2
+            worst component: S7_Hr6c1 = 76/205 non-NA
+          s7a_h (S7a_H): base 76 → 205 | mean: 214.7 → 214.7
+            worst component: S7a_Hr6c1 = 76/205 non-NA
+          s7_o (S7_O): base 43 → 205 | mean: 316.6 → 316.6
+            worst component: S7_Or6c1 = 43/205 non-NA
+          s7a_o (S7a_O): base 43 → 205 | mean: 232.4 → 232.4
+            worst component: S7a_Or6c1 = 43/205 non-NA
+          s7_u (S7_U): base 51 → 205 | mean: 522.3 → 522.3
+            worst component: S7_Ur4c1 = 51/205 non-NA
+          s7a_u (S7a_U): base 51 → 205 | mean: 350.3 → 350.3
+            worst component: S7a_Ur4c1 = 51/205 non-NA
+          s9 (S9): base 45 → 205 | mean: 62.1 → 22.9
+            worst component: S9r8c1 = 6/205 non-NA
+          prog_q11_pc_loop_order (Prog_Q11_PC_Loop_Order): base 201 → 205 | mean: 10 → 10
+            worst component: Prog_Q11_PC_Loop_Orderr8 = 0/205 non-NA
+[FIXED] Onc-CE-W6-Data_3.18.24: 4/6 tables had wrong base (N=217)
+          s7a_h (S7a_H): base 116 → 217 | mean: 292.3 → 292.3
+            worst component: S7a_Hr8c1 = 116/217 non-NA
+          s7a_u (S7a_U): base 51 → 217 | mean: 513.6 → 513.6
+            worst component: S7a_Ur4c1 = 51/217 non-NA
+          q11 (Q11): base 162 → 217 | mean: 21 → 21
+            worst component: Q11r6 = 162/217 non-NA
+          q16 (Q16): base 216 → 217 | mean: 131.1 → 100
+            worst component: Q16r14c1 = 10/217 non-NA
+[FIXED] Spravato_4.23.25: 3/8 tables had wrong base (N=291)
+          s13 (S13): base 149 → 291 | mean: 104.4 → 71.4
+            worst component: S13r2c3 = 58/291 non-NA
+          b6a (B6a): base 278 → 291 | mean: 105.4 → 105.4
+            worst component: B6ar7 = 278/291 non-NA
+          b7 (B7): base 72 → 291 | mean: 100 → 100
+            worst component: B7r2 = 72/291 non-NA
+[FIXED] UCB-Caregiver-ATU-W2-Data_9.1.23: 3/3 tables had wrong base (N=101)
+          b6ba (B6ba): base 78 → 101 | mean: 62.6 → 14.4
+            worst component: B6bar15 = 0/101 non-NA
+          e5a (E5a): base 91 → 101 | mean: 30.5 → 10.1
+            worst component: E5ar5 = 6/101 non-NA
+          e6a (E6a): base 12 → 101 | mean: 24.6 → 6.7
+            worst component: E6ar5 = 9/101 non-NA
+[FIXED] UCB-Caregiver-ATU-W4-Data_8.16.24: 3/3 tables had wrong base (N=110)
+          b6ba (B6ba): base 93 → 110 | mean: 63.7 → 13.5
+            worst component: B6bar15 = 0/110 non-NA
+          e5a (E5a): base 97 → 110 | mean: 30.1 → 11.9
+            worst component: E5ar5 = 7/110 non-NA
+          e6a (E6a): base 9 → 110 | mean: 26.4 → 7.4
+            worst component: E6ar1 = 9/110 non-NA
+[FIXED] UCB-Caregiver-ATU-W5-Data_1.7.25: 3/3 tables had wrong base (N=110)
+          b6ba (B6ba): base 89 → 110 | mean: 64.5 → 13.6
+            worst component: B6bar15 = 0/110 non-NA
+          e5a (E5a): base 93 → 110 | mean: 29 → 11.3
+            worst component: E5ar5 = 6/110 non-NA
+          e6a (E6a): base 11 → 110 | mean: 27.1 → 7.1
+            worst component: E6ar4 = 9/110 non-NA
+[FIXED] UCB-Caregiver-ATU-W6-Data_1.23.24: 3/3 tables had wrong base (N=110)
+          b6ba (B6ba): base 90 → 110 | mean: 64.4 → 13.9
+            worst component: B6bar15 = 0/110 non-NA
+          e5a (E5a): base 96 → 110 | mean: 30.5 → 10.5
+            worst component: E5ar5 = 6/110 non-NA
+          e6a (E6a): base 8 → 110 | mean: 26.1 → 6.2
+            worst component: E6ar4 = 5/110 non-NA
+[FIXED] csb-w1: 3/3 tables had wrong base (N=548)
+          c2 (C2): base 214 → 548 | mean: 44.1 → 12.3
+            worst component: C2r11 = 0/548 non-NA
+          c5 (C5): base 175 → 548 | mean: 22.5 → 5.7
+            worst component: C5r5 = 0/548 non-NA
+          g1 (G1): base 49 → 548 | mean: 42.4 → 11.2
+            worst component: G1r13 = 0/548 non-NA
+[FIXED] csb-w2: 4/4 tables had wrong base (N=650)
+          c2 (C2): base 276 → 650 | mean: 43.7 → 13.4
+            worst component: C2r11 = 0/650 non-NA
+          c5 (C5): base 401 → 650 | mean: 34.7 → 15
+            worst component: C5r5 = 0/650 non-NA
+          g1 (G1): base 68 → 650 | mean: 45.2 → 12.9
+            worst component: G1r13 = 0/650 non-NA
+          g2a (G2a): base 145 → 650 | mean: 44.1 → 15
+            worst component: G2ar15 = 0/650 non-NA
+[FIXED] titos-growth-strategy: 1/1 tables had wrong base (N=5098)
+          s9 (S9): base 4287 → 5098 | mean: 13.2 → 6.1
+            worst component: S9r99 = 101/5098 non-NA
+[FIXED] leqvio-monotherapy-demand-NOV217: 5/10 tables had wrong base (N=180)
+          a3a (A3a): base 141 → 180 | mean: 487.8 → 407.8
+            worst component: A3ar2c2 = 131/180 non-NA
+          a3b (A3b): base 137 → 180 | mean: 491.9 → 405.6
+            worst component: A3br2c2 = 130/180 non-NA
+          a4a (A4a): base 146 → 180 | mean: 487.6 → 397.8
+            worst component: A4ar5c2 = 130/180 non-NA
+          a4b (A4b): base 144 → 180 | mean: 490.3 → 396.1
+            worst component: A4br5c2 = 129/180 non-NA
+          a6 (A6): base 138 → 180 | mean: 18.8 → 7
+            worst component: A6r8 = 4/180 non-NA

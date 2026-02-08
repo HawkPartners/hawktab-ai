@@ -22,17 +22,13 @@ import { validateFilterVariables } from './filterUtils';
  *
  * @param tables - Extended table definitions (from TableGenerator → toExtendedTable)
  * @param filters - Translated filter output from FilterTranslatorAgent
- * @param noRuleQuestions - Question IDs guaranteed to have no skip/show logic
  * @param validVariables - Set of valid variable names from datamap
  */
 export function applyFilters(
   tables: ExtendedTableDefinition[],
   filters: FilterTranslationOutput,
-  noRuleQuestions: string[],
   validVariables: Set<string>,
 ): FilterApplicatorResult {
-  const noRuleSet = new Set(noRuleQuestions);
-
   // Build lookup: questionId → filters
   const filtersByQuestion = new Map<string, TableFilter[]>();
   for (const filter of filters.filters) {
@@ -49,13 +45,6 @@ export function applyFilters(
 
   for (const table of tables) {
     const questionId = table.questionId;
-
-    // If question is in noRuleQuestions, pass through
-    if (noRuleSet.has(questionId)) {
-      outputTables.push(table);
-      passCount++;
-      continue;
-    }
 
     // Look up filters for this question
     const questionFilters = filtersByQuestion.get(questionId);

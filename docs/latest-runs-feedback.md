@@ -27,7 +27,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 | 5 | Missing S4 state-from-zip table | Low | New feature | Missing tables |
 | 6 | Unnecessary NET on single-select questions (S6a) | Medium | Prompt fix (recurring) | Agent behavior |
 | 7 | Mean outlier trimming discrepancy vs Joe (S8) | Low | Investigate + document | Documentation |
-| 8 | S9 NET base incorrectly filtered to 1993 | High | Bug fix | Wrong numbers |
+| 8 | ~~S9 NET base incorrectly filtered to 1993~~ | ~~High~~ | ~~Bug fix~~ | COMPLETE |
 | 9 | Missing location distribution table (hidden variable gap) | Medium | Architecture | Missing tables |
 | 10 | Verification agent creating non-base "base" text | Low | Prompt fix | Formatting |
 | 11 | We report S11a/b/c, Joe doesn't (loop philosophy) | Conceptual | Design decision | Loop / stacking |
@@ -42,7 +42,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 ### Where to focus next
 
 **Deterministic fixes first** (wrong numbers, missing tables, broken sorting):
-- Issue 8: S9 NET base computation bug
+- ~~Issue 8: S9 NET base computation bug~~ COMPLETE
 - Issue 12: S11b/c base filtering investigation
 - Issue 17: C1/C2/C4 tables being silently dropped
 - Issue 16: LoopDetector diversity threshold for sparse patterns
@@ -354,33 +354,17 @@ This is a straightforward lookup implementation — not architecturally complex.
 
 ---
 
-#### Issue 8: S9 Base Incorrectly Filtered to 1993 (Should Be 5098)
+#### Issue 8: S9 NET Base Computation — COMPLETE
 
-**Severity:** High | **Component:** TableGenerator (deterministic) | **Priority:** Bug fix
+**Problem:** NET rows in `RScriptGeneratorV2.ts` used `sum(!is.na(first_component))` as the base, which filters the denominator to respondents with non-NA data in the first component variable. For S9 in Tito's, this produced a base of 4287 instead of 5098. An audit of all 25 test datasets found 24/25 affected (107 of 233 mean_rows tables had wrong bases).
 
-**What happened:** S9 (Location of Drinks) shows a base of 1993 in our output. Joe's shows 5098 (all respondents). S9 has no skip logic — everyone who passed S8 screening (i.e., all 5098 respondents) should qualify.
+**Fix (two changes in `src/lib/r/RScriptGeneratorV2.ts`):**
+1. **NET base = `nrow(cut_data)`** (table base) instead of first-component non-NA count. Applied to both frequency NETs and mean NETs.
+2. **Mean NET = mean of per-respondent row-sums** instead of sum-of-component-means. The old approach mixed different denominators when components had differential missingness.
 
-**Root cause — NOT the skip logic agent:** The skip logic agent correctly identified S9 as having no rule (it's in the `noRuleQuestions` array). The filter translator generated no filter for S9. The scratchpad explicitly notes: "S9: complex randomization and coding of ON/OFF-PREMISE; but S9 itself no show logic."
+**Also removed `dependsOn` and `noRuleQuestions`** from the skip logic schema — these were advisory fields that added output tokens without being used by any downstream code.
 
-**The actual problem is in NET base computation.** The verification agent created two NETs:
-- "On-premise locations (NET)" — components: S9r5 through S9r14, S9r16
-- "Off-premise locations (NET)" — components: S9r1 through S9r4, S9r15
-
-When the TableGenerator computed these NETs, it filtered the base to respondents who had 1+ drinks at any component location. So the on-premise NET base became 1993 (respondents with any on-premise drinks) instead of 5098 (all respondents). This is wrong — **the base should be all qualified respondents regardless of whether they reported drinks at those specific locations.**
-
-A respondent who reported 0 on-premise drinks is still a valid respondent for S9. Their answer is "0 drinks at on-premise locations" — that's data, not missing data.
-
-**Action item:** Fix the TableGenerator's NET base computation to preserve the table's base (all qualified respondents) rather than filtering by component availability. The NET percentage should be calculated against the full base.
-
-##### Side note: Skip logic agent output structure
-
-While investigating this, a broader observation surfaced about the skip logic agent's output:
-
-1. **`noRuleQuestions` — is this needed?** If the agent only outputs rules for questions that have them, we can infer "no rule" from absence. Removing this output field reduces token usage and simplifies the schema.
-
-2. **`dependsOn` — is this needed?** The agent outputs both `dependsOn` (e.g., "depends on S10a") and the actual rule/condition. The `dependsOn` is redundant because the condition description and `appliesTo` already encode the dependency. Removing it reduces output complexity and may reduce confusion — the agent has to reason about one less field per rule.
-
-These aren't bugs, but reducing the skip logic agent's output surface area could improve reliability and reduce token cost, especially on complex surveys with many questions.
+**Validation:** `scripts/audit-net-base-risk.ts` and `scripts/validate-net-base-fix.ts` confirm the fix across all test datasets. Tito's S9: base 4287 → 5098, mean 13.2 → 6.1.
 
 ---
 

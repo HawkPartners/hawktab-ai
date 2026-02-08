@@ -119,10 +119,6 @@ ${datamapContext}
       const contextId = rule.ruleId;
       const scratchpad = createContextScratchpadTool('FilterTranslatorAgent', contextId);
 
-      // Strip fields that are useful for provenance/debugging but can confuse translation.
-      // (dependsOn is not used by code; it's only advisory metadata from SkipLogicAgent.)
-      const { dependsOn: _dependsOn, ...ruleForPrompt } = rule;
-
       const userPrompt = `Translate the following skip/show rule into R filter expressions using the datamap provided above.
 
 Find the corresponding variables in the datamap and create the R expression.
@@ -132,7 +128,7 @@ Prefer the minimal additional constraint (avoid over-filtering). Provide alterna
 If you cannot confidently map variables, leave the expression empty and set humanReviewRequired: true.
 
 Rule to translate:
-${JSON.stringify(ruleForPrompt, null, 2)}
+${JSON.stringify(rule, null, 2)}
 
 Create a separate filter entry for each questionId in the rule's appliesTo list: ${JSON.stringify(rule.appliesTo)}`;
 

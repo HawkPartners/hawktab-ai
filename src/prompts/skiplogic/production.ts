@@ -44,11 +44,10 @@ WHAT YOU OUTPUT:
   - Whether it's table-level (who sees the question) or row-level (which items they see)
   - Translation context: any coding tables, hidden variable references, or survey-specific
     context that would help the downstream agent resolve this rule to actual data variables
-- A list of questions that have NO skip/show logic (guaranteed PASS)
 
 IMPORTANT:
 - You are ONLY extracting rules. You are NOT generating R code, filter expressions, or anything technical.
-- Be conservative: a false-positive rule can corrupt bases by over-filtering real respondents.
+- Be conservative: a false-positive rule can corrupt bases by over-filtering real respondents. If you are unsure whether a question needs a rule, DO NOT create one.
 - You must always be able to point to EVIDENCE in the survey (explicit instruction or very clear implied follow-up intent).
 </task_context>
 
@@ -147,8 +146,7 @@ FILTERED OUTPUT of the prior grid, not just the original selection.
 Pattern: Q9 → Q9a (rows where Q9 > 0) → Q9b (rows where Q9a Column B > 0)
 - Q9a's row filter depends on Q9
 - Q9b's row filter depends on Q9a's filtered values — this is a SECOND layer of filtering
-- Do NOT conflate these into a single rule. Create separate rules for each level
-  and link them with dependsOn.
+- Do NOT conflate these into a single rule. Create separate rules for each level.
 
 How to detect: Look for sequences of grid/list questions where each references the prior
 grid's values (not just the original selection). Key phrases: "for each item in [prior grid]",
@@ -197,7 +195,6 @@ Some rules require MULTIPLE conditions to be true simultaneously.
 Pattern: "ASK IF Q4=7 AND Q14a=1 AND respondent type is category B"
 - This is one rule with a compound condition, not three separate rules
 - List ALL conditions in conditionDescription
-- Include ALL referenced questions in dependsOn
 
 How to detect: Look for AND/& between conditions, or multiple [ASK IF] qualifiers
 on the same question.
@@ -273,7 +270,7 @@ Survey text: "IF AWARE (Q3=1), ASK Q5-Q8"
 EXAMPLE 4: NO RULE DETECTED
 Survey text: "S1. What is your age group?"
 No [ASK IF], no [SHOW IF], no Base: instruction, early screener position
-→ Add "S1" to noRuleQuestions
+→ No rule needed
 
 EXAMPLE 5: BOTH TABLE AND ROW LEVEL
 Survey text: "Q12. For each product you are aware of, rate satisfaction [ASK IF Q3 == 1] [SHOW PRODUCT WHERE Q8 > 0]"
@@ -283,7 +280,7 @@ Survey text: "Q12. For each product you are aware of, rate satisfaction [ASK IF 
 EXAMPLE 6: HYPOTHETICAL — NO RULE
 Survey text: "Q15. Assume that Product X is now available. How would you respond?"
 No [ASK IF] instruction. "Assume that..." signals hypothetical.
-→ Add "Q15" to noRuleQuestions
+→ No rule needed
 
 EXAMPLE 7: CHANGED RESPONSE FILTER
 Survey text: "Q16. Why did you change your approach? [ASK IF Q15 DIFFERS FROM Q12]"
@@ -314,8 +311,7 @@ Analysis:
   which itself is only populated for rows where Q9 > 0.
 
 → Rule 1: row-level, applies to Q9a, condition: "show each product only if Q9 count > 0"
-→ Rule 2: row-level, applies to Q9b, condition: "show each product only if Q9a Column B > 0",
-   dependsOn: [Rule 1]
+→ Rule 2: row-level, applies to Q9b, condition: "show each product only if Q9a Column B > 0"
 
 EXAMPLE 11: CROSS-QUESTION COMPARISON RULE
 Survey text: "Q12. How has your response changed? [ASK IF RESPONSE IN Q11 > OR < Q10 FOR ROWS 2, 3, OR 4]"
@@ -351,7 +347,6 @@ Analysis:
 EXAMPLE 13: COMPOUND CONDITION
 Survey text: "ASK IF Q4=7 WAS CHOSEN AND Q14a=1"
 → Rule: table-level, applies to Q15, condition: "Q4 = 7 AND Q14a = 1"
-   dependsOn: [Q4, Q14a]
 
 EXAMPLE 14: NESTED CONDITION WITHIN LOOP
 Survey structure:
@@ -441,21 +436,18 @@ OUTPUT STRUCTURE:
       "plainTextRule": "Only ask respondents who answered 1 at Q3 (aware of the product)",
       "ruleType": "table-level",
       "conditionDescription": "Respondent must be aware of the product (Q3 = 1)",
-      "dependsOn": [],
       "translationContext": ""
     }
-  ],
-  "noRuleQuestions": ["S1", "S2", "Q1", "Q2"]
+  ]
 }
 
 RULES FOR OUTPUT:
-1. Every question in the survey should appear EITHER in a rule's appliesTo OR in noRuleQuestions
+1. Only output rules for questions that need them. If a question has no skip logic, simply omit it.
 2. A question CAN appear in multiple rules (table-level + row-level)
 3. ruleId should be descriptive (e.g., "rule_q5_awareness_filter", "rule_q10_per_product")
 4. surveyText should be the actual text from the survey, not paraphrased
 5. plainTextRule should be understandable by a non-technical person
-6. dependsOn links rules that build on each other (e.g., row-level depends on table-level)
-7. translationContext is optional — include only when there is useful coding/mapping/hidden-variable
+6. translationContext is optional — include only when there is useful coding/mapping/hidden-variable
    context from the survey that would help the downstream agent. Leave as empty string otherwise.
 </output_format>
 
