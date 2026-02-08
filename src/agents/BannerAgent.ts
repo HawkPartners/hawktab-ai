@@ -569,15 +569,13 @@ Begin analysis now.
 
     const totalColumns = result.extractedStructure.bannerCuts
       .reduce((sum, group) => sum + group.columns.length, 0);
-
     const groupCount = result.extractedStructure.bannerCuts.length;
 
-    // Higher confidence for multiple groups with reasonable column distribution
-    let confidence = 0.7; // Base confidence
-
-    if (groupCount > 1) confidence += 0.2; // Bonus for multiple groups
-    if (groupCount >= 4) confidence += 0.1; // Extra bonus for 4+ groups
-    if (totalColumns >= 10) confidence += 0.1; // Bonus for substantial content
+    let confidence = 0.75; // Base confidence
+    if (groupCount === 1) confidence -= 0.15;     // 1 group is suspicious
+    else if (groupCount >= 2) confidence += 0.15;  // 2+ groups = valid
+    if (groupCount >= 4) confidence += 0.05;       // Small bonus for rich structure
+    if (totalColumns >= 10) confidence += 0.05;    // Content volume bonus
 
     return Math.min(confidence, 1.0);
   }

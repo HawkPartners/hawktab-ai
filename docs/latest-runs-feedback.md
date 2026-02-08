@@ -20,20 +20,20 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 
 | # | Issue | Severity | Type | Category |
 |---|---|---|---|---|
-| 1 | Banner agent confidence penalty for low group count | Low | Prompt tweak | Agent behavior |
-| 2 | Crosstab agent prompt overfitting + confidence penalty | Medium | Prompt refactor | Agent behavior |
+| 1 | ~~Banner agent confidence penalty for low group count~~ | ~~Low~~ | ~~Prompt + code fix~~ | COMPLETE |
+| 2 | ~~Crosstab agent prompt overfitting + confidence penalty~~ | ~~Medium~~ | ~~Prompt refactor~~ | COMPLETE |
 | 3 | Location variable selection philosophy (binary flag vs assignment) | High | Architectural decision | Loop / stacking |
-| 4 | Table formatting inconsistency across verification loops | Medium | Prompt + deterministic post-pass | Formatting |
+| 4 | Table formatting: deterministic post-pass (**done**), sub-issues 4a-4e open | Medium | Prompt + deterministic post-pass | PARTIAL |
 | 5 | Missing S4 state-from-zip table | Low | New feature | Missing tables |
-| 6 | Unnecessary NET on single-select questions (S6a) | Medium | Prompt fix (recurring) | Agent behavior |
+| 6 | ~~Unnecessary NET on single-select questions (S6a)~~ | ~~Medium~~ | ~~Prompt rule + post-pass~~ | COMPLETE |
 | 7 | Mean outlier trimming discrepancy vs Joe (S8) | Low | Investigate + document | Documentation |
 | 8 | ~~S9 NET base incorrectly filtered to 1993~~ | ~~High~~ | ~~Bug fix~~ | COMPLETE |
 | 9 | Missing location distribution table (hidden variable gap) | Medium | Architecture | Missing tables |
-| 10 | Verification agent creating non-base "base" text | Low | Prompt fix | Formatting |
+| 10 | ~~Verification agent creating non-base "base" text~~ | ~~Low~~ | ~~Prompt rule + post-pass warning~~ | COMPLETE |
 | 11 | We report S11a/b/c, Joe doesn't (loop philosophy) | Conceptual | Design decision | Loop / stacking |
 | 12 | ~~S11b/c base filtered to 68 (skip logic overzealous)~~ | ~~High~~ | ~~Investigation + fix~~ | COMPLETE |
 | 13 | ~~Table sort order broken (C3 between A-series)~~ | ~~Medium~~ | ~~Deterministic fix~~ | COMPLETE |
-| 14 | Inconsistent section label cleanup | Low | Deterministic post-pass | Formatting |
+| 14 | ~~Inconsistent section label cleanup~~ | ~~Low~~ | ~~Deterministic post-pass~~ | COMPLETE |
 | 15 | Dual-base reporting for skip logic questions (A10) | Conceptual | Future enhancement | Product quality |
 | 16 | ~~Loop variables not collapsed (A13a, A14a, A14b)~~ | ~~Medium~~ | ~~LoopDetector fix~~ | COMPLETE |
 | 17 | ~~Section C tables missing (C1, C2, C4 dropped)~~ | ~~High~~ | ~~Bug fix~~ | COMPLETE |
@@ -49,10 +49,11 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 - ~~Issue 13: Table sort order~~ COMPLETE
 
 **Then prompt/formatting consistency:**
-- Issue 6: NET suppression on single-select (recurring)
-- Issue 4/14: Deterministic post-pass for formatting
-- Issue 10: Base text vs question description
-- Issues 1, 2: Banner and crosstab agent prompt tweaks
+- ~~Issue 6: NET suppression on single-select (recurring)~~ COMPLETE
+- ~~Issue 14: Deterministic post-pass for formatting~~ COMPLETE
+- ~~Issue 10: Base text vs question description~~ COMPLETE
+- ~~Issues 1, 2: Banner and crosstab agent prompt tweaks~~ COMPLETE
+- Issue 4 sub-issues still open: 4a (context/notes formatting), 4b (terminate rows: dash vs 0%), 4c (TERMINATE label clutter), 4d (screener NET suppression), 4e (row sort order)
 
 **Then document our assumptions:**
 - Issue 3/11: Loop reporting philosophy — document the default, make it configurable
@@ -67,38 +68,24 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 
 ---
 
-#### Issue 1: Banner Agent — Unnecessary Confidence Penalty for Low Group Count
+#### Issue 1: Banner Agent — Confidence Penalty for Low Group Count — COMPLETE
 
-**Severity:** Low | **Agent:** BannerAgent | **Priority:** Prompt tweak
+**Problem:** The banner agent self-penalized from ~0.95 to 0.88 for a valid 2-group banner because the prompt heuristic said "typical banners have 4-10 groups." 2 groups is perfectly valid.
 
-**What happened:** The banner agent correctly extracted both groups (Needs State, Location) and all 19 columns. However, it self-penalized from ~0.95 to 0.88 because the prompt includes a heuristic that "typical banners have 4-10 groups," and this banner only has 2.
-
-**Agent output:**
-> "Confidence: 0.88 because group headers are visually distinct and filter expressions are clearly paired with names, but there are only 2 groups (typical banners have 4-10 groups) which reduces overall confidence slightly."
-
-**The problem:** 2 groups is a perfectly valid banner plan. The agent shouldn't second-guess itself when it correctly identified everything. The group-count heuristic is causing unnecessary doubt.
-
-**Action item:** Adjust the banner agent prompt to remove or soften the group-count skepticism. A banner with 2 groups that are cleanly extracted should score 0.95+, not 0.88.
+**Fix (two changes):**
+1. **Prompt** (`src/prompts/banner/alternative.ts`): Changed "Typical range: 4-10 groups" → "2-10 groups". Removed confidence penalty for low group count — 2-3 groups are valid for simpler studies.
+2. **Code** (`src/agents/BannerAgent.ts`): Rewrote `calculateConfidence()` — 2+ groups now get a +0.15 bonus (was neutral). 1 group gets a -0.15 penalty (was no penalty). Effect: 2-group, 19-column banner → 0.95 (was 0.88).
 
 ---
 
-#### Issue 2: Crosstab Agent — Prompt Overfitting and Confidence Penalty
+#### Issue 2: Crosstab Agent — Prompt Overfitting and Confidence Penalty — COMPLETE
 
-**Severity:** Medium | **Agent:** CrosstabAgent | **Priority:** Prompt refactor
+**Problem:** The crosstab prompt was overfitted to specific datasets (listed locations in guidance) and the 3+ candidate confidence penalty (max 0.65) was too aggressive, triggering `humanReviewRequired` on every location column.
 
-**What happened:** The crosstab agent correctly identified `hLOCATIONrX == 1` as the primary expression and provided all viable alternatives. But two problems surfaced:
-
-1. **The prompt is too specific.** It literally lists each location in the guidance, which means the agent isn't truly generalizing — it's pattern-matching against hints we gave it. This won't scale to unseen datasets.
-
-2. **The 3+ candidate confidence penalty (max 0.65) is too aggressive.** When there are multiple plausible variables, the agent should still be confident in its primary pick while clearly listing alternatives. A confidence of 0.65 triggers `humanReviewRequired: true` for every location column, which creates noise.
-
-**Agent output (scratchpad):**
-> "Applied consistent confidence penalty for multiple plausible candidates (3+ candidates → max 0.65)."
-
-**Action items:**
-- Strip the crosstab prompt of dataset-specific hints. Make it generalizable — the agent should reason from the datamap, not from pre-loaded answers.
-- Soften the multi-candidate confidence penalty. Having alternatives is expected behavior, not a sign of failure. The agent should: pick the best one confidently, list alternatives clearly, and let the user confirm or override.
-- Consider telling the agent: "When multiple candidates exist, present your best pick with confidence and list alternatives. The user will select, override, or provide a hint."
+**Fix (`src/prompts/crosstab/production.ts`):**
+1. **Decontaminated** all dataset-specific references (12 edits: S2→Q3, Physician→Teacher, location-specific examples → generic market research terms).
+2. **Softened confidence penalties**: 3+ candidates → max 0.75 (was 0.65). 2 candidates with clearly different relevance → max 0.85. Added "Having alternatives is EXPECTED, not a sign of failure" framing.
+3. **Generalized hidden variable hints**: Removed dataset-specific variable names, described `h`/`d` prefix patterns generically.
 
 ---
 
@@ -217,75 +204,30 @@ hLOCATION1, hLOCATION2 → Numeric loop-assignment variables (which location in 
 
 ---
 
-#### Issue 4: Table Formatting Consistency Across Verification Agent Loops
+#### Issue 4: Table Formatting Consistency — PARTIALLY COMPLETE
 
-**Severity:** Medium | **Agent:** VerificationAgent + ExcelFormatter | **Priority:** Prompt + deterministic improvements
+**Severity:** Medium | **Agent:** VerificationAgent + ExcelFormatter
 
-The verification agent runs in parallel loops, and each instance can produce slightly different formatting conventions. This creates inconsistency across tables in the same output. Comparing our S1 screener table to Joe's highlights several specific formatting gaps, but the broader issue is: how do we enforce consistent standards when multiple agent instances are formatting independently?
+**The core structural issue is resolved.** The deterministic post-pass (`src/lib/tables/TablePostProcessor.ts`) now runs after all verification agent instances finish, enforcing 7 formatting rules consistently across every table. The verification prompt also received a two-pass internal protocol (Pass A: classify + plan, Pass B: self-audit before emitting JSON) to improve per-instance consistency.
 
-##### 4a. Context column / notes section
+**What the post-pass handles:** empty field normalization, section label cleanup (Issue 14), base text validation (Issue 10), trivial NET removal (Issue 6), source ID casing, duplicate row detection, orphan indent reset. Pipeline integration saves `postpass/postpass-report.json` with all actions.
 
-**Joe's approach:** Clean, standardized notes section:
-> SCREENING SECTION
-> S1. Do you, or is any family member, currently working in one of the following industries?
-> (NOTES: Multiple answers accepted / Responses sorted in descending rank order)
+**Sub-issues still open (not blocking, but worth capturing for future polish):**
 
-**Our approach:** Cluttered context column with raw metadata:
-> SCREENER
-> S1. Do you, or is any family member, currently working in one of the following industries?
-> (Select all that apply) (Options 1–3 were programmed to terminate the respondent)
-> [s1]
-
-**Issues:**
-- `[s1]` should be capitalized (`S1`) and ideally italicized — this is the source ID, not raw code
-- "Options 1–3 were programmed to terminate the respondent" is internal metadata, not analyst-facing notes
-- Joe's notes ("Multiple answers accepted / Responses sorted in descending rank order") are useful analyst context — ours don't provide equivalent information
-- Section label differs: "SCREENER" vs "SCREENING SECTION" (minor, but worth standardizing)
-
-**Question:** Is this the verification agent's job (prompt-driven) or should it be deterministic in the Excel formatter? Probably a mix — the verification agent should produce clean, standardized metadata, and the formatter should enforce presentation rules (capitalization, italics).
+##### 4a. Context column / notes formatting
+Source ID casing (`[s1]` → `[S1]`) is fixed by the post-pass. Remaining: internal metadata clutter ("Options 1–3 were programmed to terminate the respondent") should be suppressed; analyst-facing notes ("Multiple answers accepted") should be added. Mix of verification prompt + Excel formatter work.
 
 ##### 4b. Terminate rows: 0% vs dash
-
-**Joe shows:** `-` (dash) for Advertising, Journalism, Marketing or Market Research — these are terminate options, so no qualified respondent could have selected them. Showing a dash means "not applicable."
-
-**We show:** `0%` for the same rows — technically not wrong (0 respondents chose it), but misleading. It implies respondents could have chosen it and none did, when actually those options disqualified the respondent.
-
-**The right behavior:** If the R script or table generator can distinguish between "0 respondents chose this" and "this option terminates/disqualifies," then terminate rows should show `-` or `N/A` instead of `0%`. This would also allow us to remove the "(TERMINATE)" label from each row label, which clutters the table.
-
-**Implementation question:** Can the data tell us this? The survey metadata likely flags terminate options. If the skip logic agent or table generator already knows which options are terminators, we could pass that through and let the Excel formatter render dashes.
+Terminate options show `0%` instead of `-` (dash). Requires: propagating terminate metadata from skip logic agent through to R script/Excel formatter. Not architecturally complex but needs a new data flow.
 
 ##### 4c. "(TERMINATE)" label clutter
-
-If we implement 4b (dashes for terminate rows), we can remove the "(TERMINATE)" suffix from row labels like "Advertising (TERMINATE)." The dash already communicates that the option isn't applicable. This makes the table cleaner and more aligned with Joe's output.
+If 4b is implemented (dashes for terminators), the "(TERMINATE)" suffix can be removed from row labels. Depends on 4b.
 
 ##### 4d. NET rows on screener/terminate tables
-
-**Our output** includes "Any listed industry (NET)" as the first row. **Joe's output** does not include a NET for this screener question.
-
-**Question:** Is a NET meaningful on a screener table where most options are terminators? The NET here (12%) represents "anyone who selected a listed industry" — but that's essentially "anyone who didn't select 'None of the above.'" For screener tables specifically, the NET may add noise rather than insight. Worth considering whether the verification agent should suppress NETs for screener/terminate tables, or whether this is a user-configurable preference.
+A NET on a screener table where most options are terminators adds noise. Consider verification agent or post-pass logic to suppress NETs when the table's primary purpose is screening.
 
 ##### 4e. Row sort order
-
-**Joe's output:** Rows sorted in descending rank order (highest % first): Food and Beverage (5%), Retail (5%), Finance (4%), Travel (1%), then terminators as dashes.
-
-**Our output:** Rows in survey order: Advertising, Journalism, Marketing, Travel, Food and Beverage, Finance, Retail, None of the above.
-
-**Note:** Joe's notes explicitly say "Responses sorted in descending rank order." This may be a client preference or a Joe convention. For now, survey order is a defensible default, but we should make sort order configurable. The verification agent could flag this as a formatting option.
-
-##### Broader issue: Enforcing consistency across parallel verification loops
-
-The specific formatting issues above are symptoms of a bigger structural challenge: the verification agent runs in parallel (3 concurrent via `pLimit`), and each instance reasons independently about formatting. This means:
-
-- One instance might add "(TERMINATE)" labels, another might not
-- Note sections can vary in style and content between tables
-- NET inclusion logic can differ from table to table
-
-**Potential approaches:**
-1. **Pre-pass formatting rules:** Before the verification agent runs, establish a formatting spec (from the first table or from a dedicated formatting-rules step) that all instances must follow. Pass this spec into each parallel call.
-2. **Post-pass normalization:** After all verification instances complete, run a deterministic formatting pass that enforces consistency (capitalization, note format, dash vs 0%, NET rules).
-3. **Prompt standardization:** Add explicit formatting examples to the verification prompt showing exactly how notes, labels, and special rows should look. Include a "formatting reference" section that every instance sees.
-
-The ideal is probably a combination: prompt gives the agent clear formatting standards, and a deterministic post-pass catches anything the agent missed.
+Joe sorts rows in descending rank order; we use survey order. Survey order is a defensible default. Could be made configurable (client preference).
 
 ---
 
@@ -308,21 +250,13 @@ This is a straightforward lookup implementation — not architecturally complex.
 
 ---
 
-#### Issue 6: Unnecessary NET on Single-Select / 100%-Sum Questions (S6a)
+#### Issue 6: Unnecessary NET on Single-Select / 100%-Sum Questions — COMPLETE
 
-**Severity:** Medium | **Agent:** VerificationAgent | **Priority:** Prompt fix (recurring issue)
+**Problem:** The verification agent added a "Family Origin (NET)" row to a single-select question where all options sum to 100% — a meaningless NET. This was a recurring issue that prompt-only fixes hadn't resolved.
 
-**What happened:** Our S6a (family origin) output is correct data-wise — matches Joe's X6a. However, the verification agent added a "Family Origin (NET)" row that sums to 100%. This is a single-select question where responses are mutually exclusive and exhaustive — a NET is meaningless here because it will always be 100%.
-
-**This is a known recurring issue.** We've previously tried to get the verification agent to stop adding unnecessary NETs, but it's still doing it. The agent continues to default to "add a NET" even when the question structure doesn't warrant one.
-
-**When a NET is appropriate:** Multi-select questions, top-2-box / bottom-2-box summaries, grouped categories where the NET represents a meaningful subset.
-
-**When a NET is not appropriate:** Single-select questions where all options sum to 100%, screener/terminate tables (see Issue 4d), any situation where the NET equals the base or 100% by definition.
-
-**Action item:** Revisit the verification agent prompt to strengthen the "don't add unnecessary NETs" instruction. The current guidance isn't working — the agent needs a clearer rule, possibly with examples of when to suppress. Consider a deterministic post-check: if a NET row sums to exactly 100% of the base, flag or auto-remove it.
-
-**Positive note:** The skip logic agent correctly identified S6a as a skip logic question, and the base size is accurate. The filtering pipeline is working well here — this is purely a verification agent formatting issue.
+**Fix (two layers):**
+1. **Prompt** (`src/prompts/verification/alternative.ts`): Promoted guideline 9 from "AVOID TRIVIAL NETs" to "NEVER ADD ALL-OPTION NETs TO SINGLE-SELECT QUESTIONS" — a RULE with a mechanical test: "If your NET's filterValue would cover ALL non-NET filterValues for that variable, do NOT create it." Added explicit WRONG example.
+2. **Deterministic backup** (`src/lib/tables/TablePostProcessor.ts`): `checkTrivialNets` rule auto-removes same-variable NETs that cover all non-NET options, with orphaned indent cleanup. This catches any cases the prompt misses.
 
 ---
 
@@ -387,23 +321,13 @@ This is a straightforward lookup implementation — not architecturally complex.
 
 ---
 
-#### Issue 10: Verification Agent Creating Non-Base "Base" Text
+#### Issue 10: Verification Agent Creating Non-Base "Base" Text — COMPLETE
 
-**Severity:** Low | **Agent:** VerificationAgent | **Priority:** Prompt fix
+**Problem:** The verification agent put question descriptions (e.g., "About the drink at the selected occasion/location") in the baseText field instead of audience descriptions. Base text should answer "who was asked?" not "what was asked?"
 
-**What happened:** The verification agent generated a base description for a table that reads like a question description rather than a base definition:
-
-> Base: About the drink at the selected occasion/location (asked for each occasion/location)
-
-This isn't a base — it's describing what the question is about. A proper base would be something like "All respondents" or "Those who reported 1+ alcoholic drinks." The text above is context/notes, not a filtering criterion.
-
-**The problem:** The verification agent is conflating "what is this question about" with "who qualifies for this table." The base should always answer: "Which respondents are included in this table's denominator?" If the answer is "everyone," the base should say "All respondents" or "Total respondents."
-
-**Action item:** Tighten the verification agent prompt to distinguish between:
-- **Base text** = who is in the denominator (e.g., "All respondents," "Those aware of Brand X")
-- **Notes/context** = what the question is about, how it was asked, programmer notes
-
-The agent should never put descriptive context into the base field. If there's no skip logic filter, the base is "All respondents" (or "Total respondents" to match Joe's convention).
+**Fix (two layers):**
+1. **Prompt** (`src/prompts/verification/alternative.ts`): Replaced base text guidance with three explicit rules: RULE 1 (plain English only), RULE 2 (must describe WHO not WHAT, with WRONG/RIGHT examples), RULE 3 (when in doubt, leave empty). Added concrete test: "If you can't express it as '[Group of people] who [met some condition]', use empty string."
+2. **Deterministic warning** (`src/lib/tables/TablePostProcessor.ts`): `validateBaseText` heuristic flags patterns like "About...", "Awareness of...", "Satisfaction with..." — warns but does not auto-fix since it requires semantic judgment.
 
 ---
 
@@ -450,20 +374,11 @@ Now `A7_1` → (A, 7, "", loop=1), `A13a_1` → (A, 13, "a", loop=1) instead of 
 
 ---
 
-#### Issue 14: Inconsistent Section Label Cleanup ("OCCASION LOOP" / "SECTION A" Remnants)
+#### Issue 14: Inconsistent Section Label Cleanup — COMPLETE
 
-**Severity:** Low | **Component:** Deterministic post-processing | **Priority:** Ties into Issue 4 (formatting consistency)
+**Problem:** Section labels like "SECTION A: OCCASION LOOP" appeared inconsistently across tables because each parallel verification agent instance handled cleanup differently.
 
-**What happened:** Some tables show "OCCASION LOOP" or "SECTION A: OCCASION LOOP" in the section header, while others have it cleaned up. The intent is to remove these section labels, but the cleanup is inconsistent.
-
-**This connects to the broader Issue 4 theme:** formatting consistency across tables. The verification agent sometimes strips section labels and sometimes doesn't, because each parallel instance reasons independently.
-
-**Action item:** This is a strong candidate for the **deterministic post-pass** discussed in Issue 4. After all verification agent instances complete, run a cleanup step that:
-- Strips or normalizes section labels consistently (remove "SECTION A:", "OCCASION LOOP", etc.)
-- Applies the same formatting rules to every table regardless of which agent instance produced it
-- Handles capitalization, source ID formatting, and other presentational cleanup
-
-This reinforces the pattern: use the agent for reasoning (NETs, base text, row structure), but use deterministic code for presentation rules that should never vary.
+**Fix** (`src/lib/tables/TablePostProcessor.ts`): `cleanSurveySection` rule strips "SECTION X:" prefixes (with or without number/letter), forces ALL CAPS, and trims whitespace — applied deterministically to every table after all agent instances finish.
 
 ---
 

@@ -43,36 +43,73 @@ OUTPUT: Publication-ready tables with clear labels matched to survey text, box s
 </task_context>
 
 <analysis_checklist>
-MANDATORY ANALYSIS - COMPLETE FOR EVERY TABLE
+MANDATORY TWO-PASS ANALYSIS - COMPLETE FOR EVERY TABLE
 
-Work through this checklist and document findings in the scratchpad:
+You MUST work through both passes and document findings in the scratchpad.
 
-□ STEP 1: LOCATE IN SURVEY
+═══════════════════════════════════════════════
+PASS A: CLASSIFY + PLAN (scratchpad entry 1)
+═══════════════════════════════════════════════
+
+□ A1: LOCATE IN SURVEY
   Find the question in the survey document. Note question text, answer options, and special instructions.
   Update questionText if the survey has a cleaner version. If not found, note "Not in survey" and keep original.
 
-□ STEP 2: CHECK LABELS
+□ A2: CHECK LABELS
   Compare each row label to survey answer text. Update any unclear labels (e.g., "Value 1" → actual text).
 
-□ STEP 3: IDENTIFY QUESTION TYPE AND ENRICH
+□ A3: IDENTIFY QUESTION TYPE AND ENRICH
   - SCALE (satisfaction, likelihood, agreement, importance) → Add box score rollups
   - RANKING (rank items 1st, 2nd, 3rd) → Add per-item views, per-rank views, top-N rollups
   - GRID/MATRIX (rXcY pattern, or items × scale) → Add comparison views and detail views
   - CATEGORICAL with logical groupings → Add NET rows where meaningful
   - NUMERIC (mean_rows) → Consider binned distribution if spread is interesting
 
-□ STEP 4: ASSESS READABILITY
+□ A4: ASSESS READABILITY
   How many rows will the enriched table have? If large (20+ rows), split into readable pieces.
   GUIDELINE: A 12-row table with rollups is great. Five 8-row tables are great. One 60-row table loses the analyst.
 
-□ STEP 5: CHECK FOR EXCLUSION
+□ A5: CHECK FOR EXCLUSION
   - Screener where everyone qualified (100% one answer)? → Exclude
   - Administrative data (timestamps, IDs)? → Exclude
   - Overview table fully captured by splits? → Consider excluding
   Remember: excluded tables move to a reference sheet, they're not deleted.
 
-□ STEP 6: DOCUMENT DECISION
-  Record what you found and changed in the scratchpad. Every table gets documented.
+□ A6: DOCUMENT PLAN
+  Record what you found and what you plan to change in the scratchpad.
+
+═══════════════════════════════════════════════
+PASS B: SELF-AUDIT BEFORE JSON (scratchpad entry 2)
+═══════════════════════════════════════════════
+
+Before emitting your final JSON, audit your planned output against these checks:
+
+□ B1: DUPLICATE CHECK
+  Scan your rows: does any (variable, filterValue) pair appear more than once?
+  If yes, merge or remove the duplicate.
+
+□ B2: NET SEMANTICS
+  For every NET row on the SAME variable: does its filterValue cover ALL non-NET values for that variable in the table?
+  If yes → it's trivial → REMOVE IT and reset any orphaned indent beneath it to 0.
+  For multi-variable NETs: do all netComponents exist in the datamap?
+
+□ B3: mean_rows RULES
+  If tableType is mean_rows: did you avoid adding synthetic rows for mean/median/std dev?
+  R generates those automatically. You must NOT create them.
+
+□ B4: METADATA CONSISTENCY
+  - baseText: Does it describe WHO (a group of people), not WHAT (the question topic)?
+    If you can't phrase it as "[Group] who [condition]", use empty string.
+  - surveySection: Is it ALL CAPS? Did you strip any "SECTION X:" prefix?
+  - splitFromTableId: Preserved from input? (never overwrite)
+  - sourceTableId: Correct for derived tables?
+
+□ B5: INDENT VALIDITY
+  Every row with indent > 0: does a preceding isNet=true row exist whose filterValue contains this row's filterValue?
+  If not → reset indent to 0.
+
+□ B6: EMIT JSON
+  Only after B1-B5 pass with no issues. If any check failed, fix it first, then emit.
 </analysis_checklist>
 
 <enrichment_toolkit>
@@ -155,14 +192,14 @@ LOOK FOR THESE PATTERNS:
   → "Specialist (Total)" combining specific types under the general category
 - Shared prefix/suffix: "Full-time employee," "Part-time employee" vs "Contractor"
   → "Employee (Total)" grouping the shared-prefix options
-- Conceptually opposite groups: Multiple "statin first" approaches vs one "PCSK9i first"
-  → "Statin First (Total)" highlighting the conceptual split
+- Conceptually opposite groups: Multiple "in-person" approaches vs one "online only"
+  → "In-Person (Total)" highlighting the conceptual split
 
-{ "variable": "Q5", "label": "Specialist (Total)", "filterValue": "2,3,4", "isNet": true, "indent": 0 },
-{ "variable": "Q5", "label": "Cardiologist", "filterValue": "2", "isNet": false, "indent": 1 },
-{ "variable": "Q5", "label": "Neurologist", "filterValue": "3", "isNet": false, "indent": 1 },
-{ "variable": "Q5", "label": "Oncologist", "filterValue": "4", "isNet": false, "indent": 1 },
-{ "variable": "Q5", "label": "General Practitioner", "filterValue": "1", "isNet": false, "indent": 0 }
+{ "variable": "Q5", "label": "Salaried (Total)", "filterValue": "2,3,4", "isNet": true, "indent": 0 },
+{ "variable": "Q5", "label": "Full-time employee", "filterValue": "2", "isNet": false, "indent": 1 },
+{ "variable": "Q5", "label": "Part-time employee", "filterValue": "3", "isNet": false, "indent": 1 },
+{ "variable": "Q5", "label": "Temporary employee", "filterValue": "4", "isNet": false, "indent": 1 },
+{ "variable": "Q5", "label": "Independent contractor", "filterValue": "1", "isNet": false, "indent": 0 }
 
 RULE: Only create conceptual NETs when the grouping is OBVIOUS from the labels. If uncertain, don't create it.
 
@@ -222,10 +259,10 @@ WHEN TO USE: mean_rows questions where a binned distribution view adds analytica
 
 RANGE FORMAT: "0-4" means values 0, 1, 2, 3, 4 (inclusive at both ends)
 
-{ "variable": "S6", "label": "Less than 5 years", "filterValue": "0-4", "isNet": false, "indent": 0 },
-{ "variable": "S6", "label": "5-9 years", "filterValue": "5-9", "isNet": false, "indent": 0 },
-{ "variable": "S6", "label": "10-14 years", "filterValue": "10-14", "isNet": false, "indent": 0 },
-{ "variable": "S6", "label": "15+ years", "filterValue": "15-99", "isNet": false, "indent": 0 }
+{ "variable": "Q15", "label": "Less than 5 years", "filterValue": "0-4", "isNet": false, "indent": 0 },
+{ "variable": "Q15", "label": "5-9 years", "filterValue": "5-9", "isNet": false, "indent": 0 },
+{ "variable": "Q15", "label": "10-14 years", "filterValue": "10-14", "isNet": false, "indent": 0 },
+{ "variable": "Q15", "label": "15+ years", "filterValue": "15-99", "isNet": false, "indent": 0 }
 
 GUIDELINE: Create sensible bins based on data range and what distinctions matter analytically.
 
@@ -370,12 +407,23 @@ FOR EACH TABLE, POPULATE THESE CONTEXT FIELDS:
    If unclear, use empty string "".
 
 2. BASE TEXT (baseText)
-   Describe WHO was asked this question, only when it's NOT all respondents.
+   Answers ONLY: "Who was asked this question?"
    Most questions → use "" (Excel defaults to "All respondents")
-   
-   RULE: Use plain English, not variable codes.
-   WRONG: "S2=1 or S2=2"
-   RIGHT: "Cardiologists or Endocrinologists"
+
+   RULE 1: Use plain English, not variable codes.
+   WRONG: "Q2=1 or Q2=2"
+   RIGHT: "Full-time or part-time employees"
+
+   RULE 2: baseText describes a GROUP OF PEOPLE, never the question topic.
+   If you can't express it as "[Group of people] who [met some condition]", use empty string "".
+   WRONG: "About the product selected in the previous question"  ← describes WHAT, not WHO
+   WRONG: "Awareness of available options"  ← describes topic, not audience
+   WRONG: "Growth potential of the category"  ← describes content, not respondents
+   RIGHT: "Respondents who selected a category in Q5"  ← describes WHO
+   RIGHT: "Managers who oversee 5+ direct reports"  ← describes WHO
+   RIGHT: ""  ← when ALL respondents were asked (most common case)
+
+   RULE 3: When in doubt, leave empty "". A missing base text is harmless; a wrong one misleads.
 
 3. USER NOTE (userNote)
    Add helpful context in parenthetical format. Use when:
@@ -383,8 +431,8 @@ FOR EACH TABLE, POPULATE THESE CONTEXT FIELDS:
    - Data handling needs explanation: "(Responses sum to 100%)", "(Can exceed 100%)"
    
    RULE: Plain English, not variable codes.
-   WRONG: "(S8r1 ≥70% was qualification criterion)"
-   RIGHT: "(70%+ time treating patients was a qualification criterion)"
+   WRONG: "(Q3r1 ≥50 was qualification criterion)"
+   RIGHT: "(50+ hours per week was a qualification criterion)"
    
    Leave empty when no note adds value (most simple frequency tables).
 
@@ -445,17 +493,26 @@ GUIDELINES - USE JUDGMENT:
    Keep original tables when creating splits. Derived tables supplement.
    Exception: You can exclude an overview if splits fully capture it.
 
-9. AVOID TRIVIAL NETs
-   Before creating a NET, ask: "Will this NET be ~100% or ~0%?"
+9. NEVER ADD ALL-OPTION NETs TO SINGLE-SELECT QUESTIONS
+   This is a RULE, not a guideline.
 
-   Signs a NET will be trivial:
+   MECHANICAL TEST: If your NET's filterValue would cover ALL non-NET filterValues for that variable in the table, do NOT create it.
+
+   EXAMPLE — 3-option single-select (employment type):
+   Values are "1" (Full-time), "2" (Part-time), "3" (Prefer not to say)
+   WRONG: NET with filterValue "1,2,3" ← covers all options, trivial (always 100%)
+   RIGHT: No NET needed — single-select with no meaningful sub-groupings
+
+   The ONLY valid same-variable NET on a single-select question groups a STRICT SUBSET of options
+   (e.g., filterValue "1,2" out of "1,2,3" — grouping two of three options meaningfully).
+
+   ADDITIONAL SIGNS a NET will be trivial (also avoid these):
    - It rolls up answer options where all but one has a TERMINATE instruction
      (Everyone qualified = 100% for the non-terminate options)
    - It captures a characteristic all respondents share by study design
-     (e.g., "Clinicians (NET)" when the study only recruits clinicians)
+     (e.g., "Homeowners (NET)" when the study only recruits homeowners)
    - It's the inverse of "None of these" in a screener/exclusion question
      (If selecting affiliations terminates, "Any affiliation (NET)" = 0%)
-   - It groups all options of a single-select question (always sums to 100%)
 
    If a NET would be trivial, don't create it. Look for meaningful sub-groupings instead.
 </constraints>

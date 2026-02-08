@@ -11,12 +11,12 @@ export const LOOP_SEMANTICS_POLICY_INSTRUCTIONS_PRODUCTION = `
 You are generating a LOOP SEMANTICS POLICY for a crosstab pipeline.
 
 This survey contains looped questions — respondents answer the same set of questions
-multiple times, once per entity (e.g., occasion, product, brand, medication, wave).
+multiple times, once per entity (e.g., product, concept, scenario, wave, location).
 The data has been stacked so each row represents one loop entity, not one respondent.
 A respondent who answered for 3 entities has 3 rows.
 
-Every survey is different. Loop entities could be anything — drinking occasions, medications,
-brands evaluated, store visits, advertising exposures, etc. Variable naming conventions vary
+Every survey is different. Loop entities could be anything — products evaluated, service episodes,
+concepts tested, store visits, advertising exposures, etc. Variable naming conventions vary
 widely across survey platforms and research firms. Do not assume any specific naming pattern.
 
 Your job: classify each banner group as respondent-anchored or entity-anchored,
@@ -84,7 +84,7 @@ For each banner group:
 2. For entity-anchored groups, specify implementation:
    - strategy: "alias_column"
    - aliasName: a descriptive name with ".hawktab_" prefix derived from the group's
-     semantic meaning (e.g., ".hawktab_category_code", ".hawktab_treatment_type")
+     semantic meaning (e.g., ".hawktab_category_code", ".hawktab_item_class")
    - sourcesByIteration: array of {iteration, variable} pairs mapping each iteration
      to its source variable (e.g., [{"iteration":"1","variable":"VarA"},{"iteration":"2","variable":"VarB"}])
    - The alias column will select the correct source per .loop_iter value using case_when
@@ -139,18 +139,18 @@ PITFALL 3: Getting sourcesByIteration wrong.
 </common_pitfalls>
 
 <few_shot_examples>
-EXAMPLE 1: Entity-anchored group (category classification per entity)
+EXAMPLE 1: Entity-anchored group (classification per entity)
   Loop: 2 iterations (entity 1, entity 2)
-  Banner group: "Category" with cuts:
-    "Premium" = (Q5a == 1 | Q5b == 1)
-    "Value"   = (Q5a == 2 | Q5b == 2)
+  Banner group: "Classification" with cuts:
+    "Type A" = (Q5a == 1 | Q5b == 1)
+    "Type B" = (Q5a == 2 | Q5b == 2)
   Deterministic findings: Q5a → iteration 1, Q5b → iteration 2
 
   Classification:
     anchorType: "entity"
     shouldPartition: true  (single-select categories, mutually exclusive)
     strategy: "alias_column"
-    aliasName: ".hawktab_category"
+    aliasName: ".hawktab_class_code"
     sourcesByIteration: [{"iteration":"1","variable":"Q5a"},{"iteration":"2","variable":"Q5b"}]
     confidence: 0.95
     evidence: ["Deterministic resolver maps Q5a→iter1, Q5b→iter2",
@@ -201,21 +201,21 @@ EXAMPLE 3: Respondent-anchored group (multi-select behavior)
   loop entities.
 
 EXAMPLE 4: Entity-anchored group, 3 iterations, no deterministic evidence
-  Loop: 3 iterations (brand 1, brand 2, brand 3)
-  Banner group: "Brand Attitude" with cuts:
-    "Favorable"   = (BA1 == 1 | BA2 == 1 | BA3 == 1)
-    "Unfavorable"  = (BA1 == 2 | BA2 == 2 | BA3 == 2)
+  Loop: 3 iterations (item 1, item 2, item 3)
+  Banner group: "Concept Rating" with cuts:
+    "Favorable"   = (CR1 == 1 | CR2 == 1 | CR3 == 1)
+    "Unfavorable"  = (CR1 == 2 | CR2 == 2 | CR3 == 2)
   Deterministic findings: (empty)
-  Datamap: BA1 description = "Attitude toward brand evaluated first"
-           BA2 description = "Attitude toward brand evaluated second"
-           BA3 description = "Attitude toward brand evaluated third"
+  Datamap: CR1 description = "Rating of concept evaluated first"
+           CR2 description = "Rating of concept evaluated second"
+           CR3 description = "Rating of concept evaluated third"
 
   Classification:
     anchorType: "entity"
     shouldPartition: true
     strategy: "alias_column"
-    aliasName: ".hawktab_brand_attitude"
-    sourcesByIteration: [{"iteration":"1","variable":"BA1"},{"iteration":"2","variable":"BA2"},{"iteration":"3","variable":"BA3"}]
+    aliasName: ".hawktab_concept_rating"
+    sourcesByIteration: [{"iteration":"1","variable":"CR1"},{"iteration":"2","variable":"CR2"},{"iteration":"3","variable":"CR3"}]
     confidence: 0.85  (lower because no deterministic evidence, relying on descriptions)
     evidence: ["OR pattern across 3 variables matches 3 iterations",
                "Descriptions reference 'first', 'second', 'third' — ordinal iteration language",

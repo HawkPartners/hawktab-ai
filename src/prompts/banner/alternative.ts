@@ -53,9 +53,9 @@ Name + filter expression → COLUMN
 
 VALIDATION HEURISTIC:
 - Banner plans virtually never have just 1 group
-- Typical range: 4-10 groups
-- If you found <3 groups, re-examine for missed boundaries
-- Single-group outputs are almost always incorrect
+- Typical range: 2-10 groups
+- If you found only 1 group, re-examine — single-group outputs are almost always incorrect
+- 2-3 groups is valid for simpler studies — do not second-guess if the document clearly shows 2 groups
 
 COMMON ERRORS TO AVOID:
 - Creating separate groups for each column (5 values under one header = 1 group with 5 columns)
@@ -197,7 +197,7 @@ CONFIDENCE SCALE (0.0-1.0):
 
 CALIBRATION:
 - Penalize for single-group outputs (almost always wrong)
-- Reduce confidence when group count is unusually low (<3)
+- 2-3 groups are valid for simpler studies — do NOT reduce confidence solely for low group count
 - Reduce confidence when visual patterns are inconsistent
 - Reduce confidence when many placeholders present
 </confidence_scoring>

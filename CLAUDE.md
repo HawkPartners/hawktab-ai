@@ -64,20 +64,22 @@ ACTIVE WORK: `docs/implementation-plans/reliability-plan.md`
 |------|-------------|--------|
 | 1 | Stable System for Testing | Complete |
 | 2 | Leqvio Testing (iteration loop) | Complete |
-| 3 | Loop/Stacked Data Support | Not started |
+| 3 | Loop/Stacked Data Support | Complete (core) |
 | 4 | Broader Testing | Not started |
 
-**Part 2 Issues**: 3 edge cases documented in `docs/implementation-plans/pipeline-feedback.md` (multi-column grids, ranking questions). Moving forward to validate system robustness.
+**Part 3 completed**: LoopDetector, LoopCollapser, LoopSemanticsPolicyAgent, stacking in R script, anchor/satellite detection. First real test on Tito's Future Growth dataset exposed 17 issues — 12 now resolved (see `docs/latest-runs-feedback.md`).
 
-NEXT TEST DATA: `data/stacked-data-example/` (Tito's Future Growth - loops + weights)
+**Part 2 Issues**: 3 edge cases documented in `docs/implementation-plans/pipeline-feedback.md` (multi-column grids, ranking questions).
+
+FEEDBACK: `docs/latest-runs-feedback.md` — Tracks all issues from pipeline runs with problem/fix summaries.
 </current_focus>
 
 <pipeline_architecture>
 ```
-.sav Validation → Banner → Crosstab → TableGenerator → SkipLogic → FilterApplicator → Verification → R Validation → R Script → Excel
-      ↓              ↓         ↓            ↓              ↓             ↓                  ↓              ↓            ↓          ↓
-   R+haven        PDF/DOCX   DataMap     DataMap        Survey      Tables+Rules        Survey+Tables  Catch errors  tables.json  .xlsx
-   → DataMap      → Cuts    → R expr    → Tables      → Rules      → Filtered        → Enhanced      before run   (calculated)
+.sav Validation → Banner → Crosstab → TableGenerator → SkipLogic → FilterApplicator → Verification → PostProcessor → R Validation → R Script → Excel
+      ↓              ↓         ↓            ↓              ↓             ↓                  ↓              ↓               ↓            ↓          ↓
+   R+haven        PDF/DOCX   DataMap     DataMap        Survey      Tables+Rules        Survey+Tables  Deterministic   Catch errors  tables.json  .xlsx
+   → DataMap      → Cuts    → R expr    → Tables      → Rules      → Filtered        → Enhanced      formatting      before run   (calculated)
 ```
 
 DATA SOURCE: The .sav file is the single source of truth. No CSV datamaps needed.
@@ -93,9 +95,12 @@ THE AI AGENTS:
 | SkipLogicAgent | Survey | Skip/show rules | Extract skip logic from survey |
 | FilterTranslatorAgent | Rules + DataMap | R filter expressions | Translate rules to R code |
 | VerificationAgent | Tables + Survey | ExtendedTables | Add NETs, T2B, fix labels |
+| LoopSemanticsPolicyAgent | Loop summary + cuts | Per-group policy | Classify cuts as respondent- vs entity-anchored |
 
-TableGenerator is deterministic code that builds tables from datamap structure.
-FilterApplicator is deterministic code that applies filter expressions to tables.
+DETERMINISTIC PROCESSORS:
+- TableGenerator — builds tables from datamap structure
+- FilterApplicator — applies filter expressions to tables
+- TablePostProcessor — deterministic post-pass after VerificationAgent (7 rules: empty fields, section cleanup, base text validation, trivial NET removal, source ID casing, duplicate detection, orphan indent reset)
 
 PROVENANCE TRACKING:
 - `sourceTableId` → Original TableGenerator tableId
@@ -131,6 +136,7 @@ OUTPUT LOCATION: `outputs/<dataset>/pipeline-<timestamp>/`
 - `results/crosstabs.xlsx` - Excel output
 - `scratchpad-*.md` - Agent reasoning traces (check these when debugging)
 - `skiplogic/`, `verification/` - Per-agent outputs
+- `postpass/postpass-report.json` - TablePostProcessor actions and stats
 </running_the_pipeline>
 
 <code_patterns>
@@ -241,6 +247,9 @@ RULES - NEVER VIOLATE:
 
 7. NEVER change variable names in table rows
    These are SPSS column names. Only change `label`, never `variable`.
+
+8. NEVER put dataset-specific examples in agent prompts
+   See `<prompt_hygiene>` section. All examples must be abstract and generic.
 </constraints>
 
 <gotchas>
@@ -281,7 +290,8 @@ hawktab-ai/
 │   │   ├── CrosstabAgent.ts
 │   │   ├── VerificationAgent.ts
 │   │   ├── SkipLogicAgent.ts
-│   │   └── FilterTranslatorAgent.ts
+│   │   ├── FilterTranslatorAgent.ts
+│   │   └── LoopSemanticsPolicyAgent.ts
 │   ├── lib/
 │   │   ├── env.ts                 # Per-agent model config
 │   │   ├── loadEnv.ts             # Environment loading
@@ -291,15 +301,23 @@ hawktab-ai/
 │   │   ├── processors/            # DataMapProcessor, SurveyProcessor
 │   │   ├── r/                     # RScriptGeneratorV2, ValidationOrchestrator
 │   │   ├── excel/                 # ExcelFormatter
-│   │   └── tables/                # TableGenerator, CutsSpec
+│   │   ├── tables/                # TableGenerator, CutsSpec, TablePostProcessor, sortTables
+│   │   └── validation/            # LoopDetector, LoopCollapser, RDataReader, ValidationRunner
 │   ├── schemas/                   # Zod schemas (source of truth)
-│   └── prompts/                   # Agent prompt templates
-│       ├── verification/          # production.ts, alternative.ts
-│       └── basefilter/
+│   └── prompts/                   # Agent prompt templates (production.ts + alternative.ts per agent)
+│       ├── verification/          # VerificationAgent prompts
+│       ├── banner/                # BannerAgent prompts
+│       ├── crosstab/              # CrosstabAgent prompts
+│       ├── skiplogic/             # SkipLogicAgent prompts
+│       ├── filtertranslator/      # FilterTranslatorAgent prompts
+│       └── loopSemantics/         # LoopSemanticsPolicyAgent prompts
 ├── scripts/                       # Test scripts
-├── data/leqvio-monotherapy-demand-NOV217/   # Primary test data
-│   ├── inputs/                    # Input files
-│   └── tabs/                      # Joe's reference output
+├── data/                          # Test datasets
+│   ├── leqvio-monotherapy-demand-NOV217/  # Leqvio test data
+│   └── stacked-data-example/      # Tito's Future Growth (loops + weights)
+├── docs/
+│   ├── latest-runs-feedback.md    # Issue tracking from pipeline runs
+│   └── implementation-plans/      # Architecture docs and plans
 └── outputs/                       # Pipeline outputs (persisted)
 ```
 </directory_structure>
@@ -332,14 +350,46 @@ When tuning agent prompts:
 4. TEST SPECIFIC CASES FIRST
    Before full pipeline, run isolated agent tests.
 
-PROMPT FILE LOCATIONS:
-- `src/prompts/verification/production.ts` (conservative)
-- `src/prompts/verification/alternative.ts` (aggressive)
-- `src/prompts/skiplogic/` (skip logic extraction)
-- `src/prompts/filtertranslator/` (filter translation)
-- `src/prompts/crosstabAgentPrompt.ts`
-- `src/prompts/bannerAgentPrompt.ts`
+PROMPT FILE LOCATIONS (each agent has production.ts + alternative.ts, selected via env var):
+- `src/prompts/verification/` — VerificationAgent (active: alternative)
+- `src/prompts/banner/` — BannerAgent (active: alternative)
+- `src/prompts/crosstab/` — CrosstabAgent (active: production)
+- `src/prompts/skiplogic/` — SkipLogicAgent (active: production)
+- `src/prompts/filtertranslator/` — FilterTranslatorAgent (active: production)
+- `src/prompts/loopSemantics/` — LoopSemanticsPolicyAgent (active: production)
 </prompt_iteration>
+
+<prompt_hygiene>
+NEVER GIVE AGENTS A CHEAT CODE.
+
+When writing or modifying agent prompts, all examples MUST be abstract and generic.
+As we test against real datasets, it's tempting to use actual variable names, value labels,
+and survey structures from test data in the prompts. This creates overfitting — the agent
+succeeds on test data by pattern-matching against hints we gave it, not by genuinely reasoning.
+
+RULES:
+1. NEVER use variable names from test datasets (no S9, S11, hLOCATION, hPREMISE, etc.)
+   Use generic names: Q3, Q7, Q15, hCLASS, hGROUP, etc.
+
+2. NEVER use domain-specific vocabulary from test datasets
+   Bad: "cardiologist", "drinking occasion", "Hispanic origin", "Premium/Value category"
+   Good: "employee type", "product concept", "employment status", "Type A/Type B"
+
+3. ALWAYS extract the ABSTRACT LEARNING, not the concrete example
+   Ask: "What general principle does this teach?" not "What happened in this dataset?"
+
+4. WHEN IN DOUBT, use different numbers, different variable structures, different domains
+   If the test data has 2 iterations, use 3 in the example.
+   If the test data is pharma, use retail in the example.
+   If the test data has S-prefix screeners, use Q-prefix in the example.
+
+5. AFTER EVERY PROMPT EDIT, audit for dataset contamination
+   Search for variable names, value labels, and domain terms from all test datasets.
+   Each prompt should work equally well on a dataset it has never seen.
+
+This matters because the goal is a generalizable tool, not one that passes our test suite.
+Every dataset-specific hint is a liability when a new client uploads unfamiliar data.
+</prompt_hygiene>
 
 <review_process>
 WHEN REVIEWING PIPELINE OUTPUT:

@@ -23,6 +23,7 @@ import { generateRScriptV2WithValidation } from '../r/RScriptGeneratorV2';
 import { validateAndFixTables } from '../r/ValidationOrchestrator';
 import { buildCutsSpec } from '../tables/CutsSpec';
 import { sortTables, getSortingMetadata } from '../tables/sortTables';
+import { normalizePostPass } from '../tables/TablePostProcessor';
 import { ExcelFormatter } from '../excel/ExcelFormatter';
 import { extractStreamlinedData } from '../data/extractStreamlinedData';
 import { getPromptVersions, getStatTestingConfig, formatStatTestingConfig } from '../env';
@@ -615,6 +616,43 @@ export async function runPipeline(
     }
 
     log(`  Duration: ${Date.now() - stepStart7}ms`, 'dim');
+    log('', 'reset');
+
+    // -------------------------------------------------------------------------
+    // Post-pass: deterministic formatting normalization
+    // -------------------------------------------------------------------------
+    log('Running TablePostProcessor...', 'cyan');
+    const postPassResult = normalizePostPass(verifiedTables);
+    verifiedTables = postPassResult.tables;
+
+    if (postPassResult.stats.totalFixes > 0 || postPassResult.stats.totalWarnings > 0) {
+      log(`  Fixes: ${postPassResult.stats.totalFixes}, Warnings: ${postPassResult.stats.totalWarnings}`, 'green');
+    } else {
+      log(`  No issues found`, 'dim');
+    }
+
+    // Log individual actions
+    for (const action of postPassResult.actions) {
+      const color = action.severity === 'fix' ? 'dim' : 'yellow';
+      log(`  [${action.severity}] ${action.tableId}: ${action.rule} — ${action.detail}`, color);
+    }
+
+    // Save postpass report
+    try {
+      const postpassDir = path.join(outputDir, 'postpass');
+      await fs.mkdir(postpassDir, { recursive: true });
+      await fs.writeFile(
+        path.join(postpassDir, 'postpass-report.json'),
+        JSON.stringify({
+          stats: postPassResult.stats,
+          actions: postPassResult.actions,
+        }, null, 2),
+        'utf-8'
+      );
+    } catch (postpassSaveError) {
+      log(`  Failed to save postpass report: ${postpassSaveError instanceof Error ? postpassSaveError.message : String(postpassSaveError)}`, 'yellow');
+    }
+
     log('', 'reset');
 
     // -------------------------------------------------------------------------

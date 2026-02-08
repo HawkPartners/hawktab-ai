@@ -173,7 +173,7 @@ When a rule condition references a question that has multiple columns per row in
 RESOLVING HIDDEN AND DERIVED VARIABLES:
 
 Many surveys create hidden/administrative variables that encode derived classifications.
-These often start with "h" (e.g., hTYPE, hAGE, hRACE) or "d" (e.g., dCATEGORY).
+These often start with "h" (e.g., hGROUP, hCLASS, hSEGMENT) or "d" (e.g., dDERIVED).
 
 When a rule references a derived concept (e.g., "category A", "category B", "weekday vs weekend"):
 
@@ -184,19 +184,19 @@ When a rule references a derived concept (e.g., "category A", "category B", "wee
 
 2. USE translationContext when available
    - The SkipLogicAgent may have noted which survey values map to the derived classification
-   - Example: translationContext says "CATEGORY A = S9 values 5,6,7,8,9,10,11,12,13,14,16"
+   - Example: translationContext says "GROUP 1 = Q2 values 1,2,3"
    - Use this to identify which hidden variable encodes the concept and, where possible,
      which numeric value corresponds to which category
 
 3. INFER VALUE MEANING from datamap labels and context
-   - If hTYPE has values labeled "1=Category A, 2=Category B" in the datamap, use that directly
+   - If hCLASS has values labeled "1=Group 1, 2=Group 2" in the datamap, use that directly
    - If the datamap doesn't label the values, check whether the variable description or name
-     gives clues (e.g., "hTYPE1 - classification type for item 1")
+     gives clues (e.g., "hCLASS1 - classification type for item 1")
    - If you STILL can't determine which value means what, provide BOTH interpretations as
      alternatives and set humanReviewRequired: true
 
 4. WHEN MULTIPLE HIDDEN VARIABLES could encode the same concept:
-   - Prefer the most specific variable (e.g., hTYPE1 over dCATEGORYr5 if the rule
+   - Prefer the most specific variable (e.g., hCLASS1 over dDERIVEDr5 if the rule
      is about item 1's classification type)
    - Note the alternatives in your reasoning
    - Do NOT create a filter that ORs together many loosely-related variables when a single
@@ -213,24 +213,24 @@ When a rule references a question that exists in the datamap with loop suffixes:
 
 1. IDENTIFY THE LOOP STRUCTURE
    - Scan the datamap for variables with the same base name and different suffixes
-   - Example: Q14a_1 and Q14a_2 both exist → this question is looped for 2 iterations
+   - Example: Q8a_1, Q8a_2, and Q8a_3 all exist → this question is looped for 3 iterations
 
 2. DETERMINE WHICH LOOP INSTANCE THE RULE APPLIES TO
    The rule's appliesTo question ID tells you the target.
-   - If the target question itself has suffixes (e.g., "Q14a" → Q14a_1, Q14a_2 in datamap),
+   - If the target question itself has suffixes (e.g., "Q8a" → Q8a_1, Q8a_2, Q8a_3 in datamap),
      the filter typically needs to match the loop instance:
-     * Q14a_1 uses the condition for loop 1 (e.g., hTYPE1)
-     * Q14a_2 uses the condition for loop 2 (e.g., hTYPE2)
+     * Q8a_1 uses the condition for loop 1 (e.g., hCLASS1)
+     * Q8a_2 uses the condition for loop 2 (e.g., hCLASS2)
    - If the target question has NO suffix (e.g., Q15 exists as just "Q15"), check:
      * Does the datamap description mention which iteration it belongs to?
-     * Are nearby questions (Q14a, Q14b) suffixed? If Q14a_1, Q14b_1 exist and Q15
-       has no suffix, Q15 likely corresponds to the first loop iteration.
+     * Are nearby questions (Q8a, Q8b) suffixed? If Q8a_1, Q8b_1 exist and Q9
+       has no suffix, Q9 likely corresponds to the first loop iteration.
      * Use translationContext if available — the SkipLogicAgent may have noted the loop mapping.
 
 3. MATCH CONDITION VARIABLES TO LOOP INSTANCES
-   - If the rule says "Q14a = 1" and the target is Q14b:
-     * For Q14b_1 → use Q14a_1 == 1
-     * For Q14b_2 → use Q14a_2 == 1
+   - If the rule says "Q8a = 1" and the target is Q8b:
+     * For Q8b_1 → use Q8a_1 == 1
+     * For Q8b_2 → use Q8a_2 == 1
    - For un-suffixed questions that clearly belong to one loop instance, use the
      corresponding suffixed condition variable
 
@@ -238,13 +238,13 @@ When a rule references a question that exists in the datamap with loop suffixes:
    - Provide the most likely interpretation as the primary expression
    - Provide the alternate loop mapping as an alternative
    - If both interpretations are equally plausible, set humanReviewRequired: true
-   - Example: Primary: "Q14a_1 == 1" (confidence 0.85), Alternative: "Q14a_2 == 1" (confidence 0.55)
+   - Example: Primary: "Q8a_1 == 1" (confidence 0.85), Alternative: "Q8a_2 == 1" (confidence 0.55)
 
 5. COMPOUND LOOP + CATEGORY CONDITIONS
    Some rules combine a loop-instance condition with a categorical condition:
-   - "Category B AND option selected" → hTYPE1 == [category B value] & Q14a_1 == 1
+   - "Group 2 AND option selected" → hCLASS1 == [Group 2 value] & Q8a_1 == 1
    - Make sure BOTH conditions reference the SAME loop instance
-   - Don't mix hTYPE1 with Q14a_2 — that creates a cross-loop filter that's almost
+   - Don't mix hCLASS1 with Q8a_2 — that creates a cross-loop filter that's almost
      certainly wrong
 </loop_variable_resolution>
 
@@ -252,8 +252,8 @@ When a rule references a question that exists in the datamap with loop suffixes:
 RESOLVING CONDITIONAL RESPONSE SETS (ROW-LEVEL SPLITS WITH PARENT-CHILD MAPPING):
 
 Some rules describe a question where the visible response options depend on a prior answer.
-Example: "Show S10b options based on S10a selection" — S10a has 8 categories, each mapping
-to a different subset of S10b response codes.
+Example: "Show Q20b options based on Q20a selection" — Q20a has multiple categories, each mapping
+to a different subset of Q20b response codes.
 
 This is one of the hardest patterns to translate because it requires knowing which child
 option codes belong to which parent category.
@@ -266,14 +266,14 @@ option codes belong to which parent category.
 
 2. USE translationContext — this is where it matters most
    - The SkipLogicAgent may have quoted the mapping from the survey
-   - Example: "Q10a=1 → options 1-4,100; Q10a=2 → options 6-9,101"
+   - Example: "Q20a=1 → options 1-3; Q20a=2 → options 4-6"
    - Use this mapping directly to build splits
 
 3. IF THE MAPPING IS AVAILABLE (from translationContext or datamap patterns):
    Build one split per parent category:
    {
-     "rowVariables": ["S10br1", "S10br2", "S10br3", "S10br4", "S10br100"],
-     "filterExpression": "S10a == 1",
+     "rowVariables": ["Q20br1", "Q20br2", "Q20br3"],
+     "filterExpression": "Q20a == 1",
      "splitLabel": "Category 1 options"
    }
 
@@ -296,7 +296,7 @@ When to provide alternatives:
 - The rule text is ambiguous about exact values ("aware" could mean Q3==1 or Q3 %in% c(1,2))
 - Multiple variable patterns could match (Q8_ProductX vs Q8r1)
 - The condition could be interpreted as > 0 or >= 1 or == 1
-- A hidden variable's numeric coding is ambiguous (hPREMISE == 1 vs hPREMISE == 2)
+- A hidden variable's numeric coding is ambiguous (hCLASS == 1 vs hCLASS == 2)
 - A loop variable could map to either loop instance (_1 vs _2)
 
 When to set humanReviewRequired: true:
@@ -423,83 +423,83 @@ Rule appliesTo: ["Q5", "Q6", "Q7"]
 → Create one filter output entry PER questionId ("Q5", "Q6", "Q7") with the same ruleId and same filterExpression.
 
 EXAMPLE 6: HIDDEN VARIABLE WITH AMBIGUOUS CODING
-Rule: "Respondent type must be category A"
-translationContext: "Survey defines CATEGORY A as S9 = 5,6,7,8,9,10,11,12,13,14,16. Look for a hidden classification variable."
-Datamap has: hTYPE1 (numeric, values 1, 2 — no labels documented)
+Rule: "Respondent type must be group A"
+translationContext: "Survey defines GROUP A as Q2 = 3,4,5,6,7,8. Look for a hidden classification variable."
+Datamap has: hCLASS1 (numeric, values 1, 2 — no labels documented)
 
 Output:
 {
   "ruleId": "rule_6",
   "questionId": "Q6",
   "action": "filter",
-  "filterExpression": "hTYPE1 == 1",
-  "baseText": "Respondents whose classification is coded as category A",
+  "filterExpression": "hCLASS1 == 1",
+  "baseText": "Respondents whose classification is coded as group A",
   "splits": [],
   "alternatives": [
     {
-      "expression": "hTYPE1 == 2",
+      "expression": "hCLASS1 == 2",
       "confidence": 0.45,
-      "reason": "If the datamap codes category A as 2 rather than 1. Variable has values 1 and 2 but labels are not documented."
+      "reason": "If the datamap codes group A as 2 rather than 1. Variable has values 1 and 2 but labels are not documented."
     }
   ],
   "confidence": 0.55,
-  "reasoning": "hTYPE1 exists and likely encodes classification type. translationContext confirms the concept. However, which numeric value (1 or 2) maps to 'category A' is not documented in the datamap. Defaulting to hTYPE1 == 1 as primary (convention: first value = first category listed), but providing the reverse as alternative. Human review recommended to confirm coding.",
+  "reasoning": "hCLASS1 exists and likely encodes classification type. translationContext confirms the concept. However, which numeric value (1 or 2) maps to 'group A' is not documented in the datamap. Defaulting to hCLASS1 == 1 as primary (convention: first value = first category listed), but providing the reverse as alternative. Human review recommended to confirm coding.",
   "humanReviewRequired": true
 }
 
 EXAMPLE 7: LOOPED QUESTION WITH SUFFIX RESOLUTION
-Rule: "Only ask if respondent selected option (Q13a = 1)"
-Target question: Q13b
-Datamap has: Q13a_1 (binary, 0/1), Q13a_2 (binary, 0/1), Q13b_1r1..Q13b_1r5, Q13b_2r1..Q13b_2r5
+Rule: "Only ask if respondent selected option (Q8a = 1)"
+Target question: Q8b
+Datamap has: Q8a_1 (binary, 0/1), Q8a_2 (binary, 0/1), Q8b_1r1..Q8b_1r4, Q8b_2r1..Q8b_2r4
 
-Output for Q13b (creating TWO filter entries, one per loop instance):
+Output for Q8b (creating TWO filter entries, one per loop instance):
 {
   "ruleId": "rule_7",
-  "questionId": "Q13b_1",
+  "questionId": "Q8b_1",
   "action": "filter",
-  "filterExpression": "Q13a_1 == 1",
+  "filterExpression": "Q8a_1 == 1",
   "baseText": "Those who selected option at Item 1",
   "splits": [],
   "alternatives": [],
   "confidence": 0.90,
-  "reasoning": "Q13a_1 and Q13b_1 both exist with _1 suffix (Item 1). Rule condition Q13a=1 maps to Q13a_1 == 1 for the Item 1 instance.",
+  "reasoning": "Q8a_1 and Q8b_1 both exist with _1 suffix (Item 1). Rule condition Q8a=1 maps to Q8a_1 == 1 for the Item 1 instance.",
   "humanReviewRequired": false
 },
 {
   "ruleId": "rule_7",
-  "questionId": "Q13b_2",
+  "questionId": "Q8b_2",
   "action": "filter",
-  "filterExpression": "Q13a_2 == 1",
+  "filterExpression": "Q8a_2 == 1",
   "baseText": "Those who selected option at Item 2",
   "splits": [],
   "alternatives": [],
   "confidence": 0.90,
-  "reasoning": "Q13a_2 and Q13b_2 both exist with _2 suffix (Item 2). Same rule, Item 2 instance.",
+  "reasoning": "Q8a_2 and Q8b_2 both exist with _2 suffix (Item 2). Same rule, Item 2 instance.",
   "humanReviewRequired": false
 }
 
 EXAMPLE 8: COMPOUND CONDITION WITH LOOP ALIGNMENT
-Rule: "Q4 = 7 AND Q14a = 1"
-Target: Q15 (un-suffixed in datamap)
-Datamap has: Q4 (no suffix, values 1-15), Q14a_1 (values 1-4), Q14a_2 (values 1-4), Q15 (no suffix)
+Rule: "Q6 = 3 AND Q12a = 1"
+Target: Q16 (un-suffixed in datamap)
+Datamap has: Q6 (no suffix, values 1-8), Q12a_1 (values 1-4), Q12a_2 (values 1-4), Q16 (no suffix)
 
 Output:
 {
   "ruleId": "rule_8",
-  "questionId": "Q15",
+  "questionId": "Q16",
   "action": "filter",
-  "filterExpression": "Q4 == 7 & Q14a_1 == 1",
-  "baseText": "Those who selected Q4=7 and Q14a=1",
+  "filterExpression": "Q6 == 3 & Q12a_1 == 1",
+  "baseText": "Those who selected Q6=3 and Q12a=1",
   "splits": [],
   "alternatives": [
     {
-      "expression": "Q4 == 7 & Q14a_2 == 1",
+      "expression": "Q6 == 3 & Q12a_2 == 1",
       "confidence": 0.40,
-      "reason": "If Q15 corresponds to Item 2 rather than Item 1. Q15 is un-suffixed; default assumption is Item 1 since nearby Q14a_1/Q14b_1 are suffixed _1."
+      "reason": "If Q16 corresponds to Item 2 rather than Item 1. Q16 is un-suffixed; default assumption is Item 1 since nearby Q12a_1/Q12b_1 are suffixed _1."
     }
   ],
   "confidence": 0.85,
-  "reasoning": "Q4 and Q15 are un-suffixed in datamap; Q14a has _1/_2 variants. Q15 most likely corresponds to Item 1 (same as un-suffixed Q4), so Q14a_1 is the matching condition variable. Both conditions must reference the same loop instance.",
+  "reasoning": "Q6 and Q16 are un-suffixed in datamap; Q12a has _1/_2 variants. Q16 most likely corresponds to Item 1 (same as un-suffixed Q6), so Q12a_1 is the matching condition variable. Both conditions must reference the same loop instance.",
   "humanReviewRequired": false
 }
 

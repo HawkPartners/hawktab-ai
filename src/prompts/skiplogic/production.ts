@@ -63,7 +63,7 @@ EXPLICIT SKIP/SHOW INSTRUCTIONS:
 CRITICAL — VISUAL FORMATTING (STRIKETHROUGH):
 - Text marked with strikethrough (~~text~~) indicates that content has been REMOVED or EXCLUDED from the instrument.
 - When you see strikethrough in skip/show conditions, EXCLUDE those struck-through values from the rule.
-- Example: "ASK IF A4=~~4,5~~,7,8,9,10,11,12,OR 13" means the condition is A4 IN {7,8,9,10,11,12,13} — values 4 and 5 are excluded.
+- Example: "ASK IF Q7=~~3,4~~,5,6,7,OR 8" means the condition is Q7 IN {5,6,7,8} — values 3 and 4 are excluded.
 - Example: "Base: ~~Option 1,~~ Option 2, Option 3" means only Option 2 and Option 3 are included.
 - Always check for strikethrough when parsing condition lists, value ranges, or option sets.
 
@@ -82,11 +82,11 @@ LOOPS / STACKED DATA NOTE:
 - DO NOT create a rule *just because* a question is within a loop.
 - Only extract rules where the survey text indicates an additional eligibility condition beyond "this loop exists".
 - LOOP-GATING CONDITIONS ARE NOT RULES: Programming notes like "SHOW [questions] IF respondent
-  had 2+ [loop items/locations]" are loop-inherent eligibility conditions. When data is stacked,
+  had 2+ [loop items]" are loop-inherent eligibility conditions. When data is stacked,
   questions in loop iteration 2+ can ONLY exist for respondents who have 2+ items — the stacking
   handles this automatically. DO NOT create a rule for these. They are equivalent to "this loop exists."
-  Example: "PN: SHOW S11A, S11B, S11C IF RESPONDENT HAD A DRINK AT 2+ LOCATIONS" → This is NOT a rule.
-  S11a/b/c are in the Location 2 loop — respondents only have Location 2 data if they had 2+ locations.
+  Example: "PN: SHOW Q21A, Q21B, Q21C IF RESPONDENT HAD 2+ ITEMS IN Q15" → This is NOT a rule.
+  Q21a/b/c are in the Item 2 loop — respondents only have Item 2 data if they had 2+ items.
 - However, DO extract rules for conditions WITHIN loop iterations (e.g., "within each loop,
   show Q21 only if Q20=1 for that iteration"). See NESTED CONDITIONS WITHIN LOOPS below.
 
@@ -116,16 +116,16 @@ TERMINATE condition — whether during screening OR mid-survey — was removed. 
 
 This means:
 - "S1 option 3 = TERMINATE" does NOT create a rule. Nobody with S1=3 exists in the data.
-- "TERMINATE IF experience < 3 years" does NOT create a rule. Everyone in the data has >= 3 years.
+- "TERMINATE IF age < 18" does NOT create a rule. Everyone in the data is >= 18.
 - "IF QUALIFIED, continue to Section A" does NOT create a rule. Everyone in the data is qualified.
-- Mid-survey validation terminations (e.g., "TERMINATE IF A4 contradicts S10c") also do NOT
+- Mid-survey validation terminations (e.g., "TERMINATE IF Q7 contradicts Q3") also do NOT
   create rules. Those respondents were removed from the data just like screener terminations.
 
 DO NOT create rules that reconstruct screener or validation-termination logic. The data already handles this.
 The only screener-related rules worth extracting are ones where a screener answer creates
 DIFFERENT BASES for DIFFERENT post-screener questions. For example:
-- "S2=1 → ask S3a" means S3a has a SMALLER base than other questions (only cardiologists).
-  This IS a valid rule because S3a's base differs from other questions.
+- "Q2=1 → ask Q3a" means Q3a has a SMALLER base than other questions (only respondents who qualified via Q2=1).
+  This IS a valid rule because Q3a's base differs from other questions.
 - "All qualified respondents see Section A" is NOT a rule because it's the same base as every
   other post-screener question.
 
@@ -198,7 +198,7 @@ a question answered within the same loop iteration.
 5. COMPOUND CONDITIONS:
 Some rules require MULTIPLE conditions to be true simultaneously.
 
-Pattern: "ASK IF Q4=7 AND Q14a=1 AND respondent type is category B"
+Pattern: "ASK IF Q3=2 AND Q8a=1 AND respondent type is Group 2"
 - This is one rule with a compound condition, not three separate rules
 - List ALL conditions in conditionDescription
 
@@ -223,8 +223,8 @@ The condition determines WHICH ITEMS each respondent sees within the question.
 - "For each brand selected, rate satisfaction" → Each brand row filters to its selectors
 - Different conditions per row/item
 - Also includes: CONDITIONAL RESPONSE SETS — where the set of answer options shown depends
-  on a prior answer. Example: "Show responses based on S10a selection" where S10a=1 shows
-  options 1-4, S10a=2 shows options 6-9, etc. This is row-level because different respondents
+  on a prior answer. Example: "Show responses based on Q5 selection" where Q5=1 shows
+  options 1-4, Q5=2 shows options 6-9, etc. This is row-level because different respondents
   see different subsets of the same question's options.
 
 HOW TO TELL THE DIFFERENCE:
@@ -305,10 +305,10 @@ No additional eligibility text.
 → Do NOT create a rule. Looping/stacking mechanics are handled elsewhere.
 
 EXAMPLE 9b: LOOP-GATING CONDITION (ALSO NOT A RULE)
-Survey text: "PN: SHOW S11A, S11B, S11C IF RESPONDENT HAD A DRINK AT 2+ LOCATIONS IN S9"
-S11a/b/c are questions within the Location 2 loop iteration.
-→ Do NOT create a rule. The "2+ locations" condition is loop-inherent — respondents only
-  have Location 2 data if they visited 2+ locations. The stacked data structure handles this.
+Survey text: "PN: SHOW Q21A, Q21B, Q21C IF RESPONDENT SELECTED 2+ ITEMS IN Q15"
+Q21a/b/c are questions within the Item 2 loop iteration.
+→ Do NOT create a rule. The "2+ items" condition is loop-inherent — respondents only
+  have Item 2 data if they selected 2+ items. The stacked data structure handles this.
   Applying this as a filter would incorrectly double-filter the data.
 
 EXAMPLE 10: CASCADING ROW-LEVEL LOGIC
@@ -339,23 +339,23 @@ Analysis:
 
 EXAMPLE 12: CATEGORY-BASED SECTION ROUTING
 Survey text:
-- "ASK Q6-Q10 IF RESPONDENT TYPE IS CATEGORY A"
-- "ASK Q14a-Q19 IF RESPONDENT TYPE IS CATEGORY B"
-- Survey defines: "CATEGORY A = S9 values 5,6,7,8,9,10,11,12,13,14,16"
-- Survey defines: "CATEGORY B = S9 values 1,2,3,4,15"
+- "ASK Q20-Q24 IF RESPONDENT TYPE IS GROUP 1"
+- "ASK Q30-Q35 IF RESPONDENT TYPE IS GROUP 2"
+- Survey defines: "GROUP 1 = Q2 values 1,2,3"
+- Survey defines: "GROUP 2 = Q2 values 4,5,6"
 
 Analysis:
 - This is NOT a screener termination — all respondents complete the survey
 - It creates two different analysis universes based on a categorical classification
-- The survey provides a coding table mapping S9 values to category A/B
+- The survey provides a coding table mapping Q2 values to Group 1/2
 
-→ Rule 1: table-level, applies to [Q6, Q7, Q8, Q9, Q10], condition: "respondent type is category A"
-   translationContext: "Survey defines CATEGORY A as S9 = 5,6,7,8,9,10,11,12,13,14,16.
-   Look for a hidden classification variable in the datamap that may encode this."
-→ Rule 2: table-level, applies to [Q14a, Q14b, Q15, Q16, Q17, Q18, Q19],
-   condition: "respondent type is category B"
-   translationContext: "Survey defines CATEGORY B as S9 = 1,2,3,4,15.
-   Same hidden classification variable likely encodes this."
+→ Rule 1: table-level, applies to [Q20, Q21, Q22, Q23, Q24], condition: "respondent type is Group 1"
+   translationContext: "Survey defines GROUP 1 as Q2 = 1,2,3.
+   Look for a derived classification variable in the datamap that may encode this."
+→ Rule 2: table-level, applies to [Q30, Q31, Q32, Q33, Q34, Q35],
+   condition: "respondent type is Group 2"
+   translationContext: "Survey defines GROUP 2 as Q2 = 4,5,6.
+   Same derived classification variable likely encodes this."
 
 EXAMPLE 13: COMPOUND CONDITION
 Survey text: "ASK IF Q4=7 WAS CHOSEN AND Q14a=1"
@@ -414,7 +414,7 @@ data variables. The downstream agent has the datamap but NOT the survey — you 
 window into the survey document.
 
 INCLUDE translationContext when:
-- The survey defines a CODING TABLE (e.g., "CATEGORY A = S9 values 5,6,7,..."). Quote it.
+- The survey defines a CODING TABLE (e.g., "GROUP 1 = Q2 values 1,2,3"). Quote it.
 - The survey references HIDDEN VARIABLES (variables starting with 'h', computed variables,
   assigned variables). Note what they appear to encode and how they relate to visible questions.
 - The survey defines a MAPPING between questions (e.g., "Q10b options 1-4 correspond to
