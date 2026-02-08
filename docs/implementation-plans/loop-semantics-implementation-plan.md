@@ -406,6 +406,114 @@ For each banner group:
    at the top level and explain in warnings. It is better to flag uncertainty than to
    silently produce a wrong classification.
 </instructions>
+
+<common_pitfalls>
+PITFALL 1: Confusing multi-select binary flags with parallel iteration variables.
+  - Multi-select flags (e.g., LocationR1, LocationR2, LocationR3) are DIFFERENT questions
+    about the SAME respondent ("do you visit location 1? location 2?"). These are
+    respondent-anchored — every stacked row for that respondent has the same values.
+  - Parallel iteration variables (e.g., GateQ1, GateQ2) are the SAME question about
+    DIFFERENT iterations ("what category was entity 1? what category was entity 2?").
+    These are entity-anchored — each variable corresponds to one specific iteration.
+  - Key tell: if the number of OR-joined variables in a cut MATCHES the number of loop
+    iterations, that's a strong signal of parallel iteration variables.
+
+PITFALL 2: Assuming all banner groups need transformation.
+  - Most banner groups are respondent-anchored (demographics, attitudes, screener segments).
+    Only groups whose cuts reference iteration-linked variables need alias columns.
+  - When in doubt, "respondent" is the safer default — it preserves current behavior.
+
+PITFALL 3: Getting sourcesByIteration wrong.
+  - The number of entries in sourcesByIteration MUST match the number of loop iterations.
+  - Each entry maps an iteration value (from the loop_summary) to the variable used for
+    that iteration. Do NOT reverse the mapping.
+  - If you cannot confidently assign every iteration to a source variable, set
+    humanReviewRequired=true rather than guessing.
+</common_pitfalls>
+
+<few_shot_examples>
+EXAMPLE 1: Entity-anchored group (category classification per entity)
+  Loop: 2 iterations (entity 1, entity 2)
+  Banner group: "Category" with cuts:
+    "Premium" = (Q5a == 1 | Q5b == 1)
+    "Value"   = (Q5a == 2 | Q5b == 2)
+  Deterministic findings: Q5a → iteration 1, Q5b → iteration 2
+
+  Classification:
+    anchorType: "entity"
+    shouldPartition: true  (single-select categories, mutually exclusive)
+    strategy: "alias_column"
+    aliasName: ".hawktab_category"
+    sourcesByIteration: { "1": "Q5a", "2": "Q5b" }
+    confidence: 0.95
+    evidence: ["Deterministic resolver maps Q5a→iter1, Q5b→iter2",
+               "OR pattern across 2 variables matches 2 iterations",
+               "Single-select answer options (mutually exclusive)"]
+
+EXAMPLE 2: Respondent-anchored group (demographic segment)
+  Loop: 2 iterations
+  Banner group: "Gender" with cuts:
+    "Male"   = (Gender == 1)
+    "Female" = (Gender == 2)
+  Deterministic findings: (no mention of Gender)
+
+  Classification:
+    anchorType: "respondent"
+    shouldPartition: true  (mutually exclusive demographics)
+    strategy: "none"
+    aliasName: ""
+    sourcesByIteration: {}
+    confidence: 0.95
+    evidence: ["Gender is a single column with one value per respondent",
+               "Not referenced in deterministic findings",
+               "Demographic variable — same value across all loop iterations"]
+
+EXAMPLE 3: Respondent-anchored group (multi-select behavior)
+  Loop: 3 iterations
+  Banner group: "Channel Used" with cuts:
+    "Online"   = (ChR1 == 1)
+    "In-Store" = (ChR2 == 1)
+    "Mobile"   = (ChR3 == 1)
+  Deterministic findings: (no mention of ChR*)
+
+  Classification:
+    anchorType: "respondent"
+    shouldPartition: false  (multi-select, respondent can use multiple channels)
+    strategy: "none"
+    aliasName: ""
+    sourcesByIteration: {}
+    confidence: 0.90
+    evidence: ["ChR1/ChR2/ChR3 are binary flags for different channels, not iterations",
+               "3 variables but they represent 3 channels, not 3 loop iterations",
+               "Not referenced in deterministic findings"]
+
+  WHY THIS IS NOT ENTITY-ANCHORED: There are 3 variables and 3 iterations, which
+  might look like a match. But the variables represent DIFFERENT CONCEPTS (channels),
+  not the SAME concept for different iterations. The deterministic findings don't map
+  them to iterations, and their descriptions reference different channels, not different
+  loop entities.
+
+EXAMPLE 4: Entity-anchored group, 3 iterations, no deterministic evidence
+  Loop: 3 iterations (brand 1, brand 2, brand 3)
+  Banner group: "Brand Attitude" with cuts:
+    "Favorable"   = (BA1 == 1 | BA2 == 1 | BA3 == 1)
+    "Unfavorable"  = (BA1 == 2 | BA2 == 2 | BA3 == 2)
+  Deterministic findings: (empty)
+  Datamap: BA1 description = "Attitude toward brand evaluated first"
+           BA2 description = "Attitude toward brand evaluated second"
+           BA3 description = "Attitude toward brand evaluated third"
+
+  Classification:
+    anchorType: "entity"
+    shouldPartition: true
+    strategy: "alias_column"
+    aliasName: ".hawktab_brand_attitude"
+    sourcesByIteration: { "1": "BA1", "2": "BA2", "3": "BA3" }
+    confidence: 0.85  (lower because no deterministic evidence, relying on descriptions)
+    evidence: ["OR pattern across 3 variables matches 3 iterations",
+               "Descriptions reference 'first', 'second', 'third' — ordinal iteration language",
+               "No deterministic evidence but structural + description evidence is strong"]
+</few_shot_examples>
 ```
 
 ### 1.5 R Script Generator Changes
@@ -774,36 +882,13 @@ Compare stacked A2 table bases with known values:
 
 ---
 
-## Edge Cases and Cautions
+## Edge Cases
 
-### 1. Surveys with 3+ loop iterations
-The schema and resolver support arbitrary iteration counts. The alias `case_when` generates one branch per iteration. Example with 3:
-```r
-.hawktab_needs_state = case_when(
-  .loop_iter == 1 ~ S10a,
-  .loop_iter == 2 ~ S11a,
-  .loop_iter == 3 ~ S12a,
-  TRUE ~ NA_real_
-)
-```
+### Multiple loop groups
+A dataset could have two independent loops (e.g., "occasions" and "brands"). Each loop group gets its own stacked frame. The policy agent classifies banner groups per stacked frame. Alias columns are frame-specific. The schema and pipeline already support multiple `LoopGroupMapping` entries — this edge case is about making sure the policy agent receives and classifies banner groups in the context of the correct stacked frame.
 
-### 2. No iteration-linked variables found
-If the deterministic resolver returns empty AND the LLM classifies all groups as respondent-anchored, no alias columns are created and no cuts are transformed. The pipeline output is identical to current behavior. This is the safe default.
-
-### 3. Multiple loop groups
-A dataset could have two independent loops (e.g., "occasions" and "brands"). Each loop group gets its own stacked frame. The policy agent classifies banner groups per stacked frame. Alias columns are frame-specific.
-
-### 4. Alias column naming collisions
-Use `.hawktab_` prefix (with leading dot) to avoid collision with any survey variable. R allows dots in column names. The dot also signals "system-generated."
-
-### 5. Banner cuts with mixed variable types
-A cut like `S10a == 1 & S6 == 1` (entity-anchored AND respondent-level) transforms correctly: `.hawktab_needs_state == 1 & S6 == 1`. The alias replacement only touches the iteration-linked variables; respondent-level variables pass through unchanged.
-
-### 6. Entity-anchored groups that DON'T partition
-A banner group could be entity-anchored (uses iteration-linked variables) but not partition (multi-select per iteration). Example: if each occasion can have multiple "mood" tags. The alias column is still needed for correct iteration gating, but `shouldPartition` is false and within-group stat testing is not expected to work.
-
-### 7. What if the LLM gets it wrong?
-The R-side validation (Phase 2) catches this. If the LLM says "partition" but the data shows overlap, stat testing is suppressed and a warning surfaces. The policy artifact is human-readable for review. The `humanReviewRequired` flag fires when the agent's confidence is low.
+### Entity-anchored groups that DON'T partition
+A banner group could be entity-anchored (uses iteration-linked variables) but not partition (multi-select per iteration). The alias column is still needed for correct iteration gating, but `shouldPartition` should be false. The Phase 2 validation and stat testing guard handle this correctly — no within-group stat letters are expected for non-partition groups.
 
 ---
 
