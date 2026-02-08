@@ -4,7 +4,10 @@
  * Converts survey DOCX documents to markdown for agent consumption.
  * Uses LibreOffice for DOCX → HTML conversion, then turndown for HTML → Markdown.
  *
- * Part of VerificationAgent pipeline - provides survey context for table enhancement.
+ * Preserves critical formatting like strikethrough (converted to ~~text~~) which is
+ * essential for skip logic extraction (struck-through values indicate excluded conditions).
+ *
+ * Part of VerificationAgent and SkipLogicAgent pipelines - provides survey context.
  */
 
 import { exec } from 'child_process';
@@ -112,6 +115,22 @@ export async function processSurvey(
       replacement: function (content, _node) {
         // Keep tables as-is in a simple format
         return '\n\n' + content + '\n\n';
+      },
+    });
+
+    // Preserve strikethrough formatting (critical for skip logic extraction)
+    // LibreOffice converts DOCX strikethrough to <del>, <s>, or <strike> tags
+    turndown.addRule('strikethrough', {
+      filter: function (node) {
+        return (
+          node.nodeName === 'DEL' ||
+          node.nodeName === 'S' ||
+          node.nodeName === 'STRIKE'
+        );
+      },
+      replacement: function (content) {
+        // Convert to Markdown strikethrough syntax (~~text~~)
+        return '~~' + content + '~~';
       },
     });
 

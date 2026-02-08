@@ -402,8 +402,9 @@ export async function verifyAllTables(
     }
   }
 
-  // Collect scratchpad entries
-  const scratchpadEntries = getAndClearScratchpadEntries();
+  // Collect scratchpad entries (agent-specific to avoid contamination)
+  // Note: In parallel mode, this will be empty since context-isolated scratchpads are used
+  const scratchpadEntries = getAndClearScratchpadEntries('VerificationAgent');
   logEntry(`[VerificationAgent] Collected ${scratchpadEntries.length} scratchpad entries`);
 
   // Combine all verified tables, attaching questionId from the tracked array

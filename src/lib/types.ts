@@ -23,6 +23,7 @@ export interface AgentReasoningConfig {
   verificationReasoningEffort: ReasoningEffort;
   skipLogicReasoningEffort: ReasoningEffort;
   filterTranslatorReasoningEffort: ReasoningEffort;
+  loopSemanticsReasoningEffort: ReasoningEffort;
 }
 
 export interface ProcessingLimits {
@@ -37,6 +38,7 @@ export interface ProcessingLimits {
   verificationModelTokens: number;
   skipLogicModelTokens: number;
   filterTranslatorModelTokens: number;
+  loopSemanticsModelTokens: number;
 }
 
 export interface PromptVersions {
@@ -45,6 +47,7 @@ export interface PromptVersions {
   verificationPromptVersion: string;
   skipLogicPromptVersion: string;
   filterTranslatorPromptVersion: string;
+  loopSemanticsPromptVersion: string;
 }
 
 export interface EnvironmentConfig {
@@ -63,6 +66,7 @@ export interface EnvironmentConfig {
   verificationModel: string; // e.g., 'gpt-5-mini' - used by VerificationAgent (survey enhancement)
   skipLogicModel: string;    // e.g., 'gpt-5-mini' - used by SkipLogicAgent (survey rule extraction)
   filterTranslatorModel: string; // e.g., 'o4-mini' - used by FilterTranslatorAgent (R expression translation)
+  loopSemanticsModel: string;    // e.g., 'gpt-5-mini' - used by LoopSemanticsPolicyAgent (loop classification)
 
   // Deprecated (optional, for rollback purposes)
   openaiApiKey?: string;

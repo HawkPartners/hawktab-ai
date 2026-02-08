@@ -1,0 +1,274 @@
+{
+  "bannerCuts": [
+    {
+      "groupName": "HCP Specialty",
+      "columns": [
+        {
+          "name": "Cards",
+          "adjusted": "(S2 == 1 | S2a == 1)",
+          "confidence": 0.98,
+          "reason": "Found S2 (primary specialty) with 1 = Cardiologist and S2a (type of doctor's office) with 1 = Cardiologist → original expression uses either condition, so include both with OR.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "PCPs",
+          "adjusted": "S2 == 2",
+          "confidence": 0.98,
+          "reason": "Found S2 (primary specialty) where 2 = Internal Medicine / General Practitioner / Primary Care / Family Practice → direct equality mapping to S2 == 2.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Other",
+          "adjusted": "S2 %in% c(3,4,5)",
+          "confidence": 0.97,
+          "reason": "Found S2 (primary specialty) with 3=Nephrologist, 4=Endocrinologist, 5=Lipidologist → original OR list maps to S2 %in% c(3,4,5).",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        }
+      ]
+    },
+    {
+      "groupName": "HCP Role",
+      "columns": [
+        {
+          "name": "Physician",
+          "adjusted": "S2 %in% c(1,2,3,4,5)",
+          "confidence": 0.97,
+          "reason": "Found S2 with specialty codes 1=Cardiologist, 2=Internal Medicine/GP/PCP, 3=Nephrologist, 4=Endocrinologist, 5=Lipidologist → selected S2 %in% c(1,2,3,4,5) to capture physician specialties.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "APP",
+          "adjusted": "S2b %in% c(2,3)",
+          "confidence": 0.75,
+          "reason": "Found S2b with role codes 2=Knight Nurse Practitioner and 3=Physician’s Assistant → selected S2b %in% c(2,3) because 'APP' (advanced practice providers) aligns with NP/PA; the banner's original S2a=1 refers to office type (Cardiologist) and appears mismatched.",
+          "alternatives": [
+            {
+              "expression": "S2a == 1",
+              "confidence": 0.65,
+              "reason": "This follows the banner original literally (S2a=1 exists) but S2a's value 1 = 'Cardiologist' (office type), which does not align with the intended 'APP' (NP/PA) concept."
+            }
+          ],
+          "uncertainties": [
+            "Banner original uses S2a=1 which maps to office type 'Cardiologist' — confirm whether banner intended office type or role.",
+            "Recommend confirming that 'APP' should include both Nurse Practitioners (S2b=2) and Physician’s Assistants (S2b=3)."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "conceptual_filter"
+        }
+      ]
+    },
+    {
+      "groupName": "Volume of ASCVD Patients",
+      "columns": [
+        {
+          "name": "150+ (Higher)",
+          "adjusted": "S11 >= 150",
+          "confidence": 0.98,
+          "reason": "Found S11 (number of adult patients with confirmed hypercholesterolemia and established CVD) → '150+' mapped to S11 >= 150 as an inclusive cutoff.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "20-149 (Lower)",
+          "adjusted": "(S11 >= 20 & S11 <= 149)",
+          "confidence": 0.98,
+          "reason": "Found S11 (number of adult patients with confirmed hypercholesterolemia and established CVD) → '20 - 149' mapped to an inclusive range S11 >= 20 & S11 <= 149.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        }
+      ]
+    },
+    {
+      "groupName": "Tiers",
+      "columns": [
+        {
+          "name": "Tier 1",
+          "adjusted": "qLIST_TIER == 1",
+          "confidence": 0.65,
+          "reason": "Found qLIST_TIER with value labels '1=TIER 1,2=TIER 2,3=TIER 3,4=TIER 4' → selected because it explicitly encodes the Tier 1–4 values; other 'tier' variables exist but lack matching labels.",
+          "alternatives": [
+            {
+              "expression": "FINAL_FACILITY_TIER == 1",
+              "confidence": 0.55,
+              "reason": "FINAL_FACILITY_TIER exists in the data map but has no documented value labels; could encode tiering in a different source."
+            },
+            {
+              "expression": "LEQ_TIER == 1",
+              "confidence": 0.55,
+              "reason": "LEQ_TIER exists as a captured variable without labels; may represent an alternative tier field."
+            }
+          ],
+          "uncertainties": [
+            "Multiple variables referencing 'tier' were found: qLIST_TIER (labeled), FINAL_FACILITY_TIER (no labels), LEQ_TIER (no labels) — confirm qLIST_TIER is the intended source.",
+            "FINAL_FACILITY_TIER and LEQ_TIER lack documented value labels in the data map; if these are authoritative, codes should be confirmed."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "from_list"
+        },
+        {
+          "name": "Tier 2",
+          "adjusted": "qLIST_TIER == 2",
+          "confidence": 0.65,
+          "reason": "Found qLIST_TIER with value labels '1=TIER 1,2=TIER 2,3=TIER 3,4=TIER 4' → selected because it explicitly encodes the Tier 1–4 values; alternatives exist but lack labels.",
+          "alternatives": [
+            {
+              "expression": "FINAL_FACILITY_TIER == 2",
+              "confidence": 0.55,
+              "reason": "FINAL_FACILITY_TIER exists but has no documented value labels; could be an alternate tier variable."
+            },
+            {
+              "expression": "LEQ_TIER == 2",
+              "confidence": 0.55,
+              "reason": "LEQ_TIER exists as a captured variable without labels; may represent tier information."
+            }
+          ],
+          "uncertainties": [
+            "Multiple variables referencing 'tier' were found: qLIST_TIER (labeled), FINAL_FACILITY_TIER (no labels), LEQ_TIER (no labels) — confirm qLIST_TIER is the intended source.",
+            "FINAL_FACILITY_TIER and LEQ_TIER lack documented value labels in the data map; if these are authoritative, codes should be confirmed."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "from_list"
+        },
+        {
+          "name": "Tier 3",
+          "adjusted": "qLIST_TIER == 3",
+          "confidence": 0.65,
+          "reason": "Found qLIST_TIER with value labels '1=TIER 1,2=TIER 2,3=TIER 3,4=TIER 4' → selected because it explicitly encodes the Tier 1–4 values; other tier-like variables were considered.",
+          "alternatives": [
+            {
+              "expression": "FINAL_FACILITY_TIER == 3",
+              "confidence": 0.55,
+              "reason": "FINAL_FACILITY_TIER is present but lacks documented labels; could map to tier codes in another source."
+            },
+            {
+              "expression": "LEQ_TIER == 3",
+              "confidence": 0.55,
+              "reason": "LEQ_TIER exists as a captured variable without labels; may represent tiering."
+            }
+          ],
+          "uncertainties": [
+            "Multiple variables referencing 'tier' were found: qLIST_TIER (labeled), FINAL_FACILITY_TIER (no labels), LEQ_TIER (no labels) — confirm qLIST_TIER is the intended source.",
+            "FINAL_FACILITY_TIER and LEQ_TIER lack documented value labels in the data map; if these are authoritative, codes should be confirmed."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "from_list"
+        },
+        {
+          "name": "Tier 4",
+          "adjusted": "qLIST_TIER == 4",
+          "confidence": 0.65,
+          "reason": "Found qLIST_TIER with value labels '1=TIER 1,2=TIER 2,3=TIER 3,4=TIER 4' → selected because it explicitly encodes the Tier 1–4 values; alternatives without labels were noted.",
+          "alternatives": [
+            {
+              "expression": "FINAL_FACILITY_TIER == 4",
+              "confidence": 0.55,
+              "reason": "FINAL_FACILITY_TIER exists but has no documented value labels; could be an alternate tier field."
+            },
+            {
+              "expression": "LEQ_TIER == 4",
+              "confidence": 0.55,
+              "reason": "LEQ_TIER exists as a captured variable without labels; may represent tier information."
+            }
+          ],
+          "uncertainties": [
+            "Multiple variables referencing 'tier' were found: qLIST_TIER (labeled), FINAL_FACILITY_TIER (no labels), LEQ_TIER (no labels) — confirm qLIST_TIER is the intended source.",
+            "FINAL_FACILITY_TIER and LEQ_TIER lack documented value labels in the data map; if these are authoritative, codes should be confirmed."
+          ],
+          "humanReviewRequired": true,
+          "expressionType": "from_list"
+        }
+      ]
+    },
+    {
+      "groupName": "Currently Prescribe Leqvio without a Statin and Before Other Therapies",
+      "columns": [
+        {
+          "name": "Yes",
+          "adjusted": "(A3ar1c2 > 0 & A3br1c1 > 0)",
+          "confidence": 0.95,
+          "reason": "Found A3ar1c2 and A3br1c1 as exact matches in the data map → both variables reference Leqvio (inclisiran) percent/count fields, so '>0' is interpreted as any positive value; translated to a variable-vs-variable comparison in R.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "comparison"
+        },
+        {
+          "name": "No",
+          "adjusted": "!(A3ar1c2 > 0 & A3br1c1 > 0)",
+          "confidence": 0.95,
+          "reason": "Found A3ar1c2 and A3br1c1 as exact matches in the data map → logical negation of the positive-count condition; translated to R as the negation of the comparison expression.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "comparison"
+        }
+      ]
+    },
+    {
+      "groupName": "Leqvio Rx'ing Would Increase with New PCSK9s Indication",
+      "columns": [
+        {
+          "name": "All Leqvio Prescribing",
+          "adjusted": "A4r2c2 > A4r2c1",
+          "confidence": 0.92,
+          "reason": "Found A4r2c2 and A4r2c1 in the data map → both are Leqvio prescribing variables (NEXT 100 vs LAST 100), so a direct variable comparison is appropriate.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "comparison"
+        },
+        {
+          "name": "Leqvio Rx'ing without a Statin & Before Other Therapies",
+          "adjusted": "(A3ar1c2 > 0 & A4ar1c2 > 0 & A4br1c1 > A3br1c1)",
+          "confidence": 0.92,
+          "reason": "Found A3ar1c2, A4ar1c2, A4br1c1, and A3br1c1 in the data map → all represent numeric prescribing/allocation measures, so combined numeric comparisons (> 0 and >) map directly to R comparisons.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "comparison"
+        }
+      ]
+    },
+    {
+      "groupName": "Primary Practice Setting",
+      "columns": [
+        {
+          "name": "Academic / Univ. Hospital",
+          "adjusted": "S9 == 6",
+          "confidence": 0.98,
+          "reason": "Found S9 with value 6 labeled 'Academic/University Hospital' → direct mapping to S9 == 6.",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        },
+        {
+          "name": "Total Community",
+          "adjusted": "S9 %in% c(1,2,3,4,5)",
+          "confidence": 0.9,
+          "reason": "Found S9 with values 1-5 corresponding to Private Solo Practice, Private Group Practice, Multi-specialty Practice / Comprehensive Care, Staff HMO, and Community Hospital → grouped as 'Total Community' and mapped to S9 %in% c(1,2,3,4,5).",
+          "alternatives": [],
+          "uncertainties": [],
+          "humanReviewRequired": false,
+          "expressionType": "direct_variable"
+        }
+      ]
+    }
+  ]
+}

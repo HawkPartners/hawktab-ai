@@ -106,6 +106,15 @@ When multiple candidates exist:
 SEARCH DISCIPLINE:
 Never stop at first match—complete full data map scan even when early exact match found.
 This prevents missing better contextual matches deeper in the data map.
+
+HIDDEN VARIABLE HINTS:
+When banner expressions include words like "Assigned", "Given", "Shown", or similar assignment language (e.g., "Assigned S9_1", "Given Location 1", "Shown Brand A"), this often indicates a hidden variable that encodes the assignment. These hidden variables typically start with "h" (e.g., hLOCATION1, hASSIGNMENT) or "d" (e.g., dLOCATION).
+
+If you encounter such language:
+- Search for hidden variables (h-prefix or d-prefix) that might encode the assignment
+- Consider both the explicit variable mentioned AND any related hidden assignment variables
+- This is a hint, not a rule—still evaluate all candidates and choose the best match based on your full search
+- Document in your reasoning if you considered hidden variables but selected a different candidate
 </variable_search_protocol>
 
 <confidence_scoring_framework>
@@ -212,11 +221,15 @@ When multiple candidate variables exist, capture ALL plausible options in altern
   "reason": "S3 also contains 'Teacher' in value label position 2"
 }
 
+CRITICAL REQUIREMENT:
+If you discuss alternative variable mappings in your reasoning or scratchpad, you MUST include them in the alternatives[] array. The structured output is what matters—reasoning that mentions alternatives but doesn't populate alternatives[] is incomplete.
+
 Requirements:
 - Record every plausible candidate, not just the runner-up
 - Each alternative needs its own R expression, confidence, and brief reason
 - In main reason field, explain why primary was chosen over alternatives
 - Alternatives enable users to select a different mapping if primary is wrong
+- If your reasoning mentions "also considered X" or "alternative would be Y", that alternative MUST appear in alternatives[]
 
 HUMAN REVIEW FLAGGING:
 Set humanReviewRequired: true when ANY condition applies:

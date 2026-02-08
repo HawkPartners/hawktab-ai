@@ -74,18 +74,29 @@ export const filterTranslatorScratchpadTool = createScratchpadTool('FilterTransl
 export const scratchpadTool = crosstabScratchpadTool;
 
 /**
- * Get all accumulated scratchpad entries and clear the buffer
+ * Get accumulated scratchpad entries and clear them
  * Call this after processing to include in output logs
+ * 
+ * @param agentName - Optional agent name filter. If provided, only returns and clears entries for that agent.
+ *                    If not provided, returns and clears all entries (backward compatibility).
  */
-export function getAndClearScratchpadEntries(): Array<{
+export function getAndClearScratchpadEntries(agentName?: string): Array<{
   timestamp: string;
   agentName: string;
   action: string;
   content: string;
 }> {
-  const entries = [...scratchpadEntries];
-  scratchpadEntries = [];
-  return entries;
+  if (agentName) {
+    // Agent-specific: return and clear only entries for this agent
+    const entries = scratchpadEntries.filter(e => e.agentName === agentName);
+    scratchpadEntries = scratchpadEntries.filter(e => e.agentName !== agentName);
+    return entries;
+  } else {
+    // Backward compatibility: return and clear all entries
+    const entries = [...scratchpadEntries];
+    scratchpadEntries = [];
+    return entries;
+  }
 }
 
 /**

@@ -219,10 +219,11 @@ export function generateSingleTableValidationScript(
 function generateTableValidation(lines: string[], table: TableWithLoopFrame): void {
   const tableId = escapeRString(table.tableId);
   const varName = sanitizeVarName(table.tableId);
-  const frameName = table.loopDataFrame || 'data';
+  const sanitizedFrame = table.loopDataFrame ? sanitizeVarName(table.loopDataFrame) : '';
+  const frameName = sanitizedFrame || 'data';
 
   lines.push(`# -----------------------------------------------------------------------------`);
-  lines.push(`# Table: ${table.tableId} (${table.tableType})${table.loopDataFrame ? ` [loop: ${table.loopDataFrame}]` : ''}`);
+  lines.push(`# Table: ${table.tableId} (${table.tableType})${sanitizedFrame ? ` [loop: ${sanitizedFrame}]` : ''}`);
   lines.push(`# -----------------------------------------------------------------------------`);
   lines.push('');
 

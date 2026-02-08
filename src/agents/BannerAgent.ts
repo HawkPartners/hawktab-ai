@@ -167,8 +167,8 @@ export class BannerAgent {
       const extractionResult = await this.extractBannerStructureWithAgent(images, abortSignal);
       console.log(`[BannerAgent] Agent extraction completed - Success: ${extractionResult.success}`);
 
-      // Step 4: Collect scratchpad entries for debugging
-      const scratchpadEntries = getAndClearScratchpadEntries();
+      // Step 4: Collect scratchpad entries for debugging (agent-specific to avoid contamination)
+      const scratchpadEntries = getAndClearScratchpadEntries('BannerAgent');
       console.log(`[BannerAgent] Collected ${scratchpadEntries.length} scratchpad entries`);
 
       // Step 5: Generate dual outputs

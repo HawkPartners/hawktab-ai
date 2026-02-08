@@ -38,6 +38,10 @@ import type { ExtendedTableDefinition, TableWithLoopFrame } from '../../schemas/
 import { validate as runValidation } from '../validation/ValidationRunner';
 import { collapseLoopVariables } from '../validation/LoopCollapser';
 import type { LoopGroupMapping } from '../validation/LoopCollapser';
+import { resolveIterationLinkedVariables } from '../validation/LoopContextResolver';
+import type { DeterministicResolverResult } from '../validation/LoopContextResolver';
+import { runLoopSemanticsPolicyAgent, buildDatamapExcerpt } from '../../agents/LoopSemanticsPolicyAgent';
+import type { LoopSemanticsPolicy } from '../../schemas/loopSemanticsPolicySchema';
 
 const execAsync = promisify(exec);
 
@@ -147,9 +151,12 @@ export async function runPipeline(
   // Get prompt versions for logging
   const promptVersions = getPromptVersions();
   log('Prompt Versions:', 'blue');
-  log(`  Banner:        ${promptVersions.bannerPromptVersion}`, 'dim');
-  log(`  Crosstab:      ${promptVersions.crosstabPromptVersion}`, 'dim');
-  log(`  Verification:  ${promptVersions.verificationPromptVersion}`, 'dim');
+  log(`  Banner:          ${promptVersions.bannerPromptVersion}`, 'dim');
+  log(`  Crosstab:        ${promptVersions.crosstabPromptVersion}`, 'dim');
+  log(`  Verification:    ${promptVersions.verificationPromptVersion}`, 'dim');
+  log(`  SkipLogic:       ${promptVersions.skipLogicPromptVersion}`, 'dim');
+  log(`  FilterTranslator: ${promptVersions.filterTranslatorPromptVersion}`, 'dim');
+  log(`  LoopSemantics:   ${promptVersions.loopSemanticsPromptVersion}`, 'dim');
   log('', 'reset');
 
   // Log stat testing configuration
@@ -231,6 +238,8 @@ export async function runPipeline(
     // Collapse loop variables if loops detected
     let loopMappings: LoopGroupMapping[] = [];
     let baseNameToLoopIndex: Map<string, number> = new Map();
+    let collapsedVariableNames: Set<string> = new Set();
+    let deterministicFindings: DeterministicResolverResult | undefined;
     if (validationResult.loopDetection?.hasLoops) {
       // Block if data appears already stacked
       const hasStackedPattern = validationResult.fillRateResults.some(
@@ -258,6 +267,7 @@ export async function runPipeline(
       verboseDataMap = collapseResult.collapsedDataMap as VerboseDataMapType[];
       loopMappings = collapseResult.loopMappings;
       baseNameToLoopIndex = collapseResult.baseNameToLoopIndex;
+      collapsedVariableNames = collapseResult.collapsedVariableNames;
 
       log(`  Loops detected: ${loopMappings.length} groups, ${collapseResult.collapsedVariableNames.size} iteration vars collapsed → ${loopMappings.reduce((s, m) => s + m.variables.length, 0)} base vars`, 'green');
       for (const m of loopMappings) {
@@ -293,6 +303,23 @@ export async function runPipeline(
         'utf-8'
       );
       log(`  Loop summary saved to loop-summary.json`, 'dim');
+
+      // Run deterministic resolver for iteration-linked variables
+      deterministicFindings = resolveIterationLinkedVariables(
+        verboseDataMap,
+        loopMappings,
+        collapsedVariableNames,
+      );
+      log(`  Deterministic resolver: found ${deterministicFindings.iterationLinkedVariables.length} iteration-linked variables`, 'cyan');
+
+      // Save deterministic findings
+      const loopPolicyDir = path.join(outputDir, 'loop-policy');
+      await fs.mkdir(loopPolicyDir, { recursive: true });
+      await fs.writeFile(
+        path.join(loopPolicyDir, 'deterministic-resolver.json'),
+        JSON.stringify(deterministicFindings, null, 2),
+        'utf-8',
+      );
     }
 
     log(`  Effective datamap: ${verboseDataMap.length} variables`, 'green');
@@ -682,6 +709,61 @@ export async function runPipeline(
     log(`  Tables for R script: ${validTables.length} valid + ${newlyExcluded.length} excluded = ${allTablesForR.length} total`, 'dim');
 
     // -------------------------------------------------------------------------
+    // Step 8.5: Loop Semantics Policy (if loops detected)
+    // -------------------------------------------------------------------------
+    let loopSemanticsPolicy: LoopSemanticsPolicy | undefined;
+
+    if (loopMappings.length > 0) {
+      log('Running LoopSemanticsPolicyAgent...', 'cyan');
+      const stepStartLSP = Date.now();
+
+      try {
+        loopSemanticsPolicy = await runLoopSemanticsPolicyAgent({
+          loopSummary: loopMappings.map(m => ({
+            stackedFrameName: m.stackedFrameName,
+            iterations: m.iterations,
+            variableCount: m.variables.length,
+            skeleton: m.skeleton,
+          })),
+          bannerGroups: cutsSpec.groups.map(g => ({
+            groupName: g.groupName,
+            columns: g.cuts.map(c => ({ name: c.name, original: c.name })),
+          })),
+          cuts: cutsSpec.cuts.map(c => ({
+            name: c.name,
+            groupName: c.groupName,
+            rExpression: c.rExpression,
+          })),
+          deterministicFindings: deterministicFindings || { iterationLinkedVariables: [], evidenceSummary: '' },
+          datamapExcerpt: buildDatamapExcerpt(verboseDataMap, cutsSpec.cuts, deterministicFindings),
+          outputDir,
+        });
+
+        // Save policy artifact
+        const loopPolicyDir = path.join(outputDir, 'loop-policy');
+        await fs.mkdir(loopPolicyDir, { recursive: true });
+        await fs.writeFile(
+          path.join(loopPolicyDir, 'loop-semantics-policy.json'),
+          JSON.stringify(loopSemanticsPolicy, null, 2),
+          'utf-8',
+        );
+
+        const entityGroups = loopSemanticsPolicy.bannerGroups.filter(g => g.anchorType === 'entity');
+        log(`  LoopSemanticsPolicyAgent: ${entityGroups.length} entity-anchored, ${loopSemanticsPolicy.bannerGroups.length - entityGroups.length} respondent-anchored`, 'green');
+        if (loopSemanticsPolicy.humanReviewRequired) {
+          log(`  WARNING: Human review required — see loop-policy/loop-semantics-policy.json`, 'yellow');
+        }
+      } catch (error) {
+        const errMsg = error instanceof Error ? error.message : String(error);
+        log(`  LoopSemanticsPolicyAgent failed: ${errMsg}`, 'yellow');
+        log(`  Proceeding without loop semantics policy (stacked cuts will use original expressions)`, 'yellow');
+      }
+
+      log(`  Duration: ${Date.now() - stepStartLSP}ms`, 'dim');
+      log('', 'reset');
+    }
+
+    // -------------------------------------------------------------------------
     // Step 9: RScriptGeneratorV2
     // -------------------------------------------------------------------------
     logStep(9, totalSteps, 'Generating R script...');
@@ -697,6 +779,7 @@ export async function runPipeline(
         statTestingConfig: effectiveStatConfig,
         significanceThresholds: effectiveStatConfig.thresholds,
         loopMappings: loopMappings.length > 0 ? loopMappings : undefined,
+        loopSemanticsPolicy,
       },
       { sessionId: outputFolder, outputDir: 'results' }
     );

@@ -1,0 +1,917 @@
+{
+  "dataset": "leqvio-monotherapy-demand-NOV217",
+  "timestamp": "2026-02-08T06:42:25.220Z",
+  "duration": {
+    "ms": 1252618,
+    "formatted": "1252.6s"
+  },
+  "promptVersions": {
+    "banner": "alternative",
+    "crosstab": "production",
+    "verification": "alternative"
+  },
+  "statTesting": {
+    "thresholds": [
+      0.1
+    ],
+    "confidenceLevels": [
+      90
+    ],
+    "proportionTest": "unpooled_z",
+    "meanTest": "welch_t",
+    "minBase": 0,
+    "dualThresholdMode": false
+  },
+  "inputs": {
+    "datamap": "leqvio-monotherapy-demand-datamap.csv",
+    "banner": "leqvio-monotherapy-demand-bannerplan-adjusted.docx",
+    "spss": "leqvio-monotherapy-demand-data.sav",
+    "survey": "leqvio-monotherapy-demand-survey.docx"
+  },
+  "outputs": {
+    "variables": 192,
+    "tableGeneratorTables": 42,
+    "verifiedTables": 88,
+    "validatedTables": 79,
+    "excludedTables": 9,
+    "totalTablesInR": 88,
+    "cuts": 19,
+    "bannerGroups": 7,
+    "sorting": {
+      "screenerCount": 18,
+      "mainCount": 61,
+      "otherCount": 9,
+      "order": [
+        {
+          "questionId": "S1",
+          "tableId": "s1"
+        },
+        {
+          "questionId": "S2",
+          "tableId": "s2"
+        },
+        {
+          "questionId": "S2a",
+          "tableId": "s2a"
+        },
+        {
+          "questionId": "S2b",
+          "tableId": "s2b"
+        },
+        {
+          "questionId": "S3a",
+          "tableId": "s3a"
+        },
+        {
+          "questionId": "S4",
+          "tableId": "s4"
+        },
+        {
+          "questionId": "S5",
+          "tableId": "s5"
+        },
+        {
+          "questionId": "S6",
+          "tableId": "s6"
+        },
+        {
+          "questionId": "S6",
+          "tableId": "s6_binned"
+        },
+        {
+          "questionId": "S7",
+          "tableId": "s7"
+        },
+        {
+          "questionId": "S8",
+          "tableId": "s8"
+        },
+        {
+          "questionId": "S8",
+          "tableId": "s8_binned"
+        },
+        {
+          "questionId": "S9",
+          "tableId": "s9"
+        },
+        {
+          "questionId": "S10",
+          "tableId": "s10"
+        },
+        {
+          "questionId": "S10",
+          "tableId": "s10_distribution"
+        },
+        {
+          "questionId": "S11",
+          "tableId": "s11"
+        },
+        {
+          "questionId": "S11",
+          "tableId": "s11_dist"
+        },
+        {
+          "questionId": "S12",
+          "tableId": "s12"
+        },
+        {
+          "questionId": "A1",
+          "tableId": "a1"
+        },
+        {
+          "questionId": "A2a",
+          "tableId": "a2a"
+        },
+        {
+          "questionId": "A2b",
+          "tableId": "a2b"
+        },
+        {
+          "questionId": "A3",
+          "tableId": "a3"
+        },
+        {
+          "questionId": "A3",
+          "tableId": "a3_dist_leqvio"
+        },
+        {
+          "questionId": "A3",
+          "tableId": "a3_dist_nexletol"
+        },
+        {
+          "questionId": "A3",
+          "tableId": "a3_dist_other"
+        },
+        {
+          "questionId": "A3",
+          "tableId": "a3_dist_praluent"
+        },
+        {
+          "questionId": "A3",
+          "tableId": "a3_dist_repatha"
+        },
+        {
+          "questionId": "A3",
+          "tableId": "a3_dist_statins"
+        },
+        {
+          "questionId": "A3",
+          "tableId": "a3_dist_zetia"
+        },
+        {
+          "questionId": "A3a",
+          "tableId": "a3a_leqvio_inclisiran_"
+        },
+        {
+          "questionId": "A3a",
+          "tableId": "a3a_nexletol_nexlizet"
+        },
+        {
+          "questionId": "A3a",
+          "tableId": "a3a_praluent_alirocumab_"
+        },
+        {
+          "questionId": "A3a",
+          "tableId": "a3a_repatha_evolocumab_"
+        },
+        {
+          "questionId": "A3a",
+          "tableId": "a3a_zetia_ezetimibe_"
+        },
+        {
+          "questionId": "A3a",
+          "tableId": "a3ar5c1_distribution"
+        },
+        {
+          "questionId": "A3a",
+          "tableId": "a3ar5c2_distribution"
+        },
+        {
+          "questionId": "A3b",
+          "tableId": "a3b_leqvio_inclisiran_"
+        },
+        {
+          "questionId": "A3b",
+          "tableId": "a3b_nexletol_bempedoic_acid_"
+        },
+        {
+          "questionId": "A3b",
+          "tableId": "a3b_praluent_alirocumab_"
+        },
+        {
+          "questionId": "A3b",
+          "tableId": "a3b_repatha_evolocumab_"
+        },
+        {
+          "questionId": "A3b",
+          "tableId": "a3b_zetia_ezetimibe_"
+        },
+        {
+          "questionId": "A4",
+          "tableId": "a4"
+        },
+        {
+          "questionId": "A4",
+          "tableId": "a4_last100"
+        },
+        {
+          "questionId": "A4",
+          "tableId": "a4_next100"
+        },
+        {
+          "questionId": "A4a",
+          "tableId": "a4a"
+        },
+        {
+          "questionId": "A4a",
+          "tableId": "a4a_in_addition_comparison"
+        },
+        {
+          "questionId": "A4a",
+          "tableId": "a4a_without_statins_comparison"
+        },
+        {
+          "questionId": "A4b",
+          "tableId": "a4b_leqvio_inclisiran_"
+        },
+        {
+          "questionId": "A4b",
+          "tableId": "a4b_nexletol_bempedoic_acid_"
+        },
+        {
+          "questionId": "A4b",
+          "tableId": "a4b_nexletol_bempedoic_acid_after"
+        },
+        {
+          "questionId": "A4b",
+          "tableId": "a4b_nexletol_bempedoic_acid_before"
+        },
+        {
+          "questionId": "A4b",
+          "tableId": "a4b_praluent_alirocumab_"
+        },
+        {
+          "questionId": "A4b",
+          "tableId": "a4b_repatha_evolocumab_"
+        },
+        {
+          "questionId": "A4b",
+          "tableId": "a4b_zetia_ezetimibe_"
+        },
+        {
+          "questionId": "A5",
+          "tableId": "a5"
+        },
+        {
+          "questionId": "A6",
+          "tableId": "a6"
+        },
+        {
+          "questionId": "A6",
+          "tableId": "a6_top1"
+        },
+        {
+          "questionId": "A6",
+          "tableId": "a6_top2"
+        },
+        {
+          "questionId": "A7",
+          "tableId": "a7"
+        },
+        {
+          "questionId": "A8",
+          "tableId": "a8"
+        },
+        {
+          "questionId": "A8",
+          "tableId": "a8_leqvio_detail"
+        },
+        {
+          "questionId": "A8",
+          "tableId": "a8_praluent_detail"
+        },
+        {
+          "questionId": "A8",
+          "tableId": "a8_r1_t2b"
+        },
+        {
+          "questionId": "A8",
+          "tableId": "a8_r2_t2b"
+        },
+        {
+          "questionId": "A8",
+          "tableId": "a8_r3_t2b"
+        },
+        {
+          "questionId": "A8",
+          "tableId": "a8_r4_t2b"
+        },
+        {
+          "questionId": "A8",
+          "tableId": "a8_r5_t2b"
+        },
+        {
+          "questionId": "A8",
+          "tableId": "a8_repatha_detail"
+        },
+        {
+          "questionId": "A9",
+          "tableId": "a9"
+        },
+        {
+          "questionId": "A9",
+          "tableId": "a9_any_issues_comparison"
+        },
+        {
+          "questionId": "A9",
+          "tableId": "a9_leqvio_detail"
+        },
+        {
+          "questionId": "A9",
+          "tableId": "a9_praluent_detail"
+        },
+        {
+          "questionId": "A9",
+          "tableId": "a9_repatha_detail"
+        },
+        {
+          "questionId": "A10",
+          "tableId": "a10"
+        },
+        {
+          "questionId": "B1",
+          "tableId": "b1"
+        },
+        {
+          "questionId": "B3",
+          "tableId": "b3"
+        },
+        {
+          "questionId": "B4",
+          "tableId": "b4"
+        },
+        {
+          "questionId": "B4",
+          "tableId": "b4_binned"
+        },
+        {
+          "questionId": "B5",
+          "tableId": "b5"
+        },
+        {
+          "questionId": "qCARD_SPECIALTY",
+          "tableId": "qcard_specialty"
+        },
+        {
+          "questionId": "QCONSENT",
+          "tableId": "qconsent"
+        },
+        {
+          "questionId": "qLIST_PRIORITY_ACCOUNT",
+          "tableId": "qlist_priority_account"
+        },
+        {
+          "questionId": "qLIST_TIER",
+          "tableId": "qlist_tier"
+        },
+        {
+          "questionId": "qON_LIST_OFF_LIST",
+          "tableId": "qon_list_off_list"
+        },
+        {
+          "questionId": "qSPECIALTY",
+          "tableId": "qspecialty"
+        },
+        {
+          "questionId": "qTYPE_OF_CARD",
+          "tableId": "qtype_of_card"
+        },
+        {
+          "questionId": "Region",
+          "tableId": "region"
+        },
+        {
+          "questionId": "US_State",
+          "tableId": "us_state"
+        }
+      ]
+    },
+    "rValidation": {
+      "totalTables": 88,
+      "passedFirstTime": 88,
+      "fixedAfterRetry": 0,
+      "excluded": 9,
+      "entries": [
+        {
+          "tableId": "s1",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s2",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s2a",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s2b",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s3a",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s4",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s5",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s6",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s6_binned",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s7",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s8",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s8_binned",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s9",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s10",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s10_distribution",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s11",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s11_dist",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "s12",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a1",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a2a",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a2b",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3_dist_leqvio",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3_dist_nexletol",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3_dist_other",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3_dist_praluent",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3_dist_repatha",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3_dist_statins",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3_dist_zetia",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3a_leqvio_inclisiran_",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3a_nexletol_nexlizet",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3a_praluent_alirocumab_",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3a_repatha_evolocumab_",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3a_zetia_ezetimibe_",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3ar5c1_distribution",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3ar5c2_distribution",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3b_leqvio_inclisiran_",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3b_nexletol_bempedoic_acid_",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3b_praluent_alirocumab_",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3b_repatha_evolocumab_",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a3b_zetia_ezetimibe_",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a4",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a4_last100",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a4_next100",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a4a",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a4a_in_addition_comparison",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a4a_without_statins_comparison",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a4b_leqvio_inclisiran_",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a4b_nexletol_bempedoic_acid_",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a4b_nexletol_bempedoic_acid_after",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a4b_nexletol_bempedoic_acid_before",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a4b_praluent_alirocumab_",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a4b_repatha_evolocumab_",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a4b_zetia_ezetimibe_",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a5",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a6",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a6_top1",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a6_top2",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a7",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a8",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a8_leqvio_detail",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a8_praluent_detail",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a8_r1_t2b",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a8_r2_t2b",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a8_r3_t2b",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a8_r4_t2b",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a8_r5_t2b",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a8_repatha_detail",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a9",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a9_any_issues_comparison",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a9_leqvio_detail",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a9_praluent_detail",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a9_repatha_detail",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "a10",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "b1",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "b3",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "b4",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "b4_binned",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "b5",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "qcard_specialty",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "qconsent",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "qlist_priority_account",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "qlist_tier",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "qon_list_off_list",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "qspecialty",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "qtype_of_card",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "region",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        },
+        {
+          "tableId": "us_state",
+          "retryAttempts": 0,
+          "finalStatus": "passed"
+        }
+      ],
+      "timestamp": "2026-02-08T06:42:08.960Z",
+      "durationMs": 657
+    }
+  },
+  "costs": {
+    "byAgent": [
+      {
+        "agentName": "BannerAgent",
+        "model": "azure/gpt-5-mini",
+        "calls": 1,
+        "totalInputTokens": 5372,
+        "totalOutputTokens": 3996,
+        "totalTokens": 9368,
+        "totalDurationMs": 54331,
+        "avgDurationMs": 54331,
+        "estimatedCostUsd": 0.009335
+      },
+      {
+        "agentName": "CrosstabAgent",
+        "model": "azure/gpt-5-mini",
+        "calls": 7,
+        "totalInputTokens": 154017,
+        "totalOutputTokens": 9064,
+        "totalTokens": 163081,
+        "totalDurationMs": 427827,
+        "avgDurationMs": 61118,
+        "estimatedCostUsd": 0.05663225000000001
+      },
+      {
+        "agentName": "FilterTranslatorAgent",
+        "model": "azure/gpt-5-mini",
+        "calls": 9,
+        "totalInputTokens": 207315,
+        "totalOutputTokens": 17369,
+        "totalTokens": 224684,
+        "totalDurationMs": 301742,
+        "avgDurationMs": 33527,
+        "estimatedCostUsd": 0.08656675
+      },
+      {
+        "agentName": "SkipLogicAgent",
+        "model": "azure/gpt-5-mini",
+        "calls": 1,
+        "totalInputTokens": 17643,
+        "totalOutputTokens": 3476,
+        "totalTokens": 21119,
+        "totalDurationMs": 114877,
+        "avgDurationMs": 114877,
+        "estimatedCostUsd": 0.01136275
+      },
+      {
+        "agentName": "VerificationAgent",
+        "model": "azure/gpt-5-mini",
+        "calls": 54,
+        "totalInputTokens": 753665,
+        "totalOutputTokens": 146597,
+        "totalTokens": 900262,
+        "totalDurationMs": 2188709,
+        "avgDurationMs": 40532,
+        "estimatedCostUsd": 0.48161025
+      }
+    ],
+    "totals": {
+      "calls": 72,
+      "inputTokens": 1138012,
+      "outputTokens": 180502,
+      "totalTokens": 1318514,
+      "durationMs": 3087486,
+      "estimatedCostUsd": 0.645507
+    }
+  }
+}

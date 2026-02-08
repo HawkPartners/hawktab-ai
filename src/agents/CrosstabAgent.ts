@@ -238,8 +238,8 @@ export async function processAllGroups(
 
   const combinedResult = combineValidationResults(results);
 
-  // Collect scratchpad entries for the processing log
-  const scratchpadEntries = getAndClearScratchpadEntries();
+  // Collect scratchpad entries for the processing log (agent-specific to avoid contamination)
+  const scratchpadEntries = getAndClearScratchpadEntries('CrosstabAgent');
   logEntry(`[CrosstabAgent] Collected ${scratchpadEntries.length} scratchpad entries`);
 
   // Save outputs with processing log and scratchpad

@@ -41,6 +41,11 @@ export const SkipRuleSchema = z.object({
 
   /** Other ruleIds this rule depends on (empty array if none) */
   dependsOn: z.array(z.string()),
+
+  /** Translation context: coding tables, hidden variable references, or survey-specific context
+   * that helps FilterTranslatorAgent resolve this rule to actual data variables.
+   * Must always be present (use empty string "" if no additional context needed). */
+  translationContext: z.string(),
 });
 
 export type SkipRule = z.infer<typeof SkipRuleSchema>;

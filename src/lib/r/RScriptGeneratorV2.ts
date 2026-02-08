@@ -19,6 +19,8 @@ import type { ExtendedTableDefinition, ExtendedTableRow, TableWithLoopFrame } fr
 import type { CutDefinition, CutGroup } from '../tables/CutsSpec';
 import type { StatTestingConfig } from '../env';
 import type { LoopGroupMapping } from '../validation/LoopCollapser';
+import type { LoopSemanticsPolicy, BannerGroupPolicy } from '../../schemas/loopSemanticsPolicySchema';
+import { transformCutForAlias } from './transformStackedCuts';
 
 // =============================================================================
 // Types
@@ -49,6 +51,7 @@ export interface RScriptV2Input {
   bannerGroups?: BannerGroup[];     // Banner structure for Excel formatter
   statTestingConfig?: StatTestingConfig;  // Full stat testing configuration
   loopMappings?: LoopGroupMapping[];     // Loop stacking mappings (from LoopCollapser)
+  loopSemanticsPolicy?: LoopSemanticsPolicy;  // Per-banner-group loop classification
 }
 
 export interface RScriptV2Options {
@@ -150,10 +153,16 @@ export function validateTable(table: ExtendedTableDefinition): TableValidationRe
   }
 
   // Check for duplicate row keys (variable + filterValue combination for frequency)
+  // Note: Category headers (_HEADER_) are exempt from uniqueness checks since they're visual grouping rows
   if (table.tableType === 'frequency') {
     const seen = new Set<string>();
     for (let i = 0; i < table.rows.length; i++) {
       const row = table.rows[i];
+      // Skip category headers - they're visual grouping rows and multiple headers are expected
+      const isCategoryHeader = row.filterValue === '_HEADER_';
+      if (isCategoryHeader) {
+        continue;
+      }
       const key = `${row.variable}:${row.filterValue}`;
       if (seen.has(key)) {
         warnings.push(`Row ${i + 1}: Duplicate variable/filterValue combination "${key}".`);
@@ -245,6 +254,7 @@ export function generateRScriptV2WithValidation(
     bannerGroups = [],
     statTestingConfig,
     loopMappings = [],
+    loopSemanticsPolicy,
   } = input;
 
   // Extract stat testing config values (use explicit params if provided, else config, else defaults)
@@ -324,7 +334,7 @@ export function generateRScriptV2WithValidation(
   // Loop Stacking Preamble (if any loop groups detected)
   // -------------------------------------------------------------------------
   if (loopMappings.length > 0) {
-    generateStackingPreamble(lines, loopMappings, cuts);
+    generateStackingPreamble(lines, loopMappings, cuts, loopSemanticsPolicy);
   }
 
   // -------------------------------------------------------------------------
@@ -418,6 +428,13 @@ export function generateRScriptV2WithValidation(
   generateSignificanceTesting(lines);
 
   // -------------------------------------------------------------------------
+  // Loop Semantics Policy Validation (if entity-anchored groups exist)
+  // -------------------------------------------------------------------------
+  if (loopSemanticsPolicy) {
+    generateLoopPolicyValidation(lines, loopSemanticsPolicy, cuts, loopMappings, outputDir);
+  }
+
+  // -------------------------------------------------------------------------
   // JSON Output
   // -------------------------------------------------------------------------
   generateJsonOutput(lines, validTables, cuts, outputDir, {
@@ -459,12 +476,23 @@ function generateStackingPreamble(
   lines: string[],
   loopMappings: LoopGroupMapping[],
   cuts: CutDefinition[],
+  loopSemanticsPolicy?: LoopSemanticsPolicy,
 ): void {
   lines.push('# =============================================================================');
   lines.push('# Loop Stacking: Create stacked data frames for looped questions');
   lines.push(`# ${loopMappings.length} loop group(s) detected`);
   lines.push('# =============================================================================');
   lines.push('');
+
+  // Build lookup: groupName → policy for entity-anchored groups
+  const entityPolicies = new Map<string, BannerGroupPolicy>();
+  if (loopSemanticsPolicy) {
+    for (const bp of loopSemanticsPolicy.bannerGroups) {
+      if (bp.anchorType === 'entity' && bp.implementation.strategy === 'alias_column') {
+        entityPolicies.set(bp.groupName, bp);
+      }
+    }
+  }
 
   for (const mapping of loopMappings) {
     const frameName = mapping.stackedFrameName;
@@ -503,17 +531,96 @@ function generateStackingPreamble(
     lines.push(`print(paste("Created ${frameName}:", nrow(${frameName}), "rows (", nrow(data), "x", ${mapping.iterations.length}, "iterations)"))`);
     lines.push('');
 
+    // Detect and warn about value label conflicts across iterations
+    // bind_rows keeps the first iteration's labels — warn if later iterations differ
+    if (mapping.variables.length > 0 && mapping.iterations.length >= 2) {
+      lines.push(`# Check for value label conflicts across iterations (first iteration's labels win)`);
+      lines.push(`label_conflict_warnings <- c()`);
+
+      // Sample up to 20 variables to avoid bloating the script
+      const varsToCheck = mapping.variables.slice(0, 20);
+      const firstIter = mapping.iterations[0];
+
+      for (const v of varsToCheck) {
+        const refCol = v.iterationColumns[firstIter];
+        if (!refCol) continue;
+
+        for (let i = 1; i < mapping.iterations.length; i++) {
+          const otherCol = v.iterationColumns[mapping.iterations[i]];
+          if (!otherCol) continue;
+
+          const safeRef = escapeRString(refCol);
+          const safeOther = escapeRString(otherCol);
+          lines.push(`if (!is.null(haven::val_labels(data[["${safeRef}"]])) && !identical(haven::val_labels(data[["${safeRef}"]]), haven::val_labels(data[["${safeOther}"]]))) {`);
+          lines.push(`  label_conflict_warnings <- c(label_conflict_warnings, paste0("${escapeRString(v.baseName)}: labels differ between ${refCol} and ${otherCol}"))`);
+          lines.push(`}`);
+        }
+      }
+
+      lines.push(`if (length(label_conflict_warnings) > 0) {`);
+      lines.push(`  warning(paste("Value label conflicts in ${frameName} (first iteration labels used):", paste(label_conflict_warnings, collapse = "; ")))`);
+      lines.push(`  print(paste("WARNING:", length(label_conflict_warnings), "label conflict(s) in ${frameName} - using iteration ${firstIter} labels"))`);
+      lines.push(`}`);
+      lines.push('');
+    }
+
+    // Generate alias columns for entity-anchored banner groups
+    const aliasesForFrame = [...entityPolicies.values()].filter(
+      bp => bp.stackedFrameName === frameName || bp.stackedFrameName === ''
+    );
+    if (aliasesForFrame.length > 0) {
+      lines.push(`# Create alias columns for entity-anchored banner groups`);
+      lines.push(`${frameName} <- ${frameName} %>% dplyr::mutate(`);
+
+      const mutateArgs: string[] = [];
+      for (const bp of aliasesForFrame) {
+        const aliasName = bp.implementation.aliasName;
+        const sources = bp.implementation.sourcesByIteration;
+        if (!aliasName || Object.keys(sources).length === 0) continue;
+
+        const caseLines: string[] = [];
+        for (const iter of mapping.iterations) {
+          const sourceVar = sources[iter];
+          if (sourceVar) {
+            caseLines.push(`    .loop_iter == ${iter} ~ ${sanitizeRColumnName(sourceVar)}`);
+          }
+        }
+        caseLines.push('    TRUE ~ NA_real_');
+
+        mutateArgs.push(
+          `  \`${aliasName}\` = dplyr::case_when(\n${caseLines.join(',\n')}\n  )`
+        );
+      }
+
+      lines.push(mutateArgs.join(',\n'));
+      lines.push(')');
+      lines.push(`print(paste("Added ${aliasesForFrame.length} alias column(s) to ${frameName}"))`);
+      lines.push('');
+    }
+
     // Pre-compute cuts for this stacked frame
     lines.push(`# Cuts for ${frameName}`);
     lines.push(`cuts_${frameName} <- list(`);
     lines.push(`  Total = rep(TRUE, nrow(${frameName}))`);
 
     for (const cut of cuts) {
-      const expr = cut.rExpression.replace(/^\s*#.*$/gm, '').trim();
-      if (expr && !expr.startsWith('#')) {
-        const safeName = cut.name.replace(/`/g, "'");
-        lines.push(`,  \`${safeName}\` = with(${frameName}, ${expr})`);
+      if (cut.name === 'Total') continue; // Total already hardcoded above
+      let expr = cut.rExpression.replace(/^\s*#.*$/gm, '').trim();
+      if (!expr || expr.startsWith('#')) continue;
+
+      // Check if this cut belongs to an entity-anchored group — transform if so
+      const policy = entityPolicies.get(cut.groupName);
+      if (policy && policy.implementation.aliasName) {
+        const sourceVars = Object.values(policy.implementation.sourcesByIteration);
+        const transformed = transformCutForAlias(expr, sourceVars, policy.implementation.aliasName);
+        if (transformed !== expr) {
+          lines.push(`  # Transformed: ${expr}`);
+          expr = transformed;
+        }
       }
+
+      const safeName = cut.name.replace(/`/g, "'");
+      lines.push(`,  \`${safeName}\` = with(${frameName}, ${expr})`);
     }
 
     lines.push(')');
@@ -917,9 +1024,10 @@ function generateFrequencyTable(lines: string[], table: TableWithLoopFrame): voi
   const questionText = escapeRString(table.questionText);
 
   // Determine data frame and cuts variable for this table
-  const frameName = table.loopDataFrame || 'data';
-  const cutsName = table.loopDataFrame ? `cuts_${table.loopDataFrame}` : 'cuts';
-  const isLoopTable = !!table.loopDataFrame;
+  const sanitizedFrame = table.loopDataFrame ? sanitizeVarName(table.loopDataFrame) : '';
+  const frameName = sanitizedFrame || 'data';
+  const cutsName = sanitizedFrame ? `cuts_${sanitizedFrame}` : 'cuts';
+  const isLoopTable = !!sanitizedFrame;
 
   // Sanitize questionText for R comments (replace newlines with spaces)
   const commentSafeQuestion = table.questionText.replace(/[\r\n]+/g, ' ').trim();
@@ -975,7 +1083,8 @@ function generateFrequencyTable(lines: string[], table: TableWithLoopFrame): voi
   }
 
   lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]] <- list()`);
-  lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]]$stat_letter <- cut_stat_letters[[cut_name]]`);
+  const freqStatLettersVar = isLoopTable ? `cut_stat_letters_${frameName}` : 'cut_stat_letters';
+  lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]]$stat_letter <- ${freqStatLettersVar}[[cut_name]]`);
   lines.push('');
 
   // Generate each row
@@ -1109,9 +1218,10 @@ function generateMeanRowsTable(lines: string[], table: TableWithLoopFrame): void
   const questionText = escapeRString(table.questionText);
 
   // Determine data frame and cuts variable for this table
-  const frameName = table.loopDataFrame || 'data';
-  const cutsName = table.loopDataFrame ? `cuts_${table.loopDataFrame}` : 'cuts';
-  const isLoopTable = !!table.loopDataFrame;
+  const sanitizedFrame = table.loopDataFrame ? sanitizeVarName(table.loopDataFrame) : '';
+  const frameName = sanitizedFrame || 'data';
+  const cutsName = sanitizedFrame ? `cuts_${sanitizedFrame}` : 'cuts';
+  const isLoopTable = !!sanitizedFrame;
 
   // Sanitize questionText for R comments (replace newlines with spaces)
   const commentSafeQuestion = table.questionText.replace(/[\r\n]+/g, ' ').trim();
@@ -1166,7 +1276,8 @@ function generateMeanRowsTable(lines: string[], table: TableWithLoopFrame): void
   }
 
   lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]] <- list()`);
-  lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]]$stat_letter <- cut_stat_letters[[cut_name]]`);
+  const meanStatLettersVar = isLoopTable ? `cut_stat_letters_${frameName}` : 'cut_stat_letters';
+  lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]]$stat_letter <- ${meanStatLettersVar}[[cut_name]]`);
   lines.push('');
 
   // Generate each row
@@ -1456,6 +1567,105 @@ function generateSignificanceTesting(lines: string[]): void {
 }
 
 // =============================================================================
+// Loop Semantics Policy Validation
+// =============================================================================
+
+/**
+ * Generate R code to validate the loop semantics policy on real data.
+ * For each entity-anchored group with shouldPartition=true, checks that:
+ * - Sum of bases equals total (no overlap)
+ * - No pairwise overlaps between cuts in the group
+ */
+function generateLoopPolicyValidation(
+  lines: string[],
+  policy: LoopSemanticsPolicy,
+  cuts: CutDefinition[],
+  loopMappings: LoopGroupMapping[],
+  outputDir: string,
+): void {
+  const entityPartitionGroups = policy.bannerGroups.filter(
+    bp => bp.anchorType === 'entity' && bp.shouldPartition
+  );
+
+  if (entityPartitionGroups.length === 0) return;
+
+  lines.push('# =============================================================================');
+  lines.push('# Loop Semantics Policy Validation');
+  lines.push('# =============================================================================');
+  lines.push('');
+  lines.push('loop_policy_validation <- list()');
+  lines.push('');
+
+  for (const bp of entityPartitionGroups) {
+    const groupName = bp.groupName;
+    const safeGroupName = escapeRString(groupName);
+    const varName = `lpv_${sanitizeVarName(groupName)}`;
+    const frameName = bp.stackedFrameName || loopMappings[0]?.stackedFrameName || 'data';
+    const cutsVarName = `cuts_${frameName}`;
+
+    // Get cut names for this group
+    const groupCuts = cuts.filter(c => c.groupName === groupName && c.name !== 'Total');
+    if (groupCuts.length === 0) continue;
+
+    lines.push(`# Validate: ${groupName} (entity-anchored, shouldPartition=true)`);
+
+    // Build masks
+    lines.push(`${varName}_masks <- list(`);
+    const maskLines: string[] = [];
+    for (const cut of groupCuts) {
+      const safeCutName = cut.name.replace(/`/g, "'").replace(/"/g, '\\"');
+      maskLines.push(`  \`${safeCutName}\` = ${cutsVarName}[["${safeCutName}"]]`);
+    }
+    lines.push(maskLines.join(',\n'));
+    lines.push(')');
+    lines.push('');
+
+    // Compute bases and check partition
+    lines.push(`${varName}_total <- nrow(${frameName})`);
+    lines.push(`${varName}_bases <- sapply(${varName}_masks, function(m) sum(m, na.rm = TRUE))`);
+    lines.push(`${varName}_sum_bases <- sum(${varName}_bases)`);
+    lines.push(`${varName}_na_count <- ${varName}_total - sum(sapply(${varName}_masks, function(m) sum(!is.na(m))))`);
+    lines.push('');
+
+    // Pairwise overlap check
+    lines.push(`${varName}_overlaps <- list()`);
+    lines.push(`${varName}_names <- names(${varName}_masks)`);
+    lines.push(`for (i in seq_along(${varName}_masks)) {`);
+    lines.push(`  for (j in seq_len(i - 1)) {`);
+    lines.push(`    overlap <- sum(${varName}_masks[[i]] & ${varName}_masks[[j]], na.rm = TRUE)`);
+    lines.push('    if (overlap > 0) {');
+    lines.push(`      ${varName}_overlaps[[paste0(${varName}_names[i], " x ", ${varName}_names[j])]] <- overlap`);
+    lines.push('    }');
+    lines.push('  }');
+    lines.push('}');
+    lines.push('');
+
+    // Store validation result
+    lines.push(`loop_policy_validation[["${safeGroupName}"]] <- list(`);
+    lines.push(`  groupName = "${safeGroupName}",`);
+    lines.push('  anchorType = "entity",');
+    lines.push('  shouldPartition = TRUE,');
+    lines.push(`  totalBase = ${varName}_total,`);
+    lines.push(`  sumOfBases = ${varName}_sum_bases,`);
+    lines.push(`  naCount = ${varName}_na_count,`);
+    lines.push(`  partitionValid = (${varName}_sum_bases + ${varName}_na_count == ${varName}_total) && (length(${varName}_overlaps) == 0),`);
+    lines.push(`  bases = as.list(${varName}_bases),`);
+    lines.push(`  overlaps = ${varName}_overlaps`);
+    lines.push(')');
+    lines.push('');
+  }
+
+  // Write validation results
+  lines.push(`# Create validation output directory`);
+  lines.push(`if (!dir.exists("${outputDir}")) {`);
+  lines.push(`  dir.create("${outputDir}", recursive = TRUE)`);
+  lines.push('}');
+  lines.push(`write_json(loop_policy_validation, file.path("${outputDir}", "loop-semantics-validation.json"), auto_unbox = TRUE, pretty = TRUE)`);
+  lines.push('print("Loop semantics validation results written")');
+  lines.push('');
+}
+
+// =============================================================================
 // JSON Output
 // =============================================================================
 
@@ -1661,6 +1871,7 @@ export {
   generateFrequencyTable,
   generateMeanRowsTable,
   generateSignificanceTesting,
+  generateLoopPolicyValidation,
   generateJsonOutput,
   generateStackingPreamble,
   // Utilities

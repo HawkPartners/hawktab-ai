@@ -25,6 +25,7 @@ import {
   skipLogicScratchpadTool,
   clearScratchpadEntries,
   getAndClearScratchpadEntries,
+  getScratchpadEntries,
   formatScratchpadAsMarkdown,
 } from './tools/scratchpad';
 import { getSkipLogicPrompt } from '../prompts';
@@ -65,10 +66,11 @@ export async function extractSkipLogic(
     throw new DOMException('SkipLogicAgent aborted', 'AbortError');
   }
 
-  // Clear scratchpad from any previous runs
+  // Clear scratchpad from any previous runs (only once at the start)
   clearScratchpadEntries();
 
-  const systemPrompt = `
+  // Build base prompts (will be enhanced with scratchpad context on retries)
+  const baseSystemPrompt = `
 ${getSkipLogicAgentInstructions()}
 
 ## Survey Document
@@ -77,7 +79,7 @@ ${surveyMarkdown}
 </survey>
 `;
 
-  const userPrompt = `Read the entire survey document above and extract skip/show/filter rules that define who should be included in a question's analytic base (i.e., rules that could require additional constraints beyond the default base of "banner cut + non-NA").
+  const baseUserPrompt = `Read the entire survey document above and extract skip/show/filter rules that define who should be included in a question's analytic base (i.e., rules that could require additional constraints beyond the default base of "banner cut + non-NA").
 
 Be conservative: if you cannot point to clear evidence in the survey that the default base would be wrong, do NOT create a rule. Put that question in noRuleQuestions instead.
 
@@ -87,41 +89,97 @@ Output the complete list of rules and no-rule questions.`;
 
   const retryResult = await retryWithPolicyHandling(
     async () => {
-      const { output, usage } = await generateText({
-        model: getSkipLogicModel(),
-        system: systemPrompt,
-        maxRetries: 3,
-        prompt: userPrompt,
-        tools: {
-          scratchpad: skipLogicScratchpadTool,
-        },
-        stopWhen: stepCountIs(15),
-        maxOutputTokens: Math.min(getSkipLogicModelTokenLimit(), 100000),
-        providerOptions: {
-          openai: {
-            reasoningEffort: getSkipLogicReasoningEffort(),
-          },
-        },
-        output: Output.object({
-          schema: SkipLogicExtractionOutputSchema,
-        }),
-        abortSignal,
-      });
+      // Get scratchpad state before the call (for error context and prompt enhancement)
+      const scratchpadBeforeCall = getScratchpadEntries().filter(e => e.agentName === 'SkipLogicAgent');
+      
+      // Enhance prompts with scratchpad context if this is a retry
+      let systemPrompt = baseSystemPrompt;
+      let userPrompt = baseUserPrompt;
+      
+      if (scratchpadBeforeCall.length > 0) {
+        // This is a retry - include existing scratchpad entries so agent can resume
+        const scratchpadContext = scratchpadBeforeCall
+          .map((e, i) => `[${i + 1}] (${e.action}) ${e.content}`)
+          .join('\n\n');
+        
+        systemPrompt = `${baseSystemPrompt}
 
-      if (!output) {
-        throw new Error('Invalid output from SkipLogicAgent');
+## Previous Analysis (from scratchpad)
+You have already analyzed part of this survey. Here are your previous scratchpad entries:
+${scratchpadContext}
+
+IMPORTANT: You are RETRYING after a previous attempt failed. Continue from where you left off - do NOT restart from the beginning. Use the scratchpad "read" action to see all your previous entries, then continue your analysis.`;
+
+        userPrompt = `${baseUserPrompt}
+
+NOTE: This is a retry attempt. You have already documented analysis for ${scratchpadBeforeCall.length} questions in your scratchpad. Use the scratchpad "read" action first to review your previous work, then continue analyzing the remaining questions. Do not duplicate work you've already done.`;
       }
+      
+      try {
+        const result = await generateText({
+          model: getSkipLogicModel(),
+          system: systemPrompt,
+          maxRetries: 3,
+          prompt: userPrompt,
+          tools: {
+            scratchpad: skipLogicScratchpadTool,
+          },
+          stopWhen: stepCountIs(15),
+          maxOutputTokens: Math.min(getSkipLogicModelTokenLimit(), 100000),
+          providerOptions: {
+            openai: {
+              reasoningEffort: getSkipLogicReasoningEffort(),
+            },
+          },
+          output: Output.object({
+            schema: SkipLogicExtractionOutputSchema,
+          }),
+          abortSignal,
+        });
 
-      // Record metrics
-      const durationMs = Date.now() - startTime;
-      recordAgentMetrics(
-        'SkipLogicAgent',
-        getSkipLogicModelName(),
-        { input: usage?.inputTokens || 0, output: usage?.outputTokens || 0 },
-        durationMs
-      );
+        const { output, usage } = result;
+        
+        // Get scratchpad state after the call
+        const scratchpadAfterCall = getScratchpadEntries().filter(e => e.agentName === 'SkipLogicAgent');
 
-      return output;
+        if (!output) {
+          // Enhanced error message with context
+          const errorDetails = [
+            `Scratchpad entries: ${scratchpadAfterCall.length} (had ${scratchpadBeforeCall.length} before call)`,
+            `Usage: ${usage?.inputTokens || 0} input, ${usage?.outputTokens || 0} output tokens`,
+            `Result keys: ${Object.keys(result).join(', ')}`,
+          ].join('; ');
+          
+          throw new Error(`Invalid output from SkipLogicAgent - ${errorDetails}`);
+        }
+
+        // Record metrics
+        const durationMs = Date.now() - startTime;
+        recordAgentMetrics(
+          'SkipLogicAgent',
+          getSkipLogicModelName(),
+          { input: usage?.inputTokens || 0, output: usage?.outputTokens || 0 },
+          durationMs
+        );
+
+        return output;
+      } catch (error) {
+        // Enhanced error logging with scratchpad context
+        const scratchpadAfterError = getScratchpadEntries().filter(e => e.agentName === 'SkipLogicAgent');
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorType = error instanceof Error ? error.constructor.name : typeof error;
+        
+        console.error(`[SkipLogicAgent] Error details:`, {
+          error: errorMessage,
+          type: errorType,
+          scratchpadEntries: scratchpadAfterError.length,
+          lastScratchpadEntry: scratchpadAfterError.length > 0 
+            ? scratchpadAfterError[scratchpadAfterError.length - 1].content.substring(0, 200)
+            : 'none',
+        });
+        
+        throw error;
+      }
     },
     {
       abortSignal,
@@ -129,7 +187,20 @@ Output the complete list of rules and no-rule questions.`;
         if (err instanceof DOMException && err.name === 'AbortError') {
           throw err;
         }
-        console.warn(`[SkipLogicAgent] Retry ${attempt}/3: ${err.message.substring(0, 120)}`);
+        
+        // Enhanced retry logging with scratchpad context
+        const scratchpadEntries = getScratchpadEntries().filter(e => e.agentName === 'SkipLogicAgent');
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        const errorType = err instanceof Error ? err.constructor.name : typeof err;
+        
+        console.warn(
+          `[SkipLogicAgent] Retry ${attempt}/3: ${errorMessage.substring(0, 200)}` +
+          ` | Type: ${errorType}` +
+          ` | Scratchpad entries preserved: ${scratchpadEntries.length}` +
+          (scratchpadEntries.length > 0 
+            ? ` | Last entry: ${scratchpadEntries[scratchpadEntries.length - 1].content.substring(0, 100)}`
+            : '')
+        );
       },
     }
   );
@@ -140,8 +211,8 @@ Output the complete list of rules and no-rule questions.`;
 
     console.log(`[SkipLogicAgent] Extracted ${extraction.rules.length} rules, ${extraction.noRuleQuestions.length} no-rule questions in ${durationMs}ms`);
 
-    // Collect scratchpad entries
-    const scratchpadEntries = getAndClearScratchpadEntries();
+    // Collect scratchpad entries (agent-specific to avoid contamination)
+    const scratchpadEntries = getAndClearScratchpadEntries('SkipLogicAgent');
 
     const result: SkipLogicResult = {
       extraction,

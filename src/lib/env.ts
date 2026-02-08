@@ -117,6 +117,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   const verificationModel = process.env.VERIFICATION_MODEL || process.env.TABLE_MODEL || 'gpt-5-mini';
   const skipLogicModel = process.env.SKIPLOGIC_MODEL || verificationModel;
   const filterTranslatorModel = process.env.FILTERTRANSLATOR_MODEL || crosstabModel;
+  const loopSemanticsModel = process.env.LOOP_SEMANTICS_MODEL || verificationModel;
 
   // Legacy model aliases (for backward compatibility)
   const reasoningModel = process.env.REASONING_MODEL || crosstabModel;
@@ -129,6 +130,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   const verificationReasoningEffort = parseReasoningEffort(process.env.VERIFICATION_REASONING_EFFORT, 'VERIFICATION');
   const skipLogicReasoningEffort = parseReasoningEffort(process.env.SKIPLOGIC_REASONING_EFFORT, 'SKIPLOGIC');
   const filterTranslatorReasoningEffort = parseReasoningEffort(process.env.FILTERTRANSLATOR_REASONING_EFFORT, 'FILTERTRANSLATOR');
+  const loopSemanticsReasoningEffort = parseReasoningEffort(process.env.LOOP_SEMANTICS_REASONING_EFFORT, 'LOOP_SEMANTICS');
 
   const nodeEnv = (process.env.NODE_ENV as 'development' | 'production') || 'development';
 
@@ -147,6 +149,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
     verificationModel,
     skipLogicModel,
     filterTranslatorModel,
+    loopSemanticsModel,
 
     // Deprecated
     openaiApiKey: process.env.OPENAI_API_KEY,  // Optional, deprecated
@@ -159,6 +162,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
       verificationPromptVersion: process.env.VERIFICATION_PROMPT_VERSION || 'production',
       skipLogicPromptVersion: process.env.SKIPLOGIC_PROMPT_VERSION || 'production',
       filterTranslatorPromptVersion: process.env.FILTERTRANSLATOR_PROMPT_VERSION || 'production',
+      loopSemanticsPromptVersion: process.env.LOOP_SEMANTICS_PROMPT_VERSION || 'production',
     },
     processingLimits: {
       maxDataMapVariables: parseInt(process.env.MAX_DATA_MAP_VARIABLES || '1000'),
@@ -172,6 +176,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
       verificationModelTokens: parseInt(process.env.VERIFICATION_MODEL_TOKENS || process.env.TABLE_MODEL_TOKENS || '128000'),
       skipLogicModelTokens: parseInt(process.env.SKIPLOGIC_MODEL_TOKENS || process.env.VERIFICATION_MODEL_TOKENS || '128000'),
       filterTranslatorModelTokens: parseInt(process.env.FILTERTRANSLATOR_MODEL_TOKENS || process.env.CROSSTAB_MODEL_TOKENS || '100000'),
+      loopSemanticsModelTokens: parseInt(process.env.LOOP_SEMANTICS_MODEL_TOKENS || process.env.VERIFICATION_MODEL_TOKENS || '128000'),
     },
     reasoningConfig: {
       crosstabReasoningEffort,
@@ -179,6 +184,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
       verificationReasoningEffort,
       skipLogicReasoningEffort,
       filterTranslatorReasoningEffort,
+      loopSemanticsReasoningEffort,
     },
   };
 };
@@ -244,6 +250,16 @@ export const getFilterTranslatorModel = () => {
 };
 
 /**
+ * Get LoopSemanticsPolicyAgent model for loop classification
+ * Used by: LoopSemanticsPolicyAgent (classifies banner groups as entity/respondent-anchored)
+ */
+export const getLoopSemanticsModel = () => {
+  const config = getEnvironmentConfig();
+  const provider = getAzureProvider();
+  return provider.chat(config.loopSemanticsModel);
+};
+
+/**
  * Get per-agent model name strings (for logging)
  */
 export const getCrosstabModelName = (): string => {
@@ -269,6 +285,11 @@ export const getSkipLogicModelName = (): string => {
 export const getFilterTranslatorModelName = (): string => {
   const config = getEnvironmentConfig();
   return `azure/${config.filterTranslatorModel}`;
+};
+
+export const getLoopSemanticsModelName = (): string => {
+  const config = getEnvironmentConfig();
+  return `azure/${config.loopSemanticsModel}`;
 };
 
 /**
@@ -297,6 +318,11 @@ export const getSkipLogicModelTokenLimit = (): number => {
 export const getFilterTranslatorModelTokenLimit = (): number => {
   const config = getEnvironmentConfig();
   return config.processingLimits.filterTranslatorModelTokens;
+};
+
+export const getLoopSemanticsModelTokenLimit = (): number => {
+  const config = getEnvironmentConfig();
+  return config.processingLimits.loopSemanticsModelTokens;
 };
 
 // =============================================================================
@@ -332,6 +358,11 @@ export const getSkipLogicReasoningEffort = (): ReasoningEffort => {
 export const getFilterTranslatorReasoningEffort = (): ReasoningEffort => {
   const config = getEnvironmentConfig();
   return config.reasoningConfig.filterTranslatorReasoningEffort;
+};
+
+export const getLoopSemanticsReasoningEffort = (): ReasoningEffort => {
+  const config = getEnvironmentConfig();
+  return config.reasoningConfig.loopSemanticsReasoningEffort;
 };
 
 /**
