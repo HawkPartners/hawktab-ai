@@ -1,0 +1,22 @@
+{
+  "Needs State": {
+    "groupName": "Needs State",
+    "anchorType": "entity",
+    "shouldPartition": true,
+    "totalBase": 10196,
+    "sumOfBases": 7420,
+    "naCount": -49164,
+    "partitionValid": false,
+    "bases": {
+      "Connection / Belonging": 852,
+      "Status / Image": 212,
+      "Exploration / Discovery": 514,
+      "Celebration": 919,
+      "Indulgence": 1379,
+      "Escape / Relief": 2576,
+      "Performance": 732,
+      "Tradition": 236
+    },
+    "overlaps": []
+  }
+}

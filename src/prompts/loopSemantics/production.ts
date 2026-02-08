@@ -68,20 +68,32 @@ For each banner group:
    - Single-column variables that describe a respondent attribute (demographics, general
      preferences, screener qualifications) are respondent-anchored
    - Use the deterministic findings as primary evidence when available
+   - When deterministic findings are absent or do not cover a group's variables,
+     apply this evidence chain in order:
+     a. Structural pattern: does the number of OR-joined variables in each cut
+        match the number of loop iterations? If yes, strong entity signal.
+     b. Datamap descriptions: do the OR-joined variables' descriptions reference
+        ordinal positions ("first", "second"), iteration-specific entities, or
+        the same concept for different entities? If yes, entity signal.
+     c. Variable independence: does each variable represent a different concept
+        (e.g., different channels, different response options) rather than the
+        same concept for different iterations? If yes, respondent signal.
+     d. When evidence is ambiguous, default to "respondent" (safer — preserves
+        current behavior) and set humanReviewRequired=true.
 
 2. For entity-anchored groups, specify implementation:
    - strategy: "alias_column"
    - aliasName: a descriptive name with ".hawktab_" prefix derived from the group's
      semantic meaning (e.g., ".hawktab_category_code", ".hawktab_treatment_type")
-   - sourcesByIteration: map each iteration value to the source variable for that iteration
-     (e.g., { "1": "VarA", "2": "VarB", "3": "VarC" } for a 3-iteration loop)
+   - sourcesByIteration: array of {iteration, variable} pairs mapping each iteration
+     to its source variable (e.g., [{"iteration":"1","variable":"VarA"},{"iteration":"2","variable":"VarB"}])
    - The alias column will select the correct source per .loop_iter value using case_when
    - Stacked-frame cuts will then reference the alias instead of the raw per-iteration variables
 
 3. For respondent-anchored groups:
    - strategy: "none"
    - aliasName: ""
-   - sourcesByIteration: {}
+   - sourcesByIteration: []
 
 4. Set shouldPartition:
    - true if each loop entity should belong to exactly one cut in the group
@@ -116,8 +128,12 @@ PITFALL 2: Assuming all banner groups need transformation.
 
 PITFALL 3: Getting sourcesByIteration wrong.
   - The number of entries in sourcesByIteration MUST match the number of loop iterations.
-  - Each entry maps an iteration value (from the loop_summary) to the variable used for
-    that iteration. Do NOT reverse the mapping.
+  - The "iteration" field in each entry must be the exact iteration value from the
+    loop_summary input (these are the .loop_iter values in the stacked frame). Do not
+    assume they are sequential integers — use the exact identifiers provided
+    (e.g., "1", "2" or "brand_a", "brand_b").
+  - Each entry maps an iteration value to the source variable for that iteration.
+    Do NOT reverse the mapping.
   - If you cannot confidently assign every iteration to a source variable, set
     humanReviewRequired=true rather than guessing.
 </common_pitfalls>
@@ -135,7 +151,7 @@ EXAMPLE 1: Entity-anchored group (category classification per entity)
     shouldPartition: true  (single-select categories, mutually exclusive)
     strategy: "alias_column"
     aliasName: ".hawktab_category"
-    sourcesByIteration: { "1": "Q5a", "2": "Q5b" }
+    sourcesByIteration: [{"iteration":"1","variable":"Q5a"},{"iteration":"2","variable":"Q5b"}]
     confidence: 0.95
     evidence: ["Deterministic resolver maps Q5a→iter1, Q5b→iter2",
                "OR pattern across 2 variables matches 2 iterations",
@@ -153,7 +169,7 @@ EXAMPLE 2: Respondent-anchored group (demographic segment)
     shouldPartition: true  (mutually exclusive demographics)
     strategy: "none"
     aliasName: ""
-    sourcesByIteration: {}
+    sourcesByIteration: []
     confidence: 0.95
     evidence: ["Gender is a single column with one value per respondent",
                "Not referenced in deterministic findings",
@@ -172,7 +188,7 @@ EXAMPLE 3: Respondent-anchored group (multi-select behavior)
     shouldPartition: false  (multi-select, respondent can use multiple channels)
     strategy: "none"
     aliasName: ""
-    sourcesByIteration: {}
+    sourcesByIteration: []
     confidence: 0.90
     evidence: ["ChR1/ChR2/ChR3 are binary flags for different channels, not iterations",
                "3 variables but they represent 3 channels, not 3 loop iterations",
@@ -199,7 +215,7 @@ EXAMPLE 4: Entity-anchored group, 3 iterations, no deterministic evidence
     shouldPartition: true
     strategy: "alias_column"
     aliasName: ".hawktab_brand_attitude"
-    sourcesByIteration: { "1": "BA1", "2": "BA2", "3": "BA3" }
+    sourcesByIteration: [{"iteration":"1","variable":"BA1"},{"iteration":"2","variable":"BA2"},{"iteration":"3","variable":"BA3"}]
     confidence: 0.85  (lower because no deterministic evidence, relying on descriptions)
     evidence: ["OR pattern across 3 variables matches 3 iterations",
                "Descriptions reference 'first', 'second', 'third' — ordinal iteration language",

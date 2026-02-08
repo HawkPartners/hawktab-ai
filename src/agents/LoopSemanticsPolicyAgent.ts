@@ -108,6 +108,9 @@ export async function runLoopSemanticsPolicyAgent(
   // Build user prompt with runtime data
   const userPrompt = buildUserPrompt(input);
 
+  // Clear scratchpad from any previous runs (only once at the start)
+  clearAllContextScratchpads();
+
   // Create context-isolated scratchpad
   const scratchpad = createContextScratchpadTool('LoopSemanticsPolicy', 'policy');
 

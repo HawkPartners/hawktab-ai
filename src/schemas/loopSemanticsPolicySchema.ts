@@ -32,9 +32,13 @@ export const BannerGroupPolicySchema = z.object({
      *  Use ".hawktab_" prefix to avoid collisions with survey variables. */
     aliasName: z.string(),
 
-    /** Map of iteration value -> source variable name.
-     *  e.g., { "1": "S10a", "2": "S11a" }. Empty object if not used. */
-    sourcesByIteration: z.record(z.string(), z.string()),
+    /** Iteration-to-variable mapping. Each entry maps one loop iteration to
+     *  its source variable. Empty array if not used.
+     *  e.g., [{ iteration: "1", variable: "S10a" }, { iteration: "2", variable: "S11a" }] */
+    sourcesByIteration: z.array(z.object({
+      iteration: z.string(),
+      variable: z.string(),
+    })),
 
     /** Brief explanation of the implementation choice */
     notes: z.string(),

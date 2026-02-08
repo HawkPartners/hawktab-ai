@@ -1,0 +1,28 @@
+R Execution Log
+===============
+Timestamp: 2026-02-08T07:26:32.853Z
+Status: FAILED
+
+--- STDOUT ---
+[1] "Loaded 5098 rows and 530 columns"
+[1] "Created stacked_loop_1: 10196 rows ( 5098 x 2 iterations)"
+
+
+--- STDERR ---
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Warning message:
+`..1$A18` and `..2$A18` have conflicting value labels.
+ℹ Labels for these values will be taken from `..1$A18`.
+✖ Values: 4 
+Error: 'val_labels' is not an exported object from 'namespace:haven'
+Execution halted

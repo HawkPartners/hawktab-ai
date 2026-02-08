@@ -551,7 +551,7 @@ function generateStackingPreamble(
 
           const safeRef = escapeRString(refCol);
           const safeOther = escapeRString(otherCol);
-          lines.push(`if (!is.null(haven::val_labels(data[["${safeRef}"]])) && !identical(haven::val_labels(data[["${safeRef}"]]), haven::val_labels(data[["${safeOther}"]]))) {`);
+          lines.push(`if (!is.null(attr(data[["${safeRef}"]], "labels")) && !identical(attr(data[["${safeRef}"]], "labels"), attr(data[["${safeOther}"]], "labels"))) {`);
           lines.push(`  label_conflict_warnings <- c(label_conflict_warnings, paste0("${escapeRString(v.baseName)}: labels differ between ${refCol} and ${otherCol}"))`);
           lines.push(`}`);
         }
@@ -575,12 +575,15 @@ function generateStackingPreamble(
       const mutateArgs: string[] = [];
       for (const bp of aliasesForFrame) {
         const aliasName = bp.implementation.aliasName;
-        const sources = bp.implementation.sourcesByIteration;
-        if (!aliasName || Object.keys(sources).length === 0) continue;
+        const sourcesArray = bp.implementation.sourcesByIteration;
+        if (!aliasName || sourcesArray.length === 0) continue;
+
+        // Convert array to lookup map: iteration -> variable
+        const sourcesMap = new Map(sourcesArray.map(s => [s.iteration, s.variable]));
 
         const caseLines: string[] = [];
         for (const iter of mapping.iterations) {
-          const sourceVar = sources[iter];
+          const sourceVar = sourcesMap.get(iter);
           if (sourceVar) {
             caseLines.push(`    .loop_iter == ${iter} ~ ${sanitizeRColumnName(sourceVar)}`);
           }
@@ -611,7 +614,7 @@ function generateStackingPreamble(
       // Check if this cut belongs to an entity-anchored group — transform if so
       const policy = entityPolicies.get(cut.groupName);
       if (policy && policy.implementation.aliasName) {
-        const sourceVars = Object.values(policy.implementation.sourcesByIteration);
+        const sourceVars = policy.implementation.sourcesByIteration.map(s => s.variable);
         const transformed = transformCutForAlias(expr, sourceVars, policy.implementation.aliasName);
         if (transformed !== expr) {
           lines.push(`  # Transformed: ${expr}`);
