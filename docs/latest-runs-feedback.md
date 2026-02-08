@@ -35,7 +35,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 | 13 | Table sort order broken (C3 between A-series) | Medium | Deterministic fix | Formatting |
 | 14 | Inconsistent section label cleanup | Low | Deterministic post-pass | Formatting |
 | 15 | Dual-base reporting for skip logic questions (A10) | Conceptual | Future enhancement | Product quality |
-| 16 | Loop variables not collapsed (A13a, A14a, A14b) | Medium | LoopDetector fix | Loop / stacking |
+| 16 | ~~Loop variables not collapsed (A13a, A14a, A14b)~~ | ~~Medium~~ | ~~LoopDetector fix~~ | COMPLETE |
 | 17 | ~~Section C tables missing (C1, C2, C4 dropped)~~ | ~~High~~ | ~~Bug fix~~ | COMPLETE |
 | WIN | Skip logic agent caught strikethrough text on A13 | — | — | Validation |
 
@@ -45,7 +45,7 @@ The Tito's dataset is our first real test of looped/stacked data, and it exposed
 - ~~Issue 8: S9 NET base computation bug~~ COMPLETE
 - ~~Issue 12: S11b/c base filtering investigation~~ COMPLETE
 - ~~Issue 17: C1/C2/C4 tables being silently dropped~~ COMPLETE
-- Issue 16: LoopDetector diversity threshold for sparse patterns
+- ~~Issue 16: LoopDetector diversity threshold for sparse patterns~~ COMPLETE
 - Issue 13: Table sort order
 
 **Then prompt/formatting consistency:**
@@ -507,32 +507,18 @@ The skip logic for A13 in the survey shows: "ASK IF A4 = 4, 5, 7-13" — but opt
 
 ---
 
-#### Issue 16: Loop Variables Not Collapsed — A13a, A14a, A14b Appear as Separate _1/_2 Tables
+#### Issue 16: Loop Variables Not Collapsed — A13a, A14a, A14b — COMPLETE
 
-**Severity:** Medium | **Component:** LoopDetector (deterministic) | **Priority:** Investigate fix
+**Problem:** Skeleton groups like `A-N-a-_-N` (A13a, A14a — 4 members, diversity 2) and `A-N-b-_-N` (A14b — 2 members) failed the LoopDetector's strict thresholds (diversity >= 3, members >= 3) even though they share the same iteration values (`['1','2']`) and separator (`_`) as the certified anchor skeleton `A-N-_-N` (24+ members, diversity 12). Each skeleton group was evaluated in isolation with no way to see it belonged to the same loop.
 
-**What happened:** A13a appears as two separate tables (A13a_1 and A13a_2) instead of being collapsed into a single stacked table. Same for A14a and A14b. Meanwhile, A5, A6, and other loop variables were correctly collapsed.
+**Fix (one file: `src/lib/validation/LoopDetector.ts`):**
+1. **Extracted `analyzeSkeletonGroup()` helper** — separates analysis (finding best iterator position, diversity, iterations, separator type) from threshold decisions, so both passes can reuse it.
+2. **Two-pass "Anchor & Satellite" detection:**
+   - **Pass 1 (unchanged thresholds):** diversity >= 3 → certified "anchor." Registers an adoption key (sorted iterations + separator type) in an `anchorMap`.
+   - **Pass 2 (satellite sweep):** Rejected groups with >= 2 members and >= 2 iterations are adopted if their adoption key matches a certified anchor (same iteration values + same separator).
+3. **Lowered minimum members from 3 to 2 for analysis** (not acceptance). Pass 1 strict thresholds still gate anchor acceptance. Pass 2 can consider 2-member groups for satellite adoption.
 
-**Root cause: LoopDetector diversity threshold.**
-
-The LoopDetector (`src/lib/validation/LoopDetector.ts`, line ~191) groups variables by skeleton pattern and requires `bestDiversity >= 3` (3+ unique base variables in the skeleton) to classify them as loop variables:
-
-| Variable | Skeleton | Unique bases in skeleton | Passes? | Result |
-|---|---|---|---|---|
-| A5 | `A-N-_-N` | 12 (A1, A2, A3, A4, A5, A6, A8, A10, A11, A13, A15, A18) | Yes | Stacked into single `a5` table |
-| A13a | `A-N-a-_-N` | 2 (A13a, A14a) | No | Split into `a13a_1`, `a13a_2` |
-| A14b | `A-N-b-_-N` | 1 (A14b only) | No | Split into `a14b_1`, `a14b_2` |
-
-The threshold exists to prevent false positives — you need enough repetition across iterations to confidently say "this is a loop." But it creates false negatives for sparsely populated skeleton patterns. A13a/A14a are clearly loop variables (they have _1 and _2 suffixes, same question asked per occasion), but they don't have enough "siblings" in their naming pattern to pass the diversity check.
-
-**Additional inconsistency: A17_1 exists without A17_2.** This suggests either the source data has an unpaired loop variable, or one iteration was dropped/renamed. This compounds the inconsistency — some questions have both loops, some have only one, and some aren't recognized as loops at all.
-
-**Possible fixes:**
-1. **Cross-reference skeleton groups.** If `A-N-_-N` is already confirmed as a loop pattern with iterations {1, 2}, then variables in related skeletons (`A-N-a-_-N`, `A-N-b-_-N`) with the same iteration values could be "adopted" into the loop group. The reasoning: if A5 is loop {1,2} and A13a has _1/_2 suffixes, A13a is almost certainly part of the same loop.
-2. **Lower the diversity threshold for related patterns.** If a sibling skeleton already passed, reduce the threshold for skeletons with similar prefixes (A-section, same iteration set).
-3. **Manual override / post-detection fixup.** Allow the pipeline to flag "variables that look like loops but didn't pass the threshold" and let a downstream step (or user) confirm them.
-
-**The unpaired A17_1 question** is separate — worth checking whether A17_2 exists in the raw .sav data but was excluded, or whether the survey genuinely only has one iteration for A17.
+No changes needed downstream — `LoopCollapser.mergeLoopGroups()` already merges groups with identical iteration values, so satellites automatically merge with their anchors.
 
 ---
 
