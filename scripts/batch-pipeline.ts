@@ -5,7 +5,7 @@
  * Scans data/ for dataset folders that have all three required files:
  *   1. .sav data file
  *   2. Banner plan (.docx or .pdf containing "banner")
- *   3. Survey document (.docx or .pdf containing "survey" or "questionnaire")
+ *   3. Survey document (.docx or .pdf containing "survey", "questionnaire", or "qre")
  *
  * Runs the pipeline on each qualifying folder sequentially.
  * Skips folders missing any of the three.
@@ -73,23 +73,25 @@ async function checkFolder(folderPath: string): Promise<DatasetReadiness> {
       result.savFile = savFile;
     }
 
-    // Check for banner plan
-    const bannerFile = files.find(f =>
-      f.toLowerCase().includes('banner') &&
-      (f.endsWith('.docx') || f.endsWith('.pdf')) &&
-      !f.startsWith('~$')
-    );
+    // Check for banner plan ("banner plan" or "banner")
+    const bannerFile = files.find(f => {
+      const lower = f.toLowerCase();
+      return (lower.includes('banner')) &&
+        (f.endsWith('.docx') || f.endsWith('.pdf')) &&
+        !f.startsWith('~$');
+    });
     if (bannerFile) {
       result.hasBanner = true;
       result.bannerFile = bannerFile;
     }
 
-    // Check for survey
-    let surveyFile = files.find(f =>
-      (f.toLowerCase().includes('survey') || f.toLowerCase().includes('questionnaire')) &&
-      (f.endsWith('.docx') || f.endsWith('.pdf')) &&
-      !f.startsWith('~$')
-    );
+    // Check for survey ("survey", "questionnaire", or "qre")
+    const surveyFile = files.find(f => {
+      const lower = f.toLowerCase();
+      return (lower.includes('survey') || lower.includes('questionnaire') || lower.includes('qre')) &&
+        (f.endsWith('.docx') || f.endsWith('.pdf')) &&
+        !f.startsWith('~$');
+    });
     if (surveyFile) {
       result.hasSurvey = true;
       result.surveyFile = surveyFile;
