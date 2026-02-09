@@ -71,10 +71,10 @@ export async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
   }
 
   // Find survey/questionnaire document (optional - for VerificationAgent)
-  // Priority: 1) file with 'survey', 'questionnaire', or 'qre', 2) .docx that's not a banner plan
+  // Priority: 1) file with 'survey', 'questionnaire', 'qre', or 'qnr', 2) .docx that's not a banner plan
   let survey = files.find(f => {
     const lower = f.toLowerCase();
-    return (lower.includes('survey') || lower.includes('questionnaire') || lower.includes('qre')) &&
+    return (lower.includes('survey') || lower.includes('questionnaire') || lower.includes('qre') || lower.includes('qnr')) &&
       (f.endsWith('.docx') || f.endsWith('.pdf'));
   });
   if (!survey) {

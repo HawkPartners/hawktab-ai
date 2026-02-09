@@ -5,7 +5,7 @@
  * Scans data/ for dataset folders that have all three required files:
  *   1. .sav data file
  *   2. Banner plan (.docx or .pdf containing "banner")
- *   3. Survey document (.docx or .pdf containing "survey", "questionnaire", or "qre")
+ *   3. Survey document (.docx or .pdf containing "survey", "questionnaire", "qre", or "qnr")
  *
  * Runs the pipeline on each qualifying folder sequentially.
  * Skips folders missing any of the three.
@@ -85,10 +85,10 @@ async function checkFolder(folderPath: string): Promise<DatasetReadiness> {
       result.bannerFile = bannerFile;
     }
 
-    // Check for survey ("survey", "questionnaire", or "qre")
+    // Check for survey ("survey", "questionnaire", "qre", or "qnr")
     const surveyFile = files.find(f => {
       const lower = f.toLowerCase();
-      return (lower.includes('survey') || lower.includes('questionnaire') || lower.includes('qre')) &&
+      return (lower.includes('survey') || lower.includes('questionnaire') || lower.includes('qre') || lower.includes('qnr')) &&
         (f.endsWith('.docx') || f.endsWith('.pdf')) &&
         !f.startsWith('~$');
     });
