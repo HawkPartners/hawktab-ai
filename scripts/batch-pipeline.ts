@@ -172,14 +172,21 @@ async function main() {
   }
 
   if (notReady.length > 0) {
-    console.log(`\nSKIPPED (${notReady.length}):`);
+    console.log(`\nNOT READY (${notReady.length}):`);
     for (const r of notReady) {
       const missing = [
         !r.hasSav ? '.sav' : '',
         !r.hasBanner ? 'banner' : '',
         !r.hasSurvey ? 'survey' : '',
-      ].filter(Boolean).join(', ');
-      console.log(`  ${r.name} — missing: ${missing}`);
+      ].filter(Boolean);
+      const has = [
+        r.hasSav ? `.sav (${r.savFile})` : '',
+        r.hasBanner ? `banner (${r.bannerFile})` : '',
+        r.hasSurvey ? `survey (${r.surveyFile})` : '',
+      ].filter(Boolean);
+      console.log(`  ${r.name}`);
+      if (has.length > 0) console.log(`    has:     ${has.join(', ')}`);
+      console.log(`    missing: ${missing.join(', ')}`);
     }
   }
 
