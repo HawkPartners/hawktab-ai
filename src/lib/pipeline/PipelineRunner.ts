@@ -97,7 +97,7 @@ export async function runPipeline(
   options: Partial<PipelineOptions> = {}
 ): Promise<PipelineResult> {
   const opts: PipelineOptions = { ...DEFAULT_PIPELINE_OPTIONS, ...options };
-  const { format, displayMode, separateWorkbooks, stopAfterVerification, concurrency, theme, quiet, statTesting } = opts;
+  const { format, displayMode, separateWorkbooks, stopAfterVerification, concurrency, theme, quiet, statTesting, weightVariable: weightOpt, noWeight } = opts;
 
   // Build effective stat testing config (CLI overrides -> env defaults)
   const envStatConfig = getStatTestingConfig();
@@ -225,6 +225,25 @@ export async function runPipeline(
     }
 
     log(`  Validation passed in ${validationDuration}ms`, 'green');
+
+    // Weight detection / validation
+    let weightVariable: string | undefined = weightOpt;
+    if (weightOpt) {
+      // User specified --weight=VAR: validate it exists
+      const allCols = validationResult.dataFileStats?.columns || [];
+      if (!allCols.includes(weightOpt)) {
+        log(`  WARNING: Weight variable "${weightOpt}" not found in data columns`, 'red');
+        log(`  Available columns: ${allCols.slice(0, 20).join(', ')}${allCols.length > 20 ? '...' : ''}`, 'dim');
+        weightVariable = undefined;
+      } else {
+        log(`  Weight variable: ${weightOpt}`, 'green');
+      }
+    } else if (!noWeight && validationResult.weightDetection?.bestCandidate) {
+      const best = validationResult.weightDetection.bestCandidate;
+      log(`  Weight candidate detected: "${best.column}" (score: ${best.score.toFixed(2)}, mean: ${best.mean.toFixed(3)})`, 'yellow');
+      log(`  Use --weight=${best.column} to apply weighting, or --no-weight to suppress`, 'yellow');
+    }
+
     log('', 'reset');
 
     // -------------------------------------------------------------------------
@@ -236,6 +255,17 @@ export async function runPipeline(
 
     const dataMapResult = validationResult.processingResult!;
     let verboseDataMap = dataMapResult.verbose as VerboseDataMapType[];
+
+    // Mark weight variable as 'weight' normalizedType so it's excluded from table generation
+    if (weightVariable) {
+      verboseDataMap = verboseDataMap.map(v => {
+        if (v.column === weightVariable) {
+          return { ...v, normalizedType: 'weight' as const };
+        }
+        return v;
+      });
+    }
+
     log(`  ${verboseDataMap.length} variables from .sav`, 'green');
 
     // Collapse loop variables if loops detected
@@ -896,6 +926,7 @@ export async function runPipeline(
         significanceThresholds: effectiveStatConfig.thresholds,
         loopMappings: loopMappings.length > 0 ? loopMappings : undefined,
         loopSemanticsPolicy,
+        weightVariable,
       },
       { sessionId: outputFolder, outputDir: 'results' }
     );
@@ -966,22 +997,44 @@ export async function runPipeline(
       log(`  R log saved to: ${path.relative(outputDir, logPath)}`, 'dim');
 
       const resultFiles = await fs.readdir(resultsDir);
-      const jsonFile = resultFiles.find(f => f === 'tables.json');
 
-      if (jsonFile) {
-        const jsonPath = path.join(resultsDir, jsonFile);
-        const jsonContent = await fs.readFile(jsonPath, 'utf-8');
-        const jsonData = JSON.parse(jsonContent);
-        const tableCount = Object.keys(jsonData.tables || {}).length;
+      if (weightVariable) {
+        // Dual output mode: check for weighted and unweighted JSON
+        const weightedFile = resultFiles.find(f => f === 'tables-weighted.json');
+        const unweightedFile = resultFiles.find(f => f === 'tables-unweighted.json');
 
-        log(`  Generated tables.json with ${tableCount} tables`, 'green');
+        if (weightedFile && unweightedFile) {
+          const weightedContent = await fs.readFile(path.join(resultsDir, weightedFile), 'utf-8');
+          const weightedData = JSON.parse(weightedContent);
+          const tableCount = Object.keys(weightedData.tables || {}).length;
+          log(`  Generated tables-weighted.json + tables-unweighted.json with ${tableCount} tables each`, 'green');
 
-        const streamlinedData = extractStreamlinedData(jsonData);
-        const streamlinedPath = path.join(resultsDir, 'data-streamlined.json');
-        await fs.writeFile(streamlinedPath, JSON.stringify(streamlinedData, null, 2), 'utf-8');
-        log(`  Generated data-streamlined.json`, 'green');
+          // Generate streamlined data from weighted output
+          const streamlinedData = extractStreamlinedData(weightedData);
+          const streamlinedPath = path.join(resultsDir, 'data-streamlined.json');
+          await fs.writeFile(streamlinedPath, JSON.stringify(streamlinedData, null, 2), 'utf-8');
+          log(`  Generated data-streamlined.json (from weighted)`, 'green');
+        } else {
+          log(`  WARNING: Expected tables-weighted.json + tables-unweighted.json but not all found`, 'yellow');
+        }
       } else {
-        log(`  WARNING: No tables.json generated`, 'yellow');
+        const jsonFile = resultFiles.find(f => f === 'tables.json');
+
+        if (jsonFile) {
+          const jsonPath = path.join(resultsDir, jsonFile);
+          const jsonContent = await fs.readFile(jsonPath, 'utf-8');
+          const jsonData = JSON.parse(jsonContent);
+          const tableCount = Object.keys(jsonData.tables || {}).length;
+
+          log(`  Generated tables.json with ${tableCount} tables`, 'green');
+
+          const streamlinedData = extractStreamlinedData(jsonData);
+          const streamlinedPath = path.join(resultsDir, 'data-streamlined.json');
+          await fs.writeFile(streamlinedPath, JSON.stringify(streamlinedData, null, 2), 'utf-8');
+          log(`  Generated data-streamlined.json`, 'green');
+        } else {
+          log(`  WARNING: No tables.json generated`, 'yellow');
+        }
       }
 
       eventBus.emitStageComplete(10, STAGE_NAMES[10], Date.now() - stepStart10);
@@ -994,26 +1047,49 @@ export async function runPipeline(
       const stepStart11 = Date.now();
       eventBus.emitStageStart(11, STAGE_NAMES[11]);
 
-      const tablesJsonPath = path.join(resultsDir, 'tables.json');
-      const excelPath = path.join(resultsDir, 'crosstabs.xlsx');
-
       try {
         setActiveTheme(theme);
-        const formatter = new ExcelFormatter({
-          format,
-          displayMode,
-          separateWorkbooks,
-        });
-        await formatter.formatFromFile(tablesJsonPath);
-        await formatter.saveToFile(excelPath);
 
-        if (formatter.hasSecondWorkbook()) {
-          const countsPath = path.join(resultsDir, 'crosstabs-counts.xlsx');
-          await formatter.saveSecondWorkbook(countsPath);
-          log(`  Generated crosstabs.xlsx (percentages) + crosstabs-counts.xlsx (counts)`, 'green');
+        if (weightVariable) {
+          // Dual workbook generation: weighted + unweighted
+          const weightedJsonPath = path.join(resultsDir, 'tables-weighted.json');
+          const unweightedJsonPath = path.join(resultsDir, 'tables-unweighted.json');
+
+          // Weighted workbook
+          const weightedFormatter = new ExcelFormatter({ format, displayMode, separateWorkbooks });
+          await weightedFormatter.formatFromFile(weightedJsonPath);
+          await weightedFormatter.saveToFile(path.join(resultsDir, 'crosstabs-weighted.xlsx'));
+          if (weightedFormatter.hasSecondWorkbook()) {
+            await weightedFormatter.saveSecondWorkbook(path.join(resultsDir, 'crosstabs-weighted-counts.xlsx'));
+          }
+
+          // Unweighted workbook
+          const unweightedFormatter = new ExcelFormatter({ format, displayMode, separateWorkbooks });
+          await unweightedFormatter.formatFromFile(unweightedJsonPath);
+          await unweightedFormatter.saveToFile(path.join(resultsDir, 'crosstabs-unweighted.xlsx'));
+          if (unweightedFormatter.hasSecondWorkbook()) {
+            await unweightedFormatter.saveSecondWorkbook(path.join(resultsDir, 'crosstabs-unweighted-counts.xlsx'));
+          }
+
+          log(`  Generated crosstabs-weighted.xlsx + crosstabs-unweighted.xlsx (weight: ${weightVariable})`, 'green');
         } else {
-          log(`  Generated crosstabs.xlsx (format: ${format}, display: ${displayMode})`, 'green');
+          // Standard single workbook
+          const tablesJsonPath = path.join(resultsDir, 'tables.json');
+          const excelPath = path.join(resultsDir, 'crosstabs.xlsx');
+
+          const formatter = new ExcelFormatter({ format, displayMode, separateWorkbooks });
+          await formatter.formatFromFile(tablesJsonPath);
+          await formatter.saveToFile(excelPath);
+
+          if (formatter.hasSecondWorkbook()) {
+            const countsPath = path.join(resultsDir, 'crosstabs-counts.xlsx');
+            await formatter.saveSecondWorkbook(countsPath);
+            log(`  Generated crosstabs.xlsx (percentages) + crosstabs-counts.xlsx (counts)`, 'green');
+          } else {
+            log(`  Generated crosstabs.xlsx (format: ${format}, display: ${displayMode})`, 'green');
+          }
         }
+
         eventBus.emitStageComplete(11, STAGE_NAMES[11], Date.now() - stepStart11);
         log(`  Duration: ${Date.now() - stepStart11}ms`, 'dim');
       } catch (excelError) {
@@ -1095,6 +1171,11 @@ export async function runPipeline(
         banner: files.banner ? path.basename(files.banner) : '(AI-generated)',
         spss: path.basename(files.spss),
         survey: files.survey ? path.basename(files.survey) : null,
+      },
+      weighting: {
+        weightVariable: weightVariable || null,
+        detected: validationResult.weightDetection?.bestCandidate?.column || null,
+        detectedScore: validationResult.weightDetection?.bestCandidate?.score || null,
       },
       outputs: {
         variables: verboseDataMap.length,

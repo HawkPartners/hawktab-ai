@@ -60,7 +60,8 @@ export interface ToCRenderResult {
  */
 export function renderTableOfContents(
   workbook: Workbook,
-  tables: TableData[]
+  tables: TableData[],
+  options?: { subtitle?: string }
 ): ToCRenderResult {
   const worksheet = workbook.addWorksheet('Table of Contents', {
     properties: { tabColor: { argb: 'FF92D050' } }  // Green tab color
@@ -83,8 +84,20 @@ export function renderTableOfContents(
   worksheet.getColumn(TOC_COLUMNS.questionText).width = COL_WIDTHS.questionText;
   worksheet.getColumn(TOC_COLUMNS.section).width = sectionWidth;
 
+  // Optional subtitle row (e.g., "Weighted results (weight variable: wt)")
+  let startRow = 1;
+  if (options?.subtitle) {
+    const subtitleRow = worksheet.getRow(1);
+    worksheet.mergeCells(1, 1, 1, 4);
+    const subtitleCell = subtitleRow.getCell(1);
+    subtitleCell.value = options.subtitle;
+    subtitleCell.font = { ...FONTS.header, italic: true, color: { argb: 'FF4472C4' } };
+    subtitleCell.alignment = ALIGNMENTS.left;
+    startRow = 2;
+  }
+
   // Header row
-  const headerRow = worksheet.getRow(1);
+  const headerRow = worksheet.getRow(startRow);
   headerRow.values = ['#', 'Question ID', 'Question Text', 'Section'];
 
   // Style header cells
@@ -104,7 +117,7 @@ export function renderTableOfContents(
   // Group tables by section for sorting (optional - keeps tables in section order)
   // For now, maintain original order from R script
 
-  let rowNum = 2;
+  let rowNum = startRow + 1;
   for (let i = 0; i < includedTables.length; i++) {
     const table = includedTables[i];
     const row = worksheet.getRow(rowNum);
@@ -143,12 +156,12 @@ export function renderTableOfContents(
     rowNum++;
   }
 
-  // Freeze header row
+  // Freeze header row(s)
   worksheet.views = [{
     state: 'frozen',
-    ySplit: 1,
-    topLeftCell: 'A2',
-    activeCell: 'A2',
+    ySplit: startRow,
+    topLeftCell: `A${startRow + 1}`,
+    activeCell: `A${startRow + 1}`,
   }];
 
   return {

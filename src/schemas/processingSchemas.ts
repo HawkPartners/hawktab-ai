@@ -48,6 +48,7 @@ export const VerboseDataMapSchema = z.object({
       'categorical_select',   // Single choice from list
       'text_open',           // Free text response
       'admin',               // Administrative/metadata field
+      'weight',              // Weight variable (excluded from tables)
     ])
     .optional(),
   

@@ -86,6 +86,7 @@ export interface QuestionGroup {
 export const EXCLUDED_NORMALIZED_TYPES = new Set([
   'admin',      // Administrative/metadata fields (record IDs, timestamps, etc.)
   'text_open',  // Free text responses - can't crosstab open-ended text
+  'weight',     // Weight variables - used for weighting, not reportable
 ]);
 
 /**
@@ -103,6 +104,9 @@ export function isProcessableVariable(
   }
   if (normalizedType === 'text_open' && !options.includeOpenEnds) {
     return false;
+  }
+  if (normalizedType === 'weight') {
+    return false;  // Weight variables are never processable
   }
 
   return true;

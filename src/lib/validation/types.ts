@@ -65,6 +65,10 @@ export interface SavVariableMetadata {
   observedMin: number | null;
   /** Actual maximum value (numeric columns only, null for text) */
   observedMax: number | null;
+  /** Actual mean value (numeric columns only, null for text/empty) */
+  observedMean: number | null;
+  /** Actual standard deviation (numeric columns only, null for text/empty/single value) */
+  observedSd: number | null;
 }
 
 export interface DataFileStats {
@@ -116,6 +120,30 @@ export interface ValidationWarning {
   details?: string;
 }
 
+// =============================================================================
+// Weight Detection
+// =============================================================================
+
+export interface WeightCandidate {
+  column: string;
+  label: string;
+  score: number;       // 0-1 confidence
+  signals: string[];   // human-readable reasons
+  mean: number;
+  sd: number;
+  min: number;
+  max: number;
+}
+
+export interface WeightDetectionResult {
+  candidates: WeightCandidate[];
+  bestCandidate: WeightCandidate | null;
+}
+
+// =============================================================================
+// Validation Report
+// =============================================================================
+
 export interface ValidationReport {
   /** Whether the pipeline can proceed */
   canProceed: boolean;
@@ -133,6 +161,8 @@ export interface ValidationReport {
   dataFileStats: DataFileStats | null;
   /** Fill rate results for detected loops */
   fillRateResults: LoopFillRateResult[];
+  /** Weight detection results (if R available) */
+  weightDetection: WeightDetectionResult | null;
   /** Duration in ms */
   durationMs: number;
 }

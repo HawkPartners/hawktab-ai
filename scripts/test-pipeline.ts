@@ -18,6 +18,8 @@
  *   --objectives="..."         Research objectives for AI-generated banner (when no banner doc)
  *   --cuts="..."               Suggested cuts for AI-generated banner
  *   --project-type=TYPE        Project type hint (atu|segmentation|demand|concept_test|tracking|general)
+ *   --weight=VAR               Apply weight variable (e.g., --weight=wt)
+ *   --no-weight                Suppress weight detection warnings
  *
  * Examples:
  *   npx tsx scripts/test-pipeline.ts
@@ -105,6 +107,14 @@ function parseProjectTypeFlag(): 'atu' | 'segmentation' | 'demand' | 'concept_te
   return undefined;
 }
 
+function parseWeightFlag(): string | undefined {
+  const arg = process.argv.find(a => a.startsWith('--weight='));
+  if (arg) {
+    return arg.split('=').slice(1).join('=');
+  }
+  return undefined;
+}
+
 // =============================================================================
 // Main
 // =============================================================================
@@ -144,6 +154,8 @@ async function main() {
     researchObjectives: parseObjectivesFlag(),
     cutSuggestions: parseCutsFlag(),
     projectType: parseProjectTypeFlag(),
+    weightVariable: parseWeightFlag(),
+    noWeight: process.argv.includes('--no-weight'),
   });
 
   if (!result.success) {

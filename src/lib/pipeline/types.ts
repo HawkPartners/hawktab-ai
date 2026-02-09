@@ -46,6 +46,10 @@ export interface PipelineOptions {
   cutSuggestions?: string;
   /** Project type hint for AI-generated banner */
   projectType?: 'atu' | 'segmentation' | 'demand' | 'concept_test' | 'tracking' | 'general';
+  /** Weight variable column name (e.g., "wt") — enables weighted output */
+  weightVariable?: string;
+  /** Suppress weight detection warnings */
+  noWeight?: boolean;
 }
 
 export const DEFAULT_PIPELINE_OPTIONS: PipelineOptions = {

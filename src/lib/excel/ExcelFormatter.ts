@@ -46,6 +46,8 @@ export interface TablesJsonMetadata {
   totalRespondents: number;
   bannerGroups: BannerGroup[];
   comparisonGroups: string[];
+  weighted?: boolean;
+  weightVariable?: string;
 }
 
 export interface TableData {
@@ -134,7 +136,7 @@ export class ExcelFormatter {
     console.log(`[ExcelFormatter] Formatting ${tableIds.length} tables (format: ${this.options.format}, display: ${this.options.displayMode})...`);
 
     if (this.options.format === 'joe') {
-      this.formatJoeStyle(tables, tableIds, context);
+      this.formatJoeStyle(tables, tableIds, context, metadata);
     } else {
       this.formatAntaresStyle(tables, tableIds, context);
     }
@@ -150,7 +152,8 @@ export class ExcelFormatter {
   private formatJoeStyle(
     tables: Record<string, TableData>,
     tableIds: string[],
-    context: RenderContext
+    context: RenderContext,
+    metadata?: TablesJsonMetadata
   ): void {
     const { displayMode } = this.options;
 
@@ -171,7 +174,12 @@ export class ExcelFormatter {
     }
 
     // 1. Render Table of Contents sheet first
-    const tocResult = renderTableOfContents(this.workbook, tableArray);
+    const tocSubtitle = metadata?.weighted
+      ? `Weighted results (weight variable: ${metadata.weightVariable || 'unknown'})`
+      : metadata?.weighted === false
+        ? 'Unweighted results'
+        : undefined;
+    const tocResult = renderTableOfContents(this.workbook, tableArray, { subtitle: tocSubtitle });
     console.log(`[ExcelFormatter] ToC rendered with ${tocResult.tableCount} tables`);
 
     // Calculate total cuts for column widths
@@ -191,7 +199,7 @@ export class ExcelFormatter {
       this.secondWorkbook = new ExcelJS.Workbook();
       this.secondWorkbook.creator = 'HawkTab AI';
       this.secondWorkbook.created = new Date();
-      renderTableOfContents(this.secondWorkbook, tableArray);
+      renderTableOfContents(this.secondWorkbook, tableArray, { subtitle: tocSubtitle });
       const countSheet = this.secondWorkbook.addWorksheet('Crosstabs', {
         properties: { tabColor: { argb: 'FF4472C4' } }
       });

@@ -14,6 +14,7 @@ import path from 'path';
 import { detectLoops } from './LoopDetector';
 import { checkRAvailability, getDataFileStats, getColumnFillRates, convertToRawVariables } from './RDataReader';
 import { classifyLoopFillRates } from './FillRateValidator';
+import { detectWeightCandidates } from './WeightDetector';
 import { DataMapProcessor } from '../processors/DataMapProcessor';
 import { getPipelineEventBus } from '../events';
 import type { ProcessingResult } from '../processors/DataMapProcessor';
@@ -24,6 +25,7 @@ import type {
   LoopDetectionResult,
   DataFileStats,
   LoopFillRateResult,
+  WeightDetectionResult,
   DataMapFormat,
 } from './types';
 
@@ -35,6 +37,7 @@ const STAGE_NAMES: Record<number, string> = {
   1: 'Read Data File',
   2: 'Enrich Variables',
   3: 'Loop Detection',
+  4: 'Weight Detection',
 };
 
 // =============================================================================
@@ -57,6 +60,7 @@ export async function validate(options: ValidationRunnerOptions): Promise<Valida
   let loopDetection: LoopDetectionResult | null = null;
   let dataFileStats: DataFileStats | null = null;
   const fillRateResults: LoopFillRateResult[] = [];
+  let weightDetection: WeightDetectionResult | null = null;
 
   // =========================================================================
   // Stage 1: Read Data File (.sav via R + haven)
@@ -77,7 +81,7 @@ export async function validate(options: ValidationRunnerOptions): Promise<Valida
     });
     eventBus.emitValidationStageComplete(1, STAGE_NAMES[1], Date.now() - stage1Start);
     eventBus.emitValidationComplete(false, format, errors.length, warnings.length, Date.now() - startTime);
-    return buildReport(false, format, errors, warnings, null, null, null, [], startTime);
+    return buildReport(false, format, errors, warnings, null, null, null, [], null, startTime);
   }
 
   try {
@@ -106,7 +110,7 @@ export async function validate(options: ValidationRunnerOptions): Promise<Valida
     });
     eventBus.emitValidationStageComplete(1, STAGE_NAMES[1], Date.now() - stage1Start);
     eventBus.emitValidationComplete(false, format, errors.length, warnings.length, Date.now() - startTime);
-    return buildReport(false, format, errors, warnings, null, null, null, [], startTime);
+    return buildReport(false, format, errors, warnings, null, null, null, [], null, startTime);
   }
 
   eventBus.emitValidationStageComplete(1, STAGE_NAMES[1], Date.now() - stage1Start);
@@ -172,7 +176,7 @@ export async function validate(options: ValidationRunnerOptions): Promise<Valida
   // If Stage 2 has blocking errors, stop
   if (errors.some((e) => e.stage === 2 && e.severity === 'error')) {
     eventBus.emitValidationComplete(false, format, errors.length, warnings.length, Date.now() - startTime);
-    return buildReport(false, format, errors, warnings, processingResult, null, null, [], startTime);
+    return buildReport(false, format, errors, warnings, processingResult, null, null, [], null, startTime);
   }
 
   // =========================================================================
@@ -240,6 +244,39 @@ export async function validate(options: ValidationRunnerOptions): Promise<Valida
   eventBus.emitValidationStageComplete(3, STAGE_NAMES[3], Date.now() - stage3Start);
 
   // =========================================================================
+  // Stage 4: Weight Detection
+  // =========================================================================
+  const stage4Start = Date.now();
+  eventBus.emitValidationStageStart(4, STAGE_NAMES[4]);
+
+  if (dataFileStats) {
+    weightDetection = detectWeightCandidates(dataFileStats);
+
+    if (weightDetection.bestCandidate) {
+      const best = weightDetection.bestCandidate;
+      console.log(`[Validation] Weight candidate detected: "${best.column}" (score: ${best.score.toFixed(2)}, mean: ${best.mean.toFixed(3)})`);
+      for (const signal of best.signals) {
+        console.log(`  - ${signal}`);
+      }
+
+      warnings.push({
+        stage: 4,
+        stageName: STAGE_NAMES[4],
+        message: `Weight variable candidate: "${best.column}" (score: ${best.score.toFixed(2)}, mean: ${best.mean.toFixed(3)})`,
+        details: `Use --weight=${best.column} to apply weighting. Use --no-weight to suppress this warning.`,
+      });
+      eventBus.emitValidationWarning(
+        4,
+        `Weight candidate: ${best.column} (score: ${best.score.toFixed(2)})`
+      );
+    } else {
+      console.log('[Validation] No weight variable candidates detected');
+    }
+  }
+
+  eventBus.emitValidationStageComplete(4, STAGE_NAMES[4], Date.now() - stage4Start);
+
+  // =========================================================================
   // Final Report
   // =========================================================================
   const hasBlockingErrors = errors.some((e) => e.severity === 'error');
@@ -256,6 +293,7 @@ export async function validate(options: ValidationRunnerOptions): Promise<Valida
     loopDetection,
     dataFileStats,
     fillRateResults,
+    weightDetection,
     startTime
   );
 }
@@ -273,6 +311,7 @@ function buildReport(
   loopDetection: LoopDetectionResult | null,
   dataFileStats: DataFileStats | null,
   fillRateResults: LoopFillRateResult[],
+  weightDetection: WeightDetectionResult | null,
   startTime: number
 ): ValidationReport {
   return {
@@ -284,6 +323,7 @@ function buildReport(
     loopDetection,
     dataFileStats,
     fillRateResults,
+    weightDetection,
     durationMs: Date.now() - startTime,
   };
 }

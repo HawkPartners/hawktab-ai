@@ -31,7 +31,7 @@ export interface ProcessedDataMapVariable extends RawDataMapVariable {
   // Enrichment fields for normalized typing
   normalizedType?: 'numeric_range' | 'percentage_per_option' | 'ordinal_scale' |
                    'matrix_single_choice' | 'binary_flag' | 'categorical_select' |
-                   'text_open' | 'admin';
+                   'text_open' | 'admin' | 'weight';
   rangeMin?: number;
   rangeMax?: number;
   rangeStep?: number;

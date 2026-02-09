@@ -131,9 +131,15 @@ metadata <- lapply(cols, function(col_name) {
   n_unique <- length(unique(non_na))
   obs_min <- NULL
   obs_max <- NULL
+  obs_mean <- NULL
+  obs_sd <- NULL
   if (is.numeric(raw) && length(non_na) > 0) {
     obs_min <- min(non_na)
     obs_max <- max(non_na)
+    obs_mean <- mean(non_na)
+    if (length(non_na) > 1) {
+      obs_sd <- sd(non_na)
+    }
   }
 
   list(
@@ -144,7 +150,9 @@ metadata <- lapply(cols, function(col_name) {
     rClass = r_class,
     nUnique = n_unique,
     observedMin = obs_min,
-    observedMax = obs_max
+    observedMax = obs_max,
+    observedMean = obs_mean,
+    observedSd = obs_sd
   )
 })
 names(metadata) <- cols

@@ -19,6 +19,8 @@
  *   --stop-after-verification   Stop before R/Excel generation
  *   --concurrency=N            Parallel agent limit (default: 3)
  *   --dry-run                  Just show which folders qualify, don't run
+ *   --weight=VAR               Apply weight variable (e.g., --weight=wt)
+ *   --no-weight                Suppress weight detection warnings
  */
 
 // Load environment variables
@@ -159,6 +161,14 @@ function parseThemeFlag(): string {
   return 'classic';
 }
 
+function parseWeightFlag(): string | undefined {
+  const arg = process.argv.find(a => a.startsWith('--weight='));
+  if (arg) {
+    return arg.split('=').slice(1).join('=');
+  }
+  return undefined;
+}
+
 // =============================================================================
 // Main
 // =============================================================================
@@ -231,6 +241,8 @@ async function main() {
   const stopAfterVerification = process.argv.includes('--stop-after-verification');
   const concurrency = parseConcurrency();
   const theme = parseThemeFlag();
+  const weightVariable = parseWeightFlag();
+  const noWeight = process.argv.includes('--no-weight');
 
   console.log(`\n${'='.repeat(60)}`);
   console.log(`BATCH RUN: ${ready.length} datasets`);
@@ -256,6 +268,8 @@ async function main() {
         stopAfterVerification,
         concurrency,
         theme,
+        weightVariable,
+        noWeight,
       });
 
       const durationMs = Date.now() - startTime;

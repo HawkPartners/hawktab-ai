@@ -29,7 +29,7 @@ This document outlines the path from HawkTab AI's current state (reliable local 
 | **Phase 2.5** Upfront Context | Consolidated | Merged into 3.1 (Project Intake Questions) |
 | **Phase 2.5a** Input Flexibility | Complete | PDF/DOCX for survey + banner; .sav for data |
 | **Phase 2.5b** AI-Generated Banner | Complete | BannerAgent generate-cuts prompt + HITL gate |
-| **Phase 2.6** Weight Detection | Not Started | Detection + HITL + separate weighted/unweighted workbooks |
+| **Phase 2.6** Weight Detection | Complete | Detection + `--weight=VAR` CLI + dual-pass R + separate weighted/unweighted workbooks |
 | **Phase 2.7** ~~Survey Classification~~ | Consolidated | Classification → 3.1 intake; confidence scoring → Long-term Vision |
 | **Phase 2.8** HITL Review Overhaul | Partial | Agent output simplification + user-facing review with base sizes |
 | **Phase 2.9** Table ID Visibility | Complete | IDs render, excluded sheet works. Interactive control → Long-term Vision |
@@ -252,68 +252,26 @@ if (bannerPlanProvided) {
 
 ---
 
-### 2.6 Weight Detection & Application — `NOT STARTED`
+### 2.6 Weight Detection & Application — `COMPLETE`
 
-**Problem**: Most commercial survey data arrives pre-weighted. The fielding partner (Antares, Dynata, etc.) runs RIM weighting or raking on the completed data to match demographic targets and adds a weight column to the .sav file before delivery. This is a respondent-level attribute — each person gets one weight value (typically 0.3–3.0, centered around 1.0). Currently the pipeline ignores weights entirely. For weighted studies, this means all output is technically valid but analytically incomplete — clients expect weighted results when they've paid for weighted data.
+> **Implementation Status (Feb 2026):** Fully implemented. Weight detection via heuristic scoring in ValidationRunner. CLI flags `--weight=VAR` and `--no-weight`. Dual-pass R script generates both weighted and unweighted tables in a single execution. Manual weighted formulas (not R `survey` package) for counts, bases, means, and effective n. Significance testing uses Kish's effective sample size. Loop stacking carries weight column through `bind_rows`. Dual JSON output (`tables-weighted.json` + `tables-unweighted.json`). Dual Excel workbooks with weighted/unweighted TOC annotations. Weight variable excluded from table generation via `normalizedType: 'weight'`.
 
-**Detection**:
+**Architecture**:
 
-Scan the datamap for weight variable candidates. Signals:
+| Component | Implementation |
+|-----------|---------------|
+| Detection | `WeightDetector.ts` — heuristic scoring (name pattern, mean≈1.0, no value labels, numeric class, plausible range). Threshold ≥ 0.5. Runs as Stage 4 in ValidationRunner. |
+| CLI | `--weight=varName` applies that weight. No flag + candidate detected → warning logged, continues unweighted. `--no-weight` suppresses warnings. |
+| R script | One `master.R` with dual-pass loop (`for weight_mode in c("unweighted", "weighted")`). Manual formulas: `sum(w[mask])` for counts, `sum(w[!is.na(var)])` for bases, `sum(w*x)/sum(w)` for means, `(sum(w))^2/sum(w^2)` for effective n. |
+| JSON output | `tables-weighted.json` + `tables-unweighted.json` (each with `metadata.weighted` flag). Without `--weight`: single `tables.json` (backward compatible). |
+| Excel output | `crosstabs-weighted.xlsx` + `crosstabs-unweighted.xlsx`, each with TOC subtitle ("Weighted results" / "Unweighted results"). Respects `--display` and `--separate-workbooks` flags. |
+| Exclusion | Weight variable marked `normalizedType: 'weight'` in datamap, excluded from table generation (same as admin/text_open). |
 
-| Signal | What to Look For |
-|--------|-----------------|
-| Variable name | `weight`, `wt`, `wgt`, `WT_FINAL`, `WEIGHT_VAR`, and common variations (case-insensitive) |
-| Data characteristics | Numeric, no value labels, values clustered around 1.0, no zeros or negatives |
-| SPSS metadata | Some .sav files tag the weight variable explicitly — haven may expose this |
-
-Detection should run early (during datamap processing) and flag candidates for user confirmation.
-
-**User Confirmation (HITL)**:
-
-This must surface to the user — never silently apply weights. The UI (or CLI for now) presents:
-
-```
-We found a possible weight variable: "wt" (mean: 1.02, range: 0.31–2.87)
-
-○ Yes, apply weights using "wt"
-○ No, run unweighted
-○ That's not a weight variable — it's [user can explain]
-```
-
-If multiple candidates are found, let the user pick which one. If none are found, skip — unweighted is the default.
-
-**Output — Separate Workbooks for Weighted vs. Unweighted**:
-
-When weights are applied, produce two complete workbooks:
-
-| Workbook | Contents |
-|----------|----------|
-| `crosstabs-weighted.xlsx` | All tables with weighted calculations. Base row shows weighted n. TOC + Excluded Tables sheet. |
-| `crosstabs-unweighted.xlsx` | Same tables, unweighted. Base row shows raw n. TOC + Excluded Tables sheet. |
-
-Both workbooks have their own TOC and Excluded Tables sheet (same pattern as `--display=both --separate-workbooks`). The TOC should note whether the workbook contains weighted or unweighted results.
-
-This is simpler than collapsing weighted and unweighted into one workbook (which Joe sometimes does but inconsistently). Two workbooks is clean, unambiguous, and reuses the separate-workbooks pattern we already have for display modes.
-
-**R Script Changes**:
-
-- Weighted workbook: Use R's `survey` package — `svydesign()` for design specification, `svytable()` / `svymean()` / `svyciprop()` for weighted calculations, weighted significance testing
-- Unweighted workbook: Current R script (no changes)
-- Both scripts generated from the same `tables.json` — only the calculation layer differs
-- If the data is later stacked for loop tables, the weight variable carries forward to each stacked row (respondent's weight applies to all their occasions)
-
-**Pipeline Integration**:
-
-```
-DataMap extraction
-  → Weight detection (scan for candidates)
-  → HITL confirmation (user picks weight variable or declines)
-  → Pipeline continues with weightVariable in config
-  → R script generation: if weightVariable, generate both weighted + unweighted scripts
-  → Excel generation: two workbooks (or one if unweighted)
-```
-
-**Level of Effort**: Medium (detection heuristics are straightforward; R `survey` package handles the math; Excel output reuses separate-workbooks pattern. Main work is R script generation for weighted calculations + testing.)
+**Key design decisions**:
+- Manual weighted formulas instead of R `survey` package (existing code builds R as strings; `svydesign()` would require restructuring)
+- One R script, dual JSON output (avoids loading .sav twice)
+- Non-blocking detection (CLI flag, not interactive prompt during pipeline)
+- Backward compatible — unweighted pipelines produce identical output
 
 ---
 
@@ -908,7 +866,7 @@ Documented as of February 2026. These are areas where the system has known limit
 | **Complex expression transformation** — `transformCutForAlias` handles `==`, `%in%`, and OR patterns. Expressions with `&` conditions, nested logic, or negations could break transformation. | Low-Medium | Expand transformer for common compound patterns. Flag untransformable expressions for human review. | Common cases handled |
 | **Multiple independent loop groups** — Dataset with both an occasion loop AND a brand loop. Architecturally supported but never tested. | Low | Schema and pipeline support N loop groups. Needs integration testing with a real multi-loop dataset. | Untested |
 | **Nested loops** — A brand loop inside an occasion loop. Not handled. | Low | Not supported. Validation already detects loops; nested loop detection could be added as a basic sanity check. | Not supported |
-| **Weighted stacked data** — Weights exist in the data but aren't applied during stacking or computation. | High | Next priority after loop semantics. R's `svydesign` handles weighted calculations natively. | Not implemented |
+| **Weighted stacked data** — Weights exist in the data but aren't applied during stacking or computation. | ~~High~~ | Implemented in 2.6. Weight column carries through `bind_rows` in stacked frames. Manual weighted formulas with effective n for sig testing. | Complete |
 | **No clustered standard errors** — Stacked rows from the same respondent are correlated, which overstates significance. Standard tests treat them as independent. This is industry-standard behavior (WinCross, SPSS Tables, Q all do the same). | Low | Accept as industry-standard limitation. Future differentiator if implemented. Would require respondent ID column in stacked frame + cluster-robust R functions. | Known limitation, not planned |
 | **No within-group stat letter suppression for entity-anchored groups** — `generateSignificanceTesting()` doesn't consult the loop semantics policy. Within-group pairwise comparisons run for all groups regardless of overlap. Validation detects overlaps but doesn't act on them. | Medium | Implement 2.4b (suppress or vs-complement testing for entity-anchored groups). | Not implemented |
 
@@ -934,5 +892,5 @@ Documented as of February 2026. These are areas where the system has known limit
 ---
 
 *Created: January 22, 2026*
-*Updated: February 8, 2026*
+*Updated: February 9, 2026*
 *Status: Planning — Implementation status audit completed Feb 8, 2026*

@@ -53,6 +53,7 @@ export interface RScriptV2Input {
   statTestingConfig?: StatTestingConfig;  // Full stat testing configuration
   loopMappings?: LoopGroupMapping[];     // Loop stacking mappings (from LoopCollapser)
   loopSemanticsPolicy?: LoopSemanticsPolicy;  // Per-banner-group loop classification
+  weightVariable?: string;  // Weight variable column name (e.g., "wt") for weighted output
 }
 
 export interface RScriptV2Options {
@@ -256,7 +257,9 @@ export function generateRScriptV2WithValidation(
     statTestingConfig,
     loopMappings = [],
     loopSemanticsPolicy,
+    weightVariable,
   } = input;
+  const isWeighted = !!weightVariable;
 
   // Extract stat testing config values (use explicit params if provided, else config, else defaults)
   const minBase = statTestingConfig?.minBase ?? 0;
@@ -307,7 +310,11 @@ export function generateRScriptV2WithValidation(
   lines.push(`#   Proportion test: ${proportionTest === 'unpooled_z' ? 'Unpooled z-test' : 'Pooled z-test'}`);
   lines.push(`#   Mean test: ${meanTest === 'welch_t' ? "Welch's t-test" : "Student's t-test"}`);
   lines.push(`#   Minimum base: ${minBase > 0 ? minBase : 'None (testing all cells)'}`);
-  lines.push('#   Comparisons: Within-group + vs Total')
+  lines.push('#   Comparisons: Within-group + vs Total');
+  if (isWeighted) {
+    lines.push(`#   Weight variable: ${weightVariable}`);
+    lines.push('#   Output: Dual pass (weighted + unweighted)');
+  }
   if (report.invalidTables > 0) {
     lines.push('#');
     lines.push('# WARNING: Some tables were skipped due to validation errors.');
@@ -331,6 +338,24 @@ export function generateRScriptV2WithValidation(
   lines.push(`data <- read_sav("${dataFilePath}")`);
   lines.push('print(paste("Loaded", nrow(data), "rows and", ncol(data), "columns"))');
   lines.push('');
+
+  // Weight vector setup
+  if (isWeighted) {
+    const safeWeightVar = escapeRString(weightVariable);
+    lines.push('# =============================================================================');
+    lines.push('# Weight Variable Setup');
+    lines.push('# =============================================================================');
+    lines.push('');
+    lines.push(`weight_vec <- data[["${safeWeightVar}"]]`);
+    lines.push('if (is.null(weight_vec)) {');
+    lines.push(`  stop("Weight variable '${safeWeightVar}' not found in data")`);
+    lines.push('}');
+    lines.push('weight_vec[is.na(weight_vec)] <- 1.0  # NA weights default to 1');
+    lines.push(`cat(paste("Weight variable: ${safeWeightVar}",`);
+    lines.push('    "- mean:", round(mean(weight_vec), 3),');
+    lines.push('    "- range:", round(min(weight_vec), 3), "-", round(max(weight_vec), 3), "\\n"))');
+    lines.push('');
+  }
 
   // -------------------------------------------------------------------------
   // Loop Stacking Preamble (if any loop groups detected)
@@ -379,7 +404,7 @@ export function generateRScriptV2WithValidation(
   // -------------------------------------------------------------------------
   // Helper Functions
   // -------------------------------------------------------------------------
-  generateHelperFunctions(lines);
+  generateHelperFunctions(lines, isWeighted);
 
   // -------------------------------------------------------------------------
   // Table Calculations
@@ -388,12 +413,39 @@ export function generateRScriptV2WithValidation(
   lines.push('# Table Calculations');
   lines.push('# =============================================================================');
   lines.push('');
+
+  // Dual-pass weight mode loop (when weighted)
+  if (isWeighted) {
+    const safeWtVar = escapeRString(weightVariable!);
+    lines.push('# Dual-pass: compute both weighted and unweighted results');
+    lines.push('weight_modes <- c("unweighted", "weighted")');
+    lines.push('');
+    lines.push('for (weight_mode in weight_modes) {');
+    lines.push('  if (weight_mode == "weighted") {');
+    lines.push('    w_main <- weight_vec');
+    // Set weight vectors for stacked loop frames
+    for (const mapping of loopMappings) {
+      const frameName = mapping.stackedFrameName;
+      lines.push(`    w_main_${sanitizeVarName(frameName)} <- ${frameName}[["${safeWtVar}"]]`);
+      lines.push(`    w_main_${sanitizeVarName(frameName)}[is.na(w_main_${sanitizeVarName(frameName)})] <- 1.0`);
+    }
+    lines.push('  } else {');
+    lines.push('    w_main <- rep(1, nrow(data))');
+    for (const mapping of loopMappings) {
+      const frameName = mapping.stackedFrameName;
+      lines.push(`    w_main_${sanitizeVarName(frameName)} <- rep(1, nrow(${frameName}))`);
+    }
+    lines.push('  }');
+    lines.push('  cat(paste("Computing tables for mode:", weight_mode, "\\n"))');
+    lines.push('');
+  }
+
   lines.push('all_tables <- list()');
   lines.push('');
 
   // Generate demo table first (banner profile - always first in output)
   if (cuts.length > 0) {
-    generateDemoTable(lines, cuts, cutGroups, totalStatLetter);
+    generateDemoTable(lines, cuts, cutGroups, totalStatLetter, isWeighted);
   }
 
   // Add comments for skipped invalid tables
@@ -417,9 +469,9 @@ export function generateRScriptV2WithValidation(
 
     // Since we validated upfront, tableType should always be valid
     if (table.tableType === 'frequency') {
-      generateFrequencyTable(lines, table);
+      generateFrequencyTable(lines, table, isWeighted);
     } else if (table.tableType === 'mean_rows') {
-      generateMeanRowsTable(lines, table);
+      generateMeanRowsTable(lines, table, isWeighted);
     }
     // No else/fallback needed - validation already caught invalid types
   }
@@ -436,6 +488,15 @@ export function generateRScriptV2WithValidation(
     generateLoopPolicyValidation(lines, loopSemanticsPolicy, cuts, loopMappings, outputDir);
   }
 
+  // Close weight mode loop and save per-mode tables
+  if (isWeighted) {
+    lines.push('  # Save tables for this weight mode');
+    lines.push('  assign(paste0("all_tables_", weight_mode), all_tables)');
+    lines.push('  cat(paste("Saved", length(all_tables), "tables for mode:", weight_mode, "\\n"))');
+    lines.push('}');  // end for (weight_mode ...)
+    lines.push('');
+  }
+
   // -------------------------------------------------------------------------
   // JSON Output
   // -------------------------------------------------------------------------
@@ -444,7 +505,7 @@ export function generateRScriptV2WithValidation(
     bannerGroups: effectiveBannerGroups,
     comparisonGroups,
     significanceThresholds: effectiveThresholds,
-  });
+  }, isWeighted, weightVariable);
 
   return {
     script: lines.join('\n'),
@@ -738,7 +799,8 @@ function generateDemoTable(
   lines: string[],
   cuts: CutDefinition[],
   cutGroups: CutGroup[],
-  totalStatLetter: string | null
+  totalStatLetter: string | null,
+  isWeighted: boolean = false
 ): void {
   lines.push('# -----------------------------------------------------------------------------');
   lines.push('# Demo Table: Banner Profile (respondent distribution across cuts)');
@@ -765,6 +827,11 @@ function generateDemoTable(
   // For each banner column, calculate how many respondents match each banner cut (row)
   lines.push('for (cut_name in names(cuts)) {');
   lines.push('  cut_data <- apply_cut(data, cuts[[cut_name]])');
+  if (isWeighted) {
+    lines.push('  w_cut_mask <- cuts[[cut_name]]');
+    lines.push('  w_cut_mask[is.na(w_cut_mask)] <- FALSE');
+    lines.push('  w_cut <- w_main[w_cut_mask]');
+  }
   lines.push('  table__demo_banner_x_banner$data[[cut_name]] <- list()');
   lines.push('  table__demo_banner_x_banner$data[[cut_name]]$stat_letter <- cut_stat_letters[[cut_name]]');
   lines.push('');
@@ -800,8 +867,13 @@ function generateDemoTable(
   // First add Total as a row (totalStatLetter used for consistency but Total always labeled "Total")
   const _totalLetter = totalStatLetter || 'T';  // Unused but kept for potential future use
   lines.push(`  # Row: Total`);
-  lines.push('  total_count <- nrow(cut_data)');
-  lines.push('  base_n <- nrow(cut_data)');
+  if (isWeighted) {
+    lines.push('  total_count <- sum(w_cut)');
+    lines.push('  base_n <- sum(w_cut)');
+  } else {
+    lines.push('  total_count <- nrow(cut_data)');
+    lines.push('  base_n <- nrow(cut_data)');
+  }
   lines.push('  pct <- if (base_n > 0) total_count / base_n * 100 else 0');
   lines.push('');
   lines.push(`  table__demo_banner_x_banner$data[[cut_name]][["row_${rowIndex}_Total"]] <- list(`);
@@ -831,7 +903,11 @@ function generateDemoTable(
       lines.push('    # Count respondents in this column who also match this banner cut');
       lines.push('    combined_mask <- cuts[[cut_name]] & row_cut_mask');
       lines.push('    combined_mask[is.na(combined_mask)] <- FALSE');
-      lines.push('    row_count <- sum(combined_mask)');
+      if (isWeighted) {
+        lines.push('    row_count <- sum(w_main[combined_mask])');
+      } else {
+        lines.push('    row_count <- sum(combined_mask)');
+      }
       lines.push('    row_pct <- if (base_n > 0) row_count / base_n * 100 else 0');
       lines.push('');
       lines.push(`    table__demo_banner_x_banner$data[[cut_name]][["${rowKey}"]] <- list(`);
@@ -862,11 +938,41 @@ function generateDemoTable(
 // Helper Functions
 // =============================================================================
 
-function generateHelperFunctions(lines: string[]): void {
+function generateHelperFunctions(lines: string[], isWeighted: boolean = false): void {
   lines.push('# =============================================================================');
   lines.push('# Helper Functions');
   lines.push('# =============================================================================');
   lines.push('');
+
+  // Weighted helper functions (only when weight variable is active)
+  if (isWeighted) {
+    lines.push('# --- Weighted computation helpers ---');
+    lines.push('');
+    lines.push('# Weighted base: sum of weights for non-NA respondents');
+    lines.push('weighted_base <- function(w, var_col) sum(w[!is.na(var_col)], na.rm = TRUE)');
+    lines.push('');
+    lines.push('# Weighted count: sum of weights where mask is TRUE');
+    lines.push('weighted_count <- function(w, mask) sum(w[mask], na.rm = TRUE)');
+    lines.push('');
+    lines.push('# Weighted mean');
+    lines.push('weighted_mean_custom <- function(w, x) {');
+    lines.push('  v <- !is.na(x)');
+    lines.push('  if (sum(v) == 0) return(NA)');
+    lines.push('  sum(w[v] * x[v]) / sum(w[v])');
+    lines.push('}');
+    lines.push('');
+    lines.push('# Weighted standard deviation');
+    lines.push('weighted_sd_custom <- function(w, x) {');
+    lines.push('  v <- !is.na(x)');
+    lines.push('  if (sum(v) < 2) return(NA)');
+    lines.push('  wm <- weighted_mean_custom(w[v], x[v])');
+    lines.push('  sqrt(sum(w[v] * (x[v] - wm)^2) / sum(w[v]))');
+    lines.push('}');
+    lines.push('');
+    lines.push('# Effective sample size (for significance testing with weights)');
+    lines.push('n_effective <- function(w) sum(w)^2 / sum(w^2)');
+    lines.push('');
+  }
 
   // Round half up (not banker's rounding)
   lines.push('# Round half up (12.5 -> 13, not banker\'s rounding which gives 12)');
@@ -1024,7 +1130,7 @@ function generateHelperFunctions(lines: string[]): void {
 // Frequency Table Generator
 // =============================================================================
 
-function generateFrequencyTable(lines: string[], table: TableWithLoopFrame): void {
+function generateFrequencyTable(lines: string[], table: TableWithLoopFrame, isWeighted: boolean = false): void {
   const tableId = escapeRString(table.tableId);
   const questionText = escapeRString(table.questionText);
 
@@ -1076,6 +1182,14 @@ function generateFrequencyTable(lines: string[], table: TableWithLoopFrame): voi
   lines.push(`for (cut_name in names(${cutsName})) {`);
   lines.push(`  cut_data <- apply_cut(${frameName}, ${cutsName}[[cut_name]])`);
 
+  // Weight vector for this cut (filtered in parallel with cut_data)
+  if (isWeighted) {
+    const weightSource = isLoopTable ? `w_main_${sanitizeVarName(frameName)}` : 'w_main';
+    lines.push(`  w_cut_mask <- ${cutsName}[[cut_name]]`);
+    lines.push('  w_cut_mask[is.na(w_cut_mask)] <- FALSE');
+    lines.push(`  w_cut <- ${weightSource}[w_cut_mask]`);
+  }
+
   // Apply additional table-level filter if specified (skip logic from FilterApplicator)
   const hasAdditionalFilter = table.additionalFilter && table.additionalFilter.trim().length > 0;
   if (hasAdditionalFilter) {
@@ -1085,6 +1199,9 @@ function generateFrequencyTable(lines: string[], table: TableWithLoopFrame): voi
     lines.push(`  additional_mask <- with(cut_data, eval(parse(text = "${filterExpr}")))`);
     lines.push('  additional_mask[is.na(additional_mask)] <- FALSE');
     lines.push('  cut_data <- cut_data[additional_mask, ]');
+    if (isWeighted) {
+      lines.push('  w_cut <- w_cut[additional_mask]');
+    }
   }
 
   lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]] <- list()`);
@@ -1146,8 +1263,13 @@ function generateFrequencyTable(lines: string[], table: TableWithLoopFrame): voi
       lines.push('    }');
       lines.push('  }');
       lines.push('  # Base = table base (all qualified respondents in this cut)');
-      lines.push('  base_n <- nrow(cut_data)');
-      lines.push('  count <- sum(net_respondents, na.rm = TRUE)');
+      if (isWeighted) {
+        lines.push('  base_n <- sum(w_cut)');
+        lines.push('  count <- sum(w_cut[net_respondents], na.rm = TRUE)');
+      } else {
+        lines.push('  base_n <- nrow(cut_data)');
+        lines.push('  count <- sum(net_respondents, na.rm = TRUE)');
+      }
       lines.push('  pct <- if (base_n > 0) count / base_n * 100 else 0');
     } else if (rangeMatch) {
       // Range filter value (e.g., "0-4" for binned distributions)
@@ -1155,33 +1277,57 @@ function generateFrequencyTable(lines: string[], table: TableWithLoopFrame): voi
       lines.push(`  # Row ${i + 1}: ${row.variable} in range [${minVal}-${maxVal}]`);
       lines.push(`  var_col <- safe_get_var(cut_data, "${varName}")`);
       lines.push('  if (!is.null(var_col)) {');
-      lines.push('    base_n <- sum(!is.na(var_col))');
-      lines.push(`    count <- sum(as.numeric(var_col) >= ${minVal} & as.numeric(var_col) <= ${maxVal}, na.rm = TRUE)`);
+      if (isWeighted) {
+        lines.push('    base_n <- weighted_base(w_cut, var_col)');
+        lines.push(`    range_mask <- as.numeric(var_col) >= ${minVal} & as.numeric(var_col) <= ${maxVal} & !is.na(var_col)`);
+        lines.push('    count <- weighted_count(w_cut, range_mask)');
+      } else {
+        lines.push('    base_n <- sum(!is.na(var_col))');
+        lines.push(`    count <- sum(as.numeric(var_col) >= ${minVal} & as.numeric(var_col) <= ${maxVal}, na.rm = TRUE)`);
+      }
       lines.push('    pct <- if (base_n > 0) count / base_n * 100 else 0');
     } else if (hasMultipleValues) {
       // Multiple filter values (e.g., T2B "4,5")
       lines.push(`  # Row ${i + 1}: ${row.variable} IN (${filterValues.join(', ')})`);
       lines.push(`  var_col <- safe_get_var(cut_data, "${varName}")`);
       lines.push('  if (!is.null(var_col)) {');
-      lines.push('    base_n <- sum(!is.na(var_col))');
-      lines.push(`    count <- sum(as.numeric(var_col) %in% c(${filterValues.join(', ')}), na.rm = TRUE)`);
+      if (isWeighted) {
+        lines.push('    base_n <- weighted_base(w_cut, var_col)');
+        lines.push(`    multi_mask <- as.numeric(var_col) %in% c(${filterValues.join(', ')}) & !is.na(var_col)`);
+        lines.push('    count <- weighted_count(w_cut, multi_mask)');
+      } else {
+        lines.push('    base_n <- sum(!is.na(var_col))');
+        lines.push(`    count <- sum(as.numeric(var_col) %in% c(${filterValues.join(', ')}), na.rm = TRUE)`);
+      }
       lines.push('    pct <- if (base_n > 0) count / base_n * 100 else 0');
     } else {
       // Standard single filter value
       lines.push(`  # Row ${i + 1}: ${row.variable} == ${filterValue}`);
       lines.push(`  var_col <- safe_get_var(cut_data, "${varName}")`);
       lines.push('  if (!is.null(var_col)) {');
-      lines.push('    base_n <- sum(!is.na(var_col))');
-      lines.push(`    count <- sum(as.numeric(var_col) == ${filterValue}, na.rm = TRUE)`);
+      if (isWeighted) {
+        lines.push('    base_n <- weighted_base(w_cut, var_col)');
+        lines.push(`    val_mask <- as.numeric(var_col) == ${filterValue} & !is.na(var_col)`);
+        lines.push('    count <- weighted_count(w_cut, val_mask)');
+      } else {
+        lines.push('    base_n <- sum(!is.na(var_col))');
+        lines.push(`    count <- sum(as.numeric(var_col) == ${filterValue}, na.rm = TRUE)`);
+      }
       lines.push('    pct <- if (base_n > 0) count / base_n * 100 else 0');
     }
 
     lines.push('');
+    if (isWeighted) {
+      lines.push('    n_eff_val <- n_effective(w_cut)');
+    }
     lines.push(`    table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
     lines.push(`      label = "${label}",`);
     lines.push('      n = base_n,');
     lines.push('      count = count,');
     lines.push('      pct = pct,');
+    if (isWeighted) {
+      lines.push('      n_eff = n_eff_val,');
+    }
     lines.push(`      isNet = ${isNet ? 'TRUE' : 'FALSE'},`);
     lines.push(`      indent = ${indent},`);
     lines.push('      sig_higher_than = c(),');
@@ -1218,7 +1364,7 @@ function generateFrequencyTable(lines: string[], table: TableWithLoopFrame): voi
 // Mean Rows Table Generator
 // =============================================================================
 
-function generateMeanRowsTable(lines: string[], table: TableWithLoopFrame): void {
+function generateMeanRowsTable(lines: string[], table: TableWithLoopFrame, isWeighted: boolean = false): void {
   const tableId = escapeRString(table.tableId);
   const questionText = escapeRString(table.questionText);
 
@@ -1269,6 +1415,14 @@ function generateMeanRowsTable(lines: string[], table: TableWithLoopFrame): void
   lines.push(`for (cut_name in names(${cutsName})) {`);
   lines.push(`  cut_data <- apply_cut(${frameName}, ${cutsName}[[cut_name]])`);
 
+  // Weight vector for this cut
+  if (isWeighted) {
+    const weightSourceMean = isLoopTable ? `w_main_${sanitizeVarName(frameName)}` : 'w_main';
+    lines.push(`  w_cut_mask <- ${cutsName}[[cut_name]]`);
+    lines.push('  w_cut_mask[is.na(w_cut_mask)] <- FALSE');
+    lines.push(`  w_cut <- ${weightSourceMean}[w_cut_mask]`);
+  }
+
   // Apply additional table-level filter if specified (skip logic from FilterApplicator)
   const hasAdditionalFilterMean = table.additionalFilter && table.additionalFilter.trim().length > 0;
   if (hasAdditionalFilterMean) {
@@ -1278,6 +1432,9 @@ function generateMeanRowsTable(lines: string[], table: TableWithLoopFrame): void
     lines.push(`  additional_mask <- with(cut_data, eval(parse(text = "${filterExprMean}")))`);
     lines.push('  additional_mask[is.na(additional_mask)] <- FALSE');
     lines.push('  cut_data <- cut_data[additional_mask, ]');
+    if (isWeighted) {
+      lines.push('  w_cut <- w_cut[additional_mask]');
+    }
   }
 
   lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]] <- list()`);
@@ -1312,9 +1469,15 @@ function generateMeanRowsTable(lines: string[], table: TableWithLoopFrame): void
       lines.push('  row_all_na <- apply(net_matrix, 1, function(r) all(is.na(r)))');
       lines.push('  row_sums <- rowSums(net_matrix, na.rm = TRUE)');
       lines.push('  row_sums[row_all_na] <- NA');
-      lines.push('  net_mean <- if (all(is.na(row_sums))) NA else round_half_up(mean(row_sums, na.rm = TRUE), 1)');
-      lines.push('  # Base = table base (all qualified respondents in this cut)');
-      lines.push('  n <- nrow(cut_data)');
+      if (isWeighted) {
+        lines.push('  net_mean <- if (all(is.na(row_sums))) NA else round_half_up(weighted_mean_custom(w_cut, row_sums), 1)');
+        lines.push('  # Base = weighted table base');
+        lines.push('  n <- sum(w_cut)');
+      } else {
+        lines.push('  net_mean <- if (all(is.na(row_sums))) NA else round_half_up(mean(row_sums, na.rm = TRUE), 1)');
+        lines.push('  # Base = table base (all qualified respondents in this cut)');
+        lines.push('  n <- nrow(cut_data)');
+      }
       lines.push('');
       lines.push(`  table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
       lines.push(`    label = "${label}",`);
@@ -1336,15 +1499,29 @@ function generateMeanRowsTable(lines: string[], table: TableWithLoopFrame): void
       lines.push(`  # Row ${i + 1}: ${row.variable} (numeric summary)`);
       lines.push(`  var_col <- safe_get_var(cut_data, "${varName}")`);
       lines.push('  if (!is.null(var_col)) {');
-      lines.push('    # Get valid (non-NA) values');
-      lines.push('    valid_vals <- var_col[!is.na(var_col)]');
-      lines.push('    n <- length(valid_vals)');
-      lines.push('');
-      lines.push('    # Calculate summary statistics (all rounded to 1 decimal)');
-      lines.push('    mean_val <- if (n > 0) round_half_up(mean(valid_vals), 1) else NA');
-      lines.push('    median_val <- if (n > 0) round_half_up(median(valid_vals), 1) else NA');
-      lines.push('    sd_val <- if (n > 1) round_half_up(sd(valid_vals), 1) else NA');
-      lines.push('    mean_no_out <- if (n > 3) round_half_up(mean_no_outliers(valid_vals), 1) else NA');
+      if (isWeighted) {
+        lines.push('    # Get valid mask and weighted n');
+        lines.push('    valid_mask <- !is.na(var_col)');
+        lines.push('    valid_vals <- var_col[valid_mask]');
+        lines.push('    w_valid <- w_cut[valid_mask]');
+        lines.push('    n <- weighted_base(w_cut, var_col)');
+        lines.push('');
+        lines.push('    # Calculate weighted summary statistics');
+        lines.push('    mean_val <- if (length(valid_vals) > 0) round_half_up(weighted_mean_custom(w_valid, valid_vals), 1) else NA');
+        lines.push('    median_val <- if (length(valid_vals) > 0) round_half_up(median(valid_vals), 1) else NA  # median not weighted');
+        lines.push('    sd_val <- if (length(valid_vals) > 1) round_half_up(weighted_sd_custom(w_valid, valid_vals), 1) else NA');
+        lines.push('    mean_no_out <- if (length(valid_vals) > 3) round_half_up(mean_no_outliers(valid_vals), 1) else NA');
+      } else {
+        lines.push('    # Get valid (non-NA) values');
+        lines.push('    valid_vals <- var_col[!is.na(var_col)]');
+        lines.push('    n <- length(valid_vals)');
+        lines.push('');
+        lines.push('    # Calculate summary statistics (all rounded to 1 decimal)');
+        lines.push('    mean_val <- if (n > 0) round_half_up(mean(valid_vals), 1) else NA');
+        lines.push('    median_val <- if (n > 0) round_half_up(median(valid_vals), 1) else NA');
+        lines.push('    sd_val <- if (n > 1) round_half_up(sd(valid_vals), 1) else NA');
+        lines.push('    mean_no_out <- if (n > 3) round_half_up(mean_no_outliers(valid_vals), 1) else NA');
+      }
       lines.push('');
       lines.push(`    table_${sanitizeVarName(table.tableId)}$data[[cut_name]][["${escapeRString(rowKey)}"]] <- list(`);
       lines.push(`      label = "${label}",`);
@@ -1446,8 +1623,9 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('          # Calculate p-value directly for dual threshold support');
   lines.push('          p1 <- row_data$count / row_data$n');
   lines.push('          p2 <- other_data$count / other_data$n');
-  lines.push('          n1 <- row_data$n');
-  lines.push('          n2 <- other_data$n');
+  lines.push('          # Use effective n for sig testing when weighted (accounts for design effect)');
+  lines.push('          n1 <- if (!is.null(row_data$n_eff)) row_data$n_eff else row_data$n');
+  lines.push('          n2 <- if (!is.null(other_data$n_eff)) other_data$n_eff else other_data$n');
   lines.push('');
   lines.push('          # Skip if both proportions are same or undefined');
   lines.push('          if (is.na(p1) || is.na(p2)) next');
@@ -1485,9 +1663,12 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('            # Get minimum base from config (defaults to 0 = no minimum)');
   lines.push('            min_base <- if (exists("stat_min_base")) stat_min_base else 0');
   lines.push('');
+  lines.push('            # Use effective n for weighted data (if available)');
+  lines.push('            n1_sig <- if (!is.null(row_data$n_eff)) row_data$n_eff else row_data$n');
+  lines.push('            n2_sig <- if (!is.null(other_data$n_eff)) other_data$n_eff else other_data$n');
   lines.push('            result <- sig_test_mean_summary(');
-  lines.push('              row_data$n, row_data$mean, row_data$sd,');
-  lines.push('              other_data$n, other_data$mean, other_data$sd,');
+  lines.push('              n1_sig, row_data$mean, row_data$sd,');
+  lines.push('              n2_sig, other_data$mean, other_data$sd,');
   lines.push('              min_base');
   lines.push('            )');
   lines.push('');
@@ -1522,8 +1703,8 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('            } else {');
   lines.push('              p1 <- row_data$count / row_data$n');
   lines.push('              p2 <- total_data$count / total_data$n');
-  lines.push('              n1 <- row_data$n');
-  lines.push('              n2 <- total_data$n');
+  lines.push('              n1 <- if (!is.null(row_data$n_eff)) row_data$n_eff else row_data$n');
+  lines.push('              n2 <- if (!is.null(total_data$n_eff)) total_data$n_eff else total_data$n');
   lines.push('');
   lines.push('              if (!is.na(p1) && !is.na(p2) && !((p1 == 0 && p2 == 0) || (p1 == 1 && p2 == 1))) {');
   lines.push('                se <- sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2)');
@@ -1545,9 +1726,11 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('');
   lines.push('              min_base <- if (exists("stat_min_base")) stat_min_base else 0');
   lines.push('');
+  lines.push('              n1_sig <- if (!is.null(row_data$n_eff)) row_data$n_eff else row_data$n');
+  lines.push('              n2_sig <- if (!is.null(total_data$n_eff)) total_data$n_eff else total_data$n');
   lines.push('              result <- sig_test_mean_summary(');
-  lines.push('                row_data$n, row_data$mean, row_data$sd,');
-  lines.push('                total_data$n, total_data$mean, total_data$sd,');
+  lines.push('                n1_sig, row_data$mean, row_data$sd,');
+  lines.push('                n2_sig, total_data$mean, total_data$sd,');
   lines.push('                min_base');
   lines.push('              )');
   lines.push('');
@@ -1691,7 +1874,9 @@ function generateJsonOutput(
   tables: ExtendedTableDefinition[],
   cuts: CutDefinition[],
   outputDir: string,
-  metadata: JsonOutputMetadata
+  metadata: JsonOutputMetadata,
+  isWeighted: boolean = false,
+  weightVariable?: string,
 ): void {
   lines.push('# =============================================================================');
   lines.push('# Save Results as JSON');
@@ -1744,23 +1929,49 @@ function generateJsonOutput(
   lines.push(`    bannerGroups = fromJSON('${bannerGroupsJson.replace(/'/g, "\\'")}'),`);
   lines.push(`    comparisonGroups = fromJSON('${comparisonGroupsJson.replace(/'/g, "\\'")}')`);
   lines.push('  ),');
-  lines.push('  tables = all_tables');
+  if (isWeighted) {
+    // Use unweighted tables as placeholder — overridden per mode below
+    lines.push('  tables = all_tables_unweighted');
+  } else {
+    lines.push('  tables = all_tables');
+  }
   lines.push(')');
   lines.push('');
 
-  lines.push('# Write JSON output');
-  lines.push(`output_path <- file.path("${outputDir}", "tables.json")`);
-  lines.push('write_json(output, output_path, pretty = TRUE, auto_unbox = TRUE)');
-  lines.push('print(paste("JSON output saved to:", output_path))');
+  if (isWeighted) {
+    // Dual JSON output: one for each weight mode
+    lines.push('# Write dual JSON output (weighted + unweighted)');
+    lines.push('for (wm in weight_modes) {');
+    lines.push('  output_tables <- get(paste0("all_tables_", wm))');
+    lines.push('  output_wm <- output');
+    lines.push('  output_wm$tables <- output_tables');
+    lines.push('  output_wm$metadata$weighted <- (wm == "weighted")');
+    lines.push(`  output_wm$metadata$weightVariable <- if (wm == "weighted") "${escapeRString(weightVariable!)}" else ""`);
+    lines.push(`  output_path <- file.path("${outputDir}", paste0("tables-", wm, ".json"))`);
+    lines.push('  write_json(output_wm, output_path, pretty = TRUE, auto_unbox = TRUE)');
+    lines.push('  print(paste("JSON output saved to:", output_path))');
+    lines.push('}');
+  } else {
+    lines.push('# Write JSON output');
+    lines.push(`output_path <- file.path("${outputDir}", "tables.json")`);
+    lines.push('write_json(output, output_path, pretty = TRUE, auto_unbox = TRUE)');
+    lines.push('print(paste("JSON output saved to:", output_path))');
+  }
   lines.push('');
 
   lines.push('# Summary');
   lines.push('print(paste(rep("=", 60), collapse = ""))');
   lines.push('print(paste("SUMMARY"))');
-  lines.push('print(paste("  Tables generated:", length(all_tables)))');
+  if (isWeighted) {
+    lines.push('print(paste("  Tables generated:", length(all_tables_weighted), "(per mode)"))');
+    lines.push(`print(paste("  Weight variable: ${weightVariable}"))`);
+    lines.push('print(paste("  Output: tables-weighted.json + tables-unweighted.json"))');
+  } else {
+    lines.push('print(paste("  Tables generated:", length(all_tables)))');
+    lines.push('print(paste("  Output:", output_path))');
+  }
   lines.push('print(paste("  Cuts applied:", length(cuts)))');
   lines.push('print(paste("  Significance level:", p_threshold))');
-  lines.push('print(paste("  Output:", output_path))');
   lines.push('print(paste(rep("=", 60), collapse = ""))');
 }
 
