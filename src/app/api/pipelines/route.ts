@@ -14,12 +14,13 @@ export interface PipelineListItem {
   dataset: string;
   timestamp: string;
   duration: string;
-  status: 'success' | 'partial' | 'error' | 'in_progress' | 'pending_review' | 'cancelled';
+  status: 'success' | 'partial' | 'error' | 'in_progress' | 'pending_review' | 'cancelled' | 'awaiting_tables';
   tables: number;
   cuts: number;
   variables: number;
   bannerGroups: number;
   hasExcel: boolean;
+  hasFeedback: boolean;
   inputs: {
     datamap: string;
     banner: string;
@@ -80,6 +81,16 @@ export async function GET() {
             // No Excel file
           }
 
+          // Check if feedback exists
+          const feedbackPath = path.join(pipelinePath, 'feedback.json');
+          let hasFeedback = false;
+          try {
+            await fs.access(feedbackPath);
+            hasFeedback = true;
+          } catch {
+            // No feedback
+          }
+
           // Only show UI-created pipelines in the sidebar (skip test script runs)
           if (summary.source !== 'ui') {
             continue;
@@ -87,10 +98,10 @@ export async function GET() {
 
           // Map internal status to display status
           const rawStatus: string = summary.status || 'success';
-          let displayStatus: 'success' | 'partial' | 'error' | 'in_progress' | 'pending_review' | 'cancelled';
+          let displayStatus: 'success' | 'partial' | 'error' | 'in_progress' | 'pending_review' | 'cancelled' | 'awaiting_tables';
           if (rawStatus === 'resuming') {
             displayStatus = 'in_progress';
-          } else if (rawStatus === 'success' || rawStatus === 'partial' || rawStatus === 'error' || rawStatus === 'in_progress' || rawStatus === 'pending_review' || rawStatus === 'cancelled') {
+          } else if (rawStatus === 'success' || rawStatus === 'partial' || rawStatus === 'error' || rawStatus === 'in_progress' || rawStatus === 'pending_review' || rawStatus === 'cancelled' || rawStatus === 'awaiting_tables') {
             displayStatus = rawStatus;
           } else {
             displayStatus = 'success'; // Default fallback
@@ -113,6 +124,7 @@ export async function GET() {
             variables: summary.outputs?.variables || 0,
             bannerGroups: summary.outputs?.bannerGroups || 0,
             hasExcel,
+            hasFeedback,
             inputs: {
               datamap: summary.inputs?.datamap || '',
               banner: summary.inputs?.banner || '',

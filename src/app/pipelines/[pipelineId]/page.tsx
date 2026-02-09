@@ -5,6 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 import {
   ArrowLeft,
   Download,
@@ -21,6 +26,8 @@ import {
   AlertTriangle,
   Play,
   XCircle,
+  MessageSquare,
+  X,
 } from 'lucide-react';
 import type { PipelineDetails, FileInfo } from '@/app/api/pipelines/[pipelineId]/route';
 
@@ -34,6 +41,17 @@ function formatDate(timestamp: string): string {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+  });
+}
+
+function formatDateTime(timestamp: string): string {
+  const date = new Date(timestamp);
+  return date.toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
@@ -178,7 +196,74 @@ export default function PipelineDetailPage({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+  const [feedbackNotes, setFeedbackNotes] = useState('');
+  const [feedbackRating, setFeedbackRating] = useState('0');
+  const [tableIdInput, setTableIdInput] = useState('');
+  const [tableIds, setTableIds] = useState<string[]>([]);
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
   const router = useRouter();
+
+  const addTableIdsFromInput = () => {
+    const raw = tableIdInput.trim();
+    if (!raw) return;
+    const parsed = raw
+      .split(/[\n,\t ]+/g)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const next = new Set<string>(tableIds);
+    for (const id of parsed) next.add(id);
+    setTableIds(Array.from(next));
+    setTableIdInput('');
+  };
+
+  const removeTableId = (id: string) => {
+    setTableIds(tableIds.filter(t => t !== id));
+  };
+
+  const submitFeedback = async () => {
+    if (!details) return;
+    if (isSubmittingFeedback) return;
+
+    setIsSubmittingFeedback(true);
+    try {
+      const res = await fetch(`/api/pipelines/${encodeURIComponent(pipelineId)}/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rating: Number(feedbackRating) || 0,
+          notes: feedbackNotes,
+          tableIds,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || 'Failed to submit feedback');
+      }
+
+      toast.success('Feedback submitted', {
+        description: 'Thanks — this helps us improve the pipeline.',
+      });
+
+      if (data?.summary) {
+        setDetails(prev => prev ? { ...prev, feedback: data.summary } : prev);
+      }
+
+      // Reset form but keep it open so users can add more if desired
+      setFeedbackNotes('');
+      setFeedbackRating('0');
+      setTableIds([]);
+      setTableIdInput('');
+    } catch (err) {
+      toast.error('Failed to submit feedback', {
+        description: err instanceof Error ? err.message : 'Unknown error',
+      });
+    } finally {
+      setIsSubmittingFeedback(false);
+    }
+  };
 
   const handleCancel = async () => {
     setIsCancelling(true);
@@ -287,6 +372,7 @@ export default function PipelineDetailPage({
   // Check if pipeline is still active
   const isActive = details.status === 'in_progress' || details.status === 'pending_review' || details.status === 'awaiting_tables';
   const hasOutputs = details.outputs.tables > 0 || details.outputs.cuts > 0;
+  const feedbackAvailable = !isActive;
 
   return (
     <div className="py-12 px-4">
@@ -458,6 +544,150 @@ export default function PipelineDetailPage({
               <p className="text-sm text-muted-foreground">
                 {isActive ? 'Output files will appear here once processing completes.' : 'No output files available'}
               </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Output Feedback */}
+        <Card className="mb-8">
+          <CardHeader>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-primary" />
+                  Output Feedback
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Tell us what was wrong or missing in this output. This does not re-run anything; it’s for improving future runs.
+                </p>
+              </div>
+              <Button
+                variant={showFeedbackForm ? 'outline' : 'default'}
+                onClick={() => setShowFeedbackForm(v => !v)}
+                disabled={!feedbackAvailable}
+              >
+                {showFeedbackForm ? 'Hide' : 'Leave Feedback'}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!feedbackAvailable && (
+              <p className="text-sm text-muted-foreground">
+                Feedback becomes available once the pipeline completes.
+              </p>
+            )}
+
+            {details.feedback?.hasFeedback && (
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                <Badge variant="secondary">
+                  {details.feedback.entryCount} entr{details.feedback.entryCount === 1 ? 'y' : 'ies'}
+                </Badge>
+                {details.feedback.lastSubmittedAt && (
+                  <span className="text-muted-foreground">
+                    Last submitted {formatDateTime(details.feedback.lastSubmittedAt)}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {showFeedbackForm && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Overall quality (optional)</Label>
+                    <Select value={feedbackRating} onValueChange={setFeedbackRating} disabled={!feedbackAvailable || isSubmittingFeedback}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Not sure" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">Not sure</SelectItem>
+                        <SelectItem value="1">1 - Very poor</SelectItem>
+                        <SelectItem value="2">2 - Poor</SelectItem>
+                        <SelectItem value="3">3 - OK</SelectItem>
+                        <SelectItem value="4">4 - Good</SelectItem>
+                        <SelectItem value="5">5 - Great</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Table IDs (optional)</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={tableIdInput}
+                        onChange={(e) => setTableIdInput(e.target.value)}
+                        placeholder="Paste one or more table IDs (comma/newline separated)"
+                        disabled={!feedbackAvailable || isSubmittingFeedback}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addTableIdsFromInput();
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={addTableIdsFromInput}
+                        disabled={!feedbackAvailable || isSubmittingFeedback || tableIdInput.trim().length === 0}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                    {tableIds.length > 0 && (
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {tableIds.map((id) => (
+                          <Badge key={id} variant="secondary" className="flex items-center gap-1">
+                            <span>{id}</span>
+                            <button
+                              type="button"
+                              className="ml-1 opacity-70 hover:opacity-100"
+                              onClick={() => removeTableId(id)}
+                              aria-label={`Remove ${id}`}
+                              disabled={!feedbackAvailable || isSubmittingFeedback}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Notes</Label>
+                  <Textarea
+                    value={feedbackNotes}
+                    onChange={(e) => setFeedbackNotes(e.target.value)}
+                    placeholder="e.g., missing NETs, wrong table structure, tables that should be excluded, bad labels…"
+                    disabled={!feedbackAvailable || isSubmittingFeedback}
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowFeedbackForm(false)}
+                    disabled={isSubmittingFeedback}
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    onClick={submitFeedback}
+                    disabled={!feedbackAvailable || isSubmittingFeedback}
+                  >
+                    {isSubmittingFeedback ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      'Submit Feedback'
+                    )}
+                  </Button>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>

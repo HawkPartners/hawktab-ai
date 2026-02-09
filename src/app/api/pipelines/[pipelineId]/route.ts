@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { formatDuration } from '@/lib/utils/formatDuration';
+import { PipelineFeedbackFileSchema, type PipelineFeedbackSummary } from '@/schemas/pipelineFeedbackSchema';
 
 export interface FileInfo {
   name: string;
@@ -40,6 +41,7 @@ export interface PipelineDetails {
     bannerGroups: number;
   };
   files: FileInfo[];
+  feedback: PipelineFeedbackSummary;
   review?: {
     flaggedColumnCount: number;
     reviewUrl: string;
@@ -146,6 +148,29 @@ async function listFiles(
   return files;
 }
 
+async function readFeedbackSummary(pipelineDir: string): Promise<PipelineFeedbackSummary> {
+  const feedbackPath = path.join(pipelineDir, 'feedback.json');
+
+  try {
+    const raw = await fs.readFile(feedbackPath, 'utf-8');
+    const parsed = PipelineFeedbackFileSchema.parse(JSON.parse(raw));
+    const last = parsed.entries.length > 0 ? parsed.entries[parsed.entries.length - 1] : null;
+    return {
+      hasFeedback: parsed.entries.length > 0,
+      entryCount: parsed.entries.length,
+      lastSubmittedAt: last ? last.createdAt : '',
+      lastRating: last ? last.rating : 0,
+    };
+  } catch {
+    return {
+      hasFeedback: false,
+      entryCount: 0,
+      lastSubmittedAt: '',
+      lastRating: 0,
+    };
+  }
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ pipelineId: string }> }
@@ -178,6 +203,8 @@ export async function GET(
     } catch {
       return NextResponse.json({ error: 'Pipeline summary not found' }, { status: 404 });
     }
+
+    const feedback = await readFeedbackSummary(pipelineInfo.path);
 
     // List all files in the pipeline directory
     const allFiles = await listFiles(pipelineInfo.path, pipelineInfo.path, pipelineId);
@@ -253,6 +280,7 @@ export async function GET(
         bannerGroups: summary.outputs?.bannerGroups || 0,
       },
       files,
+      feedback,
     };
 
     // Add review info for pending_review status

@@ -47,6 +47,8 @@ function StatusIcon({ status }: { status: string }) {
       return <AlertCircle className="h-4 w-4 text-red-500" />;
     case 'in_progress':
       return <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />;
+    case 'awaiting_tables':
+      return <Loader2 className="h-4 w-4 text-purple-500 animate-spin" />;
     case 'pending_review':
       return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
     case 'cancelled':
@@ -74,6 +76,13 @@ function StatusBadge({ status }: { status: string }) {
       </Badge>
     );
   }
+  if (status === 'awaiting_tables') {
+    return (
+      <Badge variant="secondary" className="text-xs bg-purple-500/20 text-purple-700 dark:text-purple-400">
+        Completing...
+      </Badge>
+    );
+  }
   if (status === 'cancelled') {
     return (
       <Badge variant="secondary" className="text-xs bg-gray-500/20 text-gray-700 dark:text-gray-400">
@@ -85,7 +94,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export function PipelineListCard({ pipeline, onClick }: PipelineListCardProps) {
-  const isActive = pipeline.status === 'in_progress' || pipeline.status === 'pending_review';
+  const isActive = pipeline.status === 'in_progress' || pipeline.status === 'pending_review' || pipeline.status === 'awaiting_tables';
   const isCancelled = pipeline.status === 'cancelled';
 
   return (
@@ -93,6 +102,8 @@ export function PipelineListCard({ pipeline, onClick }: PipelineListCardProps) {
       className={`p-3 cursor-pointer hover:bg-muted/50 transition-colors ${
         pipeline.status === 'pending_review' ? 'border-yellow-500/50' : ''
       } ${pipeline.status === 'in_progress' ? 'border-blue-500/50' : ''} ${
+        pipeline.status === 'awaiting_tables' ? 'border-purple-500/50' : ''
+      } ${
         isCancelled ? 'opacity-60' : ''
       }`}
       onClick={() => onClick(pipeline.pipelineId)}
@@ -116,6 +127,11 @@ export function PipelineListCard({ pipeline, onClick }: PipelineListCardProps) {
           </div>
           <div className="flex items-center gap-2 mt-2 flex-wrap">
             <StatusBadge status={pipeline.status} />
+            {pipeline.hasFeedback && (
+              <Badge variant="outline" className="text-xs">
+                Feedback
+              </Badge>
+            )}
             {!isActive && !isCancelled && (
               <>
                 <Badge variant="secondary" className="text-xs">
