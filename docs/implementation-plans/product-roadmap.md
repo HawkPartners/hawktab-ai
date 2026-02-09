@@ -12,7 +12,7 @@ This document outlines the path from HawkTab AI's current state (reliable local 
 
 ---
 
-### Implementation Status Summary (Feb 8, 2026)
+### Implementation Status Summary (Feb 9, 2026)
 
 | Item | Status | Notes |
 |------|--------|-------|
@@ -28,12 +28,12 @@ This document outlines the path from HawkTab AI's current state (reliable local 
 | **Phase 2.4d** Dual-Mode Loop Prompt | Deferred | Moved to Long-term Vision |
 | **Phase 2.5** Upfront Context | Consolidated | Merged into 3.1 (Project Intake Questions) |
 | **Phase 2.5a** Input Flexibility | Complete | PDF/DOCX for survey + banner; .sav for data |
-| **Phase 2.5b** AI-Generated Banner | Not Started | BannerAgent generate-cuts prompt + HITL gate |
+| **Phase 2.5b** AI-Generated Banner | Complete | BannerAgent generate-cuts prompt + HITL gate |
 | **Phase 2.6** Weight Detection | Not Started | Detection + HITL + separate weighted/unweighted workbooks |
 | **Phase 2.7** ~~Survey Classification~~ | Consolidated | Classification → 3.1 intake; confidence scoring → Long-term Vision |
 | **Phase 2.8** HITL Review Overhaul | Partial | Agent output simplification + user-facing review with base sizes |
-| **Phase 2.9** Table ID Visibility | Partial (done) | IDs render, excluded sheet works. Interactive control → Long-term Vision |
-| **Phase 2.10** Output Feedback | Not Started | Lightweight per-run feedback collection. Per-table regen → Long-term Vision |
+| **Phase 2.9** Table ID Visibility | Complete | IDs render, excluded sheet works. Interactive control → Long-term Vision |
+| **Phase 2.10** Output Feedback | Complete | Feedback form on results page, stored as feedback.json, history badge |
 | **Phase 2.11** Excel Themes | Complete | 6 themes: classic, coastal, blush, tropical, bold, earth. `--theme` CLI flag. |
 | **Phase 2.12** ~~Browser Review~~ | Deferred | Consolidated into Long-term Vision → Interactive Table Review |
 | **Phase 3.1** Local UI | Partial (~40%) | Basic pipeline UI; no enterprise structure |
