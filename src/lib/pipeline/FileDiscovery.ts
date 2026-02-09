@@ -35,27 +35,30 @@ export async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
 
   const files = await fs.readdir(inputsFolder);
 
+  // Filter out Office temp files (~$...) before searching
+  const validFiles = files.filter(f => !f.startsWith('~$'));
+
   // Find datamap CSV (optional — .sav is the source of truth)
-  const datamapFile = files.find(f =>
+  const datamapFile = validFiles.find(f =>
     f.toLowerCase().includes('datamap') && f.endsWith('.csv')
   );
   const datamap = datamapFile ? path.join(inputsFolder, datamapFile) : null;
 
   // Find banner plan (prefer 'adjusted' > 'clean' > original)
-  let banner = files.find(f =>
+  let banner = validFiles.find(f =>
     f.toLowerCase().includes('banner') &&
     f.toLowerCase().includes('adjusted') &&
     (f.endsWith('.docx') || f.endsWith('.pdf'))
   );
   if (!banner) {
-    banner = files.find(f =>
+    banner = validFiles.find(f =>
       f.toLowerCase().includes('banner') &&
       f.toLowerCase().includes('clean') &&
       (f.endsWith('.docx') || f.endsWith('.pdf'))
     );
   }
   if (!banner) {
-    banner = files.find(f =>
+    banner = validFiles.find(f =>
       f.toLowerCase().includes('banner') &&
       (f.endsWith('.docx') || f.endsWith('.pdf'))
     );
@@ -65,21 +68,21 @@ export async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
   }
 
   // Find SPSS file
-  const spss = files.find(f => f.endsWith('.sav'));
+  const spss = validFiles.find(f => f.endsWith('.sav'));
   if (!spss) {
     throw new Error(`No SPSS file found in ${folder}. Expected .sav file.`);
   }
 
-  // Find survey/questionnaire document (optional - for VerificationAgent)
+  // Find survey/questionnaire document (required for SkipLogicAgent + VerificationAgent)
   // Priority: 1) file with 'survey', 'questionnaire', 'qre', or 'qnr', 2) .docx that's not a banner plan
-  let survey = files.find(f => {
+  let survey = validFiles.find(f => {
     const lower = f.toLowerCase();
     return (lower.includes('survey') || lower.includes('questionnaire') || lower.includes('qre') || lower.includes('qnr')) &&
       (f.endsWith('.docx') || f.endsWith('.pdf'));
   });
   if (!survey) {
     // Fall back to any .docx that's not a banner plan (likely the main survey document)
-    survey = files.find(f =>
+    survey = validFiles.find(f =>
       f.endsWith('.docx') &&
       !f.toLowerCase().includes('banner')
     );
