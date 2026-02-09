@@ -64,6 +64,14 @@ function parseConcurrency(): number {
   return 3;
 }
 
+function parseThemeFlag(): string {
+  const arg = process.argv.find(a => a.startsWith('--theme='));
+  if (arg) {
+    return arg.split('=')[1]?.toLowerCase() || 'classic';
+  }
+  return 'classic';
+}
+
 // =============================================================================
 // Main
 // =============================================================================
@@ -99,6 +107,7 @@ async function main() {
     separateWorkbooks: process.argv.includes('--separate-workbooks'),
     stopAfterVerification: process.argv.includes('--stop-after-verification'),
     concurrency: parseConcurrency(),
+    theme: parseThemeFlag(),
   });
 
   if (!result.success) {

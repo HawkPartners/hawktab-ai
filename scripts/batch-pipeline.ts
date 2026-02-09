@@ -151,6 +151,14 @@ function parseConcurrency(): number {
   return 3;
 }
 
+function parseThemeFlag(): string {
+  const arg = process.argv.find(a => a.startsWith('--theme='));
+  if (arg) {
+    return arg.split('=')[1]?.toLowerCase() || 'classic';
+  }
+  return 'classic';
+}
+
 // =============================================================================
 // Main
 // =============================================================================
@@ -222,6 +230,7 @@ async function main() {
   const separateWorkbooks = process.argv.includes('--separate-workbooks');
   const stopAfterVerification = process.argv.includes('--stop-after-verification');
   const concurrency = parseConcurrency();
+  const theme = parseThemeFlag();
 
   console.log(`\n${'='.repeat(60)}`);
   console.log(`BATCH RUN: ${ready.length} datasets`);
@@ -246,6 +255,7 @@ async function main() {
         separateWorkbooks,
         stopAfterVerification,
         concurrency,
+        theme,
       });
 
       const durationMs = Date.now() - startTime;

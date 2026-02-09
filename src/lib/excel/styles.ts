@@ -4,15 +4,19 @@
  * Two style sets:
  * - Antares: Original vertical stacking format
  * - Joe: Horizontal layout with minimal borders, colored sections
+ *
+ * Supports theming via setActiveTheme(). Call it before ExcelFormatter renders.
+ * Renderers import FILLS/FONTS/getGroupFill — these are mutated in place on theme switch.
  */
 
 import type { Fill, Borders, Font, Alignment, Border } from 'exceljs';
+import { getTheme, type ThemePalette } from './themes';
 
 // =============================================================================
-// Colors (ARGB format for ExcelJS)
+// Colors (ARGB format for ExcelJS) — mutable, rebuilt on theme switch
 // =============================================================================
 
-export const COLORS = {
+export const COLORS: Record<string, string> = {
   // Header colors (Antares)
   titleBackground: 'FFE0E0E0',      // Light gray for title row
   groupHeaderBackground: 'FFD9E1F2', // Light blue for group/column headers
@@ -56,7 +60,7 @@ export const COLORS = {
   joeGroup4B: 'FFD9D2E9',           // Light purple - shade B
   joeGroup5A: 'FFDAEEF3',           // Light teal - shade A
   joeGroup5B: 'FFCBE4EE',           // Light teal - shade B
-} as const;
+};
 
 // =============================================================================
 // Fills
@@ -510,3 +514,63 @@ export const TABLE_SPACING = {
   startRow: 1,          // Starting row for first table
   startCol: 1,          // Starting column (A = 1)
 } as const;
+
+// =============================================================================
+// Theme Switching
+// =============================================================================
+
+function makeFill(argb: string): Fill {
+  return { type: 'pattern', pattern: 'solid', fgColor: { argb } };
+}
+
+/**
+ * Apply a color theme. Mutates COLORS, FILLS, and FONTS in place so all
+ * renderers that imported them see the updated values.
+ *
+ * Call this BEFORE ExcelFormatter.formatFromJson().
+ *
+ * @param name - Theme name from themes.ts (e.g., 'classic', 'coastal')
+ */
+export function setActiveTheme(name: string): void {
+  const palette: ThemePalette = getTheme(name);
+
+  // --- Update COLORS ---
+  COLORS.joeContext = palette.context;
+  COLORS.joeBase = palette.base;
+  COLORS.joeLabel = palette.label;
+  COLORS.joeHeader = palette.header;
+  COLORS.joeHeaderStatLetter = palette.header;
+  COLORS.joeDataAlt1 = palette.groups[0].a;
+  COLORS.sigLetterRed = palette.sigLetter;
+
+  for (let i = 0; i < 6; i++) {
+    const group = palette.groups[i % palette.groups.length];
+    COLORS[`joeGroup${i}A`] = group.a;
+    COLORS[`joeGroup${i}B`] = group.b;
+  }
+
+  // --- Update FILLS (replace each Fill object in place) ---
+  FILLS.joeContext = makeFill(palette.context);
+  FILLS.joeBase = makeFill(palette.base);
+  FILLS.joeLabel = makeFill(palette.label);
+  FILLS.joeHeader = makeFill(palette.header);
+  FILLS.joeDataBlue = makeFill(palette.groups[0].a);
+
+  for (let i = 0; i < 6; i++) {
+    const group = palette.groups[i % palette.groups.length];
+    FILLS[`joeGroup${i}A`] = makeFill(group.a);
+    FILLS[`joeGroup${i}B`] = makeFill(group.b);
+  }
+
+  // --- Update FONTS (sig letter color) ---
+  FONTS.significanceLetterRed = {
+    bold: true,
+    size: 10,
+    color: { argb: palette.sigLetter },
+  };
+  FONTS.joeStatLetterRed = {
+    bold: false,
+    size: 10,
+    color: { argb: palette.sigLetter },
+  };
+}

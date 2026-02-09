@@ -28,14 +28,14 @@ This document outlines the path from HawkTab AI's current state (reliable local 
 | **Phase 2.4d** Dual-Mode Loop Prompt | Deferred | Moved to Long-term Vision |
 | **Phase 2.5** Upfront Context | Consolidated | Merged into 3.1 (Project Intake Questions) |
 | **Phase 2.5a** Input Flexibility | Complete | PDF/DOCX for survey + banner; .sav for data |
-| **Phase 2.5b** AI-Generated Banner | Not Started | Deferred post-MVP |
-| **Phase 2.6** Weight Detection | Not Started | No detection, no R integration |
-| **Phase 2.7** Survey Classification | Not Started | No type detection or confidence scoring |
-| **Phase 2.8** Sample Size in HITL | Partial | HITL UI exists; base sizes missing |
-| **Phase 2.9** Table ID + Exclude | Partial | IDs render, excluded sheet works; no regeneration control |
-| **Phase 2.10** Table Feedback | Not Started | No per-table feedback or regeneration |
-| **Phase 2.11** Excel Themes | Not Started | Single hardcoded palette |
-| **Phase 2.12** Browser Review | Partial (foundation) | Crosstab review UI exists; table review missing |
+| **Phase 2.5b** AI-Generated Banner | Not Started | BannerAgent generate-cuts prompt + HITL gate |
+| **Phase 2.6** Weight Detection | Not Started | Detection + HITL + separate weighted/unweighted workbooks |
+| **Phase 2.7** ~~Survey Classification~~ | Consolidated | Classification → 3.1 intake; confidence scoring → Long-term Vision |
+| **Phase 2.8** HITL Review Overhaul | Partial | Agent output simplification + user-facing review with base sizes |
+| **Phase 2.9** Table ID Visibility | Partial (done) | IDs render, excluded sheet works. Interactive control → Long-term Vision |
+| **Phase 2.10** Output Feedback | Not Started | Lightweight per-run feedback collection. Per-table regen → Long-term Vision |
+| **Phase 2.11** Excel Themes | Complete | 6 themes: classic, coastal, blush, tropical, bold, earth. `--theme` CLI flag. |
+| **Phase 2.12** ~~Browser Review~~ | Deferred | Consolidated into Long-term Vision → Interactive Table Review |
 | **Phase 3.1** Local UI | Partial (~40%) | Basic pipeline UI; no enterprise structure |
 | **Phase 3.2** Cloud Deployment | Not Started | No Convex/R2/Railway/Sentry/PostHog |
 | **Phase 3.3** Auth (WorkOS) | Not Started | Zero authentication |
@@ -174,284 +174,303 @@ Question numbering flexibility (Q_S2, S2, QS2, etc.) is handled by AI pattern ma
 
 ---
 
-### 2.5b AI-Generated Banner from Research Objectives (defer to after MVP delivery) — `NOT STARTED`
+### 2.5b AI-Generated Banner from Research Objectives — `NOT STARTED`
 
-When no banner plan is provided—or user explicitly chooses "AI generate cuts"—the system generates a suggested banner.
+When no banner plan is provided — or the user explicitly chooses "AI generate cuts" — the system generates a suggested banner from the datamap and optional research objectives.
 
-**Why It Matters**: Antares mentioned clients who send banner plans with "just words" or no spec at all. This feature handles that case and could be a differentiator.
+**Why It Matters**: Many projects don't have formal banner plans. Internally, we have datasets we can't test because the pipeline expects a banner plan. Externally, Antares mentioned clients who send plans with "just words" or no spec at all. This feature unblocks both scenarios and is a commercial differentiator — no other tool generates banner groups from data + objectives.
 
-> **Note**: This feature isn't blocking for initial Antares access. The core value is reliable tabs from their existing workflow (banner plan provided). We can tell them: "We heard this in our conversation and have a plan to implement it, but we wanted to get this in your hands as soon as possible." Ship it as a fast-follow after MVP delivery.
+**User Flow** (UI context for future 3.1, but the logic is pipeline-level):
 
-**Flow**:
-1. **Prompt for research objectives** (optional but recommended):
-   - CLI: `--objectives "Compare specialty tiers, focus on PCSK9i adoption"` or interactive prompt
-   - What are you trying to learn? Key subgroups of interest?
-   - For testing: default objectives per dataset
+1. User completes intake form (project type, research objectives — if provided)
+2. At the banner plan step, user has three options:
+   - **Upload a banner plan** → existing BannerAgent flow (no change)
+   - **Provide optional cut suggestions** → text hints like "cut by specialty tier and region" that steer the agent
+   - **Skip / let AI generate** → system generates cuts from datamap + objectives
+3. If generating: BannerAgent (generate mode) proposes 3-5 banner groups
+4. **HITL gate**: User reviews proposed groups before pipeline continues — "Here's what we'd cut by. Add, remove, or modify." This is mandatory for generated banners (unlike parsed banners where the user already made the decisions).
+5. User confirms → output feeds into CrosstabAgent as normal
 
-2. **Analyze data map for cut candidates**:
-   - Demographics (age, gender, region, specialty)
-   - Segments/tiers (common cut patterns)
-   - Key variables mentioned in objectives
+**Architecture**:
 
-3. **Apply best practices**:
-   - What makes a useful banner cut (sufficient n, meaningful segmentation)
-   - Typical group structures (Total, then demographic cuts, then behavioral cuts)
+The BannerAgent handles both paths. Same agent, different prompt. The output schema (`BannerGroup[]`) is unchanged — downstream pipeline doesn't know or care whether groups were parsed from a PDF or generated from data.
 
-4. **Generate suggested banner groups**:
-   - Ranked by relevance to research objectives
-   - Include stat testing letters
+```
+src/prompts/banner/
+├── with-plan.ts          # Current: parse provided banner plan
+├── generate-cuts.ts      # New: generate cuts from datamap + objectives
+└── shared/               # Common output format instructions, best practices
+```
 
-5. **HITL confirmation**:
-   - Show suggested banner to user before proceeding
-   - Allow edits/removals before pipeline continues
+This follows a broader pattern we'll adopt as agents handle more scenarios: **scenario-based prompts** rather than just production/alternative tuning variants. Each prompt is optimized for a specific input situation.
 
-**Implementation Options**:
-- Mode of existing BannerAgent (different prompt path when no banner provided)
-- Separate "BannerInferenceAgent" that runs when banner input is missing
+**Key input for generation is the datamap, not the survey.** The .sav-derived datamap has everything needed: variable names, labels, value labels, category counts, `nUnique`. The survey PDF is supplemental context (question wording helps understand intent), but the datamap is the engine.
 
-**Level of Effort**: Medium-High (new agent logic, HITL integration, research objectives capture)
+**What the generate-cuts prompt reasons about:**
+
+| Signal | Source | How It's Used |
+|--------|--------|---------------|
+| Demographics | Datamap variable names + labels (age, gender, region) | Almost always included as cuts |
+| Project type | Intake form (segmentation, ATU, MaxDiff, etc.) | Informs which variables matter (e.g., segment variable for segmentation studies) |
+| Research objectives | User-provided text (optional) | Prioritizes variables relevant to what the user is trying to learn |
+| Cut suggestions | User-provided hints (optional) | Direct steering — "cut by specialty tier" |
+| Variable suitability | Datamap `nUnique`, value labels | Categorical variables with 2-8 categories make good cuts; 50-category variables don't |
+| Sample size | Datamap or quick R query | Cuts need sufficient n per cell to be meaningful |
+
+**What "good" generated cuts look like:**
+
+- **Group 1**: Total (always)
+- **Groups 2-4**: Demographics — the "usual suspects" that almost every study cuts by
+- **Group 5**: Study-specific — driven by research objectives or project type (e.g., segment assignments, awareness tiers, usage levels)
+- Each group has 2-6 cuts with clear labels and stat testing letters
+
+**Pipeline branching logic:**
+
+```
+if (bannerPlanProvided) {
+  // Existing flow — parse banner plan PDF/DOCX
+  BannerAgent(prompt: 'with-plan', input: bannerPlan + survey)
+} else {
+  // New flow — generate cuts from data
+  BannerAgent(prompt: 'generate-cuts', input: datamap + objectives + cutSuggestions)
+  → HITL gate (user reviews/edits proposed groups)
+}
+→ CrosstabAgent (unchanged — receives BannerGroup[] either way)
+```
+
+**Why this is more feasible than originally scoped:**
+
+- Output format is unchanged — no downstream pipeline changes
+- BannerAgent already handles structured output with the right schema
+- Datamap already contains everything needed (variables, labels, types, category counts)
+- HITL pattern already exists for crosstab cuts — we add a similar gate earlier
+- The prompt engineering is the main work, not plumbing
+
+**What's genuinely hard:** The current BannerAgent prompt is optimized for *parsing* — reading a document and extracting structure. The generate-cuts prompt is a different cognitive task — *designing* banner groups from raw data. The prompt will need real iteration. But the infrastructure (agent call, schema, pipeline integration) is straightforward.
+
+**Level of Effort**: Medium (prompt engineering + pipeline branching + HITL gate. No new schemas, no new agents, no downstream changes.)
 
 ---
 
 ### 2.6 Weight Detection & Application — `NOT STARTED`
 
-*Moved from Reliability Plan Part 5.*
+**Problem**: Most commercial survey data arrives pre-weighted. The fielding partner (Antares, Dynata, etc.) runs RIM weighting or raking on the completed data to match demographic targets and adds a weight column to the .sav file before delivery. This is a respondent-level attribute — each person gets one weight value (typically 0.3–3.0, centered around 1.0). Currently the pipeline ignores weights entirely. For weighted studies, this means all output is technically valid but analytically incomplete — clients expect weighted results when they've paid for weighted data.
 
-**Problem**: Many surveys include weight variables to adjust for sampling imbalances. Currently the pipeline ignores weights — all calculations are unweighted. This produces technically correct but analytically incomplete output for weighted studies.
+**Detection**:
 
-**Detection**: Look for common weight column names in the data file (`weight`, `wt`, `wgt`, and variations).
+Scan the datamap for weight variable candidates. Signals:
 
-**User Confirmation**:
+| Signal | What to Look For |
+|--------|-----------------|
+| Variable name | `weight`, `wt`, `wgt`, `WT_FINAL`, `WEIGHT_VAR`, and common variations (case-insensitive) |
+| Data characteristics | Numeric, no value labels, values clustered around 1.0, no zeros or negatives |
+| SPSS metadata | Some .sav files tag the weight variable explicitly — haven may expose this |
+
+Detection should run early (during datamap processing) and flag candidates for user confirmation.
+
+**User Confirmation (HITL)**:
+
+This must surface to the user — never silently apply weights. The UI (or CLI for now) presents:
+
 ```
-We found a possible weight variable: "wt"
-Apply weights to calculations?
+We found a possible weight variable: "wt" (mean: 1.02, range: 0.31–2.87)
 
-[Yes, apply weights]  [No, unweighted]  [That's not a weight]
+○ Yes, apply weights using "wt"
+○ No, run unweighted
+○ That's not a weight variable — it's [user can explain]
 ```
 
-**Output**:
-- Two base rows: Unweighted base (n), Weighted base (weighted n)
-- All percentages/means calculated with weights
-- R's `svydesign` handles weighted calculations natively
+If multiple candidates are found, let the user pick which one. If none are found, skip — unweighted is the default.
 
-**Level of Effort**: Medium (heuristic detection + R script changes + Excel formatting for dual base rows)
+**Output — Separate Workbooks for Weighted vs. Unweighted**:
 
----
+When weights are applied, produce two complete workbooks:
 
-### 2.7 Survey Classification & Confidence Scoring — `NOT STARTED`
+| Workbook | Contents |
+|----------|----------|
+| `crosstabs-weighted.xlsx` | All tables with weighted calculations. Base row shows weighted n. TOC + Excluded Tables sheet. |
+| `crosstabs-unweighted.xlsx` | Same tables, unweighted. Base row shows raw n. TOC + Excluded Tables sheet. |
 
-*Moved from Reliability Plan Part 6.*
+Both workbooks have their own TOC and Excluded Tables sheet (same pattern as `--display=both --separate-workbooks`). The TOC should note whether the workbook contains weighted or unweighted results.
 
-**Problem**: Different research methodologies need different handling. A MaxDiff survey needs actual message text. A conjoint has choice tasks and derived utilities. An ATU has expected table structures. Without detecting the type, agents operate generically and may miss methodology-specific requirements.
+This is simpler than collapsing weighted and unweighted into one workbook (which Joe sometimes does but inconsistently). Two workbooks is clean, unambiguous, and reuses the separate-workbooks pattern we already have for display modes.
 
-**Survey Classification**:
+**R Script Changes**:
 
-If we can detect the type, we can set user expectations, prompt for missing context, pre-configure agent behavior, and flag when we're out of our depth.
+- Weighted workbook: Use R's `survey` package — `svydesign()` for design specification, `svytable()` / `svymean()` / `svyciprop()` for weighted calculations, weighted significance testing
+- Unweighted workbook: Current R script (no changes)
+- Both scripts generated from the same `tables.json` — only the calculation layer differs
+- If the data is later stacked for loop tables, the weight variable carries forward to each stacked row (respondent's weight applies to all their occasions)
 
-| Type | Detection Signals | Why It Matters |
-|------|-------------------|----------------|
-| **MaxDiff** | Variables named `MD*`, `maxdiff*`; "best/worst" or "most/least appealing" in descriptions | Needs message text; has utility scores |
-| **Conjoint/DCM** | Variables named `DCM*`, `conjoint*`, `choice*`; utility score patterns | Has choice tasks and derived utilities |
-| **ATU** | "awareness" + "trial/usage" patterns; "ever heard/used" | Standard table structures expected |
-| **Message Testing** | "message N" patterns; "appeal" + "message" | Needs actual message content |
-| **Segmentation** | "segment" or "cluster" in variables | May have derived segment assignments |
-| **Standard** | None of the above | Default handling |
+**Pipeline Integration**:
 
-**Multi-Dimensional Confidence Scoring**:
+```
+DataMap extraction
+  → Weight detection (scan for candidates)
+  → HITL confirmation (user picks weight variable or declines)
+  → Pipeline continues with weightVariable in config
+  → R script generation: if weightVariable, generate both weighted + unweighted scripts
+  → Excel generation: two workbooks (or one if unweighted)
+```
 
-Instead of a single confidence score, track confidence across dimensions:
-
-| Dimension | What It Measures | When Low Score Matters |
-|-----------|------------------|------------------------|
-| **Structure** | Did we parse brackets/values/options correctly? | Parser may have failed |
-| **Parent-Child** | Are relationships between variables clear? | Context enrichment issues |
-| **Variable Types** | Did we identify types correctly? | Wrong table treatment |
-| **Loop Detection** | If loops detected, how certain? | May ask for wrong format |
-| **Survey Classification** | How confident in methodology type? | May miss required context |
-
-**Integration**: Ties into Project Intake Questions (3.1). Low classification confidence triggers user prompts; high confidence enables auto-configuration.
-
-**Level of Effort**: Medium-High (detection logic + confidence aggregation + UI integration)
+**Level of Effort**: Medium (detection heuristics are straightforward; R `survey` package handles the math; Excel output reuses separate-workbooks pattern. Main work is R script generation for weighted calculations + testing.)
 
 ---
 
-### 2.8 Sample Size Review (HITL Enhancement) — `PARTIAL`
+### ~~2.7 Survey Classification & Confidence Scoring~~ — `CONSOLIDATED`
 
-> **Implementation Status (Feb 2026):** HITL review UI exists at `/pipelines/[pipelineId]/review/` showing alternatives with confidence scores. Missing: `baseSize` field not in `AlternativeSchema`, no R query to calculate n counts during HITL, no zero-count/low-count flagging.
-
-**Current State**: When the AI is uncertain about a cut, HITL shows the user:
-- Proposed R expression
-- Alternative expressions with confidence scores
-- Reason for uncertainty
-
-**What's Missing**: Base sizes. The user has no idea if a proposed cut has 20 respondents or 200.
-
-**What's Needed**:
-1. **Add base sizes to HITL alternatives**: For each proposed cut and alternative, show the n count
-   - Requires running a quick R query against the data file during HITL
-   - User sees: "Tier 1 (n=156)" vs "Tier 1 - Alternative (n=23)"
-   - Helps user identify correct mapping: "We expected ~150 Tier 1 HCPs, so the first one is right"
-
-2. **Flag problematic base sizes**:
-   - Zero-count cuts (n=0) → likely wrong mapping
-   - Low-count cuts (n<30) → warning for sig testing limitations
-
-3. **Schema update**: Add `baseSize` field to `AlternativeSchema`
-
-**Why It Matters**: Users often know roughly how many respondents should be in a segment. Showing base sizes turns HITL from "trust the AI's confidence score" into "verify against what I know about my data."
-
-**Level of Effort**: Medium (R query integration + schema/UI updates)
+> **Decision (Feb 8, 2026):** This item combined two ideas that are already covered elsewhere:
+>
+> 1. **Survey classification** (detecting project type to prompt for missing context) — covered in **3.1** as part of Project Intake Questions. The user selects their project type during intake, and the system asks conditional follow-ups per type (Segmentation → segment assignments, MaxDiff → message list, Conjoint → choice task definitions). Asking the user is simpler and more reliable than auto-detecting from variable names.
+>
+> 2. **Multi-dimensional confidence scoring** (assessing pipeline readiness across dimensions like structure, parent-child, variable types) — covered in **Long-term Vision → Predictive Confidence Scoring**. Same conclusion applies: we don't yet have enough failure data to build a reliable predictor. Revisit after 50+ dataset runs.
 
 ---
 
-### 2.9 Table ID Visibility + Include/Exclude Control — `PARTIAL`
+### 2.8 HITL Review Overhaul (Agent Output + User Experience) — `PARTIAL`
 
-> **Implementation Status (Feb 2026):** Table IDs render in Excel output (`[tableId]` in context column). Excluded Tables sheet exists with full rendering. Tables have `excluded` and `excludeReason` schema fields. Missing: No CLI command or API to accept include/exclude lists and regenerate. No user-facing control to pull tables back from excluded.
+> **Implementation Status (Feb 2026):** HITL review UI exists at `/pipelines/[pipelineId]/review/` showing alternatives with confidence scores. Has state management for per-column decisions and visual feedback. Missing: base sizes, plain-language summaries, agent output simplification, actionable review flow.
 
-**Problem**: Users currently can't control which tables appear in the final output. Some tables are auto-excluded by the system, but users can't bring them back. Some included tables might not be wanted.
+**Problem**: The current HITL flow surfaces raw agent output — confidence decimals, R expressions, developer-facing reasoning. This works for debugging but is wrong for users. A non-technical person reviewing cuts doesn't care that `hLOCATIONr1` has 0.75 confidence vs `dLOCATIONr1` at 0.65. They want: "We found multiple variables for 'Own Home.' Here are your options, ranked. Option 1 has 156 respondents, Option 2 has 23."
 
-**What's Needed**:
-
-1. **Show table ID in Excel output**:
-   - Add table ID to Column A, near the top of each table (under section name or in parentheses next to it)
-   - Users can reference these IDs when requesting changes
-   - Example: "S5_summary" or "A3a_t2b_derived"
-
-2. **Include/Exclude functionality**:
-   - Given a list of table IDs, regenerate Excel with those changes
-   - Tables on "Excluded Tables" sheet can be pulled back into main output
-   - Tables in main output can be moved to excluded
-
-**User Actions** (per table):
-- **Keep** (default) — table stays where it is
-- **Exclude** — move to excluded sheet
-- **Include** — pull back from excluded sheet into main output
-
-**Phase 2**: CLI flags or config file to specify include/exclude lists
-**Phase 3**: UI with toggles per table
-
-**Level of Effort**: Low-Medium (Excel formatting + regeneration logic)
+This item has two sides: simplifying what agents produce, and improving what users see.
 
 ---
 
-### 2.10 Table Feedback & Regeneration — `NOT STARTED`
+**Part A: Agent Output Simplification**
 
-**Problem**: Users may like a table but want it formatted differently—different derived rows, different groupings, etc. Currently they'd have to manually edit the Excel or request a full re-run.
+Audit agent output schemas across the pipeline and ask: is this field necessary? Is it redundant? Could it be derived deterministically? Agents should produce what only agents can produce — don't make them do work that code can do better.
 
-**What's Needed**:
+| Current | Problem | Fix |
+|---------|---------|-----|
+| Per-alternative `confidence` scores (0.75, 0.65, 0.60) | Granularity is false precision. Users don't know what 0.65 vs 0.60 means. | **Rank alternatives by preference** (1st, 2nd, 3rd). Agent picks its recommendation (#1) and orders the rest. No decimals. |
+| `humanReviewRequired` flag set by agent per-column | Agent decides when to escalate — inconsistent, non-auditable. | **Derive deterministically.** Agent outputs a single group-level confidence score. Pipeline applies a threshold (e.g., <0.8 → review). Consistent, tunable, no agent discretion. |
+| Per-column confidence + per-alternative confidence + group-level confidence | Confidence at every level is redundant. | **One confidence score per group.** If any column in the group is uncertain, the group gets flagged. Simpler schema, same outcome. |
+| `reason` and `uncertainties` written in developer language | "Found hLOCATIONr1 (HOME - HIDDEN: LOCATIONS) → selected because it is a direct 0/1 flag corresponding to Assigned S9_1" is not user-facing. | **Separate internal reasoning from user-facing summary.** Agent produces both: (1) detailed reasoning for debugging/scratchpad, (2) plain-language summary for the user written as if speaking to a non-technical research manager. |
+| `expressionType` field | Internal classification. User doesn't need to see this. | **Keep in schema for pipeline use, don't surface in HITL UI.** |
 
-1. **Feedback mechanism**:
-   - User provides table ID + feedback text
-   - Example: "T5a — show top 3 box instead of top 2" or "A3a_summary — combine PCSK9i rows into single NET"
-
-2. **Targeted regeneration**:
-   - System reruns that specific table through VerificationAgent with feedback appended to context
-   - Agent generates updated table with same table ID
-   - Slot updated table back into full output (same position)
-
-3. **Constraints**:
-   - Feedback is scoped to what VerificationAgent can do (row labels, NETs, derived rows, exclusions)
-   - Can't change the underlying data or banner structure
-   - This is constrained editing, not free-form exploration
-
-**Why It Matters**: Foundation for future conversational exploration features. Users get a preview of "ask for changes, get updated output" while staying grounded in validated artifacts.
-
-**Phase 2**: CLI command: `--regenerate-table T5a --feedback "Show top 3 box"`
-**Phase 3**: UI with feedback input per table
-
-**Level of Effort**: Medium (VerificationAgent re-invocation + output splicing)
+**The principle:** Agents output a recommendation with a confidence level and plain-language reasoning. Everything else (whether to escalate, base sizes, ranking presentation) is handled deterministically by the pipeline.
 
 ---
 
-### 2.11 Excel Color Themes — `NOT STARTED`
+**Part B: HITL Review Experience**
 
-> **Implementation Status (Feb 2026):** Colors are hardcoded in `src/lib/excel/styles.ts` without semantic role abstraction. Only one palette (Joe style + Antares colors). No `themes.ts`, no `--theme` CLI flag, no theme configuration.
+What the user sees when a banner group needs review:
 
-**Problem**: We have effectively one styling look-and-feel. Users may want flexibility in workbook color palette while preserving readability and visual hierarchy.
+1. **Group-level summary** — "We need your input on the **Location** group. We found variables that could work but want to confirm."
 
-**What's Needed**:
+2. **For each cut in the group**, show:
+   - Cut name from the banner plan (e.g., "Own Home")
+   - Our recommendation — plain-language description of what variable we chose and why
+   - Sample size (n=156) — **deterministically calculated via R query**, not AI-generated
+   - Ranked alternatives if they exist — each with plain-language description and sample size
+   - If n=0 on any option → flag it ("This variable has no matching respondents — likely wrong mapping")
+   - If n<30 on recommended option → warning ("Low sample size — significance testing may be unreliable")
 
-1. **Map current colors to semantic roles**:
-   - Header row fill
-   - Alternating row fill (zebra striping)
-   - Banner column separation
-   - NET/Total row emphasis
-   - Derived row styling
-   - Stat letter highlighting
+3. **User actions per cut**:
+   - Accept recommendation (default)
+   - Pick an alternative
+   - Flag for manual handling ("I'll fix this in the Excel myself")
 
-2. **Define 4+ curated palettes**:
-   | Theme | Description |
-   |-------|-------------|
-   | Classic (default) | Current blue-gray palette |
-   | Minimal | Light grays, subtle contrast |
-   | High Contrast | Bold colors for presentations |
-   | Print-Friendly | Optimized for black-and-white printing |
+4. **User actions per group**:
+   - Accept all recommendations
+   - Review individually
 
-3. **CLI configuration**:
-   - `--theme classic` (default)
-   - `--theme minimal`
-   - Show available themes: `hawktab themes`
-
-4. **Implementation**:
-   - Create `src/lib/excel/themes.ts` with semantic color mapping
-   - ExcelFormatter reads theme config and applies colors
-   - Each palette plugs into same semantic roles
-
-**Phase 2**: CLI flag for theme selection
-**Phase 3**: UI dropdown in project settings
-
-**Level of Effort**: Low (color mapping + config flag, no structural changes)
+**Base size calculation**: Run a quick R query against the .sav file for each proposed expression and its alternatives. This happens once when HITL review is triggered — lightweight and deterministic. Users often know roughly how many respondents should be in a segment ("we expected ~150 Tier 1 HCPs"), so sample size is the single most useful signal for confirming whether a mapping is correct.
 
 ---
 
-### 2.12 Interactive Browser Review (defer to after MVP delivery) — `PARTIAL (foundation only)`
+**What this replaces in the schema:**
 
-> **Implementation Status (Feb 2026):** HITL review page exists for crosstab cut validation (`/pipelines/[pipelineId]/review/`). Has state management for per-column decisions, visual feedback, collapsible sections. Missing: No table preview component (rendering `tables.json` as HTML), no per-table include/exclude toggles, no per-table feedback notes, no "Generate Final Excel" button.
+```
+Before (per-column):
+  confidence: 0.75
+  reason: "Found hLOCATIONr1 (HOME - HIDDEN: LOCATIONS)..."
+  alternatives: [{ expression, confidence: 0.65, reason }]
+  uncertainties: ["Multiple variables encode..."]
+  humanReviewRequired: true
 
-**Problem**: Current review workflow is inefficient:
-- Reviewer looks at static Excel output
-- Decides which tables to exclude/keep
-- Has to regenerate full workbook to see changes
+After (per-column):
+  rank: 1                           # Agent's preference order
+  userSummary: "We chose the binary  # Plain language for the user
+    location flag (156 respondents).
+    There are similar variables in
+    the data — see alternatives."
+  alternatives: [{ expression,       # Ranked by preference, no confidence decimals
+    rank: 2, userSummary }]
+  baseSize: 156                      # Deterministic (R query, not AI)
 
-**Why It Matters**: This friction slows down iteration. Reviewers want to see changes live before committing to final output.
+After (per-group):
+  confidence: 0.72                   # Single score for the group
+  reviewRequired: true               # Derived: confidence < threshold
+```
 
-> **Note**: This feature isn't blocking for initial Antares access. The core value is reliable tabs from their existing workflow. We can tell them: "We have a plan to add interactive review, but we wanted to get this in your hands as soon as possible." Ship as a fast-follow after MVP delivery.
+**Scope**: This audit applies primarily to the CrosstabAgent (banner cut mappings), which is where HITL review happens today. The same principles (simplify output, separate internal/user-facing language, derive what you can deterministically) should inform future schema changes across other agents.
 
-**Desired Workflow**:
+**Level of Effort**: Medium (schema changes + prompt updates for plain-language output + R query for base sizes + HITL UI refresh). The UI component belongs in 3.1 but the schema and prompt work is Phase 2.
 
-1. After pipeline runs, open preview **in browser** (not Excel)
-2. See all tables rendered in a scrollable list
-3. Toggle tables on/off (exclude/include) with instant visual feedback
-4. Add feedback notes to specific tables
-5. See changes **live** without regeneration
-6. Click "Generate Final Excel" when satisfied
+---
+
+### 2.9 Table ID Visibility — `COMPLETE`
+
+> **Implementation Status (Feb 2026):** Table IDs render in Excel output (`[tableId]` in context column). Excluded Tables sheet exists with full rendering. Tables have `excluded` and `excludeReason` schema fields. This is sufficient for MVP.
+
+Table IDs in the Excel output are already useful — users can reference specific tables when giving feedback. The interactive include/exclude control and regeneration functionality that was originally scoped here has been moved to **Long-term Vision → Interactive Table Review** as part of a larger consolidated vision (former 2.9, 2.10, 2.12).
+
+No additional work needed for MVP.
+
+---
+
+### 2.10 Output Feedback Collection — `NOT STARTED`
+
+> *Replaces former "Table Feedback & Regeneration." Per-table regeneration moved to Long-term Vision → Interactive Table Review.*
+
+**Problem**: When a user reviews their crosstab output and finds issues — wrong table structures, missing NETs, tables that should be excluded — there's no structured way to capture that feedback. Currently it's ad-hoc (Slack messages, emails, notes in a doc).
+
+**What's Needed**: A lightweight feedback mechanism per pipeline run. Not per-table regeneration (that's Long-term Vision), just a way for users to say "here's what was wrong with this output."
 
 **Implementation**:
+- After a pipeline run completes, the user can submit feedback on the output as a whole
+- Stored as `feedback.json` in the pipeline output folder (or in the project record once we have Convex)
+- Simple structured format: free-text notes, optional table IDs referenced, overall quality rating
+- This is for *us to learn from* — helps prioritize agent/prompt improvements based on real user pain points
+- In the UI (3.1): a "Leave Feedback" button on the results page. Textarea + optional table ID tags.
 
-1. **Table preview component**:
-   - Render `tables.json` as HTML tables
-   - Style to match Excel output (close enough for review purposes)
-   - Collapsible sections by question/table group
+**What this is NOT**:
+- Not per-table regeneration (that's the Interactive Table Review vision)
+- Not real-time — feedback is collected after the fact, not acted on during the run
+- Not blocking anything downstream — just a feedback collection mechanism
 
-2. **State management**:
-   - Track include/exclude toggles in local state
-   - Track feedback notes per table
-   - No backend changes until "Generate" clicked
+**Level of Effort**: Low (JSON storage + simple UI form)
 
-3. **Regeneration on demand**:
-   - When user clicks "Generate Final Excel", apply exclusions and feedback
-   - Call existing regeneration logic (2.9, 2.10)
-   - Provide updated Excel for download
+---
 
-4. **Route structure**:
-   ```
-   /projects/[id]/review     # Interactive review page
-   /projects/[id]/results    # Final download page (existing)
-   ```
+### 2.11 Excel Color Themes — `COMPLETE`
 
-**Phase 3**: Ship after core UI is stable. Requires 2.9 (include/exclude) and 2.10 (feedback) as foundations.
+**Current State**: Fully implemented. 6 color themes available via `--theme` CLI flag.
 
-**Level of Effort**: Medium-High (new UI component, state management, integration with existing regeneration)
+| Theme | Description |
+|-------|-------------|
+| `classic` (default) | Original blue/green/yellow/peach/purple/teal palette |
+| `coastal` | Sky blue, sand, warm orange, slate, taupe |
+| `blush` | Soft pinks, peach, mauve, lavender, coral |
+| `tropical` | Teal, pink, indigo, amber, cream |
+| `bold` | Navy, cream, gold, red, olive |
+| `earth` | Brown, yellow, mint green, olive, red |
+
+**Architecture**: `src/lib/excel/themes.ts` defines `ThemePalette` interface with semantic color roles (header, context, base, label, 6 banner group A/B shade pairs, sig letter color). `setActiveTheme()` in `styles.ts` mutates `FILLS` and `FONTS` in place — zero renderer changes needed. Accent colors are lightened via formula to produce cell-appropriate pastel backgrounds.
+
+**CLI**: `--theme=coastal` (or any theme name). Default: `classic`. Works in both `test-pipeline.ts` and `batch-pipeline.ts`.
+
+**Phase 3**: UI dropdown in project settings.
+
+**Preview script**: `npx tsx scripts/test-themes.ts [tables.json]` generates one Excel per theme in `outputs/theme-preview/`.
+
+---
+
+### ~~2.12 Interactive Browser Review~~ — `DEFERRED`
+
+> **Decision (Feb 8, 2026):** Consolidated with former 2.9 (include/exclude control) and 2.10 (per-table regeneration) into **Long-term Vision → Interactive Table Review**. The full interactive review experience — browser rendering, per-table toggles, targeted regeneration — is a compelling post-MVP feature but not needed for initial delivery. See Long-term Vision for the fleshed-out plan.
 
 ---
 
@@ -803,6 +822,60 @@ The crosstab agent's variable selection is non-deterministic — same dataset ca
 **Why it matters:** Eliminates "it worked last time but not this time." First step toward accumulating project-level knowledge across runs.
 
 **Level of Effort:** Low (JSON persistence + prompt section, no architectural changes)
+
+---
+
+### Interactive Table Review
+
+*Consolidated from former Phase 2.9 (include/exclude control), 2.10 (table feedback & regeneration), and 2.12 (interactive browser review).*
+
+**The vision:** After a pipeline run completes, the user opens an interactive review in the browser — not a static Excel file. They see every table rendered as HTML, can toggle tables on/off, leave feedback on specific tables, request targeted regeneration, and only generate the final Excel when they're satisfied with the output.
+
+This is the post-MVP experience that replaces the current workflow of: download Excel → review in Excel → note issues → request full re-run.
+
+**Why it matters:** Users like Antares are used to working in Q, where they can iterate on individual tables. Giving them a static Excel with no way to adjust without re-running the full 45-minute pipeline is friction. This feature closes the gap — not by replicating Q, but by giving users control over the output they already have.
+
+**The full workflow:**
+
+1. **Pipeline completes** → user gets a notification (email, in-app, or browser tab)
+2. **Open interactive review** (`/projects/[id]/review`) — tables rendered in a scrollable browser view
+   - Collapsible sections by question group
+   - Each table shows its table ID, base sizes, and a visual that closely matches the Excel styling
+   - Tables already have `tableId`, `excluded`, `excludeReason` in the schema — this is the data model
+3. **Per-table actions:**
+   - **Include/Exclude toggle** — instant visual feedback. Excluded tables dim or move to a separate "Excluded" section. Tables on the excluded list can be pulled back in. No backend call until the user commits.
+   - **Feedback note** — free-text per table: "Show top 3 box instead of top 2" or "Combine these rows into a single NET." Stored as metadata on the table.
+   - **Request regeneration** — for tables with feedback, trigger a targeted re-run through the VerificationAgent with the feedback appended to context. Agent produces an updated table with the same table ID. Only that table is re-processed — not the full pipeline.
+4. **Review summary** — before generating, show a summary: "12 tables included, 3 excluded, 2 regenerated with feedback."
+5. **"Generate Final Excel"** — applies all include/exclude decisions and regenerated tables, produces the final workbook for download.
+
+**What makes this feasible (foundations already exist):**
+
+| Foundation | Status | What It Enables |
+|-----------|--------|-----------------|
+| `tables.json` with full table data | Done | Render tables in browser from structured data |
+| Table IDs in Excel output | Done | Users can reference specific tables |
+| `excluded` / `excludeReason` schema fields | Done | Toggle tables between included/excluded |
+| VerificationAgent | Done | Re-run individual tables with feedback context |
+| HITL review UI (cut validation) | Done | State management pattern, collapsible sections |
+| ExcelJS for workbook generation | Done | Potentially render Excel-like views in browser |
+
+**What needs building:**
+
+| Component | Effort | Notes |
+|-----------|--------|-------|
+| Table preview component (HTML rendering of `tables.json`) | Medium | Style to approximate Excel output. Doesn't need to be pixel-perfect. |
+| Per-table state management (include/exclude/feedback) | Low | Pattern exists in HITL review. Local state until "Generate" clicked. |
+| Targeted regeneration (VerificationAgent re-invocation) | Medium | Re-run one table with feedback appended. Splice updated table back into `tables.json`. |
+| Excel regeneration from modified `tables.json` | Low | ExcelFormatter already takes `tables.json` as input. Just pass the modified version. |
+| Route: `/projects/[id]/review` | Low | New page in `(product)/` route group. |
+
+**Constraints on targeted regeneration:**
+- Feedback is scoped to what the VerificationAgent can control: row labels, NETs, derived rows, exclusions, groupings
+- Can't change underlying data or banner structure — that requires a full re-run
+- This is constrained editing, not free-form data exploration
+
+**When to build:** After MVP delivery and initial Antares feedback. This is the kind of feature that's best informed by real usage — what do users actually want to change after seeing output? Build it once we have that signal.
 
 ---
 

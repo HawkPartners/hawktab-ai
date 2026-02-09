@@ -17,6 +17,7 @@ These are the settings an end user (like someone at Antares) would reasonably wa
 | Excel layout | `--format` CLI flag | `joe`, ~~`antares`~~ (deprecated) | `joe` | Joe format: horizontal (1 row per answer, value+sig column pairs). Antares format is deprecated and will be removed. |
 | Display mode | `--display` CLI flag | `frequency`, `counts`, `both` | `frequency` | `frequency` = percentages only. `counts` = raw counts only. `both` = two sheets in one workbook (Percentages + Counts). |
 | Separate workbooks | `--separate-workbooks` CLI flag | Boolean | `false` | When `--display=both`, output two separate .xlsx files (`crosstabs.xlsx` for percentages, `crosstabs-counts.xlsx` for counts) instead of two sheets in one workbook. Each file gets its own TOC and Excluded Tables sheet. |
+| Color theme | `--theme` CLI flag | `classic`, `coastal`, `blush`, `tropical`, `bold`, `earth` | `classic` | Color palette for the Excel workbook. Each theme provides a different set of banner group colors, header/label/context fills, and row alternation shading. All themes preserve the same layout and structure — only colors change. Defined in `src/lib/excel/themes.ts`. |
 
 ### Statistical Testing
 
@@ -166,6 +167,8 @@ Still supported for backward compatibility but should not be used in new config.
 
 **Not yet configurable but should be (future roadmap items):**
 - Weight variable selection (2.6)
-- Excel color theme (2.11)
 - Table include/exclude lists (2.9)
 - Per-table feedback/regeneration (2.10)
+
+**Recently implemented:**
+- Excel color theme (2.11) — `--theme` flag, 6 palettes available

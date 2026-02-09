@@ -34,6 +34,8 @@ export interface PipelineOptions {
   stopAfterVerification: boolean;
   /** Concurrency level for parallel agents */
   concurrency: number;
+  /** Excel color theme */
+  theme: string;
   /** Suppress console output (for UI mode) */
   quiet: boolean;
   /** Statistical testing configuration (overrides env defaults) */
@@ -46,6 +48,7 @@ export const DEFAULT_PIPELINE_OPTIONS: PipelineOptions = {
   separateWorkbooks: false,
   stopAfterVerification: false,
   concurrency: 3,
+  theme: 'classic',
   quiet: false,
 };
 

@@ -25,6 +25,7 @@ import { buildCutsSpec } from '../tables/CutsSpec';
 import { sortTables, getSortingMetadata } from '../tables/sortTables';
 import { normalizePostPass } from '../tables/TablePostProcessor';
 import { ExcelFormatter } from '../excel/ExcelFormatter';
+import { setActiveTheme } from '../excel/styles';
 import { extractStreamlinedData } from '../data/extractStreamlinedData';
 import { getPromptVersions, getStatTestingConfig, formatStatTestingConfig } from '../env';
 import type { StatTestingConfig } from '../env';
@@ -95,7 +96,7 @@ export async function runPipeline(
   options: Partial<PipelineOptions> = {}
 ): Promise<PipelineResult> {
   const opts: PipelineOptions = { ...DEFAULT_PIPELINE_OPTIONS, ...options };
-  const { format, displayMode, separateWorkbooks, stopAfterVerification, concurrency, quiet, statTesting } = opts;
+  const { format, displayMode, separateWorkbooks, stopAfterVerification, concurrency, theme, quiet, statTesting } = opts;
 
   // Build effective stat testing config (CLI overrides -> env defaults)
   const envStatConfig = getStatTestingConfig();
@@ -963,6 +964,7 @@ export async function runPipeline(
       const excelPath = path.join(resultsDir, 'crosstabs.xlsx');
 
       try {
+        setActiveTheme(theme);
         const formatter = new ExcelFormatter({
           format,
           displayMode,
