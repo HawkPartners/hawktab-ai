@@ -219,6 +219,7 @@ async function main() {
   // Run pipeline on each ready dataset sequentially
   const format = parseFormatFlag();
   const displayMode = parseDisplayFlag();
+  const separateWorkbooks = process.argv.includes('--separate-workbooks');
   const stopAfterVerification = process.argv.includes('--stop-after-verification');
   const concurrency = parseConcurrency();
 
@@ -242,6 +243,7 @@ async function main() {
       const result = await runPipeline(dataset.folder, {
         format,
         displayMode,
+        separateWorkbooks,
         stopAfterVerification,
         concurrency,
       });

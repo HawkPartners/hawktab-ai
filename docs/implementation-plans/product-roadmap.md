@@ -20,14 +20,14 @@ This document outlines the path from HawkTab AI's current state (reliable local 
 | **Phase 1.2** Leqvio Dataset | Complete | 3 edge cases documented |
 | **Phase 1.3** Loop/Stacked Data | Complete | Full deterministic resolver + semantics agent |
 | **Phase 1.4** Broader Testing | In Progress | 11 datasets, batch runner operational |
-| **Phase 1.5** Pre-Flight Confidence | Not Started | All signals exist, aggregation missing |
-| **Phase 2.1** Output Formats | Mostly Complete | 3 display modes work; separate workbooks missing |
-| **Phase 2.4** Stat Testing Config | Mostly Complete | Full env var config; CLI convenience flags missing |
-| **Phase 2.4b** Advanced Loop Testing | Not Started | vs-Complement, clustered inference deferred |
-| **Phase 2.4c** Variable Persistence | Not Started | No confirmed-cuts.json |
-| **Phase 2.4d** Dual-Mode Loop Prompt | Not Started | Single prompt only |
-| **Phase 2.5** Upfront Context | Not Started | No project type detection |
-| **Phase 2.5a** Input Flexibility | Partial | PDF/DOCX work; Excel/TXT missing |
+| **Phase 1.5** ~~Pre-Flight Confidence~~ | Reorganized | Intake questions → 3.1; predictive scoring → Long-term Vision |
+| **Phase 2.1** Output Formats | Complete | frequency, counts, both (same workbook or separate) |
+| **Phase 2.4** Stat Testing Config | Complete | Env vars, pipeline summary, `--show-defaults` |
+| **Phase 2.4b** Loop-Aware Stat Testing | Not Started | Suppress (default) or vs-complement for entity-anchored groups |
+| **Phase 2.4c** Variable Persistence | Deferred | Moved to Long-term Vision |
+| **Phase 2.4d** Dual-Mode Loop Prompt | Deferred | Moved to Long-term Vision |
+| **Phase 2.5** Upfront Context | Consolidated | Merged into 3.1 (Project Intake Questions) |
+| **Phase 2.5a** Input Flexibility | Complete | PDF/DOCX for survey + banner; .sav for data |
 | **Phase 2.5b** AI-Generated Banner | Not Started | Deferred post-MVP |
 | **Phase 2.6** Weight Detection | Not Started | No detection, no R integration |
 | **Phase 2.7** Survey Classification | Not Started | No type detection or confidence scoring |
@@ -64,46 +64,23 @@ This document outlines the path from HawkTab AI's current state (reliable local 
 
 **Exit Criteria**: 5 datasets producing consistent output across 3 runs each, output quality acceptable for report writing.
 
-### 1.5 Pipeline Confidence Pre-Flight (Reject Early) — `NOT STARTED`
+### ~~1.5 Pipeline Confidence Pre-Flight~~ — `REORGANIZED`
 
-**Priority: High — candidate for Phase 1 or early Phase 2.**
-
-> **Implementation Status (Feb 2026):** All building blocks exist (loop detection, deterministic resolver, fill rate validation, data map quality signals) but NO aggregation function combines them into a confidence tier. No green/yellow/red assessment. No pre-flight UI for project type questions. The signals are there — the integration is not.
-
-Before burning 45+ minutes of pipeline time, the system should assess its own confidence in producing accurate output for a given dataset and flag issues upfront.
-
-**Why this matters:** It's a trust-building feature, not a limitation. Most AI products confidently produce garbage. A system that says "I can't do this reliably" is one users will trust when it says "I can."
-
-**Signals already available:**
-- Loop detection: iteration counts, fill rates, variable family completeness
-- Deterministic resolver: how many iteration-linked variables found, confidence scores
-- Data map quality: percentage of variables with value labels, description completeness
-- Variable count and complexity: number of hidden/admin variables, naming consistency
-
-**Three-tier output:**
-| Tier | Signal | User message |
-|------|--------|--------------|
-| Green | Strong deterministic evidence, clean loop detection, high fill rates | "This dataset looks good. Proceeding with high confidence." |
-| Yellow | Partial evidence, some ambiguous variables, mixed naming patterns | "We can process this, but some banner cuts may need your review." |
-| Red | No deterministic evidence for loops, irregular naming, nested loops detected | "This dataset has characteristics we can't handle reliably. Here's what we found: [specifics]." |
-
-**Implementation:** Aggregation function that runs after validation + loop detection + deterministic resolver (all fast, pre-agent steps). Returns a confidence assessment before any LLM calls. The yellow tier proceeds but sets `humanReviewRequired` on the policy agent. The red tier halts with an explanation.
-
-**Level of Effort**: Low-Medium (signals exist, just need aggregation logic and UX)
-
-**NOTE**: This also includes the UI as well and ensuring that the user has an ability to add details of the project before we start, such as if it's a segmentation and we should choose what variables we care most about. I'm already thinking the question is more like "Is this a segmentation? Is this a MaxDiff with message testing?" and stuff like that. We don't have to do every survey type, but the ones that require some sort of extra detail (right). For example, if it's a segmentation, then we should ask them "Does your data file have the segment assignments?" and if the answer is no, then we have to warn the user. We can still do your tabs, but we can't do any segment cuts if that's in the banner plan (right). Just basic stuff like that. If it's a MaxDiff with message testing, we have to say "Oh, can you also upload your message test (your messages) so that we could actually link each of the questions to your thing?" Then also, we could be like "Does your data file have the anchored probability scores attached?" If they say no, then we just warn them. "Oh, if that's the case, then we can't show you your MaxDiff results," so just basic stuff like that.
+> **Decision (Feb 8, 2026):** This item originally combined two different ideas that have been separated:
+>
+> 1. **Intake questions** (asking users about project type, missing files, etc.) — moved to **3.1** as part of the New Project Flow. This is a UI/UX concern that belongs in the upload experience, not a pipeline pre-check.
+>
+> 2. **Predictive confidence scoring** (can the pipeline handle this dataset?) — moved to **Long-term Vision**. We don't yet have enough failure data across datasets to build a reliable predictor. Most pipeline failures come from AI agent behavior, not data characteristics — and you can't predict agent success without running the agents. Premature confidence tiers would either give false assurance (green on a dataset that fails) or meaningless noise (yellow on everything). Revisit after 50+ dataset runs with documented failure modes.
+>
+> The basic sanity checks that already exist (validation catches corrupt data, loop detection flags structural issues) continue to run as part of the pipeline. No new work needed in Phase 1.
 
 ---
 
 ## Phase 2: Feature Completeness
 
-**NOTE**: Can we render the full decimal values for the percents and frequencies? So instead of showing 11% show 10.5678%?
-
-> **Implementation Status (Feb 2026):** Full decimal precision is NOT YET exposed. R calculates with full precision, but Excel format strings use `'0%'` (integer display). Changing to `'0.00%'` or similar in `ExcelFormatter` would surface the existing precision. Low effort.
-
 Features needed before external users can rely on the system for real projects.
 
-### 2.1 Output Format Options — `MOSTLY COMPLETE`
+### 2.1 Output Format Options — `COMPLETE`
 
 **Percents Only / Frequencies Only**
 
@@ -115,151 +92,85 @@ Bob asked: "Is it possible to add in an option to say I only want percents or fr
 | Percents only | Just percentages |
 | Frequencies only | Just counts |
 
-**Current State**: The system already supports all three options via `--display=frequency|counts|both` CLI flag. When `both` is selected, two separate sheets are created within the same workbook (Percentages + Counts). Default is `frequency`.
+**Current State**: All options implemented.
 
-**Remaining Work**: Add option for separate workbooks when user wants percents AND frequencies but in different files:
-- Default: Single workbook with both (current behavior)
-- Optional: Two workbooks when explicitly requested
-  - Workbook 1: TOC → Percents sheet → Excluded tables
-  - Workbook 2: TOC → Frequencies sheet → Excluded tables
-
-**Level of Effort**: Low (config option + ExcelFormatter logic for separate workbook generation)
+- `--display=frequency` — percentages only (default)
+- `--display=counts` — raw counts only
+- `--display=both` — two sheets in one workbook (Percentages + Counts)
+- `--display=both --separate-workbooks` — two separate .xlsx files: `crosstabs.xlsx` (percentages) + `crosstabs-counts.xlsx` (counts). Each workbook gets its own TOC and Excluded Tables sheet.
 
 ---
 
 ---
 
-### 2.4 Stat Testing Configuration — `MOSTLY COMPLETE`
+### 2.4 Stat Testing Configuration — `COMPLETE`
 
-**Current State**: Fully configurable via environment variables (`STAT_THRESHOLDS`, `STAT_PROPORTION_TEST`, `STAT_MEAN_TEST`, `STAT_MIN_BASE`). Supports dual thresholds, unpooled/pooled z-tests, Welch/Student t-tests, and minimum base size. Config is validated on startup, formatted for display, and stored in pipeline summary. Defaults flow from a single config source in `src/lib/env.ts`.
+**Current State**: Fully implemented.
 
-**What's Needed for MVP**:
-
-1. ~~**CLI flag for custom configuration**~~: ✅ Done via environment variables. Interactive `--sig-config` CLI prompts are a nice-to-have but not required — env vars provide full configurability.
-
-2. **CLI command for defaults**: `--show-defaults` to display current configuration without running pipeline — `NOT DONE` (convenience feature)
-
-3. ~~**Capture in pipeline summary**~~: ✅ Done. Stat testing config stored in `pipeline-summary.json`.
-
-4. ~~**Remove hardcoded values**~~: ✅ Done. All defaults flow from `getStatTestingConfig()` in `src/lib/env.ts`.
-
-```typescript
-sigTestConfig: {
-  thresholds: number[];           // [0.05, 0.10] for dual, [0.10] for single
-  minBase: number | null;         // null = no minimum
-  method: "unpooled_z" | "pooled_z" | "t_test";
-  smallBaseHandling: "suppress" | "show_warning" | "show_anyway";
-}
-```
-
-**Level of Effort**: Medium (CLI integration + config consolidation)
+- **Environment variables**: `STAT_THRESHOLDS`, `STAT_PROPORTION_TEST`, `STAT_MEAN_TEST`, `STAT_MIN_BASE`
+- **Supports**: Dual thresholds (uppercase/lowercase letter notation), unpooled/pooled z-tests, Welch/Student t-tests, minimum base size
+- **Validated on startup**, formatted for display, stored in `pipeline-summary.json`
+- **All defaults** flow from a single config source: `getStatTestingConfig()` in `src/lib/env.ts`
+- **`--show-defaults`** CLI flag displays current configuration without running pipeline
 
 ---
 
-### 2.4b Advanced Stat Testing for Loop Tables — `NOT STARTED`
+### 2.4b Loop-Aware Stat Testing — `NOT STARTED`
 
-**Context**: When loop/stacked data is present, standard within-group stat testing can be invalid for two reasons: (1) banner groups may overlap on the stacked frame, and (2) multiple rows per respondent creates within-respondent correlation.
+**Problem**: When entity-anchored banner groups exist on stacked/loop data, within-group pairwise stat testing (A-vs-B) can be invalid if groups overlap. Today, the system validates partition correctness and reports overlaps in `loop-semantics-validation.json`, but `generateSignificanceTesting()` doesn't consult this — stat letters are generated regardless.
 
-Phase 1-2 of the loop semantics implementation (`loop-semantics-implementation-plan.md`) handles the immediate problem: detecting overlap and suppressing invalid within-group stat letters. The items below are future enhancements that go beyond suppression to provide alternative valid testing.
+**What to implement (two modes, default = suppress):**
 
-**vs-Complement Testing**
+| Mode | Behavior | When to use |
+|------|----------|-------------|
+| **Suppress** (default) | Skip within-group stat letters entirely for entity-anchored groups on stacked data. Still show vs-Total comparison. | Safe default. No invalid letters. |
+| **vs-Complement** (optional) | Instead of A-vs-B, compute A-vs-not-A for each cut. Always statistically valid regardless of overlap. | User wants significance testing on loop tables and understands the tradeoff. |
 
-For overlapping banner groups on loop tables, instead of comparing A-vs-B (invalid when groups overlap), compute A-vs-not-A (segment vs complement). This is always statistically valid regardless of overlap. Requires changes to `generateSignificanceTesting()` in `RScriptGeneratorV2.ts` to support a second comparison mode alongside the existing within-group mode.
+**Implementation approach:**
 
-**Clustered Inference**
+1. **Schema** — Add `comparisonMode: 'suppress' | 'complement'` to `BannerGroupPolicySchema` in `loopSemanticsPolicySchema.ts`. Default: `'suppress'`.
 
-Loop tables have within-respondent correlation — the same person contributes 2+ stacked rows. Standard stat tests assume every row is independent, which overstates the effective sample size and makes differences look more significant than they are. Clustered standard errors account for this by grouping rows by respondent and adjusting confidence intervals. This requires:
-- Stacked frame includes a stable respondent ID column
-- R stat testing functions support a cluster-robust mode
-- Most MR tools (WinCross, SPSS Tables, Q) don't do this — they treat stacked rows as independent. So this is a future differentiator, not a current correctness gap vs industry standard.
+2. **R script generation** — In `generateSignificanceTesting()` (`RScriptGeneratorV2.ts`):
+   - Pass the loop semantics policy into the function (currently it receives nothing)
+   - For each group, check if it's entity-anchored with `shouldPartition=true`
+   - If `suppress`: skip the within-group comparison loop for that group
+   - If `complement`: generate R code that computes complement mask (`!cut_mask`) and tests cut proportions/means against the complement set using the same z-test/t-test logic
 
-**Level of Effort**: Medium-High (new R stat functions, testing infrastructure changes)
+3. **Config** — Expose as a pipeline option. In the UI, only show this toggle when loops are detected. Default to suppress.
 
----
-
-### 2.4c Crosstab Agent Variable Selection Persistence — `NOT STARTED`
-
-**Problem:** The crosstab agent's variable selection is non-deterministic. On two runs of the same dataset, it might pick `hLOCATIONr1` (correct) one time and `S9r1` (wrong) the next. The hidden variable hint helps steer it, but doesn't guarantee consistency.
-
-**Solution: Lock in confirmed selections.**
-
-Once a user confirms a variable mapping via HITL — or once a run succeeds and the user accepts the output — save those selections as project-level overrides. Future re-runs of the same dataset load the confirmed mappings instead of re-rolling the dice.
-
-**What gets saved:**
-- Banner group name → variable mappings (e.g., "Own Home" → `hLOCATIONr1 == 1`)
-- Confirmation source: "user_confirmed" or "accepted_from_run_N"
-- The crosstab agent receives these as hard constraints, not hints
-
-**Implementation:** JSON artifact in the project folder (`confirmed-cuts.json`). The crosstab agent prompt includes a "locked selections" section — variables in this list are not re-evaluated. Only unmapped or low-confidence cuts go through the full matching process.
-
-**Why this matters:** Eliminates the "it worked last time but not this time" problem. Builds toward the broader pattern of accumulating project-level knowledge across runs.
-
-**Level of Effort**: Low (JSON persistence + prompt section, no architectural changes)
+**Level of Effort**: Medium (R script generation changes + schema addition + config wiring)
 
 ---
 
-### 2.4d Dual-Mode Loop Semantics Prompt — `NOT STARTED`
+### ~~2.4c Crosstab Agent Variable Selection Persistence~~ — `DEFERRED`
 
-> **Implementation Status (Feb 2026):** Only one prompt file exists (`production.ts`). Infrastructure for prompt variants exists (same pattern as other agents) but no `alternative.ts` for low-evidence mode. Selection logic not implemented.
-
-**Context:** The Loop Semantics Policy Agent currently uses a single prompt regardless of how much deterministic evidence is available. When the resolver finds strong evidence (label tokens, suffix patterns), the prompt works well — the LLM has structured data to anchor on. When there's no deterministic evidence, the LLM has to work from cut patterns and datamap descriptions alone, which is harder and less reliable.
-
-**Solution: Two prompt variants, selected automatically.**
-
-| Mode | Trigger | Prompt focus |
-|------|---------|-------------|
-| **High-evidence** | Deterministic resolver found iteration-linked variables | "Here's what the resolver found. Use this as primary evidence. Classify accordingly." |
-| **Low-evidence** | Resolver found nothing (empty result) | "We have no metadata evidence. You must infer from cut expression patterns, datamap descriptions, and variable naming. Be extra cautious. Flag uncertainty aggressively." |
-
-The low-evidence prompt would include:
-- More explicit pattern-matching guidance for OR expressions
-- Stronger emphasis on datamap description analysis
-- Lower confidence thresholds for triggering `humanReviewRequired`
-- Additional few-shot examples showing ambiguous cases
-
-**Selection logic:** If `deterministicFindings.iterationLinkedVariables.length === 0`, use low-evidence prompt. Otherwise, use high-evidence prompt.
-
-**Level of Effort**: Low (second prompt file + selection logic in agent)
+> Moved to Long-term Vision. Not blocking for MVP — hidden variable hints and HITL provide sufficient reliability for now.
 
 ---
 
-### 2.5 Upfront Context Capture — `NOT STARTED`
+### ~~2.4d Dual-Mode Loop Semantics Prompt~~ — `DEFERRED`
 
-**Problem**: The system currently accepts file uploads and treats everything the same — but different project types need different context. A MaxDiff survey needs actual message text (not just "Message 1"). A conjoint needs choice task definitions. An ATU has expected table structures. Without this context, agents produce tables that are technically correct but analytically unhelpful.
-
-**Examples of missing context:**
-- **Project type** — Is this MaxDiff? ATU? Conjoint? Knowing this changes what we expect.
-- **MaxDiff messages** — The datamap often just says "Message 1, Message 2" but the VerificationAgent needs the actual message text to make useful tables. Either the user provides a message list, or we need a way to link to it.
-- **Research objective** — What is this study trying to answer? Helps prioritize which tables matter.
-
-**Higher-level question:** What information are we NOT capturing that's necessary for reliability? This will become clearer as we test different project types. The UI may need to ask qualifying questions based on what the user uploads.
-
-**Implementation:** Part of the new project wizard (3.1). After file upload, the system detects project type signals from the datamap and prompts for any missing context before running the pipeline.
-
-**Level of Effort**: Medium (detection logic + UI prompts + agent context injection)
+> Moved to Long-term Vision. Single prompt works well when deterministic evidence exists. Revisit if batch testing reveals failures on low-evidence datasets.
 
 ---
 
-### 2.5a Input Format Flexibility — `PARTIAL`
+### ~~2.5 Upfront Context Capture~~ — `CONSOLIDATED`
 
-> **Implementation Status (Feb 2026):** PDF and DOCX accepted for survey and banner plan (BannerAgent converts via LibreOffice headless + pdf2pic). Data file: .sav only. Missing: Excel banner plans, TXT format support. Question numbering flexibility handled by AI pattern matching as expected.
+> Merged into 3.1 (Project Intake Questions in the New Project Flow). All context capture happens through the UI upload experience.
 
-Normalize inputs before they hit the pipeline agents.
+---
+
+### 2.5a Input Format Flexibility — `COMPLETE`
 
 | Input Type | Accepted Formats | Notes |
 |------------|------------------|-------|
-| Survey | PDF, DOCX, TXT | Anything we can convert to PDF for processing |
-| Banner Plan | PDF, DOCX, TXT, Excel | Excel needs format detection + preprocessing |
-| Data File | SPSS (.sav) only | Keep simple for MVP |
-| Data Map | CSV only | Standard export from SPSS |
+| Survey | PDF, DOCX | BannerAgent converts via LibreOffice headless + pdf2pic |
+| Banner Plan | PDF, DOCX | Same conversion pipeline as survey |
+| Data File | SPSS (.sav) only | Source of truth for variables and values |
 
-**Implementation**:
-- Add format detection on upload
-- Preprocessing step to normalize each input type before pipeline
-- Excel banner plans: detect structure, convert to intermediate format
-- Question numbering flexibility (Q_S2, S2, QS2, etc.) handled by AI pattern matching—no special work needed
+**Not supported (by design):** Excel banner plans, TXT files for survey or banner. These are edge cases not worth the preprocessing complexity. If a client has an Excel banner plan, they can export it to PDF first.
 
-**Level of Effort**: Low-Medium (mostly preprocessing logic, pipeline unchanged)
+Question numbering flexibility (Q_S2, S2, QS2, etc.) is handled by AI pattern matching — no special work needed.
 
 ---
 
@@ -358,7 +269,7 @@ Instead of a single confidence score, track confidence across dimensions:
 | **Loop Detection** | If loops detected, how certain? | May ask for wrong format |
 | **Survey Classification** | How confident in methodology type? | May miss required context |
 
-**Integration**: Ties into Pre-Flight Confidence (1.5) and Upfront Context Capture (2.5). Low classification confidence triggers user prompts; high confidence enables auto-configuration.
+**Integration**: Ties into Project Intake Questions (3.1). Low classification confidence triggers user prompts; high confidence enables auto-configuration.
 
 **Level of Effort**: Medium-High (detection logic + confidence aggregation + UI integration)
 
@@ -567,6 +478,14 @@ Taking the reliable, feature-rich CLI and bringing it to a self-service UI that 
    - **Dashboard**: Project list with columns (Project Name, Private/Public, Team, Date Created, Your Role, Status)
    - **New Project Flow**: File upload (SPSS, datamap, survey, banner plan), configuration options
      - *Note*: Data file upload should include helper text or tooltip clarifying "qualified respondents only"—the system assumes terminated/disqualified respondents are already filtered out.
+   - **Project Intake Questions** *(consolidates former 1.5 and 2.5)*: After file upload, ask qualifying questions based on project type. Not every survey type needs extra context, but some do:
+     - "What type of project is this?" → Segmentation, MaxDiff, ATU, Conjoint, Standard, etc.
+     - **Segmentation**: "Does your data file have the segment assignments?" If no → warn that segment banner cuts won't work.
+     - **MaxDiff with message testing**: "Can you upload the message list?" (so we can link questions to actual message text, not just "Message 1"). "Does your data file have the anchored probability scores?" If no → warn that MaxDiff utility results won't be available.
+     - **Conjoint/DCM**: "Can you upload your choice task definitions?" Needed to interpret utility scores and choice shares.
+     - **General**: Set expectations about what the system can and can't do for this project type, before burning 45 minutes of pipeline time.
+     - Context captured here gets injected into agent prompts (e.g., VerificationAgent knows this is a MaxDiff study and can label tables appropriately).
+     - This is about giving the pipeline the context it needs to succeed, not about predicting success. Start with the 2-3 project types that require extra files or context. Expand as we encounter more.
    - **HITL Review**: Uncertain variable mappings with base sizes (from 2.8)
    - **Job Progress**: Real-time status updates
    - **Results**: Download Excel, view table list, include/exclude toggles (from 2.9), feedback per table (from 2.10)
@@ -850,6 +769,57 @@ This is a long-term feature — the foundation (correct defaults + validation pr
 
 ---
 
+### Predictive Confidence Scoring (Pre-Flight)
+
+*Moved from former Phase 1.5.*
+
+The idea: before running the full pipeline (45+ minutes), assess whether the system can handle a given dataset and flag issues upfront. A three-tier assessment (green/yellow/red) that tells users "we're confident," "proceed with caution," or "we can't handle this reliably."
+
+**Why it's long-term, not now:** Most pipeline failures come from AI agent behavior (BannerAgent misreading a format, CrosstabAgent picking wrong variables, VerificationAgent making bad table decisions) — not from data characteristics we can measure upfront. You can't predict whether an agent will succeed on *this specific* banner plan without running it. Building a predictor now would produce either false assurance or meaningless noise.
+
+**What's needed to make this real:**
+- 50+ dataset runs with documented failure modes and root causes
+- Enough signal to correlate data characteristics (variable complexity, naming patterns, loop structure) with actual pipeline outcomes
+- Statistical evidence that pre-flight signals actually predict success/failure
+
+**Signals that could eventually feed this** (all exist today but aren't predictive yet):
+- Loop detection: iteration counts, fill rates, variable family completeness
+- Deterministic resolver: evidence strength for iteration-linked variables
+- Data map quality: percentage of variables with value labels, description completeness
+- Variable count and complexity: hidden/admin variable ratios, naming consistency
+
+**When to revisit:** After Part 4 broader testing is complete and we have failure data across 20+ datasets with diverse characteristics. If clear patterns emerge (e.g., "datasets with no deterministic resolver evidence fail 80% of the time"), then a predictor becomes viable.
+
+---
+
+### Variable Selection Persistence
+
+*Moved from Phase 2.4c.*
+
+The crosstab agent's variable selection is non-deterministic — same dataset can produce different variable mappings across runs. Once a user confirms a mapping via HITL or accepts a successful run's output, lock those selections as project-level overrides so future re-runs don't re-roll the dice.
+
+**What gets saved:** Banner group name → variable mappings, confirmation source ("user_confirmed" or "accepted_from_run_N"). Stored as `confirmed-cuts.json` in the project folder. The crosstab agent prompt includes a "locked selections" section — variables in this list are not re-evaluated.
+
+**Why it matters:** Eliminates "it worked last time but not this time." First step toward accumulating project-level knowledge across runs.
+
+**Level of Effort:** Low (JSON persistence + prompt section, no architectural changes)
+
+---
+
+### Dual-Mode Loop Semantics Prompt
+
+*Moved from Phase 2.4d.*
+
+The Loop Semantics Policy Agent uses a single prompt regardless of how much deterministic evidence is available. When the resolver finds strong evidence, the prompt works well. When there's none, the LLM must infer from cut patterns and datamap descriptions alone — harder and less reliable.
+
+**Solution:** Two prompt variants selected automatically based on `deterministicFindings.iterationLinkedVariables.length`. High-evidence prompt anchors on resolver data. Low-evidence prompt adds pattern-matching guidance for OR expressions, emphasizes datamap descriptions, lowers confidence thresholds for `humanReviewRequired`, and includes more few-shot examples.
+
+**Level of Effort:** Low (second prompt file in `src/prompts/loopSemantics/alternative.ts` + selection logic in agent)
+
+**When to revisit:** If batch testing reveals classification failures on datasets where the deterministic resolver finds nothing.
+
+---
+
 ## Known Gaps & Limitations
 
 Documented as of February 2026. These are areas where the system has known limitations — some with mitigation paths already identified, others that may define the boundary of what HawkTab can handle. Even where solutions exist, it's important to be aware of these when communicating capabilities externally or testing against new datasets.
@@ -858,12 +828,14 @@ Documented as of February 2026. These are areas where the system has known limit
 
 | Gap | Severity | Mitigation | Status |
 |-----|----------|------------|--------|
-| **No deterministic evidence** — SPSS file has no label tokens, suffix patterns, or sibling descriptions. LLM must infer entirely from cut patterns and datamap context. | Medium | Dual-mode prompt (2.4d). Pre-flight confidence check (1.5). If confidence is too low, reject early. | Identified, not implemented |
+| **No deterministic evidence** — SPSS file has no label tokens, suffix patterns, or sibling descriptions. LLM must infer entirely from cut patterns and datamap context. | Medium | Dual-mode prompt (2.4d). Long-term: predictive confidence scoring (see Long-term Vision). | Identified, not implemented |
 | **Irregular parallel variable naming** — Occasion 1 uses Q5a, occasion 2 uses Q7b, occasion 3 uses Q12. No naming relationship. Resolver can't match. | Medium | LLM prompt must handle this from datamap descriptions. Few-shot examples for irregular naming. Some surveys may be unfixable without user hints. | Partially mitigated by LLM |
 | **Complex expression transformation** — `transformCutForAlias` handles `==`, `%in%`, and OR patterns. Expressions with `&` conditions, nested logic, or negations could break transformation. | Low-Medium | Expand transformer for common compound patterns. Flag untransformable expressions for human review. | Common cases handled |
 | **Multiple independent loop groups** — Dataset with both an occasion loop AND a brand loop. Architecturally supported but never tested. | Low | Schema and pipeline support N loop groups. Needs integration testing with a real multi-loop dataset. | Untested |
-| **Nested loops** — A brand loop inside an occasion loop. Not handled. | Low | Not supported. Pre-flight check (1.5) should detect and flag this as a red-tier limitation. | Not supported |
+| **Nested loops** — A brand loop inside an occasion loop. Not handled. | Low | Not supported. Validation already detects loops; nested loop detection could be added as a basic sanity check. | Not supported |
 | **Weighted stacked data** — Weights exist in the data but aren't applied during stacking or computation. | High | Next priority after loop semantics. R's `svydesign` handles weighted calculations natively. | Not implemented |
+| **No clustered standard errors** — Stacked rows from the same respondent are correlated, which overstates significance. Standard tests treat them as independent. This is industry-standard behavior (WinCross, SPSS Tables, Q all do the same). | Low | Accept as industry-standard limitation. Future differentiator if implemented. Would require respondent ID column in stacked frame + cluster-robust R functions. | Known limitation, not planned |
+| **No within-group stat letter suppression for entity-anchored groups** — `generateSignificanceTesting()` doesn't consult the loop semantics policy. Within-group pairwise comparisons run for all groups regardless of overlap. Validation detects overlaps but doesn't act on them. | Medium | Implement 2.4b (suppress or vs-complement testing for entity-anchored groups). | Not implemented |
 
 ### Crosstab Agent
 
@@ -876,12 +848,13 @@ Documented as of February 2026. These are areas where the system has known limit
 
 | Gap | Severity | Mitigation | Status |
 |-----|----------|------------|--------|
-| **No pre-flight confidence assessment** — Pipeline runs for 45+ minutes before discovering it can't handle a dataset reliably. | Medium-High | Pre-flight check (1.5) using signals from validation, loop detection, and resolver. Three-tier go/no-go. | Identified, not implemented |
+| **No pre-flight confidence assessment** — Pipeline runs for 45+ minutes before discovering it can't handle a dataset reliably. | Medium-High | Long-term: predictive confidence scoring (see Long-term Vision). Requires failure data across 50+ datasets before a predictor is viable. Near-term: project intake questions (3.1) set expectations upfront. | Deferred to Long-term Vision |
 | **No methodology documentation in output** — Users receive numbers without explanation of how they were computed. Assumptions are implicit. | Medium | Methodology sheet in Excel (Configurable Assumptions vision). Policy agent + validation results provide the content. | Planned |
 | **No project-level knowledge accumulation** — Each pipeline run starts fresh. Confirmed variable mappings, user preferences, and past decisions aren't carried forward. | Low-Medium | Variable selection persistence (2.4c) is the first step. Longer-term: project-level config that accumulates across runs. | Identified |
 | **Hidden assignment variables don't produce distribution tables** — When a question's answers are stored as hidden variables (e.g., `hLOCATIONr1–r16` for S9), the pipeline correctly hides them but misses the distribution table that shows assignment frequency. Requires parent-variable linking in DataMapProcessor or verification agent awareness. | Low | Accept gap for now. Future: detect when hidden variable families relate to a visible question and auto-generate distribution tables. | Known limitation |
 | **No dual-base reporting for skip logic questions** — When a question has skip logic, only the filtered base is reported. An experienced analyst might also report the same table with an all-respondents base for context (e.g., "what share of everyone had 2+ people present" vs "among those not alone, group size distribution"). Current behavior is correct; this is a future quality-of-life enhancement. | Low | Future: optional "also report unfiltered" flag on skip logic tables, generating both versions with clear base text. | Known limitation |
 | **`deriveBaseParent()` doesn't collapse parent references for loop variables** — In LoopCollapser.ts, when a collapsed variable's parent is itself a loop variable being collapsed, `deriveBaseParent()` returns the uncollapsed parent name (e.g., `A7_1` instead of `A7`). DataMapGrouper then uses this uncollapsed parent as the `questionId`, causing loop variables like A7 to appear with inconsistent naming (e.g., `a7_1` instead of `a7`). Non-loop parents like A4 are unaffected. | Low | Fix `deriveBaseParent()` to check if the derived parent is in the collapse map and resolve it to the collapsed form. Straightforward code fix. | Known limitation |
+| **No Excel or TXT input support** — Survey and banner plan inputs only accept PDF and DOCX. Excel banner plans (sometimes sent by clients) and TXT files are not supported. Users must export/convert to PDF or DOCX before uploading. | Low | Could add Excel parsing + structure detection for banner plans if demand warrants it. TXT is unlikely to be needed. | By design |
 
 ---
 

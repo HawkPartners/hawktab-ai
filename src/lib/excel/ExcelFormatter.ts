@@ -71,12 +71,13 @@ export interface TablesJson {
   tables: Record<string, TableData>;
 }
 
-export type ExcelFormat = 'joe' | 'antares';
+export type ExcelFormat = 'joe' | 'antares'; // 'antares' is deprecated — will be removed in a future release
 export type DisplayMode = 'frequency' | 'counts' | 'both';
 
 export interface ExcelFormatOptions {
-  format?: ExcelFormat;        // 'joe' (default) or 'antares'
-  displayMode?: DisplayMode;   // 'frequency' (default), 'counts', or 'both'
+  format?: ExcelFormat;            // 'joe' (default) or 'antares' (deprecated)
+  displayMode?: DisplayMode;       // 'frequency' (default), 'counts', or 'both'
+  separateWorkbooks?: boolean;     // When displayMode='both', output two separate .xlsx files instead of two sheets in one
 }
 
 export interface FormatOptions extends ExcelFormatOptions {
@@ -101,6 +102,7 @@ interface RenderContext {
 
 export class ExcelFormatter {
   private workbook: ExcelJS.Workbook;
+  private secondWorkbook: ExcelJS.Workbook | null = null;
   private options: ExcelFormatOptions;
 
   constructor(options: ExcelFormatOptions = {}) {
@@ -110,6 +112,7 @@ export class ExcelFormatter {
     this.options = {
       format: options.format ?? 'joe',
       displayMode: options.displayMode ?? 'frequency',
+      separateWorkbooks: options.separateWorkbooks ?? false,
     };
   }
 
@@ -177,8 +180,25 @@ export class ExcelFormatter {
     // 2. Render main crosstabs sheet(s)
     let headerInfo: JoeHeaderInfo | null = null;
 
-    if (displayMode === 'both') {
-      // Two sheets: Percentages and Counts
+    if (displayMode === 'both' && this.options.separateWorkbooks) {
+      // Separate workbooks: primary = Percentages, secondWorkbook = Counts
+      const pctSheet = this.workbook.addWorksheet('Crosstabs', {
+        properties: { tabColor: { argb: 'FF006BB3' } }
+      });
+      headerInfo = this.renderJoeSheet(pctSheet, includedTablesRecord, includedTableIds, context, cutCount, 'percent');
+
+      // Build second workbook for counts
+      this.secondWorkbook = new ExcelJS.Workbook();
+      this.secondWorkbook.creator = 'HawkTab AI';
+      this.secondWorkbook.created = new Date();
+      renderTableOfContents(this.secondWorkbook, tableArray);
+      const countSheet = this.secondWorkbook.addWorksheet('Crosstabs', {
+        properties: { tabColor: { argb: 'FF4472C4' } }
+      });
+      this.renderJoeSheet(countSheet, includedTablesRecord, includedTableIds, context, cutCount, 'count');
+
+    } else if (displayMode === 'both') {
+      // Two sheets in one workbook (existing behavior)
       const pctSheet = this.workbook.addWorksheet('Percentages', {
         properties: { tabColor: { argb: 'FF006BB3' } }
       });
@@ -209,6 +229,17 @@ export class ExcelFormatter {
         context.bannerGroups
       );
       console.log(`[ExcelFormatter] Excluded sheet rendered with ${excludedResult.excludedCount} tables`);
+
+      // Also add excluded sheet to second workbook if it exists
+      if (this.secondWorkbook) {
+        renderExcludedSheet(
+          this.secondWorkbook,
+          excludedTables,
+          headerInfo,
+          context.totalRespondents,
+          context.bannerGroups
+        );
+      }
     }
   }
 
@@ -361,6 +392,24 @@ export class ExcelFormatter {
   async saveToFile(outputPath: string): Promise<void> {
     await this.workbook.xlsx.writeFile(outputPath);
     console.log(`[ExcelFormatter] Saved workbook to: ${outputPath}`);
+  }
+
+  /**
+   * Whether a second workbook was generated (separate workbooks mode)
+   */
+  hasSecondWorkbook(): boolean {
+    return this.secondWorkbook !== null;
+  }
+
+  /**
+   * Save second workbook to file (only exists when separateWorkbooks=true and displayMode='both')
+   */
+  async saveSecondWorkbook(outputPath: string): Promise<void> {
+    if (!this.secondWorkbook) {
+      throw new Error('No second workbook to save. Only generated when separateWorkbooks=true and displayMode=both.');
+    }
+    await this.secondWorkbook.xlsx.writeFile(outputPath);
+    console.log(`[ExcelFormatter] Saved second workbook to: ${outputPath}`);
   }
 
   /**

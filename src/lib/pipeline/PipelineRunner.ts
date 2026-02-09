@@ -95,7 +95,7 @@ export async function runPipeline(
   options: Partial<PipelineOptions> = {}
 ): Promise<PipelineResult> {
   const opts: PipelineOptions = { ...DEFAULT_PIPELINE_OPTIONS, ...options };
-  const { format, displayMode, stopAfterVerification, concurrency, quiet, statTesting } = opts;
+  const { format, displayMode, separateWorkbooks, stopAfterVerification, concurrency, quiet, statTesting } = opts;
 
   // Build effective stat testing config (CLI overrides -> env defaults)
   const envStatConfig = getStatTestingConfig();
@@ -966,11 +966,18 @@ export async function runPipeline(
         const formatter = new ExcelFormatter({
           format,
           displayMode,
+          separateWorkbooks,
         });
         await formatter.formatFromFile(tablesJsonPath);
         await formatter.saveToFile(excelPath);
 
-        log(`  Generated crosstabs.xlsx (format: ${format}, display: ${displayMode})`, 'green');
+        if (formatter.hasSecondWorkbook()) {
+          const countsPath = path.join(resultsDir, 'crosstabs-counts.xlsx');
+          await formatter.saveSecondWorkbook(countsPath);
+          log(`  Generated crosstabs.xlsx (percentages) + crosstabs-counts.xlsx (counts)`, 'green');
+        } else {
+          log(`  Generated crosstabs.xlsx (format: ${format}, display: ${displayMode})`, 'green');
+        }
         eventBus.emitStageComplete(11, STAGE_NAMES[11], Date.now() - stepStart11);
         log(`  Duration: ${Date.now() - stepStart11}ms`, 'dim');
       } catch (excelError) {

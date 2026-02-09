@@ -55,9 +55,9 @@ Each banner column receives a letter (A, B, C, ...). When column A is statistica
 
 ### What We Don't Do (Stat Testing)
 
-- **No minimum base suppression by default.** If a base has 5 respondents, it still gets tested. This matches WinCross behavior. A minimum base can be configured.
-- **No overlap-aware testing on loop tables yet.** If a banner group's segments overlap (a stacked row can match multiple cuts), within-group stat letters may be invalid. The system will validate partition behavior on loop tables and suppress within-group letters when overlap is detected.
-- **No clustered standard errors on loop tables.** Stacked rows from the same respondent are correlated, which can overstate significance. Standard tests treat them as independent. This is industry-standard behavior (WinCross, SPSS Tables, Q all do the same), but technically overstates the effective sample size. A future enhancement could add cluster-robust testing.
+- **No minimum base suppression by default.** If a base has 5 respondents, it still gets tested. This matches WinCross behavior. A minimum base can be configured via `STAT_MIN_BASE`.
+- **No overlap-aware stat testing on loop tables.** When entity-anchored banner groups are present on stacked data, the system validates partition correctness (no overlaps between cuts) and writes the result to `loop-semantics-validation.json`. However, stat testing itself does NOT consult this validation — within-group pairwise comparisons still run for all groups regardless. If a partition has overlaps, stat letters may be invalid. Planned fix: suppress within-group letters for entity-anchored groups, with optional vs-complement testing as an alternative (see product roadmap 2.4b).
+- **No clustered standard errors on loop tables.** Stacked rows from the same respondent are correlated, which can overstate significance. Standard tests treat them as independent. This is industry-standard behavior (WinCross, SPSS Tables, Q all do the same), but technically overstates the effective sample size.
 - **No weighted stat tests.** Weighting is not currently supported (see below).
 
 ---

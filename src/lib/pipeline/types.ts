@@ -28,6 +28,8 @@ export interface PipelineOptions {
   format: ExcelFormat;
   /** Display mode (frequency, counts, both) */
   displayMode: DisplayMode;
+  /** When displayMode='both', output two separate .xlsx files instead of two sheets in one */
+  separateWorkbooks: boolean;
   /** Stop after VerificationAgent (skip R/Excel) */
   stopAfterVerification: boolean;
   /** Concurrency level for parallel agents */
@@ -41,6 +43,7 @@ export interface PipelineOptions {
 export const DEFAULT_PIPELINE_OPTIONS: PipelineOptions = {
   format: 'joe',
   displayMode: 'frequency',
+  separateWorkbooks: false,
   stopAfterVerification: false,
   concurrency: 3,
   quiet: false,
