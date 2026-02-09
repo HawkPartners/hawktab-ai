@@ -13,7 +13,7 @@ import type { StatTestingConfig } from '../env';
 
 export interface DatasetFiles {
   datamap: string | null;  // Optional — .sav is the source of truth
-  banner: string;
+  banner: string | null;   // Optional — AI generates banner cuts when missing
   spss: string;
   survey: string | null;  // Optional - needed for VerificationAgent
   name: string;
@@ -40,6 +40,12 @@ export interface PipelineOptions {
   quiet: boolean;
   /** Statistical testing configuration (overrides env defaults) */
   statTesting?: Partial<StatTestingConfig>;
+  /** Research objectives for AI-generated banner (when no banner document) */
+  researchObjectives?: string;
+  /** Suggested cuts for AI-generated banner (treated as near-requirements) */
+  cutSuggestions?: string;
+  /** Project type hint for AI-generated banner */
+  projectType?: 'atu' | 'segmentation' | 'demand' | 'concept_test' | 'tracking' | 'general';
 }
 
 export const DEFAULT_PIPELINE_OPTIONS: PipelineOptions = {

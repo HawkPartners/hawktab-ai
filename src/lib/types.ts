@@ -20,6 +20,7 @@ export type ReasoningEffort = 'none' | 'minimal' | 'low' | 'medium' | 'high' | '
 export interface AgentReasoningConfig {
   crosstabReasoningEffort: ReasoningEffort;
   bannerReasoningEffort: ReasoningEffort;
+  bannerGenerateReasoningEffort: ReasoningEffort;
   verificationReasoningEffort: ReasoningEffort;
   skipLogicReasoningEffort: ReasoningEffort;
   filterTranslatorReasoningEffort: ReasoningEffort;
@@ -35,6 +36,7 @@ export interface ProcessingLimits {
   // Per-agent token limits
   crosstabModelTokens: number;
   bannerModelTokens: number;
+  bannerGenerateModelTokens: number;
   verificationModelTokens: number;
   skipLogicModelTokens: number;
   filterTranslatorModelTokens: number;
@@ -63,6 +65,7 @@ export interface EnvironmentConfig {
   // Per-agent model configuration (Azure deployment names)
   crosstabModel: string;   // e.g., 'o4-mini' - used by CrosstabAgent (complex validation)
   bannerModel: string;     // e.g., 'gpt-5-nano' - used by BannerAgent (vision/extraction)
+  bannerGenerateModel: string; // e.g., 'gpt-5-mini' - used by BannerGenerateAgent (text-based cut design)
   verificationModel: string; // e.g., 'gpt-5-mini' - used by VerificationAgent (survey enhancement)
   skipLogicModel: string;    // e.g., 'gpt-5-mini' - used by SkipLogicAgent (survey rule extraction)
   filterTranslatorModel: string; // e.g., 'o4-mini' - used by FilterTranslatorAgent (R expression translation)

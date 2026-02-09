@@ -36,6 +36,14 @@ These are the settings an end user (like someone at Antares) would reasonably wa
 | Stop early | `--stop-after-verification` flag | Boolean | `false` | Skip R execution and Excel generation. Useful for reviewing agent output before committing to the full run. |
 | Show defaults | `--show-defaults` flag | Boolean | — | Print current pipeline configuration (output format, stat testing, etc.) and exit without running. |
 
+### AI-Generated Banner (when no banner document is provided)
+
+| Setting | Current Access | Options | Default | What It Does |
+|---------|---------------|---------|---------|-------------|
+| Research objectives | `--objectives="..."` CLI flag | Free text | — | Guides the BannerGenerateAgent on which variables to prioritize as cuts. Highest priority signal. |
+| Cut suggestions | `--cuts="..."` CLI flag | Free text | — | Direct cut requests from the user (e.g., "cut by specialty and region"). Treated as near-requirements. |
+| Project type | `--project-type` CLI flag | `atu`, `segmentation`, `demand`, `concept_test`, `tracking`, `general` | — | Hint that informs domain-specific cut selection (e.g., ATU prioritizes awareness/trial/usage funnels). |
+
 ---
 
 ## Internal Configuration (developer-only, don't expose in UI)
@@ -44,12 +52,13 @@ These tune the system's behavior but aren't meaningful to end users. Keep in `.e
 
 ### Per-Agent Model Selection
 
-Each of the 6 agents has its own model, token limit, reasoning effort, and prompt version. Users don't need to know about this — it's how we tune quality vs cost vs speed.
+Each of the 7 agents has its own model, token limit, reasoning effort, and prompt version. Users don't need to know about this — it's how we tune quality vs cost vs speed.
 
 | Agent | Model Var | Default Model | Token Limit Var | Default Tokens | Reasoning Var | Default |
 |-------|-----------|---------------|-----------------|----------------|---------------|---------|
 | CrosstabAgent | `CROSSTAB_MODEL` | `o4-mini` | `CROSSTAB_MODEL_TOKENS` | `100000` | `CROSSTAB_REASONING_EFFORT` | `medium` |
 | BannerAgent | `BANNER_MODEL` | `gpt-5-nano` | `BANNER_MODEL_TOKENS` | `128000` | `BANNER_REASONING_EFFORT` | `medium` |
+| BannerGenerateAgent | `BANNER_GENERATE_MODEL` | (inherits Verification) | `BANNER_GENERATE_MODEL_TOKENS` | `128000` | `BANNER_GENERATE_REASONING_EFFORT` | `high` |
 | VerificationAgent | `VERIFICATION_MODEL` | `gpt-5-mini` | `VERIFICATION_MODEL_TOKENS` | `128000` | `VERIFICATION_REASONING_EFFORT` | `medium` |
 | SkipLogicAgent | `SKIPLOGIC_MODEL` | (inherits Verification) | `SKIPLOGIC_MODEL_TOKENS` | `128000` | `SKIPLOGIC_REASONING_EFFORT` | `medium` |
 | FilterTranslatorAgent | `FILTERTRANSLATOR_MODEL` | (inherits Crosstab) | `FILTERTRANSLATOR_MODEL_TOKENS` | `100000` | `FILTERTRANSLATOR_REASONING_EFFORT` | `medium` |
@@ -98,6 +107,7 @@ Controls how many reasoning steps an agent can take before being forced to produ
 | SkipLogicAgent (initial) | 25 | `src/agents/SkipLogicAgent.ts` |
 | SkipLogicAgent (retry) | 15 | `src/agents/SkipLogicAgent.ts` |
 | BannerAgent | 15 | `src/agents/BannerAgent.ts` |
+| BannerGenerateAgent | 15 | `src/agents/BannerGenerateAgent.ts` |
 | VerificationAgent | 15 | `src/agents/VerificationAgent.ts` |
 | FilterTranslatorAgent | 15 | `src/agents/FilterTranslatorAgent.ts` |
 | LoopSemanticsPolicyAgent | 15 | `src/agents/LoopSemanticsPolicyAgent.ts` |
@@ -123,7 +133,7 @@ How `batch-pipeline.ts` and `FileDiscovery.ts` identify input files:
 | File Type | Detection | Format | Required |
 |-----------|-----------|--------|----------|
 | Data file | `*.sav` extension | SPSS | Yes |
-| Banner plan | Filename contains `banner` | `.docx` or `.pdf` | Yes |
+| Banner plan | Filename contains `banner` | `.docx` or `.pdf` | No (AI generates cuts from datamap when missing) |
 | Survey | Filename contains `survey`, `questionnaire`, `qre`, or `qnr` | `.docx` or `.pdf` | Yes |
 | Datamap | (legacy) | CSV | No (.sav is source of truth) |
 
@@ -171,4 +181,5 @@ Still supported for backward compatibility but should not be used in new config.
 - Per-table feedback/regeneration (2.10)
 
 **Recently implemented:**
+- AI-generated banner (2.5b) — `--objectives`, `--cuts`, `--project-type` flags. When no banner document is found, BannerGenerateAgent designs cuts from the datamap. Batch pipeline no longer requires banner for readiness.
 - Excel color theme (2.11) — `--theme` flag, 6 palettes available

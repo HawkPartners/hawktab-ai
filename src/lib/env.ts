@@ -115,6 +115,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   const crosstabModel = process.env.CROSSTAB_MODEL || process.env.REASONING_MODEL || 'o4-mini';
   const bannerModel = process.env.BANNER_MODEL || process.env.BASE_MODEL || 'gpt-5-nano';
   const verificationModel = process.env.VERIFICATION_MODEL || process.env.TABLE_MODEL || 'gpt-5-mini';
+  const bannerGenerateModel = process.env.BANNER_GENERATE_MODEL || verificationModel;
   const skipLogicModel = process.env.SKIPLOGIC_MODEL || verificationModel;
   const filterTranslatorModel = process.env.FILTERTRANSLATOR_MODEL || crosstabModel;
   const loopSemanticsModel = process.env.LOOP_SEMANTICS_MODEL || verificationModel;
@@ -127,6 +128,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   // Defaults to 'medium' (AI SDK default) if not specified
   const crosstabReasoningEffort = parseReasoningEffort(process.env.CROSSTAB_REASONING_EFFORT, 'CROSSTAB');
   const bannerReasoningEffort = parseReasoningEffort(process.env.BANNER_REASONING_EFFORT, 'BANNER');
+  const bannerGenerateReasoningEffort = parseReasoningEffort(process.env.BANNER_GENERATE_REASONING_EFFORT || 'high', 'BANNER_GENERATE');
   const verificationReasoningEffort = parseReasoningEffort(process.env.VERIFICATION_REASONING_EFFORT, 'VERIFICATION');
   const skipLogicReasoningEffort = parseReasoningEffort(process.env.SKIPLOGIC_REASONING_EFFORT, 'SKIPLOGIC');
   const filterTranslatorReasoningEffort = parseReasoningEffort(process.env.FILTERTRANSLATOR_REASONING_EFFORT, 'FILTERTRANSLATOR');
@@ -146,6 +148,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
     // Per-agent model configuration
     crosstabModel,
     bannerModel,
+    bannerGenerateModel,
     verificationModel,
     skipLogicModel,
     filterTranslatorModel,
@@ -173,6 +176,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
       // Per-agent token limits
       crosstabModelTokens: parseInt(process.env.CROSSTAB_MODEL_TOKENS || process.env.REASONING_MODEL_TOKENS || '100000'),
       bannerModelTokens: parseInt(process.env.BANNER_MODEL_TOKENS || process.env.BASE_MODEL_TOKENS || '128000'),
+      bannerGenerateModelTokens: parseInt(process.env.BANNER_GENERATE_MODEL_TOKENS || process.env.VERIFICATION_MODEL_TOKENS || '128000'),
       verificationModelTokens: parseInt(process.env.VERIFICATION_MODEL_TOKENS || process.env.TABLE_MODEL_TOKENS || '128000'),
       skipLogicModelTokens: parseInt(process.env.SKIPLOGIC_MODEL_TOKENS || process.env.VERIFICATION_MODEL_TOKENS || '128000'),
       filterTranslatorModelTokens: parseInt(process.env.FILTERTRANSLATOR_MODEL_TOKENS || process.env.CROSSTAB_MODEL_TOKENS || '100000'),
@@ -181,6 +185,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
     reasoningConfig: {
       crosstabReasoningEffort,
       bannerReasoningEffort,
+      bannerGenerateReasoningEffort,
       verificationReasoningEffort,
       skipLogicReasoningEffort,
       filterTranslatorReasoningEffort,
@@ -217,6 +222,16 @@ export const getBannerModel = () => {
   const config = getEnvironmentConfig();
   const provider = getAzureProvider();
   return provider.chat(config.bannerModel);
+};
+
+/**
+ * Get BannerGenerateAgent model for AI-generated banner cuts
+ * Used by: BannerGenerateAgent (text-based cut design from datamap)
+ */
+export const getBannerGenerateModel = () => {
+  const config = getEnvironmentConfig();
+  const provider = getAzureProvider();
+  return provider.chat(config.bannerGenerateModel);
 };
 
 /**
@@ -272,6 +287,11 @@ export const getBannerModelName = (): string => {
   return `azure/${config.bannerModel}`;
 };
 
+export const getBannerGenerateModelName = (): string => {
+  const config = getEnvironmentConfig();
+  return `azure/${config.bannerGenerateModel}`;
+};
+
 export const getVerificationModelName = (): string => {
   const config = getEnvironmentConfig();
   return `azure/${config.verificationModel}`;
@@ -303,6 +323,11 @@ export const getCrosstabModelTokenLimit = (): number => {
 export const getBannerModelTokenLimit = (): number => {
   const config = getEnvironmentConfig();
   return config.processingLimits.bannerModelTokens;
+};
+
+export const getBannerGenerateModelTokenLimit = (): number => {
+  const config = getEnvironmentConfig();
+  return config.processingLimits.bannerGenerateModelTokens;
 };
 
 export const getVerificationModelTokenLimit = (): number => {
@@ -343,6 +368,11 @@ export const getCrosstabReasoningEffort = (): ReasoningEffort => {
 export const getBannerReasoningEffort = (): ReasoningEffort => {
   const config = getEnvironmentConfig();
   return config.reasoningConfig.bannerReasoningEffort;
+};
+
+export const getBannerGenerateReasoningEffort = (): ReasoningEffort => {
+  const config = getEnvironmentConfig();
+  return config.reasoningConfig.bannerGenerateReasoningEffort;
 };
 
 export const getVerificationReasoningEffort = (): ReasoningEffort => {

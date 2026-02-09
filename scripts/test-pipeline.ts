@@ -15,6 +15,9 @@
  *   --stop-after-verification   Stop before R/Excel generation
  *   --concurrency=N            Parallel agent limit (default: 3)
  *   --show-defaults            Show current pipeline configuration and exit
+ *   --objectives="..."         Research objectives for AI-generated banner (when no banner doc)
+ *   --cuts="..."               Suggested cuts for AI-generated banner
+ *   --project-type=TYPE        Project type hint (atu|segmentation|demand|concept_test|tracking|general)
  *
  * Examples:
  *   npx tsx scripts/test-pipeline.ts
@@ -22,6 +25,7 @@
  *   npx tsx scripts/test-pipeline.ts --display=both --separate-workbooks
  *   npx tsx scripts/test-pipeline.ts --stop-after-verification
  *   npx tsx scripts/test-pipeline.ts --show-defaults
+ *   npx tsx scripts/test-pipeline.ts data/some-dataset --objectives="Understand brand awareness by specialty"
  */
 
 // Load environment variables
@@ -72,6 +76,35 @@ function parseThemeFlag(): string {
   return 'classic';
 }
 
+function parseObjectivesFlag(): string | undefined {
+  const arg = process.argv.find(a => a.startsWith('--objectives='));
+  if (arg) {
+    return arg.split('=').slice(1).join('=');
+  }
+  return undefined;
+}
+
+function parseCutsFlag(): string | undefined {
+  const arg = process.argv.find(a => a.startsWith('--cuts='));
+  if (arg) {
+    return arg.split('=').slice(1).join('=');
+  }
+  return undefined;
+}
+
+function parseProjectTypeFlag(): 'atu' | 'segmentation' | 'demand' | 'concept_test' | 'tracking' | 'general' | undefined {
+  const arg = process.argv.find(a => a.startsWith('--project-type='));
+  if (arg) {
+    const value = arg.split('=')[1]?.toLowerCase();
+    const valid = ['atu', 'segmentation', 'demand', 'concept_test', 'tracking', 'general'] as const;
+    if (valid.includes(value as typeof valid[number])) {
+      return value as typeof valid[number];
+    }
+    console.warn(`Unknown --project-type "${value}". Valid: ${valid.join(', ')}`);
+  }
+  return undefined;
+}
+
 // =============================================================================
 // Main
 // =============================================================================
@@ -108,6 +141,9 @@ async function main() {
     stopAfterVerification: process.argv.includes('--stop-after-verification'),
     concurrency: parseConcurrency(),
     theme: parseThemeFlag(),
+    researchObjectives: parseObjectivesFlag(),
+    cutSuggestions: parseCutsFlag(),
+    projectType: parseProjectTypeFlag(),
   });
 
   if (!result.success) {

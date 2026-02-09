@@ -174,7 +174,7 @@ Question numbering flexibility (Q_S2, S2, QS2, etc.) is handled by AI pattern ma
 
 ---
 
-### 2.5b AI-Generated Banner from Research Objectives — `NOT STARTED`
+### 2.5b AI-Generated Banner from Research Objectives — `COMPLETE`
 
 When no banner plan is provided — or the user explicitly chooses "AI generate cuts" — the system generates a suggested banner from the datamap and optional research objectives.
 

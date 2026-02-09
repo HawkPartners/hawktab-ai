@@ -63,9 +63,7 @@ export async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
       (f.endsWith('.docx') || f.endsWith('.pdf'))
     );
   }
-  if (!banner) {
-    throw new Error(`No banner plan found in ${folder}. Expected file containing "banner" with .docx or .pdf extension.`);
-  }
+  // banner may be null — AI will generate cuts from datamap when missing
 
   // Find SPSS file
   const spss = validFiles.find(f => f.endsWith('.sav'));
@@ -93,7 +91,7 @@ export async function findDatasetFiles(folder: string): Promise<DatasetFiles> {
 
   return {
     datamap,
-    banner: path.join(inputsFolder, banner),
+    banner: banner ? path.join(inputsFolder, banner) : null,
     spss: path.join(inputsFolder, spss),
     survey: survey ? path.join(inputsFolder, survey) : null,
     name,

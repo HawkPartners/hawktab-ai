@@ -2,13 +2,13 @@
 /**
  * Batch Pipeline Runner
  *
- * Scans data/ for dataset folders that have all three required files:
- *   1. .sav data file
- *   2. Banner plan (.docx or .pdf containing "banner")
- *   3. Survey document (.docx or .pdf containing "survey", "questionnaire", "qre", or "qnr")
+ * Scans data/ for dataset folders that have the required files:
+ *   1. .sav data file (required)
+ *   2. Survey document (.docx or .pdf containing "survey", "questionnaire", "qre", or "qnr") (required)
+ *   3. Banner plan (.docx or .pdf containing "banner") (optional — AI generates cuts when missing)
  *
  * Runs the pipeline on each qualifying folder sequentially.
- * Skips folders missing any of the three.
+ * Skips folders missing .sav or survey.
  *
  * Usage:
  *   npx tsx scripts/batch-pipeline.ts [options]
@@ -111,7 +111,7 @@ async function checkFolder(folderPath: string): Promise<DatasetReadiness> {
       result.surveyFile = surveyFile;
     }
 
-    result.ready = result.hasSav && result.hasBanner && result.hasSurvey;
+    result.ready = result.hasSav && result.hasSurvey;
   } catch {
     // Folder not readable, skip
   }
@@ -191,7 +191,7 @@ async function main() {
   for (const r of ready) {
     console.log(`  ${r.name}`);
     console.log(`    .sav:    ${r.savFile}`);
-    console.log(`    banner:  ${r.bannerFile}`);
+    console.log(`    banner:  ${r.hasBanner ? r.bannerFile : '(will generate from datamap)'}`);
     console.log(`    survey:  ${r.surveyFile}`);
   }
 

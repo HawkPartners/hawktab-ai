@@ -11,6 +11,7 @@ import { promisify } from 'util';
 
 // Processors and agents
 import { BannerAgent } from '../../agents/BannerAgent';
+import { generateBannerCuts } from '../../agents/BannerGenerateAgent';
 import { processAllGroups as processCrosstabGroups } from '../../agents/CrosstabAgent';
 import { groupDataMap } from '../tables/DataMapGrouper';
 import { generateTables, convertToLegacyFormat, getGeneratorStats } from '../tables/TableGenerator';
@@ -145,7 +146,7 @@ export async function runPipeline(
   }
 
   log(`  Datamap: ${files.datamap ? path.basename(files.datamap) : '(not used — .sav is source of truth)'}`, 'dim');
-  log(`  Banner:  ${path.basename(files.banner)}`, 'dim');
+  log(`  Banner:  ${files.banner ? path.basename(files.banner) : '(not found — AI will generate cuts)'}`, 'dim');
   log(`  SPSS:    ${path.basename(files.spss)}`, 'dim');
   log(`  Survey:  ${files.survey ? path.basename(files.survey) : '(not found - VerificationAgent will use passthrough)'}`, 'dim');
   log('', 'reset');
@@ -373,7 +374,7 @@ export async function runPipeline(
     // -------------------------------------------------------------------------
     log('', 'reset');
     logStep(2, totalSteps, 'Starting parallel paths...');
-    log(`  Path A: BannerAgent → CrosstabAgent`, 'dim');
+    log(`  Path A: ${files.banner ? 'BannerAgent' : 'BannerGenerateAgent'} → CrosstabAgent`, 'dim');
     log(`  Path B: TableGenerator → tables + distribution stats`, 'dim');
     log(`  Path C: SkipLogicAgent → FilterTranslatorAgent → filters`, 'dim');
     log('', 'reset');
@@ -387,34 +388,67 @@ export async function runPipeline(
       Answer_Options: v.Answer_Options,
     }));
 
-    // Path A: BannerAgent → CrosstabAgent
+    // Path A: Banner → CrosstabAgent
+    // Two sub-paths: BannerAgent (document extraction) or BannerGenerateAgent (AI generation)
     const pathAPromise = (async () => {
       const pathAStart = Date.now();
-      log(`  [Path A] Starting BannerAgent...`, 'cyan');
-      eventBus.emitStageStart(2, STAGE_NAMES[2]);
+      let agentBanner: { groupName: string; columns: { name: string; original: string }[] }[];
+      let groupCount: number;
+      let columnCount: number;
 
-      const bannerAgent = new BannerAgent();
-      const bannerResult = await bannerAgent.processDocument(files.banner, outputDir);
+      if (files.banner) {
+        // Path A1: Extract banner from document (existing flow)
+        log(`  [Path A] Starting BannerAgent (document extraction)...`, 'cyan');
+        eventBus.emitStageStart(2, STAGE_NAMES[2]);
 
-      if (!bannerResult.success) {
-        log(`  [Path A] WARNING: Banner extraction had issues`, 'yellow');
+        const bannerAgent = new BannerAgent();
+        const bannerResult = await bannerAgent.processDocument(files.banner, outputDir);
+
+        if (!bannerResult.success) {
+          log(`  [Path A] WARNING: Banner extraction had issues`, 'yellow');
+        }
+
+        const extractedStructure = bannerResult.verbose?.data?.extractedStructure;
+        groupCount = extractedStructure?.bannerCuts?.length || 0;
+        columnCount = (extractedStructure?.processingMetadata as { totalColumns?: number })?.totalColumns || 0;
+
+        if (groupCount === 0) {
+          throw new Error('Banner extraction failed - 0 groups extracted');
+        }
+
+        agentBanner = bannerResult.agent || [];
+        log(`  [Path A] BannerAgent: ${groupCount} groups, ${columnCount} columns`, 'green');
+        eventBus.emitStageComplete(2, STAGE_NAMES[2], Date.now() - pathAStart);
+      } else {
+        // Path A2: Generate banner cuts from datamap using AI
+        log(`  [Path A] Starting BannerGenerateAgent (AI-generated cuts)...`, 'cyan');
+        eventBus.emitStageStart(2, STAGE_NAMES[2]);
+
+        const generateResult = await generateBannerCuts({
+          verboseDataMap,
+          researchObjectives: opts.researchObjectives,
+          cutSuggestions: opts.cutSuggestions,
+          projectType: opts.projectType,
+          outputDir,
+        });
+
+        agentBanner = generateResult.agent;
+        groupCount = agentBanner.length;
+        columnCount = agentBanner.reduce((sum, g) => sum + g.columns.length, 0);
+
+        if (groupCount === 0) {
+          throw new Error('Banner generation failed - 0 groups generated');
+        }
+
+        log(`  [Path A] BannerGenerateAgent: ${groupCount} groups, ${columnCount} columns (confidence: ${generateResult.confidence.toFixed(2)})`, 'green');
+        eventBus.emitStageComplete(2, STAGE_NAMES[2], Date.now() - pathAStart);
       }
 
-      const extractedStructure = bannerResult.verbose?.data?.extractedStructure;
-      const groupCount = extractedStructure?.bannerCuts?.length || 0;
-      const columnCount = (extractedStructure?.processingMetadata as { totalColumns?: number })?.totalColumns || 0;
-
-      if (groupCount === 0) {
-        throw new Error('Banner extraction failed - 0 groups extracted');
-      }
-
-      log(`  [Path A] BannerAgent: ${groupCount} groups, ${columnCount} columns`, 'green');
-      eventBus.emitStageComplete(2, STAGE_NAMES[2], Date.now() - pathAStart);
+      // CrosstabAgent (shared for both paths)
       log(`  [Path A] Starting CrosstabAgent...`, 'cyan');
       const crosstabStart = Date.now();
       eventBus.emitStageStart(3, STAGE_NAMES[3]);
 
-      const agentBanner = bannerResult.agent || [];
       const crosstabResult = await processCrosstabGroups(
         agentDataMap,
         { bannerCuts: agentBanner.map(g => ({ groupName: g.groupName, columns: g.columns })) },
@@ -425,7 +459,7 @@ export async function runPipeline(
       eventBus.emitStageComplete(3, STAGE_NAMES[3], Date.now() - crosstabStart);
       log(`  [Path A] Complete in ${((Date.now() - pathAStart) / 1000).toFixed(1)}s`, 'dim');
 
-      return { bannerResult, crosstabResult, agentBanner, groupCount, columnCount };
+      return { crosstabResult, agentBanner, groupCount, columnCount };
     })();
 
     // Path B: TableGenerator → tables + distribution stats (VerificationAgent moved to sequential)
@@ -1058,7 +1092,7 @@ export async function runPipeline(
       },
       inputs: {
         datamap: files.datamap ? path.basename(files.datamap) : null,
-        banner: path.basename(files.banner),
+        banner: files.banner ? path.basename(files.banner) : '(AI-generated)',
         spss: path.basename(files.spss),
         survey: files.survey ? path.basename(files.survey) : null,
       },
