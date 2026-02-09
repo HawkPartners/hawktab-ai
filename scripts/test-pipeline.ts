@@ -20,6 +20,7 @@
  *   --project-type=TYPE        Project type hint (atu|segmentation|demand|concept_test|tracking|general)
  *   --weight=VAR               Apply weight variable (e.g., --weight=wt)
  *   --no-weight                Suppress weight detection warnings
+ *   --loop-stat-testing=MODE   Loop within-group stats (suppress|complement)
  *
  * Examples:
  *   npx tsx scripts/test-pipeline.ts
@@ -115,6 +116,18 @@ function parseWeightFlag(): string | undefined {
   return undefined;
 }
 
+function parseLoopStatTestingMode(): 'suppress' | 'complement' | undefined {
+  const arg = process.argv.find(a => a.startsWith('--loop-stat-testing='));
+  if (arg) {
+    const value = arg.split('=')[1]?.toLowerCase();
+    if (value === 'suppress' || value === 'complement') {
+      return value;
+    }
+    console.warn(`Unknown --loop-stat-testing "${value}". Valid: suppress, complement`);
+  }
+  return undefined;
+}
+
 // =============================================================================
 // Main
 // =============================================================================
@@ -133,6 +146,7 @@ function showDefaults(): void {
   console.log(`  Concurrency: ${defaults.concurrency}`);
   console.log(`\nStatistical Testing:`);
   console.log(`  ${formatStatTestingConfig(statConfig)}`);
+  console.log(`  Loop stat testing: per-policy (default suppress)`);
   console.log('');
 }
 
@@ -156,6 +170,7 @@ async function main() {
     projectType: parseProjectTypeFlag(),
     weightVariable: parseWeightFlag(),
     noWeight: process.argv.includes('--no-weight'),
+    loopStatTestingMode: parseLoopStatTestingMode(),
   });
 
   if (!result.success) {

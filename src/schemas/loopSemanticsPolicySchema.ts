@@ -20,6 +20,9 @@ export const BannerGroupPolicySchema = z.object({
   /** Whether cuts in this group should be mutually exclusive on loop tables */
   shouldPartition: z.boolean(),
 
+  /** How to handle within-group significance testing on loop tables */
+  comparisonMode: z.enum(['suppress', 'complement']).default('suppress'),
+
   /** Which stacked frame this applies to (empty string if respondent-anchored) */
   stackedFrameName: z.string(),
 

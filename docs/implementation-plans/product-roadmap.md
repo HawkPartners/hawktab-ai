@@ -23,7 +23,7 @@ This document outlines the path from HawkTab AI's current state (reliable local 
 | **Phase 1.5** ~~Pre-Flight Confidence~~ | Reorganized | Intake questions → 3.1; predictive scoring → Long-term Vision |
 | **Phase 2.1** Output Formats | Complete | frequency, counts, both (same workbook or separate) |
 | **Phase 2.4** Stat Testing Config | Complete | Env vars, pipeline summary, `--show-defaults` |
-| **Phase 2.4b** Loop-Aware Stat Testing | Not Started | Suppress (default) or vs-complement for entity-anchored groups |
+| **Phase 2.4b** Loop-Aware Stat Testing | Complete | Suppress (default) or vs-complement for entity-anchored groups |
 | **Phase 2.4c** Variable Persistence | Deferred | Moved to Long-term Vision |
 | **Phase 2.4d** Dual-Mode Loop Prompt | Deferred | Moved to Long-term Vision |
 | **Phase 2.5** Upfront Context | Consolidated | Merged into 3.1 (Project Intake Questions) |
@@ -115,18 +115,18 @@ Bob asked: "Is it possible to add in an option to say I only want percents or fr
 
 ---
 
-### 2.4b Loop-Aware Stat Testing — `NOT STARTED`
+### 2.4b Loop-Aware Stat Testing — `COMPLETE`
 
-**Problem**: When entity-anchored banner groups exist on stacked/loop data, within-group pairwise stat testing (A-vs-B) can be invalid if groups overlap. Today, the system validates partition correctness and reports overlaps in `loop-semantics-validation.json`, but `generateSignificanceTesting()` doesn't consult this — stat letters are generated regardless.
+**Problem**: When entity-anchored banner groups exist on stacked/loop data, within-group pairwise stat testing (A-vs-B) can be invalid if groups overlap. The system now consults the loop semantics policy before generating within-group stat letters.
 
-**What to implement (two modes, default = suppress):**
+**What is implemented (two modes, default = suppress):**
 
 | Mode | Behavior | When to use |
 |------|----------|-------------|
 | **Suppress** (default) | Skip within-group stat letters entirely for entity-anchored groups on stacked data. Still show vs-Total comparison. | Safe default. No invalid letters. |
 | **vs-Complement** (optional) | Instead of A-vs-B, compute A-vs-not-A for each cut. Always statistically valid regardless of overlap. | User wants significance testing on loop tables and understands the tradeoff. |
 
-**Implementation approach:**
+**Implementation (now live):**
 
 1. **Schema** — Add `comparisonMode: 'suppress' | 'complement'` to `BannerGroupPolicySchema` in `loopSemanticsPolicySchema.ts`. Default: `'suppress'`.
 
@@ -136,7 +136,7 @@ Bob asked: "Is it possible to add in an option to say I only want percents or fr
    - If `suppress`: skip the within-group comparison loop for that group
    - If `complement`: generate R code that computes complement mask (`!cut_mask`) and tests cut proportions/means against the complement set using the same z-test/t-test logic
 
-3. **Config** — Expose as a pipeline option. In the UI, only show this toggle when loops are detected. Default to suppress.
+3. **Config** — Exposed as a pipeline option. In the UI, the toggle only appears when loops are detected. Default to suppress.
 
 **Level of Effort**: Medium (R script generation changes + schema addition + config wiring)
 
@@ -868,7 +868,7 @@ Documented as of February 2026. These are areas where the system has known limit
 | **Nested loops** — A brand loop inside an occasion loop. Not handled. | Low | Not supported. Validation already detects loops; nested loop detection could be added as a basic sanity check. | Not supported |
 | **Weighted stacked data** — Weights exist in the data but aren't applied during stacking or computation. | ~~High~~ | Implemented in 2.6. Weight column carries through `bind_rows` in stacked frames. Manual weighted formulas with effective n for sig testing. | Complete |
 | **No clustered standard errors** — Stacked rows from the same respondent are correlated, which overstates significance. Standard tests treat them as independent. This is industry-standard behavior (WinCross, SPSS Tables, Q all do the same). | Low | Accept as industry-standard limitation. Future differentiator if implemented. Would require respondent ID column in stacked frame + cluster-robust R functions. | Known limitation, not planned |
-| **No within-group stat letter suppression for entity-anchored groups** — `generateSignificanceTesting()` doesn't consult the loop semantics policy. Within-group pairwise comparisons run for all groups regardless of overlap. Validation detects overlaps but doesn't act on them. | Medium | Implement 2.4b (suppress or vs-complement testing for entity-anchored groups). | Not implemented |
+| **No within-group stat letter suppression for entity-anchored groups** — `generateSignificanceTesting()` didn't consult the loop semantics policy. Within-group pairwise comparisons ran for all groups regardless of overlap. Validation detected overlaps but didn't act on them. | Medium | Implement 2.4b (suppress or vs-complement testing for entity-anchored groups). | Complete |
 
 ### Crosstab Agent
 
@@ -876,6 +876,7 @@ Documented as of February 2026. These are areas where the system has known limit
 |-----|----------|------------|--------|
 | **Non-deterministic variable selection** — Same dataset can produce different variable mappings across runs. | Medium | Hidden variable hints help steer. Variable selection persistence (2.4c) locks in confirmed choices. HITL for low-confidence cuts. | Partially mitigated |
 | **Hidden variable conventions vary by platform** — h-prefix and d-prefix patterns are Decipher/FocusVision conventions. Other platforms (Qualtrics, SurveyMonkey, Confirmit) use different naming. | Low-Medium | Expand hint patterns as we encounter new platforms. The datamap description is platform-agnostic and usually contains enough signal. | Platform-specific hints added |
+| **Overlapping banner cuts (non-loop)** — If a user provides overlapping respondent-anchored cuts, pairwise A-vs-B letters still run even when overlap makes comparisons questionable. | Medium | Consider optional suppression or complement testing for overlapping groups if demand warrants it. | Known limitation |
 
 ### General Pipeline
 

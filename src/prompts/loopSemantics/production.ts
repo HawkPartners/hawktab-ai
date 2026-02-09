@@ -103,9 +103,15 @@ For each banner group:
    - When unsure, look at the answer options: if they are coded as discrete categories
      from a single-select question, shouldPartition is likely true
 
-5. Set confidence (0-1) and provide evidence strings explaining your reasoning.
+5. Set comparisonMode:
+  - "suppress" means skip within-group stat letters for entity-anchored groups
+  - "complement" means compare each cut to its complement (A vs not-A)
+  - Use "suppress" unless there is a clear request to provide stat testing on loop tables
+  - comparisonMode only applies to entity-anchored groups; use "suppress" for respondent groups
 
-6. If you are uncertain about any group's classification, set humanReviewRequired=true
+6. Set confidence (0-1) and provide evidence strings explaining your reasoning.
+
+7. If you are uncertain about any group's classification, set humanReviewRequired=true
    at the top level and explain in warnings. It is better to flag uncertainty than to
    silently produce a wrong classification.
 </instructions>
@@ -220,5 +226,24 @@ EXAMPLE 4: Entity-anchored group, 3 iterations, no deterministic evidence
     evidence: ["OR pattern across 3 variables matches 3 iterations",
                "Descriptions reference 'first', 'second', 'third' — ordinal iteration language",
                "No deterministic evidence but structural + description evidence is strong"]
+
+EXAMPLE 5: Entity-anchored group with complement testing
+  Loop: 3 iterations (entity A, entity B, entity C)
+  Banner group: "Category" with cuts:
+    "Type 1" = (Q7a == 1 | Q7b == 1 | Q7c == 1)
+    "Type 2" = (Q7a == 2 | Q7b == 2 | Q7c == 2)
+  Deterministic findings: Q7a → iteration A, Q7b → iteration B, Q7c → iteration C
+
+  Classification:
+    anchorType: "entity"
+    shouldPartition: true
+    comparisonMode: "complement"
+    strategy: "alias_column"
+    aliasName: ".hawktab_category_code"
+    sourcesByIteration: [{"iteration":"A","variable":"Q7a"},{"iteration":"B","variable":"Q7b"},{"iteration":"C","variable":"Q7c"}]
+    confidence: 0.90
+    evidence: ["Cut pattern spans all iterations for the same concept",
+               "Deterministic resolver maps variables to iterations",
+               "Single-select categories imply partitioning"]
 </few_shot_examples>
 `;

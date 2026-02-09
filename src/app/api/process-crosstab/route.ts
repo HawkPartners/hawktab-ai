@@ -53,6 +53,9 @@ interface PipelineSummary {
   source: 'ui' | 'cli';
   status: PipelineStatus;
   currentStage?: string;
+  options?: {
+    loopStatTestingMode?: 'suppress' | 'complement';
+  };
   inputs: {
     datamap: string;
     banner: string;
@@ -495,6 +498,11 @@ export async function POST(request: NextRequest) {
     const bannerPlanFile = formData.get('bannerPlan') as File;
     const dataFile = formData.get('dataFile') as File;
     const surveyFile = formData.get('surveyDocument') as File | null;
+    const loopStatTestingRaw = formData.get('loopStatTestingMode');
+    const loopStatTestingMode =
+      loopStatTestingRaw === 'suppress' || loopStatTestingRaw === 'complement'
+        ? loopStatTestingRaw
+        : undefined;
 
     if (!dataMapFile || !bannerPlanFile || !dataFile) {
       return NextResponse.json(
@@ -630,6 +638,9 @@ export async function POST(request: NextRequest) {
           source: 'ui',
           status: 'in_progress',
           currentStage: 'parallel_processing',
+          options: {
+            loopStatTestingMode,
+          },
           inputs: {
             datamap: dataMapFile.name,
             banner: bannerPlanFile.name,
@@ -986,7 +997,12 @@ export async function POST(request: NextRequest) {
         await fs.mkdir(rDir, { recursive: true });
 
         const { script: masterScript, validation: staticValidationReport } = generateRScriptV2WithValidation(
-          { tables: allTablesForR, cuts: cutsSpec.cuts, cutGroups: cutsSpec.groups },
+          {
+            tables: allTablesForR,
+            cuts: cutsSpec.cuts,
+            cutGroups: cutsSpec.groups,
+            loopStatTestingMode,
+          },
           { sessionId: pipelineId, outputDir: 'results' }
         );
 

@@ -97,7 +97,7 @@ export async function runPipeline(
   options: Partial<PipelineOptions> = {}
 ): Promise<PipelineResult> {
   const opts: PipelineOptions = { ...DEFAULT_PIPELINE_OPTIONS, ...options };
-  const { format, displayMode, separateWorkbooks, stopAfterVerification, concurrency, theme, quiet, statTesting, weightVariable: weightOpt, noWeight } = opts;
+  const { format, displayMode, separateWorkbooks, stopAfterVerification, concurrency, theme, quiet, statTesting, weightVariable: weightOpt, noWeight, loopStatTestingMode } = opts;
 
   // Build effective stat testing config (CLI overrides -> env defaults)
   const envStatConfig = getStatTestingConfig();
@@ -926,6 +926,7 @@ export async function runPipeline(
         significanceThresholds: effectiveStatConfig.thresholds,
         loopMappings: loopMappings.length > 0 ? loopMappings : undefined,
         loopSemanticsPolicy,
+        loopStatTestingMode,
         weightVariable,
       },
       { sessionId: outputFolder, outputDir: 'results' }

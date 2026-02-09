@@ -53,6 +53,7 @@ export interface RScriptV2Input {
   statTestingConfig?: StatTestingConfig;  // Full stat testing configuration
   loopMappings?: LoopGroupMapping[];     // Loop stacking mappings (from LoopCollapser)
   loopSemanticsPolicy?: LoopSemanticsPolicy;  // Per-banner-group loop classification
+  loopStatTestingMode?: 'suppress' | 'complement';  // Override for entity-anchored group comparisons
   weightVariable?: string;  // Weight variable column name (e.g., "wt") for weighted output
 }
 
@@ -257,6 +258,7 @@ export function generateRScriptV2WithValidation(
     statTestingConfig,
     loopMappings = [],
     loopSemanticsPolicy,
+    loopStatTestingMode,
     weightVariable,
   } = input;
   const isWeighted = !!weightVariable;
@@ -479,7 +481,7 @@ export function generateRScriptV2WithValidation(
   // -------------------------------------------------------------------------
   // Significance Testing Pass
   // -------------------------------------------------------------------------
-  generateSignificanceTesting(lines);
+  generateSignificanceTesting(lines, loopSemanticsPolicy, loopStatTestingMode);
 
   // -------------------------------------------------------------------------
   // Loop Semantics Policy Validation (if entity-anchored groups exist)
@@ -1571,7 +1573,11 @@ function generateMeanRowsTable(lines: string[], table: TableWithLoopFrame, isWei
 // Significance Testing Pass
 // =============================================================================
 
-function generateSignificanceTesting(lines: string[]): void {
+function generateSignificanceTesting(
+  lines: string[],
+  loopSemanticsPolicy?: LoopSemanticsPolicy,
+  loopStatTestingMode?: 'suppress' | 'complement'
+): void {
   lines.push('# =============================================================================');
   lines.push('# Significance Testing Pass');
   lines.push('# =============================================================================');
@@ -1579,9 +1585,36 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('print("Running significance testing...")');
   lines.push('');
 
+  // Build comparison mode lookup for entity-anchored, partitioned groups
+  const entityPartitionGroups = loopSemanticsPolicy?.bannerGroups.filter(
+    bp => bp.anchorType === 'entity' && bp.shouldPartition
+  ) || [];
+  lines.push('# Comparison mode by group (entity-anchored, shouldPartition=true)');
+  lines.push('comparison_mode_by_group <- list()');
+  if (entityPartitionGroups.length > 0) {
+    for (const group of entityPartitionGroups) {
+      const safeGroupName = group.groupName.replace(/`/g, "'").replace(/"/g, '\\"');
+      const comparisonMode = loopStatTestingMode || group.comparisonMode || 'suppress';
+      lines.push(`comparison_mode_by_group[["${safeGroupName}"]] <- "${comparisonMode}"`);
+    }
+  }
+  lines.push('');
+
   // Check if we have dual thresholds
   lines.push('# Check for dual threshold mode (uppercase = high conf, lowercase = low conf)');
   lines.push('has_dual_thresholds <- exists("p_threshold_high") && exists("p_threshold_low")');
+  lines.push('');
+
+  // Helper: get group name for a cut
+  lines.push('# Get group name for a cut (from cut_groups)');
+  lines.push('get_group_name <- function(cut_name) {');
+  lines.push('  for (group_name in names(cut_groups)) {');
+  lines.push('    if (cut_name %in% cut_groups[[group_name]]) {');
+  lines.push('      return(group_name)');
+  lines.push('    }');
+  lines.push('  }');
+  lines.push('  return(NA)');
+  lines.push('}');
   lines.push('');
 
   lines.push('for (table_id in names(all_tables)) {');
@@ -1598,6 +1631,8 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('');
   lines.push('    # Get cuts in same group for within-group comparison');
   lines.push('    group_cuts <- get_group_cuts(cut_name)');
+  lines.push('    group_name <- get_group_name(cut_name)');
+  lines.push('    comparison_mode <- if (!is.na(group_name) && !is.null(comparison_mode_by_group[[group_name]])) comparison_mode_by_group[[group_name]] else "pairwise"');
   lines.push('');
   lines.push('    for (row_key in row_keys) {');
   lines.push('      row_data <- cut_data_obj[[row_key]]');
@@ -1605,83 +1640,177 @@ function generateSignificanceTesting(lines: string[]): void {
   lines.push('');
   lines.push('      sig_higher <- c()');
   lines.push('');
-  lines.push('      # Compare to other cuts in same group');
-  lines.push('      for (other_cut in group_cuts) {');
-  lines.push('        if (other_cut == cut_name) next');
-  lines.push('        if (!(other_cut %in% names(tbl$data))) next');
+  lines.push('      # Compare within group (pairwise, suppress, or vs complement)');
+  lines.push('      if (comparison_mode == "pairwise") {');
+  lines.push('        for (other_cut in group_cuts) {');
+  lines.push('          if (other_cut == cut_name) next');
+  lines.push('          if (!(other_cut %in% names(tbl$data))) next');
   lines.push('');
-  lines.push('        other_data <- tbl$data[[other_cut]][[row_key]]');
-  lines.push('        if (is.null(other_data) || !is.null(other_data$error)) next');
+  lines.push('          other_data <- tbl$data[[other_cut]][[row_key]]');
+  lines.push('          if (is.null(other_data) || !is.null(other_data$error)) next');
   lines.push('');
-  lines.push('        other_letter <- cut_stat_letters[[other_cut]]');
+  lines.push('          other_letter <- cut_stat_letters[[other_cut]]');
   lines.push('');
-  lines.push('        if (table_type == "frequency") {');
-  lines.push('          # Skip category headers and rows with null values (e.g., visual grouping rows)');
-  lines.push('          if (is.null(row_data$n) || is.null(row_data$count) ||');
-  lines.push('              is.null(other_data$n) || is.null(other_data$count)) next');
+  lines.push('          if (table_type == "frequency") {');
+  lines.push('            # Skip category headers and rows with null values (e.g., visual grouping rows)');
+  lines.push('            if (is.null(row_data$n) || is.null(row_data$count) ||');
+  lines.push('                is.null(other_data$n) || is.null(other_data$count)) next');
   lines.push('');
-  lines.push('          # Calculate p-value directly for dual threshold support');
-  lines.push('          p1 <- row_data$count / row_data$n');
-  lines.push('          p2 <- other_data$count / other_data$n');
-  lines.push('          # Use effective n for sig testing when weighted (accounts for design effect)');
-  lines.push('          n1 <- if (!is.null(row_data$n_eff)) row_data$n_eff else row_data$n');
-  lines.push('          n2 <- if (!is.null(other_data$n_eff)) other_data$n_eff else other_data$n');
+  lines.push('            # Calculate p-value directly for dual threshold support');
+  lines.push('            p1 <- row_data$count / row_data$n');
+  lines.push('            p2 <- other_data$count / other_data$n');
+  lines.push('            # Use effective n for sig testing when weighted (accounts for design effect)');
+  lines.push('            n1 <- if (!is.null(row_data$n_eff)) row_data$n_eff else row_data$n');
+  lines.push('            n2 <- if (!is.null(other_data$n_eff)) other_data$n_eff else other_data$n');
   lines.push('');
-  lines.push('          # Skip if both proportions are same or undefined');
-  lines.push('          if (is.na(p1) || is.na(p2)) next');
-  lines.push('          if ((p1 == 0 && p2 == 0) || (p1 == 1 && p2 == 1)) next');
+  lines.push('            # Skip if both proportions are same or undefined');
+  lines.push('            if (is.na(p1) || is.na(p2)) next');
+  lines.push('            if ((p1 == 0 && p2 == 0) || (p1 == 1 && p2 == 1)) next');
   lines.push('');
-  lines.push('          # Calculate p-value (unpooled z-test)');
-  lines.push('          se <- sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2)');
-  lines.push('          if (is.na(se) || se == 0) next');
-  lines.push('          z <- (p1 - p2) / se');
-  lines.push('          p_value <- 2 * (1 - pnorm(abs(z)))');
+  lines.push('            # Calculate p-value (unpooled z-test)');
+  lines.push('            se <- sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2)');
+  lines.push('            if (is.na(se) || se == 0) next');
+  lines.push('            z <- (p1 - p2) / se');
+  lines.push('            p_value <- 2 * (1 - pnorm(abs(z)))');
   lines.push('');
-  lines.push('          # Only add letter if this column is higher');
-  lines.push('          if (p1 > p2) {');
-  lines.push('            if (has_dual_thresholds) {');
-  lines.push('              # Dual mode: uppercase for high confidence, lowercase for low-only');
-  lines.push('              if (p_value < p_threshold_high) {');
-  lines.push('                sig_higher <- c(sig_higher, toupper(other_letter))');
-  lines.push('              } else if (p_value < p_threshold_low) {');
-  lines.push('                sig_higher <- c(sig_higher, tolower(other_letter))');
-  lines.push('              }');
-  lines.push('            } else {');
-  lines.push('              # Single threshold mode');
-  lines.push('              if (p_value < p_threshold) {');
-  lines.push('                sig_higher <- c(sig_higher, other_letter)');
-  lines.push('              }');
-  lines.push('            }');
-  lines.push('          }');
-  lines.push('        } else if (table_type == "mean_rows") {');
-  lines.push("          # Welch's t-test using summary statistics (n, mean, sd)");
-  lines.push('          # These are stored in each row during mean_rows table generation');
-  lines.push('          if (!is.na(row_data$mean) && !is.na(other_data$mean) &&');
-  lines.push('              !is.null(row_data$n) && !is.null(other_data$n) &&');
-  lines.push('              !is.null(row_data$sd) && !is.null(other_data$sd)) {');
-  lines.push('');
-  lines.push('            # Get minimum base from config (defaults to 0 = no minimum)');
-  lines.push('            min_base <- if (exists("stat_min_base")) stat_min_base else 0');
-  lines.push('');
-  lines.push('            # Use effective n for weighted data (if available)');
-  lines.push('            n1_sig <- if (!is.null(row_data$n_eff)) row_data$n_eff else row_data$n');
-  lines.push('            n2_sig <- if (!is.null(other_data$n_eff)) other_data$n_eff else other_data$n');
-  lines.push('            result <- sig_test_mean_summary(');
-  lines.push('              n1_sig, row_data$mean, row_data$sd,');
-  lines.push('              n2_sig, other_data$mean, other_data$sd,');
-  lines.push('              min_base');
-  lines.push('            )');
-  lines.push('');
-  lines.push('            if (is.list(result) && !is.na(result$p_value) && result$higher) {');
+  lines.push('            # Only add letter if this column is higher');
+  lines.push('            if (p1 > p2) {');
   lines.push('              if (has_dual_thresholds) {');
-  lines.push('                if (result$p_value < p_threshold_high) {');
+  lines.push('                # Dual mode: uppercase for high confidence, lowercase for low-only');
+  lines.push('                if (p_value < p_threshold_high) {');
   lines.push('                  sig_higher <- c(sig_higher, toupper(other_letter))');
-  lines.push('                } else if (result$p_value < p_threshold_low) {');
+  lines.push('                } else if (p_value < p_threshold_low) {');
   lines.push('                  sig_higher <- c(sig_higher, tolower(other_letter))');
   lines.push('                }');
   lines.push('              } else {');
-  lines.push('                if (result$p_value < p_threshold) {');
+  lines.push('                # Single threshold mode');
+  lines.push('                if (p_value < p_threshold) {');
   lines.push('                  sig_higher <- c(sig_higher, other_letter)');
+  lines.push('                }');
+  lines.push('              }');
+  lines.push('            }');
+  lines.push('          } else if (table_type == "mean_rows") {');
+  lines.push("            # Welch's t-test using summary statistics (n, mean, sd)");
+  lines.push('            # These are stored in each row during mean_rows table generation');
+  lines.push('            if (!is.na(row_data$mean) && !is.na(other_data$mean) &&');
+  lines.push('                !is.null(row_data$n) && !is.null(other_data$n) &&');
+  lines.push('                !is.null(row_data$sd) && !is.null(other_data$sd)) {');
+  lines.push('');
+  lines.push('              # Get minimum base from config (defaults to 0 = no minimum)');
+  lines.push('              min_base <- if (exists("stat_min_base")) stat_min_base else 0');
+  lines.push('');
+  lines.push('              # Use effective n for weighted data (if available)');
+  lines.push('              n1_sig <- if (!is.null(row_data$n_eff)) row_data$n_eff else row_data$n');
+  lines.push('              n2_sig <- if (!is.null(other_data$n_eff)) other_data$n_eff else other_data$n');
+  lines.push('              result <- sig_test_mean_summary(');
+  lines.push('                n1_sig, row_data$mean, row_data$sd,');
+  lines.push('                n2_sig, other_data$mean, other_data$sd,');
+  lines.push('                min_base');
+  lines.push('              )');
+  lines.push('');
+  lines.push('              if (is.list(result) && !is.na(result$p_value) && result$higher) {');
+  lines.push('                if (has_dual_thresholds) {');
+  lines.push('                  if (result$p_value < p_threshold_high) {');
+  lines.push('                    sig_higher <- c(sig_higher, toupper(other_letter))');
+  lines.push('                  } else if (result$p_value < p_threshold_low) {');
+  lines.push('                    sig_higher <- c(sig_higher, tolower(other_letter))');
+  lines.push('                  }');
+  lines.push('                } else {');
+  lines.push('                  if (result$p_value < p_threshold) {');
+  lines.push('                    sig_higher <- c(sig_higher, other_letter)');
+  lines.push('                  }');
+  lines.push('                }');
+  lines.push('              }');
+  lines.push('            }');
+  lines.push('          }');
+  lines.push('        }');
+  lines.push('      } else if (comparison_mode == "complement") {');
+  lines.push('        if ("Total" %in% names(tbl$data) && cut_name != "Total") {');
+  lines.push('          total_data <- tbl$data[["Total"]][[row_key]]');
+  lines.push('          if (!is.null(total_data) && is.null(total_data$error)) {');
+  lines.push('            if (table_type == "frequency") {');
+  lines.push('              if (is.null(row_data$n) || is.null(row_data$count) ||');
+  lines.push('                  is.null(total_data$n) || is.null(total_data$count)) {');
+  lines.push('                next');
+  lines.push('              }');
+  lines.push('              n_comp <- total_data$n - row_data$n');
+  lines.push('              count_comp <- total_data$count - row_data$count');
+  lines.push('              if (is.na(n_comp) || n_comp <= 0 || is.na(count_comp) || count_comp < 0) next');
+  lines.push('');
+  lines.push('              p1 <- row_data$count / row_data$n');
+  lines.push('              p2 <- count_comp / n_comp');
+  lines.push('');
+  lines.push('              # Use effective n for sig testing when weighted (accounts for design effect)');
+  lines.push('              n1 <- if (!is.null(row_data$n_eff)) row_data$n_eff else row_data$n');
+  lines.push('              n2_raw <- if (!is.null(total_data$n_eff) && !is.null(row_data$n_eff)) total_data$n_eff - row_data$n_eff else n_comp');
+  lines.push('              n2 <- if (is.na(n2_raw) || n2_raw <= 0) n_comp else n2_raw');
+  lines.push('');
+  lines.push('              if (is.na(p1) || is.na(p2)) next');
+  lines.push('              if ((p1 == 0 && p2 == 0) || (p1 == 1 && p2 == 1)) next');
+  lines.push('');
+  lines.push('              se <- sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2)');
+  lines.push('              if (is.na(se) || se == 0) next');
+  lines.push('              z <- (p1 - p2) / se');
+  lines.push('              p_value <- 2 * (1 - pnorm(abs(z)))');
+  lines.push('');
+  lines.push('              if (p1 > p2) {');
+  lines.push('                if (has_dual_thresholds) {');
+  lines.push('                  if (p_value < p_threshold_high) {');
+  lines.push('                    sig_higher <- c(sig_higher, "*")');
+  lines.push('                  } else if (p_value < p_threshold_low) {');
+  lines.push('                    sig_higher <- c(sig_higher, "*")');
+  lines.push('                  }');
+  lines.push('                } else {');
+  lines.push('                  if (p_value < p_threshold) {');
+  lines.push('                    sig_higher <- c(sig_higher, "*")');
+  lines.push('                  }');
+  lines.push('                }');
+  lines.push('              }');
+  lines.push('            } else if (table_type == "mean_rows") {');
+  lines.push('              if (!is.na(row_data$mean) && !is.na(total_data$mean) &&');
+  lines.push('                  !is.null(row_data$n) && !is.null(total_data$n) &&');
+  lines.push('                  !is.null(row_data$sd) && !is.null(total_data$sd)) {');
+  lines.push('');
+  lines.push('                n_total <- if (!is.null(total_data$n_eff)) total_data$n_eff else total_data$n');
+  lines.push('                n_a <- if (!is.null(row_data$n_eff)) row_data$n_eff else row_data$n');
+  lines.push('                n_b <- n_total - n_a');
+  lines.push('                if (is.na(n_b) || n_b <= 1) next');
+  lines.push('');
+  lines.push('                mean_total <- total_data$mean');
+  lines.push('                mean_a <- row_data$mean');
+  lines.push('                sd_total <- total_data$sd');
+  lines.push('                sd_a <- row_data$sd');
+  lines.push('');
+  lines.push('                sum_total <- n_total * mean_total');
+  lines.push('                sum_a <- n_a * mean_a');
+  lines.push('                mean_b <- (sum_total - sum_a) / n_b');
+  lines.push('');
+  lines.push('                sumsq_total <- (n_total - 1) * (sd_total ^ 2) + n_total * (mean_total ^ 2)');
+  lines.push('                sumsq_a <- (n_a - 1) * (sd_a ^ 2) + n_a * (mean_a ^ 2)');
+  lines.push('                sumsq_b <- sumsq_total - sumsq_a');
+  lines.push('                var_b <- (sumsq_b - n_b * (mean_b ^ 2)) / (n_b - 1)');
+  lines.push('                if (is.na(var_b) || var_b <= 0) next');
+  lines.push('                sd_b <- sqrt(var_b)');
+  lines.push('');
+  lines.push('                min_base <- if (exists("stat_min_base")) stat_min_base else 0');
+  lines.push('                result <- sig_test_mean_summary(');
+  lines.push('                  n_a, mean_a, sd_a,');
+  lines.push('                  n_b, mean_b, sd_b,');
+  lines.push('                  min_base');
+  lines.push('                )');
+  lines.push('');
+  lines.push('                if (is.list(result) && !is.na(result$p_value) && result$higher) {');
+  lines.push('                  if (has_dual_thresholds) {');
+  lines.push('                    if (result$p_value < p_threshold_high) {');
+  lines.push('                      sig_higher <- c(sig_higher, "*")');
+  lines.push('                    } else if (result$p_value < p_threshold_low) {');
+  lines.push('                      sig_higher <- c(sig_higher, "*")');
+  lines.push('                    }');
+  lines.push('                  } else {');
+  lines.push('                    if (result$p_value < p_threshold) {');
+  lines.push('                      sig_higher <- c(sig_higher, "*")');
+  lines.push('                    }');
+  lines.push('                  }');
   lines.push('                }');
   lines.push('              }');
   lines.push('            }');

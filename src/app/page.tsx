@@ -6,6 +6,7 @@ import FileUpload from '../components/FileUpload';
 import { useValidationQueue } from '../hooks/useValidationQueue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/PageHeader';
 import { PipelineHistory } from '@/components/PipelineHistory';
@@ -18,11 +19,62 @@ export default function Home() {
   const [bannerPlanFile, setBannerPlanFile] = useState<File | null>(null);
   const [dataFile, setDataFile] = useState<File | null>(null);
   const [surveyFile, setSurveyFile] = useState<File | null>(null);
+  const [loopDetection, setLoopDetection] = useState<{ hasLoops: boolean; loopCount: number } | null>(null);
+  const [isDetectingLoops, setIsDetectingLoops] = useState(false);
+  const [loopStatTestingMode, setLoopStatTestingMode] = useState<'suppress' | 'complement'>('suppress');
   const [isProcessing, setIsProcessing] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobError, setJobError] = useState<string | null>(null);
   const router = useRouter();
   const { counts, refresh } = useValidationQueue();
+
+  // Detect loop presence when data file changes
+  useEffect(() => {
+    let cancelled = false;
+
+    const detectLoops = async () => {
+      if (!dataFile) {
+        setLoopDetection(null);
+        setIsDetectingLoops(false);
+        setLoopStatTestingMode('suppress');
+        return;
+      }
+
+      const lowerName = dataFile.name.toLowerCase();
+      if (!lowerName.endsWith('.sav')) {
+        setLoopDetection(null);
+        setIsDetectingLoops(false);
+        setLoopStatTestingMode('suppress');
+        return;
+      }
+
+      setIsDetectingLoops(true);
+      try {
+        const fd = new FormData();
+        fd.append('dataFile', dataFile);
+        const res = await fetch('/api/loop-detect', { method: 'POST', body: fd });
+        if (!res.ok) throw new Error('Loop detection failed');
+        const data = await res.json();
+        if (cancelled) return;
+        setLoopDetection({ hasLoops: !!data.hasLoops, loopCount: Number(data.loopCount) || 0 });
+        if (!data.hasLoops) {
+          setLoopStatTestingMode('suppress');
+        }
+      } catch {
+        if (!cancelled) {
+          setLoopDetection({ hasLoops: false, loopCount: 0 });
+          setLoopStatTestingMode('suppress');
+        }
+      } finally {
+        if (!cancelled) setIsDetectingLoops(false);
+      }
+    };
+
+    detectLoops();
+    return () => {
+      cancelled = true;
+    };
+  }, [dataFile]);
 
   // Restore active job from localStorage on mount
   useEffect(() => {
@@ -158,6 +210,9 @@ export default function Home() {
       formData.append('dataFile', submittedFiles.dataFile);
       if (submittedFiles.survey) {
         formData.append('surveyDocument', submittedFiles.survey);
+      }
+      if (loopDetection?.hasLoops) {
+        formData.append('loopStatTestingMode', loopStatTestingMode);
       }
 
       // Call our API endpoint for complete processing (returns early with jobId)
@@ -415,6 +470,41 @@ export default function Home() {
             optional
           />
         </div>
+
+        {dataFile && (
+          <div className="mb-8 flex justify-center">
+            <div className="w-full max-w-2xl rounded-lg border border-muted p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium">Loop stat testing</p>
+                  <p className="text-xs text-muted-foreground">
+                    {isDetectingLoops
+                      ? 'Detecting loops in data file...'
+                      : loopDetection?.hasLoops
+                        ? `Loops detected (${loopDetection.loopCount})`
+                        : 'No loops detected'}
+                  </p>
+                </div>
+                {loopDetection?.hasLoops && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Suppress</span>
+                    <Switch
+                      checked={loopStatTestingMode === 'complement'}
+                      onCheckedChange={(checked) => setLoopStatTestingMode(checked ? 'complement' : 'suppress')}
+                      aria-label="Toggle complement testing for loop tables"
+                    />
+                    <span className="text-xs text-muted-foreground">Complement</span>
+                  </div>
+                )}
+              </div>
+              {loopDetection?.hasLoops && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Complement compares each cut vs not-A. Suppress disables within-group letters for entity-anchored loop groups.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="text-center">
           {isProcessing ? (

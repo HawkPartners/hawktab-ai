@@ -50,6 +50,8 @@ export interface PipelineOptions {
   weightVariable?: string;
   /** Suppress weight detection warnings */
   noWeight?: boolean;
+  /** Override loop stat testing mode for entity-anchored groups */
+  loopStatTestingMode?: 'suppress' | 'complement';
 }
 
 export const DEFAULT_PIPELINE_OPTIONS: PipelineOptions = {

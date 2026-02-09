@@ -21,6 +21,7 @@
  *   --dry-run                  Just show which folders qualify, don't run
  *   --weight=VAR               Apply weight variable (e.g., --weight=wt)
  *   --no-weight                Suppress weight detection warnings
+ *   --loop-stat-testing=MODE   Loop within-group stats (suppress|complement)
  */
 
 // Load environment variables
@@ -169,6 +170,18 @@ function parseWeightFlag(): string | undefined {
   return undefined;
 }
 
+function parseLoopStatTestingMode(): 'suppress' | 'complement' | undefined {
+  const arg = process.argv.find(a => a.startsWith('--loop-stat-testing='));
+  if (arg) {
+    const value = arg.split('=')[1]?.toLowerCase();
+    if (value === 'suppress' || value === 'complement') {
+      return value;
+    }
+    console.warn(`Unknown --loop-stat-testing "${value}". Valid: suppress, complement`);
+  }
+  return undefined;
+}
+
 // =============================================================================
 // Main
 // =============================================================================
@@ -243,6 +256,7 @@ async function main() {
   const theme = parseThemeFlag();
   const weightVariable = parseWeightFlag();
   const noWeight = process.argv.includes('--no-weight');
+  const loopStatTestingMode = parseLoopStatTestingMode();
 
   console.log(`\n${'='.repeat(60)}`);
   console.log(`BATCH RUN: ${ready.length} datasets`);
@@ -270,6 +284,7 @@ async function main() {
         theme,
         weightVariable,
         noWeight,
+      loopStatTestingMode,
       });
 
       const durationMs = Date.now() - startTime;
