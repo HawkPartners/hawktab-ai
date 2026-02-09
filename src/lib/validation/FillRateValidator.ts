@@ -8,6 +8,7 @@
  */
 
 import type { LoopGroup, LoopFillRateResult, LoopDataPattern } from './types';
+import { tokenize } from './LoopDetector';
 
 /**
  * Classify the fill rate pattern for a loop group.
@@ -26,19 +27,15 @@ export function classifyLoopFillRates(
     const rate = fillRates[varName];
     if (rate === undefined) continue;
 
-    // Find which iteration this variable belongs to
-    // by checking the token at the iterator position
-    for (const iter of loopGroup.iterations) {
-      // Check if this variable's iteration value matches
-      if (varName.includes(`_${iter}`) || varName.endsWith(iter)) {
-        // Simple heuristic: check if the variable contains the iteration marker
-        if (!iterationRates[iter]) {
-          iterationRates[iter] = [];
-        }
-        iterationRates[iter].push(rate);
-        break;
-      }
-    }
+    // Robust iteration assignment: use LoopDetector tokenization + iteratorPosition
+    const tokens = tokenize(varName);
+    const tokenAtIter = tokens[loopGroup.iteratorPosition];
+    const iter = tokenAtIter?.type === 'numeric' ? tokenAtIter.value : null;
+    if (!iter) continue;
+    if (!loopGroup.iterations.includes(iter)) continue;
+
+    if (!iterationRates[iter]) iterationRates[iter] = [];
+    iterationRates[iter].push(rate);
   }
 
   // Calculate average fill rate per iteration
@@ -48,7 +45,7 @@ export function classifyLoopFillRates(
   }
 
   // Classify the pattern
-  const { pattern, explanation } = classifyPattern(loopGroup.iterations, avgRates);
+  const { pattern, explanation } = classifyPattern(loopGroup, avgRates);
 
   return {
     loopGroup,
@@ -62,10 +59,10 @@ export function classifyLoopFillRates(
  * Classify the fill rate pattern from iteration average rates.
  */
 function classifyPattern(
-  iterations: string[],
+  loopGroup: LoopGroup,
   avgRates: Record<string, number>
 ): { pattern: LoopDataPattern; explanation: string } {
-  const sortedIters = [...iterations].sort(
+  const sortedIters = [...loopGroup.iterations].sort(
     (a, b) => parseInt(a) - parseInt(b)
   );
 
@@ -84,11 +81,23 @@ function classifyPattern(
     otherRates.reduce((sum, r) => sum + r, 0) / otherRates.length;
 
   // Pattern: likely_stacked
-  // First iteration has high fill rate, others are very low (< 1%)
-  if (firstRate > 0.1 && avgOtherRate < 0.01) {
+  // Strong signal only when we have 3+ iterations AND a high-diversity loop group.
+  //
+  // Rationale: With only 2 iterations, "iter 1 filled, iter 2 empty" is ambiguous:
+  // it can be truly stacked-long input OR simply unused/placeholder later iterations
+  // in wide data. We avoid false positives by classifying that as 'uncertain'.
+  if (rates.length >= 3 && loopGroup.diversity >= 3 && firstRate > 0.1 && avgOtherRate < 0.01) {
     return {
       pattern: 'likely_stacked',
       explanation: `Iteration 1 has ${(firstRate * 100).toFixed(0)}% fill rate, others avg ${(avgOtherRate * 100).toFixed(1)}% — data appears stacked (not wide)`,
+    };
+  }
+
+  // Ambiguous 2-iteration "one filled, one empty" case
+  if (rates.length === 2 && firstRate > 0.1 && avgOtherRate < 0.01) {
+    return {
+      pattern: 'uncertain',
+      explanation: `Iteration 1 has ${(firstRate * 100).toFixed(0)}% fill rate, iteration 2 ~0% — ambiguous (could be unused later iteration or already-stacked input); treating as uncertain`,
     };
   }
 

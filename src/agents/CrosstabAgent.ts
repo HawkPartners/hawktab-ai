@@ -7,6 +7,7 @@
  */
 
 import { generateText, Output, stepCountIs } from 'ai';
+import { RESEARCH_DATA_PREAMBLE, sanitizeForAzureContentFilter } from '../lib/promptSanitization';
 import { ValidationResultSchema, ValidatedGroupSchema, combineValidationResults, type ValidationResultType, type ValidatedGroupType } from '../schemas/agentOutputSchema';
 import { DataMapType } from '../schemas/dataMapSchema';
 import { BannerGroupType, BannerPlanInputType } from '../schemas/bannerPlanSchema';
@@ -73,16 +74,16 @@ Please use this hint to improve your variable mapping. The user knows what varia
 ` : '';
 
   const systemPrompt = `
-${getCrosstabValidationInstructions()}
+${RESEARCH_DATA_PREAMBLE}${getCrosstabValidationInstructions()}
 ${hintSection}
 CURRENT CONTEXT DATA:
 
 DATA MAP (${dataMap.length} variables):
-${JSON.stringify(dataMap, null, 2)}
+${sanitizeForAzureContentFilter(JSON.stringify(dataMap, null, 2))}
 
 BANNER GROUP TO VALIDATE:
 Group: "${group.groupName}"
-${JSON.stringify(group, null, 2)}
+${sanitizeForAzureContentFilter(JSON.stringify(group, null, 2))}
 
 PROCESSING REQUIREMENTS:
 - Validate all ${group.columns.length} columns in this group

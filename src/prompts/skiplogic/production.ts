@@ -87,6 +87,15 @@ LOOPS / STACKED DATA NOTE:
   handles this automatically. DO NOT create a rule for these. They are equivalent to "this loop exists."
   Example: "PN: SHOW Q21A, Q21B, Q21C IF RESPONDENT HAD 2+ ITEMS IN Q15" → This is NOT a rule.
   Q21a/b/c are in the Item 2 loop — respondents only have Item 2 data if they had 2+ items.
+- THIS INCLUDES PRE-LOOP SETUP QUESTIONS: Some surveys have questions before the loop that
+  collect input for each iteration (e.g., setup for iteration 1, setup for iteration 2).
+  If these setup questions are gated on "respondent has N+ items," that is still loop-gating.
+  The same principle applies — respondents without enough items were never shown these questions.
+- HIDDEN GATE VARIABLES: When you see least-fill, randomization, or assignment patterns in
+  the survey, the fielding platform likely created hidden variables to track those assignments.
+  If you encounter such patterns near a rule you're extracting, note it in translationContext
+  so the downstream agent can look for a simpler variable in the datamap (e.g., "there may be
+  a hidden variable related to [concept] that encodes this assignment").
 - However, DO extract rules for conditions WITHIN loop iterations (e.g., "within each loop,
   show Q21 only if Q20=1 for that iteration"). See NESTED CONDITIONS WITHIN LOOPS below.
 
@@ -250,10 +259,25 @@ Skip logic exists because the survey designer wanted to:
 2. Reduce respondent fatigue (skip sections that don't apply)
 3. Ensure valid data (only collect data from qualified respondents)
 
-Why the default base can be wrong even when data is non-NA:
+HELPFUL MENTAL MODEL — THINK ABOUT THE DEFAULT BEHAVIOR:
+Before creating a rule, ask yourself: "If I don't add this filter, what happens?"
+
+The pipeline already applies a default base of "banner cut + non-NA for the target question."
+Respondents who were never shown a question typically have NA values, so the default base
+already excludes them naturally.
+
+This doesn't mean rules are never needed — they often are. But it's a useful gut check:
+- If the default non-NA base would already produce the right set of respondents, does this
+  rule add value? (It might still add value for base text clarity.)
+- If the routing was already applied during fielding, is this rule adding a genuine
+  analytical constraint, or re-stating something the data already handles?
+
+Why the default base can be wrong (and a rule IS needed):
 - Programmers may auto-fill values (e.g., 0) instead of leaving null for non-applicable items
 - A respondent might have a valid value of 0 (e.g., "0 years") that differs from "not applicable"
 - Coded values like "99 = Not applicable" need explicit eligibility constraints
+- The survey creates DIFFERENT BASES for different post-screener questions (e.g., Q3a has
+  a smaller base than Q3b because of a branch)
 
 When you see skip logic, ask: "What problem was the designer trying to solve?"
 This helps you correctly identify the scope (table vs row level) and the intent.
@@ -310,6 +334,21 @@ Q21a/b/c are questions within the Item 2 loop iteration.
 → Do NOT create a rule. The "2+ items" condition is loop-inherent — respondents only
   have Item 2 data if they selected 2+ items. The stacked data structure handles this.
   Applying this as a filter would incorrectly double-filter the data.
+
+EXAMPLE 9c: PRE-LOOP SETUP GATING (ALSO NOT A RULE)
+Survey structure:
+- Some questions before a loop exist solely to collect input for each loop iteration
+- These "setup" questions may be gated on having enough items for that iteration
+- "PN: SHOW [iteration 2 setup questions] IF RESPONDENT HAD 2+ ITEMS"
+
+Analysis:
+- These setup questions are not inside the loop body, but they serve the loop
+- The gating condition is loop-inherent — same principle as Example 9b
+- Respondents without 2+ items were never shown these questions, so they are NA
+- The default non-NA base handles this
+
+→ Do NOT create a rule. This is the same pattern as 9b — the condition is about
+  whether the loop iteration exists, not an analytical constraint.
 
 EXAMPLE 10: CASCADING ROW-LEVEL LOGIC
 Survey structure:
@@ -471,7 +510,17 @@ IMPORTANT: Make ONE scratchpad entry per question or small group of related ques
 Do NOT cram your entire analysis into one or two giant entries — that leads to rushed reasoning and contradictions.
 Take your time. You have plenty of turns. Be methodical.
 
-Walk through the survey systematically, top to bottom. For each question or section:
+FIRST ENTRY — SURVEY STRUCTURE MAP (do this BEFORE extracting any rules):
+Read the entire survey once and write a single scratchpad entry that maps out the high-level
+structure. Understanding the survey architecture helps you make better rule decisions later.
+1. SECTIONS: What are the major sections and their purpose?
+2. LOOPS: Are there any loops or repeated question blocks? What feeds into them?
+3. ASSIGNMENT PATTERNS: Are there any least-fill, randomization, or allocation instructions?
+   These suggest hidden variables may exist to track those assignments.
+4. HIDDEN VARIABLES: Note any references to hidden/computed/derived variables and what they
+   likely represent.
+
+THEN walk through the survey systematically, top to bottom. For each question or section:
 1. Note the question ID and any skip/show instructions
 2. Classify as table-level, row-level, or no rule
 3. Explicitly answer: "Is the default base likely sufficient?" If yes, mark no rule

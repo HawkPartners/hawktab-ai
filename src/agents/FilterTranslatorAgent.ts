@@ -9,6 +9,7 @@
  */
 
 import { generateText, Output, stepCountIs } from 'ai';
+import { RESEARCH_DATA_PREAMBLE, sanitizeForAzureContentFilter } from '../lib/promptSanitization';
 import pLimit from 'p-limit';
 import {
   FilterTranslationOutputSchema,
@@ -96,11 +97,11 @@ export async function translateSkipRules(
   const validVariables = new Set<string>(verboseDataMap.map(v => v.column));
 
   const systemPrompt = `
-${getFilterTranslatorAgentInstructions()}
+${RESEARCH_DATA_PREAMBLE}${getFilterTranslatorAgentInstructions()}
 
 ## Complete Datamap (All Variables)
 <datamap>
-${datamapContext}
+${sanitizeForAzureContentFilter(datamapContext)}
 </datamap>
 `;
 

@@ -7,6 +7,7 @@
  */
 
 import { generateText, Output, stepCountIs } from 'ai';
+import { RESEARCH_DATA_PREAMBLE } from '../lib/promptSanitization';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
@@ -216,7 +217,7 @@ export class BannerAgent {
     }
 
     const systemPrompt = `
-${getBannerExtractionPrompt()}
+${RESEARCH_DATA_PREAMBLE}${getBannerExtractionPrompt()}
 
 IMAGES TO ANALYZE:
 You have ${images.length} image(s) of the banner plan document to analyze.

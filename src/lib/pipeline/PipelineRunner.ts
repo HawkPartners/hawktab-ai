@@ -242,13 +242,26 @@ export async function runPipeline(
     let collapsedVariableNames: Set<string> = new Set();
     let deterministicFindings: DeterministicResolverResult | undefined;
     if (validationResult.loopDetection?.hasLoops) {
-      // Block if data appears already stacked
-      const hasStackedPattern = validationResult.fillRateResults.some(
-        fr => fr.pattern === 'likely_stacked'
-      );
-      if (hasStackedPattern) {
+      // Block ONLY on strong evidence of already-stacked (long) input.
+      // Fill-rate heuristics alone are not sufficient: wide data can legitimately
+      // have empty later iterations (unused/placeholder columns, strong dropout, etc.).
+      const stackingColumns = validationResult.dataFileStats?.stackingColumns ?? [];
+      const likelyStackedResults = validationResult.fillRateResults.filter(fr => fr.pattern === 'likely_stacked');
+      const likelyStackedAnchors = likelyStackedResults.filter(fr => fr.loopGroup.diversity >= 3);
+
+      const shouldBlockForStackedInput =
+        (stackingColumns.length > 0 && likelyStackedAnchors.length > 0) ||
+        likelyStackedAnchors.length >= 2;
+
+      if (shouldBlockForStackedInput) {
+        const details = [
+          stackingColumns.length > 0 ? `stacking columns: ${stackingColumns.join(', ')}` : '',
+          likelyStackedAnchors.length > 0 ? `loop patterns: ${likelyStackedAnchors.map(r => r.loopGroup.skeleton).join(', ')}` : '',
+        ].filter(Boolean).join(' | ');
+
         const msg = 'Data appears to be already stacked. Please upload the original wide-format data.';
         log(`  ${msg}`, 'red');
+        if (details) log(`    ${details}`, 'dim');
         eventBus.emitPipelineFailed(files.name, msg);
         return {
           success: false,
@@ -259,6 +272,16 @@ export async function runPipeline(
           totalCostUsd: 0,
           error: msg,
         };
+      }
+
+      // If we saw any stacked-like signal but not enough to block, keep it as a warning and proceed.
+      if (likelyStackedResults.length > 0) {
+        const skeletons = [...new Set(likelyStackedResults.map(r => r.loopGroup.skeleton))];
+        log(
+          `  Warning: stacked-like loop fill pattern detected (${skeletons.length} group(s)); continuing (not blocking)`,
+          'yellow'
+        );
+        log(`    ${skeletons.join(', ')}`, 'dim');
       }
 
       const collapseResult = collapseLoopVariables(

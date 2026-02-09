@@ -15,6 +15,7 @@
 
 import { generateText, Output, stepCountIs } from 'ai';
 import pLimit from 'p-limit';
+import { RESEARCH_DATA_PREAMBLE, sanitizeForAzureContentFilter } from '../lib/promptSanitization';
 import {
   VerificationAgentOutputSchema,
   type VerificationAgentOutput,
@@ -128,16 +129,16 @@ export async function verifyTable(
 
   // Build system prompt with survey and datamap context
   const systemPrompt = `
-${getVerificationAgentInstructions()}
+${RESEARCH_DATA_PREAMBLE}${getVerificationAgentInstructions()}
 
 ## Survey Document
 <survey>
-${input.surveyMarkdown}
+${sanitizeForAzureContentFilter(input.surveyMarkdown)}
 </survey>
 
 ## Variable Context (Datamap)
 <datamap>
-${input.datamapContext}
+${sanitizeForAzureContentFilter(input.datamapContext)}
 </datamap>
 `;
 

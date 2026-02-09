@@ -11,6 +11,7 @@
  */
 
 import { generateText, Output, stepCountIs } from 'ai';
+import { RESEARCH_DATA_PREAMBLE, sanitizeForAzureContentFilter } from '../lib/promptSanitization';
 import {
   LoopSemanticsPolicySchema,
   type LoopSemanticsPolicy,
@@ -103,7 +104,7 @@ export async function runLoopSemanticsPolicyAgent(
   const promptVersions = getPromptVersions();
   const systemInstructions = getLoopSemanticsPrompt(promptVersions.loopSemanticsPromptVersion);
 
-  const systemPrompt = systemInstructions;
+  const systemPrompt = `${RESEARCH_DATA_PREAMBLE}${systemInstructions}`;
 
   // Build user prompt with runtime data
   const userPrompt = buildUserPrompt(input);
@@ -215,15 +216,15 @@ function buildUserPrompt(input: LoopSemanticsPolicyInput): string {
 
   // Loop summary
   sections.push('<loop_summary>');
-  sections.push(JSON.stringify(input.loopSummary, null, 2));
+  sections.push(sanitizeForAzureContentFilter(JSON.stringify(input.loopSummary, null, 2)));
   sections.push('</loop_summary>\n');
 
   // Deterministic findings
   sections.push('<deterministic_findings>');
   if (input.deterministicFindings.iterationLinkedVariables.length > 0) {
-    sections.push(input.deterministicFindings.evidenceSummary);
+    sections.push(sanitizeForAzureContentFilter(input.deterministicFindings.evidenceSummary));
     sections.push('\nDetailed mappings:');
-    sections.push(JSON.stringify(input.deterministicFindings.iterationLinkedVariables, null, 2));
+    sections.push(sanitizeForAzureContentFilter(JSON.stringify(input.deterministicFindings.iterationLinkedVariables, null, 2)));
   } else {
     sections.push('No iteration-linked variables found via deterministic evidence.');
     sections.push('You must infer from banner expressions, datamap descriptions, and structural patterns.');
@@ -253,9 +254,9 @@ function buildUserPrompt(input: LoopSemanticsPolicyInput): string {
   // Datamap excerpt
   sections.push('<datamap_excerpt>');
   for (const entry of input.datamapExcerpt) {
-    sections.push(`  ${entry.column}: ${entry.description} [${entry.normalizedType}]`);
+    sections.push(`  ${entry.column}: ${sanitizeForAzureContentFilter(entry.description)} [${entry.normalizedType}]`);
     if (entry.answerOptions) {
-      sections.push(`    Options: ${entry.answerOptions.substring(0, 200)}`);
+      sections.push(`    Options: ${sanitizeForAzureContentFilter(entry.answerOptions.substring(0, 200))}`);
     }
   }
   sections.push('</datamap_excerpt>\n');

@@ -213,7 +213,7 @@ export async function validate(options: ValidationRunnerOptions): Promise<Valida
           const fillResult = classifyLoopFillRates(loop, fillRates);
           fillRateResults.push(fillResult);
 
-          console.log(`  Fill pattern: ${fillResult.pattern} — ${fillResult.explanation}`);
+          console.log(`  Fill pattern (${loop.skeleton}): ${fillResult.pattern} — ${fillResult.explanation}`);
 
           if (fillResult.pattern === 'likely_stacked') {
             warnings.push({

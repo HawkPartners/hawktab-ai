@@ -10,6 +10,7 @@
  */
 
 import { generateText, Output, stepCountIs } from 'ai';
+import { RESEARCH_DATA_PREAMBLE, sanitizeForAzureContentFilter } from '../lib/promptSanitization';
 import {
   SkipLogicExtractionOutputSchema,
   type SkipLogicResult,
@@ -71,11 +72,11 @@ export async function extractSkipLogic(
 
   // Build base prompts (will be enhanced with scratchpad context on retries)
   const baseSystemPrompt = `
-${getSkipLogicAgentInstructions()}
+${RESEARCH_DATA_PREAMBLE}${getSkipLogicAgentInstructions()}
 
 ## Survey Document
 <survey>
-${surveyMarkdown}
+${sanitizeForAzureContentFilter(surveyMarkdown)}
 </survey>
 `;
 
