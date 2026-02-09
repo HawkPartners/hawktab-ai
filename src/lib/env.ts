@@ -649,6 +649,12 @@ export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
   };
 };
 
+// =============================================================================
+// Review Threshold Configuration (re-export from review module)
+// =============================================================================
+
+export { getReviewThresholds, type ReviewThresholds } from './review/ReviewConfig';
+
 // Legacy compatibility exports (deprecated - will be removed in future)
 // These redirect to the appropriate task-based functions for any code that hasn't been migrated yet
 

@@ -61,9 +61,6 @@ export const LoopSemanticsPolicySchema = z.object({
   /** Per-banner-group semantic classifications */
   bannerGroups: z.array(BannerGroupPolicySchema),
 
-  /** Whether a human should review before trusting these results */
-  humanReviewRequired: z.boolean(),
-
   /** Warnings about edge cases or low confidence decisions */
   warnings: z.array(z.string()),
 

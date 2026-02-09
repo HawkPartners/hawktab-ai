@@ -472,7 +472,8 @@ COMPLETE OUTPUT:
       "description": "string"   // What you found and what you did
     }
   ],
-  "confidence": 0.0-1.0
+  "confidence": 0.0-1.0,
+  "userSummary": "string"   // 1-sentence summary of what you changed, for a non-technical user. No table IDs or variable names.
 }
 
 ALL FIELDS REQUIRED:

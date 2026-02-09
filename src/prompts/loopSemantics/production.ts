@@ -79,7 +79,7 @@ For each banner group:
         (e.g., different channels, different response options) rather than the
         same concept for different iterations? If yes, respondent signal.
      d. When evidence is ambiguous, default to "respondent" (safer — preserves
-        current behavior) and set humanReviewRequired=true.
+        current behavior) and set low confidence on the group.
 
 2. For entity-anchored groups, specify implementation:
    - strategy: "alias_column"
@@ -109,11 +109,12 @@ For each banner group:
   - Use "suppress" unless there is a clear request to provide stat testing on loop tables
   - comparisonMode only applies to entity-anchored groups; use "suppress" for respondent groups
 
-6. Set confidence (0-1) and provide evidence strings explaining your reasoning.
+6. Set per-group confidence (0-1) honestly and provide evidence strings explaining your reasoning.
+   Do not inflate confidence to avoid escalation — the system decides review based on your scores.
 
-7. If you are uncertain about any group's classification, set humanReviewRequired=true
-   at the top level and explain in warnings. It is better to flag uncertainty than to
-   silently produce a wrong classification.
+7. If you are uncertain about any group's classification, set low confidence on that group
+   and explain in warnings. It is better to express uncertainty than to silently produce
+   a wrong classification.
 </instructions>
 
 <common_pitfalls>
@@ -141,7 +142,7 @@ PITFALL 3: Getting sourcesByIteration wrong.
   - Each entry maps an iteration value to the source variable for that iteration.
     Do NOT reverse the mapping.
   - If you cannot confidently assign every iteration to a source variable, set
-    humanReviewRequired=true rather than guessing.
+    low confidence on the group rather than guessing.
 </common_pitfalls>
 
 <few_shot_examples>

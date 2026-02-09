@@ -64,8 +64,7 @@ const BannerColumnSchema = z.object({
   statLetter: z.string(),
   confidence: z.number().min(0).max(1),
   requiresInference: z.boolean(),  // True if cut came from outside the banner plan
-  inferenceReason: z.string(),     // Explains what was inferred and why
-  humanInLoopRequired: z.boolean(), // True if confidence < 0.85
+  reasoning: z.string(),           // Developer-facing: explains what was inferred and why
   uncertainties: z.array(z.string()) // What human should verify
 });
 
@@ -83,12 +82,7 @@ const BannerNotesSchema = z.object({
 const ExtractedBannerStructureSchema = z.object({
   bannerCuts: z.array(BannerCutSchema),
   notes: z.array(BannerNotesSchema),  // Required - AI must provide this (can be empty array)
-  processingMetadata: z.object({
-    totalColumns: z.number(),
-    groupCount: z.number(),
-    statisticalLettersUsed: z.array(z.string()),
-    processingTimestamp: z.string()
-  })
+  statisticalLettersUsed: z.array(z.string()),  // Only AI-knowable field; rest of processingMetadata is derived
 });
 
 const BannerExtractionResultSchema = z.object({
@@ -329,12 +323,7 @@ Begin analysis now.
       extractedStructure: {
         bannerCuts: [],
         notes: [],
-        processingMetadata: {
-          totalColumns: 0,
-          groupCount: 0,
-          statisticalLettersUsed: [],
-          processingTimestamp: new Date().toISOString()
-        }
+        statisticalLettersUsed: [],
       },
       errors: [errorMessage + retryContext],
       warnings: []
@@ -539,12 +528,32 @@ Begin analysis now.
     }
   }
 
+  // Derive processingMetadata from extracted structure (not AI-generated)
+  private deriveProcessingMetadata(extractionResult: BannerExtractionResult) {
+    const structure = extractionResult.extractedStructure;
+    return {
+      totalColumns: structure.bannerCuts.flatMap(g => g.columns).length,
+      groupCount: structure.bannerCuts.length,
+      statisticalLettersUsed: structure.statisticalLettersUsed,
+      processingTimestamp: new Date().toISOString(),
+    };
+  }
+
   // Generate dual outputs (verbose + agent)
   private generateDualOutputs(extractionResult: BannerExtractionResult) {
-    // Verbose output (full structure)
+    // Derive processingMetadata deterministically
+    const processingMetadata = this.deriveProcessingMetadata(extractionResult);
+
+    // Verbose output (full structure with derived metadata)
     const verbose: VerboseBannerPlan = {
       success: extractionResult.success,
-      data: extractionResult,
+      data: {
+        ...extractionResult,
+        extractedStructure: {
+          ...extractionResult.extractedStructure,
+          processingMetadata,
+        },
+      },
       timestamp: new Date().toISOString()
     };
 
@@ -597,8 +606,8 @@ Begin analysis now.
               totalColumns: 0,
               groupCount: 0,
               statisticalLettersUsed: [],
-              processingTimestamp: new Date().toISOString()
-            }
+              processingTimestamp: new Date().toISOString(),
+            },
           },
           errors: [error],
           warnings: []

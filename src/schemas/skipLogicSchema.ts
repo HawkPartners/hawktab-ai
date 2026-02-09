@@ -69,11 +69,11 @@ export const FilterAlternativeSchema = z.object({
   /** Alternative R expression */
   expression: z.string(),
 
-  /** Confidence in this alternative (0.0-1.0) */
-  confidence: z.number().min(0).max(1),
+  /** Agent's preference order (2 = second choice, 3 = third, etc.) */
+  rank: z.number(),
 
-  /** Why this alternative was considered */
-  reason: z.string(),
+  /** Plain-language explanation for a non-technical reviewer */
+  userSummary: z.string(),
 });
 
 export type FilterAlternative = z.infer<typeof FilterAlternativeSchema>;
@@ -127,9 +127,6 @@ export const TableFilterSchema = z.object({
 
   /** Why this translation was chosen */
   reasoning: z.string(),
-
-  /** Whether this filter requires human review */
-  humanReviewRequired: z.boolean(),
 });
 
 export type TableFilter = z.infer<typeof TableFilterSchema>;

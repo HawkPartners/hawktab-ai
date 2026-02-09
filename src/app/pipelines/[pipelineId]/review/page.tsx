@@ -45,8 +45,8 @@ function stripEmojis(text: string): string {
 // Crosstab review interfaces
 interface Alternative {
   expression: string;
-  confidence: number;
-  reason: string;
+  rank: number;
+  userSummary: string;
 }
 
 interface FlaggedCrosstabColumn {
@@ -55,7 +55,8 @@ interface FlaggedCrosstabColumn {
   original: string;
   proposed: string;
   confidence: number;
-  reason: string;
+  reasoning: string;
+  userSummary: string;
   alternatives: Alternative[];
   uncertainties: string[];
   expressionType?: string;
@@ -153,6 +154,11 @@ function CrosstabColumnCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* User summary - plain language explanation */}
+        {column.userSummary && (
+          <p className="text-sm text-muted-foreground">{stripEmojis(column.userSummary)}</p>
+        )}
+
         {/* Banner says vs AI suggests - simplified layout */}
         <div className="space-y-2">
           <div className="flex items-baseline gap-3">
@@ -204,7 +210,7 @@ function CrosstabColumnCard({
                   >
                     <span className="font-mono text-xs break-all">{alt.expression}</span>
                     <span className="text-xs text-muted-foreground">
-                      {Math.round(alt.confidence * 100)}% confident
+                      {stripEmojis(alt.userSummary)}
                     </span>
                   </DropdownMenuItem>
                 ))}

@@ -193,6 +193,9 @@ export const VerificationAgentOutputSchema = z.object({
 
   /** Confidence in the verification (0.0-1.0) */
   confidence: z.number().min(0).max(1),
+
+  /** Brief plain-language summary of what was changed, for a non-technical user */
+  userSummary: z.string(),
 });
 
 export type VerificationAgentOutput = z.infer<typeof VerificationAgentOutputSchema>;
@@ -332,6 +335,7 @@ export function createPassthroughOutput(
     tables: [toExtendedTable(table, '')],
     changes: [],
     confidence: 1.0,
+    userSummary: 'No changes needed.',
   };
 }
 

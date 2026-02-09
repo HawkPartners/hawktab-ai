@@ -181,9 +181,11 @@ OUTPUT REQUIREMENTS:
 
 - bannerCuts: Array of groups, each with groupName and columns array (a single group is almost always incorrect)
 - notes: Array of extracted notes
-- processingMetadata: totalColumns, groupCount, statisticalLettersUsed, processingTimestamp
+- statisticalLettersUsed: Array of statistical letters assigned to columns
 - errors: Empty array unless extraction failed
 - warnings: Note any ambiguities or quality issues
+
+NOTE: Do NOT output totalColumns, groupCount, or processingTimestamp — the system derives these automatically.
 
 Remember: Your job is EXTRACTION, not interpretation. Capture the document structure faithfully.
 `;

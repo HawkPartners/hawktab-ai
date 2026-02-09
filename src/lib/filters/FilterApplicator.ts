@@ -16,6 +16,7 @@ import type { ExtendedTableDefinition } from '../../schemas/verificationAgentSch
 import type { FilterTranslationOutput, TableFilter } from '../../schemas/skipLogicSchema';
 import type { FilterApplicatorResult } from '../../schemas/skipLogicSchema';
 import { validateFilterVariables } from './filterUtils';
+import { shouldFlagForReview, getReviewThresholds } from '../review';
 
 /**
  * Apply pre-computed filters to tables.
@@ -60,8 +61,9 @@ export function applyFilters(
     const tableLevelFilters = questionFilters.filter(f => f.action === 'filter' && f.filterExpression.trim() !== '');
     const rowLevelFilters = questionFilters.filter(f => f.action === 'split' && f.splits.length > 0);
 
-    // Track review requirements
-    const hasReviewRequired = questionFilters.some(f => f.humanReviewRequired);
+    // Track review requirements — derived from confidence threshold + validation
+    const filterThreshold = getReviewThresholds().filter;
+    const hasReviewRequired = questionFilters.some(f => shouldFlagForReview(f.confidence, filterThreshold));
     if (hasReviewRequired) {
       reviewRequiredCount++;
     }

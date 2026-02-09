@@ -179,7 +179,7 @@ async function main() {
       const expr = filter.action === 'filter'
         ? filter.filterExpression
         : `SPLIT: ${filter.splits.length} parts`;
-      const review = filter.humanReviewRequired ? ' [REVIEW]' : '';
+      const review = filter.confidence < 0.80 ? ' [REVIEW]' : '';
       log(`    ${filter.questionId}: ${expr} (confidence: ${filter.confidence.toFixed(2)})${review}`, 'dim');
     }
     log('', 'reset');

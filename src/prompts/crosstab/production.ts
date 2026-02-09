@@ -170,18 +170,24 @@ CONFIDENCE PENALTIES (applied cumulatively):
 </confidence_scoring_framework>
 
 <reasoning_documentation>
-REASON FIELD FORMAT:
-Write a brief 1-2 sentence summary of your mapping decision.
+TWO FIELDS — reasoning AND userSummary:
 
+"reasoning" (developer-facing):
+Write a brief 1-2 sentence technical summary of your mapping decision.
 Format: "[What was found] → [Why this mapping]"
-
 Examples:
 - "Found S2 with 'Teacher' at position 3. Selected as primary screener variable."
 - "Multiple matches: S2, Q5. Chose S2 (screener) over Q5 (narrower scope)."
 - "No exact match. Inferred SEG == 2 from 'Segment B' label position."
+Keep detailed search traces in scratchpad, not in reasoning field.
 
-Keep detailed search traces in scratchpad, not in reason field.
-The reason field is for human-readable summary, not full documentation.
+"userSummary" (non-technical, for review UI):
+Write a 1-2 sentence explanation for a non-technical research manager.
+No R syntax, no variable names, no technical jargon.
+Examples:
+- "We matched 'Own Home' to the binary location flag. 2 similar variables exist."
+- "This is a straightforward Total column — includes all qualified respondents."
+- "We found 'Teacher' in the main screener question. An alternative exists in a narrower profession question."
 </reasoning_documentation>
 
 <scratchpad_protocol>
@@ -219,12 +225,12 @@ For each column, classify and output expressionType as one of:
 - total: Base column (All respondents, Total)
 
 ALTERNATIVE TRACKING:
-When multiple candidate variables exist, capture ALL plausible options in alternatives[]:
+When multiple candidate variables exist, capture ALL plausible options in alternatives[], ordered by your preference (rank 2 = second choice, rank 3 = third, etc.):
 
 {
   "expression": "S3 == 2",
-  "confidence": 0.70,
-  "reason": "S3 also contains 'Teacher' in value label position 2"
+  "rank": 2,
+  "userSummary": "Uses a different screener question that also mentions 'Teacher' but with a narrower scope"
 }
 
 CRITICAL REQUIREMENT:
@@ -232,26 +238,16 @@ If you discuss alternative variable mappings in your reasoning or scratchpad, yo
 
 Requirements:
 - Record every plausible candidate, not just the runner-up
-- Each alternative needs its own R expression, confidence, and brief reason
-- In main reason field, explain why primary was chosen over alternatives
+- Each alternative needs its own R expression, rank, and userSummary (plain language, no R syntax)
+- In main reasoning field, explain why primary was chosen over alternatives
 - Alternatives enable users to select a different mapping if primary is wrong
 - If your reasoning mentions "also considered X" or "alternative would be Y", that alternative MUST appear in alternatives[]
 
-HUMAN REVIEW FLAGGING:
-Set humanReviewRequired: true when ANY condition applies:
-
-| Condition                              | Flag |
-|----------------------------------------|------|
-| expressionType is 'placeholder'        | Yes  |
-| expressionType is 'conceptual_filter'  | Yes  |
-| expressionType is 'from_list'          | Yes  |
-| confidence < 0.75                      | Yes  |
-| 2+ plausible alternatives found        | Yes  |
-| expressionType is 'total'              | No   |
-| Direct variable with exact match       | No   |
+REVIEW FLAGGING — YOU DO NOT SET THIS:
+The pipeline derives whether a column needs human review based on your confidence score and expressionType. Your job is to provide honest confidence scores. Do not inflate confidence to avoid review.
 
 UNCERTAINTIES DOCUMENTATION:
-When humanReviewRequired is true, populate uncertainties[] with specific, actionable concerns:
+For uncertain mappings, populate uncertainties[] with specific, actionable concerns:
 
 Good examples:
 - "Multiple variables match 'teacher': S2, Q5, ROLE"
@@ -265,7 +261,7 @@ Bad examples (too vague):
 - "Low confidence"
 - "May need review"
 
-Uncertainties are what the human should verify. Reason is why you made your choice.
+Uncertainties are what the human should verify. Reasoning is why you made your choice.
 
 EXAMPLE WITH ALTERNATIVES:
 Input: "IF TEACHER" in group "Role Segments"
@@ -275,14 +271,14 @@ Output:
   "name": "Teacher",
   "adjusted": "ROLE == 3",
   "confidence": 0.72,
-  "reason": "Searched for 'teacher' across data map. Found in ROLE (Occupation screener) with value label 'Teacher/Educator'=3, and in Q15 (profession question) with 'K-12 Teacher'=5. Selected ROLE as screener variables are typical for role-based cuts. ROLE match is exact role label; Q15 is narrower scope.",
+  "reasoning": "Searched for 'teacher' across data map. Found in ROLE (Occupation screener) with value label 'Teacher/Educator'=3, and in Q15 (profession question) with 'K-12 Teacher'=5. Selected ROLE as screener variables are typical for role-based cuts. ROLE match is exact role label; Q15 is narrower scope.",
+  "userSummary": "We matched 'Teacher' to the occupation screener. An alternative exists in a narrower profession question.",
   "expressionType": "conceptual_filter",
-  "humanReviewRequired": true,
   "alternatives": [
     {
       "expression": "Q15 == 5",
-      "confidence": 0.65,
-      "reason": "Q15 profession question has 'K-12 Teacher' at position 5, but narrower than general 'teacher' concept"
+      "rank": 2,
+      "userSummary": "Uses a profession question that has 'K-12 Teacher', but this is narrower than the general 'teacher' concept"
     }
   ],
   "uncertainties": [
@@ -299,23 +295,23 @@ STRUCTURE PER COLUMN:
   "name": "string",                    // Column name from banner (unchanged)
   "adjusted": "string",                // PURE R CODE ONLY - no comments, must be executable
   "confidence": 0.0-1.0,               // Honest assessment using scoring framework
-  "reason": "string",                  // Comprehensive documentation (see reasoning_documentation)
+  "reasoning": "string",               // Developer-facing: search process and decision rationale
+  "userSummary": "string",             // Plain-language for reviewers: no R syntax or variable names
   "expressionType": "string",          // Classification: direct_variable|comparison|conceptual_filter|from_list|placeholder|total
-  "humanReviewRequired": boolean,      // True if flagging criteria met (see human_review_support)
-  "alternatives": [...],               // Array of other candidate mappings (when applicable)
-  "uncertainties": [...]               // Array of specific concerns for human verification (when flagged)
+  "alternatives": [...],               // Rank-ordered candidate mappings (when applicable)
+  "uncertainties": [...]               // Array of specific concerns for human verification
 }
 
 QUALITY STANDARDS:
 - adjusted field contains ONLY executable R syntax (no # comments, no explanations)
 - R syntax is valid (== not =, & not AND, proper %in% usage)
 - Confidence scores match actual certainty, not aspirational goals
-- Reason field documents search process, alternatives, and decision rationale
+- reasoning field documents search process, alternatives, and decision rationale
+- userSummary field is plain language for a non-technical reviewer
 - All data map variables referenced exist in provided data map
 - expressionType correctly classifies the input expression
-- humanReviewRequired set according to flagging criteria
-- alternatives[] populated when multiple candidates found
-- uncertainties[] populated with specific concerns when humanReviewRequired is true
+- alternatives[] populated when multiple candidates found, ordered by rank
+- uncertainties[] populated with specific concerns when confidence is low
 </output_requirements>
 
 <critical_reminders>
@@ -335,13 +331,13 @@ VALIDATION CHECKLIST:
 □ Used & for AND, | for OR, not words
 □ Used %in% for multiple values, not repeated ==
 □ Confidence score reflects actual certainty (applied penalties if needed)
-□ Reason field documents search results and decision process
+□ reasoning field documents search results and decision process
+□ userSummary field is plain language (no R syntax or variable names)
 □ All referenced variables exist in provided data map
 □ Acknowledged alternatives when multiple candidates existed
 □ Set expressionType correctly for the input expression
-□ Set humanReviewRequired based on flagging criteria
-□ Populated alternatives[] when multiple candidates found
-□ Populated uncertainties[] with specific concerns when flagged
+□ Populated alternatives[] with rank and userSummary when multiple candidates found
+□ Populated uncertainties[] with specific concerns when confidence is low
 
 COMMON FAILURE MODES:
 - Stopping at first variable match without checking alternatives
@@ -353,13 +349,13 @@ COMMON FAILURE MODES:
 - Inventing variables not in data map
 - Missing confidence penalties for ambiguous cases
 - Forgetting to set expressionType (required for every column)
-- Setting humanReviewRequired: false when confidence < 0.75 or expression type requires review
-- Empty uncertainties[] when humanReviewRequired is true
+- Inflating confidence to avoid review (the system decides review, not you)
 - Vague uncertainties like "may need review" instead of specific concerns
+- Including R syntax in userSummary (must be plain language)
 
 AMBIGUITY PROTOCOL:
 When multiple variables plausible: List all → Select best → Document alternatives → Apply confidence penalty
-When expression unclear: Attempt interpretation → Document assumptions → Reduce confidence → Flag for review
+When expression unclear: Attempt interpretation → Document assumptions → Reduce confidence
 When cannot map: Set adjusted = "NA" → Confidence near 0 → Explain why mapping failed
 </critical_reminders>
 `;

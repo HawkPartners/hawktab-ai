@@ -426,8 +426,9 @@ async function main() {
       const entityGroups = loopSemanticsPolicy.bannerGroups.filter(g => g.anchorType === 'entity');
       log(`  ${entityGroups.length} entity-anchored, ${loopSemanticsPolicy.bannerGroups.length - entityGroups.length} respondent-anchored`, 'green');
 
-      if (loopSemanticsPolicy.humanReviewRequired) {
-        log(`  WARNING: Human review required`, 'yellow');
+      const minGroupConfidence = Math.min(...loopSemanticsPolicy.bannerGroups.map(g => g.confidence));
+      if (minGroupConfidence < 0.80) {
+        log(`  WARNING: Human review recommended (min confidence: ${minGroupConfidence.toFixed(2)})`, 'yellow');
       }
 
       for (const bg of loopSemanticsPolicy.bannerGroups) {

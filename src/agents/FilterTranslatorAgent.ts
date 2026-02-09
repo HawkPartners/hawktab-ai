@@ -36,6 +36,7 @@ import { getFilterTranslatorPrompt } from '../prompts';
 import { formatFullDatamapContext, validateFilterVariables } from '../lib/filters/filterUtils';
 import { retryWithPolicyHandling, isRateLimitError } from '../lib/retryWithPolicyHandling';
 import { recordAgentMetrics } from '../lib/observability';
+import { shouldFlagForReview, getReviewThresholds } from '../lib/review';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -126,7 +127,7 @@ Find the corresponding variables in the datamap and create the R expression.
 IMPORTANT: Do NOT assume variable naming patterns from other questions. Check the datamap for the EXACT variable names for each question referenced in this rule.
 
 Prefer the minimal additional constraint (avoid over-filtering). Provide alternatives where the interpretation is ambiguous.
-If you cannot confidently map variables, leave the expression empty and set humanReviewRequired: true.
+If you cannot confidently map variables, leave the expression empty and set confidence near 0.
 
 Rule to translate:
 ${JSON.stringify(rule, null, 2)}
@@ -214,6 +215,8 @@ Create a separate filter entry for each questionId in the rule's appliesTo list:
   }
 
   // Post-validate: check all filter expressions against datamap
+  // When invalid variables are found, clear the expression and drop confidence to 0
+  // so shouldFlagForReview() will catch it downstream.
   const validatedFilters = allFilters.map(filter => {
     // Validate primary expression
     if (filter.filterExpression && filter.filterExpression.trim() !== '') {
@@ -222,12 +225,12 @@ Create a separate filter entry for each questionId in the rule's appliesTo list:
         console.warn(
           `[FilterTranslatorAgent] INVALID VARIABLES in filter for ${filter.questionId}: ` +
           `"${filter.filterExpression}" uses non-existent variables: ${validation.invalidVariables.join(', ')}. ` +
-          `Clearing and flagging for review.`
+          `Clearing expression (confidence → 0 triggers review).`
         );
         return {
           ...filter,
           filterExpression: '',
-          humanReviewRequired: true,
+          confidence: 0,
           reasoning: filter.reasoning + ` [VALIDATION: Variables ${validation.invalidVariables.join(', ')} not found in datamap.]`,
         };
       }
@@ -247,13 +250,13 @@ Create a separate filter entry for each questionId in the rule's appliesTo list:
         return split;
       });
 
-      // If any splits had invalid variables, flag for review
+      // If any splits had invalid variables, drop confidence to trigger review
       const hasInvalidSplits = validatedSplits.some(s => s.filterExpression === '');
       if (hasInvalidSplits) {
         return {
           ...filter,
           splits: validatedSplits,
-          humanReviewRequired: true,
+          confidence: Math.min(filter.confidence, 0.3),
           reasoning: filter.reasoning + ' [VALIDATION: Some split expressions had non-existent variables.]',
         };
       }
@@ -266,7 +269,8 @@ Create a separate filter entry for each questionId in the rule's appliesTo list:
 
   const validatedTranslation: FilterTranslationOutput = { filters: validatedFilters };
   const highConfidenceCount = validatedFilters.filter(f => f.confidence >= 0.8).length;
-  const reviewRequiredCount = validatedFilters.filter(f => f.humanReviewRequired).length;
+  const filterThreshold = getReviewThresholds().filter;
+  const reviewRequiredCount = validatedFilters.filter(f => shouldFlagForReview(f.confidence, filterThreshold)).length;
   const failedRules = ruleResults.filter(r => r.error).length;
 
   console.log(`[FilterTranslatorAgent] Translated ${validatedFilters.length} filters from ${rules.length} rules (${highConfidenceCount} high confidence, ${reviewRequiredCount} need review, ${failedRules} failed) in ${durationMs}ms`);

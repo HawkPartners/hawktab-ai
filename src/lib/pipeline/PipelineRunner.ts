@@ -26,6 +26,7 @@ import { buildCutsSpec } from '../tables/CutsSpec';
 import { sortTables, getSortingMetadata } from '../tables/sortTables';
 import { normalizePostPass } from '../tables/TablePostProcessor';
 import { ExcelFormatter } from '../excel/ExcelFormatter';
+import { shouldFlagForReview, getReviewThresholds } from '../review';
 import { setActiveTheme } from '../excel/styles';
 import { extractStreamlinedData } from '../data/extractStreamlinedData';
 import { getPromptVersions, getStatTestingConfig, formatStatTestingConfig } from '../env';
@@ -440,7 +441,7 @@ export async function runPipeline(
 
         const extractedStructure = bannerResult.verbose?.data?.extractedStructure;
         groupCount = extractedStructure?.bannerCuts?.length || 0;
-        columnCount = (extractedStructure?.processingMetadata as { totalColumns?: number })?.totalColumns || 0;
+        columnCount = extractedStructure?.bannerCuts?.flatMap(g => g.columns).length || 0;
 
         if (groupCount === 0) {
           throw new Error('Banner extraction failed - 0 groups extracted');
@@ -896,8 +897,11 @@ export async function runPipeline(
 
         const entityGroups = loopSemanticsPolicy.bannerGroups.filter(g => g.anchorType === 'entity');
         log(`  LoopSemanticsPolicyAgent: ${entityGroups.length} entity-anchored, ${loopSemanticsPolicy.bannerGroups.length - entityGroups.length} respondent-anchored`, 'green');
-        if (loopSemanticsPolicy.humanReviewRequired) {
-          log(`  WARNING: Human review required — see loop-policy/loop-semantics-policy.json`, 'yellow');
+        // Derive review flag from min group confidence
+        const minGroupConfidence = Math.min(...loopSemanticsPolicy.bannerGroups.map(g => g.confidence));
+        const lsThreshold = getReviewThresholds().loopSemantics;
+        if (shouldFlagForReview(minGroupConfidence, lsThreshold)) {
+          log(`  WARNING: Human review recommended (min confidence ${(minGroupConfidence * 100).toFixed(0)}%) — see loop-policy/loop-semantics-policy.json`, 'yellow');
         }
       } catch (error) {
         const errMsg = error instanceof Error ? error.message : String(error);

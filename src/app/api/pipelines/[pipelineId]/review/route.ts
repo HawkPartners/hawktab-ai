@@ -259,16 +259,14 @@ async function applyDecisions(
               modifiedColumns.push({
                 ...rerunCol,
                 confidence: 1.0, // User approved via hint
-                reason: `Re-run with hint "${decision.hint}": ${rerunCol.reason}`,
-                humanReviewRequired: false
+                reasoning: `Re-run with hint "${decision.hint}": ${rerunCol.reasoning}`,
               });
             } else {
               // Still uncertain - use the re-run result but note it
               console.log(`[Review] Re-run had confidence ${rerunCol.confidence} - using anyway`);
               modifiedColumns.push({
                 ...rerunCol,
-                reason: `Re-run with hint "${decision.hint}": ${rerunCol.reason}`,
-                humanReviewRequired: false
+                reasoning: `Re-run with hint "${decision.hint}": ${rerunCol.reasoning}`,
               });
             }
             continue;

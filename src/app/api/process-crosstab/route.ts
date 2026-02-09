@@ -37,6 +37,7 @@ import type { TableAgentOutput } from '../../../schemas/tableAgentSchema';
 import type { VerboseDataMapType } from '../../../schemas/processingSchemas';
 import type { BannerProcessingResult } from '../../../agents/BannerAgent';
 import type { ValidationResultType } from '../../../schemas/agentOutputSchema';
+import { shouldFlagForReview, getReviewThresholds } from '../../../lib/review';
 
 const execAsync = promisify(exec);
 
@@ -205,11 +206,12 @@ interface FlaggedCrosstabColumn {
   original: string;           // From banner document
   proposed: string;           // CrosstabAgent's R expression
   confidence: number;
-  reason: string;             // Why this mapping was chosen
+  reasoning: string;          // Developer-facing: why this mapping was chosen
+  userSummary: string;        // Plain-language explanation for reviewers
   alternatives: Array<{
     expression: string;
-    confidence: number;
-    reason: string;
+    rank: number;
+    userSummary: string;
   }>;
   uncertainties: string[];
   expressionType?: string;
@@ -252,6 +254,7 @@ function getFlaggedCrosstabColumns(
   bannerResult: BannerProcessingResult
 ): FlaggedCrosstabColumn[] {
   const flagged: FlaggedCrosstabColumn[] = [];
+  const thresholds = getReviewThresholds();
 
   // Build a lookup for original expressions from banner
   const originalLookup = new Map<string, string>();
@@ -267,16 +270,7 @@ function getFlaggedCrosstabColumns(
 
   for (const group of crosstabResult.bannerCuts) {
     for (const col of group.columns) {
-      // Check if this column needs review based on:
-      // 1. Explicit humanReviewRequired flag
-      // 2. Low confidence (< 0.75)
-      // 3. Expression types that always need review
-      const requiresReviewByType = col.expressionType &&
-        ['placeholder', 'conceptual_filter', 'from_list'].includes(col.expressionType);
-
-      if (col.humanReviewRequired ||
-          col.confidence < 0.75 ||
-          requiresReviewByType) {
+      if (shouldFlagForReview(col.confidence, thresholds.crosstab, col.expressionType)) {
         const lookupKey = `${group.groupName}::${col.name}`;
         flagged.push({
           groupName: group.groupName,
@@ -284,7 +278,8 @@ function getFlaggedCrosstabColumns(
           original: originalLookup.get(lookupKey) || col.name,
           proposed: col.adjusted,
           confidence: col.confidence,
-          reason: col.reason,
+          reasoning: col.reasoning,
+          userSummary: col.userSummary,
           alternatives: col.alternatives || [],
           uncertainties: col.uncertainties || [],
           expressionType: col.expressionType

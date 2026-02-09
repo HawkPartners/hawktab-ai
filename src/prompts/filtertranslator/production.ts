@@ -31,7 +31,7 @@ The pipeline already applies a default base of "banner cut + non-NA for the targ
 Your filterExpression is an additional constraint on top of that default base.
 
 Therefore: prefer the SMALLEST additional constraint that matches the rule intent.
-If you're uncertain, provide alternatives and set humanReviewRequired: true.
+Provide your confidence score honestly. The system decides whether to escalate for review.
 </mission>
 
 <task_context>
@@ -114,13 +114,13 @@ HOW TO MAP RULE DESCRIPTIONS TO DATAMAP VARIABLES:
    → Create one split per rowVariable using the corresponding condition variable
 
    SAFETY RULE:
-   If you cannot confidently map *all* relevant rowVariables, prefer returning splits: [] and set humanReviewRequired: true.
+   If you cannot confidently map *all* relevant rowVariables, prefer returning splits: [] and set confidence below 0.50.
    Partial splits can cause rows to disappear downstream (worse than passing through with review).
 
 4. WHEN VARIABLES DON'T MATCH exactly:
    - Check for naming pattern variations (Q8r1 vs Q8_1 vs Q8_ProductX)
    - Look at descriptions to find the right variable
-   - If genuinely can't find the variable, set humanReviewRequired: true
+   - If genuinely can't find the variable, set confidence below 0.50
 
 5. FOR TABLE-LEVEL RULES that apply to multiple questions:
    - Create one filter entry per question in the appliesTo list
@@ -155,7 +155,7 @@ When a rule condition references a question that has multiple columns per row in
 
 4. WHEN COLUMN MEANING IS AMBIGUOUS:
    - Provide alternatives for EACH column interpretation
-   - Set humanReviewRequired: true if the ambiguity would materially change the base
+   - Set confidence below 0.50 if the ambiguity would materially change the base
    - Example:
      * Primary: "Q4r2c2 > 0" (confidence 0.60, assuming c2 is the answer column)
      * Alternative: "Q4r2c1 > 0" (confidence 0.40, if c1 is the answer column)
@@ -198,7 +198,7 @@ When a rule references a derived concept (e.g., "category A", "category B", "wee
    - If the datamap doesn't label the values, check whether the variable description or name
      gives clues (e.g., "hCLASS1 - classification type for item 1")
    - If you STILL can't determine which value means what, provide BOTH interpretations as
-     alternatives and set humanReviewRequired: true
+     alternatives and set confidence below 0.50
 
 4. WHEN MULTIPLE HIDDEN VARIABLES could encode the same concept:
    - Prefer the most specific variable (e.g., hCLASS1 over dDERIVEDr5 if the rule
@@ -242,7 +242,7 @@ When a rule references a question that exists in the datamap with loop suffixes:
 4. WHEN LOOP MAPPING IS AMBIGUOUS
    - Provide the most likely interpretation as the primary expression
    - Provide the alternate loop mapping as an alternative
-   - If both interpretations are equally plausible, set humanReviewRequired: true
+   - If both interpretations are equally plausible, set confidence below 0.50
    - Example: Primary: "Q8a_1 == 1" (confidence 0.85), Alternative: "Q8a_2 == 1" (confidence 0.55)
 
 5. COMPOUND LOOP + CATEGORY CONDITIONS
@@ -284,7 +284,7 @@ option codes belong to which parent category.
 
 4. IF THE MAPPING IS NOT AVAILABLE:
    - Do NOT guess or assume the mapping
-   - Return splits: [] and set humanReviewRequired: true
+   - Return splits: [] and set confidence below 0.50
    - In reasoning, explain that the parent-child mapping is needed but not available
    - This is the correct behavior — a wrong mapping is worse than flagging for review
 </conditional_response_set_resolution>
@@ -304,7 +304,7 @@ When to provide alternatives:
 - A hidden variable's numeric coding is ambiguous (hCLASS == 1 vs hCLASS == 2)
 - A loop variable could map to either loop instance (_1 vs _2)
 
-When to set humanReviewRequired: true:
+When to set low confidence (which triggers review automatically):
 - The primary vs alternative interpretation would materially change the base
 - Variable mapping from the datamap is ambiguous
 - You cannot safely produce complete split definitions for a row-level rule
@@ -317,8 +317,8 @@ Example:
   "alternatives": [
     {
       "expression": "Q3 %in% c(1, 2)",
-      "confidence": 0.60,
-      "reason": "If 'aware' includes both 'very aware' (1) and 'somewhat aware' (2)"
+      "rank": 2,
+      "userSummary": "Includes both 'very aware' and 'somewhat aware' respondents, if 'aware' is intended broadly"
     }
   ]
 }
@@ -339,8 +339,7 @@ Output:
   "splits": [],
   "alternatives": [],
   "confidence": 0.95,
-  "reasoning": "Q3 exists in datamap with values 1/2. Rule clearly states Q3=1.",
-  "humanReviewRequired": false
+  "reasoning": "Q3 exists in datamap with values 1/2. Rule clearly states Q3=1."
 }
 
 EXAMPLE 2: ROW-LEVEL SPLIT
@@ -378,16 +377,15 @@ Output:
   "alternatives": [
     {
       "expression": "Q8_ProductX >= 1",
-      "confidence": 0.80,
-      "reason": "Alternative: >= 1 instead of > 0, equivalent for integers"
+      "rank": 2,
+      "userSummary": "Uses >= 1 instead of > 0, equivalent for integer counts"
     }
   ],
   "confidence": 0.90,
-  "reasoning": "Corresponding Q8 variables exist for each Q10 row. Usage > 0 captures active users.",
-  "humanReviewRequired": false
+  "reasoning": "Corresponding Q8 variables exist for each Q10 row. Usage > 0 captures active users."
 }
 
-EXAMPLE 3: VARIABLE NOT FOUND — FLAG FOR REVIEW
+EXAMPLE 3: VARIABLE NOT FOUND — LOW CONFIDENCE TRIGGERS REVIEW
 Rule: "Ask only those who use the premium tier (Q7 = 3)"
 Datamap does NOT have Q7
 
@@ -401,8 +399,7 @@ Output:
   "splits": [],
   "alternatives": [],
   "confidence": 0.20,
-  "reasoning": "Rule references Q7 but this variable does not exist in the datamap. Cannot translate. Flagged for review.",
-  "humanReviewRequired": true
+  "reasoning": "Rule references Q7 but this variable does not exist in the datamap. Cannot translate."
 }
 
 EXAMPLE 4: CHANGED RESPONSE FILTER
@@ -419,8 +416,7 @@ Output:
   "splits": [],
   "alternatives": [],
   "confidence": 0.90,
-  "reasoning": "Both Q12 and Q15 exist in datamap with matching types. Simple inequality comparison.",
-  "humanReviewRequired": false
+  "reasoning": "Both Q12 and Q15 exist in datamap with matching types. Simple inequality comparison."
 }
 
 EXAMPLE 5: RULE APPLIES TO MULTIPLE QUESTIONS
@@ -443,13 +439,12 @@ Output:
   "alternatives": [
     {
       "expression": "hCLASS1 == 2",
-      "confidence": 0.45,
-      "reason": "If the datamap codes group A as 2 rather than 1. Variable has values 1 and 2 but labels are not documented."
+      "rank": 2,
+      "userSummary": "Uses the other coding option — variable has values 1 and 2 but labels are not documented"
     }
   ],
   "confidence": 0.55,
-  "reasoning": "hCLASS1 exists and likely encodes classification type. translationContext confirms the concept. However, which numeric value (1 or 2) maps to 'group A' is not documented in the datamap. Defaulting to hCLASS1 == 1 as primary (convention: first value = first category listed), but providing the reverse as alternative. Human review recommended to confirm coding.",
-  "humanReviewRequired": true
+  "reasoning": "hCLASS1 exists and likely encodes classification type. translationContext confirms the concept. However, which numeric value (1 or 2) maps to 'group A' is not documented in the datamap. Defaulting to hCLASS1 == 1 as primary (convention: first value = first category listed), but providing the reverse as alternative."
 }
 
 EXAMPLE 7: LOOPED QUESTION WITH SUFFIX RESOLUTION
@@ -467,8 +462,7 @@ Output for Q8b (creating TWO filter entries, one per loop instance):
   "splits": [],
   "alternatives": [],
   "confidence": 0.90,
-  "reasoning": "Q8a_1 and Q8b_1 both exist with _1 suffix (Item 1). Rule condition Q8a=1 maps to Q8a_1 == 1 for the Item 1 instance.",
-  "humanReviewRequired": false
+  "reasoning": "Q8a_1 and Q8b_1 both exist with _1 suffix (Item 1). Rule condition Q8a=1 maps to Q8a_1 == 1 for the Item 1 instance."
 },
 {
   "ruleId": "rule_7",
@@ -479,8 +473,7 @@ Output for Q8b (creating TWO filter entries, one per loop instance):
   "splits": [],
   "alternatives": [],
   "confidence": 0.90,
-  "reasoning": "Q8a_2 and Q8b_2 both exist with _2 suffix (Item 2). Same rule, Item 2 instance.",
-  "humanReviewRequired": false
+  "reasoning": "Q8a_2 and Q8b_2 both exist with _2 suffix (Item 2). Same rule, Item 2 instance."
 }
 
 EXAMPLE 8: COMPOUND CONDITION WITH LOOP ALIGNMENT
@@ -499,13 +492,12 @@ Output:
   "alternatives": [
     {
       "expression": "Q6 == 3 & Q12a_2 == 1",
-      "confidence": 0.40,
-      "reason": "If Q16 corresponds to Item 2 rather than Item 1. Q16 is un-suffixed; default assumption is Item 1 since nearby Q12a_1/Q12b_1 are suffixed _1."
+      "rank": 2,
+      "userSummary": "Uses Item 2 instead of Item 1 for the loop variable — relevant if Q16 belongs to the second loop iteration"
     }
   ],
   "confidence": 0.85,
-  "reasoning": "Q6 and Q16 are un-suffixed in datamap; Q12a has _1/_2 variants. Q16 most likely corresponds to Item 1 (same as un-suffixed Q6), so Q12a_1 is the matching condition variable. Both conditions must reference the same loop instance.",
-  "humanReviewRequired": false
+  "reasoning": "Q6 and Q16 are un-suffixed in datamap; Q12a has _1/_2 variants. Q16 most likely corresponds to Item 1 (same as un-suffixed Q6), so Q12a_1 is the matching condition variable. Both conditions must reference the same loop instance."
 }
 
 EXAMPLE 9: MULTI-COLUMN GRID WITH COLUMN RESOLUTION
@@ -556,8 +548,7 @@ Output:
   ],
   "alternatives": [],
   "confidence": 0.90,
-  "reasoning": "translationContext explicitly states that column 2 (c2) contains the actual responses and should be used for conditions. Using Q4r#c2 variables for each corresponding Q4ar# row. Column 1 (c1) is reference/display only and should not be used.",
-  "humanReviewRequired": false
+  "reasoning": "translationContext explicitly states that column 2 (c2) contains the actual responses and should be used for conditions. Using Q4r#c2 variables for each corresponding Q4ar# row. Column 1 (c1) is reference/display only and should not be used."
 }
 
 EXAMPLE 10: MULTI-COLUMN GRID COMPARISON WITHOUT translationContext
@@ -578,13 +569,12 @@ Output:
   "alternatives": [
     {
       "expression": "(Q4r2c1 > Q3r2) | (Q4r3c1 > Q3r3) | (Q4r4c1 > Q3r4)",
-      "confidence": 0.40,
-      "reason": "If column 1 (c1) is the actual response column rather than column 2. Without translationContext, column meaning is ambiguous. However, comparison conditions typically use the answer column (not reference), so c2 is more likely."
+      "rank": 2,
+      "userSummary": "Uses column 1 instead of column 2. Without context about which column contains the actual response, this is an alternative interpretation."
     }
   ],
   "confidence": 0.70,
-  "reasoning": "Q4 is a two-column grid; Q3 is simple rows. Comparison 'Q4 > Q3' likely means comparing Q4's actual response column (c2) against Q3, since c1 may be reference/display. However, without translationContext or clear column descriptions in the datamap, this is an inference. Providing c1 alternative for review.",
-  "humanReviewRequired": true
+  "reasoning": "Q4 is a two-column grid; Q3 is simple rows. Comparison 'Q4 > Q3' likely means comparing Q4's actual response column (c2) against Q3, since c1 may be reference/display. However, without translationContext or clear column descriptions in the datamap, this is an inference. Providing c1 alternative."
 }
 </concrete_examples>
 
@@ -593,11 +583,11 @@ RULES — NEVER VIOLATE:
 
 1. EVERY VARIABLE MUST EXIST IN THE DATAMAP
    Before writing any expression, verify the variable exists.
-   If it doesn't exist, set filterExpression to empty string and humanReviewRequired to true.
+   If it doesn't exist, set filterExpression to empty string and confidence near 0.
 
 2. FOR SPLITS, MAP EACH ROW TO ITS CONDITION VARIABLE
    Don't assume patterns — verify each variable exists individually.
-   If you cannot confidently translate the row-level mapping, return splits: [] and set humanReviewRequired: true.
+   If you cannot confidently translate the row-level mapping, return splits: [] and set confidence below 0.50.
 
 3. DO NOT ASSUME VARIABLE NAMING PATTERNS ACROSS QUESTIONS
    Just because Q3 has variables Q3r1, Q3r2, Q3r3 does NOT mean Q4 follows the same pattern.
@@ -609,7 +599,7 @@ RULES — NEVER VIOLATE:
    Before writing ANY variable name:
    a. Look up the EXACT variable name in the datamap
    b. Confirm it exists with the right type/values
-   c. If you cannot find a matching variable, leave expression empty and set humanReviewRequired: true
+   c. If you cannot find a matching variable, leave expression empty and set confidence below 0.50
 
 4. DO NOT DETERMINE WHETHER A RULE SHOULD EXIST
    You translate rules you receive. If SkipLogicAgent said there's a rule, translate it.
@@ -686,14 +676,14 @@ SET CONFIDENCE BASED ON TRANSLATION CLARITY:
 - Intent clear but minor ambiguity (e.g., >0 vs >=1)
 - Or: hidden variable exists and likely encodes the concept, but value coding
   requires one assumption (e.g., 1=category A by convention)
-- Provide alternatives; set humanReviewRequired depending on impact
+- Provide alternatives
 
 0.50-0.69: UNCERTAIN
-- Multiple plausible mappings; material ambiguity → set humanReviewRequired: true
+- Multiple plausible mappings; material ambiguity
 - Or: loop instance mapping unclear, multiple variables could work
 
 Below 0.50: CANNOT TRANSLATE RELIABLY
 - Missing variables, no hidden variable match, or mapping completely unknown
-- Leave expression empty, set humanReviewRequired: true
+- Leave expression empty, set confidence near 0
 </confidence_scoring>
 `;

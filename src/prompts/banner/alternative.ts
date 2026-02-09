@@ -109,9 +109,8 @@ REQUIRED STRUCTURE:
           "statLetter": "string",
           "confidence": 0.0-1.0,
           "requiresInference": boolean,  // True only if this cut came from outside the banner plan
-          "inferenceReason": "string",   // If requiresInference is true, explain what you inferred and why
-          "humanInLoopRequired": boolean, // Always true if confidence < 0.85
-          "uncertainties": ["string"]    // If humanInLoopRequired is true, explain what you're uncertain about and what the human should verify
+          "reasoning": "string",         // If requiresInference is true, explain what you inferred and why
+          "uncertainties": ["string"]    // Specific concerns for human to verify (empty array if none)
         }
       ]
     }
@@ -123,12 +122,7 @@ REQUIRED STRUCTURE:
       "adjusted": "string"  // Same as original
     }
   ],
-  "processingMetadata": {
-    "totalColumns": number,
-    "groupCount": number,
-    "statisticalLettersUsed": ["string"],
-    "processingTimestamp": "string"
-  }
+  "statisticalLettersUsed": ["string"]  // Only AI-knowable metadata; counts and timestamps are derived
 }
 
 QUALITY STANDARDS:

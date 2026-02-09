@@ -175,11 +175,10 @@ Begin validation now.
       name: col.name,
       adjusted: `# Error: Processing failed for "${col.original}"`,
       confidence: 0.0,
-      reason: `Processing error: ${errorMessage}${retryContext}. Manual review required.`,
-      // Include required human review fields with appropriate defaults
+      reasoning: `Processing error: ${errorMessage}${retryContext}. Manual review required.`,
+      userSummary: 'Processing failed for this column. Manual review required.',
       alternatives: [],
       uncertainties: [`Processing error: ${errorMessage}${retryContext}`],
-      humanReviewRequired: true,
       expressionType: 'direct_variable' as const
     }))
   };

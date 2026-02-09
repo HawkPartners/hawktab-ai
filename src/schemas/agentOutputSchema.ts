@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { shouldFlagForReview } from '../lib/review/ReviewConfig';
 
 // Expression type classification for human review targeting
 export const ExpressionTypeSchema = z.enum([
@@ -15,8 +16,8 @@ export type ExpressionType = z.infer<typeof ExpressionTypeSchema>;
 // Alternative mapping found during variable search
 export const AlternativeSchema = z.object({
   expression: z.string().describe('Alternative R syntax expression'),
-  confidence: z.number().min(0).max(1),
-  reason: z.string().describe('Why this alternative was considered')
+  rank: z.number().describe('Agent preference order (2 = second choice, 3 = third, etc.)'),
+  userSummary: z.string().describe('Plain-language explanation for a non-technical reviewer')
 });
 
 export type AlternativeType = z.infer<typeof AlternativeSchema>;
@@ -29,15 +30,14 @@ export const ValidatedColumnSchema = z.object({
   name: z.string(),
   adjusted: z.string().describe('R syntax expression'),
   confidence: z.number().min(0).max(1),
-  reason: z.string(),
+  reasoning: z.string().describe('Developer-facing: search process and decision rationale'),
+  userSummary: z.string().describe('Plain-language explanation for a non-technical research manager. No R syntax or variable names.'),
   // Human review support fields - all required for Azure OpenAI compatibility
-  // AI must output these for every column (empty arrays and false are valid values)
+  // AI must output these for every column (empty arrays are valid values)
   alternatives: z.array(AlternativeSchema)
-    .describe('Other candidate mappings found during variable search (empty array if none)'),
+    .describe('Other candidate mappings found during variable search, ordered by rank (empty array if none)'),
   uncertainties: z.array(z.string())
     .describe('Specific concerns for human to verify (empty array if none)'),
-  humanReviewRequired: z.boolean()
-    .describe('True if this column should be flagged for human review'),
   expressionType: ExpressionTypeSchema
     .describe('Classification of the original expression type')
 });
@@ -120,7 +120,7 @@ export const createValidationResult = (group: ValidatedGroupType): ValidationRes
   };
 };
 
-// Get columns that need human review based on flags or confidence threshold
+// Get columns that need human review based on confidence threshold and expression type
 export const getColumnsNeedingReview = (
   result: ValidationResultType,
   confidenceThreshold = 0.75
@@ -129,16 +129,7 @@ export const getColumnsNeedingReview = (
 
   for (const group of result.bannerCuts) {
     for (const col of group.columns) {
-      // Flag for review if:
-      // 1. Explicitly marked as requiring review
-      // 2. Low confidence
-      // 3. Expression type that always needs review
-      const requiresReviewByType = col.expressionType &&
-        ['placeholder', 'conceptual_filter', 'from_list'].includes(col.expressionType);
-
-      if (col.humanReviewRequired ||
-          col.confidence < confidenceThreshold ||
-          requiresReviewByType) {
+      if (shouldFlagForReview(col.confidence, confidenceThreshold, col.expressionType)) {
         needsReview.push({ ...col, groupName: group.groupName });
       }
     }

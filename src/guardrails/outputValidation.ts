@@ -96,7 +96,7 @@ export const validateAgentOutput = (
     for (const group of result.bannerCuts) {
       for (const column of group.columns) {
         // Check required fields
-        if (!column.name || !column.adjusted || typeof column.confidence !== 'number' || !column.reason) {
+        if (!column.name || !column.adjusted || typeof column.confidence !== 'number' || !column.reasoning) {
           errors.push(`Incomplete column data in group ${group.groupName}: ${column.name || 'unnamed'}`);
         }
 

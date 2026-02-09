@@ -12,7 +12,7 @@ This document outlines the path from HawkTab AI's current state (reliable local 
 
 ---
 
-### Implementation Status Summary (Feb 9, 2026)
+### Implementation Status Summary (Feb 8, 2026)
 
 | Item | Status | Notes |
 |------|--------|-------|
@@ -31,7 +31,7 @@ This document outlines the path from HawkTab AI's current state (reliable local 
 | **Phase 2.5b** AI-Generated Banner | Complete | BannerAgent generate-cuts prompt + HITL gate |
 | **Phase 2.6** Weight Detection | Complete | Detection + `--weight=VAR` CLI + dual-pass R + separate weighted/unweighted workbooks |
 | **Phase 2.7** ~~Survey Classification~~ | Consolidated | Classification → 3.1 intake; confidence scoring → Long-term Vision |
-| **Phase 2.8** HITL Review Overhaul | Partial | Agent output simplification + user-facing review with base sizes |
+| **Phase 2.8** HITL Review Overhaul | Complete | Agent output audit, `humanReviewRequired` removed (derived by pipeline), `userSummary` fields, rank-based alternatives, shared review thresholds |
 | **Phase 2.9** Table ID Visibility | Complete | IDs render, excluded sheet works. Interactive control → Long-term Vision |
 | **Phase 2.10** Output Feedback | Complete | Feedback form on results page, stored as feedback.json, history badge |
 | **Phase 2.11** Excel Themes | Complete | 6 themes: classic, coastal, blush, tropical, bold, earth. `--theme` CLI flag. |
@@ -285,9 +285,9 @@ if (bannerPlanProvided) {
 
 ---
 
-### 2.8 HITL Review Overhaul (Agent Output + User Experience) — `PARTIAL`
+### 2.8 HITL Review Overhaul (Agent Output + User Experience) — `COMPLETE`
 
-> **Implementation Status (Feb 2026):** HITL review UI exists at `/pipelines/[pipelineId]/review/` showing alternatives with confidence scores. Has state management for per-column decisions and visual feedback. Missing: base sizes, plain-language summaries, agent output simplification, actionable review flow.
+> **Implementation Status (Feb 2026):** Part A (Agent Output Simplification) fully implemented. `humanReviewRequired` removed from all 4 AI agent schemas — now derived by pipeline via centralized `shouldFlagForReview(confidence, threshold, expressionType)` with env-configurable thresholds. Field names standardized (`reason` → `reasoning`, `inferenceReason` → `reasoning`). `userSummary` (plain-language) fields added to CrosstabAgent columns and VerificationAgent output. Alternatives switched from confidence-scored to rank-ordered with `userSummary`. BannerAgent `processingMetadata` counts removed from AI output and derived deterministically. Shared review infrastructure in `src/lib/review/`. Review page updated to display `userSummary` and ranked alternatives. Part B (base sizes via R query) moved to Long-term Vision as a separate effort.
 
 **Problem**: The current HITL flow surfaces raw agent output — confidence decimals, R expressions, developer-facing reasoning. This works for debugging but is wrong for users. A non-technical person reviewing cuts doesn't care that `hLOCATIONr1` has 0.75 confidence vs `dLOCATIONr1` at 0.65. They want: "We found multiple variables for 'Own Home.' Here are your options, ranked. Option 1 has 156 respondents, Option 2 has 23."
 
@@ -579,6 +579,7 @@ Redis is likely overkill for MVP—Convex handles real-time well. Consider Redis
 - **CORS**: Restrict to known origins
 - **Rate limiting**: Prevent abuse (especially on expensive AI calls)
 - **Secrets**: All API keys in environment variables, never in client code
+- **Claude Security Audit Skill**: `security_audit`
 
 **Reliability Patterns**:
 
@@ -850,6 +851,10 @@ The Loop Semantics Policy Agent uses a single prompt regardless of how much dete
 **Level of Effort:** Low (second prompt file in `src/prompts/loopSemantics/alternative.ts` + selection logic in agent)
 
 **When to revisit:** If batch testing reveals classification failures on datasets where the deterministic resolver finds nothing.
+
+---
+
+BANNER_GENERATE_SYSTEM_PROMPT IS out of sync with other prompts.
 
 ---
 

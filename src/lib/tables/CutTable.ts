@@ -35,7 +35,7 @@ export function buildCutTable(validation: ValidationResultType, sessionId: strin
       name: column.name,
       expression: column.adjusted,
       confidence: column.confidence,
-      reason: column.reason,
+      reason: column.reasoning,
     })),
   }));
 

@@ -34,8 +34,7 @@ export interface VerboseBannerGroup {
     statLetter: string;
     confidence: number;
     requiresInference: boolean;
-    inferenceReason: string;
-    humanInLoopRequired: boolean;
+    reasoning: string;
     uncertainties: unknown[];
   }>;
 }
