@@ -1,7 +1,0 @@
-{
-  "a10": {
-    "success": false,
-    "tableId": "a10",
-    "error": "Variable 'A10' not found"
-  }
-}
