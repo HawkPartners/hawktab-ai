@@ -421,7 +421,9 @@ No additional work needed for MVP.
 
 ---
 
-### 2.10 Output Feedback Collection — `NOT STARTED`
+### 2.10 Output Feedback Collection — `COMPLETE`
+
+> **Implementation Status (Feb 2026):** Feedback collection fully implemented. Users can submit feedback on completed pipeline runs via a "Leave Feedback" form on the results page (`/pipelines/[pipelineId]`). Feedback stored as `feedback.json` in pipeline output folder. Includes: free-text notes, optional quality rating (1-5), optional table ID tags. Pipeline history shows a "Feedback" badge when feedback exists. API endpoints: `GET/POST /api/pipelines/[pipelineId]/feedback`. Schema: `pipelineFeedbackSchema.ts`.
 
 > *Replaces former "Table Feedback & Regeneration." Per-table regeneration moved to Long-term Vision → Interactive Table Review.*
 
