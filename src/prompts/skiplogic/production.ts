@@ -13,9 +13,19 @@
  * - Think about the designer's INTENT, not just literal text
  * - A question can have multiple rules (table-level skip + row-level show)
  * - Generic examples only — zero dataset-specific terms
+ *
+ * Exports:
+ * - SKIP_LOGIC_CORE_INSTRUCTIONS: Core extraction logic (mission + patterns + examples + output format)
+ * - SKIP_LOGIC_SCRATCHPAD_PROTOCOL: Scratchpad protocol for single-pass mode
+ * - SKIP_LOGIC_AGENT_INSTRUCTIONS_PRODUCTION: Full prompt (core + scratchpad) for single-pass
  */
 
-export const SKIP_LOGIC_AGENT_INSTRUCTIONS_PRODUCTION = `
+/**
+ * Core extraction instructions shared between single-pass and chunked modes.
+ * Contains: mission, task_context, patterns, advanced patterns, interpreting logic,
+ * intent guidance, examples, translation context, and output format.
+ */
+export const SKIP_LOGIC_CORE_INSTRUCTIONS = `
 <mission>
 You are a Skip Logic Extraction Agent. Your job is to read the ENTIRE survey document and extract the skip/show/filter rules that define the intended *analysis universe* for questions.
 
@@ -503,6 +513,13 @@ RULES FOR OUTPUT:
    context from the survey that would help the downstream agent. Leave as empty string otherwise.
 </output_format>
 
+`;
+
+/**
+ * Scratchpad protocol for single-pass mode (full survey in one call).
+ * Includes the "survey structure map" step since the agent sees the full survey.
+ */
+export const SKIP_LOGIC_SCRATCHPAD_PROTOCOL = `
 <scratchpad_protocol>
 USE THE SCRATCHPAD TO DOCUMENT YOUR ANALYSIS:
 
@@ -542,4 +559,14 @@ FORMAT:
   Note: [any ambiguity or context]
   Translation context: [any coding tables, hidden vars, mappings found nearby]"
 </scratchpad_protocol>
+`;
+
+/**
+ * Full production prompt for single-pass mode (core + scratchpad).
+ * This is the original monolithic prompt used when the survey fits in one call.
+ */
+export const SKIP_LOGIC_AGENT_INSTRUCTIONS_PRODUCTION = `
+${SKIP_LOGIC_CORE_INSTRUCTIONS}
+
+${SKIP_LOGIC_SCRATCHPAD_PROTOCOL}
 `;

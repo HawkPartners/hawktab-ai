@@ -12,6 +12,45 @@ This document outlines the path from HawkTab AI's current state (reliable local 
 
 ---
 
+### Implementation Status Summary (Feb 8, 2026)
+
+| Item | Status | Notes |
+|------|--------|-------|
+| **Phase 1.1** Stable System | Complete | R validation, retry logic, per-table isolation |
+| **Phase 1.2** Leqvio Dataset | Complete | 3 edge cases documented |
+| **Phase 1.3** Loop/Stacked Data | Complete | Full deterministic resolver + semantics agent |
+| **Phase 1.4** Broader Testing | In Progress | 11 datasets, batch runner operational |
+| **Phase 1.5** Pre-Flight Confidence | Not Started | All signals exist, aggregation missing |
+| **Phase 2.1** Output Formats | Mostly Complete | 3 display modes work; separate workbooks missing |
+| **Phase 2.4** Stat Testing Config | Mostly Complete | Full env var config; CLI convenience flags missing |
+| **Phase 2.4b** Advanced Loop Testing | Not Started | vs-Complement, clustered inference deferred |
+| **Phase 2.4c** Variable Persistence | Not Started | No confirmed-cuts.json |
+| **Phase 2.4d** Dual-Mode Loop Prompt | Not Started | Single prompt only |
+| **Phase 2.5** Upfront Context | Not Started | No project type detection |
+| **Phase 2.5a** Input Flexibility | Partial | PDF/DOCX work; Excel/TXT missing |
+| **Phase 2.5b** AI-Generated Banner | Not Started | Deferred post-MVP |
+| **Phase 2.6** Weight Detection | Not Started | No detection, no R integration |
+| **Phase 2.7** Survey Classification | Not Started | No type detection or confidence scoring |
+| **Phase 2.8** Sample Size in HITL | Partial | HITL UI exists; base sizes missing |
+| **Phase 2.9** Table ID + Exclude | Partial | IDs render, excluded sheet works; no regeneration control |
+| **Phase 2.10** Table Feedback | Not Started | No per-table feedback or regeneration |
+| **Phase 2.11** Excel Themes | Not Started | Single hardcoded palette |
+| **Phase 2.12** Browser Review | Partial (foundation) | Crosstab review UI exists; table review missing |
+| **Phase 3.1** Local UI | Partial (~40%) | Basic pipeline UI; no enterprise structure |
+| **Phase 3.2** Cloud Deployment | Not Started | No Convex/R2/Railway/Sentry/PostHog |
+| **Phase 3.3** Auth (WorkOS) | Not Started | Zero authentication |
+| **Phase 3.4** Cost Tracking | Partial (~30%) | Metrics collected, not persisted |
+| **Phase 3.5** Logging | Minimal (~20%) | Basic tracing scaffold only |
+
+**Also verified as implemented (not separate roadmap items):**
+- TablePostProcessor: 8 deterministic rules (exceeds the 7 specified)
+- Provenance tracking: `sourceTableId`, `splitFromTableId`, `lastModifiedBy` all in schemas
+- SkipLogicAgent + FilterTranslatorAgent: Fully functional
+- LoopDetector + LoopContextResolver + LoopCollapser: Fully functional
+- Batch pipeline runner with cross-dataset analytics
+
+---
+
 ## Phase 1: Reliability (Current)
 
 *See `reliability-plan.md` for details*
@@ -19,15 +58,17 @@ This document outlines the path from HawkTab AI's current state (reliable local 
 | Part | Description | Status |
 |------|-------------|--------|
 | 1 | Stable System for Testing (R validation, bug fixes, retry logic) | Complete |
-| 2 | Finalize Leqvio Dataset (golden datasets, 3x consistency runs) | In Progress |
-| 3 | Loop/Stacked Data + Weights (Tito's dataset) | Not Started |
-| 4 | Strategic Broader Testing (5 datasets across survey types) | Not Started |
+| 2 | Finalize Leqvio Dataset (golden datasets, 3x consistency runs) | Complete |
+| 3 | Loop/Stacked Data + Weights (Tito's dataset) | Complete |
+| 4 | Strategic Broader Testing (5 datasets across survey types) | In Progress |
 
 **Exit Criteria**: 5 datasets producing consistent output across 3 runs each, output quality acceptable for report writing.
 
-### 1.5 Pipeline Confidence Pre-Flight (Reject Early)
+### 1.5 Pipeline Confidence Pre-Flight (Reject Early) — `NOT STARTED`
 
 **Priority: High — candidate for Phase 1 or early Phase 2.**
+
+> **Implementation Status (Feb 2026):** All building blocks exist (loop detection, deterministic resolver, fill rate validation, data map quality signals) but NO aggregation function combines them into a confidence tier. No green/yellow/red assessment. No pre-flight UI for project type questions. The signals are there — the integration is not.
 
 Before burning 45+ minutes of pipeline time, the system should assess its own confidence in producing accurate output for a given dataset and flag issues upfront.
 
@@ -50,15 +91,19 @@ Before burning 45+ minutes of pipeline time, the system should assess its own co
 
 **Level of Effort**: Low-Medium (signals exist, just need aggregation logic and UX)
 
+**NOTE**: This also includes the UI as well and ensuring that the user has an ability to add details of the project before we start, such as if it's a segmentation and we should choose what variables we care most about. I'm already thinking the question is more like "Is this a segmentation? Is this a MaxDiff with message testing?" and stuff like that. We don't have to do every survey type, but the ones that require some sort of extra detail (right). For example, if it's a segmentation, then we should ask them "Does your data file have the segment assignments?" and if the answer is no, then we have to warn the user. We can still do your tabs, but we can't do any segment cuts if that's in the banner plan (right). Just basic stuff like that. If it's a MaxDiff with message testing, we have to say "Oh, can you also upload your message test (your messages) so that we could actually link each of the questions to your thing?" Then also, we could be like "Does your data file have the anchored probability scores attached?" If they say no, then we just warn them. "Oh, if that's the case, then we can't show you your MaxDiff results," so just basic stuff like that.
+
 ---
 
 ## Phase 2: Feature Completeness
 
 **NOTE**: Can we render the full decimal values for the percents and frequencies? So instead of showing 11% show 10.5678%?
 
+> **Implementation Status (Feb 2026):** Full decimal precision is NOT YET exposed. R calculates with full precision, but Excel format strings use `'0%'` (integer display). Changing to `'0.00%'` or similar in `ExcelFormatter` would surface the existing precision. Low effort.
+
 Features needed before external users can rely on the system for real projects.
 
-### 2.1 Output Format Options
+### 2.1 Output Format Options — `MOSTLY COMPLETE`
 
 **Percents Only / Frequencies Only**
 
@@ -70,7 +115,7 @@ Bob asked: "Is it possible to add in an option to say I only want percents or fr
 | Percents only | Just percentages |
 | Frequencies only | Just counts |
 
-**Current State**: The system already supports all three options. Currently defaults to placing both in the same worksheet.
+**Current State**: The system already supports all three options via `--display=frequency|counts|both` CLI flag. When `both` is selected, two separate sheets are created within the same workbook (Percentages + Counts). Default is `frequency`.
 
 **Remaining Work**: Add option for separate workbooks when user wants percents AND frequencies but in different files:
 - Default: Single workbook with both (current behavior)
@@ -84,24 +129,19 @@ Bob asked: "Is it possible to add in an option to say I only want percents or fr
 
 ---
 
-### 2.4 Stat Testing Configuration
+### 2.4 Stat Testing Configuration — `MOSTLY COMPLETE`
 
-**Current State**: The R script generator supports dual significance thresholds (e.g., 95%/90% with uppercase/lowercase letters) and single threshold mode. However, these values are not exposed through the CLI and are effectively hardcoded in test scripts.
+**Current State**: Fully configurable via environment variables (`STAT_THRESHOLDS`, `STAT_PROPORTION_TEST`, `STAT_MEAN_TEST`, `STAT_MIN_BASE`). Supports dual thresholds, unpooled/pooled z-tests, Welch/Student t-tests, and minimum base size. Config is validated on startup, formatted for display, and stored in pipeline summary. Defaults flow from a single config source in `src/lib/env.ts`.
 
 **What's Needed for MVP**:
 
-1. **CLI flag for custom configuration**: `--sig-config` flag on pipeline script that opens interactive prompts:
-   - How many confidence levels? (1 or 2)
-   - Confidence level(s) (90%, 95%, 99%)
-   - Minimum base size for sig testing (default: none, or e.g., n < 30 → suppress letters)
-   - Test method (unpooled z-test is current default)
-   - Small base handling (suppress letters vs show with warning)
+1. ~~**CLI flag for custom configuration**~~: ✅ Done via environment variables. Interactive `--sig-config` CLI prompts are a nice-to-have but not required — env vars provide full configurability.
 
-2. **CLI command for defaults**: `--show-defaults` to display current configuration without running pipeline
+2. **CLI command for defaults**: `--show-defaults` to display current configuration without running pipeline — `NOT DONE` (convenience feature)
 
-3. **Capture in pipeline summary**: Store all stat testing assumptions in `pipeline-summary.json` so output is self-documenting
+3. ~~**Capture in pipeline summary**~~: ✅ Done. Stat testing config stored in `pipeline-summary.json`.
 
-4. **Remove hardcoded values**: Ensure defaults flow from a single config source, not scattered across files
+4. ~~**Remove hardcoded values**~~: ✅ Done. All defaults flow from `getStatTestingConfig()` in `src/lib/env.ts`.
 
 ```typescript
 sigTestConfig: {
@@ -116,7 +156,7 @@ sigTestConfig: {
 
 ---
 
-### 2.4b Advanced Stat Testing for Loop Tables
+### 2.4b Advanced Stat Testing for Loop Tables — `NOT STARTED`
 
 **Context**: When loop/stacked data is present, standard within-group stat testing can be invalid for two reasons: (1) banner groups may overlap on the stacked frame, and (2) multiple rows per respondent creates within-respondent correlation.
 
@@ -137,7 +177,7 @@ Loop tables have within-respondent correlation — the same person contributes 2
 
 ---
 
-### 2.4c Crosstab Agent Variable Selection Persistence
+### 2.4c Crosstab Agent Variable Selection Persistence — `NOT STARTED`
 
 **Problem:** The crosstab agent's variable selection is non-deterministic. On two runs of the same dataset, it might pick `hLOCATIONr1` (correct) one time and `S9r1` (wrong) the next. The hidden variable hint helps steer it, but doesn't guarantee consistency.
 
@@ -158,7 +198,9 @@ Once a user confirms a variable mapping via HITL — or once a run succeeds and 
 
 ---
 
-### 2.4d Dual-Mode Loop Semantics Prompt
+### 2.4d Dual-Mode Loop Semantics Prompt — `NOT STARTED`
+
+> **Implementation Status (Feb 2026):** Only one prompt file exists (`production.ts`). Infrastructure for prompt variants exists (same pattern as other agents) but no `alternative.ts` for low-evidence mode. Selection logic not implemented.
 
 **Context:** The Loop Semantics Policy Agent currently uses a single prompt regardless of how much deterministic evidence is available. When the resolver finds strong evidence (label tokens, suffix patterns), the prompt works well — the LLM has structured data to anchor on. When there's no deterministic evidence, the LLM has to work from cut patterns and datamap descriptions alone, which is harder and less reliable.
 
@@ -181,7 +223,7 @@ The low-evidence prompt would include:
 
 ---
 
-### 2.5 Upfront Context Capture
+### 2.5 Upfront Context Capture — `NOT STARTED`
 
 **Problem**: The system currently accepts file uploads and treats everything the same — but different project types need different context. A MaxDiff survey needs actual message text (not just "Message 1"). A conjoint needs choice task definitions. An ATU has expected table structures. Without this context, agents produce tables that are technically correct but analytically unhelpful.
 
@@ -198,7 +240,9 @@ The low-evidence prompt would include:
 
 ---
 
-### 2.5a Input Format Flexibility
+### 2.5a Input Format Flexibility — `PARTIAL`
+
+> **Implementation Status (Feb 2026):** PDF and DOCX accepted for survey and banner plan (BannerAgent converts via LibreOffice headless + pdf2pic). Data file: .sav only. Missing: Excel banner plans, TXT format support. Question numbering flexibility handled by AI pattern matching as expected.
 
 Normalize inputs before they hit the pipeline agents.
 
@@ -219,7 +263,7 @@ Normalize inputs before they hit the pipeline agents.
 
 ---
 
-### 2.5b AI-Generated Banner from Research Objectives (defer to after MVP delivery)
+### 2.5b AI-Generated Banner from Research Objectives (defer to after MVP delivery) — `NOT STARTED`
 
 When no banner plan is provided—or user explicitly chooses "AI generate cuts"—the system generates a suggested banner.
 
@@ -258,7 +302,7 @@ When no banner plan is provided—or user explicitly chooses "AI generate cuts"�
 
 ---
 
-### 2.6 Weight Detection & Application
+### 2.6 Weight Detection & Application — `NOT STARTED`
 
 *Moved from Reliability Plan Part 5.*
 
@@ -283,7 +327,7 @@ Apply weights to calculations?
 
 ---
 
-### 2.7 Survey Classification & Confidence Scoring
+### 2.7 Survey Classification & Confidence Scoring — `NOT STARTED`
 
 *Moved from Reliability Plan Part 6.*
 
@@ -320,7 +364,9 @@ Instead of a single confidence score, track confidence across dimensions:
 
 ---
 
-### 2.8 Sample Size Review (HITL Enhancement)
+### 2.8 Sample Size Review (HITL Enhancement) — `PARTIAL`
+
+> **Implementation Status (Feb 2026):** HITL review UI exists at `/pipelines/[pipelineId]/review/` showing alternatives with confidence scores. Missing: `baseSize` field not in `AlternativeSchema`, no R query to calculate n counts during HITL, no zero-count/low-count flagging.
 
 **Current State**: When the AI is uncertain about a cut, HITL shows the user:
 - Proposed R expression
@@ -347,7 +393,9 @@ Instead of a single confidence score, track confidence across dimensions:
 
 ---
 
-### 2.9 Table ID Visibility + Include/Exclude Control
+### 2.9 Table ID Visibility + Include/Exclude Control — `PARTIAL`
+
+> **Implementation Status (Feb 2026):** Table IDs render in Excel output (`[tableId]` in context column). Excluded Tables sheet exists with full rendering. Tables have `excluded` and `excludeReason` schema fields. Missing: No CLI command or API to accept include/exclude lists and regenerate. No user-facing control to pull tables back from excluded.
 
 **Problem**: Users currently can't control which tables appear in the final output. Some tables are auto-excluded by the system, but users can't bring them back. Some included tables might not be wanted.
 
@@ -375,7 +423,7 @@ Instead of a single confidence score, track confidence across dimensions:
 
 ---
 
-### 2.10 Table Feedback & Regeneration
+### 2.10 Table Feedback & Regeneration — `NOT STARTED`
 
 **Problem**: Users may like a table but want it formatted differently—different derived rows, different groupings, etc. Currently they'd have to manually edit the Excel or request a full re-run.
 
@@ -404,7 +452,9 @@ Instead of a single confidence score, track confidence across dimensions:
 
 ---
 
-### 2.11 Excel Color Themes
+### 2.11 Excel Color Themes — `NOT STARTED`
+
+> **Implementation Status (Feb 2026):** Colors are hardcoded in `src/lib/excel/styles.ts` without semantic role abstraction. Only one palette (Joe style + Antares colors). No `themes.ts`, no `--theme` CLI flag, no theme configuration.
 
 **Problem**: We have effectively one styling look-and-feel. Users may want flexibility in workbook color palette while preserving readability and visual hierarchy.
 
@@ -443,7 +493,9 @@ Instead of a single confidence score, track confidence across dimensions:
 
 ---
 
-### 2.12 Interactive Browser Review (defer to after MVP delivery)
+### 2.12 Interactive Browser Review (defer to after MVP delivery) — `PARTIAL (foundation only)`
+
+> **Implementation Status (Feb 2026):** HITL review page exists for crosstab cut validation (`/pipelines/[pipelineId]/review/`). Has state management for per-column decisions, visual feedback, collapsible sections. Missing: No table preview component (rendering `tables.json` as HTML), no per-table include/exclude toggles, no per-table feedback notes, no "Generate Final Excel" button.
 
 **Problem**: Current review workflow is inefficient:
 - Reviewer looks at static Excel output
@@ -496,7 +548,9 @@ Instead of a single confidence score, track confidence across dimensions:
 
 Taking the reliable, feature-rich CLI and bringing it to a self-service UI that external parties like Antares can use.
 
-### 3.1 Local UI Overhaul (Cloud-Ready)
+### 3.1 Local UI Overhaul (Cloud-Ready) — `PARTIAL (~40%)`
+
+> **Implementation Status (Feb 2026):** Basic Next.js app works: file upload UI, pipeline history, job progress polling with toast notifications, job cancellation, HITL review page for crosstab cuts. Missing: No `(marketing)/` or `(product)/` route groups, no dashboard/project list, no new project wizard, no organization structure. `StorageProvider` not abstracted (hardcoded `/tmp/hawktab-ai/`). `JobStore` is in-memory only (Map, no persistence across restarts). Not cloud-ready.
 
 **Goal**: Build the complete web experience locally, but architected so deployment to cloud is just configuration changes—not rewrites.
 
@@ -568,7 +622,7 @@ Taking the reliable, feature-rich CLI and bringing it to a self-service UI that 
 
 ---
 
-### 3.2 Cloud Deployment
+### 3.2 Cloud Deployment — `NOT STARTED`
 
 **Current**: Runs locally via CLI and local Next.js dev server
 
@@ -648,7 +702,7 @@ Redis is likely overkill for MVP—Convex handles real-time well. Consider Redis
 
 ---
 
-### 3.3 Multi-Tenant & Auth (WorkOS Integration)
+### 3.3 Multi-Tenant & Auth (WorkOS Integration) — `NOT STARTED`
 
 **Context**: At this point, we have a cloud-deployed app with proper abstractions (3.1) and reliable infrastructure (3.2). Now we layer on authentication and organization management to make it ready for external users like Antares.
 
@@ -709,7 +763,9 @@ Redis is likely overkill for MVP—Convex handles real-time well. Consider Redis
 
 ---
 
-### 3.4 Cost Tracking
+### 3.4 Cost Tracking — `PARTIAL (~30%)`
+
+> **Implementation Status (Feb 2026):** `AgentMetricsCollector` tracks token usage per agent call. `CostCalculator` uses LiteLLM pricing for cost estimation. Cost summary printed to console after pipeline completion. Missing: No database persistence (metrics are lost when process ends). No per-org aggregation, no dashboard, no historical tracking. Needs a database (Convex) to be useful.
 
 **Goal**: Track AI costs so we can price the product appropriately. This is for us, not exposed to users.
 
@@ -726,7 +782,9 @@ Redis is likely overkill for MVP—Convex handles real-time well. Consider Redis
 
 ---
 
-### 3.5 Logging and Observability
+### 3.5 Logging and Observability — `MINIMAL (~20%)`
+
+> **Implementation Status (Feb 2026):** Basic tracing config exists (`src/lib/tracing.ts`) with `TRACING_ENABLED` env var. Pipeline event bus emits internal events. Agent metrics record duration. Missing: No Sentry integration, no structured logging with levels, no correlation IDs, no PostHog analytics. Logging is ad-hoc `console.log` throughout.
 
 **Goal**: When something breaks for Antares, we can debug it.
 
@@ -829,4 +887,4 @@ Documented as of February 2026. These are areas where the system has known limit
 
 *Created: January 22, 2026*
 *Updated: February 8, 2026*
-*Status: Planning*
+*Status: Planning — Implementation status audit completed Feb 8, 2026*

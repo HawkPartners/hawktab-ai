@@ -12,3 +12,9 @@ export const getSkipLogicPrompt = (version?: string): string => {
 };
 
 export { SKIP_LOGIC_AGENT_INSTRUCTIONS_PRODUCTION };
+
+// Composable prompt sections for chunked mode
+export {
+  SKIP_LOGIC_CORE_INSTRUCTIONS,
+  SKIP_LOGIC_SCRATCHPAD_PROTOCOL,
+} from './production';

@@ -26,6 +26,7 @@
 
 # pipeline outputs (generated, regenerable)
 /temp-outputs
+/outputs
 
 # debug
 npm-debug.log*
