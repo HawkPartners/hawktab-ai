@@ -114,163 +114,57 @@ After detecting loop patterns, validate data format:
 
 ## Part 4: Strategic Broader Testing
 
-**Status**: NOT STARTED
+**Status**: IN PROGRESS
 
-**Goal**: Validate reliability across different survey types. Learn what different projects throw at the system and discover failure modes.
+**Goal**: Validate reliability across different survey types. Learn what different projects throw at the system and discover failure modes. Breadth over depth — expose the system to many datasets rather than perfecting any one.
+
+### Why Now
+
+Parts 1-3 established a solid foundation: stable pipeline, validated primary dataset, loop/stacked data support. Continued focus on Leqvio and Tito's risks overfitting. By running batch tests across 11+ datasets, we discover where failures accrue across project types and can make high-leverage fixes that improve the system broadly.
+
+Additionally, the UI (when built) will surface agent uncertainty and low-confidence alternatives via HITL review. Many issues that look like "failures" in CLI output are actually resolvable in the UI — the agent surfaces alternatives, and a reviewer selects the right one. Part 4 testing also validates this: are the alternatives being surfaced? Would a reviewer be able to correct the issue?
 
 ### Process
 
-For each dataset:
-1. Run the pipeline
-2. Look at the output - does it work? What's wrong?
-3. Run it 2-3x if needed to check consistency
-4. Note what works and what doesn't
-5. Make small prompt tweaks if needed
-6. Move on to the next dataset
+1. **Batch run** — Run all ready datasets through the pipeline via `scripts/batch-pipeline.ts`
+2. **Consolidate feedback** — Review each dataset's output, note issues with tableIds and `lastModifiedBy`
+3. **Identify patterns** — Look for systemic issues across datasets (not one-off quirks)
+4. **Tweak at the highest level** — Make prompt or logic changes that address the broadest class of failures
+5. **Repeat** — Run the batch again, measure improvement
 
-The goal is breadth - expose the system to different patterns so we learn where it breaks. Don't get stuck perfecting one dataset.
+The batch runner produces `outputs/batch-summary-<timestamp>.json` with cross-dataset analytics (cost, time, tables, R validation rates, agent breakdown) to track progress across iterations.
 
 ### Test Datasets
 
-| # | Dataset | Why It's Useful |
-|---|---------|-----------------|
-| 1 | `leqvio-monotherapy-demand-NOV217` | Baseline (Part 2) |
-| 2 | `titos-future-growth` | Loop/Stacked + Weights (Part 3) |
-| 3 | `spravato-hcp-maxdiff` | **MaxDiff survey** — Tests handling of MaxDiff research methodology, which has unique table structures and scoring. Also has multiple scale questions per question block that may need per-answer-option tables. |
-| 4 | `therasphere-demand-conjoint` | **Conjoint survey** — Another complex methodology with choice-based tasks and derived utility scores. |
-| 5 | `caplidar-maxdiff` | **Second MaxDiff** — HawkPartners does a lot of MaxDiff work, so testing another one is important. |
-| 6 | TBD | Fill based on gaps discovered in earlier testing (e.g., surveys with strikethrough question numbers, blank questions, draft-like features) |
+| # | Dataset | Type | Status |
+|---|---------|------|--------|
+| 1 | `leqvio-monotherapy-demand-NOV217` | HCP Demand (pharma) | Baseline (Part 2) |
+| 2 | `titos-growth-strategy` | Consumer/Beverage (loops + weights) | Loop testing (Part 3) |
+| 3 | `Spravato_4.23.25` | HCP Segmentation (pharma) | Ready |
+| 4 | `CART-Segmentation-Data_7.22.24_v2` | HCP Segmentation (pharma) | Ready |
+| 5 | `Iptacopan-Data_2.23.24` | HCP Access Perceptions (pharma) | Ready |
+| 6 | `Leqvio-Segmentation-Data-HCP-W1_7.11.23` | HCP Segmentation (pharma) | Ready |
+| 7 | `UCB-Caregiver-ATU-W1-Data_1.11.23` | Caregiver ATU (rare disease) | Ready |
+| 8 | `UCB-Caregiver-ATU-W2-Data_9.1.23` | Caregiver ATU wave 2 | Ready |
+| 9 | `UCB-W3` | Caregiver ATU wave 3 | Ready |
+| 10 | `UCB-Caregiver-ATU-W4-Data_8.16.24` | Caregiver ATU wave 4 | Ready |
+| 11 | `UCB-Caregiver-ATU-W5-Data_1.7.25` | Caregiver ATU wave 5 | Ready |
 
-### Note: Upfront Context Capture
+**Not ready** (missing banner or survey): `GVHD-Data`, `Leqvio-Demand-W1`, `Leqvio-Demand-W2`, `Leqvio-Segmentation-Patients-Data`
 
-As we test broader datasets, we'll likely discover that we need more information upfront. Currently the system just accepts file uploads and treats everything the same - but different project types need different context.
-
-**Examples of missing context:**
-- **Project type** — Is this MaxDiff? ATU? Conjoint? Knowing this changes what we expect.
-- **MaxDiff messages** — The datamap often just says "Message 1, Message 2" but the VerificationAgent needs the actual message text to make useful tables. Either the user provides a message list, or we need a way to link to it.
-- **Research objective** — What is this study trying to answer? Helps prioritize which tables matter.
-- **Stacked/looped data** — User confirmation (addressed in Part 3)
-
-**Higher-level question:** What information are we NOT capturing that's necessary for reliability? This will become clearer as we test different project types. The UI may need to ask qualifying questions based on what the user uploads.
+**Coverage gaps**: No MaxDiff dataset yet. Good range of HCP segmentation, ATU (5 waves), demand, access perceptions, and consumer/beverage with loops.
 
 ### Exit Criteria
 
 - [ ] Each dataset produces consistent output across 3 runs
 - [ ] No major prompt changes needed between runs (small tweaks only)
 - [ ] Output quality acceptable for report writing
+- [ ] Batch summary shows stable cost/time/quality metrics across iterations
 
 ---
 
-## Part 5: Weight Detection
-
-**Status**: NOT STARTED
-
-**Goal**: Detect weight variables in data files and apply them to crosstab calculations.
-
-**Prerequisites**: Parts 3-4 complete. The validation and broader testing infrastructure should be stable before adding weight complexity.
-
-### Why Deferred
-
-Weight detection adds complexity:
-1. Heuristic detection (column names like `weight`, `wt`, `wgt`)
-2. User confirmation (is this really a weight?)
-3. R script changes for weighted calculations
-4. Excel output changes (weighted/unweighted base rows)
-
-We want the core validation system tested before layering this on.
-
-### Planned Approach
-
-**Detection**: Look for common weight column names in data file.
-
-**User Confirmation**:
-```
-We found a possible weight variable: "wt"
-Apply weights to calculations?
-
-[Yes, apply weights]  [No, unweighted]  [That's not a weight]
-```
-
-**Output**:
-- Two base rows: Unweighted base (n), Weighted base (weighted n)
-- All percentages/means calculated with weights
-
-### Success Criteria
-
-- [ ] Detect weight variable with robust multi-condition logic
-- [ ] User confirmation before applying
-- [ ] Apply weights correctly in R calculations
-- [ ] Output shows both weighted/unweighted base rows
-
----
-
-## Part 6: Survey Classification & Confidence Scoring
-
-**Status**: NOT STARTED
-
-**Goal**: Automatically detect survey methodology type from datamap patterns, and provide multi-dimensional confidence scores to surface when human review is needed.
-
-**Prerequisites**: Parts 3-5 complete. This is enhancement-level work once the core system is reliable.
-
-### Survey Classification
-
-Different research methodologies need different handling. If we can detect the type, we can:
-1. Set user expectations ("This looks like a MaxDiff survey...")
-2. Prompt for missing context (MaxDiff needs actual message text, not just "Message 1")
-3. Pre-configure agent behavior
-4. Flag when we're out of our depth
-
-| Type | Detection Signals | Why It Matters |
-|------|-------------------|----------------|
-| **MaxDiff** | Variables named `MD*`, `maxdiff*`; "best/worst" or "most/least appealing" in descriptions | Needs message text; has utility scores |
-| **Conjoint/DCM** | Variables named `DCM*`, `conjoint*`, `choice*`; utility score patterns | Has choice tasks and derived utilities |
-| **ATU** | "awareness" + "trial/usage" patterns; "ever heard/used" | Standard table structures expected |
-| **Message Testing** | "message N" patterns; "appeal" + "message" | Needs actual message content |
-| **Segmentation** | "segment" or "cluster" in variables | May have derived segment assignments |
-| **Standard** | None of the above | Default handling |
-
-### Multi-Dimensional Confidence Scoring
-
-Instead of a single confidence score, track confidence across dimensions:
-
-| Dimension | What It Measures | When Low Score Matters |
-|-----------|------------------|------------------------|
-| **Structure** | Did we parse brackets/values/options correctly? | Parser may have failed |
-| **Parent-Child** | Are relationships between variables clear? | Context enrichment issues |
-| **Variable Types** | Did we identify types correctly? | Wrong table treatment |
-| **Loop Detection** | If loops detected, how certain? | May ask for wrong format |
-| **Survey Classification** | How confident in methodology type? | May miss required context |
-
-### Flagging Thresholds
-
-```
-If overall confidence < 70%:
-  → Flag for human review before proceeding
-  → "We're not confident we parsed this correctly. Please review."
-
-If loop confidence < 80% AND loops detected:
-  → Ask user to confirm loop detection
-  → "We think this has looped questions. Is that right?"
-
-If survey type confidence < 60%:
-  → Don't auto-configure, ask user
-  → "What type of research is this? MaxDiff / Conjoint / Standard / Other"
-```
-
-### Implementation Notes
-
-This is UI-level work. The pipeline produces confidence scores; the UI decides what to surface. The validation layer (Part 3) provides the foundation—this part adds intelligence on top.
-
-### Success Criteria
-
-- [ ] Detect MaxDiff surveys with >80% accuracy
-- [ ] Detect Conjoint surveys with >80% accuracy
-- [ ] Multi-dimensional confidence scores available
-- [ ] UI prompts when confidence is low
-- [ ] Survey type influences agent behavior or user prompts
-
----
+> **Note**: Weight Detection and Survey Classification & Confidence Scoring were previously Parts 5 and 6 of this plan. They have been moved to the [Product Roadmap](./product-roadmap.md) as feature completeness items (2.6 and 2.7) since they are enhancements that build on the core reliability foundation, not part of the testing process itself.
 
 *Created: January 6, 2026*
-*Updated: February 5, 2026*
-*Status: Parts 1-3 complete (43 tests passing), Part 4 not started*
+*Updated: February 8, 2026*
+*Status: Parts 1-3 complete, Part 4 in progress*

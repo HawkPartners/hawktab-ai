@@ -181,6 +181,23 @@ The low-evidence prompt would include:
 
 ---
 
+### 2.5 Upfront Context Capture
+
+**Problem**: The system currently accepts file uploads and treats everything the same — but different project types need different context. A MaxDiff survey needs actual message text (not just "Message 1"). A conjoint needs choice task definitions. An ATU has expected table structures. Without this context, agents produce tables that are technically correct but analytically unhelpful.
+
+**Examples of missing context:**
+- **Project type** — Is this MaxDiff? ATU? Conjoint? Knowing this changes what we expect.
+- **MaxDiff messages** — The datamap often just says "Message 1, Message 2" but the VerificationAgent needs the actual message text to make useful tables. Either the user provides a message list, or we need a way to link to it.
+- **Research objective** — What is this study trying to answer? Helps prioritize which tables matter.
+
+**Higher-level question:** What information are we NOT capturing that's necessary for reliability? This will become clearer as we test different project types. The UI may need to ask qualifying questions based on what the user uploads.
+
+**Implementation:** Part of the new project wizard (3.1). After file upload, the system detects project type signals from the datamap and prompts for any missing context before running the pipeline.
+
+**Level of Effort**: Medium (detection logic + UI prompts + agent context injection)
+
+---
+
 ### 2.5a Input Format Flexibility
 
 Normalize inputs before they hit the pipeline agents.
@@ -238,6 +255,68 @@ When no banner plan is provided—or user explicitly chooses "AI generate cuts"�
 - Separate "BannerInferenceAgent" that runs when banner input is missing
 
 **Level of Effort**: Medium-High (new agent logic, HITL integration, research objectives capture)
+
+---
+
+### 2.6 Weight Detection & Application
+
+*Moved from Reliability Plan Part 5.*
+
+**Problem**: Many surveys include weight variables to adjust for sampling imbalances. Currently the pipeline ignores weights — all calculations are unweighted. This produces technically correct but analytically incomplete output for weighted studies.
+
+**Detection**: Look for common weight column names in the data file (`weight`, `wt`, `wgt`, and variations).
+
+**User Confirmation**:
+```
+We found a possible weight variable: "wt"
+Apply weights to calculations?
+
+[Yes, apply weights]  [No, unweighted]  [That's not a weight]
+```
+
+**Output**:
+- Two base rows: Unweighted base (n), Weighted base (weighted n)
+- All percentages/means calculated with weights
+- R's `svydesign` handles weighted calculations natively
+
+**Level of Effort**: Medium (heuristic detection + R script changes + Excel formatting for dual base rows)
+
+---
+
+### 2.7 Survey Classification & Confidence Scoring
+
+*Moved from Reliability Plan Part 6.*
+
+**Problem**: Different research methodologies need different handling. A MaxDiff survey needs actual message text. A conjoint has choice tasks and derived utilities. An ATU has expected table structures. Without detecting the type, agents operate generically and may miss methodology-specific requirements.
+
+**Survey Classification**:
+
+If we can detect the type, we can set user expectations, prompt for missing context, pre-configure agent behavior, and flag when we're out of our depth.
+
+| Type | Detection Signals | Why It Matters |
+|------|-------------------|----------------|
+| **MaxDiff** | Variables named `MD*`, `maxdiff*`; "best/worst" or "most/least appealing" in descriptions | Needs message text; has utility scores |
+| **Conjoint/DCM** | Variables named `DCM*`, `conjoint*`, `choice*`; utility score patterns | Has choice tasks and derived utilities |
+| **ATU** | "awareness" + "trial/usage" patterns; "ever heard/used" | Standard table structures expected |
+| **Message Testing** | "message N" patterns; "appeal" + "message" | Needs actual message content |
+| **Segmentation** | "segment" or "cluster" in variables | May have derived segment assignments |
+| **Standard** | None of the above | Default handling |
+
+**Multi-Dimensional Confidence Scoring**:
+
+Instead of a single confidence score, track confidence across dimensions:
+
+| Dimension | What It Measures | When Low Score Matters |
+|-----------|------------------|------------------------|
+| **Structure** | Did we parse brackets/values/options correctly? | Parser may have failed |
+| **Parent-Child** | Are relationships between variables clear? | Context enrichment issues |
+| **Variable Types** | Did we identify types correctly? | Wrong table treatment |
+| **Loop Detection** | If loops detected, how certain? | May ask for wrong format |
+| **Survey Classification** | How confident in methodology type? | May miss required context |
+
+**Integration**: Ties into Pre-Flight Confidence (1.5) and Upfront Context Capture (2.5). Low classification confidence triggers user prompts; high confidence enables auto-configuration.
+
+**Level of Effort**: Medium-High (detection logic + confidence aggregation + UI integration)
 
 ---
 

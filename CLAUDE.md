@@ -58,16 +58,18 @@ AVOID SHALLOW IMPLEMENTATIONS:
 </engineering_philosophy>
 
 <current_focus>
-ACTIVE WORK: `docs/implementation-plans/reliability-plan.md`
+ACTIVE WORK: `docs/implementation-plans/reliability-plan.md` — Part 4
 
 | Part | Description | Status |
 |------|-------------|--------|
 | 1 | Stable System for Testing | Complete |
 | 2 | Leqvio Testing (iteration loop) | Complete |
-| 3 | Loop/Stacked Data Support | Complete (core) |
-| 4 | Broader Testing | Not started |
+| 3 | Loop/Stacked Data Support | Complete |
+| 4 | Broader Testing | **In Progress** |
 
-**Part 3 completed**: LoopDetector, LoopCollapser, LoopSemanticsPolicyAgent, stacking in R script, anchor/satellite detection. First real test on Tito's Future Growth dataset exposed 17 issues — 12 now resolved (see `docs/latest-runs-feedback.md`).
+**Part 4 process**: Batch run 11 datasets → consolidate feedback → tweak at highest level → repeat. Using `scripts/batch-pipeline.ts` for overnight runs with cross-dataset analytics (`outputs/batch-summary-*.json`).
+
+**Test coverage**: 11 ready datasets spanning HCP segmentation, ATU (5 waves), demand, access perceptions, consumer/beverage with loops. No MaxDiff dataset yet.
 
 **Part 2 Issues**: 3 edge cases documented in `docs/implementation-plans/pipeline-feedback.md` (multi-column grids, ranking questions).
 
@@ -325,8 +327,10 @@ hawktab-ai/
 <quick_reference>
 | Task | Command/Location |
 |------|------------------|
+| Batch run (all datasets) | `npx tsx scripts/batch-pipeline.ts` (user runs this) |
+| Batch dry run | `npx tsx scripts/batch-pipeline.ts --dry-run` |
 | Run pipeline | `npx tsx scripts/test-pipeline.ts` (user runs this) |
-| Run pipeline (specific dataset) | `npx tsx scripts/test-pipeline.ts data/test-data/some-dataset` |
+| Run pipeline (specific dataset) | `npx tsx scripts/test-pipeline.ts data/some-dataset` |
 | Test VerificationAgent | `npx tsx scripts/test-verification-agent.ts` |
 | Check agent reasoning | `outputs/*/scratchpad-*.md` |
 | Compare to Joe | `data/leqvio-monotherapy-demand-NOV217/tabs/*.xlsx` |

@@ -91,27 +91,22 @@ An AI-powered system that:
 
 ## Next Steps
 
-### Current: Reliability Testing
+### Current: Reliability Testing (Part 4 — Broader Testing)
 
-Working through the reliability plan to ensure consistent, publication-quality output.
+Working through the reliability plan to ensure consistent, publication-quality output across diverse survey types.
 
 | Part | Description | Status |
 |------|-------------|--------|
 | 1 | Stable System for Testing | Complete |
 | 2 | Leqvio Testing (iteration loop) | Complete |
-| 3 | Loop/Stacked Data Support | Complete (core) |
-| 4 | Broader Testing | Not started |
+| 3 | Loop/Stacked Data Support | Complete |
+| 4 | Broader Testing | **In Progress** |
 
-**Recent**: Tito's Future Growth (first stacked/looped data test) complete. 17 issues found, 12 resolved. See `docs/latest-runs-feedback.md`.
+**Current approach**: Batch pipeline runs across 11 datasets (HCP segmentation, ATU, demand, access perceptions, consumer/beverage with loops). Consolidate feedback, make high-leverage fixes, repeat.
 
 **Deadline**: Send updated version to Antares by February 16th.
 
 See `docs/implementation-plans/reliability-plan.md`
-
-### Then: Pre-Phase 2 Testing
-
-Validate pipeline against `data/test-data/practice-files/` before proceeding:
-→ `docs/implementation-plans/pre-phase-2-testing-plan.md`
 
 ### Roadmap
 
@@ -186,6 +181,10 @@ npx tsx scripts/test-pipeline.ts --concurrency=5
 ### Other Scripts
 
 ```bash
+# Batch pipeline: run all ready datasets sequentially
+npx tsx scripts/batch-pipeline.ts              # Run all
+npx tsx scripts/batch-pipeline.ts --dry-run    # Show ready/not-ready status
+
 # Full pipeline: .sav → Banner → Crosstab → Tables → Verification → R → Excel
 npx tsx scripts/test-pipeline.ts
 
@@ -253,8 +252,7 @@ hawktab-ai/
 │   ├── prompts/          # Agent prompt templates (production.ts + alternative.ts per agent)
 │   └── schemas/          # Zod type definitions
 ├── scripts/              # CLI test scripts
-├── data/test-data/       # Test datasets (23 projects)
-│   └── practice-files/   # Default test dataset
+├── data/                 # Test datasets (15 projects, 11 pipeline-ready)
 ├── docs/
 │   ├── latest-runs-feedback.md    # Issue tracking from pipeline runs
 │   └── implementation-plans/      # Architecture docs and plans
