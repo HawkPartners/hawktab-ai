@@ -430,7 +430,7 @@ No additional work needed for MVP.
 
 ### ~~2.12 Interactive Browser Review~~ — `DEFERRED`
 
-> **Decision (Feb 8, 2026):** Consolidated with former 2.9 (include/exclude control) and 2.10 (per-table regeneration) into **Long-term Vision → Interactive Table Review**. The full interactive review experience — browser rendering, per-table toggles, targeted regeneration — is a compelling post-MVP feature but not needed for initial delivery. See Long-term Vision for the fleshed-out plan.
+> **Decision (Feb 8, 2026):** The **full** interactive review experience — browser rendering, pixel-close previews, targeted per-table regeneration — is a compelling post-MVP feature. However, a **basic table list + include/exclude toggles + fast Excel-only regeneration** is valuable enough to pull into **Phase 3.1** (no HTML table rendering required). See Long-term Vision for the complete version.
 
 ---
 
@@ -466,8 +466,9 @@ Taking the reliable, feature-rich CLI and bringing it to a self-service UI that 
      - Context captured here gets injected into agent prompts (e.g., VerificationAgent knows this is a MaxDiff study and can label tables appropriately).
      - This is about giving the pipeline the context it needs to succeed, not about predicting success. Start with the 2-3 project types that require extra files or context. Expand as we encounter more.
    - **HITL Review**: Uncertain variable mappings with base sizes (from 2.8)
+   - **Run determinism (must-have for external trust)**: Persist user-confirmed cut mappings and re-use them on re-runs so results don’t “change just because” the LLM made a different choice. (Formerly Long-term Vision → Variable Selection Persistence; pull into Phase 3.1 because it’s low effort and high impact.)
    - **Job Progress**: Real-time status updates
-   - **Results**: Download Excel, view table list, include/exclude toggles (from 2.9), feedback per table (from 2.10)
+   - **Results**: Download Excel, view a table list, include/exclude toggles with fast Excel-only regeneration, feedback per table (tableId-linked)
 
 3. **Organization Structure Foundation**:
    - UI assumes organization context (like "HawkPartners" in Discuss.io header)
@@ -573,12 +574,15 @@ Redis is likely overkill for MVP—Convex handles real-time well. Consider Redis
 **Security Fundamentals**:
 
 - **File uploads**: Validate file types server-side (not just client), scan for malicious content, size limits
+- **Direct-to-storage uploads**: Use signed upload URLs so the browser uploads large files straight to R2/S3 (avoid Vercel timeouts/memory limits)
 - **API routes**: All `/api/` routes behind auth middleware (after 3.3)
 - **Signed URLs**: R2 downloads use time-limited signed URLs, not public buckets
 - **Input validation**: Zod schemas on all API inputs
 - **CORS**: Restrict to known origins
 - **Rate limiting**: Prevent abuse (especially on expensive AI calls)
 - **Secrets**: All API keys in environment variables, never in client code
+- **Data lifecycle**: Retention and deletion (per-project delete that reliably deletes artifacts + inputs). Add optional auto-expiration for pilot.
+- **Supportability**: “Download debug bundle” (logs + artifacts manifest + error trace) so failures are diagnosable without screen-sharing.
 - **Claude Security Audit Skill**: `security_audit`
 
 **Reliability Patterns**:
@@ -772,9 +776,9 @@ The idea: before running the full pipeline (45+ minutes), assess whether the sys
 
 ---
 
-### Variable Selection Persistence
+### Variable Selection Persistence — `MOVED TO PHASE 3.1`
 
-*Moved from Phase 2.4c.*
+*Originally moved from Phase 2.4c into Long-term Vision, but pulled forward into **Phase 3.1** because it’s low effort and unlocks external trust (deterministic re-runs).*
 
 The crosstab agent's variable selection is non-deterministic — same dataset can produce different variable mappings across runs. Once a user confirms a mapping via HITL or accepts a successful run's output, lock those selections as project-level overrides so future re-runs don't re-roll the dice.
 

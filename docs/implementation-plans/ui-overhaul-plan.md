@@ -8,11 +8,37 @@ This document architects the transformation of HawkTab AI's web application from
 
 **Target State**: A multi-page web application with marketing pages, an enterprise-grade project management experience, full exposure of all pipeline configuration options, cloud-ready abstractions, and a foundation for auth and multi-tenancy.
 
-**Philosophy**: Each phase delivers a shippable improvement. No phase depends on cloud deployment — everything works locally first. The abstraction layers we build in early phases make cloud migration a configuration swap, not a rewrite.
+**Philosophy**: Each phase delivers a shippable improvement, but we will **design for the hosted reality from day one** (long-running background jobs, secure storage, org-scoped data). “Local-first” is a development strategy, not a product constraint. The abstraction layers we build in early phases make cloud migration a configuration swap, not a rewrite.
 
 *Created: February 9, 2026*
 
 ---
+
+## What’s Missing Today (for Antares to actually use it)
+
+The plan correctly focuses on local UI structure, but **external usability requires a few non-negotiables** that are easy to accidentally defer because they aren’t “UI.”
+
+### Non-Negotiables for an External Pilot
+
+These aren’t polish; they’re the minimum bar for someone outside Hawk to trust the system.
+
+1. **Hosted execution model**: Production cannot run the pipeline inside a request/response handler. The UI must assume “enqueue job → worker runs → UI observes status.”
+2. **Secure file handling**:
+   - Upload/download must be auth-scoped to org/project/run.
+   - Cloud uploads should support **direct-to-object-store** (browser → R2/S3 via signed URLs) to avoid app-server timeouts and memory limits.
+3. **Durable run history + determinism**:
+   - Users must be able to come back later and download artifacts / complete HITL.
+   - Confirmed decisions (especially banner cut mappings) should be **persisted and reused** on re-runs to avoid “it worked last time but not this time.”
+4. **Data lifecycle**: Clear retention + deletion semantics (manual delete, and optionally auto-expiration).
+5. **Supportability**: A “download debug bundle” / “share support link” path so failures are actionable without screen-sharing.
+
+### Core Workflows to Design Around
+
+The app should feel optimized for these real patterns (including what Antares described):
+
+- **Interim → Final**: Set up project once, run interim datasets during field, then re-run with final data quickly (same structure, fast validation).
+- **HITL as a checkpoint**: Review can happen asynchronously; a run can safely pause and be resumed later.
+- **Re-run with intent**: Re-run should mean “same cuts, same tables, new data / new settings,” not “roll the dice again.”
 
 ## Architecture Audit: Current State
 
@@ -70,20 +96,20 @@ These are all **implemented and working** in the pipeline (Phase 2 complete) but
 ### Phase A: Foundation & App Shell
 *Restructure the app, build the skeleton, establish patterns.*
 
+### Phase D: Abstractions & Cloud Readiness (Pulled Forward)
+*Introduce `StorageProvider` / `JobStore` / `ProjectStore` seams early so Phase B/C are built on persistent primitives and don’t need a rewrite for cloud.*
+
 ### Phase B: New Project Experience
 *Replace the flat upload form with a guided wizard that exposes all pipeline config.*
 
 ### Phase C: Project Management & Results
 *Dashboard, project list, enhanced results page, pipeline progress.*
 
-### Phase D: Abstractions & Cloud Readiness
-*StorageProvider, JobStore interfaces, persistent state.*
+### Phase F: Auth & Multi-Tenancy Foundation
+*Org-scoped data model + middleware scaffolding now; WorkOS enforcement later.*
 
 ### Phase E: Marketing & Polish
-*Landing page, visual identity, onboarding.*
-
-### Phase F: Auth & Multi-Tenancy Foundation
-*WorkOS integration, org structure, role-based access.*
+*Landing page, visual identity, onboarding. Can run in parallel once product routes exist.*
 
 Each phase is described in detail below.
 
@@ -402,6 +428,11 @@ This replaces the current toast-based polling with a visual timeline. The data i
 - If weighted: separate download buttons for weighted/unweighted outputs
 - If separate workbooks: separate download buttons for percentages/counts
 - Configuration summary (what settings were used)
+- **Table list (MVP, not full preview)**:
+  - Render a searchable list of tables from `tables.json` (tableId, title, base text, excluded flag)
+  - Allow include/exclude toggles and bulk actions (“exclude empties”, “include all”)
+  - “Regenerate Excel” uses the modified table metadata without re-running agents (fast iteration)
+  - This is the bridge toward the Long-term Vision “Interactive Table Review” without needing pixel-perfect HTML table rendering yet.
 
 **Feedback Section** (existing, enhanced):
 - Current feedback form (rating + notes + table IDs) stays
@@ -427,7 +458,9 @@ Replace the current polling approach with a cleaner pattern:
 When a user wants to adjust settings and re-run:
 - "Re-run" button on the project detail page
 - Pre-populates the wizard (Step 3: Config) with the previous run's settings
+- Allows swapping the data file to support **interim → final** runs while keeping the same project structure
 - Creates a new pipeline run under the same project (versioned: `pipeline-<timestamp-2>`)
+- Re-uses persisted, user-confirmed decisions where possible (e.g., locked banner cut mappings) so the re-run is deterministic
 - Previous runs are accessible via a "Run History" expandable section
 
 ### C.5 Deliverables
@@ -446,6 +479,23 @@ When a user wants to adjust settings and re-run:
 
 **Goal**: Introduce the interface abstractions that make Phase 3.2 (Cloud Deployment) a configuration swap. Everything continues to work locally, but the seams are in place.
 
+### D.0 Project/Run API Shape (to avoid cloud rewrites)
+
+Even if the implementation is local-first, the **contract** should match the hosted world:
+
+- **Project** = user-facing container (name, type, config, intake answers, files)
+- **Run** = one execution of the pipeline (status, stages, artifacts, cost)
+
+Recommended API shape (local implementations can still back these with filesystem JSON):
+
+- `POST /api/projects` → create project record (no execution)
+- `POST /api/projects/:projectId/files` → register uploads (local: multipart; cloud: signed upload URLs + “commit”)
+- `POST /api/projects/:projectId/runs` → enqueue run using stored file keys + config snapshot
+- `GET /api/runs/:runId` → status + progress + artifact manifest
+- `POST /api/runs/:runId/cancel` → durable cancel request (runner checks cancel flag)
+
+This prevents the UI from being tightly coupled to a single monolithic `process-crosstab` “upload+run” endpoint that will not survive cloud timeouts.
+
 ### D.1 StorageProvider Interface
 
 ```typescript
@@ -453,6 +503,13 @@ When a user wants to adjust settings and re-run:
 export interface StorageProvider {
   // Upload a file, get back a storage key
   upload(key: string, data: Buffer | ReadableStream, metadata?: Record<string, string>): Promise<string>;
+
+  // Optional: allow browser → storage direct uploads.
+  // Local impl can return an `/api/uploads/*` URL; cloud impl should return a signed R2/S3 URL.
+  getUploadUrl?(
+    key: string,
+    options?: { expiresIn?: number; contentType?: string; contentLength?: number }
+  ): Promise<{ url: string; method: 'PUT' | 'POST'; headers: Record<string, string> }>;
 
   // Download a file by key
   download(key: string): Promise<Buffer>;
@@ -500,12 +557,14 @@ export interface JobStore {
   update(jobId: string, updates: Partial<JobRecord>): Promise<JobRecord>;
   listByProject(projectId: string): Promise<JobRecord[]>;
   listActive(): Promise<JobRecord[]>;
-  getAbortController(jobId: string): AbortController | null;
-  setAbortController(jobId: string, controller: AbortController): void;
+
+  // Cancellation must be durable (works across server/worker boundaries in cloud).
+  requestCancel(jobId: string): Promise<void>;
+  isCancelRequested(jobId: string): Promise<boolean>;
 }
 ```
 
-**Local implementation**: `FileJobStore` — JSON files in the pipeline output directory. Survives server restarts (unlike current in-memory Map). AbortControllers are still in-memory (inherent to the process).
+**Local implementation**: `FileJobStore` — JSON files in the pipeline output directory. Survives server restarts (unlike current in-memory Map). The local runner can still use an in-memory `AbortController` registry, but cancellation intent should also be persisted so the UI reflects it reliably.
 
 **Cloud implementation** (Phase 3.2): `ConvexJobStore` — Convex database with real-time subscriptions.
 
@@ -728,14 +787,14 @@ This means the cloud migration doesn't need to retrofit scoping — it's already
 Phase A ─────────────────────────────────────────────────────────
   (Foundation)   Route groups, app shell, API refactor
          │
-         ├──────────────> Phase B ──────────────────────────────
-         │                  (New Project Wizard)
+         ├──────────────> Phase D ──────────────────────────────
+         │                  (Abstractions: stores + storage seams)
          │                         │
-         │                         ├──────> Phase C ────────────
-         │                         │          (Dashboard + Results)
+         │                         ├──────> Phase B ────────────
+         │                         │          (New Project Wizard)
          │                         │
-         │                         └──────> Phase D ────────────
-         │                                   (Abstractions)
+         │                         └──────> Phase C ────────────
+         │                                    (Dashboard + Results)
          │
          └──────────────> Phase E ──────────────────────────────
                            (Marketing — can run in parallel)
@@ -745,10 +804,10 @@ Phase C + Phase D ──────> Phase F ───────────�
 ```
 
 **Key dependencies**:
-- Phase A must complete before B, C, D, or F
-- Phase E (Marketing) can run in parallel with B/C/D — it's independent
+- Phase A must complete before D (route structure + refactors)
+- Phase D should start immediately after A and land early (so B/C are built on persistent primitives)
 - Phase B and C can be interleaved (wizard needed before dashboard is useful)
-- Phase D can run after B or in parallel with C
+- Phase E (Marketing) can run in parallel once `(marketing)/` routes exist — it's independent
 - Phase F depends on C (project management) and D (abstractions)
 
 ---
