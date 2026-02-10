@@ -187,20 +187,17 @@
 
 ### Strengthen translationContext
 
-- [ ] **Clarify the distinction between `conditionDescription` and `translationContext` in the SkipLogicAgent prompt.** Even the product owner finds the difference confusing. Make it crystal clear:
+- [x] **Clarify the distinction between `conditionDescription` and `translationContext` in the SkipLogicAgent prompt.** Even the product owner finds the difference confusing. Make it crystal clear:
   - `conditionDescription`: plain-text description of the condition — who sees this question and why
   - `translationContext`: everything the downstream FilterTranslatorAgent needs to translate this rule — answer option mappings, variable relationships, coding tables
   - Ref: SkipLogicAgent report 3.3, FilterTranslator report
+  - **Done:** Replaced `<translation_context_guidance>` section in alternative prompt with sharp field distinction and role-based framing.
 
-- [ ] **Tell the SkipLogicAgent to be dramatically more verbose in both fields.** The FilterTranslator has zero survey context. The SkipLogicAgent should write as if the next agent has never seen the survey — because it hasn't. Write out answer options. Create mapping tables. Explain the intent, not just the variable name.
+- [x] **Tell the SkipLogicAgent to be dramatically more verbose in both fields.** The FilterTranslator has zero survey context. The SkipLogicAgent should write as if the next agent has never seen the survey — because it hasn't. Write out answer options. Create mapping tables. Explain the intent, not just the variable name.
   - Specifically add prompt guidance: "The downstream agent has NO survey context. Over-provide. Write out answer option labels. Create parent-child mapping tables. Explain in a way that someone with no survey context could understand."
   - Ref: SkipLogicAgent report 3.1, FilterTranslator report 3.1
+  - **Done:** Added 6-category "write for a blind downstream agent" verbosity guidance with concrete Not/Yes examples for each category.
 
-- [ ] **Require explicit code mappings for conditional response sets.** When a rule says "show Q20b options based on Q20a selection," the SkipLogicAgent MUST include the mapping: `Q20a=1 → Q20b codes [1,2,3]; Q20a=2 → Q20b codes [4,5,6]`. This is the #1 source of low-confidence filters.
-  - Ref: FilterTranslator report 3.1, 4.1
-
-- [ ] **Require row-to-variable mapping for row-level rules.** When a rule says "show rows where Q8 > 0," the agent MUST document which rows map to which variables if the survey provides that information.
-  - Ref: SkipLogicAgent report 6.1.4
 
 ### Add Column-Level Rule Support
 
