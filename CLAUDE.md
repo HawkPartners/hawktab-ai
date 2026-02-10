@@ -360,14 +360,17 @@ When tuning agent prompts:
 4. TEST SPECIFIC CASES FIRST
    Before full pipeline, run isolated agent tests.
 
+BEFORE CHANGING PROMPTS: Check `.env.local` for the active `*_PROMPT_VERSION` for each agent.
+All agents are currently set to `production`. Do not change the env without explicit instruction.
+
 PROMPT FILE LOCATIONS (each agent has production.ts + alternative.ts, selected via env var):
-- `src/prompts/verification/` — VerificationAgent (active: alternative)
-- `src/prompts/banner/` — BannerAgent (active: alternative)
-- `src/prompts/bannerGenerate/` — BannerGenerateAgent (active: production)
-- `src/prompts/crosstab/` — CrosstabAgent (active: production)
-- `src/prompts/skiplogic/` — SkipLogicAgent (active: production)
-- `src/prompts/filtertranslator/` — FilterTranslatorAgent (active: production)
-- `src/prompts/loopSemantics/` — LoopSemanticsPolicyAgent (active: production)
+- `src/prompts/verification/` — VerificationAgent
+- `src/prompts/banner/` — BannerAgent
+- `src/prompts/bannerGenerate/` — BannerGenerateAgent
+- `src/prompts/crosstab/` — CrosstabAgent
+- `src/prompts/skiplogic/` — SkipLogicAgent
+- `src/prompts/filtertranslator/` — FilterTranslatorAgent
+- `src/prompts/loopSemantics/` — LoopSemanticsPolicyAgent
 </prompt_iteration>
 
 <prompt_hygiene>
