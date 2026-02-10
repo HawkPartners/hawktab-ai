@@ -328,8 +328,9 @@
 
 ### BannerGenerateAgent Separation
 
-- [ ] **Move BannerGenerateAgent to its own folder.** Create `src/prompts/bannerGenerate/` with `production.ts` and `alternative.ts`. The BannerAgent and BannerGenerateAgent are fundamentally different agents doing different jobs. The current coupling in `src/prompts/banner/` is confusing.
+- [x] **Move BannerGenerateAgent to its own folder.** Create `src/prompts/bannerGenerate/` with `production.ts` and `alternative.ts`. The BannerAgent and BannerGenerateAgent are fundamentally different agents doing different jobs. The current coupling in `src/prompts/banner/` is confusing.
   - Ref: BannerAgent report
+  - Done: Created `src/prompts/bannerGenerate/` with `production.ts` + `index.ts` (standard pattern with `BANNER_GENERATE_PROMPT_VERSION` env var). Removed `generate-cuts.ts` from `src/prompts/banner/`. Updated barrel exports in `src/prompts/index.ts`. BannerGenerateAgent imports unchanged (uses barrel).
 
 ### Banner Routing
 

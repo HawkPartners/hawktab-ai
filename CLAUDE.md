@@ -363,6 +363,7 @@ When tuning agent prompts:
 PROMPT FILE LOCATIONS (each agent has production.ts + alternative.ts, selected via env var):
 - `src/prompts/verification/` — VerificationAgent (active: alternative)
 - `src/prompts/banner/` — BannerAgent (active: alternative)
+- `src/prompts/bannerGenerate/` — BannerGenerateAgent (active: production)
 - `src/prompts/crosstab/` — CrosstabAgent (active: production)
 - `src/prompts/skiplogic/` — SkipLogicAgent (active: production)
 - `src/prompts/filtertranslator/` — FilterTranslatorAgent (active: production)

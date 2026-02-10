@@ -1,5 +1,5 @@
 /**
- * Banner Generation Prompt
+ * Banner Generation Prompt — Production
  *
  * System and user prompt templates for the BannerGenerateAgent.
  * This agent designs banner cuts from a verbose datamap when no banner
@@ -10,7 +10,7 @@
 // System Prompt
 // =============================================================================
 
-export const BANNER_GENERATE_SYSTEM_PROMPT = `You are an expert market research analyst designing a cross-tabulation banner plan.
+export const BANNER_GENERATE_SYSTEM_PROMPT_PRODUCTION = `You are an expert market research analyst designing a cross-tabulation banner plan.
 
 ## What is a Banner Plan?
 

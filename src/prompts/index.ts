@@ -1,6 +1,7 @@
 // Central prompt exports
 export { getCrosstabPrompt } from './crosstab';
-export { getBannerPrompt, getBannerGeneratePrompt, buildBannerGenerateUserPrompt } from './banner';
+export { getBannerPrompt } from './banner';
+export { getBannerGeneratePrompt, buildBannerGenerateUserPrompt } from './bannerGenerate';
 export { getVerificationPrompt } from './verification';
 export { getSkipLogicPrompt } from './skiplogic';
 export { getFilterTranslatorPrompt } from './filtertranslator';
