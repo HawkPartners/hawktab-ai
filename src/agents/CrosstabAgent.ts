@@ -430,7 +430,9 @@ export async function processAllGroups(
     results.push(groupResult);
 
     const groupDuration = Date.now() - groupStartTime;
-    const avgConfidence = groupResult.columns.reduce((sum, col) => sum + col.confidence, 0) / groupResult.columns.length;
+    const avgConfidence = groupResult.columns.length > 0
+      ? groupResult.columns.reduce((sum, col) => sum + col.confidence, 0) / groupResult.columns.length
+      : 0;
 
     logEntry(`[CrosstabAgent] Group "${group.groupName}" completed in ${groupDuration}ms - Avg confidence: ${avgConfidence.toFixed(2)}`);
     try { onProgress?.(i + 1, bannerPlan.bannerCuts.length); } catch {}

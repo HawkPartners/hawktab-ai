@@ -603,11 +603,84 @@ export async function runPipeline(
         columnCount = extractedStructure?.bannerCuts?.flatMap(g => g.columns).length || 0;
 
         if (groupCount === 0) {
-          throw new Error('Banner extraction failed - 0 groups extracted');
+          // Fallback: 0 groups extracted — fall through to BannerGenerateAgent with no hints
+          log(`  [Path A] BannerAgent extracted 0 groups — falling through to BannerGenerateAgent`, 'yellow');
+          await persistSystemError({
+            outputDir,
+            dataset: datasetNameGuess,
+            pipelineId,
+            stageNumber: 2,
+            stageName: 'BannerAgent',
+            severity: 'warning',
+            actionTaken: 'fallback_used',
+            error: new Error('Banner extraction produced 0 groups, falling through to BannerGenerateAgent'),
+            meta: { bannerFile: files.banner },
+          });
+
+          const generateResult = await generateBannerCuts({
+            verboseDataMap,
+            researchObjectives: opts.researchObjectives,
+            cutSuggestions: opts.cutSuggestions,
+            projectType: opts.projectType,
+            outputDir,
+            abortSignal: pipelineSignal,
+          });
+
+          agentBanner = generateResult.agent;
+          groupCount = agentBanner.length;
+          columnCount = agentBanner.reduce((sum, g) => sum + g.columns.length, 0);
+
+          if (groupCount === 0) {
+            throw new Error('Banner fallback failed - BannerGenerateAgent also produced 0 groups');
+          }
+
+          log(`  [Path A] BannerGenerateAgent (fallback): ${groupCount} groups, ${columnCount} columns (confidence: ${generateResult.confidence.toFixed(2)})`, 'green');
+        } else if (columnCount === 0) {
+          // Partial extraction: groups exist but all have empty columns — enrich via BannerGenerateAgent
+          const groupNames = (extractedStructure?.bannerCuts || []).map((g: { groupName: string }) => g.groupName);
+          log(`  [Path A] BannerAgent extracted ${groupCount} groups but 0 columns — enriching via BannerGenerateAgent`, 'yellow');
+          log(`  [Path A] Group names as hints: ${groupNames.join(', ')}`, 'dim');
+          await persistSystemError({
+            outputDir,
+            dataset: datasetNameGuess,
+            pipelineId,
+            stageNumber: 2,
+            stageName: 'BannerAgent',
+            severity: 'warning',
+            actionTaken: 'fallback_used',
+            error: new Error(`Banner extraction produced ${groupCount} groups with 0 columns, enriching via BannerGenerateAgent`),
+            meta: { bannerFile: files.banner, groupNames },
+          });
+
+          const cutSuggestionHint = `Create banner cuts for these groups: ${groupNames.join(', ')}`;
+          const combinedSuggestions = opts.cutSuggestions
+            ? `${opts.cutSuggestions}\n\n${cutSuggestionHint}`
+            : cutSuggestionHint;
+
+          const generateResult = await generateBannerCuts({
+            verboseDataMap,
+            researchObjectives: opts.researchObjectives,
+            cutSuggestions: combinedSuggestions,
+            projectType: opts.projectType,
+            outputDir,
+            abortSignal: pipelineSignal,
+          });
+
+          agentBanner = generateResult.agent;
+          groupCount = agentBanner.length;
+          columnCount = agentBanner.reduce((sum, g) => sum + g.columns.length, 0);
+
+          if (groupCount === 0) {
+            throw new Error('Banner enrichment failed - BannerGenerateAgent produced 0 groups from hints');
+          }
+
+          log(`  [Path A] BannerGenerateAgent (enriched): ${groupCount} groups, ${columnCount} columns (confidence: ${generateResult.confidence.toFixed(2)})`, 'green');
+        } else {
+          // Normal flow: groups with columns extracted successfully
+          agentBanner = bannerResult.agent || [];
+          log(`  [Path A] BannerAgent: ${groupCount} groups, ${columnCount} columns`, 'green');
         }
 
-        agentBanner = bannerResult.agent || [];
-        log(`  [Path A] BannerAgent: ${groupCount} groups, ${columnCount} columns`, 'green');
         eventBus.emitStageComplete(2, STAGE_NAMES[2], Date.now() - pathAStart);
       } else {
         // Path A2: Generate banner cuts from datamap using AI

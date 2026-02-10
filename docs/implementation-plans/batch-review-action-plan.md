@@ -1,18 +1,5 @@
 # Batch Review Action Plan
 
-**Created**: February 9, 2026
-**Source**: User review of 7 agent audit reports from 11-dataset batch run (2026-02-08/09)
-**Purpose**: Consolidated checklist of all agreed-upon actions and considerations from the review session
-
----
-
-## How to Use This File
-
-- **[ ] Checkbox items** are concrete tasks to implement
-- **[CONSIDER]** items are decisions to make — evaluate and either implement or explicitly decide not to
-- **[VERIFY]** items require investigation before deciding on action
-- Items are grouped by theme, not by agent, and ordered by implementation flow within each priority tier
-
 ---
 
 ## P0 — System Resilience
@@ -234,6 +221,8 @@
 
 *Before tables reach the VerificationAgent, ensure only necessary tables proceed.*
 
+### Table Explosion
+
 - [x] **Implement pre-verification table count gate.** After FilterApplicator but before VerificationAgent:
   - Below ~100 tables: pass all through, no intervention
   - Above 100 tables: deterministically identify and remove admin/metadata tables (IDs containing `_meta`, `_changes`, `_placeholder`, `_audit`, `_trailer`)
@@ -262,7 +251,7 @@
 *Every agent gets a fresh production prompt. Remove contradictions, align with schemas.*
 
 - [ ] **Prompt rotation across all agents.** After this review: current production prompts become alternatives. Write fresh production prompts that align with current schemas, incorporate learnings from this review, and remove contradictions.
-  - All 6 agents: BannerAgent, CrosstabAgent, SkipLogicAgent, FilterTranslatorAgent, VerificationAgent, LoopSemanticsPolicyAgent
+  - All 6 agents: BannerAgent, CrosstabAgent, SkipLogicAgent, FilterTranslatorAgent, VerificationAgent, LoopSemanticsPolicyAgent, BannerGenerate
   - Ref: CrosstabAgent report 3.6
 
 - [ ] **Remove confidence scoring contradictions.** The CrosstabAgent prompt says "exact match = 0.95" but also "multiple candidates = max 0.75." These conflict when an exact match also has alternatives. Add clear precedence rules.
@@ -318,14 +307,14 @@
 
 ### Postpass Offloading
 
-- [CONSIDER] **Move indentation entirely to postpass.** The orphan indent reset accounts for 81.5% of all postpass fixes (1,001 out of 1,227). Rather than trying to teach the agent correct indentation, remove `indent` from agent responsibility entirely and let the deterministic postpass handle it. Eliminates an entire error class.
+- [REJECTED] **Move indentation entirely to postpass.** The orphan indent reset accounts for 81.5% of all postpass fixes (1,001 out of 1,227). Rather than trying to teach the agent correct indentation, remove `indent` from agent responsibility entirely and let the deterministic postpass handle it. Eliminates an entire error class.
   - Ref: VerificationAgent report 3.2, 4.2
 
-- [ ] **Add deterministic duplicate tableId resolution to postpass.** If duplicate tableIds occur, append `_2`, `_3` suffix. But first trace WHY duplicates are generated — this shouldn't happen.
-  - [VERIFY] How does a duplicate tableId get generated? Trace the logic.
+- [REJECTED] **Add deterministic duplicate tableId resolution to postpass.** If duplicate tableIds occur, append `_2`, `_3` suffix. But first trace WHY duplicates are generated — this shouldn't happen.
+  - [REJECTED] How does a duplicate tableId get generated? Trace the logic.
   - Ref: VerificationAgent report 3.5
 
-- [ ] **Add deterministic recombination for useless splits.** If a FilterApplicator split produces expressions where all split variables don't exist in the datamap, recombine the parts back together using `splitFromTableId` traceability.
+- [REJECTED] **Add deterministic recombination for useless splits.** If a FilterApplicator split produces expressions where all split variables don't exist in the datamap, recombine the parts back together using `splitFromTableId` traceability.
   - Ref: FilterTranslator report 3.4
 
 ---
@@ -340,7 +329,7 @@
 
 ### Banner Routing
 
-- [ ] **Add `filtersExist` flag to BannerAgent output.** When a banner document has group names but no filter expressions (like Leqvio-Seg-HCP), set `filtersExist: false`. The pipeline should route this to the BannerGenerateAgent or CrosstabAgent to figure out the actual expressions. This is a routing problem, not an extraction failure.
+- [x] **Add `filtersExist` flag to BannerAgent output.** When a banner document has group names but no filter expressions (like Leqvio-Seg-HCP), set `filtersExist: false`. The pipeline should route this to the BannerGenerateAgent or CrosstabAgent to figure out the actual expressions. This is a routing problem, not an extraction failure.
   - Ref: BannerAgent report 3.1
 
 ### LoopSemanticsPolicyAgent Optimization
