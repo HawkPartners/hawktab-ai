@@ -22,6 +22,9 @@
  *   --weight=VAR               Apply weight variable (e.g., --weight=wt)
  *   --no-weight                Suppress weight detection warnings
  *   --loop-stat-testing=MODE   Loop within-group stats (suppress|complement)
+ *   --timeout=N                Per-dataset timeout in minutes (default: 95)
+ *   --fail-fast=N              Abort after N consecutive same-class failures (default: 3)
+ *   --resume                   Skip datasets with existing pipeline-summary.json
  */
 
 // Load environment variables
@@ -44,6 +47,8 @@ interface RunResult {
   outputDir?: string;
   tableCount?: number;
   totalCostUsd?: number;
+  skipped?: boolean;
+  skipReason?: string;
 }
 
 // =============================================================================
@@ -182,6 +187,108 @@ function parseLoopStatTestingMode(): 'suppress' | 'complement' | undefined {
   return undefined;
 }
 
+function parseTimeoutFlag(): number {
+  const arg = process.argv.find(a => a.startsWith('--timeout='));
+  if (arg) {
+    const value = parseInt(arg.split('=')[1], 10);
+    if (!isNaN(value) && value > 0) return value;
+    console.warn(`Invalid --timeout value. Using default 95 minutes.`);
+  }
+  return 95;
+}
+
+function parseFailFastThreshold(): number {
+  const arg = process.argv.find(a => a.startsWith('--fail-fast='));
+  if (arg) {
+    const value = parseInt(arg.split('=')[1], 10);
+    if (!isNaN(value) && value > 0) return value;
+    console.warn(`Invalid --fail-fast value. Using default 3.`);
+  }
+  return 3;
+}
+
+function hasResumeFlag(): boolean {
+  return process.argv.includes('--resume');
+}
+
+// =============================================================================
+// Fail-Fast Tracker
+// =============================================================================
+
+type BatchErrorClass = 'rate_limit' | 'timeout' | 'circuit_breaker' | 'policy' | 'transient' | 'health_check' | 'unknown';
+
+interface FailFastTracker {
+  consecutiveCount: number;
+  lastClassification: BatchErrorClass | null;
+  threshold: number;
+}
+
+function createFailFastTracker(threshold: number): FailFastTracker {
+  return { consecutiveCount: 0, lastClassification: null, threshold };
+}
+
+function classifyBatchError(errorMsg: string): BatchErrorClass {
+  const lower = errorMsg.toLowerCase();
+  if (lower.includes('rate limit') || lower.includes('429') || lower.includes('quota')) return 'rate_limit';
+  if (lower.includes('timeout') || lower.includes('timed out') || lower.includes('aborted')) return 'timeout';
+  if (lower.includes('circuit breaker') || lower.includes('circuit_breaker')) return 'circuit_breaker';
+  if (lower.includes('content policy') || lower.includes('content_filter') || lower.includes('content management')) return 'policy';
+  if (lower.includes('health check') || lower.includes('healthcheck') || lower.includes('deployment') && lower.includes('unavailable')) return 'health_check';
+  if (lower.includes('econnreset') || lower.includes('econnrefused') || lower.includes('socket') || lower.includes('network')) return 'transient';
+  return 'unknown';
+}
+
+function recordFailFastSuccess(tracker: FailFastTracker): void {
+  tracker.consecutiveCount = 0;
+  tracker.lastClassification = null;
+}
+
+/** Returns true if the batch should abort */
+function recordFailFastFailure(tracker: FailFastTracker, errorMsg: string): boolean {
+  const classification = classifyBatchError(errorMsg);
+  if (classification === tracker.lastClassification) {
+    tracker.consecutiveCount++;
+  } else {
+    tracker.consecutiveCount = 1;
+    tracker.lastClassification = classification;
+  }
+  return tracker.consecutiveCount >= tracker.threshold;
+}
+
+// =============================================================================
+// Resume Check
+// =============================================================================
+
+async function checkResume(datasetName: string): Promise<{ outputDir: string } | null> {
+  const outputsDir = path.join(process.cwd(), 'outputs', datasetName);
+  try {
+    const entries = await fs.readdir(outputsDir, { withFileTypes: true });
+    // Sort descending to check most recent pipeline run first
+    const pipelineDirs = entries
+      .filter(e => e.isDirectory() && e.name.startsWith('pipeline-'))
+      .map(e => e.name)
+      .sort()
+      .reverse();
+
+    for (const dir of pipelineDirs) {
+      const summaryPath = path.join(outputsDir, dir, 'pipeline-summary.json');
+      try {
+        const raw = await fs.readFile(summaryPath, 'utf-8');
+        const parsed = JSON.parse(raw);
+        // Validate it has essential fields (not truncated)
+        if (parsed.dataset && parsed.timestamp) {
+          return { outputDir: path.join(outputsDir, dir) };
+        }
+      } catch {
+        // Truncated or invalid JSON — try next
+      }
+    }
+  } catch {
+    // outputs/<name> doesn't exist yet
+  }
+  return null;
+}
+
 // =============================================================================
 // Main
 // =============================================================================
@@ -238,7 +345,11 @@ async function main() {
   }
 
   if (dryRun) {
-    console.log(`\n--dry-run: ${ready.length} datasets would run. Exiting.`);
+    const timeoutMin = parseTimeoutFlag();
+    const ffThreshold = parseFailFastThreshold();
+    const resumeFlag = hasResumeFlag();
+    console.log(`\n--dry-run: ${ready.length} datasets would run.`);
+    console.log(`  timeout: ${timeoutMin}m | fail-fast: ${ffThreshold} | resume: ${resumeFlag}`);
     return;
   }
 
@@ -257,35 +368,116 @@ async function main() {
   const weightVariable = parseWeightFlag();
   const noWeight = process.argv.includes('--no-weight');
   const loopStatTestingMode = parseLoopStatTestingMode();
+  const timeoutMinutes = parseTimeoutFlag();
+  const failFastThreshold = parseFailFastThreshold();
+  const resume = hasResumeFlag();
 
   console.log(`\n${'='.repeat(60)}`);
   console.log(`BATCH RUN: ${ready.length} datasets`);
   console.log(`  format: ${format} | display: ${displayMode} | concurrency: ${concurrency}`);
+  console.log(`  timeout: ${timeoutMinutes}m per dataset | fail-fast: ${failFastThreshold} consecutive`);
+  if (resume) console.log(`  resume: skipping datasets with existing pipeline-summary.json`);
   if (stopAfterVerification) console.log(`  stopping after verification (no R/Excel)`);
   console.log(`${'='.repeat(60)}\n`);
 
+  // ---------------------------------------------------------------------------
+  // Graceful shutdown (SIGINT / SIGTERM)
+  // ---------------------------------------------------------------------------
+  let shuttingDown = false;
+  let sigintCount = 0;
+  let currentDatasetAbortController: AbortController | null = null;
+
+  const signalHandler = (signal: string) => {
+    sigintCount++;
+    if (sigintCount === 1) {
+      console.log(`\n[batch] Received ${signal} — finishing current dataset then stopping...`);
+      shuttingDown = true;
+      // Abort the currently running pipeline
+      if (currentDatasetAbortController) {
+        currentDatasetAbortController.abort();
+      }
+    } else {
+      console.log(`\n[batch] Received second ${signal} — force exiting.`);
+      process.exit(1);
+    }
+  };
+
+  process.on('SIGINT', () => signalHandler('SIGINT'));
+  process.on('SIGTERM', () => signalHandler('SIGTERM'));
+
+  // ---------------------------------------------------------------------------
+  // Main loop
+  // ---------------------------------------------------------------------------
   const summary: RunResult[] = [];
+  const failFast = createFailFastTracker(failFastThreshold);
+  let terminationReason: string | undefined;
 
   for (let i = 0; i < ready.length; i++) {
     const dataset = ready[i];
-    const startTime = Date.now();
+
+    // Check for graceful shutdown
+    if (shuttingDown) {
+      terminationReason = 'User interrupted (SIGINT/SIGTERM)';
+      console.log(`\n[batch] Shutdown requested — skipping remaining ${ready.length - i} datasets.`);
+      break;
+    }
 
     console.log(`\n${'─'.repeat(60)}`);
     console.log(`[${i + 1}/${ready.length}] ${dataset.name}`);
     console.log(`${'─'.repeat(60)}\n`);
 
+    // Check for resume (skip datasets with existing output)
+    if (resume) {
+      const existing = await checkResume(dataset.name);
+      if (existing) {
+        console.log(`[${dataset.name}] SKIP — existing output found: ${path.basename(existing.outputDir)}`);
+        summary.push({
+          name: dataset.name,
+          success: true,
+          durationMs: 0,
+          outputDir: existing.outputDir,
+          skipped: true,
+          skipReason: 'Existing pipeline-summary.json found (--resume)',
+        });
+        continue;
+      }
+    }
+
+    // Create per-dataset AbortController
+    const datasetAbort = new AbortController();
+    currentDatasetAbortController = datasetAbort;
+    const startTime = Date.now();
+
+    // Timeout promise (belt-and-suspenders — PipelineRunner has its own 90-min timeout)
+    const timeoutMs = timeoutMinutes * 60 * 1000;
+    let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
+    const timeoutPromise = new Promise<never>((_resolve, reject) => {
+      timeoutHandle = setTimeout(() => {
+        datasetAbort.abort();
+        reject(new Error(`Batch-level timeout: dataset exceeded ${timeoutMinutes} minutes`));
+      }, timeoutMs);
+    });
+
     try {
-      const result = await runPipeline(dataset.folder, {
-        format,
-        displayMode,
-        separateWorkbooks,
-        stopAfterVerification,
-        concurrency,
-        theme,
-        weightVariable,
-        noWeight,
-      loopStatTestingMode,
-      });
+      const result = await Promise.race([
+        runPipeline(dataset.folder, {
+          format,
+          displayMode,
+          separateWorkbooks,
+          stopAfterVerification,
+          concurrency,
+          theme,
+          weightVariable,
+          noWeight,
+          loopStatTestingMode,
+          abortSignal: datasetAbort.signal,
+        }),
+        timeoutPromise,
+      ]);
+
+      // Clear the timeout since pipeline finished
+      if (timeoutHandle) clearTimeout(timeoutHandle);
+      currentDatasetAbortController = null;
 
       const durationMs = Date.now() - startTime;
       summary.push({
@@ -300,10 +492,21 @@ async function main() {
 
       if (result.success) {
         console.log(`\n[${dataset.name}] Completed in ${(durationMs / 1000 / 60).toFixed(1)} minutes`);
+        recordFailFastSuccess(failFast);
       } else {
         console.error(`\n[${dataset.name}] Failed: ${result.error}`);
+        const shouldAbort = recordFailFastFailure(failFast, result.error || 'unknown');
+        if (shouldAbort) {
+          terminationReason = `Fail-fast: ${failFast.consecutiveCount} consecutive ${failFast.lastClassification} failures`;
+          console.error(`\n[batch] ABORTING — ${terminationReason}`);
+          break;
+        }
       }
     } catch (err) {
+      // Clear the timeout since we exited (via error or timeout)
+      if (timeoutHandle) clearTimeout(timeoutHandle);
+      currentDatasetAbortController = null;
+
       const durationMs = Date.now() - startTime;
       const errorMsg = err instanceof Error ? err.message : String(err);
       summary.push({
@@ -313,14 +516,25 @@ async function main() {
         durationMs,
       });
       console.error(`\n[${dataset.name}] Crashed: ${errorMsg}`);
+
+      const shouldAbort = recordFailFastFailure(failFast, errorMsg);
+      if (shouldAbort) {
+        terminationReason = `Fail-fast: ${failFast.consecutiveCount} consecutive ${failFast.lastClassification} failures`;
+        console.error(`\n[batch] ABORTING — ${terminationReason}`);
+        break;
+      }
     }
   }
+
+  // Clean up signal handlers
+  process.removeAllListeners('SIGINT');
+  process.removeAllListeners('SIGTERM');
 
   // =========================================================================
   // Aggregate batch report from per-pipeline summaries
   // =========================================================================
 
-  const batchReport = await buildBatchReport(summary, format, displayMode, concurrency);
+  const batchReport = await buildBatchReport(summary, format, displayMode, concurrency, timeoutMinutes, failFastThreshold, resume, terminationReason);
 
   // Print console summary
   printBatchSummary(batchReport);
@@ -339,7 +553,8 @@ async function main() {
 
 interface BatchReport {
   timestamp: string;
-  config: { format: string; displayMode: string; concurrency: number };
+  config: { format: string; displayMode: string; concurrency: number; timeoutMinutes: number; failFastThreshold: number; resume: boolean };
+  terminationReason?: string;
   datasets: DatasetReport[];
   aggregates: BatchAggregates;
 }
@@ -351,6 +566,8 @@ interface DatasetReport {
   durationMs: number;
   durationFormatted: string;
   outputDir?: string;
+  skipped?: boolean;
+  skipReason?: string;
   tables?: {
     generated: number;
     verified: number;
@@ -390,6 +607,7 @@ interface BatchAggregates {
   totalDatasets: number;
   succeeded: number;
   failed: number;
+  skipped: number;
   totalDurationMs: number;
   totalDurationFormatted: string;
   avgDurationMs: number;
@@ -437,6 +655,10 @@ async function buildBatchReport(
   format: string,
   displayMode: string,
   concurrency: number,
+  timeoutMinutes: number,
+  failFastThreshold: number,
+  resume: boolean,
+  terminationReason?: string,
 ): Promise<BatchReport> {
   const datasets: DatasetReport[] = [];
 
@@ -448,6 +670,8 @@ async function buildBatchReport(
       durationMs: run.durationMs,
       durationFormatted: formatDuration(run.durationMs),
       outputDir: run.outputDir,
+      skipped: run.skipped,
+      skipReason: run.skipReason,
     };
 
     // Read per-pipeline files if we have an output directory
@@ -534,8 +758,9 @@ async function buildBatchReport(
     datasets.push(report);
   }
 
-  // Compute aggregates across successful runs
-  const succeeded = datasets.filter(d => d.success);
+  // Compute aggregates across successful runs (excluding skipped)
+  const skippedDatasets = datasets.filter(d => d.skipped);
+  const succeeded = datasets.filter(d => d.success && !d.skipped);
   const failed = datasets.filter(d => !d.success);
   const n = succeeded.length || 1; // avoid divide-by-zero
 
@@ -588,12 +813,14 @@ async function buildBatchReport(
 
   return {
     timestamp: new Date().toISOString(),
-    config: { format, displayMode, concurrency },
+    config: { format, displayMode, concurrency, timeoutMinutes, failFastThreshold, resume },
+    terminationReason,
     datasets,
     aggregates: {
       totalDatasets: datasets.length,
       succeeded: succeeded.length,
       failed: failed.length,
+      skipped: skippedDatasets.length,
       totalDurationMs,
       totalDurationFormatted: formatDuration(totalDurationMs),
       avgDurationMs: Math.round(totalDurationMs / n),
@@ -633,23 +860,30 @@ function printBatchSummary(report: BatchReport): void {
   console.log('BATCH SUMMARY');
   console.log(`${'='.repeat(70)}`);
 
+  // Termination reason
+  if (report.terminationReason) {
+    console.log(`\n  TERMINATED: ${report.terminationReason}`);
+  }
+
   // Per-dataset results
   console.log('\nPER DATASET:');
   for (const d of datasets) {
-    const status = d.success ? 'OK  ' : 'FAIL';
+    const status = d.skipped ? 'SKIP' : d.success ? 'OK  ' : 'FAIL';
     const cost = d.costs ? `$${d.costs.totalUsd.toFixed(2)}` : '—';
     const tables = d.tables ? `${d.tables.validated}v/${d.tables.excluded}x` : '—';
     const firstPass = d.rValidation ? `${d.rValidation.firstPassRate}% 1st-pass` : '';
     const loops = d.loops?.detected ? `loops:${d.loops.totalGroups}` : '';
     const error = d.error ? `  ${d.error.substring(0, 60)}` : '';
-    console.log(`  [${status}] ${d.name.padEnd(40)} ${d.durationFormatted.padStart(6)}  ${cost.padStart(6)}  ${tables.padStart(8)}  ${firstPass}  ${loops}`);
+    const skipNote = d.skipped ? '  (existing output)' : '';
+    console.log(`  [${status}] ${d.name.padEnd(40)} ${d.durationFormatted.padStart(6)}  ${cost.padStart(6)}  ${tables.padStart(8)}  ${firstPass}  ${loops}${skipNote}`);
     if (error) console.log(`         ${error}`);
   }
 
   // Aggregate stats
   console.log(`\n${'─'.repeat(70)}`);
-  console.log('AGGREGATES (across successful runs):');
-  console.log(`  Datasets:     ${agg.succeeded} succeeded, ${agg.failed} failed`);
+  console.log('AGGREGATES (across successful runs, excluding skipped):');
+  const skippedLabel = agg.skipped > 0 ? `, ${agg.skipped} skipped` : '';
+  console.log(`  Datasets:     ${agg.succeeded} succeeded, ${agg.failed} failed${skippedLabel}`);
   console.log(`  Total time:   ${agg.totalDurationFormatted}  |  Avg: ${agg.avgDurationFormatted}`);
   console.log(`  Total cost:   $${agg.totalCostUsd.toFixed(2)}  |  Avg: $${agg.avgCostUsd.toFixed(2)}/dataset`);
   console.log(`  Total tokens: ${agg.totalTokens.toLocaleString()}  |  Avg: ${agg.avgTokens.toLocaleString()}/dataset`);

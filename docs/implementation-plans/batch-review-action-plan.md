@@ -125,19 +125,23 @@
 
 #### Batch Pipeline
 
-- [ ] **Add per-dataset timeout to batch pipeline.** If one dataset hangs (R OOM on a huge .sav, stuck API call), the entire overnight batch stalls. No mechanism to timeout a single dataset and proceed to the next.
-  - Fix: Wrap each `runPipeline()` call in a `Promise.race` with a configurable timeout (default: 90 minutes). On timeout, kill the pipeline, record the error, and continue to the next dataset.
+- [x] **Add per-dataset timeout to batch pipeline.** If one dataset hangs (R OOM on a huge .sav, stuck API call), the entire overnight batch stalls. No mechanism to timeout a single dataset and proceed to the next.
+  - Fix: Wrap each `runPipeline()` call in a `Promise.race` with a configurable timeout (default: 95 minutes). On timeout, abort the pipeline, record the error, and continue to the next dataset.
   - Affected: `scripts/batch-pipeline.ts`
+  - Done: `--timeout=N` flag (default 95 min). Creates AbortController per dataset, passes to `runPipeline()` via `abortSignal`. `Promise.race` with timeout promise as safety net (PipelineRunner's 90-min timeout fires first normally).
 
-- [ ] **Add fail-fast logic to batch pipeline.** If Azure quota is exhausted, all 11 datasets fail identically — wasting the entire run time. No "abort if N consecutive datasets fail" logic.
+- [x] **Add fail-fast logic to batch pipeline.** If Azure quota is exhausted, all 11 datasets fail identically — wasting the entire run time. No "abort if N consecutive datasets fail" logic.
   - Fix: If 3 consecutive datasets fail with the same error pattern (e.g., all rate-limited), abort the batch early with a summary of what happened. Still generate the batch summary for completed datasets.
   - Affected: `scripts/batch-pipeline.ts`
+  - Done: `--fail-fast=N` flag (default 3). `FailFastTracker` with `classifyBatchError()` pattern matching (rate_limit, timeout, circuit_breaker, policy, transient, health_check, unknown). Any success resets counter.
 
-- [CONSIDER] **Add batch resume capability.** If a batch run is interrupted (machine restarts, Ctrl+C), the entire batch must be re-run from scratch. A simple `--resume` flag that skips datasets with existing output directories (checking for `pipeline-summary.json`) would save hours on partial failures.
+- [x] **[CONSIDER → IMPLEMENTED] Add batch resume capability.** If a batch run is interrupted (machine restarts, Ctrl+C), the entire batch must be re-run from scratch. A simple `--resume` flag that skips datasets with existing output directories (checking for `pipeline-summary.json`) would save hours on partial failures.
   - Affected: `scripts/batch-pipeline.ts`
+  - Done: `--resume` flag. `checkResume()` scans `outputs/<name>/pipeline-*/pipeline-summary.json`, validates JSON parse (dataset + timestamp fields required). Skipped datasets show as `SKIP` in summary with data from existing output.
 
-- [CONSIDER] **Add SIGINT handler for graceful shutdown.** Pressing Ctrl+C during a pipeline run could leave R subprocesses orphaned and output directories incomplete. A handler that catches SIGINT, kills child processes, and writes partial results would be cleaner.
-  - Affected: `scripts/batch-pipeline.ts`, `scripts/test-pipeline.ts`
+- [x] **[CONSIDER → IMPLEMENTED] Add SIGINT handler for graceful shutdown.** Pressing Ctrl+C during a pipeline run could leave R subprocesses orphaned and output directories incomplete. A handler that catches SIGINT, kills child processes, and writes partial results would be cleaner.
+  - Affected: `scripts/batch-pipeline.ts`
+  - Done: SIGINT/SIGTERM handlers. First signal aborts current dataset's AbortController + sets `shuttingDown` flag (loop breaks at next iteration). Second signal force-exits. Partial batch summary generated for completed datasets. Handlers cleaned up after loop.
 
 #### Known Non-Issues (researched, already covered or not actionable)
 
