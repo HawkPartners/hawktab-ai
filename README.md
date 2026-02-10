@@ -211,6 +211,7 @@ npx tsx scripts/export-excel.ts [sessionId]        # Uses specific session
 - `results/tables.json` - Calculated tables with significance testing
 - `results/crosstabs.xlsx` - Formatted Excel workbook
 - `pipeline-summary.json` - Run metadata and timing
+- `errors/errors.ndjson` - Persisted agent + system errors (append-only; for debugging over time)
 
 The pipeline runs 13 steps (6 AI agents + 7 deterministic steps):
 1. **ValidationRunner** - Validate .sav, build verbose datamap, detect and collapse loops
@@ -226,6 +227,22 @@ The pipeline runs 13 steps (6 AI agents + 7 deterministic steps):
 11. **RScriptGeneratorV2** - Generate R script with derived tables and loop policies
 12. **R Execution** - Run R script to calculate tables with significance testing
 13. **ExcelFormatter** - Format tables.json into Excel workbook
+
+### Error persistence utilities
+
+Errors are persisted to disk (even for partial failures/fallbacks) so we can debug runs over time:
+- **Primary log**: `outputs/<dataset>/<pipelineId>/errors/errors.ndjson`
+- **Reports**: `outputs/<dataset>/<pipelineId>/errors/verify-report-*.json`, `errors/clear-report.json`
+
+Scripts:
+
+```bash
+# Verify error persistence for a run (report-only)
+npx tsx scripts/verify-pipeline-errors.ts --pipelineId="pipeline-..."
+
+# Archive + clear the error log for a run
+npx tsx scripts/clear-pipeline-errors.ts --outputDir="outputs/<dataset>/pipeline-.../"
+```
 
 ### Testing (UI)
 

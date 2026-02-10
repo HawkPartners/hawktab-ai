@@ -22,6 +22,7 @@ import { crosstabScratchpadTool, clearScratchpadEntries, getAndClearScratchpadEn
 import { getCrosstabPrompt } from '../prompts';
 import { retryWithPolicyHandling, type RetryContext } from '../lib/retryWithPolicyHandling';
 import { recordAgentMetrics } from '../lib/observability';
+import { persistAgentErrorAuto } from '../lib/errors/ErrorPersistence';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -53,7 +54,7 @@ export async function processGroup(
     options = optionsOrAbortSignal;
   }
 
-  const { abortSignal, hint } = options;
+  const { abortSignal, hint, outputDir } = options;
   const startTime = Date.now();
 
   console.log(`[CrosstabAgent] Processing group: ${group.groupName} (${group.columns.length} columns)${hint ? ` [with hint: ${hint}]` : ''}`);
@@ -244,6 +245,28 @@ Begin validation now.
   // Per-column salvage: if a single column blocks (policy/transient), we still want to process the rest.
   console.warn(`[CrosstabAgent] Falling back to per-column processing for group "${group.groupName}" (${group.columns.length} columns)`);
 
+  if (outputDir) {
+    try {
+      await persistAgentErrorAuto({
+        outputDir,
+        agentName: 'CrosstabAgent',
+        severity: 'error',
+        actionTaken: 'fallback_used',
+        itemId: group.groupName,
+        error: new Error(`Group failed: ${errorMessage}${retryContext}`),
+        meta: {
+          groupName: group.groupName,
+          columnCount: group.columns.length,
+          attempts: retryResult.attempts,
+          wasPolicyError: retryResult.wasPolicyError,
+          hint: hint || '',
+        },
+      });
+    } catch {
+      // ignore
+    }
+  }
+
   const processSingleColumn = async (col: BannerGroupType['columns'][number]) => {
     const singleGroup: BannerGroupType = {
       groupName: group.groupName,
@@ -312,6 +335,28 @@ Begin validation now.
       ? ` (failed after ${columnRetryResult.attempts} retries due to content policy)`
       : '';
 
+    if (outputDir) {
+      try {
+        await persistAgentErrorAuto({
+          outputDir,
+          agentName: 'CrosstabAgent',
+          severity: 'error',
+          actionTaken: 'fallback_used',
+          itemId: `${group.groupName}::${col.name}`,
+          error: new Error(`Column failed: ${colErr}${colRetryContext}`),
+          meta: {
+            groupName: group.groupName,
+            columnName: col.name,
+            original: col.original,
+            attempts: columnRetryResult.attempts,
+            wasPolicyError: columnRetryResult.wasPolicyError,
+          },
+        });
+      } catch {
+        // ignore
+      }
+    }
+
     return {
       name: col.name,
       adjusted: `# Error: Processing failed for "${col.original}"`,
@@ -374,7 +419,7 @@ export async function processAllGroups(
 
     logEntry(`[CrosstabAgent] Processing group ${i + 1}/${bannerPlan.bannerCuts.length}: "${group.groupName}" (${group.columns.length} columns)`);
 
-    const groupResult = await processGroup(dataMap, group, abortSignal);
+    const groupResult = await processGroup(dataMap, group, { abortSignal, outputDir });
     results.push(groupResult);
 
     const groupDuration = Date.now() - groupStartTime;

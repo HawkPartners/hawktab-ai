@@ -110,6 +110,23 @@ export type {
   TableAgentOutput,
 } from './tableAgentSchema';
 
+// Pipeline Error Persistence Schema exports
+export {
+  PipelineErrorRecordSchema,
+  PipelineErrorSourceSchema,
+  PipelineErrorSeveritySchema,
+  PipelineErrorClassificationSchema,
+  PipelineErrorActionTakenSchema,
+} from './pipelineErrorSchema';
+
+export type {
+  PipelineErrorRecord,
+  PipelineErrorSource,
+  PipelineErrorSeverity,
+  PipelineErrorClassification,
+  PipelineErrorActionTaken,
+} from './pipelineErrorSchema';
+
 // Schema compilation test - this will fail to compile if any schemas are invalid
 import { z } from 'zod';
 import { DataMapSchema } from './dataMapSchema';

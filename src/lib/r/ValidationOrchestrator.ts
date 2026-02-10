@@ -24,6 +24,7 @@ import type { VerboseDataMapType } from '../../schemas/processingSchemas';
 import type { LoopGroupMapping } from '../validation/LoopCollapser';
 import { generateValidationScript, generateSingleTableValidationScript } from './RValidationGenerator';
 import { verifyTable, type VerificationInput } from '../../agents/VerificationAgent';
+import { persistAgentErrorAuto, persistSystemErrorAuto } from '../errors/ErrorPersistence';
 
 const execAsync = promisify(exec);
 
@@ -284,6 +285,24 @@ export async function validateAndFixTables(
       } catch (retryError) {
         log(`  Attempt ${attempt} error: ${retryError instanceof Error ? retryError.message : String(retryError)}`);
         lastError = retryError instanceof Error ? retryError.message : String(retryError);
+        try {
+          await persistAgentErrorAuto({
+            outputDir,
+            agentName: 'VerificationAgent',
+            severity: 'error',
+            actionTaken: 'continued',
+            itemId: tableId,
+            error: retryError,
+            meta: {
+              tableId,
+              attempt,
+              maxRetries,
+              phase: 'r_validation_retry',
+            },
+          });
+        } catch {
+          // ignore
+        }
       }
     }
 
@@ -403,6 +422,23 @@ async function executeValidationScript(
     );
 
     // Return empty results - all tables considered failed
+    try {
+      await persistSystemErrorAuto({
+        outputDir: workingDir,
+        stageNumber: 8,
+        stageName: 'RValidation',
+        severity: 'error',
+        actionTaken: 'continued',
+        error,
+        meta: {
+          scriptPath: path.relative(workingDir, scriptPath),
+          resultsFileName,
+          errorLogPath: path.relative(workingDir, errorLogPath),
+        },
+      });
+    } catch {
+      // ignore
+    }
     return {};
   }
 }

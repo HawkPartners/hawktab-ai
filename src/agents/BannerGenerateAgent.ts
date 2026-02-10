@@ -30,6 +30,7 @@ import { retryWithPolicyHandling } from '../lib/retryWithPolicyHandling';
 import { recordAgentMetrics } from '../lib/observability';
 import type { AgentBannerGroup } from '../lib/contextBuilder';
 import type { VerboseDataMap } from '../lib/processors/DataMapProcessor';
+import { persistAgentErrorAuto } from '../lib/errors/ErrorPersistence';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -93,7 +94,20 @@ export async function generateBannerCuts(
 
   // Check for cancellation
   if (input.abortSignal?.aborted) {
-    throw new DOMException('BannerGenerateAgent aborted', 'AbortError');
+    const abortErr = new DOMException('BannerGenerateAgent aborted', 'AbortError');
+    try {
+      await persistAgentErrorAuto({
+        outputDir: input.outputDir,
+        agentName: 'BannerGenerateAgent',
+        severity: 'warning',
+        actionTaken: 'aborted',
+        error: abortErr,
+        meta: { variableCount: input.verboseDataMap.length },
+      });
+    } catch {
+      // ignore
+    }
+    throw abortErr;
   }
 
   // Build prompts
@@ -122,67 +136,68 @@ export async function generateBannerCuts(
 
   const maxAttempts = 10;
 
-  // Wrap the AI call with retry logic for policy errors
-  const retryResult = await retryWithPolicyHandling(
-    async () => {
-      const { output, usage } = await generateText({
-        model: getBannerGenerateModel(),
-        system: systemPrompt,
-        maxRetries: 0, // Centralized outer retries via retryWithPolicyHandling
-        prompt: userPrompt,
-        tools: {
-          scratchpad,
-        },
-        stopWhen: stepCountIs(15),
-        maxOutputTokens: Math.min(getBannerGenerateModelTokenLimit(), 100000),
-        providerOptions: {
-          openai: {
-            reasoningEffort: getBannerGenerateReasoningEffort(),
+  try {
+    // Wrap the AI call with retry logic for policy errors
+    const retryResult = await retryWithPolicyHandling(
+      async () => {
+        const { output, usage } = await generateText({
+          model: getBannerGenerateModel(),
+          system: systemPrompt,
+          maxRetries: 0, // Centralized outer retries via retryWithPolicyHandling
+          prompt: userPrompt,
+          tools: {
+            scratchpad,
           },
-        },
-        output: Output.object({
-          schema: BannerGenerateOutputSchema,
-        }),
-        abortSignal: input.abortSignal,
-      });
+          stopWhen: stepCountIs(15),
+          maxOutputTokens: Math.min(getBannerGenerateModelTokenLimit(), 100000),
+          providerOptions: {
+            openai: {
+              reasoningEffort: getBannerGenerateReasoningEffort(),
+            },
+          },
+          output: Output.object({
+            schema: BannerGenerateOutputSchema,
+          }),
+          abortSignal: input.abortSignal,
+        });
 
-      if (!output || !output.bannerGroups || output.bannerGroups.length === 0) {
-        throw new Error('BannerGenerateAgent produced empty output');
-      }
-
-      // Record metrics
-      const durationMs = Date.now() - startTime;
-      recordAgentMetrics(
-        'BannerGenerateAgent',
-        getBannerGenerateModelName(),
-        { input: usage?.inputTokens || 0, output: usage?.outputTokens || 0 },
-        durationMs,
-      );
-
-      return output;
-    },
-    {
-      abortSignal: input.abortSignal,
-      maxAttempts,
-      onRetry: (attempt, err) => {
-        if (err instanceof DOMException && err.name === 'AbortError') {
-          throw err;
+        if (!output || !output.bannerGroups || output.bannerGroups.length === 0) {
+          throw new Error('BannerGenerateAgent produced empty output');
         }
-        console.warn(`[BannerGenerateAgent] Retry ${attempt}/${maxAttempts}: ${err.message.substring(0, 120)}`);
+
+        // Record metrics
+        const durationMs = Date.now() - startTime;
+        recordAgentMetrics(
+          'BannerGenerateAgent',
+          getBannerGenerateModelName(),
+          { input: usage?.inputTokens || 0, output: usage?.outputTokens || 0 },
+          durationMs,
+        );
+
+        return output;
       },
-    },
-  );
+      {
+        abortSignal: input.abortSignal,
+        maxAttempts,
+        onRetry: (attempt, err) => {
+          if (err instanceof DOMException && err.name === 'AbortError') {
+            throw err;
+          }
+          console.warn(`[BannerGenerateAgent] Retry ${attempt}/${maxAttempts}: ${err.message.substring(0, 120)}`);
+        },
+      },
+    );
 
-  // Handle abort
-  if (retryResult.error === 'Operation was cancelled') {
-    throw new DOMException('BannerGenerateAgent aborted', 'AbortError');
-  }
+    // Handle abort
+    if (retryResult.error === 'Operation was cancelled') {
+      throw new DOMException('BannerGenerateAgent aborted', 'AbortError');
+    }
 
-  if (!retryResult.success || !retryResult.result) {
-    throw new Error(`BannerGenerateAgent failed: ${retryResult.error || 'Unknown error'}`);
-  }
+    if (!retryResult.success || !retryResult.result) {
+      throw new Error(`BannerGenerateAgent failed: ${retryResult.error || 'Unknown error'}`);
+    }
 
-  const result = retryResult.result;
+    const result = retryResult.result;
 
   // Convert to AgentBannerGroup[] format
   const agentBanner: AgentBannerGroup[] = result.bannerGroups.map(g => ({
@@ -238,9 +253,25 @@ export async function generateBannerCuts(
     `(confidence: ${result.confidence.toFixed(2)}, ${Date.now() - startTime}ms)`,
   );
 
-  return {
-    agent: agentBanner,
-    confidence: result.confidence,
-    reasoning: result.reasoning,
-  };
+    return {
+      agent: agentBanner,
+      confidence: result.confidence,
+      reasoning: result.reasoning,
+    };
+  } catch (error) {
+    const isAbort = error instanceof DOMException && error.name === 'AbortError';
+    try {
+      await persistAgentErrorAuto({
+        outputDir: input.outputDir,
+        agentName: 'BannerGenerateAgent',
+        severity: isAbort ? 'warning' : 'error',
+        actionTaken: isAbort ? 'aborted' : 'continued',
+        error,
+        meta: { variableCount: input.verboseDataMap.length },
+      });
+    } catch {
+      // ignore
+    }
+    throw error;
+  }
 }

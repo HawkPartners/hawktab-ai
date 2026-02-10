@@ -33,6 +33,7 @@ import { getPromptVersions, getStatTestingConfig, formatStatTestingConfig } from
 import type { StatTestingConfig } from '../env';
 import { resetMetricsCollector, getPipelineCostSummary, getMetricsCollector } from '../observability';
 import { getPipelineEventBus, STAGE_NAMES } from '../events';
+import { persistSystemError, readPipelineErrors, summarizePipelineErrors } from '../errors/ErrorPersistence';
 
 import { findDatasetFiles, DEFAULT_DATASET } from './FileDiscovery';
 import type { PipelineOptions, PipelineResult, DatasetFiles } from './types';
@@ -127,18 +128,47 @@ export async function runPipeline(
   log('='.repeat(70), 'magenta');
   log('', 'reset');
 
+  // Create output folder early so we can persist *early* failures too.
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const outputFolder = `pipeline-${timestamp}`;
+  const pipelineId = outputFolder;
+
+  const datasetNameGuess = path.basename(
+    path.isAbsolute(datasetFolder) ? datasetFolder : path.join(process.cwd(), datasetFolder)
+  );
+  const outputDir = path.join(process.cwd(), 'outputs', datasetNameGuess, outputFolder);
+  await fs.mkdir(outputDir, { recursive: true });
+
   // Discover files
   log(`Dataset folder: ${datasetFolder}`, 'blue');
+  log(`Output folder: outputs/${datasetNameGuess}/${outputFolder}`, 'blue');
+  log('', 'reset');
+
   let files: DatasetFiles;
   try {
     files = await findDatasetFiles(datasetFolder);
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
-    eventBus.emitPipelineFailed(datasetFolder, errorMsg);
+    try {
+      await persistSystemError({
+        outputDir,
+        dataset: datasetNameGuess,
+        pipelineId,
+        stageNumber: 0,
+        stageName: 'FileDiscovery',
+        severity: 'fatal',
+        actionTaken: 'failed_pipeline',
+        error,
+        meta: { datasetFolder },
+      });
+    } catch {
+      // ignore
+    }
+    eventBus.emitPipelineFailed(datasetNameGuess, errorMsg);
     return {
       success: false,
-      dataset: datasetFolder,
-      outputDir: '',
+      dataset: datasetNameGuess,
+      outputDir,
       durationMs: Date.now() - startTime,
       tableCount: 0,
       totalCostUsd: 0,
@@ -168,13 +198,8 @@ export async function runPipeline(
   log(`  ${formatStatTestingConfig(effectiveStatConfig).split('\n').join('\n  ')}`, 'dim');
   log('', 'reset');
 
-  // Create output folder: outputs/<dataset>/pipeline-<timestamp>/
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const outputFolder = `pipeline-${timestamp}`;
-  const outputDir = path.join(process.cwd(), 'outputs', files.name, outputFolder);
-  await fs.mkdir(outputDir, { recursive: true });
-  log(`Output folder: outputs/${files.name}/${outputFolder}`, 'blue');
-  log('', 'reset');
+  // NOTE: outputDir was created earlier (before file discovery) so early failures are persisted.
+  // We still use files.name for events/summary.
 
   // Copy SPSS file to output folder (needed for R)
   const spssDestPath = path.join(outputDir, 'dataFile.sav');
@@ -212,6 +237,25 @@ export async function runPipeline(
       for (const e of validationResult.errors) {
         log(`  [Stage ${e.stage}] ${e.message}`, 'red');
         if (e.details) log(`    ${e.details}`, 'dim');
+      }
+      try {
+        await persistSystemError({
+          outputDir,
+          dataset: files.name,
+          pipelineId,
+          stageNumber: 0,
+          stageName: 'Validation',
+          severity: 'fatal',
+          actionTaken: 'failed_pipeline',
+          error: new Error('Validation failed'),
+          meta: {
+            errors: validationResult.errors.map(e => ({ stage: e.stage, message: e.message, details: e.details || '' })),
+            warnings: validationResult.warnings.map(w => ({ stage: w.stage, message: w.message })),
+            format: validationResult.format,
+          },
+        });
+      } catch {
+        // ignore
       }
       eventBus.emitPipelineFailed(files.name, 'Validation failed: ' + validationResult.errors.map(e => e.message).join('; '));
       return {
@@ -522,6 +566,21 @@ export async function runPipeline(
         }
       } catch (distError) {
         log(`  [Path B] Distribution stats skipped: ${distError instanceof Error ? distError.message : String(distError)}`, 'yellow');
+        try {
+          await persistSystemError({
+            outputDir,
+            dataset: files.name,
+            pipelineId,
+            stageNumber: 4,
+            stageName: STAGE_NAMES[4],
+            severity: 'warning',
+            actionTaken: 'continued',
+            error: distError,
+            meta: { action: 'distribution_stats_skipped' },
+          });
+        } catch {
+          // ignore
+        }
       }
 
       log(`  [Path B] Complete in ${((Date.now() - pathBStart) / 1000).toFixed(1)}s`, 'dim');
@@ -567,6 +626,21 @@ export async function runPipeline(
         const errorMsg = pathCError instanceof Error ? pathCError.message : String(pathCError);
         log(`  [Path C] Skip logic extraction failed: ${errorMsg}`, 'yellow');
         eventBus.emitStageFailed(5, STAGE_NAMES[5], errorMsg);
+        try {
+          await persistSystemError({
+            outputDir,
+            dataset: files.name,
+            pipelineId,
+            stageNumber: 5,
+            stageName: STAGE_NAMES[5],
+            severity: 'warning',
+            actionTaken: 'continued',
+            error: pathCError,
+            meta: { action: 'skiplogic_pipeline_continued' },
+          });
+        } catch {
+          // ignore
+        }
         return { skipLogicResult: null, filterResult: null };
       }
     })();
@@ -636,6 +710,21 @@ export async function runPipeline(
       log(`  TableGenerator output saved: ${extendedTables.length} tables`, 'dim');
     } catch (saveError) {
       log(`  Failed to save TableGenerator output: ${saveError instanceof Error ? saveError.message : String(saveError)}`, 'yellow');
+      try {
+        await persistSystemError({
+          outputDir,
+          dataset: files.name,
+          pipelineId,
+          stageNumber: 4,
+          stageName: STAGE_NAMES[4],
+          severity: 'warning',
+          actionTaken: 'continued',
+          error: saveError,
+          meta: { action: 'tablegenerator_output_save_failed' },
+        });
+      } catch {
+        // ignore
+      }
     }
 
     // Step 6: FilterApplicator (deterministic, instant)
@@ -687,6 +776,21 @@ export async function runPipeline(
       } catch (verifyError) {
         log(`  VerificationAgent failed: ${verifyError instanceof Error ? verifyError.message : String(verifyError)}`, 'yellow');
         eventBus.emitStageFailed(7, STAGE_NAMES[7], verifyError instanceof Error ? verifyError.message : String(verifyError));
+        try {
+          await persistSystemError({
+            outputDir,
+            dataset: files.name,
+            pipelineId,
+            stageNumber: 7,
+            stageName: STAGE_NAMES[7],
+            severity: 'warning',
+            actionTaken: 'continued',
+            error: verifyError,
+            meta: { action: 'verification_failed_passthrough' },
+          });
+        } catch {
+          // ignore
+        }
         verifiedTables = extendedTables;
       }
     } else {
@@ -740,6 +844,21 @@ export async function runPipeline(
       );
     } catch (postpassSaveError) {
       log(`  Failed to save postpass report: ${postpassSaveError instanceof Error ? postpassSaveError.message : String(postpassSaveError)}`, 'yellow');
+      try {
+        await persistSystemError({
+          outputDir,
+          dataset: files.name,
+          pipelineId,
+          stageNumber: 7,
+          stageName: 'Postpass',
+          severity: 'warning',
+          actionTaken: 'continued',
+          error: postpassSaveError,
+          meta: { action: 'postpass_report_save_failed' },
+        });
+      } catch {
+        // ignore
+      }
     }
 
     log('', 'reset');
@@ -907,6 +1026,21 @@ export async function runPipeline(
         const errMsg = error instanceof Error ? error.message : String(error);
         log(`  LoopSemanticsPolicyAgent failed: ${errMsg}`, 'yellow');
         log(`  Proceeding without loop semantics policy (stacked cuts will use original expressions)`, 'yellow');
+        try {
+          await persistSystemError({
+            outputDir,
+            dataset: files.name,
+            pipelineId,
+            stageNumber: 8,
+            stageName: 'LoopSemanticsPolicy',
+            severity: 'error',
+            actionTaken: 'fallback_used',
+            error,
+            meta: { action: 'proceed_without_loop_policy' },
+          });
+        } catch {
+          // ignore
+        }
       }
 
       log(`  Duration: ${Date.now() - stepStartLSP}ms`, 'dim');
@@ -1100,6 +1234,21 @@ export async function runPipeline(
       } catch (excelError) {
         log(`  Excel generation failed: ${excelError instanceof Error ? excelError.message : String(excelError)}`, 'red');
         eventBus.emitStageFailed(11, STAGE_NAMES[11], excelError instanceof Error ? excelError.message : String(excelError));
+        try {
+          await persistSystemError({
+            outputDir,
+            dataset: files.name,
+            pipelineId,
+            stageNumber: 11,
+            stageName: STAGE_NAMES[11],
+            severity: 'error',
+            actionTaken: 'continued',
+            error: excelError,
+            meta: { action: 'excel_generation_failed' },
+          });
+        } catch {
+          // ignore
+        }
       }
 
     } catch (rError) {
@@ -1117,9 +1266,44 @@ export async function runPipeline(
       if (errorMsg.includes('command not found') && !errorMsg.includes('Error in')) {
         log(`  R not installed - script saved for manual execution`, 'yellow');
         eventBus.emitStageFailed(10, STAGE_NAMES[10], 'R not installed');
+        try {
+          await persistSystemError({
+            outputDir,
+            dataset: files.name,
+            pipelineId,
+            stageNumber: 10,
+            stageName: STAGE_NAMES[10],
+            severity: 'warning',
+            actionTaken: 'continued',
+            error: rError,
+            meta: { action: 'r_not_installed', message: errorMsg.substring(0, 500) },
+          });
+        } catch {
+          // ignore
+        }
       } else {
         log(`  R execution failed:`, 'red');
         eventBus.emitStageFailed(10, STAGE_NAMES[10], errorMsg.substring(0, 200));
+        try {
+          await persistSystemError({
+            outputDir,
+            dataset: files.name,
+            pipelineId,
+            stageNumber: 10,
+            stageName: STAGE_NAMES[10],
+            severity: 'error',
+            actionTaken: 'continued',
+            error: rError,
+            meta: {
+              action: 'r_execution_failed',
+              message: errorMsg.substring(0, 500),
+              stdoutTail: stdout.length > 500 ? stdout.slice(-500) : stdout,
+              stderrTail: stderr.length > 500 ? stderr.slice(-500) : stderr,
+            },
+          });
+        } catch {
+          // ignore
+        }
         if (stderr) {
           const stderrTail = stderr.length > 500 ? '...' + stderr.slice(-500) : stderr;
           log(`  ${stderrTail}`, 'dim');
@@ -1151,6 +1335,10 @@ export async function runPipeline(
     log('', 'reset');
 
     const costMetrics = await getMetricsCollector().getSummary();
+
+    // Error persistence summary (for batch analytics)
+    const errorRead = await readPipelineErrors(outputDir);
+    const errorSummary = summarizePipelineErrors(errorRead.records);
 
     // Write summary file
     const summary = {
@@ -1197,6 +1385,10 @@ export async function runPipeline(
       costs: {
         byAgent: costMetrics.byAgent,
         totals: costMetrics.totals,
+      },
+      errors: {
+        ...errorSummary,
+        invalidLines: errorRead.invalidLines.length,
       },
     };
     await fs.writeFile(
@@ -1267,6 +1459,21 @@ export async function runPipeline(
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     log(`ERROR: ${errorMsg}`, 'red');
+    try {
+      await persistSystemError({
+        outputDir,
+        dataset: files.name,
+        pipelineId,
+        stageNumber: 0,
+        stageName: 'PipelineRunner',
+        severity: 'fatal',
+        actionTaken: 'failed_pipeline',
+        error,
+        meta: { message: errorMsg.substring(0, 500) },
+      });
+    } catch {
+      // ignore
+    }
     eventBus.emitPipelineFailed(files.name, errorMsg);
 
     return {

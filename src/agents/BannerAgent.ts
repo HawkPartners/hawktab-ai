@@ -34,6 +34,7 @@ import {
 import { getBannerPrompt } from '../prompts';
 import { retryWithPolicyHandling } from '../lib/retryWithPolicyHandling';
 import { recordAgentMetrics } from '../lib/observability';
+import { persistAgentErrorAuto } from '../lib/errors/ErrorPersistence';
 import { bannerScratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
 
 // Types for internal processing
@@ -188,6 +189,23 @@ export class BannerAgent {
 
     } catch (error) {
       console.error('[BannerAgent] Processing failed:', error);
+      if (outputDir) {
+        try {
+          await persistAgentErrorAuto({
+            outputDir,
+            agentName: 'BannerAgent',
+            severity: error instanceof DOMException && error.name === 'AbortError' ? 'warning' : 'error',
+            actionTaken: error instanceof DOMException && error.name === 'AbortError' ? 'aborted' : 'continued',
+            error,
+            meta: {
+              fileName: path.basename(filePath),
+              durationMs: Date.now() - startTime,
+            },
+          });
+        } catch {
+          // ignore
+        }
+      }
       return this.createFailureResult(
         error instanceof Error ? error.message : 'Unknown processing error'
       );

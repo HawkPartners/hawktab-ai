@@ -38,6 +38,12 @@ import type { VerboseDataMapType } from '../../../schemas/processingSchemas';
 import type { BannerProcessingResult } from '../../../agents/BannerAgent';
 import type { ValidationResultType } from '../../../schemas/agentOutputSchema';
 import { shouldFlagForReview, getReviewThresholds } from '../../../lib/review';
+import {
+  persistSystemError,
+  getGlobalSystemOutputDir,
+  readPipelineErrors,
+  summarizePipelineErrors,
+} from '../../../lib/errors/ErrorPersistence';
 
 const execAsync = promisify(exec);
 
@@ -69,9 +75,11 @@ interface PipelineSummary {
   };
   outputs?: {
     variables: number;
-    tableAgentTables: number;
+    tableGeneratorTables: number;
     verifiedTables: number;
-    tables: number;
+    validatedTables: number;
+    excludedTables: number;
+    totalTablesInR: number;
     cuts: number;
     bannerGroups: number;
     sorting: {
@@ -79,11 +87,47 @@ interface PipelineSummary {
       main: number;
       other: number;
     };
+    rValidation?: {
+      passedFirstTime: number;
+      fixedAfterRetry: number;
+      excluded: number;
+      durationMs: number;
+    };
+  };
+  costs?: {
+    byAgent: Array<{
+      agent: string;
+      model: string;
+      calls: number;
+      inputTokens: number;
+      outputTokens: number;
+      durationMs: number;
+      estimatedCostUsd: number;
+    }>;
+    totals: {
+      calls: number;
+      inputTokens: number;
+      outputTokens: number;
+      totalTokens: number;
+      durationMs: number;
+      estimatedCostUsd: number;
+    };
   };
   error?: string;
   review?: {
     flaggedColumnCount: number;
     reviewUrl: string;
+  };
+
+  // Error persistence summary (report-only; does not affect pipeline status)
+  errors?: {
+    total: number;
+    bySource: Record<string, number>;
+    bySeverity: Record<string, number>;
+    byAgent: Record<string, number>;
+    byStageName: Record<string, number>;
+    lastErrorAt: string;
+    invalidLines: number;
   };
 }
 
@@ -1149,7 +1193,7 @@ export async function POST(request: NextRequest) {
         // Get cost metrics for summary
         const costMetrics = await getMetricsCollector().getSummary();
 
-        const pipelineSummary = {
+        const pipelineSummary: PipelineSummary = {
           pipelineId,
           dataset: datasetName,
           timestamp: new Date().toISOString(),
@@ -1206,6 +1250,15 @@ export async function POST(request: NextRequest) {
             },
           }
         };
+
+        // Attach error persistence summary (for batch analytics + debugging)
+        try {
+          const errorRead = await readPipelineErrors(outputDir);
+          const errorSummary = summarizePipelineErrors(errorRead.records);
+          pipelineSummary.errors = { ...errorSummary, invalidLines: errorRead.invalidLines.length };
+        } catch {
+          // ignore
+        }
 
         // Check if already cancelled before writing
         const summaryPath = path.join(outputDir, 'pipeline-summary.json');
@@ -1268,6 +1321,21 @@ export async function POST(request: NextRequest) {
         }
 
         console.error('[API] Pipeline error:', processingError);
+        try {
+          await persistSystemError({
+            outputDir: outputDir || getGlobalSystemOutputDir(),
+            dataset: datasetName || '',
+            pipelineId: pipelineId || '',
+            stageNumber: 0,
+            stageName: 'API',
+            severity: 'fatal',
+            actionTaken: 'failed_pipeline',
+            error: processingError,
+            meta: { jobId: job.jobId },
+          });
+        } catch {
+          // ignore
+        }
         updateJob(job.jobId, {
           stage: 'error',
           percent: 100,
@@ -1283,6 +1351,21 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
       console.error('[API] Early processing error:', error);
+      try {
+        await persistSystemError({
+          outputDir: getGlobalSystemOutputDir(),
+          dataset: '',
+          pipelineId: '',
+          stageNumber: 0,
+          stageName: 'API',
+          severity: 'fatal',
+          actionTaken: 'failed_pipeline',
+          error,
+          meta: { jobId: job.jobId, sessionId },
+        });
+      } catch {
+        // ignore
+      }
       updateJob(job.jobId, { stage: 'error', percent: 100, message: 'Processing error', error: error instanceof Error ? error.message : 'Unknown processing error' });
       return NextResponse.json(
         {

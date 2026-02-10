@@ -35,6 +35,7 @@ import { recordAgentMetrics } from '../lib/observability';
 import type { DeterministicResolverResult } from '../lib/validation/LoopContextResolver';
 import type { VerboseDataMap } from '../lib/processors/DataMapProcessor';
 import type { CutDefinition } from '../lib/tables/CutsSpec';
+import { persistAgentErrorAuto } from '../lib/errors/ErrorPersistence';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -98,7 +99,21 @@ export async function runLoopSemanticsPolicyAgent(
 
   // Check for cancellation
   if (input.abortSignal?.aborted) {
-    throw new DOMException('LoopSemanticsPolicyAgent aborted', 'AbortError');
+    const abortErr = new DOMException('LoopSemanticsPolicyAgent aborted', 'AbortError');
+    // Persist for post-run diagnostics (best-effort)
+    try {
+      await persistAgentErrorAuto({
+        outputDir: input.outputDir,
+        agentName: 'LoopSemanticsPolicyAgent',
+        severity: 'warning',
+        actionTaken: 'aborted',
+        error: abortErr,
+        meta: { bannerGroups: input.bannerGroups.length, loops: input.loopSummary.length },
+      });
+    } catch {
+      // ignore
+    }
+    throw abortErr;
   }
 
   // Build system prompt
@@ -117,91 +132,125 @@ export async function runLoopSemanticsPolicyAgent(
   const scratchpad = createContextScratchpadTool('LoopSemanticsPolicy', 'policy');
 
   // Wrap the AI call with retry logic for policy errors
-  const retryResult = await retryWithPolicyHandling(
-    async () => {
-      const { output, usage } = await generateText({
-        model: getLoopSemanticsModel(),
-        system: systemPrompt,
-        maxRetries: 0, // Centralized outer retries via retryWithPolicyHandling
-        prompt: userPrompt,
-        tools: {
-          scratchpad,
-        },
-        stopWhen: stepCountIs(15),
-        maxOutputTokens: Math.min(getLoopSemanticsModelTokenLimit(), 100000),
-        providerOptions: {
-          openai: {
-            reasoningEffort: getLoopSemanticsReasoningEffort(),
+  try {
+    const retryResult = await retryWithPolicyHandling(
+      async () => {
+        const { output, usage } = await generateText({
+          model: getLoopSemanticsModel(),
+          system: systemPrompt,
+          maxRetries: 0, // Centralized outer retries via retryWithPolicyHandling
+          prompt: userPrompt,
+          tools: {
+            scratchpad,
           },
-        },
-        output: Output.object({
-          schema: LoopSemanticsPolicySchema,
-        }),
-        abortSignal: input.abortSignal,
-      });
+          stopWhen: stepCountIs(15),
+          maxOutputTokens: Math.min(getLoopSemanticsModelTokenLimit(), 100000),
+          providerOptions: {
+            openai: {
+              reasoningEffort: getLoopSemanticsReasoningEffort(),
+            },
+          },
+          output: Output.object({
+            schema: LoopSemanticsPolicySchema,
+          }),
+          abortSignal: input.abortSignal,
+        });
 
-      if (!output || !output.bannerGroups) {
-        throw new Error('Invalid output from LoopSemanticsPolicyAgent');
-      }
-
-      // Record metrics
-      const durationMs = Date.now() - startTime;
-      recordAgentMetrics(
-        'LoopSemanticsPolicyAgent',
-        getLoopSemanticsModelName(),
-        { input: usage?.inputTokens || 0, output: usage?.outputTokens || 0 },
-        durationMs,
-      );
-
-      return output;
-    },
-    {
-      abortSignal: input.abortSignal,
-      maxAttempts,
-      onRetry: (attempt, err) => {
-        if (err instanceof DOMException && err.name === 'AbortError') {
-          throw err;
+        if (!output || !output.bannerGroups) {
+          throw new Error('Invalid output from LoopSemanticsPolicyAgent');
         }
-        console.warn(`[LoopSemanticsPolicyAgent] Retry ${attempt}/${maxAttempts}: ${err.message.substring(0, 120)}`);
+
+        // Record metrics
+        const durationMs = Date.now() - startTime;
+        recordAgentMetrics(
+          'LoopSemanticsPolicyAgent',
+          getLoopSemanticsModelName(),
+          { input: usage?.inputTokens || 0, output: usage?.outputTokens || 0 },
+          durationMs,
+        );
+
+        return output;
       },
-    },
-  );
-
-  // Handle abort
-  if (retryResult.error === 'Operation was cancelled') {
-    throw new DOMException('LoopSemanticsPolicyAgent aborted', 'AbortError');
-  }
-
-  if (!retryResult.success || !retryResult.result) {
-    throw new Error(`LoopSemanticsPolicyAgent failed: ${retryResult.error || 'Unknown error'}`);
-  }
-
-  const result = retryResult.result;
-
-  // Save scratchpad trace
-  const contextEntries = getAllContextScratchpadEntries();
-  const allScratchpadEntries = contextEntries.flatMap((ctx) =>
-    ctx.entries.map((e) => ({ ...e, contextId: ctx.contextId }))
-  );
-  if (allScratchpadEntries.length > 0) {
-    const loopPolicyDir = path.join(input.outputDir, 'loop-policy');
-    await fs.mkdir(loopPolicyDir, { recursive: true });
-    const scratchpadMd = formatScratchpadAsMarkdown('LoopSemanticsPolicyAgent', allScratchpadEntries);
-    await fs.writeFile(
-      path.join(loopPolicyDir, 'scratchpad-loop-semantics.md'),
-      scratchpadMd,
-      'utf-8',
+      {
+        abortSignal: input.abortSignal,
+        maxAttempts,
+        onRetry: (attempt, err) => {
+          if (err instanceof DOMException && err.name === 'AbortError') {
+            throw err;
+          }
+          console.warn(`[LoopSemanticsPolicyAgent] Retry ${attempt}/${maxAttempts}: ${err.message.substring(0, 120)}`);
+        },
+      },
     );
-    clearAllContextScratchpads();
+
+    // Handle abort
+    if (retryResult.error === 'Operation was cancelled') {
+      throw new DOMException('LoopSemanticsPolicyAgent aborted', 'AbortError');
+    }
+
+    if (!retryResult.success || !retryResult.result) {
+      throw new Error(`LoopSemanticsPolicyAgent failed: ${retryResult.error || 'Unknown error'}`);
+    }
+
+    const result = retryResult.result;
+
+    // Save scratchpad trace
+    const contextEntries = getAllContextScratchpadEntries();
+    const allScratchpadEntries = contextEntries.flatMap((ctx) =>
+      ctx.entries.map((e) => ({ ...e, contextId: ctx.contextId }))
+    );
+    if (allScratchpadEntries.length > 0) {
+      const loopPolicyDir = path.join(input.outputDir, 'loop-policy');
+      await fs.mkdir(loopPolicyDir, { recursive: true });
+      const scratchpadMd = formatScratchpadAsMarkdown('LoopSemanticsPolicyAgent', allScratchpadEntries);
+      await fs.writeFile(
+        path.join(loopPolicyDir, 'scratchpad-loop-semantics.md'),
+        scratchpadMd,
+        'utf-8',
+      );
+      clearAllContextScratchpads();
+    }
+
+    console.log(
+      `[LoopSemanticsPolicyAgent] Done: ${result.bannerGroups.filter((g: { anchorType: string }) => g.anchorType === 'entity').length} entity-anchored, ` +
+      `${result.bannerGroups.filter((g: { anchorType: string }) => g.anchorType === 'respondent').length} respondent-anchored ` +
+      `(${Date.now() - startTime}ms)`,
+    );
+
+    return result;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      // Persist aborts too (best-effort)
+      try {
+        await persistAgentErrorAuto({
+          outputDir: input.outputDir,
+          agentName: 'LoopSemanticsPolicyAgent',
+          severity: 'warning',
+          actionTaken: 'aborted',
+          error,
+          meta: { bannerGroups: input.bannerGroups.length, loops: input.loopSummary.length },
+        });
+      } catch {
+        // ignore
+      }
+      throw error;
+    }
+
+    try {
+      await persistAgentErrorAuto({
+        outputDir: input.outputDir,
+        agentName: 'LoopSemanticsPolicyAgent',
+        severity: 'error',
+        actionTaken: 'continued',
+        error,
+        meta: { bannerGroups: input.bannerGroups.length, loops: input.loopSummary.length },
+      });
+    } catch {
+      // ignore
+    }
+
+    throw error;
   }
-
-  console.log(
-    `[LoopSemanticsPolicyAgent] Done: ${result.bannerGroups.filter((g: { anchorType: string }) => g.anchorType === 'entity').length} entity-anchored, ` +
-    `${result.bannerGroups.filter((g: { anchorType: string }) => g.anchorType === 'respondent').length} respondent-anchored ` +
-    `(${Date.now() - startTime}ms)`,
-  );
-
-  return result;
 }
 
 // =============================================================================

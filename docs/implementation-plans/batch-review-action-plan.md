@@ -21,24 +21,24 @@
 
 ### Error Recovery Overhaul
 
-- [ ] **Increase retry limits for transient errors across all agents.** The current 4-retry limit is too conservative for rate limits and timeouts. Use exponential backoff, 8-10 attempts minimum. These errors are designed to be retried.
+- [x] **Increase retry limits for transient errors across all agents.** The current 4-retry limit is too conservative for rate limits and timeouts. Use exponential backoff, 8-10 attempts minimum. These errors are designed to be retried.
   - Affected: `retryWithPolicyHandling` and all agent call sites
   - Ref: CrosstabAgent report 3.1
 
-- [ ] **Research content policy error handling.** Web search for best practices on Azure OpenAI content policy retries. Options: (a) attach a preamble to every prompt ("this is an automated survey data processing pipeline"), (b) reformulate by stripping medical terminology and using generic placeholders, (c) retry identical requests since classifiers are stochastic.
+- [x] **Research content policy error handling.** Web search for best practices on Azure OpenAI content policy retries. Options: (a) attach a preamble to every prompt ("this is an automated survey data processing pipeline"), (b) reformulate by stripping medical terminology and using generic placeholders, (c) retry identical requests since classifiers are stochastic.
   - Ref: CrosstabAgent report 3.1, error recovery deep dive
 
-- [ ] **Implement per-column/per-table skip on exhausted retries.** If a single column or table fails after N retries, skip it and continue the pipeline. A pipeline with 1 missing table is infinitely better than a failed pipeline. Cap retries per item, not per pipeline.
+- [x] **Implement per-column/per-table skip on exhausted retries.** If a single column or table fails after N retries, skip it and continue the pipeline. A pipeline with 1 missing table is infinitely better than a failed pipeline. Cap retries per item, not per pipeline.
   - Affected: CrosstabAgent, VerificationAgent, FilterTranslatorAgent
   - Ref: CrosstabAgent report, error recovery deep dive
 
-- [ ] **Tell agents WHY retries happen.** When a retry occurs because of a validation error (e.g., hallucinated variable), feed the error message back to the agent: "Variable S2_21_24 does not exist in the data. Do not construct synthetic variable names." Currently we don't tell the agent what went wrong, so it repeats the same mistake.
+- [x] **Tell agents WHY retries happen.** When a retry occurs because of a validation error (e.g., hallucinated variable), feed the error message back to the agent: "Variable S2_21_24 does not exist in the data. Do not construct synthetic variable names." Currently we don't tell the agent what went wrong, so it repeats the same mistake.
   - Affected: VerificationAgent retry loop, R validation retry mechanism
   - Ref: VerificationAgent report 3.1
 
 ### Error Persistence
 
-- [ ] **Persist all agent errors to disk.** The LoopSemanticsPolicyAgent failed silently for 5/6 datasets with no trace. Every agent's catch block must write errors to a JSON file in the output directory, not just log to console.
+- [x] **Persist all agent errors to disk.** The LoopSemanticsPolicyAgent failed silently for 5/6 datasets with no trace. Every agent's catch block must write errors to a JSON file in the output directory, not just log to console.
   - Affected: PipelineRunner.ts catch blocks (especially line ~906-910 for LoopPolicy)
   - Ref: LoopPolicyAgent report, Section 3
 

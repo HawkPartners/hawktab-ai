@@ -46,6 +46,7 @@ import { getVerificationPrompt } from '../prompts';
 import { retryWithPolicyHandling, type RetryContext } from '../lib/retryWithPolicyHandling';
 import { recordAgentMetrics } from '../lib/observability';
 import { getPipelineEventBus } from '../lib/events';
+import { persistAgentErrorAuto } from '../lib/errors/ErrorPersistence';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -661,23 +662,80 @@ export async function verifyAllTablesParallel(
 
       // Use context-specific scratchpad
       const contextScratchpad = createContextScratchpadTool('VerificationAgent', table.tableId);
-      const result = await verifyTable(input, abortSignal, contextScratchpad);
-
-      // Emit slot:complete event
-      const durationMs = Date.now() - startTime;
-      getPipelineEventBus().emitSlotComplete('VerificationAgent', slotIndex, table.tableId, durationMs);
-      activeSlots.delete(table.tableId);
-
-      completed++;
-
-      // Emit agent:progress event
-      getPipelineEventBus().emitAgentProgress('VerificationAgent', completed, allTables.length);
-
       try {
-        onProgress?.(completed, allTables.length, table.tableId);
-      } catch { /* ignore progress errors */ }
+        const result = await verifyTable(input, abortSignal, contextScratchpad);
 
-      return { result, questionId, index };
+        // Emit slot:complete event
+        const durationMs = Date.now() - startTime;
+        getPipelineEventBus().emitSlotComplete('VerificationAgent', slotIndex, table.tableId, durationMs);
+        activeSlots.delete(table.tableId);
+
+        completed++;
+
+        // Emit agent:progress event
+        getPipelineEventBus().emitAgentProgress('VerificationAgent', completed, allTables.length);
+
+        try {
+          onProgress?.(completed, allTables.length, table.tableId);
+        } catch { /* ignore progress errors */ }
+
+        return { result, questionId, index };
+      } catch (error) {
+        // Always close the slot so the CLI/UI doesn't hang.
+        const durationMs = Date.now() - startTime;
+        getPipelineEventBus().emitSlotComplete('VerificationAgent', slotIndex, table.tableId, durationMs);
+        activeSlots.delete(table.tableId);
+
+        // Propagate aborts — cancellation should stop the pipeline.
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          throw error;
+        }
+
+        // Persist error for post-run diagnostics (best-effort)
+        if (outputDir) {
+          try {
+            await persistAgentErrorAuto({
+              outputDir,
+              agentName: 'VerificationAgent',
+              severity: 'error',
+              actionTaken: 'skipped_item',
+              itemId: table.tableId,
+              error,
+              meta: {
+                tableId: table.tableId,
+                questionId,
+                durationMs,
+              },
+            });
+          } catch {
+            // ignore
+          }
+        }
+
+        // Return a safe fallback: passthrough table marked excluded.
+        const fallback = createPassthroughOutput(table);
+        for (const t of fallback.tables) {
+          t.questionId = questionId;
+          t.questionText = questionText;
+          // Preserve upstream filter fields when present
+          if (filterContext) {
+            t.additionalFilter = filterContext.additionalFilter;
+            t.splitFromTableId = filterContext.splitFromTableId;
+            t.filterReviewRequired = filterContext.filterReviewRequired;
+            if (filterContext.baseText) t.baseText = filterContext.baseText;
+          }
+          t.exclude = true;
+          t.excludeReason = `VerificationAgent failed for this table: ${error instanceof Error ? error.message : String(error)}`.substring(0, 500);
+        }
+
+        completed++;
+        getPipelineEventBus().emitAgentProgress('VerificationAgent', completed, allTables.length);
+        try {
+          onProgress?.(completed, allTables.length, table.tableId);
+        } catch { /* ignore progress errors */ }
+
+        return { result: fallback, questionId, index };
+      }
     })
   );
 

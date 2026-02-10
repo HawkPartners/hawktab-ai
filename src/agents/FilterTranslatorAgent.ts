@@ -37,6 +37,7 @@ import { formatFullDatamapContext, validateFilterVariables } from '../lib/filter
 import { retryWithPolicyHandling, isRateLimitError, type RetryContext } from '../lib/retryWithPolicyHandling';
 import { recordAgentMetrics } from '../lib/observability';
 import { shouldFlagForReview, getReviewThresholds } from '../lib/review';
+import { persistAgentErrorAuto } from '../lib/errors/ErrorPersistence';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -247,6 +248,25 @@ Fix the issue and retry. DO NOT invent variable names. Use ONLY variables presen
           return { ruleId: rule.ruleId, filters: result.result.filters, error: null };
         } else {
           console.warn(`[FilterTranslatorAgent] [${completedCount}/${rules.length}] Rule ${rule.ruleId} failed: ${result.error}`);
+          if (outputDir) {
+            try {
+              await persistAgentErrorAuto({
+                outputDir,
+                agentName: 'FilterTranslatorAgent',
+                severity: 'error',
+                actionTaken: 'continued',
+                itemId: rule.ruleId,
+                error: new Error(result.error || 'Unknown error'),
+                meta: {
+                  ruleId: rule.ruleId,
+                  appliesTo: rule.appliesTo,
+                  durationMs: duration,
+                },
+              });
+            } catch {
+              // ignore
+            }
+          }
           return { ruleId: rule.ruleId, filters: [] as TableFilter[], error: result.error || 'Unknown error' };
         }
       } catch (err) {
@@ -256,6 +276,24 @@ Fix the issue and retry. DO NOT invent variable names. Use ONLY variables presen
         completedCount++;
         const errorMsg = err instanceof Error ? err.message : String(err);
         console.warn(`[FilterTranslatorAgent] [${completedCount}/${rules.length}] Rule ${rule.ruleId} error: ${errorMsg}`);
+        if (outputDir) {
+          try {
+            await persistAgentErrorAuto({
+              outputDir,
+              agentName: 'FilterTranslatorAgent',
+              severity: 'error',
+              actionTaken: 'continued',
+              itemId: rule.ruleId,
+              error: err,
+              meta: {
+                ruleId: rule.ruleId,
+                appliesTo: rule.appliesTo,
+              },
+            });
+          } catch {
+            // ignore
+          }
+        }
         return { ruleId: rule.ruleId, filters: [] as TableFilter[], error: errorMsg };
       }
     }))

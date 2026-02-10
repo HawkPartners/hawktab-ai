@@ -46,6 +46,7 @@ import {
   deduplicateRules,
   getSurveyStats,
 } from '../lib/survey/surveyChunker';
+import { persistAgentErrorAuto } from '../lib/errors/ErrorPersistence';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -91,10 +92,33 @@ export async function extractSkipLogic(
 
   console.log(`[SkipLogicAgent] Survey: ${stats.charCount} chars (~${stats.estimatedTokens} tokens), threshold: ${threshold} chars`);
 
-  if (stats.charCount <= threshold) {
-    return extractSkipLogicSinglePass(surveyMarkdown, options);
-  } else {
-    return extractSkipLogicChunked(surveyMarkdown, options);
+  try {
+    if (stats.charCount <= threshold) {
+      return extractSkipLogicSinglePass(surveyMarkdown, options);
+    } else {
+      return extractSkipLogicChunked(surveyMarkdown, options);
+    }
+  } catch (error) {
+    const outputDir = options?.outputDir;
+    if (outputDir) {
+      try {
+        await persistAgentErrorAuto({
+          outputDir,
+          agentName: 'SkipLogicAgent',
+          severity: error instanceof DOMException && error.name === 'AbortError' ? 'warning' : 'error',
+          actionTaken: error instanceof DOMException && error.name === 'AbortError' ? 'aborted' : 'continued',
+          error,
+          meta: {
+            charCount: stats.charCount,
+            estimatedTokens: stats.estimatedTokens,
+            threshold,
+          },
+        });
+      } catch {
+        // ignore
+      }
+    }
+    throw error;
   }
 }
 

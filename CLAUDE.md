@@ -252,6 +252,12 @@ RULES - NEVER VIOLATE:
 
 8. NEVER put dataset-specific examples in agent prompts
    See `<prompt_hygiene>` section. All examples must be abstract and generic.
+
+9. ALWAYS persist agent + system errors to disk
+   If something fails (or we fall back / skip an item), we must write a structured error record to:
+   `outputs/<dataset>/<pipelineId>/errors/errors.ndjson`
+   Use: `src/lib/errors/ErrorPersistence.ts` (`persistAgentErrorAuto`, `persistSystemError`, etc.)
+   Utilities: `npx tsx scripts/verify-pipeline-errors.ts` and `npx tsx scripts/clear-pipeline-errors.ts`
 </constraints>
 
 <gotchas>
