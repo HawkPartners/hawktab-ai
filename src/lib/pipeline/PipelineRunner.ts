@@ -35,6 +35,7 @@ import { resetMetricsCollector, getPipelineCostSummary, getMetricsCollector } fr
 import { getPipelineEventBus, STAGE_NAMES } from '../events';
 import { persistSystemError, readPipelineErrors, summarizePipelineErrors } from '../errors/ErrorPersistence';
 
+import { CircuitBreaker, setActiveCircuitBreaker } from '../CircuitBreaker';
 import { findDatasetFiles, DEFAULT_DATASET } from './FileDiscovery';
 import type { PipelineOptions, PipelineResult, DatasetFiles } from './types';
 import { DEFAULT_PIPELINE_OPTIONS } from './types';
@@ -126,6 +127,46 @@ export async function runPipeline(
   const opts: PipelineOptions = { ...DEFAULT_PIPELINE_OPTIONS, ...options };
   const { format, displayMode, separateWorkbooks, stopAfterVerification, concurrency, theme, quiet, statTesting, weightVariable: weightOpt, noWeight, loopStatTestingMode } = opts;
 
+  // -------------------------------------------------------------------------
+  // Pipeline-level abort + timeout
+  // -------------------------------------------------------------------------
+  const timeoutMs = opts.timeoutMs ?? 5_400_000; // 90 min default
+  const pipelineAbortController = new AbortController();
+  const pipelineSignal = pipelineAbortController.signal;
+
+  // Link external signal if provided
+  if (opts.abortSignal) {
+    if (opts.abortSignal.aborted) {
+      pipelineAbortController.abort(opts.abortSignal.reason);
+    } else {
+      opts.abortSignal.addEventListener('abort', () => {
+        pipelineAbortController.abort(opts.abortSignal!.reason);
+      }, { once: true });
+    }
+  }
+
+  // Set pipeline timeout
+  let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+  if (timeoutMs > 0) {
+    timeoutHandle = setTimeout(() => {
+      pipelineAbortController.abort(new Error(`Pipeline timeout: exceeded ${Math.round(timeoutMs / 60000)} minutes`));
+    }, timeoutMs);
+  }
+  const clearPipelineTimeout = () => { if (timeoutHandle) clearTimeout(timeoutHandle); };
+
+  // Circuit breaker: abort pipeline after consecutive infrastructure failures
+  const circuitBreaker = new CircuitBreaker({
+    threshold: 3,
+    classifications: ['rate_limit', 'transient'],
+    onTrip: (info) => {
+      log(`CIRCUIT BREAKER: ${info.consecutiveCount} consecutive ${info.classification} failures — aborting pipeline`, 'red');
+      pipelineAbortController.abort(
+        new Error(`Circuit breaker: ${info.consecutiveCount} consecutive ${info.classification} errors. Last: ${info.lastError}`)
+      );
+    },
+  });
+  setActiveCircuitBreaker(circuitBreaker);
+
   // Build effective stat testing config (CLI overrides -> env defaults)
   const envStatConfig = getStatTestingConfig();
   const effectiveStatConfig: StatTestingConfig = {
@@ -164,6 +205,49 @@ export async function runPipeline(
   const outputDir = path.join(process.cwd(), 'outputs', datasetNameGuess, outputFolder);
   await fs.mkdir(outputDir, { recursive: true });
 
+  // Pre-flight: Azure deployment health check
+  if (process.env.SKIP_HEALTH_CHECK !== 'true') {
+    log('Pre-flight: checking Azure deployments...', 'cyan');
+    const { runHealthCheck } = await import('./HealthCheck');
+    const health = await runHealthCheck(pipelineSignal);
+    if (health.success) {
+      log(`  ${health.deployments.length} deployment(s) healthy (${health.durationMs}ms)`, 'green');
+    } else {
+      const failed = health.deployments.filter(d => !d.ok);
+      for (const d of failed) {
+        log(`  FAILED: ${d.name} (${d.agents.join(', ')}): ${d.error}`, 'red');
+      }
+      try {
+        await persistSystemError({
+          outputDir,
+          dataset: datasetNameGuess,
+          pipelineId,
+          stageNumber: 0,
+          stageName: 'HealthCheck',
+          severity: 'fatal',
+          actionTaken: 'failed_pipeline',
+          error: new Error('Azure health check failed'),
+          meta: { deployments: health.deployments },
+        });
+      } catch {
+        // ignore
+      }
+      eventBus.emitPipelineFailed(datasetNameGuess, 'Azure health check failed');
+      setActiveCircuitBreaker(null);
+      clearPipelineTimeout();
+      return {
+        success: false,
+        dataset: datasetNameGuess,
+        outputDir,
+        durationMs: Date.now() - startTime,
+        tableCount: 0,
+        totalCostUsd: 0,
+        error: `Azure health check failed: ${failed.map(d => `${d.name}: ${d.error}`).join('; ')}`,
+      };
+    }
+    log('', 'reset');
+  }
+
   // Discover files
   log(`Dataset folder: ${datasetFolder}`, 'blue');
   log(`Output folder: outputs/${datasetNameGuess}/${outputFolder}`, 'blue');
@@ -190,6 +274,8 @@ export async function runPipeline(
       // ignore
     }
     eventBus.emitPipelineFailed(datasetNameGuess, errorMsg);
+    setActiveCircuitBreaker(null);
+    clearPipelineTimeout();
     return {
       success: false,
       dataset: datasetNameGuess,
@@ -283,6 +369,8 @@ export async function runPipeline(
         // ignore
       }
       eventBus.emitPipelineFailed(files.name, 'Validation failed: ' + validationResult.errors.map(e => e.message).join('; '));
+      setActiveCircuitBreaker(null);
+      clearPipelineTimeout();
       return {
         success: false,
         dataset: files.name,
@@ -365,6 +453,8 @@ export async function runPipeline(
         log(`  ${msg}`, 'red');
         if (details) log(`    ${details}`, 'dim');
         eventBus.emitPipelineFailed(files.name, msg);
+        setActiveCircuitBreaker(null);
+        clearPipelineTimeout();
         return {
           success: false,
           dataset: files.name,
@@ -502,7 +592,7 @@ export async function runPipeline(
         eventBus.emitStageStart(2, STAGE_NAMES[2]);
 
         const bannerAgent = new BannerAgent();
-        const bannerResult = await bannerAgent.processDocument(files.banner, outputDir);
+        const bannerResult = await bannerAgent.processDocument(files.banner, outputDir, pipelineSignal);
 
         if (!bannerResult.success) {
           log(`  [Path A] WARNING: Banner extraction had issues`, 'yellow');
@@ -530,6 +620,7 @@ export async function runPipeline(
           cutSuggestions: opts.cutSuggestions,
           projectType: opts.projectType,
           outputDir,
+          abortSignal: pipelineSignal,
         });
 
         agentBanner = generateResult.agent;
@@ -552,7 +643,9 @@ export async function runPipeline(
       const crosstabResult = await processCrosstabGroups(
         agentDataMap,
         { bannerCuts: agentBanner.map(g => ({ groupName: g.groupName, columns: g.columns })) },
-        outputDir
+        outputDir,
+        undefined, // onProgress
+        pipelineSignal
       );
 
       log(`  [Path A] CrosstabAgent: ${crosstabResult.result.bannerCuts.length} groups validated`, 'green');
@@ -625,7 +718,7 @@ export async function runPipeline(
       eventBus.emitStageStart(5, STAGE_NAMES[5]);
 
       try {
-        const skipLogicResult = await extractSkipLogic(surveyMarkdown, { outputDir });
+        const skipLogicResult = await extractSkipLogic(surveyMarkdown, { outputDir, abortSignal: pipelineSignal });
         log(`  [Path C] SkipLogicAgent: ${skipLogicResult.metadata.rulesExtracted} rules`, 'green');
         eventBus.emitStageComplete(5, STAGE_NAMES[5], Date.now() - pathCStart);
 
@@ -636,7 +729,7 @@ export async function runPipeline(
           const filterResult = await translateSkipRules(
             skipLogicResult.extraction.rules,
             verboseDataMap,
-            { outputDir }
+            { outputDir, abortSignal: pipelineSignal }
           );
 
           log(`  [Path C] FilterTranslatorAgent: ${filterResult.metadata.filtersTranslated} filters (${filterResult.metadata.highConfidenceCount} high confidence)`, 'green');
@@ -792,7 +885,7 @@ export async function runPipeline(
           extendedTables,
           surveyMarkdown,
           verboseDataMap,
-          { outputDir, concurrency }
+          { outputDir, concurrency, abortSignal: pipelineSignal }
         );
         verifiedTables = verificationResult.tables;
 
@@ -910,6 +1003,8 @@ export async function runPipeline(
         outputDir
       );
 
+      setActiveCircuitBreaker(null);
+      clearPipelineTimeout();
       return {
         success: true,
         dataset: files.name,
@@ -1028,6 +1123,7 @@ export async function runPipeline(
           deterministicFindings: deterministicFindings || { iterationLinkedVariables: [], evidenceSummary: '' },
           datamapExcerpt: buildDatamapExcerpt(verboseDataMap, cutsSpec.cuts, deterministicFindings),
           outputDir,
+          abortSignal: pipelineSignal,
         });
 
         // Save policy artifact
@@ -1502,6 +1598,8 @@ export async function runPipeline(
       log(`  ${f}`, 'dim');
     }
 
+    setActiveCircuitBreaker(null);
+    clearPipelineTimeout();
     return {
       success: true,
       dataset: files.name,
@@ -1512,7 +1610,12 @@ export async function runPipeline(
     };
 
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
+    setActiveCircuitBreaker(null);
+    clearPipelineTimeout();
+    const isTimeout = pipelineSignal.aborted && !opts.abortSignal?.aborted;
+    const errorMsg = isTimeout
+      ? `Pipeline timed out after ${Math.round(timeoutMs / 60000)} minutes`
+      : error instanceof Error ? error.message : String(error);
     log(`ERROR: ${errorMsg}`, 'red');
     try {
       await persistSystemError({
@@ -1524,7 +1627,7 @@ export async function runPipeline(
         severity: 'fatal',
         actionTaken: 'failed_pipeline',
         error,
-        meta: { message: errorMsg.substring(0, 500) },
+        meta: { message: errorMsg.substring(0, 500), isTimeout, isCancelled: !!opts.abortSignal?.aborted },
       });
     } catch {
       // ignore

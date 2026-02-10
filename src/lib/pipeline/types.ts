@@ -52,6 +52,10 @@ export interface PipelineOptions {
   noWeight?: boolean;
   /** Override loop stat testing mode for entity-anchored groups */
   loopStatTestingMode?: 'suppress' | 'complement';
+  /** External abort signal (caller can cancel the pipeline) */
+  abortSignal?: AbortSignal;
+  /** Pipeline-level timeout in ms. Default: 5_400_000 (90 min). 0 = no timeout. */
+  timeoutMs?: number;
 }
 
 export const DEFAULT_PIPELINE_OPTIONS: PipelineOptions = {

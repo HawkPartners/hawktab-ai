@@ -230,6 +230,13 @@ Please carefully review the error message and the datamap context above, then re
         ? `\n<retry_context>\nYour previous attempt failed.\nReason: ${ctx.lastErrorSummary}\nFix the issue and retry. Do NOT invent variables or schema fields.\n</retry_context>\n`
         : '';
 
+      // Escalate maxOutputTokens if consecutive output_validation errors suggest truncation
+      const defaultMaxTokens = Math.min(getVerificationModelTokenLimit(), 100000);
+      const maxOutputTokens = ctx.possibleTruncation ? getVerificationModelTokenLimit() : defaultMaxTokens;
+      if (ctx.possibleTruncation) {
+        console.warn(`[VerificationAgent] Possible truncation detected — increasing maxOutputTokens to ${maxOutputTokens}`);
+      }
+
       const { output, usage } = await generateText({
         model: getVerificationModel(),
         system: buildSystemPrompt(ctx.shouldUsePolicySafeVariant),
@@ -239,7 +246,7 @@ Please carefully review the error message and the datamap context above, then re
           scratchpad,
         },
         stopWhen: stepCountIs(15),
-        maxOutputTokens: Math.min(getVerificationModelTokenLimit(), 100000),
+        maxOutputTokens,
         // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
         providerOptions: {
           openai: {

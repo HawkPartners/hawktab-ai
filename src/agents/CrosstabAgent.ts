@@ -158,6 +158,13 @@ Begin validation now.
         ? ` Previous attempt failed validation: ${ctx.lastErrorSummary}. Do NOT invent variable names.`
         : '';
 
+      // Escalate maxOutputTokens if consecutive output_validation errors suggest truncation
+      const defaultMaxTokens = Math.min(getCrosstabModelTokenLimit(), 100000);
+      const maxOutputTokens = ctx.possibleTruncation ? getCrosstabModelTokenLimit() : defaultMaxTokens;
+      if (ctx.possibleTruncation) {
+        console.warn(`[CrosstabAgent] Possible truncation detected — increasing maxOutputTokens to ${maxOutputTokens}`);
+      }
+
       const { output, usage } = await generateText({
         model: getCrosstabModel(),  // Task-based: crosstab model for complex validation
         system: buildSystemPromptForGroup(group, ctx.shouldUsePolicySafeVariant),
@@ -167,7 +174,7 @@ Begin validation now.
           scratchpad: crosstabScratchpadTool,
         },
         stopWhen: stepCountIs(25),  // AI SDK 5+: replaces maxTurns/maxSteps
-        maxOutputTokens: Math.min(getCrosstabModelTokenLimit(), 100000),
+        maxOutputTokens,
         // Configure reasoning effort for Azure OpenAI GPT-5/o-series models
         providerOptions: {
           openai: {

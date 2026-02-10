@@ -98,25 +98,30 @@
 
 #### Azure OpenAI API
 
-- [ ] **Add circuit breaker for cascading API failures.** If Azure is down, every agent exhausts all 10 retries independently. With 50+ tables in VerificationAgent alone, that's 500 failed API calls before the pipeline gives up. For overnight batch runs, this wastes hours.
+- [x] **Add circuit breaker for cascading API failures.** If Azure is down, every agent exhausts all 10 retries independently. With 50+ tables in VerificationAgent alone, that's 500 failed API calls before the pipeline gives up. For overnight batch runs, this wastes hours.
   - Fix: Add a shared failure counter in `retryWithPolicyHandling.ts`. If 3 consecutive calls across the pipeline fail with the same error classification (e.g., `rate_limit` or `transient`), emit a circuit-breaker event. PipelineRunner catches this and aborts early with a clear message: "Azure OpenAI appears unavailable — aborting after N consecutive failures."
   - Affected: `retryWithPolicyHandling.ts` (shared state), `PipelineRunner.ts` (catch + abort)
+  - Done: `CircuitBreaker` singleton in `src/lib/CircuitBreaker.ts`. Tracks consecutive failures by classification. Trips after 3 consecutive rate_limit/transient errors → aborts pipeline signal. Any success resets counter.
 
-- [ ] **Log 429 response bodies for debugging.** Azure returns three distinct 429 types — quota exceeded, regional capacity, and transient scaling — each requiring different backoff. We currently classify all as `rate_limit`. The response body contains the distinguishing text but we don't persist it.
+- [x] **Log 429 response bodies for debugging.** Azure returns three distinct 429 types — quota exceeded, regional capacity, and transient scaling — each requiring different backoff. We currently classify all as `rate_limit`. The response body contains the distinguishing text but we don't persist it.
   - Fix: When a 429 is caught, persist the response body (or at least the error message) in the error log. Not changing retry behavior now, but this gives us the data to tune backoff later if overnight runs start failing.
   - Affected: `retryWithPolicyHandling.ts` `onRetryWithContext` callback
+  - Done: `summarizeErrorForRetry` now returns `{ summary, responseBody? }`. 429 bodies logged via `console.warn` and exposed on `RetryContext.lastResponseBody` and `RetryResult.lastResponseBody`.
 
-- [ ] **Check `finish_reason` for output truncation.** Azure defaults `max_tokens` to 4,096 for GPT-4o. If output exceeds this, JSON is silently truncated. The AI SDK catches this as `JSONParseError` (retryable), but all retries fail identically if the model consistently generates too much. Also: with reasoning models, `max_completion_tokens` is shared between reasoning and visible output — high reasoning effort can starve the actual response.
+- [x] **Check `finish_reason` for output truncation.** Azure defaults `max_tokens` to 4,096 for GPT-4o. If output exceeds this, JSON is silently truncated. The AI SDK catches this as `JSONParseError` (retryable), but all retries fail identically if the model consistently generates too much. Also: with reasoning models, `max_completion_tokens` is shared between reasoning and visible output — high reasoning effort can starve the actual response.
   - Fix: After each `generateText()` call, check for `finish_reason === "length"`. If detected, log distinctly ("Output truncated — model generated more tokens than max_tokens allows") and consider auto-increasing `max_tokens` on retry. This distinguishes "model output too big" from "model returned bad JSON."
   - Affected: All agent call sites, potentially `retryWithPolicyHandling.ts`
   - Note: Azure's Responses API rate limit headers are confirmed broken (return -1 and 0) — do NOT add header parsing.
+  - Done: Tracks `consecutiveOutputValidationErrors` in retry loop. `possibleTruncation` hint (true when >=2 consecutive) on `RetryContext`. VerificationAgent + CrosstabAgent escalate `maxOutputTokens` to full model limit when truncation detected.
 
-- [ ] **Add pipeline-level AbortSignal + timeout.** All 7 agents have AbortSignal plumbing, but PipelineRunner never creates or passes one. No way to abort a running pipeline (short of killing the process), and no overall pipeline timeout. A single hung `generateText()` call blocks indefinitely.
+- [x] **Add pipeline-level AbortSignal + timeout.** All 7 agents have AbortSignal plumbing, but PipelineRunner never creates or passes one. No way to abort a running pipeline (short of killing the process), and no overall pipeline timeout. A single hung `generateText()` call blocks indefinitely.
   - Fix: Create an `AbortController` in PipelineRunner with a configurable overall timeout (default: 90 minutes). Pass the signal to all agent calls. On timeout, persist the error and save whatever partial output exists.
   - Affected: `PipelineRunner.ts` `runPipeline()`, all agent call sites
+  - Done: `PipelineOptions.abortSignal` + `timeoutMs` (default 90 min). PipelineRunner creates AbortController, links external signal, sets timeout. Signal threaded to all 7 agent call sites. Cleanup on all 6 exit paths.
 
-- [CONSIDER] **Add Azure deployment health check at pipeline start.** A simple test API call (e.g., "respond with OK") before starting a 45-minute run could catch deployment issues, misconfigured API keys, or quota exhaustion in the first 5 seconds. Currently the pipeline discovers these 10-15 minutes in, after BannerAgent and survey processing.
+- [x] **Add Azure deployment health check at pipeline start.** A simple test API call (e.g., "respond with OK") before starting a 45-minute run could catch deployment issues, misconfigured API keys, or quota exhaustion in the first 5 seconds. Currently the pipeline discovers these 10-15 minutes in, after BannerAgent and survey processing.
   - Affected: `PipelineRunner.ts` pre-flight section
+  - Done: `src/lib/pipeline/HealthCheck.ts` deduplicates 7 agents → unique deployments, probes each with `generateText({ maxRetries: 0 })`. 15s timeout. Fails fast before file discovery. `SKIP_HEALTH_CHECK=true` to bypass.
 
 #### Batch Pipeline
 

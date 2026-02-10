@@ -17,6 +17,7 @@ import {
   NoOutputGeneratedError,
   NoObjectGeneratedError,
 } from 'ai';
+import { getActiveCircuitBreaker } from './CircuitBreaker';
 
 export interface RetryOptions {
   /** Maximum number of attempts (default: 10) */
@@ -63,6 +64,12 @@ export interface RetryContext {
   shouldUsePolicySafeVariant: boolean;
   /** True when this is the final attempt */
   isFinalAttempt: boolean;
+  /** Response body from last 429 error (for diagnostics) */
+  lastResponseBody?: unknown;
+  /** Consecutive output_validation errors — 2+ suggests truncation */
+  consecutiveOutputValidationErrors: number;
+  /** True when 2+ consecutive output_validation errors suggest output truncation */
+  possibleTruncation: boolean;
 }
 
 export interface RetryResult<T> {
@@ -78,6 +85,8 @@ export interface RetryResult<T> {
   wasPolicyError: boolean;
   /** Classification of the final error (if any) */
   finalClassification?: RetryClassification;
+  /** Response body from last 429 error (for diagnostics) */
+  lastResponseBody?: unknown;
 }
 
 /**
@@ -261,16 +270,19 @@ function classifyRetry(error: unknown): RetryClassification {
   return 'non_retryable';
 }
 
-function summarizeErrorForRetry(error: unknown): string {
+function summarizeErrorForRetry(error: unknown): { summary: string; responseBody?: unknown } {
   const chain = unwrapErrorChain(error);
   const top = chain[0];
   if (APICallError.isInstance(top)) {
     const codeText = extractAzureErrorCodeFromResponseBody(top.responseBody);
     const status = top.statusCode ? `HTTP ${top.statusCode}` : 'HTTP ?';
     const code = codeText ? ` | ${codeText.substring(0, 120)}` : '';
-    return `${status}${code}`.trim();
+    const summary = `${status}${code}`.trim();
+    // Capture response body for 429 diagnostics
+    const responseBody = top.statusCode === 429 ? top.responseBody : undefined;
+    return { summary, responseBody };
   }
-  return getErrorMessage(error).substring(0, 200);
+  return { summary: getErrorMessage(error).substring(0, 200) };
 }
 
 function computeDelayMs(args: {
@@ -366,7 +378,9 @@ export async function retryWithPolicyHandling<T>(
   let lastError: Error | undefined;
   let lastClassification: RetryClassification = 'non_retryable';
   let lastErrorSummary = '';
+  let lastResponseBody: unknown;
   let policyErrorCount = 0;
+  let consecutiveOutputValidationErrors = 0;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     // Check for abort before each attempt
@@ -387,10 +401,14 @@ export async function retryWithPolicyHandling<T>(
       lastErrorSummary,
       shouldUsePolicySafeVariant: policyErrorCount > 0 && attempt >= policySafeAfterAttempt,
       isFinalAttempt: attempt === maxAttempts,
+      lastResponseBody,
+      consecutiveOutputValidationErrors,
+      possibleTruncation: consecutiveOutputValidationErrors >= 2,
     };
 
     try {
       const result = await (fn as (c: RetryContext) => Promise<T>)(context);
+      getActiveCircuitBreaker()?.recordSuccess();
       return {
         success: true,
         result,
@@ -400,9 +418,26 @@ export async function retryWithPolicyHandling<T>(
     } catch (error) {
       lastError = toError(error);
       lastClassification = classifyRetry(error);
-      lastErrorSummary = summarizeErrorForRetry(error);
+      const errorInfo = summarizeErrorForRetry(error);
+      lastErrorSummary = errorInfo.summary;
+      lastResponseBody = errorInfo.responseBody;
 
       if (lastClassification === 'policy') policyErrorCount++;
+
+      // Track consecutive output_validation errors (suggests truncation)
+      if (lastClassification === 'output_validation') {
+        consecutiveOutputValidationErrors++;
+      } else {
+        consecutiveOutputValidationErrors = 0;
+      }
+
+      // Log 429 response body for diagnostics
+      if (lastResponseBody) {
+        console.warn(`[retryWithPolicyHandling] 429 response body: ${JSON.stringify(lastResponseBody).substring(0, 500)}`);
+      }
+
+      // Notify circuit breaker (may abort the pipeline signal)
+      getActiveCircuitBreaker()?.recordFailure(lastClassification, lastErrorSummary);
 
       // Only retry on retryable errors
       if (lastClassification === 'non_retryable') {
@@ -412,6 +447,7 @@ export async function retryWithPolicyHandling<T>(
           attempts: attempt,
           wasPolicyError: isPolicyError(error),
           finalClassification: lastClassification,
+          lastResponseBody,
         };
       }
 
@@ -440,6 +476,9 @@ export async function retryWithPolicyHandling<T>(
           lastErrorSummary,
           shouldUsePolicySafeVariant: policyErrorCount > 0 && (attempt + 1) >= policySafeAfterAttempt,
           isFinalAttempt: false,
+          lastResponseBody,
+          consecutiveOutputValidationErrors,
+          possibleTruncation: consecutiveOutputValidationErrors >= 2,
         },
         lastError,
         nextDelayMs
@@ -456,6 +495,7 @@ export async function retryWithPolicyHandling<T>(
           attempts: attempt,
           wasPolicyError: true,
           finalClassification: lastClassification,
+          lastResponseBody,
         };
       }
     }
@@ -468,5 +508,6 @@ export async function retryWithPolicyHandling<T>(
     attempts: maxAttempts,
     wasPolicyError: isPolicyError(lastError),
     finalClassification: lastClassification,
+    lastResponseBody,
   };
 }
