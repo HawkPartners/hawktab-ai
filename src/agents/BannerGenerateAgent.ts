@@ -18,6 +18,7 @@ import {
   getBannerGenerateModelName,
   getBannerGenerateModelTokenLimit,
   getBannerGenerateReasoningEffort,
+  getPromptVersions,
 } from '../lib/env';
 import {
   createContextScratchpadTool,
@@ -111,7 +112,8 @@ export async function generateBannerCuts(
   }
 
   // Build prompts
-  const systemPrompt = `${RESEARCH_DATA_PREAMBLE}${getBannerGeneratePrompt()}`;
+  const promptVersions = getPromptVersions();
+  const systemPrompt = `${RESEARCH_DATA_PREAMBLE}${getBannerGeneratePrompt(promptVersions.bannerGeneratePromptVersion)}`;
 
   // Build compact datamap for the user prompt
   const compactDataMap = input.verboseDataMap.map(v => ({

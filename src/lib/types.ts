@@ -50,6 +50,7 @@ export interface PromptVersions {
   skipLogicPromptVersion: string;
   filterTranslatorPromptVersion: string;
   loopSemanticsPromptVersion: string;
+  bannerGeneratePromptVersion: string;
 }
 
 export interface EnvironmentConfig {

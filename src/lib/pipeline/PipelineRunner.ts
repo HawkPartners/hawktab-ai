@@ -182,6 +182,12 @@ export async function runPipeline(
   const startTime = Date.now();
   const totalSteps = stopAfterVerification ? 5 : 11;
 
+  // Stage timing accumulator — populated as each stage completes
+  const stageTiming: Record<string, number> = {};
+
+  // Context size tracker — captures input sizes (chars) for key agent contexts
+  const contextSizes: Record<string, number> = {};
+
   // Reset metrics collector for this pipeline run
   resetMetricsCollector();
 
@@ -297,6 +303,7 @@ export async function runPipeline(
   const promptVersions = getPromptVersions();
   log('Prompt Versions:', 'blue');
   log(`  Banner:          ${promptVersions.bannerPromptVersion}`, 'dim');
+  log(`  BannerGenerate:  ${promptVersions.bannerGeneratePromptVersion}`, 'dim');
   log(`  Crosstab:        ${promptVersions.crosstabPromptVersion}`, 'dim');
   log(`  Verification:    ${promptVersions.verificationPromptVersion}`, 'dim');
   log(`  SkipLogic:       ${promptVersions.skipLogicPromptVersion}`, 'dim');
@@ -332,6 +339,7 @@ export async function runPipeline(
     });
 
     const validationDuration = Date.now() - validationStart;
+    stageTiming['validation'] = validationDuration;
     log(`  Format: ${validationResult.format}`, 'dim');
     log(`  Errors: ${validationResult.errors.length}, Warnings: ${validationResult.warnings.length}`, 'dim');
 
@@ -539,8 +547,9 @@ export async function runPipeline(
     }
 
     log(`  Effective datamap: ${verboseDataMap.length} variables`, 'green');
-    log(`  Duration: ${Date.now() - stepStart1}ms`, 'dim');
-    eventBus.emitStageComplete(1, STAGE_NAMES[1], Date.now() - stepStart1);
+    stageTiming['dataMapProcessor'] = Date.now() - stepStart1;
+    log(`  Duration: ${stageTiming['dataMapProcessor']}ms`, 'dim');
+    eventBus.emitStageComplete(1, STAGE_NAMES[1], stageTiming['dataMapProcessor']);
     log('', 'reset');
 
     // -------------------------------------------------------------------------
@@ -552,6 +561,7 @@ export async function runPipeline(
       const surveyResult = await processSurvey(files.survey, outputDir);
       surveyMarkdown = surveyResult.markdown;
       if (surveyMarkdown) {
+        contextSizes['surveyMarkdownChars'] = surveyMarkdown.length;
         log(`  Survey: ${surveyMarkdown.length} characters`, 'green');
       } else {
         log(`  Survey processing failed: ${surveyResult.warnings.join(', ')}`, 'yellow');
@@ -577,6 +587,11 @@ export async function runPipeline(
       Description: v.Description,
       Answer_Options: v.Answer_Options,
     }));
+
+    // Capture context sizes for observability
+    contextSizes['verboseDataMapEntries'] = verboseDataMap.length;
+    contextSizes['verboseDataMapChars'] = JSON.stringify(verboseDataMap).length;
+    contextSizes['agentDataMapChars'] = JSON.stringify(agentDataMap).length;
 
     // Path A: Banner → CrosstabAgent
     // Two sub-paths: BannerAgent (document extraction) or BannerGenerateAgent (AI generation)
@@ -723,7 +738,8 @@ export async function runPipeline(
 
       log(`  [Path A] CrosstabAgent: ${crosstabResult.result.bannerCuts.length} groups validated`, 'green');
       eventBus.emitStageComplete(3, STAGE_NAMES[3], Date.now() - crosstabStart);
-      log(`  [Path A] Complete in ${((Date.now() - pathAStart) / 1000).toFixed(1)}s`, 'dim');
+      stageTiming['pathA_bannerAndCrosstab'] = Date.now() - pathAStart;
+      log(`  [Path A] Complete in ${(stageTiming['pathA_bannerAndCrosstab'] / 1000).toFixed(1)}s`, 'dim');
 
       return { crosstabResult, agentBanner, groupCount, columnCount };
     })();
@@ -774,7 +790,8 @@ export async function runPipeline(
         }
       }
 
-      log(`  [Path B] Complete in ${((Date.now() - pathBStart) / 1000).toFixed(1)}s`, 'dim');
+      stageTiming['pathB_tableGenerator'] = Date.now() - pathBStart;
+      log(`  [Path B] Complete in ${(stageTiming['pathB_tableGenerator'] / 1000).toFixed(1)}s`, 'dim');
 
       return { tableAgentResults };
     })();
@@ -806,7 +823,8 @@ export async function runPipeline(
           );
 
           log(`  [Path C] FilterTranslatorAgent: ${filterResult.metadata.filtersTranslated} filters (${filterResult.metadata.highConfidenceCount} high confidence)`, 'green');
-          log(`  [Path C] Complete in ${((Date.now() - pathCStart) / 1000).toFixed(1)}s`, 'dim');
+          stageTiming['pathC_skipLogicAndFilter'] = Date.now() - pathCStart;
+          log(`  [Path C] Complete in ${(stageTiming['pathC_skipLogicAndFilter'] / 1000).toFixed(1)}s`, 'dim');
 
           return { skipLogicResult, filterResult };
         } else {
@@ -840,6 +858,7 @@ export async function runPipeline(
     const [pathAResult, pathBResult, pathCResult] = await Promise.allSettled([pathAPromise, pathBPromise, pathCPromise]);
 
     const parallelDuration = Date.now() - parallelStartTime;
+    stageTiming['parallelPaths'] = parallelDuration;
     log('', 'reset');
     log(`Parallel paths completed in ${(parallelDuration / 1000).toFixed(1)}s`, 'green');
 
@@ -942,8 +961,9 @@ export async function runPipeline(
       log(`  No filters to apply — tables pass through unchanged`, 'dim');
     }
 
-    eventBus.emitStageComplete(6, STAGE_NAMES[6], Date.now() - stepStart6);
-    log(`  Duration: ${Date.now() - stepStart6}ms`, 'dim');
+    stageTiming['filterApplicator'] = Date.now() - stepStart6;
+    eventBus.emitStageComplete(6, STAGE_NAMES[6], stageTiming['filterApplicator']);
+    log(`  Duration: ${stageTiming['filterApplicator']}ms`, 'dim');
     log('', 'reset');
 
     // GridAutoSplitter: split oversized grid tables before VerificationAgent
@@ -1031,7 +1051,8 @@ export async function runPipeline(
       );
     }
 
-    log(`  Duration: ${Date.now() - stepStart7}ms`, 'dim');
+    stageTiming['verificationAgent'] = Date.now() - stepStart7;
+    log(`  Duration: ${stageTiming['verificationAgent']}ms`, 'dim');
     log('', 'reset');
 
     // -------------------------------------------------------------------------
@@ -1191,8 +1212,9 @@ export async function runPipeline(
     if (failedValidationCount > 0) {
       log(`  Failed R validation: ${failedValidationCount}`, 'red');
     }
-    eventBus.emitStageComplete(8, STAGE_NAMES[8], Date.now() - stepStart8);
-    log(`  Duration: ${Date.now() - stepStart8}ms`, 'dim');
+    stageTiming['rValidation'] = Date.now() - stepStart8;
+    eventBus.emitStageComplete(8, STAGE_NAMES[8], stageTiming['rValidation']);
+    log(`  Duration: ${stageTiming['rValidation']}ms`, 'dim');
     log('', 'reset');
 
     // Combine valid + excluded tables for R script generation
@@ -1291,7 +1313,8 @@ export async function runPipeline(
         }
       }
 
-      log(`  Duration: ${Date.now() - stepStartLSP}ms`, 'dim');
+      stageTiming['loopSemanticsPolicy'] = Date.now() - stepStartLSP;
+      log(`  Duration: ${stageTiming['loopSemanticsPolicy']}ms`, 'dim');
       log('', 'reset');
     }
 
@@ -1329,8 +1352,9 @@ export async function runPipeline(
 
     log(`  Generated R script (${Math.round(masterScript.length / 1024)} KB)`, 'green');
     log(`  Tables in script: ${allTablesForR.length} (${validTables.length} valid, ${newlyExcluded.length} excluded)`, 'green');
-    eventBus.emitStageComplete(9, STAGE_NAMES[9], Date.now() - stepStart9);
-    log(`  Duration: ${Date.now() - stepStart9}ms`, 'dim');
+    stageTiming['rScriptGeneration'] = Date.now() - stepStart9;
+    eventBus.emitStageComplete(9, STAGE_NAMES[9], stageTiming['rScriptGeneration']);
+    log(`  Duration: ${stageTiming['rScriptGeneration']}ms`, 'dim');
     log('', 'reset');
 
     // -------------------------------------------------------------------------
@@ -1424,8 +1448,9 @@ export async function runPipeline(
         }
       }
 
-      eventBus.emitStageComplete(10, STAGE_NAMES[10], Date.now() - stepStart10);
-      log(`  Duration: ${Date.now() - stepStart10}ms`, 'dim');
+      stageTiming['rExecution'] = Date.now() - stepStart10;
+      eventBus.emitStageComplete(10, STAGE_NAMES[10], stageTiming['rExecution']);
+      log(`  Duration: ${stageTiming['rExecution']}ms`, 'dim');
 
       // -------------------------------------------------------------------------
       // Step 11: Excel Export
@@ -1477,8 +1502,9 @@ export async function runPipeline(
           }
         }
 
-        eventBus.emitStageComplete(11, STAGE_NAMES[11], Date.now() - stepStart11);
-        log(`  Duration: ${Date.now() - stepStart11}ms`, 'dim');
+        stageTiming['excelExport'] = Date.now() - stepStart11;
+        eventBus.emitStageComplete(11, STAGE_NAMES[11], stageTiming['excelExport']);
+        log(`  Duration: ${stageTiming['excelExport']}ms`, 'dim');
       } catch (excelError) {
         log(`  Excel generation failed: ${excelError instanceof Error ? excelError.message : String(excelError)}`, 'red');
         eventBus.emitStageFailed(11, STAGE_NAMES[11], excelError instanceof Error ? excelError.message : String(excelError));
@@ -1603,9 +1629,15 @@ export async function runPipeline(
       duration: { ms: totalDuration, formatted: `${(totalDuration / 1000).toFixed(1)}s` },
       promptVersions: {
         banner: promptVersions.bannerPromptVersion,
+        bannerGenerate: promptVersions.bannerGeneratePromptVersion,
         crosstab: promptVersions.crosstabPromptVersion,
         verification: promptVersions.verificationPromptVersion,
+        skipLogic: promptVersions.skipLogicPromptVersion,
+        filterTranslator: promptVersions.filterTranslatorPromptVersion,
+        loopSemantics: promptVersions.loopSemanticsPromptVersion,
       },
+      stageTiming,
+      contextSizes,
       statTesting: {
         thresholds: effectiveStatConfig.thresholds,
         confidenceLevels: effectiveStatConfig.thresholds.map(t => Math.round((1 - t) * 100)),

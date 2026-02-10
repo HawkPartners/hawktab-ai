@@ -166,6 +166,7 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
       skipLogicPromptVersion: process.env.SKIPLOGIC_PROMPT_VERSION || 'production',
       filterTranslatorPromptVersion: process.env.FILTERTRANSLATOR_PROMPT_VERSION || 'production',
       loopSemanticsPromptVersion: process.env.LOOP_SEMANTICS_PROMPT_VERSION || 'production',
+      bannerGeneratePromptVersion: process.env.BANNER_GENERATE_PROMPT_VERSION || 'production',
     },
     processingLimits: {
       maxDataMapVariables: parseInt(process.env.MAX_DATA_MAP_VARIABLES || '1000'),

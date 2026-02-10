@@ -130,6 +130,9 @@ QUALITY STANDARDS:
 - All filter expressions preserved exactly
 - Statistical letters assigned sequentially
 - Notes properly categorized by type
+
+NON-BANNER DOCUMENTS:
+If the document contains no extractable banner structure — for example, a cover page, a data dictionary, a methodology description, a screener document, or any file that does not define crosstab column specifications — output bannerCuts as an empty array with confidence below 0.20. Do not force extraction from documents that are not banner plans. An honest empty result is far more useful than a hallucinated structure.
 </output_requirements>
 
 <scratchpad_protocol>
@@ -221,6 +224,7 @@ COMMON FAILURE MODES:
 - "Fixing" unclear filter expressions
 - Skipping scratchpad documentation
 - Over-confident scoring on ambiguous documents
+- Forcing extraction from non-banner documents (cover pages, data dictionaries, methodology docs) — output empty bannerCuts instead
 
 When uncertain about group boundaries: preserve maximum granularity.
 When uncertain about filter expressions: extract exactly as shown.

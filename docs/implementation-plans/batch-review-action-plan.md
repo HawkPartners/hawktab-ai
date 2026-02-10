@@ -346,22 +346,22 @@ This preserves useful peripheral context while removing long-tail noise.
 
 ### Remove Dead Fields
 
-- [ ] **Remove `statisticalLettersUsed` from `ExtractedBannerStructureSchema`.** Dead data — never consumed by any downstream agent or processor.
+- [REJECTED] **Remove `statisticalLettersUsed` from `ExtractedBannerStructureSchema`.** Dead data — never consumed by any downstream agent or processor.
   - Ref: BannerAgent report 3.8
 
-- [ ] **Remove `notes` section from BannerAgent output.** Extra bloat. Calculation guidance (T2B, M3B, B2B) is inherited by the VerificationAgent from coded variables. Not needed for MVP.
+- [REJECTED] **Remove `notes` section from BannerAgent output.** Extra bloat. Calculation guidance (T2B, M3B, B2B) is inherited by the VerificationAgent from coded variables. Not needed for MVP.
   - Affects downstream schema
   - Ref: BannerAgent report, notes section
 
-- [ ] **Remove `changes` array from VerificationAgent schema.** Extra work for the agent with minimal value. Can detect changes deterministically by diffing input vs output. Frees agent intelligence for what actually matters.
+- [REJECTED] **Remove `changes` array from VerificationAgent schema.** Extra work for the agent with minimal value. Can detect changes deterministically by diffing input vs output. Frees agent intelligence for what actually matters.
   - Ref: VerificationAgent report 3.9
 
-- [ ] **Remove `confidence` and `userSummary` from VerificationAgent schema (or make them deterministic).** Never populated across any dataset. If we want per-table confidence, compute it deterministically (postpass fixes applied? NET rows created? baseText populated?). `userSummary` belongs in the regeneration flow, not initial pipeline.
+- [REJECTED] **Remove `confidence` and `userSummary` from VerificationAgent schema (or make them deterministic).** Never populated across any dataset. If we want per-table confidence, compute it deterministically (postpass fixes applied? NET rows created? baseText populated?). `userSummary` belongs in the regeneration flow, not initial pipeline.
   - Ref: VerificationAgent report 1.5
 
 ### Clarify Field Semantics
 
-- [ ] **Clarify `filterValue` vs `netComponents` for T2B/B2B rows.** T2B IS a NET — it should have NET components. The distinction isn't clear even to the product owner. Make the instructions explicit about what goes where. Either require `netComponents` on T2B/B2B rows, or infer them deterministically from `filterValue` in a postpass.
+- [REJECTED] **Clarify `filterValue` vs `netComponents` for T2B/B2B rows.** T2B IS a NET — it should have NET components. The distinction isn't clear even to the product owner. Make the instructions explicit about what goes where. Either require `netComponents` on T2B/B2B rows, or infer them deterministically from `filterValue` in a postpass.
   - Ref: VerificationAgent report 3.6
 
 ### Postpass Offloading
