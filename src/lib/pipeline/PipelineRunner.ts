@@ -873,6 +873,38 @@ export async function runPipeline(
     log(`  Duration: ${Date.now() - stepStart6}ms`, 'dim');
     log('', 'reset');
 
+    // GridAutoSplitter: split oversized grid tables before VerificationAgent
+    {
+      const { splitOversizedGrids } = await import('../tables/GridAutoSplitter');
+      const gridSplitResult = splitOversizedGrids(extendedTables, { verboseDataMap });
+
+      if (gridSplitResult.actions.length > 0) {
+        extendedTables = gridSplitResult.tables;
+        log(`  GridAutoSplitter: ${gridSplitResult.summary.totalInput} → ${gridSplitResult.summary.totalOutput} tables (${gridSplitResult.summary.tablesSplit} split)`, 'green');
+        for (const action of gridSplitResult.actions) {
+          log(`    ${action.originalTableId}: ${action.rowCount} rows → ${action.subTablesCreated} sub-tables`, 'dim');
+        }
+      } else {
+        log(`  GridAutoSplitter: no oversized grids detected`, 'dim');
+      }
+
+      // Save gridsplitter-report.json for debugging
+      try {
+        await fs.writeFile(
+          path.join(outputDir, 'gridsplitter-report.json'),
+          JSON.stringify({
+            summary: gridSplitResult.summary,
+            actions: gridSplitResult.actions,
+          }, null, 2),
+          'utf-8'
+        );
+      } catch (saveError) {
+        log(`  Failed to save gridsplitter report: ${saveError instanceof Error ? saveError.message : String(saveError)}`, 'yellow');
+      }
+    }
+
+    log('', 'reset');
+
     // Step 7: VerificationAgent (now sequential, sees pre-filtered tables)
     let verifiedTables: ExtendedTableDefinition[];
     logStep(7, totalSteps, 'Running VerificationAgent...');

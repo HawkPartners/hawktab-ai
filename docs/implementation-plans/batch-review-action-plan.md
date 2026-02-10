@@ -224,7 +224,7 @@
 
 ### Hidden Variable Value Labels
 
-- [DONE] **RDataReader already extracts value labels for h\* and d\* variables** — the raw `answerOptions` string was present (e.g., `"1=INTERNAL REFERRER,2=COMMUNITY REFERRER"`). However, `DataMapProcessor.normalizeVariableTypes()` returned early for admin variables before parsing `answerOptions` into structured `scaleLabels` and `allowedValues` arrays. Fixed: admin variables now get `scaleLabels` and `allowedValues` populated before the early return, so FilterTranslator can resolve h\*/d\* values deterministically.
+- [x] **RDataReader already extracts value labels for h\* and d\* variables** — the raw `answerOptions` string was present (e.g., `"1=INTERNAL REFERRER,2=COMMUNITY REFERRER"`). However, `DataMapProcessor.normalizeVariableTypes()` returned early for admin variables before parsing `answerOptions` into structured `scaleLabels` and `allowedValues` arrays. Fixed: admin variables now get `scaleLabels` and `allowedValues` populated before the early return, so FilterTranslator can resolve h\*/d\* values deterministically.
   - Ref: FilterTranslator report 4.2
   - Fix: `src/lib/processors/DataMapProcessor.ts` — parse value labels before admin early-return
 
@@ -234,21 +234,22 @@
 
 *Before tables reach the VerificationAgent, ensure only necessary tables proceed.*
 
-- [ ] **Implement pre-verification table count gate.** After FilterApplicator but before VerificationAgent:
+- [x] **Implement pre-verification table count gate.** After FilterApplicator but before VerificationAgent:
   - Below ~100 tables: pass all through, no intervention
   - Above 100 tables: deterministically identify and remove admin/metadata tables (IDs containing `_meta`, `_changes`, `_placeholder`, `_audit`, `_trailer`)
   - Above 100 tables: collapse unnecessary splits — if a split produces expressions where all split variables don't exist in the datamap, recombine using `splitFromTableId` traceability
   - Ref: VerificationAgent report, System report Rec #9
+  - Done: GridAutoSplitter (`src/lib/tables/GridAutoSplitter.ts`). Splits oversized grid tables (>140 rows, configurable via `GRID_SPLIT_THRESHOLD`) into one sub-table per unique variable. Runs post-FilterApplicator, pre-VerificationAgent. Full provenance chain, filter field preservation, subtitle generation from datamap. Admin/metadata removal and split collapsing deferred — GridAutoSplitter addresses the root cause (oversized grids overwhelming VerificationAgent).
 
-- [CONSIDER] **Switch to minimal model for large datasets.** When table count exceeds the threshold, swap VerificationAgent to minimal reasoning effort. Tables still get processed, just more cheaply. Alternative to dropping tables.
+- [REJECTED] **Switch to minimal model for large datasets.** When table count exceeds the threshold, swap VerificationAgent to minimal reasoning effort. Tables still get processed, just more cheaply. Alternative to dropping tables.
   - Ref: VerificationAgent report
 
-- [VERIFY] **Investigate WHY UCB Caregiver ballooned from 64 to 262 tables.** The survey doesn't need 205 tables. Something in the split/generation pipeline is creating redundancy. Trace the table expansion to understand the root cause before building mitigations.
+- [x] **Investigate WHY UCB Caregiver ballooned from 64 to 262 tables.** The survey doesn't need 205 tables. Something in the split/generation pipeline is creating redundancy. Trace the table expansion to understand the root cause before building mitigations.
   - Ref: VerificationAgent report
 
 ### Pre-Verification Risk Assessment
 
-- [ ] **Implement deterministic pre-flight risk assessment.** Runs after FilterApplicator, before VerificationAgent (~minute 10). Costs zero API calls — purely deterministic. Log to `pipeline-preflight.json`. For medium+ risk, display a warning with estimated cost/duration.
+- [REJECTED] **Implement deterministic pre-flight risk assessment.** Runs after FilterApplicator, before VerificationAgent (~minute 10). Costs zero API calls — purely deterministic. Log to `pipeline-preflight.json`. For medium+ risk, display a warning with estimated cost/duration.
   - Signals: variable count, survey size, loop presence, skip rule count, table count pre/post split
   - Risk tiers: Low (<100 tables), Medium (100-150), High (>150), Critical (>200 or loop mismatch)
   - V1: warning only. Future: automatic mitigations.
@@ -286,7 +287,7 @@
 - [ ] **Strengthen variable hallucination guard in VerificationAgent prompt.** Add: "You may ONLY reference variable names that appear in the datamap context provided. Do NOT construct, infer, or synthesize variable names."
   - Ref: VerificationAgent report 3.1
 
-- [CONSIDER] **Write more aggressive/detailed prompts now that context inputs are being trimmed.** The freed-up context budget from survey/datamap reduction means we can write longer, more detailed system prompts. Test this: copy current prompts as alternatives, write verbose production prompts, compare quality.
+- [REJECTED] **Write more aggressive/detailed prompts now that context inputs are being trimmed.** The freed-up context budget from survey/datamap reduction means we can write longer, more detailed system prompts. Test this: copy current prompts as alternatives, write verbose production prompts, compare quality.
   - Ref: VerificationAgent report, context reduction section
 
 ---
@@ -304,10 +305,10 @@
   - Affects downstream schema
   - Ref: BannerAgent report, notes section
 
-- [CONSIDER] **Remove `changes` array from VerificationAgent schema.** Extra work for the agent with minimal value. Can detect changes deterministically by diffing input vs output. Frees agent intelligence for what actually matters.
+- [ ] **Remove `changes` array from VerificationAgent schema.** Extra work for the agent with minimal value. Can detect changes deterministically by diffing input vs output. Frees agent intelligence for what actually matters.
   - Ref: VerificationAgent report 3.9
 
-- [CONSIDER] **Remove `confidence` and `userSummary` from VerificationAgent schema (or make them deterministic).** Never populated across any dataset. If we want per-table confidence, compute it deterministically (postpass fixes applied? NET rows created? baseText populated?). `userSummary` belongs in the regeneration flow, not initial pipeline.
+- [ ] **Remove `confidence` and `userSummary` from VerificationAgent schema (or make them deterministic).** Never populated across any dataset. If we want per-table confidence, compute it deterministically (postpass fixes applied? NET rows created? baseText populated?). `userSummary` belongs in the regeneration flow, not initial pipeline.
   - Ref: VerificationAgent report 1.5
 
 ### Clarify Field Semantics
@@ -344,7 +345,7 @@
 
 ### LoopSemanticsPolicyAgent Optimization
 
-- [CONSIDER] **Skip LoopSemanticsPolicyAgent when no entity signals exist.** If no banner cuts reference iteration-linked variables, the answer is always "all respondent-anchored." A deterministic pre-check could save the API call. Extends the existing gate (which already skips non-loop datasets) one step further.
+- [REJECTED] **Skip LoopSemanticsPolicyAgent when no entity signals exist.** If no banner cuts reference iteration-linked variables, the answer is always "all respondent-anchored." A deterministic pre-check could save the API call. Extends the existing gate (which already skips non-loop datasets) one step further.
   - Ref: LoopPolicyAgent report, P3
 
 ---
@@ -378,21 +379,21 @@
 
 ### SkipLogic Chunking
 
-- [CONSIDER] **Take another pass at chunked mode prompt language.** The chunked mode was built quickly. Review the prompt for optimal guidance, especially around what the agent should do when it suspects a rule exists but the evidence is in another chunk.
+- [ ] **Take another pass at chunked mode prompt language.** The chunked mode was built quickly. Review the prompt for optimal guidance, especially around what the agent should do when it suspects a rule exists but the evidence is in another chunk.
   - Ref: SkipLogicAgent report, chunked mode
 
-- [CONSIDER] **Cap maximum number of chunks instead of tuning threshold.** Maybe max 10 chunks is a better lever than adjusting the 40KB character threshold. Prevents extreme cases (CART had 16 chunks).
+- [ ] **Cap maximum number of chunks instead of tuning threshold.** Maybe max 10 chunks is a better lever than adjusting the 40KB character threshold. Prevents extreme cases (CART had 16 chunks).
   - Ref: SkipLogicAgent report, chunked mode
 
-- [CONSIDER] **Review deduplication behavior.** Dedup currently gets appended to the top of every run. Is this the right design? Worth flagging but may be inherent.
+- [ ] **Review deduplication behavior.** Dedup currently gets appended to the top of every run. Is this the right design? Worth flagging but may be inherent.
   - Ref: SkipLogicAgent report, chunked mode
 
 ### SkipLogic Architecture
 
-- [CONSIDER] **Two-pass approach for skip logic.** Instead of one pass that extracts AND classifies rules, maybe: Pass 1 captures all rules the agent sees (everything — gates, column-level, row-level, table-level). Pass 2 classifies each one. The system deterministically decides which to apply. This might produce better coverage since the agent isn't filtering while extracting.
+- [REJECTED] **Two-pass approach for skip logic.** Instead of one pass that extracts AND classifies rules, maybe: Pass 1 captures all rules the agent sees (everything — gates, column-level, row-level, table-level). Pass 2 classifies each one. The system deterministically decides which to apply. This might produce better coverage since the agent isn't filtering while extracting.
   - Ref: SkipLogicAgent report 3.2
 
-- [CONSIDER] **Provide respondent counts per variable to SkipLogicAgent or FilterTranslator.** Actual R data (not just the survey) could help the agent understand whether filtering is already happening as expected. Maybe more of a FilterTranslatorAgent input than SkipLogicAgent.
+- [ ] **Provide respondent counts per variable to SkipLogicAgent or FilterTranslator.** Actual R data (not just the survey) could help the agent understand whether filtering is already happening as expected. Maybe more of a FilterTranslatorAgent input than SkipLogicAgent.
   - Ref: SkipLogicAgent report, overall impression
 
 ### BannerGenerateAgent Role
@@ -404,30 +405,6 @@
 
 - [ ] **Improve duplicate rule detection in chunked mode.** The current overlapping-appliesTo threshold (70%) is fragile. Consider making the schema structure more conducive to deterministic deduplication — each field distinct enough that collisions are easily caught.
   - Ref: SkipLogicAgent report 3.6
-
----
-
-## Post-Implementation
-
-*Things to do after the above changes are implemented and a clean batch run is completed.*
-
-- [ ] **Re-run the full batch with all fixes applied.** This is the validation step. Compare against the current batch results.
-
-- [ ] **Re-evaluate LoopSemanticsPolicyAgent with clean data.** The current report is tainted by mid-run code changes. Need a clean run to assess actual performance.
-
-- [ ] **A/B test production vs alternative prompts.** After the prompt rotation, run 3-4 representative datasets with each version and compare: R validation pass rate, postpass fix counts, table quality, cost.
-
-- [ ] **Pull scratchpad themes into prompts.** After reviewing scratchpad traces from the clean batch run, identify recurring reasoning patterns and codify them as permanent prompt rules. This is how prompts improve over time.
-
----
-
-## Decisions Log
-
-*Track decisions made on [CONSIDER] items here.*
-
-| Item | Decision | Date | Rationale |
-|------|----------|------|-----------|
-| | | | |
 
 ---
 

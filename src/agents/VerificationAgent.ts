@@ -87,6 +87,7 @@ export interface VerificationInput {
     baseText: string;
     splitFromTableId: string;
     filterReviewRequired: boolean;
+    tableSubtitle: string;
   };
 }
 
@@ -288,15 +289,19 @@ Please carefully review the error message and the datamap context above, then re
   );
 
   if (retryResult.success && retryResult.result) {
-    // Preserve filter fields from upstream FilterApplicator
+    // Preserve filter fields from upstream FilterApplicator / GridAutoSplitter
     if (input.filterContext) {
       for (const t of retryResult.result.tables) {
         t.additionalFilter = input.filterContext.additionalFilter;
         t.splitFromTableId = input.filterContext.splitFromTableId;
         t.filterReviewRequired = input.filterContext.filterReviewRequired;
-        // Preserve FilterApplicator's baseText if set; otherwise keep agent's
+        // Preserve upstream baseText if set; otherwise keep agent's
         if (input.filterContext.baseText) {
           t.baseText = input.filterContext.baseText;
+        }
+        // Preserve upstream tableSubtitle if agent didn't set its own
+        if (input.filterContext.tableSubtitle && !t.tableSubtitle) {
+          t.tableSubtitle = input.filterContext.tableSubtitle;
         }
       }
     }
@@ -551,13 +556,14 @@ export async function verifyAllTablesParallel(
   if (isExtendedTableArray(tableInput)) {
     // ExtendedTableDefinition[] from FilterApplicator — flat array with filter fields
     for (const extTable of tableInput) {
-      // Extract filter context if table has been filtered/split
-      const hasFilterContext = extTable.additionalFilter || extTable.splitFromTableId || extTable.filterReviewRequired;
+      // Extract filter context if table has been filtered/split/grid-split
+      const hasFilterContext = extTable.additionalFilter || extTable.splitFromTableId || extTable.filterReviewRequired || extTable.tableSubtitle;
       const filterContext = hasFilterContext ? {
         additionalFilter: extTable.additionalFilter,
         baseText: extTable.baseText,
         splitFromTableId: extTable.splitFromTableId,
         filterReviewRequired: extTable.filterReviewRequired,
+        tableSubtitle: extTable.tableSubtitle,
       } : undefined;
 
       // Convert ExtendedTableDefinition back to TableDefinition for the agent
