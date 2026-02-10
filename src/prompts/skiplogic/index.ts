@@ -1,10 +1,13 @@
 // SkipLogic Agent prompt selector
 import { SKIP_LOGIC_AGENT_INSTRUCTIONS_PRODUCTION } from './production';
+import { SKIP_LOGIC_AGENT_INSTRUCTIONS_ALTERNATIVE } from './alternative';
 
 export const getSkipLogicPrompt = (version?: string): string => {
   const promptVersion = version || process.env.SKIPLOGIC_PROMPT_VERSION || 'production';
 
   switch (promptVersion) {
+    case 'alternative':
+      return SKIP_LOGIC_AGENT_INSTRUCTIONS_ALTERNATIVE;
     case 'production':
     default:
       return SKIP_LOGIC_AGENT_INSTRUCTIONS_PRODUCTION;
