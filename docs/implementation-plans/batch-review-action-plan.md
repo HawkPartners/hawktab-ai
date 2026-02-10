@@ -48,12 +48,14 @@
 
 ### Loop Resilience
 
-- [ ] **Fix the Iptacopan R crash.** The only complete pipeline failure in the batch — loop iteration column mismatch (`B2b_9r1` doesn't exist in stacked frame). Add pre-flight validation in LoopCollapser that verifies all expected iteration columns exist before generating R code. If columns are missing, skip that iteration or generate a safe fallback.
+- [x] **Fix the Iptacopan R crash.** The only complete pipeline failure in the batch — loop iteration column mismatch (`B2b_9r1` doesn't exist in stacked frame). Add pre-flight validation in LoopCollapser that verifies all expected iteration columns exist before generating R code. If columns are missing, skip that iteration or generate a safe fallback.
   - Affected: LoopCollapser, RScriptGeneratorV2
   - Ref: System report Section 5
+  - Done: LoopCollapser only includes variable mappings when ALL iteration columns exist in datamap; skipped vars pass through; empty loop groups skipped.
 
-- [ ] **Add deterministic fallback for LoopSemanticsPolicyAgent failures.** If the agent fails, classify everything as respondent-anchored by default. The deterministic resolver already works across all 6 datasets. Entity-anchored only when deterministic evidence is unambiguous.
+- [x] **Add deterministic fallback for LoopSemanticsPolicyAgent failures.** If the agent fails, classify everything as respondent-anchored by default. The deterministic resolver already works across all 6 datasets. Entity-anchored only when deterministic evidence is unambiguous.
   - Ref: LoopPolicyAgent report, Claude's notes
+  - Done: createRespondentAnchoredFallbackPolicy(); fallbackApplied/fallbackReason in schema + persisted JSON for UI surfacing.
 
 - [ ] **Research and anticipate additional failure modes.** Deep web search for Azure rate limiting edge cases, context window overflow patterns, R execution edge cases. Proactively fix before they hit us.
   - Ref: System report, User Thoughts

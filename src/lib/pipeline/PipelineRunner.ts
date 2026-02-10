@@ -46,7 +46,10 @@ import type { LoopGroupMapping } from '../validation/LoopCollapser';
 import { resolveIterationLinkedVariables } from '../validation/LoopContextResolver';
 import type { DeterministicResolverResult } from '../validation/LoopContextResolver';
 import { runLoopSemanticsPolicyAgent, buildDatamapExcerpt } from '../../agents/LoopSemanticsPolicyAgent';
-import type { LoopSemanticsPolicy } from '../../schemas/loopSemanticsPolicySchema';
+import {
+  createRespondentAnchoredFallbackPolicy,
+  type LoopSemanticsPolicy,
+} from '../../schemas/loopSemanticsPolicySchema';
 
 const execAsync = promisify(exec);
 
@@ -1025,7 +1028,25 @@ export async function runPipeline(
       } catch (error) {
         const errMsg = error instanceof Error ? error.message : String(error);
         log(`  LoopSemanticsPolicyAgent failed: ${errMsg}`, 'yellow');
-        log(`  Proceeding without loop semantics policy (stacked cuts will use original expressions)`, 'yellow');
+        log(`  Using deterministic fallback: all groups respondent-anchored`, 'yellow');
+
+        const fallbackReason = `LoopSemanticsPolicyAgent failed: ${errMsg.substring(0, 200)}; all groups defaulted to respondent-anchored for safety`;
+        loopSemanticsPolicy = createRespondentAnchoredFallbackPolicy(
+          cutsSpec.groups.map(g => g.groupName),
+          fallbackReason,
+        );
+
+        // Save fallback policy (with fallbackApplied/fallbackReason for UI surfacing)
+        const loopPolicyDir = path.join(outputDir, 'loop-policy');
+        await fs.mkdir(loopPolicyDir, { recursive: true });
+        await fs.writeFile(
+          path.join(loopPolicyDir, 'loop-semantics-policy.json'),
+          JSON.stringify(loopSemanticsPolicy, null, 2),
+          'utf-8',
+        );
+
+        log(`  LoopSemanticsPolicyAgent: 0 entity-anchored, ${loopSemanticsPolicy.bannerGroups.length} respondent-anchored (fallback)`, 'green');
+
         try {
           await persistSystemError({
             outputDir,
@@ -1036,7 +1057,11 @@ export async function runPipeline(
             severity: 'error',
             actionTaken: 'fallback_used',
             error,
-            meta: { action: 'proceed_without_loop_policy' },
+            meta: {
+              action: 'respondent_anchored_fallback',
+              fallbackApplied: true,
+              fallbackReason,
+            },
           });
         } catch {
           // ignore

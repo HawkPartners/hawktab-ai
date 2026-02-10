@@ -176,36 +176,45 @@ export function collapseLoopVariables(
   const loopMappings: LoopGroupMapping[] = [];
 
   // Process each (merged) loop group
-  for (let loopIdx = 0; loopIdx < mergedLoops.length; loopIdx++) {
-    const loop = mergedLoops[loopIdx];
-    const stackedFrameName = `stacked_loop_${loopIdx + 1}`;
+  let mappingIdx = 0;
+  for (const loop of mergedLoops) {
+    const stackedFrameName = `stacked_loop_${mappingIdx + 1}`;
 
     const variableMappings: LoopVariableMapping[] = [];
 
     for (const basePattern of loop.bases) {
       const baseName = deriveBaseName(basePattern);
 
-      // Build iteration → column mapping
+      // Build iteration → column mapping (pre-flight: only include columns that exist in datamap)
+      // Prevents R crash when LoopDetector infers iterations that don't exist in the actual data
+      // (e.g. Iptacopan: B2b_9r1 expected but not present in stacked frame)
       const iterationColumns: Record<string, string> = {};
+      let allColumnsExist = true;
       for (const iter of loop.iterations) {
         const colName = resolveBaseToColumn(basePattern, iter);
-        iterationColumns[iter] = colName;
-        collapsedVariableNames.add(colName);
-      }
-
-      // Find the first available iteration's variable for metadata
-      let sourceVar: VerboseDataMap | undefined;
-      let sourceColName = '';
-      for (const iter of loop.iterations) {
-        const colName = iterationColumns[iter];
-        sourceVar = varByColumn.get(colName);
-        if (sourceVar) {
-          sourceColName = colName;
+        if (varByColumn.has(colName)) {
+          iterationColumns[iter] = colName;
+        } else {
+          allColumnsExist = false;
           break;
         }
       }
 
-      if (!sourceVar) continue; // Skip if no iteration found in datamap
+      // Skip this variable if any expected column is missing — prevents R rename() crash
+      if (!allColumnsExist || Object.keys(iterationColumns).length === 0) {
+        continue;
+      }
+
+      // Only add to collapsedVariableNames after we've verified all columns exist
+      for (const colName of Object.values(iterationColumns)) {
+        collapsedVariableNames.add(colName);
+      }
+
+      // Find the first available iteration's variable for metadata
+      const firstIter = loop.iterations[0];
+      const sourceColName = iterationColumns[firstIter];
+      const sourceVar = varByColumn.get(sourceColName);
+      if (!sourceVar) continue; // Should not happen given the check above
 
       // Clean the label
       const cleanedLabel = cleanLabel(sourceVar.description, sourceColName);
@@ -216,7 +225,12 @@ export function collapseLoopVariables(
         iterationColumns,
       });
 
-      baseNameToLoopIndex.set(baseName, loopIdx);
+      baseNameToLoopIndex.set(baseName, mappingIdx);
+    }
+
+    // Skip loop groups with no valid variables (all had missing iteration columns)
+    if (variableMappings.length === 0) {
+      continue;
     }
 
     loopMappings.push({
@@ -225,6 +239,7 @@ export function collapseLoopVariables(
       iterations: [...loop.iterations],
       variables: variableMappings,
     });
+    mappingIdx++;
   }
 
   // Build collapsed datamap:

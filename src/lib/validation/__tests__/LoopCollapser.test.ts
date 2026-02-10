@@ -274,6 +274,71 @@ describe('collapseLoopVariables', () => {
     });
   });
 
+  it('skips variables when iteration columns are missing (Iptacopan-style pre-flight)', () => {
+    // LoopDetector infers iterations 1,2,3 but A1_3 is missing from datamap
+    const vars = [
+      makeVar('A1_1', 'Q1 iter 1'),
+      makeVar('A2_1', 'Q2 iter 1'),
+      makeVar('A1_2', 'Q1 iter 2'),
+      makeVar('A2_2', 'Q2 iter 2'),
+      // A1_3 intentionally missing; A2_3 present
+      makeVar('A2_3', 'Q2 iter 3'),
+    ];
+
+    const detection: LoopDetectionResult = {
+      hasLoops: true,
+      loops: [{
+        skeleton: 'A-N-_-N',
+        iteratorPosition: 3,
+        iterations: ['1', '2', '3'],
+        bases: ['A1_*', 'A2_*'],
+        variables: ['A1_1', 'A2_1', 'A1_2', 'A2_2', 'A1_3', 'A2_3'],
+        diversity: 2,
+      }],
+      nonLoopVariables: [],
+    };
+
+    const result = collapseLoopVariables(vars, detection);
+
+    // A1 skipped (missing A1_3); A2 included (all columns present)
+    expect(result.loopMappings[0].variables).toHaveLength(1);
+    expect(result.loopMappings[0].variables[0].baseName).toBe('A2');
+    expect(result.loopMappings[0].variables[0].iterationColumns).toEqual({
+      '1': 'A2_1',
+      '2': 'A2_2',
+      '3': 'A2_3',
+    });
+    // A1_1, A1_2 pass through (not collapsed); A2 collapsed from A2_1, A2_2, A2_3
+    expect(result.collapsedDataMap).toHaveLength(3);
+    expect(result.collapsedDataMap.map(v => v.column).sort()).toEqual(['A1_1', 'A1_2', 'A2']);
+  });
+
+  it('skips loop group entirely when all variables have missing iteration columns', () => {
+    const vars = [
+      makeVar('A1_1', 'Q1 iter 1'),
+      makeVar('A1_2', 'Q1 iter 2'),
+      // A1_3 missing - only one base, so entire group gets skipped
+    ];
+
+    const detection: LoopDetectionResult = {
+      hasLoops: true,
+      loops: [{
+        skeleton: 'A-N-_-N',
+        iteratorPosition: 3,
+        iterations: ['1', '2', '3'],
+        bases: ['A1_*'],
+        variables: ['A1_1', 'A1_2', 'A1_3'],
+        diversity: 1,
+      }],
+      nonLoopVariables: [],
+    };
+
+    const result = collapseLoopVariables(vars, detection);
+
+    expect(result.loopMappings).toHaveLength(0);
+    expect(result.collapsedDataMap).toHaveLength(2); // A1_1, A1_2 pass through (none collapsed)
+  });
+
   it('handles grid+loop collapse: A16_1r1, A16_1r2, A16_2r1, A16_2r2', () => {
     const vars = [
       makeVar('A16_1r1', 'A16_1r1: Rate attr 1'),

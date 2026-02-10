@@ -66,7 +66,46 @@ export const LoopSemanticsPolicySchema = z.object({
 
   /** Brief reasoning summary */
   reasoning: z.string(),
+
+  /** True when agent failed and all groups defaulted to respondent-anchored (for UI surfacing) */
+  fallbackApplied: z.boolean().optional(),
+
+  /** Human-readable reason when fallback was used (for UI surfacing) */
+  fallbackReason: z.string().optional(),
 });
 
 export type LoopSemanticsPolicy = z.infer<typeof LoopSemanticsPolicySchema>;
 export type BannerGroupPolicy = z.infer<typeof BannerGroupPolicySchema>;
+
+/**
+ * Build a deterministic fallback policy when LoopSemanticsPolicyAgent fails.
+ * Classifies all banner groups as respondent-anchored (safest default).
+ * Marked with fallbackApplied/fallbackReason so UI can surface the assumption.
+ */
+export function createRespondentAnchoredFallbackPolicy(
+  groupNames: string[],
+  reason: string,
+): LoopSemanticsPolicy {
+  return {
+    policyVersion: '1.0',
+    bannerGroups: groupNames.map(groupName => ({
+      groupName,
+      anchorType: 'respondent' as const,
+      shouldPartition: true,
+      comparisonMode: 'suppress' as const,
+      stackedFrameName: '',
+      implementation: {
+        strategy: 'none' as const,
+        aliasName: '',
+        sourcesByIteration: [],
+        notes: 'Fallback: defaulted to respondent-anchored (agent failed)',
+      },
+      confidence: 0.5,
+      evidence: ['Deterministic fallback: agent failed; defaulting to respondent-anchored for safety'],
+    })),
+    warnings: [reason],
+    reasoning: 'LoopSemanticsPolicyAgent failed. All groups defaulted to respondent-anchored (entities from respondents in segment).',
+    fallbackApplied: true,
+    fallbackReason: reason,
+  };
+}
