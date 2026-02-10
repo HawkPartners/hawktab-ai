@@ -66,6 +66,8 @@ This means column-level filtering must happen at the FilterApplicator stage, bef
 2. **Application order**: table gate first, then column split, then row split within each column table
 3. **Each layer inherits from the previous**: column splits inherit the table-level filter; row splits inherit both
 4. **Deterministic splitting**: The FilterApplicator handles all structural changes; VerificationAgent enriches but doesn't restructure
+5. **Safe prompt iteration**: Prompt experiments happen in `alternative` only; `production` remains frozen until promotion
+6. **Generalization over memorization**: Prompt guidance must encode abstract principles, not dataset-specific hints
 
 ### Schema Changes
 
@@ -206,6 +208,13 @@ if (columnSplitFilters.length > 0 && rowLevelFilters.length === 0) {
 
 **Critical difference from row-level splits**: Empty `filterExpression` does NOT skip the column group — it creates the table with no additional filter. This is how "always shown" columns work.
 
+#### Required Guardrails in Column Split Logic
+
+- **Do not create zero-row tables**: If a column group produces no matching rows, skip it and emit a warning.
+- **Validate combined expressions before writing**: Run `validateFilterVariables()` on combined table-level + column-level expressions; if invalid, pass through with `filterReviewRequired: true` rather than silently writing bad filters.
+- **Preserve provenance exactly**: Always set `splitFromTableId` and `lastModifiedBy: 'FilterApplicator'` on split outputs for debugging and downstream attribution.
+- **Avoid tableId collisions**: Sanitized `splitLabel` suffixes can collide (e.g., punctuation/case variants). Add a deterministic tie-breaker when needed (e.g., suffix with split index).
+
 #### Composition with Row-Level Splits (Case 7)
 
 When both column-split and row-split apply to the same question:
@@ -218,7 +227,7 @@ This is the most complex case but follows naturally: column splits produce inter
 
 ### Prompt Changes
 
-#### SkipLogicAgent (alternative prompt)
+#### SkipLogicAgent (alternative prompt + chunked mode text)
 
 Add a third classification with guidance on identifying column-level patterns:
 
@@ -244,7 +253,9 @@ In `translationContext`, the SkipLogicAgent should describe:
 - Which column is gated (by label, position, or description)
 - What the gating condition is
 - Whether OTHER columns of the same grid are always shown or have their own conditions
-- The relationship between columns (e.g., "column 1 = 2nd line therapy, column 2 = 3rd+ line therapy")
+- The relationship between columns (e.g., "column 1 = Segment A, column 2 = Segment B")
+
+**Critical implementation note:** `SkipLogicAgent` chunked mode currently hardcodes "Classify as table-level, row-level, or no rule." That text must be updated too, or large surveys will continue to under-classify column rules even after schema changes.
 
 #### FilterTranslator (alternative prompt)
 
@@ -267,6 +278,21 @@ Steps:
 
 Output: action = "column-split", columnSplits = [...]
 ```
+
+Also add explicit output-shape constraints:
+- For `action: "column-split"`, require `splits: []` and populate `columnSplits`.
+- For `action: "split"`, require `columnSplits: []` and populate `splits`.
+- For `action: "filter"`, require both arrays empty.
+
+### Prompt Generalization Guardrails (Required)
+
+When editing `alternative` prompts for this feature:
+
+1. **No dataset identifiers**: Do not include real dataset variable names (e.g., survey-specific IDs).
+2. **No dataset domains**: Avoid domain terms from current test datasets; use neutral domains (retail, employee, service usage).
+3. **Abstract examples only**: Use generic structures like `Q5r1c2`/`Q5r2c2`, never client-specific naming.
+4. **Structure-first instructions**: Teach the model how to detect columns/rows from datamap patterns and translation context, not from memorized tokens.
+5. **Cross-dataset sanity check before save**: Review prompt edits once specifically for contamination risk.
 
 ### VerificationAgent Impact
 
@@ -295,11 +321,14 @@ All combinations of the three rule types on a single question:
 
 ## Implementation Order
 
-1. **Schema**: Add `column-level` to ruleType enum, add `ColumnSplitDefinitionSchema`, add `column-split` to action enum, add `columnSplits` to TableFilter
-2. **FilterApplicator**: Add column-split case (case 3 above), add column+row composition (case 7), update summary counters
-3. **SkipLogicAgent prompt**: Add column-level classification guidance and translationContext requirements
-4. **FilterTranslator prompt**: Add column-split translation guidance with variable grouping instructions
-5. **Testing**: Run CAR-T and GVHD datasets to verify column-level rules are correctly extracted, translated, and applied
+1. **Schema (single source of truth)**: Add `column-level` to ruleType enum, add `ColumnSplitDefinitionSchema`, add `column-split` to action enum, add `columnSplits` to `TableFilter`
+2. **FilterTranslator post-validation**: Extend `FilterTranslatorAgent` validation to validate `columnSplits[].filterExpression` (not just `filterExpression` and `splits[]`)
+3. **FilterApplicator**: Add column-split case, add column+row composition, update summary counters (including `columnSplitCount`)
+4. **Observability/logging**: Update pipeline summary logging to print `columnSplitCount` so regressions are visible in batch runs
+5. **Prompt updates in experiment paths**: Update `alternative` prompts for SkipLogic + FilterTranslator; update chunked-mode SkipLogic instructions in code
+6. **Verification guardrail (if needed)**: If re-splitting appears in outputs, add explicit "do not re-split same dimension when already split upstream" instruction in Verification prompt
+7. **Testing**: Run CAR-T and GVHD datasets with `SKIPLOGIC_PROMPT_VERSION=alternative` and `FILTERTRANSLATOR_PROMPT_VERSION=alternative` to verify extraction, translation, application, and table counts end-to-end
+8. **Promotion (separate step)**: If metrics and output quality improve across batch runs, copy vetted `alternative` content into `production` in a dedicated follow-up change
 
 ---
 
@@ -309,8 +338,11 @@ All combinations of the three rule types on a single question:
 |------|--------|
 | `src/schemas/skipLogicSchema.ts` | Add `column-level` to ruleType, `ColumnSplitDefinitionSchema`, `column-split` action, `columnSplits` field |
 | `src/lib/filters/FilterApplicator.ts` | New column-split case, column+row composition, updated summary |
-| `src/prompts/skiplogic/alternative.ts` | Column-level classification guidance |
-| `src/prompts/filtertranslator/alternative.ts` | Column-split translation guidance |
+| `src/agents/FilterTranslatorAgent.ts` | Validate `columnSplits` expressions, degrade confidence/flag review on invalid column split variables |
+| `src/agents/SkipLogicAgent.ts` | Update chunked-mode classification text to include `column-level` |
+| `src/lib/pipeline/PipelineRunner.ts` | Include `columnSplitCount` in filter summary log output |
+| `src/prompts/skiplogic/alternative.ts` | Column-level classification guidance (experiment path) |
+| `src/prompts/filtertranslator/alternative.ts` | Column-split translation guidance + output-shape constraints |
 
 ---
 
@@ -318,8 +350,31 @@ All combinations of the three rule types on a single question:
 
 - **Azure structured output**: The new `columnSplits` array must default to `[]` (not undefined) per our Azure constraint. This is consistent with how `splits` already works.
 - **Prompt hygiene**: All examples in the prompts must be abstract/generic — no CAR-T or GVHD variable names.
+- **Prompt version mismatch risk**: Editing only `alternative` prompts while env uses `production` will produce zero runtime effect. Test runs must explicitly set alternative prompt versions.
 - **VerificationAgent conflict**: If the VerificationAgent sees a pre-split table and tries to re-split it, we'd get unnecessary fragmentation. The VerificationAgent's dimensional split guidance should note: "If a table was already split by FilterApplicator (check `splitFromTableId`), do not re-split along the same dimension."
 - **Variable naming patterns**: The FilterTranslator needs to identify column groups from variable names. Most SPSS naming follows `QrXcY` (row X, column Y) patterns, but not all. The translationContext from the SkipLogicAgent should describe the column structure in words so the FilterTranslator can match even with non-standard naming.
+
+---
+
+## Acceptance Criteria (CAR-T First)
+
+Use CAR-T A6 as the must-pass reference case because it represents the original failure mode.
+
+1. **SkipLogic output**
+   - A6 rule is classified as `column-level` (not `table-level`)
+   - `translationContext` explicitly states which A6 column is conditionally shown and which remains always shown
+2. **FilterTranslator output**
+   - Emits `action: "column-split"` for A6
+   - Emits two column groups: one for `A6r*c1` and one for `A6r*c2`
+   - Only the conditionally shown column group has non-empty `filterExpression`
+3. **FilterApplicator output**
+   - Produces split A6 tables per column group before verification
+   - The always-shown column table has no unintended additional filter
+   - The conditional column table includes the expected gating expression
+4. **End behavior**
+   - Respondents with `S16r3c1 + S16r4c1 == 0` still appear in the 2nd-line A6 table
+   - The 3rd+ A6 table is suppressed for those respondents
+   - No regression in datasets without column-level rules
 
 ---
 
