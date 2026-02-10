@@ -10,6 +10,8 @@
  * 3. Loop Detection - Detect loops, check fill rates
  */
 
+import { constants as fsConstants } from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import { detectLoops } from './LoopDetector';
 import { checkRAvailability, getDataFileStats, getColumnFillRates, convertToRawVariables } from './RDataReader';
@@ -64,9 +66,39 @@ export async function validate(options: ValidationRunnerOptions): Promise<Valida
 
   // =========================================================================
   // Stage 1: Read Data File (.sav via R + haven)
+  // Truly unrecoverable errors (corrupted files, unsupported formats) are
+  // caught here in the first 30 seconds, not 40 minutes into a run.
   // =========================================================================
   const stage1Start = Date.now();
   eventBus.emitValidationStageStart(1, STAGE_NAMES[1]);
+
+  // Pre-flight: verify .sav exists, is readable, and has content (fail fast)
+  try {
+    await fs.access(options.spssPath, fsConstants.R_OK);
+    const stat = await fs.stat(options.spssPath);
+    if (stat.size === 0) {
+      throw new Error('File is empty');
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    const code = err && typeof err === 'object' && 'code' in err ? (err as NodeJS.ErrnoException).code : '';
+    const isNotFound = code === 'ENOENT' || msg.includes('ENOENT') || msg.includes('no such file');
+    const isEmpty = msg.includes('empty');
+    errors.push({
+      stage: 1,
+      stageName: STAGE_NAMES[1],
+      severity: 'error',
+      message: isNotFound
+        ? 'Data file not found or not readable'
+        : isEmpty
+          ? 'Data file is empty'
+          : `Cannot read data file: ${msg}`,
+      details: 'Ensure the .sav file exists, is readable, and contains valid SPSS data.',
+    });
+    eventBus.emitValidationStageComplete(1, STAGE_NAMES[1], Date.now() - stage1Start);
+    eventBus.emitValidationComplete(false, format, errors.length, warnings.length, Date.now() - startTime);
+    return buildReport(false, format, errors, warnings, null, null, null, [], null, startTime);
+  }
 
   // R is a hard gate — no fallback
   const rAvailable = await checkRAvailability(options.outputDir);
@@ -102,11 +134,15 @@ export async function validate(options: ValidationRunnerOptions): Promise<Valida
       );
     }
   } catch (err) {
+    const rErr = err instanceof Error ? err.message : String(err);
     errors.push({
       stage: 1,
       stageName: STAGE_NAMES[1],
       severity: 'error',
-      message: `Failed to read data file: ${err instanceof Error ? err.message : String(err)}`,
+      message: rErr.includes('R script failed') || rErr.toLowerCase().includes('parse') || rErr.toLowerCase().includes('format')
+        ? `Data file appears corrupted or in an unsupported format: ${rErr}`
+        : `Failed to read data file: ${rErr}`,
+      details: 'Ensure the file is a valid SPSS .sav format. Corrupted or renamed files (e.g. .dta, .csv) will fail here.',
     });
     eventBus.emitValidationStageComplete(1, STAGE_NAMES[1], Date.now() - stage1Start);
     eventBus.emitValidationComplete(false, format, errors.length, warnings.length, Date.now() - startTime);

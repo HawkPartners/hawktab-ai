@@ -42,8 +42,9 @@
   - Affected: PipelineRunner.ts catch blocks (especially line ~906-910 for LoopPolicy)
   - Ref: LoopPolicyAgent report, Section 3
 
-- [VERIFY] **Check if we validate for corrupted .sav files.** Truly unrecoverable errors (corrupted files, unsupported formats) should be caught in the first 30 seconds during validation, not 40 minutes into a run. Verify this check exists.
+- [x] **Check if we validate for corrupted .sav files.** Truly unrecoverable errors (corrupted files, unsupported formats) should be caught in the first 30 seconds during validation, not 40 minutes into a run. Verify this check exists.
   - Ref: CrosstabAgent error recovery deep dive
+  - Done: Pre-flight check (exists, readable, non-empty) + R read_sav failure handling in ValidationRunner Stage 1.
 
 ### Loop Resilience
 
