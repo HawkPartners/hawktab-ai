@@ -201,8 +201,11 @@
 
 ### Add Column-Level Rule Support
 
-- [ ] **Add column-level guidance to the SkipLogicAgent prompt.** The schema only has `table-level` and `row-level`. Column-level visibility (e.g., "show donor-type columns where patient count > 0") gets misclassified as row-level. Add guidance: use ruleType "row-level" but note in conditionDescription that this is column-level logic, and include the column-to-condition mapping in translationContext.
+**Full implementation plan:** [`column-level-rule-support.md`](./column-level-rule-support.md)
+
+- [ ] **Add `column-level` as a third rule type across the skip logic pipeline.** The schema only has `table-level` and `row-level`. Column-level visibility (e.g., "show donor-type columns where patient count > 0") gets misclassified. The fix adds `column-level` to the ruleType enum, a new `column-split` action with `ColumnSplitDefinition` schema, a new FilterApplicator code path for column splits, and prompt guidance for both SkipLogicAgent and FilterTranslator. See linked plan for full schema changes, composition matrix, and implementation order.
   - Ref: SkipLogicAgent report 3.2 (GVHD misclassification)
+  - Affected datasets: CAR-T Segmentation (A6), GVHD (A7)
 
 ### FilterTranslator Prompt Improvements
 
