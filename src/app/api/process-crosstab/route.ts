@@ -957,7 +957,7 @@ export async function POST(request: NextRequest) {
           verboseDataMap,
           {
             outputDir,
-            maxRetries: 3,
+            maxRetries: 8,
             dataFilePath: 'dataFile.sav',
             verbose: true,
           }

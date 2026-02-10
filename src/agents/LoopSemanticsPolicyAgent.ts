@@ -94,6 +94,7 @@ export async function runLoopSemanticsPolicyAgent(
 ): Promise<LoopSemanticsPolicy> {
   console.log(`[LoopSemanticsPolicyAgent] Classifying ${input.bannerGroups.length} banner groups`);
   const startTime = Date.now();
+  const maxAttempts = 10;
 
   // Check for cancellation
   if (input.abortSignal?.aborted) {
@@ -121,7 +122,7 @@ export async function runLoopSemanticsPolicyAgent(
       const { output, usage } = await generateText({
         model: getLoopSemanticsModel(),
         system: systemPrompt,
-        maxRetries: 3,
+        maxRetries: 0, // Centralized outer retries via retryWithPolicyHandling
         prompt: userPrompt,
         tools: {
           scratchpad,
@@ -156,11 +157,12 @@ export async function runLoopSemanticsPolicyAgent(
     },
     {
       abortSignal: input.abortSignal,
+      maxAttempts,
       onRetry: (attempt, err) => {
         if (err instanceof DOMException && err.name === 'AbortError') {
           throw err;
         }
-        console.warn(`[LoopSemanticsPolicyAgent] Retry ${attempt}/3: ${err.message.substring(0, 120)}`);
+        console.warn(`[LoopSemanticsPolicyAgent] Retry ${attempt}/${maxAttempts}: ${err.message.substring(0, 120)}`);
       },
     },
   );

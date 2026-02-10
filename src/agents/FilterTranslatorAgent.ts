@@ -34,7 +34,7 @@ import {
 } from './tools/scratchpad';
 import { getFilterTranslatorPrompt } from '../prompts';
 import { formatFullDatamapContext, validateFilterVariables } from '../lib/filters/filterUtils';
-import { retryWithPolicyHandling, isRateLimitError } from '../lib/retryWithPolicyHandling';
+import { retryWithPolicyHandling, isRateLimitError, type RetryContext } from '../lib/retryWithPolicyHandling';
 import { recordAgentMetrics } from '../lib/observability';
 import { shouldFlagForReview, getReviewThresholds } from '../lib/review';
 import fs from 'fs/promises';
@@ -63,6 +63,7 @@ export async function translateSkipRules(
 ): Promise<FilterTranslationResult> {
   const { outputDir, abortSignal, concurrency = 3 } = options || {};
   const startTime = Date.now();
+  const maxAttempts = 10;
 
   console.log(`[FilterTranslatorAgent] Starting filter translation`);
   console.log(`[FilterTranslatorAgent] Using model: ${getFilterTranslatorModelName()}`);
@@ -97,12 +98,32 @@ export async function translateSkipRules(
   const datamapContext = formatFullDatamapContext(verboseDataMap);
   const validVariables = new Set<string>(verboseDataMap.map(v => v.column));
 
-  const systemPrompt = `
+  const systemPromptFull = `
 ${RESEARCH_DATA_PREAMBLE}${getFilterTranslatorAgentInstructions()}
 
 ## Complete Datamap (All Variables)
 <datamap>
 ${sanitizeForAzureContentFilter(datamapContext)}
+</datamap>
+`;
+
+  const policySafeDatamapContext = verboseDataMap
+    .map(v => {
+      const allowed = v.allowedValues ? v.allowedValues.slice(0, 25).join(', ') : '';
+      const normalized = v.normalizedType || 'unknown';
+      // Intentionally omit description/answerOptions in policy-safe mode.
+      return `${v.column}:\n  Type: ${normalized}\n  Values: ${v.valueType}\n  ${allowed ? `Allowed Values: ${allowed}` : ''}`.trim();
+    })
+    .join('\n\n');
+
+  const systemPromptPolicySafe = `
+${RESEARCH_DATA_PREAMBLE}${getFilterTranslatorAgentInstructions()}
+
+NOTE: Policy-safe mode is enabled due to repeated Azure content filtering. The full datamap's free-text labels may be redacted. Rely on variable names, types, and allowed values.
+
+## Policy-Safe Datamap (Redacted Free Text)
+<datamap>
+${sanitizeForAzureContentFilter(policySafeDatamapContext)}
 </datamap>
 `;
 
@@ -121,7 +142,7 @@ ${sanitizeForAzureContentFilter(datamapContext)}
       const contextId = rule.ruleId;
       const scratchpad = createContextScratchpadTool('FilterTranslatorAgent', contextId);
 
-      const userPrompt = `Translate the following skip/show rule into R filter expressions using the datamap provided above.
+      const baseUserPrompt = `Translate the following skip/show rule into R filter expressions using the datamap provided above.
 
 Find the corresponding variables in the datamap and create the R expression.
 IMPORTANT: Do NOT assume variable naming patterns from other questions. Check the datamap for the EXACT variable names for each question referenced in this rule.
@@ -136,11 +157,22 @@ Create a separate filter entry for each questionId in the rule's appliesTo list:
 
       try {
         const result = await retryWithPolicyHandling(
-          async () => {
+          async (ctx: RetryContext) => {
+            const userPrompt = ctx.attempt > 1
+              ? `${baseUserPrompt}
+
+<retry_context>
+Your previous attempt failed validation in the pipeline.
+Reason: ${ctx.lastErrorSummary}
+
+Fix the issue and retry. DO NOT invent variable names. Use ONLY variables present in the datamap.
+</retry_context>`
+              : baseUserPrompt;
+
             const { output, usage } = await generateText({
               model: getFilterTranslatorModel(),
-              system: systemPrompt,
-              maxRetries: 3,
+              system: ctx.shouldUsePolicySafeVariant ? systemPromptPolicySafe : systemPromptFull,
+              maxRetries: 0, // Centralized outer retries via retryWithPolicyHandling
               prompt: userPrompt,
               tools: {
                 scratchpad,
@@ -162,7 +194,7 @@ Create a separate filter entry for each questionId in the rule's appliesTo list:
               throw new Error(`Invalid output for rule ${rule.ruleId}`);
             }
 
-            // Record metrics per call
+            // Record metrics per call (ALWAYS do this for every AI call)
             recordAgentMetrics(
               'FilterTranslatorAgent',
               getFilterTranslatorModelName(),
@@ -170,16 +202,39 @@ Create a separate filter entry for each questionId in the rule's appliesTo list:
               Date.now() - ruleStartTime
             );
 
+            // Deterministic validation: fail fast if the model hallucinated variable names.
+            // This forces a retry where we can tell the model exactly what was wrong.
+            const invalids: string[] = [];
+            for (const f of output.filters || []) {
+              if (f.filterExpression && f.filterExpression.trim() !== '') {
+                const v = validateFilterVariables(f.filterExpression, validVariables);
+                if (!v.valid) invalids.push(...v.invalidVariables);
+              }
+              for (const s of f.splits || []) {
+                if (s.filterExpression && s.filterExpression.trim() !== '') {
+                  const v = validateFilterVariables(s.filterExpression, validVariables);
+                  if (!v.valid) invalids.push(...v.invalidVariables);
+                }
+              }
+            }
+            if (invalids.length > 0) {
+              const unique = [...new Set(invalids)].slice(0, 25);
+              throw new Error(
+                `INVALID VARIABLES: ${unique.join(', ')}. Use ONLY datamap columns; do not synthesize names.`
+              );
+            }
+
             return output;
           },
           {
             abortSignal,
+            maxAttempts,
             onRetry: (attempt, err) => {
               if (err instanceof DOMException && err.name === 'AbortError') {
                 throw err;
               }
               const retryType = isRateLimitError(err) ? 'rate limit' : 'error';
-              console.warn(`[FilterTranslatorAgent] Retry ${attempt}/3 for rule ${rule.ruleId} (${retryType}): ${err.message.substring(0, 120)}`);
+              console.warn(`[FilterTranslatorAgent] Retry ${attempt}/${maxAttempts} for rule ${rule.ruleId} (${retryType}): ${err.message.substring(0, 120)}`);
             },
           }
         );

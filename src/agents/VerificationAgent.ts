@@ -43,7 +43,7 @@ import {
   clearAllContextScratchpads,
 } from './tools/scratchpad';
 import { getVerificationPrompt } from '../prompts';
-import { retryWithPolicyHandling } from '../lib/retryWithPolicyHandling';
+import { retryWithPolicyHandling, type RetryContext } from '../lib/retryWithPolicyHandling';
 import { recordAgentMetrics } from '../lib/observability';
 import { getPipelineEventBus } from '../lib/events';
 import fs from 'fs/promises';
@@ -128,19 +128,47 @@ export async function verifyTable(
   }
 
   // Build system prompt with survey and datamap context
-  const systemPrompt = `
-${RESEARCH_DATA_PREAMBLE}${getVerificationAgentInstructions()}
+  const redactDatamapContextForPolicySafe = (datamapContext: string): string => {
+    if (!datamapContext) return datamapContext;
+    return datamapContext
+      .split('\n')
+      .map((line) => {
+        const trimmed = line.trimStart();
+        if (trimmed.startsWith('Description:')) {
+          return line.replace(/Description:.*/i, 'Description: [redacted]');
+        }
+        if (trimmed.startsWith('Scale Labels:')) {
+          return line.replace(/Scale Labels:.*/i, 'Scale Labels: [redacted]');
+        }
+        // Allowed Values / Type / Values are generally safe and useful.
+        return line;
+      })
+      .join('\n');
+  };
+
+  const buildSystemPrompt = (policySafe: boolean): string => {
+    const survey = policySafe
+      ? '[OMITTED DUE TO POLICY FILTER — rely on question text, table structure, and datamap]'
+      : input.surveyMarkdown;
+    const datamap = policySafe ? redactDatamapContextForPolicySafe(input.datamapContext) : input.datamapContext;
+    const policyNote = policySafe
+      ? `\nNOTE: Policy-safe mode is enabled due to repeated Azure content filtering. Some free-text may be redacted.\n`
+      : '';
+
+    return `
+${RESEARCH_DATA_PREAMBLE}${getVerificationAgentInstructions()}${policyNote}
 
 ## Survey Document
 <survey>
-${sanitizeForAzureContentFilter(input.surveyMarkdown)}
+${sanitizeForAzureContentFilter(survey)}
 </survey>
 
 ## Variable Context (Datamap)
 <datamap>
-${sanitizeForAzureContentFilter(input.datamapContext)}
+${sanitizeForAzureContentFilter(datamap)}
 </datamap>
 `;
+  };
 
   // Build user prompt
   let userPrompt = `Review this table and output the desired end state:
@@ -189,17 +217,23 @@ Please carefully review the error message and the datamap context above, then re
     return error instanceof DOMException && error.name === 'AbortError';
   };
 
+  const maxAttempts = 10;
+
   // Use context scratchpad if provided (for parallel execution), else use global
   const scratchpad = contextScratchpad || verificationScratchpadTool;
 
   // Wrap the AI call with retry logic for policy errors
   const retryResult = await retryWithPolicyHandling(
-    async () => {
+    async (ctx: RetryContext) => {
+      const retryContextBlock = ctx.attempt > 1
+        ? `\n<retry_context>\nYour previous attempt failed.\nReason: ${ctx.lastErrorSummary}\nFix the issue and retry. Do NOT invent variables or schema fields.\n</retry_context>\n`
+        : '';
+
       const { output, usage } = await generateText({
         model: getVerificationModel(),
-        system: systemPrompt,
-        maxRetries: 3,  // SDK handles transient/network errors
-        prompt: userPrompt,
+        system: buildSystemPrompt(ctx.shouldUsePolicySafeVariant),
+        maxRetries: 0,  // Centralized outer retries via retryWithPolicyHandling
+        prompt: userPrompt + retryContextBlock,
         tools: {
           scratchpad,
         },
@@ -234,12 +268,13 @@ Please carefully review the error message and the datamap context above, then re
     },
     {
       abortSignal,
+      maxAttempts,
       onRetry: (attempt, err) => {
         // Check for abort errors and propagate them
         if (checkAbortError(err)) {
           throw err;
         }
-        console.warn(`[VerificationAgent] Retry ${attempt}/3 for table "${input.table.tableId}": ${err.message.substring(0, 120)}`);
+        console.warn(`[VerificationAgent] Retry ${attempt}/${maxAttempts} for table "${input.table.tableId}": ${err.message.substring(0, 120)}`);
       },
     }
   );

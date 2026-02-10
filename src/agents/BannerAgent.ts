@@ -231,6 +231,8 @@ Begin analysis now.
       return error instanceof DOMException && error.name === 'AbortError';
     };
 
+    const maxAttempts = 10;
+
     // Wrap the AI call with retry logic for policy errors
     const retryResult = await retryWithPolicyHandling(
       async () => {
@@ -240,7 +242,7 @@ Begin analysis now.
         const { output, usage } = await generateText({
           model: getBannerModel(),  // Task-based: banner model for vision/extraction tasks
           system: systemPrompt,
-          maxRetries: 3,  // SDK handles transient/network errors
+          maxRetries: 0,  // Centralized outer retries via retryWithPolicyHandling
           messages: [
             {
               role: 'user',
@@ -288,12 +290,13 @@ Begin analysis now.
       },
       {
         abortSignal,
+        maxAttempts,
         onRetry: (attempt, err) => {
           // Check for abort errors and propagate them
           if (checkAbortError(err)) {
             throw err;
           }
-          console.warn(`[BannerAgent] Retry ${attempt}/3 for banner extraction: ${err.message}`);
+          console.warn(`[BannerAgent] Retry ${attempt}/${maxAttempts} for banner extraction: ${err.message}`);
         },
       }
     );

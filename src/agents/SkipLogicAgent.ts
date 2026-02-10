@@ -37,7 +37,7 @@ import {
   getAllContextScratchpadEntries,
 } from './tools/scratchpad';
 import { getSkipLogicPrompt, SKIP_LOGIC_CORE_INSTRUCTIONS } from '../prompts/skiplogic';
-import { retryWithPolicyHandling } from '../lib/retryWithPolicyHandling';
+import { retryWithPolicyHandling, type RetryContext } from '../lib/retryWithPolicyHandling';
 import { recordAgentMetrics } from '../lib/observability';
 import {
   segmentSurveyIntoChunks,
@@ -112,6 +112,7 @@ async function extractSkipLogicSinglePass(
 ): Promise<SkipLogicResult> {
   const { outputDir, abortSignal } = options || {};
   const startTime = Date.now();
+  const maxAttempts = 10;
 
   console.log(`[SkipLogicAgent] Single-pass mode`);
   console.log(`[SkipLogicAgent] Using model: ${getSkipLogicModelName()}`);
@@ -145,7 +146,14 @@ Walk through the survey systematically, section by section. Use the scratchpad t
 Output the complete list of rules and no-rule questions.`;
 
   const retryResult = await retryWithPolicyHandling(
-    async () => {
+    async (ctx: RetryContext) => {
+      // Policy-safe fallback: if Azure repeatedly content-filters the full survey,
+      // return empty rules rather than failing the entire pipeline.
+      if (ctx.shouldUsePolicySafeVariant) {
+        console.warn('[SkipLogicAgent] Policy-safe mode triggered — returning empty rules to continue pipeline');
+        return { rules: [] };
+      }
+
       // Get scratchpad state before the call (for error context and prompt enhancement)
       const scratchpadBeforeCall = getScratchpadEntries().filter(e => e.agentName === 'SkipLogicAgent');
 
@@ -176,7 +184,7 @@ NOTE: This is a retry attempt. You have already documented analysis for ${scratc
         const result = await generateText({
           model: getSkipLogicModel(),
           system: systemPrompt,
-          maxRetries: 3,
+          maxRetries: 0, // Centralized outer retries via retryWithPolicyHandling
           prompt: userPrompt,
           tools: {
             scratchpad: skipLogicScratchpadTool,
@@ -240,6 +248,7 @@ NOTE: This is a retry attempt. You have already documented analysis for ${scratc
     },
     {
       abortSignal,
+      maxAttempts,
       onRetry: (attempt, err) => {
         if (err instanceof DOMException && err.name === 'AbortError') {
           throw err;
@@ -251,7 +260,7 @@ NOTE: This is a retry attempt. You have already documented analysis for ${scratc
         const errorType = err instanceof Error ? err.constructor.name : typeof err;
 
         console.warn(
-          `[SkipLogicAgent] Retry ${attempt}/3: ${errorMessage.substring(0, 200)}` +
+          `[SkipLogicAgent] Retry ${attempt}/${maxAttempts}: ${errorMessage.substring(0, 200)}` +
           ` | Type: ${errorType}` +
           ` | Scratchpad entries preserved: ${scratchpadEntries.length}` +
           (scratchpadEntries.length > 0
@@ -320,6 +329,7 @@ async function extractSkipLogicChunked(
   const { outputDir, abortSignal } = options || {};
   const startTime = Date.now();
   const chunkSize = getChunkSize();
+  const maxAttempts = 10;
 
   console.log(`[SkipLogicAgent] Chunked mode — survey exceeds threshold`);
   console.log(`[SkipLogicAgent] Using model: ${getSkipLogicModelName()}`);
@@ -378,11 +388,17 @@ async function extractSkipLogicChunked(
     const userPrompt = buildChunkedUserPrompt(chunkNum, chunks.length, allRules.length);
 
     const retryResult = await retryWithPolicyHandling(
-      async () => {
+      async (ctx: RetryContext) => {
+        // Policy-safe fallback: skip this chunk rather than failing or looping.
+        if (ctx.shouldUsePolicySafeVariant) {
+          console.warn(`[SkipLogicAgent] Chunk ${chunkNum}: policy-safe mode triggered — returning empty rules for this chunk`);
+          return { rules: [] };
+        }
+
         const result = await generateText({
           model: getSkipLogicModel(),
           system: systemPrompt,
-          maxRetries: 3,
+          maxRetries: 0, // Centralized outer retries via retryWithPolicyHandling
           prompt: userPrompt,
           tools: {
             scratchpad: chunkScratchpad,
@@ -422,12 +438,13 @@ async function extractSkipLogicChunked(
       },
       {
         abortSignal,
+        maxAttempts,
         onRetry: (attempt, err) => {
           if (err instanceof DOMException && err.name === 'AbortError') {
             throw err;
           }
           console.warn(
-            `[SkipLogicAgent] Chunk ${chunkNum} retry ${attempt}/3: ${err.message.substring(0, 200)}`
+            `[SkipLogicAgent] Chunk ${chunkNum} retry ${attempt}/${maxAttempts}: ${err.message.substring(0, 200)}`
           );
         },
       }

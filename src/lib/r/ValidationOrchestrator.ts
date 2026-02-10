@@ -34,7 +34,7 @@ const execAsync = promisify(exec);
 export interface ValidationOptions {
   /** Output directory for validation files */
   outputDir: string;
-  /** Maximum retry attempts per table (default: 3) */
+  /** Maximum retry attempts per table (default: 8) */
   maxRetries?: number;
   /** Path to SPSS data file (default: 'dataFile.sav') */
   dataFilePath?: string;
@@ -93,7 +93,7 @@ export async function validateAndFixTables(
   const startTime = Date.now();
   const {
     outputDir,
-    maxRetries = 3,
+    maxRetries = 8,
     dataFilePath = 'dataFile.sav',
     verbose = false,
     loopMappings = [],

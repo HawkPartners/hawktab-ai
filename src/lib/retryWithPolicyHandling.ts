@@ -1,21 +1,68 @@
 /**
- * Shared retry utility for handling Azure OpenAI content policy errors.
+ * Shared retry utility for handling transient Azure OpenAI / AI SDK errors.
  *
- * Content policy errors are transient - retrying the same request often succeeds
- * because Azure's content moderation can be overly sensitive to certain patterns.
+ * Design goal: the pipeline should not fail due to transient infrastructure issues
+ * (rate limits, 5xx, flaky network) or stochastic safety filtering.
+ *
+ * IMPORTANT:
+ * - This wrapper is intended to be the *primary* retry mechanism (8–10 outer attempts).
+ * - Call sites should generally set the AI SDK's `maxRetries` to 0–1 to avoid double-retrying.
  */
 
+import {
+  APICallError,
+  RetryError,
+  TypeValidationError,
+  JSONParseError,
+  NoOutputGeneratedError,
+  NoObjectGeneratedError,
+} from 'ai';
+
 export interface RetryOptions {
-  /** Maximum number of attempts (default: 3) */
+  /** Maximum number of attempts (default: 10) */
   maxAttempts?: number;
-  /** Delay between retries in milliseconds (default: 2000, rate limits use 15000) */
+  /** Base delay between retries in milliseconds (default: 2000) */
   delayMs?: number;
-  /** Delay for rate limit errors in milliseconds (default: 15000) */
+  /** Base delay for rate limit errors in milliseconds (default: 15000) */
   rateLimitDelayMs?: number;
+  /** Maximum delay cap in milliseconds (default: 30000) */
+  maxDelayMs?: number;
+  /** Maximum delay cap for rate limits in milliseconds (default: 120000) */
+  rateLimitMaxDelayMs?: number;
+  /**
+   * Attempt number (1-based) at which the caller may switch to a "policy-safe" prompt variant.
+   * This wrapper doesn't change prompts itself; it provides `RetryContext.shouldUsePolicySafeVariant`.
+   * Default: 6
+   */
+  policySafeAfterAttempt?: number;
   /** Callback invoked on each retry attempt */
   onRetry?: (attempt: number, error: Error) => void;
+  /** Callback invoked on each retry attempt with structured context */
+  onRetryWithContext?: (context: RetryContext, error: Error, nextDelayMs: number) => void;
   /** AbortSignal to cancel retries */
   abortSignal?: AbortSignal;
+  /** Random number generator for jitter (primarily for tests). Default: Math.random */
+  random?: () => number;
+}
+
+export type RetryClassification =
+  | 'rate_limit'
+  | 'policy'
+  | 'transient'
+  | 'output_validation'
+  | 'non_retryable';
+
+export interface RetryContext {
+  attempt: number;
+  maxAttempts: number;
+  /** Classification of the most recent failure (or 'non_retryable' for attempt 1) */
+  lastClassification: RetryClassification;
+  /** Short summary of the most recent failure */
+  lastErrorSummary: string;
+  /** True when repeated policy blocks suggest trying a policy-safe prompt variant */
+  shouldUsePolicySafeVariant: boolean;
+  /** True when this is the final attempt */
+  isFinalAttempt: boolean;
 }
 
 export interface RetryResult<T> {
@@ -29,6 +76,8 @@ export interface RetryResult<T> {
   attempts: number;
   /** Whether the final error was a policy error */
   wasPolicyError: boolean;
+  /** Classification of the final error (if any) */
+  finalClassification?: RetryClassification;
 }
 
 /**
@@ -69,15 +118,82 @@ const RETRYABLE_ERROR_PATTERNS = [
   'gateway timeout',
 ];
 
+function toError(value: unknown): Error {
+  return value instanceof Error ? value : new Error(String(value));
+}
+
+function getErrorMessage(value: unknown): string {
+  return value instanceof Error ? value.message : String(value);
+}
+
+function extractAzureErrorCodeFromResponseBody(responseBody: unknown): string {
+  try {
+    if (!responseBody) return '';
+    if (typeof responseBody === 'string') return responseBody.toLowerCase();
+    if (typeof responseBody === 'object') {
+      const body = responseBody as Record<string, unknown>;
+      const directCode = typeof body.code === 'string' ? body.code : '';
+      const directMessage = typeof body.message === 'string' ? body.message : '';
+      // Azure often wraps as { error: { code, message } }
+      const nested = typeof body.error === 'object' && body.error !== null ? (body.error as Record<string, unknown>) : null;
+      const nestedCode = nested && typeof nested.code === 'string' ? nested.code : '';
+      const nestedMessage = nested && typeof nested.message === 'string' ? nested.message : '';
+      return `${directCode} ${nestedCode} ${directMessage} ${nestedMessage}`.toLowerCase();
+    }
+    return String(responseBody).toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+function unwrapErrorChain(error: unknown): Error[] {
+  const chain: Error[] = [];
+
+  const add = (e: unknown) => {
+    if (!e) return;
+    chain.push(toError(e));
+  };
+
+  if (RetryError.isInstance(error)) {
+    // Prefer lastError (most actionable), but keep the full list for classification.
+    add(error.lastError);
+    for (const e of error.errors || []) add(e);
+    return chain.length > 0 ? chain : [toError(error)];
+  }
+
+  if (NoOutputGeneratedError.isInstance(error)) {
+    add(error);
+    if (error.cause) add(error.cause);
+    return chain;
+  }
+
+  // For other errors, follow `cause` if present.
+  const root = toError(error);
+  chain.push(root);
+  const anyRoot = root as unknown as { cause?: unknown };
+  if (anyRoot && anyRoot.cause) {
+    add(anyRoot.cause);
+  }
+  return chain;
+}
+
 /**
  * Check if an error is a rate limit error (needs longer backoff).
  */
 export function isRateLimitError(error: unknown): boolean {
   if (!error) return false;
-  const message = error instanceof Error
-    ? error.message.toLowerCase()
-    : String(error).toLowerCase();
-  return message.includes('429') || message.includes('rate limit') || message.includes('too many requests') || message.includes('throttl');
+  const chain = unwrapErrorChain(error);
+  for (const e of chain) {
+    if (APICallError.isInstance(e)) {
+      if (e.statusCode === 429) return true;
+      // Some providers omit statusCode but set isRetryable for rate limits; fall back to message.
+    }
+    const msg = e.message.toLowerCase();
+    if (msg.includes('429') || msg.includes('rate limit') || msg.includes('too many requests') || msg.includes('throttl')) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -85,26 +201,105 @@ export function isRateLimitError(error: unknown): boolean {
  */
 export function isPolicyError(error: unknown): boolean {
   if (!error) return false;
-
-  const message = error instanceof Error
-    ? error.message.toLowerCase()
-    : String(error).toLowerCase();
-
-  return POLICY_ERROR_PATTERNS.some(pattern => message.includes(pattern));
+  const chain = unwrapErrorChain(error);
+  for (const e of chain) {
+    if (APICallError.isInstance(e)) {
+      // Azure content filtering commonly returns HTTP 400 with code "content_filter".
+      if (e.statusCode === 400) {
+        const codeText = extractAzureErrorCodeFromResponseBody(e.responseBody);
+        if (codeText.includes('content_filter') || codeText.includes('content filter') || codeText.includes('responsibleai')) {
+          return true;
+        }
+      }
+    }
+    const msg = e.message.toLowerCase();
+    if (POLICY_ERROR_PATTERNS.some(pattern => msg.includes(pattern))) return true;
+  }
+  return false;
 }
 
 /**
  * Check if an error is retryable (policy error OR transient error).
  */
 export function isRetryableError(error: unknown): boolean {
-  if (isPolicyError(error)) return true;
   if (!error) return false;
+  const classification = classifyRetry(error);
+  return classification !== 'non_retryable';
+}
 
-  const message = error instanceof Error
-    ? error.message.toLowerCase()
-    : String(error).toLowerCase();
+function classifyRetry(error: unknown): RetryClassification {
+  if (!error) return 'non_retryable';
 
-  return RETRYABLE_ERROR_PATTERNS.some(pattern => message.includes(pattern));
+  // Output/schema validation failures are retryable (agent can often correct on retry).
+  if (TypeValidationError.isInstance(error) || JSONParseError.isInstance(error) || NoObjectGeneratedError.isInstance(error)) {
+    return 'output_validation';
+  }
+
+  if (isRateLimitError(error)) return 'rate_limit';
+  if (isPolicyError(error)) return 'policy';
+
+  const chain = unwrapErrorChain(error);
+  for (const e of chain) {
+    if (APICallError.isInstance(e)) {
+      // Respect the SDK's isRetryable when available.
+      if (e.isRetryable) return 'transient';
+      const status = e.statusCode;
+      if (status && status >= 500) return 'transient';
+      if (status === 408) return 'transient';
+      // 409/425 can be transient in some infrastructures; treat as transient.
+      if (status === 409 || status === 425) return 'transient';
+      // 400/401/403/404 etc: generally non-retryable (unless policy, handled above).
+    }
+
+    const msg = e.message.toLowerCase();
+    if (RETRYABLE_ERROR_PATTERNS.some(pattern => msg.includes(pattern))) return 'transient';
+  }
+
+  // Treat "no output generated" as retryable because it often wraps transient issues.
+  if (NoOutputGeneratedError.isInstance(error)) return 'output_validation';
+
+  return 'non_retryable';
+}
+
+function summarizeErrorForRetry(error: unknown): string {
+  const chain = unwrapErrorChain(error);
+  const top = chain[0];
+  if (APICallError.isInstance(top)) {
+    const codeText = extractAzureErrorCodeFromResponseBody(top.responseBody);
+    const status = top.statusCode ? `HTTP ${top.statusCode}` : 'HTTP ?';
+    const code = codeText ? ` | ${codeText.substring(0, 120)}` : '';
+    return `${status}${code}`.trim();
+  }
+  return getErrorMessage(error).substring(0, 200);
+}
+
+function computeDelayMs(args: {
+  classification: RetryClassification;
+  attempt: number;
+  baseDelayMs: number;
+  rateLimitDelayMs: number;
+  maxDelayMs: number;
+  rateLimitMaxDelayMs: number;
+  random: () => number;
+}): number {
+  const {
+    classification,
+    attempt,
+    baseDelayMs,
+    rateLimitDelayMs,
+    maxDelayMs,
+    rateLimitMaxDelayMs,
+    random,
+  } = args;
+
+  const exp = Math.pow(2, Math.max(0, attempt - 1));
+  const rawDelay = classification === 'rate_limit'
+    ? Math.min(rateLimitMaxDelayMs, rateLimitDelayMs * exp)
+    : Math.min(maxDelayMs, baseDelayMs * exp);
+
+  // Equal jitter: [raw/2, raw]
+  const jittered = Math.floor(rawDelay / 2 + random() * (rawDelay / 2));
+  return Math.max(250, jittered); // never hammer the API at 0ms
 }
 
 /**
@@ -127,20 +322,19 @@ async function sleep(ms: number, signal?: AbortSignal): Promise<void> {
 }
 
 /**
- * Execute an async function with retry logic for content policy errors.
- *
- * Only retries on policy errors - other errors are propagated immediately.
+ * Execute an async function with retry logic for retryable errors.
  *
  * @example
  * ```typescript
  * const result = await retryWithPolicyHandling(
- *   async () => {
+ *   async (ctx) => {
  *     const { output } = await generateText({ ... });
  *     return output;
  *   },
  *   {
- *     onRetry: (attempt, err) => {
- *       console.warn(`Retry ${attempt}/3: ${err.message}`);
+ *     maxAttempts: 10,
+ *     onRetryWithContext: (ctx, err, delayMs) => {
+ *       console.warn(`Retry ${ctx.attempt}/${ctx.maxAttempts}: ${ctx.lastClassification} (${delayMs}ms): ${err.message}`);
  *     }
  *   }
  * );
@@ -152,18 +346,27 @@ async function sleep(ms: number, signal?: AbortSignal): Promise<void> {
  * }
  * ```
  */
+export async function retryWithPolicyHandling<T>(fn: () => Promise<T>, options?: RetryOptions): Promise<RetryResult<T>>;
+export async function retryWithPolicyHandling<T>(fn: (context: RetryContext) => Promise<T>, options?: RetryOptions): Promise<RetryResult<T>>;
 export async function retryWithPolicyHandling<T>(
-  fn: () => Promise<T>,
+  fn: (() => Promise<T>) | ((context: RetryContext) => Promise<T>),
   options?: RetryOptions
 ): Promise<RetryResult<T>> {
-  const maxAttempts = options?.maxAttempts ?? 3;
+  const maxAttempts = options?.maxAttempts ?? 10;
   const baseDelayMs = options?.delayMs ?? 2000;
   const rateLimitDelayMs = options?.rateLimitDelayMs ?? 15000;
+  const maxDelayMs = options?.maxDelayMs ?? 30000;
+  const rateLimitMaxDelayMs = options?.rateLimitMaxDelayMs ?? 120000;
+  const policySafeAfterAttempt = options?.policySafeAfterAttempt ?? 6;
+  const random = options?.random ?? Math.random;
   const onRetry = options?.onRetry;
+  const onRetryWithContext = options?.onRetryWithContext;
   const abortSignal = options?.abortSignal;
 
   let lastError: Error | undefined;
-  let wasPolicyError = false;
+  let lastClassification: RetryClassification = 'non_retryable';
+  let lastErrorSummary = '';
+  let policyErrorCount = 0;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     // Check for abort before each attempt
@@ -173,11 +376,21 @@ export async function retryWithPolicyHandling<T>(
         error: 'Operation was cancelled',
         attempts: attempt - 1,
         wasPolicyError: false,
+        finalClassification: 'non_retryable',
       };
     }
 
+    const context: RetryContext = {
+      attempt,
+      maxAttempts,
+      lastClassification,
+      lastErrorSummary,
+      shouldUsePolicySafeVariant: policyErrorCount > 0 && attempt >= policySafeAfterAttempt,
+      isFinalAttempt: attempt === maxAttempts,
+    };
+
     try {
-      const result = await fn();
+      const result = await (fn as (c: RetryContext) => Promise<T>)(context);
       return {
         success: true,
         result,
@@ -185,17 +398,20 @@ export async function retryWithPolicyHandling<T>(
         wasPolicyError: false,
       };
     } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-      wasPolicyError = isPolicyError(error);
-      const retryable = isRetryableError(error);
+      lastError = toError(error);
+      lastClassification = classifyRetry(error);
+      lastErrorSummary = summarizeErrorForRetry(error);
 
-      // Only retry on retryable errors (policy errors, transient failures, rate limits)
-      if (!retryable) {
+      if (lastClassification === 'policy') policyErrorCount++;
+
+      // Only retry on retryable errors
+      if (lastClassification === 'non_retryable') {
         return {
           success: false,
           error: lastError.message,
           attempts: attempt,
-          wasPolicyError,
+          wasPolicyError: isPolicyError(error),
+          finalClassification: lastClassification,
         };
       }
 
@@ -204,18 +420,34 @@ export async function retryWithPolicyHandling<T>(
         break;
       }
 
+      const nextDelayMs = computeDelayMs({
+        classification: lastClassification,
+        attempt,
+        baseDelayMs,
+        rateLimitDelayMs,
+        maxDelayMs,
+        rateLimitMaxDelayMs,
+        random,
+      });
+
       // Notify about retry
       onRetry?.(attempt, lastError);
-
-      // Use longer delay for rate limits, exponential backoff for others
-      const rateLimit = isRateLimitError(error);
-      const delayMs = rateLimit
-        ? rateLimitDelayMs * attempt  // 15s, 30s, 45s for rate limits
-        : baseDelayMs * attempt;      // 2s, 4s, 6s for others
+      onRetryWithContext?.(
+        {
+          attempt,
+          maxAttempts,
+          lastClassification,
+          lastErrorSummary,
+          shouldUsePolicySafeVariant: policyErrorCount > 0 && (attempt + 1) >= policySafeAfterAttempt,
+          isFinalAttempt: false,
+        },
+        lastError,
+        nextDelayMs
+      );
 
       // Wait before retrying
       try {
-        await sleep(delayMs, abortSignal);
+        await sleep(nextDelayMs, abortSignal);
       } catch {
         // Aborted during sleep
         return {
@@ -223,6 +455,7 @@ export async function retryWithPolicyHandling<T>(
           error: 'Operation was cancelled',
           attempts: attempt,
           wasPolicyError: true,
+          finalClassification: lastClassification,
         };
       }
     }
@@ -233,6 +466,7 @@ export async function retryWithPolicyHandling<T>(
     success: false,
     error: lastError?.message ?? 'Unknown error after retries',
     attempts: maxAttempts,
-    wasPolicyError,
+    wasPolicyError: isPolicyError(lastError),
+    finalClassification: lastClassification,
   };
 }

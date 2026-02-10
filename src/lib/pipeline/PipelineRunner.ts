@@ -826,7 +826,7 @@ export async function runPipeline(
       verboseDataMap,
       {
         outputDir,
-        maxRetries: 3,
+        maxRetries: 8,
         dataFilePath: 'dataFile.sav',
         verbose: !quiet,
         loopMappings: loopMappings.length > 0 ? loopMappings : undefined,

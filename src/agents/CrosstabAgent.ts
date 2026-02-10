@@ -20,7 +20,7 @@ import {
 } from '../lib/env';
 import { crosstabScratchpadTool, clearScratchpadEntries, getAndClearScratchpadEntries, formatScratchpadAsMarkdown } from './tools/scratchpad';
 import { getCrosstabPrompt } from '../prompts';
-import { retryWithPolicyHandling } from '../lib/retryWithPolicyHandling';
+import { retryWithPolicyHandling, type RetryContext } from '../lib/retryWithPolicyHandling';
 import { recordAgentMetrics } from '../lib/observability';
 import fs from 'fs/promises';
 import path from 'path';
@@ -73,40 +73,95 @@ Please use this hint to improve your variable mapping. The user knows what varia
 
 ` : '';
 
-  const systemPrompt = `
+  const toPolicySafeAnswerOptions = (answerOptions?: string): string | undefined => {
+    if (!answerOptions) return answerOptions;
+    // Keep codes but redact labels: "1=Label,2=Label" → "1=?,2=?"
+    const parts = answerOptions.split(',').slice(0, 80);
+    const redacted = parts
+      .map(p => p.split('=')[0]?.trim())
+      .filter(Boolean)
+      .map(code => `${code}=?`)
+      .join(',');
+    return redacted;
+  };
+
+  const policySafeDataMap: DataMapType = dataMap.map((item) => ({
+    ...item,
+    // Remove most free-text fields that commonly trip Azure content filters.
+    Description: '',
+    Answer_Options: toPolicySafeAnswerOptions(item.Answer_Options) || '',
+    Context: '',
+  }));
+
+  const buildSystemPromptForGroup = (targetGroup: BannerGroupType, policySafe: boolean): string => {
+    const dm = policySafe ? policySafeDataMap : dataMap;
+    const policyNote = policySafe
+      ? `\nNOTE: Policy-safe mode is enabled due to repeated Azure content filtering. Free-text descriptions/labels may be redacted. Rely primarily on variable names, types, and value structures.\n`
+      : '';
+
+    return `
 ${RESEARCH_DATA_PREAMBLE}${getCrosstabValidationInstructions()}
-${hintSection}
+${hintSection}${policyNote}
 CURRENT CONTEXT DATA:
 
-DATA MAP (${dataMap.length} variables):
-${sanitizeForAzureContentFilter(JSON.stringify(dataMap, null, 2))}
+DATA MAP (${dm.length} variables):
+${sanitizeForAzureContentFilter(JSON.stringify(dm, null, 2))}
 
 BANNER GROUP TO VALIDATE:
-Group: "${group.groupName}"
-${sanitizeForAzureContentFilter(JSON.stringify(group, null, 2))}
+Group: "${targetGroup.groupName}"
+${sanitizeForAzureContentFilter(JSON.stringify(targetGroup, null, 2))}
 
 PROCESSING REQUIREMENTS:
-- Validate all ${group.columns.length} columns in this group
+- Validate all ${targetGroup.columns.length} columns in this group
 - Generate R syntax for each column's "original" expression
 - Provide confidence scores and detailed reasoning
 - Use scratchpad to show your validation process
 
 Begin validation now.
 `;
+  };
 
   // Check if this is an abort error before the AI call
   const checkAbortError = (error: unknown): boolean => {
     return error instanceof DOMException && error.name === 'AbortError';
   };
 
+  const datamapColumns = new Set<string>(dataMap.map(d => d.Column));
+  const extractVariableNames = (rExpression: string): string[] => {
+    const rKeywords = new Set([
+      'TRUE', 'FALSE', 'NA', 'NULL', 'Inf', 'NaN',
+      'if', 'else', 'for', 'in', 'while', 'repeat', 'next', 'break',
+      'function', 'return', 'c', 'rep', 'nrow', 'ncol',
+      'with', 'data', 'eval', 'parse', 'text',
+      'is', 'na', 'as', 'numeric', 'character', 'logical',
+      'sum', 'mean', 'max', 'min', 'length',
+      'grepl', 'nchar', 'paste', 'paste0',
+    ]);
+
+    const matches = rExpression.match(/\b([A-Za-z][A-Za-z0-9_.]*)\b/g) || [];
+    const vars = new Set<string>();
+    for (const m of matches) {
+      if (rKeywords.has(m)) continue;
+      if (/^\d+$/.test(m)) continue;
+      vars.add(m);
+    }
+    return [...vars];
+  };
+
+  const maxAttempts = 10;
+
   // Wrap the AI call with retry logic for policy errors
   const retryResult = await retryWithPolicyHandling(
-    async () => {
+    async (ctx: RetryContext) => {
+      const retryHint = ctx.attempt > 1
+        ? ` Previous attempt failed validation: ${ctx.lastErrorSummary}. Do NOT invent variable names.`
+        : '';
+
       const { output, usage } = await generateText({
         model: getCrosstabModel(),  // Task-based: crosstab model for complex validation
-        system: systemPrompt,
-        maxRetries: 3,  // SDK handles transient/network errors
-        prompt: `Validate banner group "${group.groupName}" with ${group.columns.length} columns against the data map.`,
+        system: buildSystemPromptForGroup(group, ctx.shouldUsePolicySafeVariant),
+        maxRetries: 0,  // Centralized outer retries via retryWithPolicyHandling
+        prompt: `Validate banner group "${group.groupName}" with ${group.columns.length} columns against the data map.${retryHint}`,
         tools: {
           scratchpad: crosstabScratchpadTool,
         },
@@ -137,16 +192,33 @@ Begin validation now.
         durationMs
       );
 
+      // Deterministic validation: ensure adjusted expressions reference real variables.
+      const invalidVars: string[] = [];
+      for (const col of output.columns) {
+        const expr = col.adjusted || '';
+        if (expr.trim().startsWith('#')) continue; // error/comment fallback
+        for (const v of extractVariableNames(expr)) {
+          if (!datamapColumns.has(v)) invalidVars.push(v);
+        }
+      }
+      if (invalidVars.length > 0) {
+        const unique = [...new Set(invalidVars)].slice(0, 25);
+        throw new Error(
+          `INVALID VARIABLES: ${unique.join(', ')}. Use ONLY variables from the data map; do not synthesize names.`
+        );
+      }
+
       return output;
     },
     {
       abortSignal,
+      maxAttempts,
       onRetry: (attempt, err) => {
         // Check for abort errors and propagate them
         if (checkAbortError(err)) {
           throw err;
         }
-        console.warn(`[CrosstabAgent] Retry ${attempt}/3 for group "${group.groupName}": ${err.message}`);
+        console.warn(`[CrosstabAgent] Retry ${attempt}/${maxAttempts} for group "${group.groupName}": ${err.message}`);
       },
     }
   );
@@ -169,19 +241,95 @@ Begin validation now.
     : '';
   console.error(`[CrosstabAgent] Error processing group ${group.groupName}:`, errorMessage + retryContext);
 
-  return {
-    groupName: group.groupName,
-    columns: group.columns.map(col => ({
+  // Per-column salvage: if a single column blocks (policy/transient), we still want to process the rest.
+  console.warn(`[CrosstabAgent] Falling back to per-column processing for group "${group.groupName}" (${group.columns.length} columns)`);
+
+  const processSingleColumn = async (col: BannerGroupType['columns'][number]) => {
+    const singleGroup: BannerGroupType = {
+      groupName: group.groupName,
+      columns: [col],
+    };
+    const colStart = Date.now();
+    const colMaxAttempts = 10;
+
+    const columnRetryResult = await retryWithPolicyHandling(
+      async (ctx: RetryContext) => {
+        const retryHint = ctx.attempt > 1
+          ? ` Previous attempt failed: ${ctx.lastErrorSummary}. Do NOT invent variable names.`
+          : '';
+
+        const { output, usage } = await generateText({
+          model: getCrosstabModel(),
+          system: buildSystemPromptForGroup(singleGroup, ctx.shouldUsePolicySafeVariant),
+          maxRetries: 0,
+          prompt: `Validate banner column "${col.name}" in group "${group.groupName}".${retryHint}`,
+          tools: { scratchpad: crosstabScratchpadTool },
+          stopWhen: stepCountIs(15),
+          maxOutputTokens: Math.min(getCrosstabModelTokenLimit(), 100000),
+          providerOptions: { openai: { reasoningEffort: getCrosstabReasoningEffort() } },
+          output: Output.object({ schema: ValidatedGroupSchema }),
+          abortSignal,
+        });
+
+        if (!output || !output.columns || output.columns.length !== 1) {
+          throw new Error(`Invalid agent response for column ${col.name} in group ${group.groupName}`);
+        }
+
+        recordAgentMetrics(
+          'CrosstabAgent',
+          getCrosstabModelName(),
+          { input: usage?.inputTokens || 0, output: usage?.outputTokens || 0 },
+          Date.now() - colStart
+        );
+
+        const invalidVars: string[] = [];
+        for (const v of extractVariableNames(output.columns[0].adjusted || '')) {
+          if (!datamapColumns.has(v)) invalidVars.push(v);
+        }
+        if (invalidVars.length > 0) {
+          const unique = [...new Set(invalidVars)].slice(0, 25);
+          throw new Error(`INVALID VARIABLES: ${unique.join(', ')}. Use ONLY variables from the data map; do not synthesize names.`);
+        }
+
+        return output;
+      },
+      {
+        abortSignal,
+        maxAttempts: colMaxAttempts,
+        onRetry: (attempt, err) => {
+          if (checkAbortError(err)) throw err;
+          console.warn(`[CrosstabAgent] Retry ${attempt}/${colMaxAttempts} for column "${col.name}" (group "${group.groupName}"): ${err.message.substring(0, 160)}`);
+        },
+      }
+    );
+
+    if (columnRetryResult.success && columnRetryResult.result) {
+      return columnRetryResult.result.columns[0];
+    }
+
+    const colErr = columnRetryResult.error || 'Unknown error';
+    const colRetryContext = columnRetryResult.wasPolicyError
+      ? ` (failed after ${columnRetryResult.attempts} retries due to content policy)`
+      : '';
+
+    return {
       name: col.name,
       adjusted: `# Error: Processing failed for "${col.original}"`,
       confidence: 0.0,
-      reasoning: `Processing error: ${errorMessage}${retryContext}. Manual review required.`,
+      reasoning: `Processing error: ${colErr}${colRetryContext}. Manual review required.`,
       userSummary: 'Processing failed for this column. Manual review required.',
       alternatives: [],
-      uncertainties: [`Processing error: ${errorMessage}${retryContext}`],
-      expressionType: 'direct_variable' as const
-    }))
+      uncertainties: [`Processing error: ${colErr}${colRetryContext}`],
+      expressionType: 'direct_variable' as const,
+    };
   };
+
+  const columns = [];
+  for (const col of group.columns) {
+    columns.push(await processSingleColumn(col));
+  }
+
+  return { groupName: group.groupName, columns };
 }
 
 // Process all banner groups using group-by-group strategy

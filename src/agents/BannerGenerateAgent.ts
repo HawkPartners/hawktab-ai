@@ -120,13 +120,15 @@ export async function generateBannerCuts(
   // Create context-isolated scratchpad
   const scratchpad = createContextScratchpadTool('BannerGenerate', 'generate');
 
+  const maxAttempts = 10;
+
   // Wrap the AI call with retry logic for policy errors
   const retryResult = await retryWithPolicyHandling(
     async () => {
       const { output, usage } = await generateText({
         model: getBannerGenerateModel(),
         system: systemPrompt,
-        maxRetries: 3,
+        maxRetries: 0, // Centralized outer retries via retryWithPolicyHandling
         prompt: userPrompt,
         tools: {
           scratchpad,
@@ -161,11 +163,12 @@ export async function generateBannerCuts(
     },
     {
       abortSignal: input.abortSignal,
+      maxAttempts,
       onRetry: (attempt, err) => {
         if (err instanceof DOMException && err.name === 'AbortError') {
           throw err;
         }
-        console.warn(`[BannerGenerateAgent] Retry ${attempt}/3: ${err.message.substring(0, 120)}`);
+        console.warn(`[BannerGenerateAgent] Retry ${attempt}/${maxAttempts}: ${err.message.substring(0, 120)}`);
       },
     },
   );
