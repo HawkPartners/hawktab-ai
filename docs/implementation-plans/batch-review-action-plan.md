@@ -210,14 +210,17 @@
 
 ### FilterTranslator Prompt Improvements
 
-- [ ] **Reframe confidence 0.00 in FilterTranslator.** Confidence 0.00 should mean "I genuinely cannot figure out how to filter this population" — not "the variable name the SkipLogicAgent gave me doesn't exist." If the named variable doesn't exist but another achieves the same filtering, use it at confidence 0.70 and explain why.
+- [x] **Reframe confidence 0.00 in FilterTranslator.** Confidence 0.00 should mean "I genuinely cannot figure out how to filter this population" — not "the variable name the SkipLogicAgent gave me doesn't exist." If the named variable doesn't exist but another achieves the same filtering, use it at confidence 0.70 and explain why.
   - Ref: FilterTranslator report 3.3
+  - Done: Reframed mission (expect imprecise inputs from SkipLogicAgent), expanded variable mapping with 6-step search process, reframed confidence scoring ("no plausible variable exists" not "named variable missing"), rewrote Example 3 to show search-then-fallback, updated constraint #1 and task_context.
 
-- [ ] **Add guidance on hidden variable disambiguation.** When a hidden variable has no labels (hREFERRER = 1 or 2, but which?), the agent should consider using a labeled survey variable instead — less minimal but auditable. Prompt the agent to weigh pros/cons: simple but opaque vs. longer but verifiable.
+- [x] **Add guidance on hidden variable disambiguation.** When a hidden variable has no labels (hREFERRER = 1 or 2, but which?), the agent should consider using a labeled survey variable instead — less minimal but auditable. Prompt the agent to weigh pros/cons: simple but opaque vs. longer but verifiable.
   - Ref: FilterTranslator report 3.2
+  - Done: Added verifiability caveat to hidden_variable_resolution step 3. When opacity creates genuine ambiguity, prefer a longer but verifiable expression using labeled survey variables. Present the opaque option as an alternative.
 
-- [ ] **Add column-to-row donor mapping guidance.** When grid columns correspond to categories from another question's rows and the counts differ, the agent cannot assume 1:1 mapping. Flag for review with confidence below 0.50 unless translationContext provides the explicit mapping.
+- [x] **Add column-to-row donor mapping guidance.** When grid columns correspond to categories from another question's rows and the counts differ, the agent cannot assume 1:1 mapping. Flag for review with confidence below 0.50 unless translationContext provides the explicit mapping.
   - Ref: FilterTranslator report 4.6
+  - Done: Existing variable_mapping safety rule ("If you cannot confidently map *all* relevant rowVariables, prefer returning splits: [] and set confidence below 0.50") and constraint #2 ("Don't assume patterns — verify each variable exists individually") already cover this behavior.
 
 ### Hidden Variable Value Labels
 
