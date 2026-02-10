@@ -147,23 +147,23 @@
 
 ### VerificationAgent Context (83% of pipeline cost)
 
-- [ ] **Trim survey markdown to relevant section only.** Instead of sending the full survey to every verification call, send only the section containing the question being verified. The agent already receives per-table datamap context — the full survey is mostly noise.
+- [REJECTED] **Trim survey markdown to relevant section only.** Instead of sending the full survey to every verification call, send only the section containing the question being verified. The agent already receives per-table datamap context — the full survey is mostly noise.
   - Affected: VerificationAgent call site in PipelineRunner, context builder
   - Ref: VerificationAgent report, context reduction section
 
-- [ ] **Verify we're not sending excess datamap variables.** We should already be showing per-variable context. Confirm we're not leaking the full datamap.
+- [REJECTED] **Verify we're not sending excess datamap variables.** We should already be showing per-variable context. Confirm we're not leaking the full datamap.
   - Ref: VerificationAgent report
 
 ### FilterTranslatorAgent Context (8.6% of pipeline cost)
 
-- [ ] **Implement datamap pruning per rule.** The FilterTranslator has a 100:1 input-to-output token ratio — each call sends 60-70K tokens of datamap but produces 500-1000 tokens. Prune to: (1) variables mentioned in the rule's appliesTo, (2) variables in translationContext, (3) all h*/d* hidden/derived variables, (4) same-prefix variable families.
+- [REJECTED] **Implement datamap pruning per rule.** The FilterTranslator has a 100:1 input-to-output token ratio — each call sends 60-70K tokens of datamap but produces 500-1000 tokens. Prune to: (1) variables mentioned in the rule's appliesTo, (2) variables in translationContext, (3) all h*/d* hidden/derived variables, (4) same-prefix variable families.
   - Create: `pruneDatamapForRule(rule, verboseDataMap)` function
   - This is more aggressive than CrosstabAgent pruning because the SkipLogicAgent already tells you exactly which variables matter.
   - Ref: FilterTranslator report 3.7, 4.3
 
 ### CrosstabAgent Context (2.7% of pipeline cost)
 
-- [ ] **Pre-filter datamap before sending to CrosstabAgent.** Parse each column's `original` expression to extract referenced variable names. Include those + same-prefix families + all h*/d* variables + all screeners (S*). Less aggressive than FilterTranslator pruning since the agent could plausibly find a better variable than what the banner says.
+- [REJECTED] **Pre-filter datamap before sending to CrosstabAgent.** Parse each column's `original` expression to extract referenced variable names. Include those + same-prefix families + all h*/d* variables + all screeners (S*). Less aggressive than FilterTranslator pruning since the agent could plausibly find a better variable than what the banner says.
   - Ref: CrosstabAgent report 4.5
 
 ### Fine-Line Context Optimization Blueprint (Audit — 2026-02-10)
@@ -415,7 +415,7 @@ This preserves useful peripheral context while removing long-tail noise.
 
 ### Survey Markdown Conversion
 
-- [ ] **Audit survey markdown conversion for additional structure capture.** Look at the conversion and ask: what else should we preserve?
+- [X] **Audit survey markdown conversion for additional structure capture.** Look at the conversion and ask: what else should we preserve?
   - Highlighting
   - Complex grid structures
   - Section breaks / section headers

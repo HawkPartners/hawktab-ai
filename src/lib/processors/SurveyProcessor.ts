@@ -44,6 +44,254 @@ const DEFAULT_LIBREOFFICE_PATHS = [
   '/usr/local/bin/soffice',
 ];
 
+// ===== COLOR SEMANTICS =====
+
+/**
+ * Classify a hex color into a semantic category.
+ * Blue = programming notes (ASK IF, RANDOMIZE, routing logic)
+ * Red = termination criteria (TERMINATE, CONTINUE)
+ */
+function classifyColor(hex: string): 'prog' | 'term' | null {
+  if (hex.length !== 6) return null;
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  if (r > 180 && g < 100 && b < 100) return 'term';
+  if (b > 140 && r < 100) return 'prog';
+  return null;
+}
+
+/**
+ * Process nested <font color="#hex"> tags using a state-machine scanner.
+ *
+ * LibreOffice nests font tags deeply:
+ *   <font face><font size><font color><font face><font size>text</font></font></font></font></font>
+ *
+ * Simple regex can't match the color font's closing tag because of nesting.
+ * This scanner finds <font color="#hex">, tracks nesting depth to find the
+ * matching </font>, and wraps the content with {{PROG: ...}} or {{TERM: ...}}.
+ */
+function processColorFonts(html: string): string {
+  const result: string[] = [];
+  let i = 0;
+
+  while (i < html.length) {
+    // Look for <font color=
+    const fontColorIdx = html.indexOf('<font color=', i);
+    if (fontColorIdx === -1) {
+      result.push(html.slice(i));
+      break;
+    }
+
+    // Push everything before this tag
+    result.push(html.slice(i, fontColorIdx));
+
+    // Extract the hex color from the tag
+    const tagEnd = html.indexOf('>', fontColorIdx);
+    if (tagEnd === -1) {
+      result.push(html.slice(fontColorIdx));
+      break;
+    }
+
+    const tagStr = html.slice(fontColorIdx, tagEnd + 1);
+    const colorMatch = tagStr.match(/color=["']#?([0-9a-fA-F]{6})["']/);
+    const hex = colorMatch ? colorMatch[1].toLowerCase() : null;
+    const category = hex ? classifyColor(hex) : null;
+
+    // Now find the matching </font> by tracking depth
+    let depth = 1;
+    let j = tagEnd + 1;
+    while (j < html.length && depth > 0) {
+      const nextOpen = html.indexOf('<font', j);
+      const nextClose = html.indexOf('</font>', j);
+
+      if (nextClose === -1) {
+        // No closing tag found, bail
+        j = html.length;
+        break;
+      }
+
+      if (nextOpen !== -1 && nextOpen < nextClose) {
+        // Found a nested <font> before the next </font>
+        depth++;
+        j = html.indexOf('>', nextOpen) + 1;
+      } else {
+        // Found </font>
+        depth--;
+        if (depth === 0) {
+          // This is our matching close
+          const innerHtml = html.slice(tagEnd + 1, nextClose);
+          if (category) {
+            const marker = category === 'prog' ? 'PROG' : 'TERM';
+            result.push(`{{${marker}: ${innerHtml}}}`);
+          } else {
+            // Unclassified color — pass through inner content without the font tag
+            result.push(innerHtml);
+          }
+          j = nextClose + '</font>'.length;
+          break;
+        } else {
+          j = nextClose + '</font>'.length;
+        }
+      }
+    }
+
+    i = j;
+  }
+
+  return result.join('');
+}
+
+/**
+ * Extract clean text from a table cell's HTML.
+ *
+ * 1. Run color font processor (handles nesting)
+ * 2. Convert <b> → **, <strike>/<s>/<del> → ~~
+ * 3. Strip all remaining HTML tags
+ * 4. Normalize whitespace, trim
+ * 5. Decode HTML entities
+ */
+function extractCellText(cellHtml: string): string {
+  let text = cellHtml;
+
+  // Process color semantics first (before stripping tags)
+  text = processColorFonts(text);
+
+  // Convert bold
+  text = text.replace(/<b\b[^>]*>(.*?)<\/b>/gi, '**$1**');
+
+  // Convert strikethrough (all three tag types)
+  text = text.replace(/<(?:strike|s|del)\b[^>]*>(.*?)<\/(?:strike|s|del)>/gi, '~~$1~~');
+
+  // Convert <br> to space (table cells are single-line in markdown)
+  text = text.replace(/<br\s*\/?>/gi, ' ');
+
+  // Strip all remaining HTML tags
+  text = text.replace(/<[^>]+>/g, '');
+
+  // Decode HTML entities
+  text = text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#(\d+);/g, (_m, code) => String.fromCharCode(parseInt(code, 10)));
+
+  // Normalize whitespace
+  text = text.replace(/\s+/g, ' ').trim();
+
+  // Clean up empty bold/strikethrough markers
+  text = text.replace(/\*\*\s*\*\*/g, '');
+  text = text.replace(/~~\s*~~/g, '');
+
+  return text;
+}
+
+/**
+ * Convert HTML <table> blocks to markdown tables before Turndown processes them.
+ *
+ * LibreOffice's HTML tables lack <thead>, so the Turndown GFM plugin skips them.
+ * This pre-processor extracts tables from the raw HTML string, converts them to
+ * markdown table syntax, and replaces them inline so Turndown only sees clean markdown.
+ */
+function preprocessHtmlTables(html: string): string {
+  // Find all <table>...</table> blocks
+  const tableRegex = /<table\b[^>]*>[\s\S]*?<\/table>/gi;
+
+  return html.replace(tableRegex, (tableHtml) => {
+    try {
+      // Extract rows
+      const rowRegex = /<tr\b[^>]*>([\s\S]*?)<\/tr>/gi;
+      const rows: string[][] = [];
+      let rowMatch;
+
+      while ((rowMatch = rowRegex.exec(tableHtml)) !== null) {
+        const rowHtml = rowMatch[1];
+        const cells: string[] = [];
+
+        // Extract cells (td or th)
+        const cellRegex = /<(?:td|th)\b([^>]*)>([\s\S]*?)<\/(?:td|th)>/gi;
+        let cellMatch;
+
+        while ((cellMatch = cellRegex.exec(rowHtml)) !== null) {
+          const attrs = cellMatch[1];
+          const cellContent = cellMatch[2];
+          const text = extractCellText(cellContent);
+          cells.push(text);
+
+          // Handle colspan — insert empty cells for spanned columns
+          const colspanMatch = attrs.match(/colspan=["']?(\d+)["']?/i);
+          if (colspanMatch) {
+            const span = parseInt(colspanMatch[1], 10);
+            for (let c = 1; c < span; c++) {
+              cells.push('');
+            }
+          }
+        }
+
+        if (cells.length > 0) {
+          rows.push(cells);
+        }
+      }
+
+      // Need at least 2 rows (header + data) for a markdown table
+      if (rows.length < 2) {
+        if (rows.length === 1) {
+          // Single row: render as a simple line
+          return '\n' + rows[0].filter(c => c).join(' | ') + '\n';
+        }
+        // Empty table — pass through unchanged
+        return tableHtml;
+      }
+
+      // Normalize column count (pad short rows with empty cells)
+      const maxCols = Math.max(...rows.map(r => r.length));
+      for (const row of rows) {
+        while (row.length < maxCols) {
+          row.push('');
+        }
+      }
+
+      // Escape pipe characters in cell text
+      const escapeCell = (cell: string) => cell.replace(/\|/g, '\\|');
+
+      // Build markdown table
+      const lines: string[] = [];
+      // Header row
+      lines.push('| ' + rows[0].map(escapeCell).join(' | ') + ' |');
+      // Separator row
+      lines.push('| ' + rows[0].map(() => '---').join(' | ') + ' |');
+      // Data rows
+      for (let r = 1; r < rows.length; r++) {
+        lines.push('| ' + rows[r].map(escapeCell).join(' | ') + ' |');
+      }
+
+      return '\n' + lines.join('\n') + '\n';
+    } catch {
+      // If anything goes wrong, pass through original HTML
+      return tableHtml;
+    }
+  });
+}
+
+/**
+ * Merge adjacent same-type color markers that result from split <font> elements.
+ * e.g., {{PROG: **[ASK**}}{{PROG:  ALL]}} → {{PROG: **[ASK ALL]**}}
+ */
+function mergeAdjacentColorMarkers(markdown: string): string {
+  let prev = '';
+  while (markdown !== prev) {
+    prev = markdown;
+    markdown = markdown.replace(
+      /\{\{(PROG|TERM): ([^}]*)\}\}\s*\{\{\1: ([^}]*)\}\}/g,
+      '{{$1: $2 $3}}'
+    );
+  }
+  return markdown;
+}
+
 // ===== MAIN FUNCTION =====
 
 /**
@@ -104,7 +352,13 @@ export async function processSurvey(
       };
     }
 
-    // Step 3: HTML → Markdown
+    // Step 3: Pre-process HTML tables → markdown tables
+    // LibreOffice's HTML tables lack <thead>, so the Turndown GFM plugin skips them.
+    // This converts <table> blocks to markdown table syntax before Turndown runs.
+    console.log('[SurveyProcessor] Pre-processing HTML tables...');
+    const preprocessedHtml = preprocessHtmlTables(html);
+
+    // Step 4: HTML → Markdown
     console.log('[SurveyProcessor] Converting HTML to Markdown...');
     const turndown = new TurndownService({
       headingStyle: 'atx',
@@ -133,9 +387,28 @@ export async function processSurvey(
       },
     });
 
-    const markdown = turndown.turndown(html);
+    // Capture color semantics from non-table colored text
+    // (Table colors are already handled in preprocessHtmlTables via extractCellText)
+    turndown.addRule('coloredText', {
+      filter: function (node) {
+        return node.nodeName === 'FONT' && !!node.getAttribute('color');
+      },
+      replacement: function (content, node) {
+        const el = node as HTMLElement;
+        const hex = (el.getAttribute('color') || '').replace('#', '').toLowerCase();
+        const cat = classifyColor(hex);
+        if (cat === 'prog') return `{{PROG: ${content.trim()}}}`;
+        if (cat === 'term') return `{{TERM: ${content.trim()}}}`;
+        return content;
+      },
+    });
 
-    // Step 4: Cleanup (unless keepHtml is true)
+    let markdown = turndown.turndown(preprocessedHtml);
+
+    // Step 5: Merge adjacent color markers from split <font> elements
+    markdown = mergeAdjacentColorMarkers(markdown);
+
+    // Step 6: Cleanup (unless keepHtml is true)
     if (!options.keepHtml) {
       await fs.unlink(htmlPath).catch(() => {
         warnings.push(`Could not clean up HTML file: ${htmlPath}`);
