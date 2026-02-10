@@ -216,8 +216,18 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 
-# Read SPSS file
-data <- read_sav("${escapedPath}")
+# Read SPSS file (with encoding fallback)
+data <- tryCatch(
+  read_sav("${escapedPath}"),
+  error = function(e) {
+    if (grepl("iconv|encoding|translat", e$message, ignore.case = TRUE)) {
+      cat("WARNING: Encoding error, retrying with encoding='latin1'\\n")
+      read_sav("${escapedPath}", encoding = "latin1")
+    } else {
+      stop(e)
+    }
+  }
+)
 
 # Variables to analyze
 vars <- c(${varsArray})

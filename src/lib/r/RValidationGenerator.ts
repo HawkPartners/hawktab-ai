@@ -75,8 +75,18 @@ export function generateValidationScript(
   // -------------------------------------------------------------------------
   // Load Data
   // -------------------------------------------------------------------------
-  lines.push('# Load SPSS data file');
-  lines.push(`data <- read_sav("${dataFilePath}")`);
+  lines.push('# Load SPSS data file (with encoding fallback)');
+  lines.push(`data <- tryCatch(`);
+  lines.push(`  read_sav("${dataFilePath}"),`);
+  lines.push('  error = function(e) {');
+  lines.push('    if (grepl("iconv|encoding|translat", e$message, ignore.case = TRUE)) {');
+  lines.push('      cat("WARNING: Encoding error, retrying with encoding=\'latin1\'\\n")');
+  lines.push(`      read_sav("${dataFilePath}", encoding = "latin1")`);
+  lines.push('    } else {');
+  lines.push('      stop(e)');
+  lines.push('    }');
+  lines.push('  }');
+  lines.push(')');
   lines.push('print(paste("Loaded", nrow(data), "rows and", ncol(data), "columns"))');
   lines.push('');
 
@@ -168,9 +178,19 @@ export function generateSingleTableValidationScript(
   lines.push('');
 
   // -------------------------------------------------------------------------
-  // Load Data
+  // Load Data (with encoding fallback)
   // -------------------------------------------------------------------------
-  lines.push(`data <- read_sav("${dataFilePath}")`);
+  lines.push(`data <- tryCatch(`);
+  lines.push(`  read_sav("${dataFilePath}"),`);
+  lines.push('  error = function(e) {');
+  lines.push('    if (grepl("iconv|encoding|translat", e$message, ignore.case = TRUE)) {');
+  lines.push('      cat("WARNING: Encoding error, retrying with encoding=\'latin1\'\\n")');
+  lines.push(`      read_sav("${dataFilePath}", encoding = "latin1")`);
+  lines.push('    } else {');
+  lines.push('      stop(e)');
+  lines.push('    }');
+  lines.push('  }');
+  lines.push(')');
   lines.push('');
 
   // -------------------------------------------------------------------------

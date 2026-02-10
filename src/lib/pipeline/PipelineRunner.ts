@@ -54,6 +54,28 @@ import {
 const execAsync = promisify(exec);
 
 // =============================================================================
+// Signal Descriptions
+// =============================================================================
+
+function describeProcessSignal(error: unknown): { signal?: string; signalDescription?: string } {
+  const execError = error as { signal?: string; killed?: boolean };
+  const signal = execError.signal;
+  if (!signal) return {};
+
+  const descriptions: Record<string, string> = {
+    SIGKILL: 'Process killed by OS (likely out of memory)',
+    SIGSEGV: 'Process crashed (segfault — possibly corrupted .sav or haven bug)',
+    SIGTERM: 'Process terminated (likely hit timeout)',
+    SIGABRT: 'Process aborted',
+  };
+
+  return {
+    signal,
+    signalDescription: descriptions[signal] || `Process received signal ${signal}`,
+  };
+}
+
+// =============================================================================
 // Logger
 // =============================================================================
 
@@ -1281,6 +1303,7 @@ export async function runPipeline(
       const stdout = execError.stdout || '';
       const stderr = execError.stderr || '';
       const errorMsg = execError.message || String(rError);
+      const { signal, signalDescription } = describeProcessSignal(rError);
 
       try {
         await saveRLog(stdout, stderr, false);
@@ -1307,8 +1330,11 @@ export async function runPipeline(
           // ignore
         }
       } else {
-        log(`  R execution failed:`, 'red');
-        eventBus.emitStageFailed(10, STAGE_NAMES[10], errorMsg.substring(0, 200));
+        const failDescription = signalDescription
+          ? `R execution failed (${signalDescription}):`
+          : `R execution failed:`;
+        log(`  ${failDescription}`, 'red');
+        eventBus.emitStageFailed(10, STAGE_NAMES[10], signalDescription || errorMsg.substring(0, 200));
         try {
           await persistSystemError({
             outputDir,
@@ -1322,6 +1348,8 @@ export async function runPipeline(
             meta: {
               action: 'r_execution_failed',
               message: errorMsg.substring(0, 500),
+              signal,
+              signalDescription,
               stdoutTail: stdout.length > 500 ? stdout.slice(-500) : stdout,
               stderrTail: stderr.length > 500 ? stderr.slice(-500) : stderr,
             },
@@ -1329,7 +1357,9 @@ export async function runPipeline(
         } catch {
           // ignore
         }
-        if (stderr) {
+        if (signalDescription) {
+          log(`  ${signalDescription}`, 'dim');
+        } else if (stderr) {
           const stderrTail = stderr.length > 500 ? '...' + stderr.slice(-500) : stderr;
           log(`  ${stderrTail}`, 'dim');
         } else {

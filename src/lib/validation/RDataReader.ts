@@ -51,15 +51,31 @@ async function executeRScript(
   writeFileSync(scriptPath, scriptContent);
   const rCommand = findRCommand();
 
+  const TIMEOUT_MS = 60_000;
+  const GRACE_MS = 5_000;
+
   return new Promise((resolve, reject) => {
     const proc = spawn(rCommand, [scriptPath]);
     let stdout = '';
     let stderr = '';
+    let timedOut = false;
+    let graceTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const killTimer = setTimeout(() => {
+      timedOut = true;
+      proc.kill('SIGTERM');
+      graceTimer = setTimeout(() => {
+        proc.kill('SIGKILL');
+      }, GRACE_MS);
+    }, TIMEOUT_MS);
 
     proc.stdout.on('data', (d) => (stdout += d));
     proc.stderr.on('data', (d) => (stderr += d));
 
     proc.on('close', (code) => {
+      clearTimeout(killTimer);
+      if (graceTimer) clearTimeout(graceTimer);
+
       // Clean up script file
       try {
         unlinkSync(scriptPath);
@@ -67,7 +83,9 @@ async function executeRScript(
         // Ignore cleanup errors
       }
 
-      if (code !== 0) {
+      if (timedOut) {
+        reject(new Error(`R script timed out after ${TIMEOUT_MS / 1000}s`));
+      } else if (code !== 0) {
         reject(new Error(`R script failed (code ${code}): ${stderr}`));
       } else {
         resolve(stdout);
@@ -75,6 +93,9 @@ async function executeRScript(
     });
 
     proc.on('error', (err) => {
+      clearTimeout(killTimer);
+      if (graceTimer) clearTimeout(graceTimer);
+
       try {
         unlinkSync(scriptPath);
       } catch {
@@ -103,7 +124,17 @@ export async function getDataFileStats(
 suppressMessages(library(haven))
 suppressMessages(library(jsonlite))
 
-data <- read_sav("${escapedPath}")
+data <- tryCatch(
+  read_sav("${escapedPath}"),
+  error = function(e) {
+    if (grepl("iconv|encoding|translat", e$message, ignore.case = TRUE)) {
+      cat("WARNING: Encoding error, retrying with encoding='latin1'\\n")
+      read_sav("${escapedPath}", encoding = "latin1")
+    } else {
+      stop(e)
+    }
+  }
+)
 cols <- colnames(data)
 
 # Detect stacking indicator columns
@@ -196,7 +227,17 @@ export async function getColumnFillRates(
 suppressMessages(library(haven))
 suppressMessages(library(jsonlite))
 
-data <- read_sav("${escapedPath}")
+data <- tryCatch(
+  read_sav("${escapedPath}"),
+  error = function(e) {
+    if (grepl("iconv|encoding|translat", e$message, ignore.case = TRUE)) {
+      cat("WARNING: Encoding error, retrying with encoding='latin1'\\n")
+      read_sav("${escapedPath}", encoding = "latin1")
+    } else {
+      stop(e)
+    }
+  }
+)
 cols_to_check <- c(${colsArray})
 
 # Only check columns that exist in the data

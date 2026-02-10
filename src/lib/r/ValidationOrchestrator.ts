@@ -29,6 +29,28 @@ import { persistAgentErrorAuto, persistSystemErrorAuto } from '../errors/ErrorPe
 const execAsync = promisify(exec);
 
 // =============================================================================
+// Signal Descriptions
+// =============================================================================
+
+function describeProcessSignal(error: unknown): { signal?: string; signalDescription?: string } {
+  const execError = error as { signal?: string; killed?: boolean };
+  const signal = execError.signal;
+  if (!signal) return {};
+
+  const descriptions: Record<string, string> = {
+    SIGKILL: 'Process killed by OS (likely out of memory)',
+    SIGSEGV: 'Process crashed (segfault — possibly corrupted .sav or haven bug)',
+    SIGTERM: 'Process terminated (likely hit timeout)',
+    SIGABRT: 'Process aborted',
+  };
+
+  return {
+    signal,
+    signalDescription: descriptions[signal] || `Process received signal ${signal}`,
+  };
+}
+
+// =============================================================================
 // Types
 // =============================================================================
 
@@ -163,6 +185,44 @@ export async function validateAndFixTables(
 
   // Parse initial results
   const failedTables: Array<{ tableId: string; error: string }> = [];
+
+  // Detect orphaned tables — tables that were submitted for validation but
+  // got no result back (R crashed before reaching them)
+  const returnedTableIds = new Set(Object.keys(initialResults));
+  const expectedTableIds = tablesToValidate.map(t => t.tableId);
+  const missingTableIds = expectedTableIds.filter(id => !returnedTableIds.has(id));
+
+  if (missingTableIds.length > 0) {
+    const isTotalCrash = returnedTableIds.size === 0;
+    const crashType = isTotalCrash ? 'full R crash (no results returned)' : 'partial R crash';
+    log(`WARNING: ${missingTableIds.length}/${expectedTableIds.length} tables orphaned by ${crashType}`);
+
+    for (const missingId of missingTableIds) {
+      failedTables.push({
+        tableId: missingId,
+        error: `Table orphaned by R validation crash — no result returned (${crashType})`,
+      });
+    }
+
+    try {
+      await persistSystemErrorAuto({
+        outputDir,
+        stageNumber: 8,
+        stageName: 'RValidation',
+        severity: 'warning',
+        actionTaken: 'continued',
+        error: new Error(`${missingTableIds.length} tables orphaned by ${crashType}`),
+        meta: {
+          missingTableIds,
+          returnedCount: returnedTableIds.size,
+          expectedCount: expectedTableIds.length,
+          crashType,
+        },
+      });
+    } catch {
+      // ignore
+    }
+  }
 
   for (const [tableId, result] of Object.entries(initialResults)) {
     const validationResult = result as TableValidationResult;
@@ -411,13 +471,17 @@ async function executeValidationScript(
 
   } catch (error) {
     const execError = error as { stdout?: string; stderr?: string; message?: string };
-    log(`R execution error: ${execError.message}`);
+    const { signal, signalDescription } = describeProcessSignal(error);
+    const errorDescription = signalDescription
+      ? `R execution error (${signalDescription}): ${execError.message}`
+      : `R execution error: ${execError.message}`;
+    log(errorDescription);
 
     // Save error log
     const errorLogPath = path.join(workingDir, 'validation-error.log');
     await fs.writeFile(
       errorLogPath,
-      `ERROR:\n${execError.message}\n\nSTDOUT:\n${execError.stdout || ''}\n\nSTDERR:\n${execError.stderr || ''}`,
+      `ERROR:\n${execError.message}\n\nSIGNAL: ${signal || 'none'}\nDESCRIPTION: ${signalDescription || 'none'}\n\nSTDOUT:\n${execError.stdout || ''}\n\nSTDERR:\n${execError.stderr || ''}`,
       'utf-8'
     );
 
@@ -434,6 +498,8 @@ async function executeValidationScript(
           scriptPath: path.relative(workingDir, scriptPath),
           resultsFileName,
           errorLogPath: path.relative(workingDir, errorLogPath),
+          signal,
+          signalDescription,
         },
       });
     } catch {

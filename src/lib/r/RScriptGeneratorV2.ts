@@ -336,8 +336,18 @@ export function generateRScriptV2WithValidation(
   // -------------------------------------------------------------------------
   // Load Data
   // -------------------------------------------------------------------------
-  lines.push('# Load SPSS data file');
-  lines.push(`data <- read_sav("${dataFilePath}")`);
+  lines.push('# Load SPSS data file (with encoding fallback)');
+  lines.push(`data <- tryCatch(`);
+  lines.push(`  read_sav("${dataFilePath}"),`);
+  lines.push('  error = function(e) {');
+  lines.push('    if (grepl("iconv|encoding|translat", e$message, ignore.case = TRUE)) {');
+  lines.push('      cat("WARNING: Encoding error, retrying with encoding=\'latin1\'\\n")');
+  lines.push(`      read_sav("${dataFilePath}", encoding = "latin1")`);
+  lines.push('    } else {');
+  lines.push('      stop(e)');
+  lines.push('    }');
+  lines.push('  }');
+  lines.push(')');
   lines.push('print(paste("Loaded", nrow(data), "rows and", ncol(data), "columns"))');
   lines.push('');
 
@@ -353,6 +363,25 @@ export function generateRScriptV2WithValidation(
     lines.push(`  stop("Weight variable '${safeWeightVar}' not found in data")`);
     lines.push('}');
     lines.push('weight_vec[is.na(weight_vec)] <- 1.0  # NA weights default to 1');
+    lines.push('');
+    lines.push('# Weight sanity checks');
+    lines.push('n_negative <- sum(weight_vec < 0)');
+    lines.push('if (n_negative > 0) {');
+    lines.push('  cat(paste("WARNING: Found", n_negative, "negative weights — setting to 0\\n"))');
+    lines.push('  weight_vec[weight_vec < 0] <- 0');
+    lines.push('}');
+    lines.push('n_zero <- sum(weight_vec == 0)');
+    lines.push('if (n_zero > 0) {');
+    lines.push('  cat(paste("WARNING: Found", n_zero, "zero weights (these respondents will be excluded from weighted calculations)\\n"))');
+    lines.push('}');
+    lines.push('wt_median <- median(weight_vec[weight_vec > 0])');
+    lines.push('if (wt_median > 0) {');
+    lines.push('  n_extreme <- sum(weight_vec > 10 * wt_median)');
+    lines.push('  if (n_extreme > 0) {');
+    lines.push('    cat(paste("WARNING: Found", n_extreme, "extreme weights (>10x median of", round(wt_median, 3), "), max =", round(max(weight_vec), 3), "\\n"))');
+    lines.push('  }');
+    lines.push('}');
+    lines.push('');
     lines.push(`cat(paste("Weight variable: ${safeWeightVar}",`);
     lines.push('    "- mean:", round(mean(weight_vec), 3),');
     lines.push('    "- range:", round(min(weight_vec), 3), "-", round(max(weight_vec), 3), "\\n"))');
@@ -976,10 +1005,33 @@ function generateHelperFunctions(lines: string[], isWeighted: boolean = false): 
     lines.push('');
   }
 
-  // Round half up (not banker's rounding)
+  // Round half up (not banker's rounding) — with NaN/Inf guard
   lines.push('# Round half up (12.5 -> 13, not banker\'s rounding which gives 12)');
   lines.push('round_half_up <- function(x, digits = 0) {');
-  lines.push('  floor(x * 10^digits + 0.5) / 10^digits');
+  lines.push('  result <- floor(x * 10^digits + 0.5) / 10^digits');
+  lines.push('  bad <- is.nan(result) | is.infinite(result)');
+  lines.push('  if (any(bad)) {');
+  lines.push('    cat(paste("WARNING: round_half_up replaced", sum(bad), "NaN/Inf values with 0\\n"))');
+  lines.push('    result[bad] <- 0');
+  lines.push('  }');
+  lines.push('  result');
+  lines.push('}');
+  lines.push('');
+
+  // Sanitize NaN/Inf before JSON serialization
+  lines.push('# Sanitize NaN/Inf in nested lists before JSON serialization');
+  lines.push('sanitize_for_json <- function(obj) {');
+  lines.push('  if (is.list(obj)) {');
+  lines.push('    return(lapply(obj, sanitize_for_json))');
+  lines.push('  }');
+  lines.push('  if (is.numeric(obj)) {');
+  lines.push('    bad <- is.nan(obj) | is.infinite(obj)');
+  lines.push('    if (any(bad)) {');
+  lines.push('      cat(paste("WARNING: sanitize_for_json replaced", sum(bad), "NaN/Inf values with 0\\n"))');
+  lines.push('      obj[bad] <- 0');
+  lines.push('    }');
+  lines.push('  }');
+  lines.push('  obj');
   lines.push('}');
   lines.push('');
 
@@ -2071,7 +2123,7 @@ function generateJsonOutput(
     // Dual JSON output: one for each weight mode
     lines.push('# Write dual JSON output (weighted + unweighted)');
     lines.push('for (wm in weight_modes) {');
-    lines.push('  output_tables <- get(paste0("all_tables_", wm))');
+    lines.push('  output_tables <- sanitize_for_json(get(paste0("all_tables_", wm)))');
     lines.push('  output_wm <- output');
     lines.push('  output_wm$tables <- output_tables');
     lines.push('  output_wm$metadata$weighted <- (wm == "weighted")');
@@ -2082,6 +2134,7 @@ function generateJsonOutput(
     lines.push('}');
   } else {
     lines.push('# Write JSON output');
+    lines.push('output$tables <- sanitize_for_json(output$tables)');
     lines.push(`output_path <- file.path("${outputDir}", "tables.json")`);
     lines.push('write_json(output, output_path, pretty = TRUE, auto_unbox = TRUE)');
     lines.push('print(paste("JSON output saved to:", output_path))');
