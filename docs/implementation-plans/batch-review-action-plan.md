@@ -67,28 +67,34 @@
 
 #### R Execution & Data Integrity
 
-- [ ] **Add timeout to RDataReader spawn.** `src/lib/validation/RDataReader.ts:55` uses raw `spawn()` with no timeout. If R hangs on a corrupted/huge .sav file, the pipeline blocks indefinitely. Every other R execution has a timeout; this one doesn't.
+- [x] **Add timeout to RDataReader spawn.** `src/lib/validation/RDataReader.ts:55` uses raw `spawn()` with no timeout. If R hangs on a corrupted/huge .sav file, the pipeline blocks indefinitely. Every other R execution has a timeout; this one doesn't.
   - Fix: Add `setTimeout` + `proc.kill('SIGTERM')` with 60s cap, then `SIGKILL` after 5s grace.
   - Affected: `RDataReader.ts` `executeRScript()` function
+  - Done: 60s SIGTERM → 5s grace → SIGKILL. `timedOut` flag for clear error message.
 
-- [ ] **Sanitize NaN/Inf before JSON serialization.** `write_json()` in `RScriptGeneratorV2.ts:2080-2086` uses default `na = "null"`, which silently converts NaN (0/0 from zero-respondent cells), Inf (division by zero), and -Inf to `null` — indistinguishable from legitimate missing data (NA). An all-NaN column can be dropped entirely by jsonlite (known bug, jsonlite issue #223).
+- [x] **Sanitize NaN/Inf before JSON serialization.** `write_json()` in `RScriptGeneratorV2.ts:2080-2086` uses default `na = "null"`, which silently converts NaN (0/0 from zero-respondent cells), Inf (division by zero), and -Inf to `null` — indistinguishable from legitimate missing data (NA). An all-NaN column can be dropped entirely by jsonlite (known bug, jsonlite issue #223).
   - Fix: Add R sanitization pass before `write_json()`: replace NaN/Inf with 0, log a warning with the affected table/cut. This preserves the data while flagging the anomaly.
   - Affected: `RScriptGeneratorV2.ts` output section
+  - Done: `sanitize_for_json()` recursive R helper + `round_half_up()` NaN/Inf guard. Called before every `write_json()`.
 
-- [ ] **Detect SIGKILL in R error messages.** When macOS kills R for memory pressure, `error.signal === 'SIGKILL'` but stderr is empty. Current error persistence logs "R script failed (code null):" with no useful info.
+- [x] **Detect SIGKILL in R error messages.** When macOS kills R for memory pressure, `error.signal === 'SIGKILL'` but stderr is empty. Current error persistence logs "R script failed (code null):" with no useful info.
   - Fix: Check `error.signal` in R execution catch blocks. If `SIGKILL`, log "R process killed by OS (likely out of memory)." If `SIGSEGV`, log "R process crashed (segfault in native code — possibly corrupted .sav or haven bug)."
   - Affected: `PipelineRunner.ts` R execution, `ValidationOrchestrator.ts`
+  - Done: `describeProcessSignal()` helper in both files. Maps SIGKILL/SIGSEGV/SIGTERM/SIGABRT to descriptions. Enriches logs + persisted error meta.
 
-- [ ] **Detect R validation crash orphaning tables.** When the entire R validation script crashes (not individual tables), the result is `{}`. The retry loop in `ValidationOrchestrator.ts` only iterates over entries in `initialResults`, so tables not in the results aren't marked as failed — they silently disappear from the pipeline.
+- [x] **Detect R validation crash orphaning tables.** When the entire R validation script crashes (not individual tables), the result is `{}`. The retry loop in `ValidationOrchestrator.ts` only iterates over entries in `initialResults`, so tables not in the results aren't marked as failed — they silently disappear from the pipeline.
   - Fix: After R validation, compare table count in results vs expected tables. If results have fewer tables than expected, log a warning with the missing table IDs and treat them as failed (eligible for retry).
   - Affected: `ValidationOrchestrator.ts` post-validation check
+  - Done: Compares returned vs expected table IDs. Missing tables pushed to `failedTables` → flow into retry loop. Persists warning with crash type (full vs partial).
 
-- [ ] **Add encoding resilience for .sav files.** SPSS files created on Windows use Windows-1252 encoding. Haven 2.4+ has stricter iconv validation that can crash on encoding mismatches. International surveys and files from older SPSS versions are especially vulnerable. When encoding doesn't crash, garbled labels (accented letters, em-dashes, curly quotes) flow through silently.
+- [x] **Add encoding resilience for .sav files.** SPSS files created on Windows use Windows-1252 encoding. Haven 2.4+ has stricter iconv validation that can crash on encoding mismatches. International surveys and files from older SPSS versions are especially vulnerable. When encoding doesn't crash, garbled labels (accented letters, em-dashes, curly quotes) flow through silently.
   - Fix: Wrap `read_sav()` in a tryCatch that retries with `encoding = "latin1"` on encoding errors. Log a warning when fallback encoding is used. Not perfect (mixed-encoding files remain unsolvable), but catches the most common case.
   - Affected: `RDataReader.ts` R script template, `RScriptGeneratorV2.ts` data loading section
+  - Done: All 5 `read_sav()` call sites wrapped (RDataReader×2, RScriptGeneratorV2, RValidationGenerator×2, DistributionCalculator).
 
-- [CONSIDER] **Add weight variable sanity checks.** Current R code handles NA weights (`weight_vec[is.na(weight_vec)] <- 1.0`) but does not check for negative weights (produce nonsensical results without warning), zero weights (produce NaN in weighted mean), or extreme weights (>10x median, which amplify individual responses disproportionately). Rare in well-run surveys, but possible with corrupted weight variables or calibration failures.
+- [x] **Add weight variable sanity checks.** Current R code handles NA weights (`weight_vec[is.na(weight_vec)] <- 1.0`) but does not check for negative weights (produce nonsensical results without warning), zero weights (produce NaN in weighted mean), or extreme weights (>10x median, which amplify individual responses disproportionately). Rare in well-run surveys, but possible with corrupted weight variables or calibration failures.
   - Affected: `RScriptGeneratorV2.ts` weight handling section
+  - Done: Negative weights → set to 0 with warning. Zero weights → warn only. Extreme (>10x median) → warn only with count and max.
 
 #### Azure OpenAI API
 
