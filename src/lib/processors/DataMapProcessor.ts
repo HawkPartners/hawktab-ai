@@ -161,6 +161,13 @@ export class DataMapProcessor {
           // Don't mark as admin — let it flow through to normal type classification
         } else {
           enriched.normalizedType = 'admin';
+          // Still parse value labels so FilterTranslator can resolve h*/d* variables deterministically
+          if (variable.answerOptions && variable.answerOptions !== 'NA') {
+            const allowedVals = this.extractAllowedValues(variable.answerOptions);
+            if (allowedVals.length > 0) enriched.allowedValues = allowedVals;
+            const labels = this.parseScaleLabels(variable.answerOptions);
+            if (labels.length > 0) enriched.scaleLabels = labels;
+          }
           return enriched;
         }
       }

@@ -224,8 +224,9 @@
 
 ### Hidden Variable Value Labels
 
-- [VERIFY] **Check if RDataReader extracts value labels for h* and d* variables.** If it does, the hREFERRER ambiguity resolves itself deterministically. If it doesn't, add this — it's low-hanging fruit.
+- [DONE] **RDataReader already extracts value labels for h\* and d\* variables** — the raw `answerOptions` string was present (e.g., `"1=INTERNAL REFERRER,2=COMMUNITY REFERRER"`). However, `DataMapProcessor.normalizeVariableTypes()` returned early for admin variables before parsing `answerOptions` into structured `scaleLabels` and `allowedValues` arrays. Fixed: admin variables now get `scaleLabels` and `allowedValues` populated before the early return, so FilterTranslator can resolve h\*/d\* values deterministically.
   - Ref: FilterTranslator report 4.2
+  - Fix: `src/lib/processors/DataMapProcessor.ts` — parse value labels before admin early-return
 
 ---
 
