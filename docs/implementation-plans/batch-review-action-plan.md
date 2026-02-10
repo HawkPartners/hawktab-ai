@@ -57,8 +57,85 @@
   - Ref: LoopPolicyAgent report, Claude's notes
   - Done: createRespondentAnchoredFallbackPolicy(); fallbackApplied/fallbackReason in schema + persisted JSON for UI surfacing.
 
-- [ ] **Research and anticipate additional failure modes.** Deep web search for Azure rate limiting edge cases, context window overflow patterns, R execution edge cases. Proactively fix before they hit us.
+- [x] **Research and anticipate additional failure modes.** Deep web search for Azure rate limiting edge cases, context window overflow patterns, R execution edge cases. Proactively fix before they hit us.
   - Ref: System report, User Thoughts
+  - Done: Deep dive completed 2026-02-10. Audited full codebase error handling + web research on Azure OpenAI, R/haven, and JSON serialization edge cases. Findings below.
+
+### Anticipated Failure Modes (from deep dive research)
+
+*Proactive hardening from Azure OpenAI, R execution, and data serialization research. Items ordered by likelihood of hitting us.*
+
+#### R Execution & Data Integrity
+
+- [ ] **Add timeout to RDataReader spawn.** `src/lib/validation/RDataReader.ts:55` uses raw `spawn()` with no timeout. If R hangs on a corrupted/huge .sav file, the pipeline blocks indefinitely. Every other R execution has a timeout; this one doesn't.
+  - Fix: Add `setTimeout` + `proc.kill('SIGTERM')` with 60s cap, then `SIGKILL` after 5s grace.
+  - Affected: `RDataReader.ts` `executeRScript()` function
+
+- [ ] **Sanitize NaN/Inf before JSON serialization.** `write_json()` in `RScriptGeneratorV2.ts:2080-2086` uses default `na = "null"`, which silently converts NaN (0/0 from zero-respondent cells), Inf (division by zero), and -Inf to `null` — indistinguishable from legitimate missing data (NA). An all-NaN column can be dropped entirely by jsonlite (known bug, jsonlite issue #223).
+  - Fix: Add R sanitization pass before `write_json()`: replace NaN/Inf with 0, log a warning with the affected table/cut. This preserves the data while flagging the anomaly.
+  - Affected: `RScriptGeneratorV2.ts` output section
+
+- [ ] **Detect SIGKILL in R error messages.** When macOS kills R for memory pressure, `error.signal === 'SIGKILL'` but stderr is empty. Current error persistence logs "R script failed (code null):" with no useful info.
+  - Fix: Check `error.signal` in R execution catch blocks. If `SIGKILL`, log "R process killed by OS (likely out of memory)." If `SIGSEGV`, log "R process crashed (segfault in native code — possibly corrupted .sav or haven bug)."
+  - Affected: `PipelineRunner.ts` R execution, `ValidationOrchestrator.ts`
+
+- [ ] **Detect R validation crash orphaning tables.** When the entire R validation script crashes (not individual tables), the result is `{}`. The retry loop in `ValidationOrchestrator.ts` only iterates over entries in `initialResults`, so tables not in the results aren't marked as failed — they silently disappear from the pipeline.
+  - Fix: After R validation, compare table count in results vs expected tables. If results have fewer tables than expected, log a warning with the missing table IDs and treat them as failed (eligible for retry).
+  - Affected: `ValidationOrchestrator.ts` post-validation check
+
+- [ ] **Add encoding resilience for .sav files.** SPSS files created on Windows use Windows-1252 encoding. Haven 2.4+ has stricter iconv validation that can crash on encoding mismatches. International surveys and files from older SPSS versions are especially vulnerable. When encoding doesn't crash, garbled labels (accented letters, em-dashes, curly quotes) flow through silently.
+  - Fix: Wrap `read_sav()` in a tryCatch that retries with `encoding = "latin1"` on encoding errors. Log a warning when fallback encoding is used. Not perfect (mixed-encoding files remain unsolvable), but catches the most common case.
+  - Affected: `RDataReader.ts` R script template, `RScriptGeneratorV2.ts` data loading section
+
+- [CONSIDER] **Add weight variable sanity checks.** Current R code handles NA weights (`weight_vec[is.na(weight_vec)] <- 1.0`) but does not check for negative weights (produce nonsensical results without warning), zero weights (produce NaN in weighted mean), or extreme weights (>10x median, which amplify individual responses disproportionately). Rare in well-run surveys, but possible with corrupted weight variables or calibration failures.
+  - Affected: `RScriptGeneratorV2.ts` weight handling section
+
+#### Azure OpenAI API
+
+- [ ] **Add circuit breaker for cascading API failures.** If Azure is down, every agent exhausts all 10 retries independently. With 50+ tables in VerificationAgent alone, that's 500 failed API calls before the pipeline gives up. For overnight batch runs, this wastes hours.
+  - Fix: Add a shared failure counter in `retryWithPolicyHandling.ts`. If 3 consecutive calls across the pipeline fail with the same error classification (e.g., `rate_limit` or `transient`), emit a circuit-breaker event. PipelineRunner catches this and aborts early with a clear message: "Azure OpenAI appears unavailable — aborting after N consecutive failures."
+  - Affected: `retryWithPolicyHandling.ts` (shared state), `PipelineRunner.ts` (catch + abort)
+
+- [ ] **Log 429 response bodies for debugging.** Azure returns three distinct 429 types — quota exceeded, regional capacity, and transient scaling — each requiring different backoff. We currently classify all as `rate_limit`. The response body contains the distinguishing text but we don't persist it.
+  - Fix: When a 429 is caught, persist the response body (or at least the error message) in the error log. Not changing retry behavior now, but this gives us the data to tune backoff later if overnight runs start failing.
+  - Affected: `retryWithPolicyHandling.ts` `onRetryWithContext` callback
+
+- [ ] **Check `finish_reason` for output truncation.** Azure defaults `max_tokens` to 4,096 for GPT-4o. If output exceeds this, JSON is silently truncated. The AI SDK catches this as `JSONParseError` (retryable), but all retries fail identically if the model consistently generates too much. Also: with reasoning models, `max_completion_tokens` is shared between reasoning and visible output — high reasoning effort can starve the actual response.
+  - Fix: After each `generateText()` call, check for `finish_reason === "length"`. If detected, log distinctly ("Output truncated — model generated more tokens than max_tokens allows") and consider auto-increasing `max_tokens` on retry. This distinguishes "model output too big" from "model returned bad JSON."
+  - Affected: All agent call sites, potentially `retryWithPolicyHandling.ts`
+  - Note: Azure's Responses API rate limit headers are confirmed broken (return -1 and 0) — do NOT add header parsing.
+
+- [ ] **Add pipeline-level AbortSignal + timeout.** All 7 agents have AbortSignal plumbing, but PipelineRunner never creates or passes one. No way to abort a running pipeline (short of killing the process), and no overall pipeline timeout. A single hung `generateText()` call blocks indefinitely.
+  - Fix: Create an `AbortController` in PipelineRunner with a configurable overall timeout (default: 90 minutes). Pass the signal to all agent calls. On timeout, persist the error and save whatever partial output exists.
+  - Affected: `PipelineRunner.ts` `runPipeline()`, all agent call sites
+
+- [CONSIDER] **Add Azure deployment health check at pipeline start.** A simple test API call (e.g., "respond with OK") before starting a 45-minute run could catch deployment issues, misconfigured API keys, or quota exhaustion in the first 5 seconds. Currently the pipeline discovers these 10-15 minutes in, after BannerAgent and survey processing.
+  - Affected: `PipelineRunner.ts` pre-flight section
+
+#### Batch Pipeline
+
+- [ ] **Add per-dataset timeout to batch pipeline.** If one dataset hangs (R OOM on a huge .sav, stuck API call), the entire overnight batch stalls. No mechanism to timeout a single dataset and proceed to the next.
+  - Fix: Wrap each `runPipeline()` call in a `Promise.race` with a configurable timeout (default: 90 minutes). On timeout, kill the pipeline, record the error, and continue to the next dataset.
+  - Affected: `scripts/batch-pipeline.ts`
+
+- [ ] **Add fail-fast logic to batch pipeline.** If Azure quota is exhausted, all 11 datasets fail identically — wasting the entire run time. No "abort if N consecutive datasets fail" logic.
+  - Fix: If 3 consecutive datasets fail with the same error pattern (e.g., all rate-limited), abort the batch early with a summary of what happened. Still generate the batch summary for completed datasets.
+  - Affected: `scripts/batch-pipeline.ts`
+
+- [CONSIDER] **Add batch resume capability.** If a batch run is interrupted (machine restarts, Ctrl+C), the entire batch must be re-run from scratch. A simple `--resume` flag that skips datasets with existing output directories (checking for `pipeline-summary.json`) would save hours on partial failures.
+  - Affected: `scripts/batch-pipeline.ts`
+
+- [CONSIDER] **Add SIGINT handler for graceful shutdown.** Pressing Ctrl+C during a pipeline run could leave R subprocesses orphaned and output directories incomplete. A handler that catches SIGINT, kills child processes, and writes partial results would be cleaner.
+  - Affected: `scripts/batch-pipeline.ts`, `scripts/test-pipeline.ts`
+
+#### Known Non-Issues (researched, already covered or not actionable)
+
+- **Content policy false positives**: Already handled via `RESEARCH_DATA_PREAMBLE`, `sanitizeForAzureContentFilter`, and policy-safe prompt variants. Pharma terminology is the main trigger — our existing mitigations are solid.
+- **Token counting accuracy**: tiktoken underestimates by 10-30% vs actual Azure consumption (tool schemas, chat formatting, structured output schema all consume hidden tokens). Our 60% guardrail in `inputValidation.ts` provides sufficient margin. No tokenizer dependency needed.
+- **`Retry-After` headers**: Microsoft confirmed these are broken on the Responses API (return -1 and 0). Our fixed exponential backoff with jitter is the correct approach. Do NOT add header parsing.
+- **Azure API version**: Pinned to `2025-01-01-preview`. Structured output requires `2024-08-01-preview` or later — we're safe.
+- **Haven tagged NA values**: Default `user_na = FALSE` safely converts SPSS user-defined missing values to R `NA`. Our `as.vector(col)` in RDataReader strips haven attributes. Safe as long as nobody adds `user_na = TRUE`.
+- **Azure structured output schema limits**: 100 max properties, 5 levels nesting, `additionalProperties: false` required. Our Zod schemas comply. Azure enforces stricter validation than direct OpenAI — schemas that work on `api.openai.com` may fail on Azure.
 
 ---
 
