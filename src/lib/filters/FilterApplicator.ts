@@ -42,6 +42,7 @@ export function applyFilters(
   let passCount = 0;
   let filterCount = 0;
   let splitCount = 0;
+  let columnSplitCount = 0;
   let reviewRequiredCount = 0;
 
   for (const table of tables) {
@@ -57,9 +58,10 @@ export function applyFilters(
       continue;
     }
 
-    // Separate table-level and row-level filters
+    // Separate filter types
     const tableLevelFilters = questionFilters.filter(f => f.action === 'filter' && f.filterExpression.trim() !== '');
     const rowLevelFilters = questionFilters.filter(f => f.action === 'split' && f.splits.length > 0);
+    const columnSplitFilters = questionFilters.filter(f => f.action === 'column-split' && f.columnSplits.length > 0);
 
     // Track review requirements — derived from confidence threshold + validation
     const filterThreshold = getReviewThresholds().filter;
@@ -69,7 +71,7 @@ export function applyFilters(
     }
 
     // Case: No actionable filters (expressions may have been cleared by validation)
-    if (tableLevelFilters.length === 0 && rowLevelFilters.length === 0) {
+    if (tableLevelFilters.length === 0 && rowLevelFilters.length === 0 && columnSplitFilters.length === 0) {
       // Pass through but flag if review is needed
       outputTables.push({
         ...table,
@@ -79,24 +81,22 @@ export function applyFilters(
       continue;
     }
 
-    // Case: Table-level filter only (no row-level splits)
-    if (tableLevelFilters.length > 0 && rowLevelFilters.length === 0) {
-      // Combine multiple table-level filters with &
-      const combinedExpression = tableLevelFilters
-        .map(f => f.filterExpression)
-        .join(' & ');
+    // =====================================================================
+    // Compute table-level expression (shared across all layers)
+    // =====================================================================
+    const tableLevelExpression = tableLevelFilters.length > 0
+      ? tableLevelFilters.map(f => f.filterExpression).join(' & ')
+      : '';
+    const tableLevelBaseText = tableLevelFilters.length > 0
+      ? tableLevelFilters.map(f => f.baseText).filter(t => t.trim() !== '').join('; ')
+      : '';
 
-      // Combine base texts
-      const combinedBaseText = tableLevelFilters
-        .map(f => f.baseText)
-        .filter(t => t.trim() !== '')
-        .join('; ');
-
-      // Final validation
-      const validation = validateFilterVariables(combinedExpression, validVariables);
+    // Validate table-level expression if present
+    if (tableLevelExpression) {
+      const validation = validateFilterVariables(tableLevelExpression, validVariables);
       if (!validation.valid) {
         console.warn(
-          `[FilterApplicator] Skipping invalid filter for ${table.tableId}: ` +
+          `[FilterApplicator] Skipping invalid table-level filter for ${table.tableId}: ` +
           `variables ${validation.invalidVariables.join(', ')} not found`
         );
         outputTables.push({
@@ -106,78 +106,165 @@ export function applyFilters(
         passCount++;
         continue;
       }
-
-      outputTables.push({
-        ...table,
-        additionalFilter: combinedExpression,
-        baseText: combinedBaseText,
-        filterReviewRequired: hasReviewRequired,
-        lastModifiedBy: 'FilterApplicator',
-      });
-      filterCount++;
-      continue;
     }
 
-    // Case: Row-level split (with or without table-level filter)
-    if (rowLevelFilters.length > 0) {
-      // Get table-level expression to combine with splits (if any)
-      const tableLevelExpression = tableLevelFilters.length > 0
-        ? tableLevelFilters.map(f => f.filterExpression).join(' & ')
-        : '';
+    // =====================================================================
+    // Layer 1 — Column split: produce intermediate tables (one per column group)
+    // If no column splits, pass through as a single intermediate table.
+    // =====================================================================
+    interface IntermediateTable {
+      table: ExtendedTableDefinition;
+      additionalFilter: string;
+      baseText: string;
+      isColumnSplit: boolean;
+    }
 
-      for (const rowFilter of rowLevelFilters) {
-        for (const split of rowFilter.splits) {
-          // Skip splits with empty expressions (cleared by validation)
-          if (split.filterExpression.trim() === '') continue;
+    let intermediates: IntermediateTable[];
 
-          // Find matching rows in the table
+    if (columnSplitFilters.length > 0) {
+      intermediates = [];
+      for (const colFilter of columnSplitFilters) {
+        for (const colSplit of colFilter.columnSplits) {
+          // Find matching rows (columns in the grid) for this column group
           const matchingRows = table.rows.filter(row =>
-            split.rowVariables.includes(row.variable)
+            colSplit.columnVariables.includes(row.variable)
           );
 
           // Skip if no matching rows found
           if (matchingRows.length === 0) continue;
 
-          // Combine table-level + split-level expression
-          const combinedExpression = tableLevelExpression
-            ? `(${tableLevelExpression}) & (${split.filterExpression})`
-            : split.filterExpression;
-
-          // Final validation
-          const validation = validateFilterVariables(combinedExpression, validVariables);
-          if (!validation.valid) {
-            console.warn(
-              `[FilterApplicator] Skipping invalid split for ${table.tableId}/${split.splitLabel}: ` +
-              `variables ${validation.invalidVariables.join(', ')} not found`
-            );
-            continue;
+          // Column split filter expression — empty means "always shown" (NO additional filter)
+          let colExpression = '';
+          if (colSplit.filterExpression.trim() !== '') {
+            // Validate the column-level expression
+            const validation = validateFilterVariables(colSplit.filterExpression, validVariables);
+            if (!validation.valid) {
+              console.warn(
+                `[FilterApplicator] Skipping invalid column-split for ${table.tableId}/${colSplit.splitLabel}: ` +
+                `variables ${validation.invalidVariables.join(', ')} not found`
+              );
+              continue;
+            }
+            colExpression = colSplit.filterExpression;
           }
 
-          // Create split table
-          const splitTableId = `${table.tableId}_${split.splitLabel.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+          // Combine table-level + column-level expressions
+          let combinedExpression: string;
+          if (tableLevelExpression && colExpression) {
+            combinedExpression = `(${tableLevelExpression}) & (${colExpression})`;
+          } else if (tableLevelExpression) {
+            combinedExpression = tableLevelExpression;
+          } else {
+            combinedExpression = colExpression;
+          }
 
-          outputTables.push({
-            ...table,
-            tableId: splitTableId,
-            rows: matchingRows,
+          const combinedBaseText = [tableLevelBaseText, colSplit.baseText]
+            .filter(t => t.trim() !== '')
+            .join('; ');
+
+          const colTableId = `${table.tableId}_${colSplit.splitLabel.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+
+          intermediates.push({
+            table: {
+              ...table,
+              tableId: colTableId,
+              rows: matchingRows,
+              splitFromTableId: table.tableId,
+              tableSubtitle: colSplit.splitLabel || table.tableSubtitle,
+            },
             additionalFilter: combinedExpression,
-            baseText: split.baseText,
-            splitFromTableId: table.tableId,
-            tableSubtitle: split.splitLabel || table.tableSubtitle,
-            filterReviewRequired: hasReviewRequired,
-            lastModifiedBy: 'FilterApplicator',
+            baseText: combinedBaseText,
+            isColumnSplit: true,
           });
+        }
+      }
+      columnSplitCount++;
+    } else {
+      // No column splits — single intermediate representing the whole table
+      intermediates = [{
+        table,
+        additionalFilter: tableLevelExpression,
+        baseText: tableLevelBaseText,
+        isColumnSplit: false,
+      }];
+    }
+
+    // =====================================================================
+    // Layer 2 — Row split: for each intermediate table, apply row splits.
+    // If no row splits, output the intermediate tables directly.
+    // =====================================================================
+    if (rowLevelFilters.length > 0) {
+      for (const intermediate of intermediates) {
+        for (const rowFilter of rowLevelFilters) {
+          for (const split of rowFilter.splits) {
+            // Skip splits with empty expressions (cleared by validation)
+            if (split.filterExpression.trim() === '') continue;
+
+            // Find matching rows in the intermediate table
+            const matchingRows = intermediate.table.rows.filter(row =>
+              split.rowVariables.includes(row.variable)
+            );
+
+            // Skip if no matching rows found
+            if (matchingRows.length === 0) continue;
+
+            // Combine intermediate filter + row-split expression
+            const combinedExpression = intermediate.additionalFilter
+              ? `(${intermediate.additionalFilter}) & (${split.filterExpression})`
+              : split.filterExpression;
+
+            // Final validation
+            const validation = validateFilterVariables(combinedExpression, validVariables);
+            if (!validation.valid) {
+              console.warn(
+                `[FilterApplicator] Skipping invalid split for ${intermediate.table.tableId}/${split.splitLabel}: ` +
+                `variables ${validation.invalidVariables.join(', ')} not found`
+              );
+              continue;
+            }
+
+            const splitTableId = `${intermediate.table.tableId}_${split.splitLabel.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+
+            outputTables.push({
+              ...intermediate.table,
+              tableId: splitTableId,
+              rows: matchingRows,
+              additionalFilter: combinedExpression,
+              baseText: split.baseText,
+              splitFromTableId: intermediate.isColumnSplit ? intermediate.table.splitFromTableId : intermediate.table.tableId,
+              tableSubtitle: split.splitLabel || intermediate.table.tableSubtitle,
+              filterReviewRequired: hasReviewRequired,
+              lastModifiedBy: 'FilterApplicator',
+            });
+          }
         }
       }
 
       splitCount++;
       continue;
     }
+
+    // No row splits — output intermediate tables directly
+    if (columnSplitFilters.length > 0 || tableLevelFilters.length > 0) {
+      for (const intermediate of intermediates) {
+        outputTables.push({
+          ...intermediate.table,
+          additionalFilter: intermediate.additionalFilter || '',
+          baseText: intermediate.baseText || intermediate.table.baseText,
+          filterReviewRequired: hasReviewRequired,
+          lastModifiedBy: 'FilterApplicator',
+        });
+      }
+      if (columnSplitFilters.length === 0) {
+        filterCount++;
+      }
+      continue;
+    }
   }
 
   console.log(
     `[FilterApplicator] Applied filters: ${tables.length} input → ${outputTables.length} output tables ` +
-    `(pass: ${passCount}, filter: ${filterCount}, split: ${splitCount}, review: ${reviewRequiredCount})`
+    `(pass: ${passCount}, filter: ${filterCount}, split: ${splitCount}, colSplit: ${columnSplitCount}, review: ${reviewRequiredCount})`
   );
 
   return {
@@ -188,6 +275,7 @@ export function applyFilters(
       passCount,
       filterCount,
       splitCount,
+      columnSplitCount,
       reviewRequiredCount,
     },
   };

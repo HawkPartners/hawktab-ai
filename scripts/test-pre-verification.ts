@@ -266,6 +266,7 @@ async function main() {
     passCount: extendedTables.length,
     filterCount: 0,
     splitCount: 0,
+    columnSplitCount: 0,
     reviewRequiredCount: 0,
   };
 
@@ -283,6 +284,7 @@ async function main() {
     log(`  Pass:   ${filterSummary.passCount}`, 'dim');
     log(`  Filter: ${filterSummary.filterCount}`, filterSummary.filterCount > 0 ? 'green' : 'dim');
     log(`  Split:  ${filterSummary.splitCount}`, filterSummary.splitCount > 0 ? 'green' : 'dim');
+    log(`  ColSplit: ${filterSummary.columnSplitCount}`, filterSummary.columnSplitCount > 0 ? 'green' : 'dim');
     log(`  Review: ${filterSummary.reviewRequiredCount}`, filterSummary.reviewRequiredCount > 0 ? 'yellow' : 'dim');
   } else {
     log(`  No filters to apply — all ${extendedTables.length} tables pass through unchanged`, 'dim');

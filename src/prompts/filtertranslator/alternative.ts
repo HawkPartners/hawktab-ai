@@ -289,6 +289,89 @@ option codes belong to which parent category.
    - This is the correct behavior — a wrong mapping is worse than flagging for review
 </conditional_response_set_resolution>
 
+<column_level_split_resolution>
+RESOLVING COLUMN-LEVEL RULES (GRID COLUMN VISIBILITY):
+
+Some rules describe a multi-column grid question where certain COLUMNS are conditionally shown
+based on a prior answer. This is the third dimension of visibility — not who sees the question
+(table-level), not which rows appear (row-level), but which columns within the grid are shown.
+
+When you receive a rule with ruleType "column-level":
+
+1. READ translationContext CAREFULLY
+   - The SkipLogicAgent will have described which column groups are conditional vs always shown
+   - It will note the variable naming pattern (e.g., "c1 = always shown, c2 = gated by Q2 > 0")
+   - Use this to map column groups to their gating conditions
+
+2. EXAMINE THE DATAMAP for the target question's column structure
+   - Look for variables with row+column indices (e.g., Q6r1c1, Q6r1c2, Q6r2c1, Q6r2c2, etc.)
+   - Group variables by their column index (all c1 vars, all c2 vars, etc.)
+   - Each column group becomes one columnSplit entry
+
+3. BUILD columnSplits — one entry per column group:
+   {
+     "columnVariables": ["Q6r1c2", "Q6r2c2", "Q6r3c2"],  // all vars in this column
+     "filterExpression": "Q2 > 0",                          // gating condition (or "" if always shown)
+     "baseText": "Those with 2nd line experience",
+     "splitLabel": "2nd Line"
+   }
+
+4. CRITICAL — "ALWAYS SHOWN" COLUMNS:
+   - Column groups that are always shown MUST still be included in columnSplits
+   - Set their filterExpression to "" (empty string)
+   - This tells the FilterApplicator to create a table for these columns with NO additional filter
+   - If you omit the always-shown group, those columns will disappear from the output
+
+5. OUTPUT SHAPE for column-level rules:
+   - action: "column-split"
+   - splits: [] (empty — row splits are not used)
+   - columnSplits: populated with one entry per column group
+   - filterExpression: "" (the column-level conditions go in columnSplits, not here)
+
+6. WHEN THE COLUMN MAPPING IS AMBIGUOUS:
+   - If you cannot confidently group variables into column groups, return columnSplits: []
+   - Set confidence below 0.50
+   - In reasoning, explain what information is missing
+
+EXAMPLE: Column-level split
+Rule: "Column 2 (2nd line) shown only if Q2 > 0; Column 3 shown only if Q3 > 0; Column 1 always shown"
+Target: Q6 (multi-column grid)
+Datamap has: Q6r1c1, Q6r2c1, Q6r3c1 (column 1), Q6r1c2, Q6r2c2, Q6r3c2 (column 2), Q6r1c3, Q6r2c3, Q6r3c3 (column 3)
+
+Output:
+{
+  "ruleId": "rule_q6_column_visibility",
+  "questionId": "Q6",
+  "action": "column-split",
+  "filterExpression": "",
+  "baseText": "",
+  "splits": [],
+  "columnSplits": [
+    {
+      "columnVariables": ["Q6r1c1", "Q6r2c1", "Q6r3c1"],
+      "filterExpression": "",
+      "baseText": "All respondents",
+      "splitLabel": "1st Line"
+    },
+    {
+      "columnVariables": ["Q6r1c2", "Q6r2c2", "Q6r3c2"],
+      "filterExpression": "Q2 > 0",
+      "baseText": "Those with 2nd line experience",
+      "splitLabel": "2nd Line"
+    },
+    {
+      "columnVariables": ["Q6r1c3", "Q6r2c3", "Q6r3c3"],
+      "filterExpression": "Q3 > 0",
+      "baseText": "Those with 3rd+ line experience",
+      "splitLabel": "3rd+ Line"
+    }
+  ],
+  "alternatives": [],
+  "confidence": 0.90,
+  "reasoning": "translationContext describes three column groups with clear gating conditions. All c1/c2/c3 variables found in datamap. Column 1 always shown (empty filter), columns 2 and 3 gated by Q2 and Q3 respectively."
+}
+</column_level_split_resolution>
+
 <alternatives>
 PROVIDE ALTERNATIVE EXPRESSIONS (like CrosstabAgent):
 
@@ -627,6 +710,13 @@ RULES — NEVER VIOLATE:
    - If a simpler variable exists, use it as your primary expression.
    - Crosstab filters are typically one or two conditions on one or two variables.
      A complex expression is worth a second look — there may be a cleaner path.
+
+9. OUTPUT SHAPE MUST MATCH THE ACTION
+   Each action type has a specific output shape. Do not mix them:
+   - action: "filter" → splits: [], columnSplits: [] (filterExpression is the main output)
+   - action: "split" → columnSplits: [] (splits is populated, filterExpression is "")
+   - action: "column-split" → splits: [] (columnSplits is populated, filterExpression is "")
+   Do NOT populate both splits and columnSplits in the same filter entry.
 </constraints>
 
 <scratchpad_protocol>

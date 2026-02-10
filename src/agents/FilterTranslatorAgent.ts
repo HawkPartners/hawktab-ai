@@ -217,6 +217,12 @@ Fix the issue and retry. DO NOT invent variable names. Use ONLY variables presen
                   if (!v.valid) invalids.push(...v.invalidVariables);
                 }
               }
+              for (const cs of f.columnSplits || []) {
+                if (cs.filterExpression && cs.filterExpression.trim() !== '') {
+                  const v = validateFilterVariables(cs.filterExpression, validVariables);
+                  if (!v.valid) invalids.push(...v.invalidVariables);
+                }
+              }
             }
             if (invalids.length > 0) {
               const unique = [...new Set(invalids)].slice(0, 25);
@@ -355,6 +361,41 @@ Fix the issue and retry. DO NOT invent variable names. Use ONLY variables presen
       }
 
       return { ...filter, splits: validatedSplits };
+    }
+
+    // Validate column split expressions
+    if (filter.columnSplits && filter.columnSplits.length > 0) {
+      const validatedColumnSplits = filter.columnSplits.map(colSplit => {
+        // Empty filterExpression = "always shown" — valid, do not clear
+        if (!colSplit.filterExpression || colSplit.filterExpression.trim() === '') {
+          return colSplit;
+        }
+        const colSplitValidation = validateFilterVariables(colSplit.filterExpression, validVariables);
+        if (!colSplitValidation.valid) {
+          console.warn(
+            `[FilterTranslatorAgent] INVALID VARIABLES in column-split for ${filter.questionId}: ` +
+            `"${colSplit.filterExpression}" uses: ${colSplitValidation.invalidVariables.join(', ')}`
+          );
+          return { ...colSplit, filterExpression: '' };
+        }
+        return colSplit;
+      });
+
+      // If any column splits had invalid variables (that were non-empty), drop confidence
+      const hasInvalidColSplits = validatedColumnSplits.some((cs, i) => {
+        const original = filter.columnSplits[i];
+        return original.filterExpression.trim() !== '' && cs.filterExpression === '';
+      });
+      if (hasInvalidColSplits) {
+        return {
+          ...filter,
+          columnSplits: validatedColumnSplits,
+          confidence: Math.min(filter.confidence, 0.3),
+          reasoning: filter.reasoning + ' [VALIDATION: Some column-split expressions had non-existent variables.]',
+        };
+      }
+
+      return { ...filter, columnSplits: validatedColumnSplits };
     }
 
     return filter;

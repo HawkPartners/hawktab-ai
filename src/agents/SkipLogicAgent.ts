@@ -36,7 +36,7 @@ import {
   createContextScratchpadTool,
   getAllContextScratchpadEntries,
 } from './tools/scratchpad';
-import { getSkipLogicPrompt, SKIP_LOGIC_CORE_INSTRUCTIONS } from '../prompts/skiplogic';
+import { getSkipLogicPrompt, getSkipLogicCoreInstructions } from '../prompts/skiplogic';
 import { retryWithPolicyHandling, type RetryContext } from '../lib/retryWithPolicyHandling';
 import { recordAgentMetrics } from '../lib/observability';
 import {
@@ -550,7 +550,7 @@ function buildChunkedSystemPrompt(
   const parts: string[] = [];
 
   // Core instructions (shared with single-pass)
-  parts.push(`${RESEARCH_DATA_PREAMBLE}${SKIP_LOGIC_CORE_INSTRUCTIONS}`);
+  parts.push(`${RESEARCH_DATA_PREAMBLE}${getSkipLogicCoreInstructions()}`);
 
   // Chunked mode context
   parts.push(`
@@ -588,7 +588,7 @@ USE THE SCRATCHPAD TO DOCUMENT YOUR ANALYSIS:
 
 Walk through the questions in this chunk systematically. For each question:
 1. Note the question ID and any skip/show instructions
-2. Classify as table-level, row-level, or no rule
+2. Classify as table-level, column-level, row-level, or no rule
 3. Check if this rule was already extracted in a prior chunk (see "Rules Already Extracted" above)
 4. If unclear, document why and do NOT create a rule unless evidence is strong
 

@@ -33,8 +33,8 @@ export const SkipRuleSchema = z.object({
   /** Human-readable rewrite of the rule in plain language */
   plainTextRule: z.string(),
 
-  /** Whether this rule applies at the table level or row level */
-  ruleType: z.enum(['table-level', 'row-level']),
+  /** Whether this rule applies at the table level, row level, or column level */
+  ruleType: z.enum(['table-level', 'row-level', 'column-level']),
 
   /** Description of what the condition checks (e.g., "respondent must be aware of Brand X") */
   conditionDescription: z.string(),
@@ -98,6 +98,27 @@ export const SplitDefinitionSchema = z.object({
 export type SplitDefinition = z.infer<typeof SplitDefinitionSchema>;
 
 /**
+ * Definition for splitting a table into multiple tables based on column-level logic.
+ * Each group represents a set of columns (variables) that share a visibility condition.
+ * An empty filterExpression means "always shown" (no additional filter needed).
+ */
+export const ColumnSplitDefinitionSchema = z.object({
+  /** Variables (columns) that belong in this split table */
+  columnVariables: z.array(z.string()),
+
+  /** R filter expression for this column group ("" = always shown) */
+  filterExpression: z.string(),
+
+  /** Human-readable base text for this column group */
+  baseText: z.string(),
+
+  /** Label suffix for the split table (e.g., "2nd Line", "3rd+ Line") */
+  splitLabel: z.string(),
+});
+
+export type ColumnSplitDefinition = z.infer<typeof ColumnSplitDefinitionSchema>;
+
+/**
  * A translated filter for a specific question, referencing a SkipLogicAgent rule.
  */
 export const TableFilterSchema = z.object({
@@ -107,8 +128,8 @@ export const TableFilterSchema = z.object({
   /** Question this filter applies to */
   questionId: z.string(),
 
-  /** Action: filter the whole table, or split into per-row tables */
-  action: z.enum(['filter', 'split']),
+  /** Action: filter the whole table, split into per-row tables, or split by column groups */
+  action: z.enum(['filter', 'split', 'column-split']),
 
   /** R expression (empty string if split) */
   filterExpression: z.string(),
@@ -116,8 +137,11 @@ export const TableFilterSchema = z.object({
   /** Human-readable base text (empty string if split) */
   baseText: z.string(),
 
-  /** Split definitions (empty array if filter) */
+  /** Split definitions (empty array if filter or column-split) */
   splits: z.array(SplitDefinitionSchema),
+
+  /** Column split definitions (empty array if filter or split) */
+  columnSplits: z.array(ColumnSplitDefinitionSchema).default([]),
 
   /** Alternative R expressions with confidence/reasoning (like CrosstabAgent) */
   alternatives: z.array(FilterAlternativeSchema),
@@ -156,6 +180,7 @@ export interface FilterApplicatorResult {
     passCount: number;
     filterCount: number;
     splitCount: number;
+    columnSplitCount: number;
     reviewRequiredCount: number;
   };
 }

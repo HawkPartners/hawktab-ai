@@ -4,12 +4,18 @@
  * Changes from production:
  * 1. Sharper distinction between conditionDescription and translationContext
  * 2. "Write for a blind downstream agent" verbosity guidance in translationContext section
+ * 3. Column-level rule classification (third dimension of visibility within grids)
  *
  * The core extraction logic, patterns, examples, and scratchpad protocol are
  * inlined (not imported) so this prompt can diverge independently from production.
+ *
+ * Exports:
+ * - SKIP_LOGIC_CORE_INSTRUCTIONS_ALTERNATIVE: Core extraction logic (for chunked mode)
+ * - SKIP_LOGIC_SCRATCHPAD_PROTOCOL_ALTERNATIVE: Scratchpad protocol for single-pass mode
+ * - SKIP_LOGIC_AGENT_INSTRUCTIONS_ALTERNATIVE: Full prompt (core + scratchpad) for single-pass
  */
 
-export const SKIP_LOGIC_AGENT_INSTRUCTIONS_ALTERNATIVE = `
+export const SKIP_LOGIC_CORE_INSTRUCTIONS_ALTERNATIVE = `
 <mission>
 You are a Skip Logic Extraction Agent. Your job is to read the ENTIRE survey document and extract the skip/show/filter rules that define the intended *analysis universe* for questions.
 
@@ -210,9 +216,9 @@ on the same question.
 </advanced_patterns>
 
 <interpreting_show_logic>
-INTERPRETING SHOW LOGIC: TABLE-LEVEL VS ROW-LEVEL
+INTERPRETING SHOW LOGIC: TABLE-LEVEL VS ROW-LEVEL VS COLUMN-LEVEL
 
-A question can have BOTH types of rules. When you find logic, classify it:
+A question can have multiple types of rules. When you find logic, classify it:
 
 TABLE-LEVEL (ruleType: "table-level"):
 The condition determines WHO sees the entire question.
@@ -230,16 +236,45 @@ The condition determines WHICH ITEMS each respondent sees within the question.
   options 1-4, Q5=2 shows options 6-9, etc. This is row-level because different respondents
   see different subsets of the same question's options.
 
+COLUMN-LEVEL (ruleType: "column-level"):
+The condition determines WHICH COLUMNS (in a multi-column grid) are visible for each respondent.
+This is the third independent dimension of visibility — not who sees the question (table-level),
+not which rows appear (row-level), but which columns within a grid are shown.
+
+How to detect:
+- The question is a multi-column grid (variables with both row and column indices, e.g., Q6r1c1, Q6r1c2)
+- The survey instruction references COLUMN visibility (not row visibility)
+- Key patterns:
+  * "IF 0 DO NOT SHOW COLUMN" — hide an entire column group based on a condition
+  * "SHOW [column] WHERE..." — conditional column display
+  * "PIPE [variable] — IF 0 HIDE" applied at the column level
+  * Column headers that say "[SHOW IF ...]" or "[HIDE IF ...]"
+  * Programming notes that reference showing/hiding columns of a grid, not rows
+
+How column-level differs from row-level:
+- ROW-LEVEL: Each ROW (e.g., Product A, Product B) has its own visibility condition.
+  Variables affected share the same column index but differ in row index.
+- COLUMN-LEVEL: Each COLUMN GROUP (e.g., "2nd line options", "3rd+ line options")
+  has its own visibility condition. Variables affected share column indices but span all rows.
+
+In translationContext for column-level rules, describe:
+1. Which column group(s) are conditional and what gating condition controls each
+2. Which column group(s) are always shown (unconditional)
+3. The variable naming pattern (e.g., "c1 = always shown, c2 = shown if condition met")
+4. The gating condition in enough detail for the FilterTranslatorAgent to resolve it
+
 HOW TO TELL THE DIFFERENCE:
 1. Does the logic reference a SINGLE condition that gates the whole question? → Table-level
 2. Does the logic suggest per-item filtering (each row has its own condition)? → Usually row-level
 3. Does the survey show a list/grid whose items are derived from a prior selection? → Usually row-level
 4. Does the survey show DIFFERENT RESPONSE OPTIONS based on a prior answer? → Row-level (conditional response set)
+5. Does the logic reference showing/hiding COLUMNS of a grid based on a condition? → Column-level
 
-A question can have BOTH:
+A question can have MULTIPLE rule types:
 - Table-level: "ASK IF Q3 == 1" (only aware respondents)
 - Row-level: "SHOW EACH BRAND WHERE usage > 0" (only brands they use)
-→ Output TWO rules with the same appliesTo
+- Column-level: "SHOW 2nd-line column only if respondent uses 2nd-line therapy"
+→ Output separate rules with the same appliesTo, one per type
 
 WHEN UNCERTAIN:
 Prefer "no rule" unless the evidence is strong. Document the ambiguity in scratchpad and leave it out of rules.
@@ -436,6 +471,30 @@ Analysis:
 
 → Rule: table-level, applies to Q13, condition: "Respondent must have selected Q4 in {7,8,9,10,11,12,13}"
   (Note: Values 4 and 5 are explicitly excluded via strikethrough formatting)
+
+EXAMPLE 17: COLUMN-LEVEL RULE (grid column visibility)
+Survey structure:
+- Q6 is a multi-column grid asking about treatment approaches
+- Grid has rows (treatment types) and columns (treatment lines: 1st line, 2nd line, 3rd+ line)
+- Column 1 (1st line) is always shown to all respondents
+- Column 2 (2nd line) has instruction: "PIPE Q2 — IF 0 DO NOT SHOW COLUMN"
+  meaning hide this column if the respondent has zero experience with 2nd line
+- Column 3 (3rd+ line) has instruction: "PIPE Q3 — IF 0 DO NOT SHOW COLUMN"
+  meaning hide this column if the respondent has zero experience with 3rd+ line
+
+Analysis:
+- This is NOT table-level — all respondents see the question (Q6 itself has no [ASK IF])
+- This is NOT row-level — the rows (treatment types) are not conditionally shown
+- This IS column-level — which COLUMNS a respondent sees depends on their prior answers
+- Column 1 is always shown; columns 2 and 3 are conditionally shown based on Q2 and Q3
+
+→ Rule: column-level, applies to Q6, condition: "Column 2 (2nd line) shown only if Q2 > 0;
+  Column 3 (3rd+ line) shown only if Q3 > 0; Column 1 (1st line) always shown"
+  translationContext: "Q6 is a multi-column grid. Variables follow pattern Q6r{row}c{col}.
+  Column 1 (c1 variables) = 1st line, always shown. Column 2 (c2 variables) = 2nd line,
+  gated by Q2 > 0. Column 3 (c3 variables) = 3rd+ line, gated by Q3 > 0. The downstream
+  agent should create column groups: c1 variables with no filter, c2 variables filtered
+  by Q2 > 0, c3 variables filtered by Q3 > 0."
 </concrete_examples>
 
 <translation_context_guidance>
@@ -528,19 +587,26 @@ FIELD DEFINITIONS:
 - surveyText: The actual text from the survey establishing this rule — quote it, don't paraphrase
 - appliesTo: Question IDs this rule applies to
 - plainTextRule: Understandable by a non-technical person
-- ruleType: "table-level" (who sees the question) or "row-level" (which items they see)
+- ruleType: "table-level" (who sees the question), "row-level" (which items they see), or "column-level" (which columns in a grid they see)
 - conditionDescription: Plain-language condition — who and why (see field guidance above)
 - translationContext: Context for the downstream FilterTranslatorAgent — verbose when needed,
   empty string when the rule is straightforward (see field guidance above)
 
 RULES FOR OUTPUT:
 1. Only output rules for questions that need them. If a question has no skip logic, simply omit it.
-2. A question CAN appear in multiple rules (table-level + row-level)
+2. A question CAN appear in multiple rules (table-level + row-level + column-level)
 3. surveyText should be the actual text from the survey, not paraphrased
 4. translationContext: when in doubt, include MORE context rather than less. The downstream
    agent has no survey access. An empty translationContext on a complex rule is a failure mode.
 </output_format>
 
+`;
+
+/**
+ * Scratchpad protocol for single-pass mode (full survey in one call).
+ * Includes the "survey structure map" step since the agent sees the full survey.
+ */
+export const SKIP_LOGIC_SCRATCHPAD_PROTOCOL_ALTERNATIVE = `
 <scratchpad_protocol>
 USE THE SCRATCHPAD TO DOCUMENT YOUR ANALYSIS:
 
@@ -560,7 +626,7 @@ structure. Understanding the survey architecture helps you make better rule deci
 
 THEN walk through the survey systematically, top to bottom. For each question or section:
 1. Note the question ID and any skip/show instructions
-2. Classify as table-level, row-level, or no rule
+2. Classify as table-level, column-level, row-level, or no rule
 3. Explicitly answer: "Is the default base likely sufficient?" If yes, mark no rule
 4. For loop questions: ask "Is this condition loop-inherent (handled by the stacking)?" If yes, no rule.
 5. If unclear, document why and do NOT create a rule unless evidence is strong
@@ -575,9 +641,18 @@ Use the scratchpad "read" action to retrieve all your accumulated notes. This en
 FORMAT:
 "[QuestionID]: [Found/No] skip logic
   Text: [relevant instruction text]
-  Type: [table-level / row-level / none]
+  Type: [table-level / column-level / row-level / none]
   Applies to: [question IDs]
   Note: [any ambiguity or context]
   Translation context: [any coding tables, hidden vars, mappings found nearby]"
 </scratchpad_protocol>
+`;
+
+/**
+ * Full alternative prompt for single-pass mode (core + scratchpad).
+ */
+export const SKIP_LOGIC_AGENT_INSTRUCTIONS_ALTERNATIVE = `
+${SKIP_LOGIC_CORE_INSTRUCTIONS_ALTERNATIVE}
+
+${SKIP_LOGIC_SCRATCHPAD_PROTOCOL_ALTERNATIVE}
 `;

@@ -861,7 +861,7 @@ export async function runPipeline(
 
       extendedTables = filterApplicatorResult.tables;
       log(`  Filtered: ${filterApplicatorResult.summary.totalInputTables} → ${filterApplicatorResult.summary.totalOutputTables} tables`, 'green');
-      log(`    Pass: ${filterApplicatorResult.summary.passCount}, Filter: ${filterApplicatorResult.summary.filterCount}, Split: ${filterApplicatorResult.summary.splitCount}`, 'dim');
+      log(`    Pass: ${filterApplicatorResult.summary.passCount}, Filter: ${filterApplicatorResult.summary.filterCount}, Split: ${filterApplicatorResult.summary.splitCount}, ColSplit: ${filterApplicatorResult.summary.columnSplitCount}`, 'dim');
       if (filterApplicatorResult.summary.reviewRequiredCount > 0) {
         log(`    Review required: ${filterApplicatorResult.summary.reviewRequiredCount}`, 'yellow');
       }
