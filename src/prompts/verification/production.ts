@@ -425,7 +425,13 @@ FOR EACH TABLE, POPULATE THESE CONTEXT FIELDS:
    RIGHT: "Managers who oversee 5+ direct reports"  ← describes WHO
    RIGHT: ""  ← when ALL respondents were asked (most common case)
 
-   RULE 3: When in doubt, leave empty "". A missing base text is harmless; a wrong one misleads.
+   RULE 3: When skip logic is visible in the survey (ASK IF, SHOW IF, SKIP TO, or similar
+   conditional instructions), ALWAYS set baseText. Describe the condition in plain English.
+   Example: Survey says "ASK Q7 IF Q3 = 1 OR 2" → baseText: "Respondents who selected option 1 or 2 at Q3"
+
+   If no skip logic is visible for a question, use empty string "" (Excel defaults to "All respondents").
+   A wrong audience description (violating Rule 2) is worse than empty — but a missing one
+   when filters are clearly applied hides information from the user.
 
 3. USER NOTE (userNote)
    Add helpful context in parenthetical format. Use when:

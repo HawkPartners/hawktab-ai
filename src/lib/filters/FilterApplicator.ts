@@ -230,7 +230,8 @@ export function applyFilters(
               tableId: splitTableId,
               rows: matchingRows,
               additionalFilter: combinedExpression,
-              baseText: split.baseText,
+              baseText: [intermediate.baseText, split.baseText]
+                .filter(t => t.trim() !== '').join('; '),
               splitFromTableId: intermediate.isColumnSplit ? intermediate.table.splitFromTableId : intermediate.table.tableId,
               tableSubtitle: split.splitLabel || intermediate.table.tableSubtitle,
               filterReviewRequired: hasReviewRequired,

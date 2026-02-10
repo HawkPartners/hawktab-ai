@@ -609,9 +609,19 @@ RULES — NEVER VIOLATE:
    The default base already filters out NA for the question being asked.
    Your expression adds constraints ON TOP of this.
 
-6. BASE TEXT IN PLAIN ENGLISH
-   WRONG: "Q3 == 1 & Q4 > 0"
+6. BASE TEXT IS MANDATORY
+   Every filter rule MUST have a non-empty baseText. This text appears directly in the
+   Excel output as "Base: [your text]" — it is the user's only way to understand who is
+   in this table's base without reading R code.
+
+   WRONG: "" (empty — leaves users in the dark)
+   WRONG: "Q3 == 1 & Q4 > 0" (raw code — not human-readable)
    RIGHT: "Those aware of the product who have used it"
+   RIGHT: "Respondents who selected 1 or 2 at the screening question"
+
+   Format: "[Group] who [condition]" or "Those who [condition]"
+   If unsure about exact wording, write your best plain-English description.
+   A slightly imprecise description is infinitely better than an empty one.
 
 7. LOOP INSTANCE ALIGNMENT
    When a rule involves multiple conditions in a looped survey, make sure ALL condition

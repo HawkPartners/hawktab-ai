@@ -343,11 +343,11 @@
 
 *Every table should tell the user who the base is.*
 
-- [ ] **Ensure every table has a clear, human-readable base description.** Currently `baseText` is 36-77% missing depending on dataset. When populated, it sometimes contains raw filter expressions instead of readable descriptions. The base should always say "Respondents who [condition]" — never "Show Leqvio row when A3a > 0."
+- [x] **Ensure every table has a clear, human-readable base description.** Currently `baseText` is 36-77% missing depending on dataset. When populated, it sometimes contains raw filter expressions instead of readable descriptions. The base should always say "Respondents who [condition]" — never "Show Leqvio row when A3a > 0."
   - Affected: VerificationAgent prompt, possibly FilterTranslatorAgent output
   - Ref: SkipLogicAgent broader point, VerificationAgent report 1.5
 
-- [ ] **Track applied filters through the system.** When skip logic filters are applied on top of the base filter, the table's base description should reflect ALL applied filters so the user knows exactly who they're looking at. "This is only respondents who [base condition] AND [skip logic condition]."
+- [x] **Track applied filters through the system.** When skip logic filters are applied on top of the base filter, the table's base description should reflect ALL applied filters so the user knows exactly who they're looking at. "This is only respondents who [base condition] AND [skip logic condition]."
   - Ref: SkipLogicAgent report, broader point on bases
 
 ---
@@ -382,12 +382,12 @@
 - [REJECTED] **Two-pass approach for skip logic.** Instead of one pass that extracts AND classifies rules, maybe: Pass 1 captures all rules the agent sees (everything — gates, column-level, row-level, table-level). Pass 2 classifies each one. The system deterministically decides which to apply. This might produce better coverage since the agent isn't filtering while extracting.
   - Ref: SkipLogicAgent report 3.2
 
-- [ ] **Provide respondent counts per variable to SkipLogicAgent or FilterTranslator.** Actual R data (not just the survey) could help the agent understand whether filtering is already happening as expected. Maybe more of a FilterTranslatorAgent input than SkipLogicAgent.
+- [REJECTED] **Provide respondent counts per variable to SkipLogicAgent or FilterTranslator.** Actual R data (not just the survey) could help the agent understand whether filtering is already happening as expected. Maybe more of a FilterTranslatorAgent input than SkipLogicAgent.
   - Ref: SkipLogicAgent report, overall impression
 
 ### BannerGenerateAgent Role
 
-- [CONSIDER] **Should BannerGenerateAgent give plain text guidance instead of R expressions?** Currently it produces concrete filter expressions (`Q3==1`, `S2 %in% c(1,2)`) — but that's the CrosstabAgent's job. Maybe it should describe what to cut in plain text and let the CrosstabAgent figure out the syntax. The two agents are bleeding into each other.
+- [REJECTED] **Should BannerGenerateAgent give plain text guidance instead of R expressions?** Currently it produces concrete filter expressions (`Q3==1`, `S2 %in% c(1,2)`) — but that's the CrosstabAgent's job. Maybe it should describe what to cut in plain text and let the CrosstabAgent figure out the syntax. The two agents are bleeding into each other.
   - Ref: BannerAgent report 3.5
 
 ### SkipLogic Duplicate Rules

@@ -150,6 +150,26 @@ function validateBaseText(table: ExtendedTableDefinition, actions: PostPassActio
 }
 
 /**
+ * Rule 3b: Backfill baseText when a filter is applied but baseText is empty.
+ * Safety net — surfaces the R expression so users can see what's applied.
+ */
+function backfillBaseText(table: ExtendedTableDefinition, actions: PostPassAction[]): ExtendedTableDefinition {
+  // Only act when a filter exists but base text is missing
+  if (!table.additionalFilter || table.additionalFilter.trim() === '') return table;
+  if (table.baseText && table.baseText.trim() !== '') return table;
+
+  // Last-resort fallback: surface the R expression so users can see what's applied
+  actions.push({
+    tableId: table.tableId,
+    rule: 'base_text_backfill',
+    severity: 'fix',
+    detail: `baseText was empty despite additionalFilter "${table.additionalFilter}" — backfilled from filter expression`,
+  });
+
+  return { ...table, baseText: `Respondents matching filter: ${table.additionalFilter}` };
+}
+
+/**
  * Rule 4: Remove same-variable NETs that cover ALL non-NET options + reset orphaned indent.
  */
 function checkTrivialNets(table: ExtendedTableDefinition, actions: PostPassAction[]): ExtendedTableDefinition {
@@ -369,6 +389,7 @@ export function normalizePostPass(tables: ExtendedTableDefinition[]): PostPassRe
     // Phase 2: Content normalization
     t = cleanSurveySection(t, actions);
     t = validateBaseText(t, actions);
+    t = backfillBaseText(t, actions);
     t = normalizeSourceIdCasing(t, actions);
     t = stripRoutingInstructions(t, actions);
 
