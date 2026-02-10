@@ -184,7 +184,15 @@ export function groupSegmentsIntoChunks(
 }
 
 /**
- * Build a compact survey outline showing all question IDs with brief descriptions.
+ * Patterns to detect skip/show/base annotations near question boundaries.
+ * These give the model "peripheral vision" into which questions have gating conditions.
+ */
+const SKIP_ANNOTATION_PATTERN = /\[(?:ASK IF|SHOW IF|IF)\s+([^\]]{1,50})/i;
+const BASE_ANNOTATION_PATTERN = /(?:Base:|Asked to:|Asked of:)\s*(.{1,50})/i;
+
+/**
+ * Build a compact survey outline showing all question IDs with brief descriptions
+ * and skip/base annotations from surrounding context.
  * Provides "peripheral vision" of the full survey to each chunk.
  *
  * @param markdown - Full survey markdown
@@ -195,7 +203,9 @@ export function buildSurveyOutline(markdown: string): string {
   const entries: string[] = [];
   let currentSection = '';
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
     // Detect section headers
     const sectionMatch = line.match(SECTION_HEADER_PATTERN);
     if (sectionMatch) {
@@ -213,7 +223,29 @@ export function buildSurveyOutline(markdown: string): string {
       const questionId = questionMatch[1];
       // Get first ~80 chars of the line as description
       const description = line.trim().substring(0, 80).replace(/\s+/g, ' ');
-      entries.push(`- ${questionId}: ${description}`);
+
+      // Scan the question line + 3 lines before and after for skip/base annotations
+      const scanStart = Math.max(0, i - 3);
+      const scanEnd = Math.min(lines.length - 1, i + 3);
+      let skipAnnotation = '';
+      let baseAnnotation = '';
+
+      for (let j = scanStart; j <= scanEnd; j++) {
+        if (!skipAnnotation) {
+          const skipMatch = lines[j].match(SKIP_ANNOTATION_PATTERN);
+          if (skipMatch) {
+            skipAnnotation = ` [SKIP: ${skipMatch[0].substring(0, 50)}]`;
+          }
+        }
+        if (!baseAnnotation) {
+          const baseMatch = lines[j].match(BASE_ANNOTATION_PATTERN);
+          if (baseMatch) {
+            baseAnnotation = ` [BASE: ${baseMatch[0].substring(0, 50)}]`;
+          }
+        }
+      }
+
+      entries.push(`- ${questionId}: ${description}${skipAnnotation}${baseAnnotation}`);
     }
   }
 
@@ -243,32 +275,103 @@ export function formatAccumulatedRules(rules: SkipRule[]): string {
 /**
  * Deduplicate rules that may have been extracted from overlapping chunk regions.
  *
- * Strategy:
- * - Group by ruleType + overlapping appliesTo sets
- * - Merge near-duplicates (same target questions, similar conditions)
- * - Conservative: when in doubt, keep both rules
+ * Strategy (applied in order):
+ * - Layer 0: Identical ruleId — same rule seen by different chunks
+ * - Layer 1: Exact fingerprint (ruleType + appliesTo + normalized condition)
+ * - Layer 1.5: Same ruleType + identical appliesTo set (different condition wording)
+ * - Layer 2: Near-duplicate (>70% appliesTo overlap + condition containment)
+ *
+ * Conservative: when in doubt, keep both rules.
  *
  * @param rules - All rules from all chunks
- * @returns Deduplicated rules
+ * @returns Deduplicated rules and dedup stats
  */
+export interface DedupStats {
+  layer0_identicalRuleId: number;
+  layer1_exactFingerprint: number;
+  layer1_5_sameTypeAndTarget: number;
+  layer2_nearDuplicate: number;
+}
+
 export function deduplicateRules(rules: SkipRule[]): SkipRule[] {
   if (rules.length <= 1) return rules;
 
+  const stats: DedupStats = {
+    layer0_identicalRuleId: 0,
+    layer1_exactFingerprint: 0,
+    layer1_5_sameTypeAndTarget: 0,
+    layer2_nearDuplicate: 0,
+  };
+
+  // --- Layer 0: Identical ruleId ---
+  // If two rules share the same ruleId, keep the one with longer translationContext.
+  const ruleIdMap = new Map<string, SkipRule>();
+  const afterLayer0: SkipRule[] = [];
+
+  for (const rule of rules) {
+    const existing = ruleIdMap.get(rule.ruleId);
+    if (existing) {
+      stats.layer0_identicalRuleId++;
+      // Keep whichever has longer translationContext
+      if ((rule.translationContext || '').length > (existing.translationContext || '').length) {
+        ruleIdMap.set(rule.ruleId, rule);
+        // Replace in afterLayer0
+        const idx = afterLayer0.indexOf(existing);
+        if (idx !== -1) afterLayer0[idx] = rule;
+      }
+      // else keep existing, skip this rule
+    } else {
+      ruleIdMap.set(rule.ruleId, rule);
+      afterLayer0.push(rule);
+    }
+  }
+
+  if (stats.layer0_identicalRuleId > 0) {
+    console.log(`[dedup] Layer 0 (identical ruleId): removed ${stats.layer0_identicalRuleId} duplicates`);
+  }
+
+  // --- Layer 1 + 1.5 + 2: Process remaining rules ---
   const deduplicated: SkipRule[] = [];
   const seen = new Set<string>();
 
-  for (const rule of rules) {
-    // Create a fingerprint based on ruleType + sorted appliesTo + normalized condition
+  for (const rule of afterLayer0) {
+    // Layer 1: Exact fingerprint (ruleType + sorted appliesTo + normalized condition)
     const appliesToKey = [...rule.appliesTo].sort().join(',');
     const conditionKey = rule.conditionDescription.toLowerCase().replace(/\s+/g, ' ').trim();
     const fingerprint = `${rule.ruleType}|${appliesToKey}|${conditionKey}`;
 
     if (seen.has(fingerprint)) {
-      continue; // Exact duplicate
+      stats.layer1_exactFingerprint++;
+      continue;
     }
 
-    // Check for near-duplicates: same ruleType and significant appliesTo overlap
+    // Layer 1.5: Same ruleType + identical sorted appliesTo set (different wording)
+    // Two rules targeting the exact same questions with the same type are the same
+    // rule seen by different chunks, even if the condition wording differs.
     let isDuplicate = false;
+    for (const existing of deduplicated) {
+      if (existing.ruleType !== rule.ruleType) continue;
+
+      const existingAppliesToKey = [...existing.appliesTo].sort().join(',');
+      if (existingAppliesToKey === appliesToKey) {
+        stats.layer1_5_sameTypeAndTarget++;
+        // Keep the one with longer translationContext
+        if ((rule.translationContext || '').length > (existing.translationContext || '').length) {
+          existing.translationContext = rule.translationContext;
+        }
+        // Also keep the longer condition description
+        if (rule.conditionDescription.length > existing.conditionDescription.length) {
+          existing.conditionDescription = rule.conditionDescription;
+          existing.surveyText = rule.surveyText;
+        }
+        isDuplicate = true;
+        break;
+      }
+    }
+
+    if (isDuplicate) continue;
+
+    // Layer 2: Near-duplicate — same ruleType and significant appliesTo overlap
     for (const existing of deduplicated) {
       if (existing.ruleType !== rule.ruleType) continue;
 
@@ -284,6 +387,7 @@ export function deduplicateRules(rules: SkipRule[]): SkipRule[] {
 
         // Simple similarity: one contains the other, or they share significant substring
         if (existingCondNorm.includes(ruleCondNorm) || ruleCondNorm.includes(existingCondNorm)) {
+          stats.layer2_nearDuplicate++;
           // Merge: take the union of appliesTo, keep the longer condition description
           const mergedAppliesTo = [...new Set([...existing.appliesTo, ...rule.appliesTo])];
           existing.appliesTo = mergedAppliesTo;
@@ -304,6 +408,22 @@ export function deduplicateRules(rules: SkipRule[]): SkipRule[] {
       seen.add(fingerprint);
       deduplicated.push({ ...rule });
     }
+  }
+
+  // Log layer stats
+  if (stats.layer1_exactFingerprint > 0) {
+    console.log(`[dedup] Layer 1 (exact fingerprint): removed ${stats.layer1_exactFingerprint} duplicates`);
+  }
+  if (stats.layer1_5_sameTypeAndTarget > 0) {
+    console.log(`[dedup] Layer 1.5 (same type+target): removed ${stats.layer1_5_sameTypeAndTarget} duplicates`);
+  }
+  if (stats.layer2_nearDuplicate > 0) {
+    console.log(`[dedup] Layer 2 (near-duplicate): merged ${stats.layer2_nearDuplicate} rules`);
+  }
+
+  const totalRemoved = stats.layer0_identicalRuleId + stats.layer1_exactFingerprint + stats.layer1_5_sameTypeAndTarget + stats.layer2_nearDuplicate;
+  if (totalRemoved > 0) {
+    console.log(`[dedup] Total: ${rules.length} → ${deduplicated.length} (removed ${totalRemoved})`);
   }
 
   return deduplicated;

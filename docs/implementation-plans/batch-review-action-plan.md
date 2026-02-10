@@ -166,6 +166,65 @@
 - [ ] **Pre-filter datamap before sending to CrosstabAgent.** Parse each column's `original` expression to extract referenced variable names. Include those + same-prefix families + all h*/d* variables + all screeners (S*). Less aggressive than FilterTranslator pruning since the agent could plausibly find a better variable than what the banner says.
   - Ref: CrosstabAgent report 4.5
 
+### Fine-Line Context Optimization Blueprint (Audit — 2026-02-10)
+
+*Goal: reduce token load without removing context that drives correct decisions.*
+
+#### Current Context Audit (what is happening now)
+
+- **VerificationAgent:** per-table datamap excerpt is already narrow, but we still pass **full survey markdown** to every table call (`verifyAllTablesParallel` → `verifyTable`). This is the biggest context inefficiency in the pipeline.
+- **FilterTranslatorAgent:** per-rule processing is good, but each rule call gets the **entire datamap** via `formatFullDatamapContext(verboseDataMap)`. This is often 100:1 input-to-output token ratio.
+- **CrosstabAgent:** processes one banner group at a time (good), but each group still receives the full `agentDataMap`.
+- **SkipLogicAgent:** already has robust chunking + overlap + global outline. This is the strongest existing pattern and should be treated as the reference architecture.
+- **LoopSemanticsPolicyAgent:** already uses focused `datamapExcerpt`; this is also a good reference pattern for scoped context delivery.
+
+#### Recommended Context Contract (3 layers)
+
+For each agent call, send context in 3 explicit layers:
+
+1) **Core context (required):** directly referenced entities only  
+2) **Neighbor context (limited):** related siblings/parents/children likely needed for disambiguation  
+3) **Global skeleton (tiny):** compact outline for orientation, not full payload  
+
+This preserves useful peripheral context while removing long-tail noise.
+
+#### Agent-Specific Strategy
+
+- **VerificationAgent (most aggressive trimming)**
+  - **Core:** table JSON + table variable datamap entries (already done).
+  - **Neighbor:** NET component variables + same-question variable siblings if available.
+  - **Global skeleton:** compact survey outline (question IDs + short headings).
+  - **Survey text payload:** replace full survey with **question-local section** (target question, nearby instructions, adjacent question boundary context).
+  - **Escalation trigger:** if question cannot be located, repeated retries on the same table, or low-confidence/fallback behavior, re-run that table with expanded survey window (or full survey as last resort).
+  - **Implementation note:** reuse existing `extractQuestionSection()` + `surveyChunker` utilities; do not invent a separate parsing stack.
+
+- **FilterTranslatorAgent (balanced trimming)**
+  - **Core seeds:** `rule.appliesTo`, variables explicitly mentioned in `translationContext`, and any variables parsed from rule text.
+  - **Neighbor expansion:** same-prefix family variables, parent/child siblings, and all relevant hidden/admin variants (`h*`, `d*`) tied to seeded families.
+  - **Always include:** compact typed index of all variable names (`column -> normalizedType`) so agent can verify candidates exist even when full labels are omitted.
+  - **Escalation trigger:** unresolved mapping, low confidence, or deterministic validation failures (invalid variables) after retry.
+  - **Fallback path:** widen only to affected families first; full datamap only as terminal fallback.
+
+- **CrosstabAgent (conservative trimming)**
+  - **Core:** variables directly referenced by group column `original` expressions.
+  - **Neighbor:** screeners + same-prefix family + h/d variants.
+  - **Global skeleton:** compact variable index.
+  - Keep less aggressive than FilterTranslator because Crosstab still benefits from discovering better candidate mappings than banner text alone.
+
+#### Safety Rails (must-have to protect quality)
+
+- **Deterministic expansion ladder:** local → family-level → full context. Never jump straight to full unless retries indicate true ambiguity.
+- **Context telemetry per call:** log char/token size of each context layer and whether escalation occurred.
+- **Outcome tagging:** store whether final successful output required expanded context; use this to tune pruning rules with real evidence.
+- **No silent regressions:** gate rollout behind env flags per agent and compare against current baseline in batch runs.
+
+#### Rollout Order
+
+1. **VerificationAgent survey windowing first** (largest cost lever, lowest semantic risk)  
+2. **FilterTranslator datamap pruning + typed global index**  
+3. **Crosstab moderate datamap pruning**  
+4. Promote defaults only after batch comparison shows cost reduction with no quality regression
+
 ---
 
 ## P0 — Skip Logic & Filter Translation Quality
@@ -368,14 +427,17 @@
 
 ### SkipLogic Chunking
 
-- [ ] **Take another pass at chunked mode prompt language.** The chunked mode was built quickly. Review the prompt for optimal guidance, especially around what the agent should do when it suspects a rule exists but the evidence is in another chunk.
+- [x] **Take another pass at chunked mode prompt language.** The chunked mode was built quickly. Review the prompt for optimal guidance, especially around what the agent should do when it suspects a rule exists but the evidence is in another chunk.
   - Ref: SkipLogicAgent report, chunked mode
+  - Done: Replaced 4-step generic protocol with structured 4-step (Chunk Survey Map → Systematic Walkthrough → Cross-Chunk Awareness → Final Review). Enriched survey outline with [SKIP:] and [BASE:] annotations. Bumped stepCount 15→20.
 
-- [ ] **Cap maximum number of chunks instead of tuning threshold.** Maybe max 10 chunks is a better lever than adjusting the 40KB character threshold. Prevents extreme cases (CART had 16 chunks).
+- [x] **Cap maximum number of chunks instead of tuning threshold.** Maybe max 10 chunks is a better lever than adjusting the 40KB character threshold. Prevents extreme cases (CART had 16 chunks).
   - Ref: SkipLogicAgent report, chunked mode
+  - Done: Added `SKIPLOGIC_MAX_CHUNKS` env var (default 10). Computes effective chunk size to stay within cap.
 
-- [ ] **Review deduplication behavior.** Dedup currently gets appended to the top of every run. Is this the right design? Worth flagging but may be inherent.
+- [x] **Review deduplication behavior.** Dedup currently gets appended to the top of every run. Is this the right design? Worth flagging but may be inherent.
   - Ref: SkipLogicAgent report, chunked mode
+  - Done: Added Layer 0 (identical ruleId) and Layer 1.5 (same ruleType + identical appliesTo). Both log when they fire.
 
 ### SkipLogic Architecture
 
@@ -392,8 +454,9 @@
 
 ### SkipLogic Duplicate Rules
 
-- [ ] **Improve duplicate rule detection in chunked mode.** The current overlapping-appliesTo threshold (70%) is fragile. Consider making the schema structure more conducive to deterministic deduplication — each field distinct enough that collisions are easily caught.
+- [x] **Improve duplicate rule detection in chunked mode.** The current overlapping-appliesTo threshold (70%) is fragile. Consider making the schema structure more conducive to deterministic deduplication — each field distinct enough that collisions are easily caught.
   - Ref: SkipLogicAgent report 3.6
+  - Done: Added Layer 0 (identical ruleId) and Layer 1.5 (same ruleType + identical appliesTo set) before the existing 70% overlap check. Catches both the A7 and A9 duplicate cases from CART.
 
 ---
 

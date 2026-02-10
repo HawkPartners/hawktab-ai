@@ -64,6 +64,11 @@ function getChunkSize(): number {
   return parseInt(process.env.SKIPLOGIC_CHUNK_SIZE || '40000', 10);
 }
 
+/** Maximum number of chunks to avoid excessive sequential API calls. */
+function getMaxChunks(): number {
+  return parseInt(process.env.SKIPLOGIC_MAX_CHUNKS || '10', 10);
+}
+
 // Get modular prompt based on environment variable
 const getSkipLogicAgentInstructions = (): string => {
   const promptVersions = getPromptVersions();
@@ -353,6 +358,7 @@ async function extractSkipLogicChunked(
   const { outputDir, abortSignal } = options || {};
   const startTime = Date.now();
   const chunkSize = getChunkSize();
+  const maxChunks = getMaxChunks();
   const maxAttempts = 10;
 
   console.log(`[SkipLogicAgent] Chunked mode — survey exceeds threshold`);
@@ -363,12 +369,22 @@ async function extractSkipLogicChunked(
   const surveyOutline = buildSurveyOutline(surveyMarkdown);
   console.log(`[SkipLogicAgent] Survey outline: ${surveyOutline.length} chars`);
 
-  // Step 2: Segment and chunk the survey
+  // Step 2: Segment and chunk the survey — cap chunk count
+  const stats = getSurveyStats(surveyMarkdown);
+  const effectiveChunkSize = Math.max(chunkSize, Math.ceil(stats.charCount / maxChunks));
+  if (effectiveChunkSize > chunkSize) {
+    console.log(`[SkipLogicAgent] Chunk size bumped from ${chunkSize} to ${effectiveChunkSize} chars to stay within ${maxChunks} chunk cap`);
+  }
+
   const { chunks, metadata: chunkingMeta } = segmentSurveyIntoChunks(
     surveyMarkdown,
-    chunkSize,
+    effectiveChunkSize,
     2 // overlap segments
   );
+
+  if (chunks.length > maxChunks) {
+    console.warn(`[SkipLogicAgent] Warning: ${chunks.length} chunks exceeds cap of ${maxChunks} (overlap may have pushed count over)`);
+  }
 
   // Graceful fallback: if chunking produced only 1 chunk (no question boundaries detected)
   if (chunkingMeta.wasSinglePass) {
@@ -427,7 +443,7 @@ async function extractSkipLogicChunked(
           tools: {
             scratchpad: chunkScratchpad,
           },
-          stopWhen: stepCountIs(15),
+          stopWhen: stepCountIs(20), // Bumped from 15 — gives 5 more reasoning steps per chunk
           maxOutputTokens: Math.min(getSkipLogicModelTokenLimit(), 100000),
           providerOptions: {
             openai: {
@@ -581,19 +597,32 @@ ${formatAccumulatedRules(accumulatedRules)}
 </previous_rules>`);
   }
 
-  // Simplified scratchpad protocol for chunks
+  // Structured scratchpad protocol for chunks — mirrors single-pass discipline
   parts.push(`
 <scratchpad_protocol>
-USE THE SCRATCHPAD TO DOCUMENT YOUR ANALYSIS:
+USE THE SCRATCHPAD TO DOCUMENT YOUR ANALYSIS IN THESE STEPS:
 
-Walk through the questions in this chunk systematically. For each question:
-1. Note the question ID and any skip/show instructions
-2. Classify as table-level, column-level, row-level, or no rule
-3. Check if this rule was already extracted in a prior chunk (see "Rules Already Extracted" above)
-4. If unclear, document why and do NOT create a rule unless evidence is strong
+**Step 1 — Chunk Survey Map** (do BEFORE extracting any rules):
+- List all question IDs present in this chunk
+- Note any cross-references to questions OUTSIDE this chunk (e.g., "[ASK IF Q5=1]" where Q5 is not in your chunk — check the survey outline for context)
+- Check the survey outline for [SKIP:] and [BASE:] annotations on questions in this chunk
+${chunkNum > 1 ? '- Note which of your questions are already covered by prior rules (see "Rules Already Extracted" above)' : ''}
 
-BEFORE PRODUCING YOUR FINAL OUTPUT:
-Use the scratchpad "read" action to review your notes, then produce your output.
+**Step 2 — Systematic Question Walkthrough:**
+- Walk through questions top to bottom, one at a time
+- For each question: identify any skip/show/filter instructions, classify as table-level, column-level, row-level, or no rule
+- Explicitly ask: "Is the default base sufficient, or does the survey text require a restriction?"
+- Check for loop-inherent conditions (e.g., "for each product you selected")
+- Note coding tables or hidden variable definitions that affect gating
+
+**Step 3 — Cross-Chunk Awareness:**
+- Review the survey outline for questions in OTHER chunks that have [SKIP:] annotations referencing variables in your chunk — but do NOT create rules for questions outside your chunk
+- Cross-check your extracted rules against "Rules Already Extracted" — do NOT re-extract
+
+**Step 4 — Final Review:**
+- Use the scratchpad "read" action to review all your notes
+- Verify each rule has clear survey text evidence
+- Then produce your final output
 </scratchpad_protocol>`);
 
   // The chunk content itself
