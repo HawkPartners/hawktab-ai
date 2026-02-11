@@ -1,6 +1,6 @@
-# CrossTab AI
+# Crosstab AI
 
-**Crosstab Automation for Hawk Partners**
+**Intelligent crosstab generation for market research teams**
 
 ---
 

@@ -1,7 +1,9 @@
 # CLAUDE.md
 
 <naming>
-This product is **CrossTab AI** (formerly HawkTab AI). Use "CrossTab AI" in all new code, UI text, and documentation. The GitHub repo, npm package name, and some internal identifiers still use "hawktab" — that's expected and not something to "fix" unless explicitly asked. The `.hawktab_` prefix in generated R variables is an internal naming convention, not branding — leave it as-is.
+This product is **Crosstab AI** (lowercase 't'). Use "Crosstab AI" in all new UI text, user-facing copy, and documentation. Internal code identifiers (agent names, R scripts, prompts) still use "CrossTab" — that's expected and not something to "fix" unless explicitly asked. The GitHub repo and npm package name still use "hawktab" — also expected. The `.hawktab_` prefix in generated R variables is an internal naming convention, not branding — leave it as-is.
+
+The product is NOT branded as "by Hawk Partners" in the UI. Keep Hawk Partners references out of user-facing surfaces for now.
 </naming>
 
 <permissions_warning>
@@ -60,6 +62,41 @@ AVOID SHALLOW IMPLEMENTATIONS:
 - Don't leave variables as "unknown" when there's enough signal to classify them
 - If something feels like a workaround, it probably is — find the root cause
 </engineering_philosophy>
+
+<design_system>
+VISUAL IDENTITY: See `docs/design-system.md` for the full reference.
+
+FONTS (loaded in root layout via next/font/google):
+- **Instrument Serif** (display/headlines) — `font-serif` in Tailwind
+- **Outfit** (body/UI) — `font-sans` in Tailwind (default)
+- **JetBrains Mono** (data values, labels, code) — `font-mono` in Tailwind
+
+COLOR PHILOSOPHY:
+- Mostly monochrome with surgical use of color
+- Color should always mean something (status, confidence, action)
+- Dark mode is the primary presentation
+
+SEMANTIC ACCENT COLORS (available as `text-ct-*` / `bg-ct-*-dim` in Tailwind):
+| Token | Dark | Light | Meaning |
+|-------|------|-------|---------|
+| `ct-emerald` | #34d399 | #059669 | Success, complete, approved |
+| `ct-amber` | #fbbf24 | #d97706 | Review required, warning |
+| `ct-blue` | #60a5fa | #2563eb | Active, in progress |
+| `ct-red` | #f87171 | #dc2626 | Error, destructive |
+| `ct-violet` | #a78bfa | #7c3aed | AI activity, alternatives |
+
+DESIGN PRINCIPLES:
+1. **Data-aware** — monospace for data values, table-like layouts, subtle grid textures
+2. **Intelligence, not automation** — emphasize understanding, not speed
+3. **Depth through restraint** — monochrome + surgical color
+4. **Typography-forward** — serif for display, sans for UI, mono for data
+
+TONE (user-facing copy):
+- Calm, confident, modest. Not punchy startup energy.
+- Focus on benefits: faster insights, data you can trust, understand your data
+- Don't oversell. "Hours" not "days". Don't claim specific accuracy percentages.
+- Don't reveal agent names externally. Talk about the hybrid AI + deterministic approach at a high level.
+</design_system>
 
 <current_focus>
 ACTIVE WORK: `docs/implementation-plans/product-roadmap.md` — Phase 3 (Productization)

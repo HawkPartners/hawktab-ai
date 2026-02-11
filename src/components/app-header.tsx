@@ -12,7 +12,7 @@ export function AppHeader({ children }: { children?: React.ReactNode }) {
       <div className="flex-1">{children}</div>
       <div className="flex items-center gap-2">
         <span className="text-xs text-muted-foreground hidden sm:inline">
-          Hawk Partners
+          Crosstab AI
         </span>
         <ModeToggle />
       </div>

@@ -35,18 +35,18 @@ import type { Id } from "../../convex/_generated/dataModel";
 function StatusIcon({ status }: { status: string }) {
   switch (status) {
     case "success":
-      return <CheckCircle className="h-3 w-3 text-green-500" />;
+      return <CheckCircle className="h-3 w-3 text-ct-emerald" />;
     case "partial":
-      return <AlertCircle className="h-3 w-3 text-yellow-500" />;
+      return <AlertCircle className="h-3 w-3 text-ct-amber" />;
     case "error":
-      return <AlertCircle className="h-3 w-3 text-red-500" />;
+      return <AlertCircle className="h-3 w-3 text-ct-red" />;
     case "in_progress":
     case "resuming":
-      return <Loader2 className="h-3 w-3 text-blue-500 animate-spin" />;
+      return <Loader2 className="h-3 w-3 text-ct-blue animate-spin" />;
     case "pending_review":
-      return <AlertTriangle className="h-3 w-3 text-yellow-500" />;
+      return <AlertTriangle className="h-3 w-3 text-ct-amber" />;
     case "cancelled":
-      return <XCircle className="h-3 w-3 text-gray-500" />;
+      return <XCircle className="h-3 w-3 text-muted-foreground" />;
     default:
       return <Clock className="h-3 w-3 text-muted-foreground" />;
   }
@@ -133,14 +133,11 @@ export function AppSidebar() {
               onClick={() => router.push("/dashboard")}
               className="cursor-pointer"
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
-                CT
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-serif">
+                Ct
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-semibold">CrossTab AI</span>
-                <span className="text-xs text-muted-foreground">
-                  Hawk Partners
-                </span>
+                <span className="font-semibold">Crosstab AI</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

@@ -56,18 +56,18 @@ function formatDurationMs(ms: number): string {
 function StatusIcon({ status }: { status: string }) {
   switch (status) {
     case 'success':
-      return <CheckCircle className="h-4 w-4 text-green-500" />;
+      return <CheckCircle className="h-4 w-4 text-ct-emerald" />;
     case 'partial':
-      return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+      return <AlertCircle className="h-4 w-4 text-ct-amber" />;
     case 'error':
-      return <AlertCircle className="h-4 w-4 text-red-500" />;
+      return <AlertCircle className="h-4 w-4 text-ct-red" />;
     case 'in_progress':
     case 'resuming':
-      return <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />;
+      return <Loader2 className="h-4 w-4 text-ct-blue animate-spin" />;
     case 'pending_review':
-      return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      return <AlertTriangle className="h-4 w-4 text-ct-amber" />;
     case 'cancelled':
-      return <XCircle className="h-4 w-4 text-gray-500" />;
+      return <XCircle className="h-4 w-4 text-muted-foreground" />;
     default:
       return <Clock className="h-4 w-4 text-muted-foreground" />;
   }
@@ -76,21 +76,21 @@ function StatusIcon({ status }: { status: string }) {
 function StatusBadge({ status }: { status: string }) {
   if (status === 'pending_review') {
     return (
-      <Badge variant="secondary" className="text-xs bg-yellow-500/20 text-yellow-700 dark:text-yellow-400">
+      <Badge variant="secondary" className="text-xs bg-ct-amber-dim text-ct-amber">
         Review Required
       </Badge>
     );
   }
   if (status === 'in_progress' || status === 'resuming') {
     return (
-      <Badge variant="secondary" className="text-xs bg-blue-500/20 text-blue-700 dark:text-blue-400">
+      <Badge variant="secondary" className="text-xs bg-ct-blue-dim text-ct-blue">
         Processing
       </Badge>
     );
   }
   if (status === 'cancelled') {
     return (
-      <Badge variant="secondary" className="text-xs bg-gray-500/20 text-gray-700 dark:text-gray-400">
+      <Badge variant="secondary" className="text-xs">
         Cancelled
       </Badge>
     );
