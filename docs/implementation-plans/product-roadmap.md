@@ -19,8 +19,8 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 | Sub-phase | Description | Status |
 |-----------|-------------|--------|
 | **UI Foundation** | Route groups, app shell, sidebar, providers, API refactor | Complete |
-| **3.1** Cloud Infrastructure Setup | Convex, R2, WorkOS, Docker/Railway | Not Started |
-| **3.2** Pipeline Cloud Migration | Wire orchestrator to Convex/R2, new API routes, deprecate old | Not Started |
+| **3.1** Cloud Infrastructure Setup | Convex, R2, WorkOS, Docker/Railway | Complete |
+| **3.2** Pipeline Cloud Migration | Wire orchestrator to Convex/R2, new API routes, deprecate old | Complete |
 | **3.3** New Project Experience | Multi-step wizard exposing all pipeline features in UI | Not Started |
 | **3.4** Dashboard & Supportability | Real-time dashboard, debug bundles, error visibility | Not Started |
 | **3.5** Deploy & Launch | Railway deployment, DNS, landing page, Sentry | Not Started |
@@ -102,11 +102,17 @@ Set up the cloud services that everything else builds on. No UI features — jus
 
 ---
 
-### 3.2 Pipeline Cloud Migration — `NOT STARTED`
+### 3.2 Pipeline Cloud Migration — `COMPLETE`
 
 Wire the pipeline orchestrator and API routes to use Convex and R2 instead of in-memory state and filesystem scanning.
 
-**What changes:**
+> **Status**: Complete. Implemented in three sub-phases:
+>
+> - **3.2a (Job Tracking → Convex)**: Orchestrator writes status updates to Convex `runs` table. Real-time subscriptions replace polling. Cancellation via Convex `cancelRequested` + in-memory AbortController.
+> - **3.2b (File Storage → R2)**: Uploads stored in R2 at `{orgId}/{projectId}/inputs/{filename}`. Pipeline outputs uploaded to R2 after completion. Downloads use signed R2 URLs.
+> - **3.2c (UI Migration + Cleanup)**: All UI pages (dashboard, sidebar, new project, project detail, review) use Convex subscriptions. New routes: `/api/runs/[runId]/review` (POST), `/api/runs/[runId]/feedback` (GET+POST), `/api/runs/[runId]/cancel` (POST), `/api/runs/[runId]/download/[filename]` (GET). Review state stored in Convex for real-time updates (pathBStatus updates reactively). All deprecated files deleted: `jobStore.ts`, `useJobPolling.ts`, `useJobRecovery.ts`, `PipelineHistory.tsx`, `pipeline-status-provider.tsx`, `project-provider.tsx`, `process-crosstab/status/route.ts`, and the entire `api/pipelines/` directory.
+
+**What changed:**
 
 1. **Job tracking → Convex** (replaces in-memory `Map<string, JobStatus>`):
    - `pipelineOrchestrator.ts` writes status updates to Convex `runs` table instead of calling `updateJob()`
@@ -124,20 +130,17 @@ Wire the pipeline orchestrator and API routes to use Convex and R2 instead of in
    - `GET /api/pipelines` (filesystem scan) → Convex query on `runs` table filtered by `orgId`
    - Project detail, HITL review state, feedback — all in Convex
 
-4. **New API routes** (alongside old, which get `@deprecated` markers):
+4. **API routes** (old routes fully deleted):
 
-| New Route | Replaces | Purpose |
-|-----------|----------|---------|
-| `POST /api/projects` | — | Create project record in Convex |
-| `POST /api/projects/:id/files` | Part of `process-crosstab` | Upload files to R2 |
-| `POST /api/projects/:id/runs` | `POST /api/process-crosstab` | Start pipeline run |
-| `GET /api/runs/:id` | `GET /api/process-crosstab/status` | Get run status (Convex query) |
-| `POST /api/runs/:id/cancel` | `POST /api/pipelines/:id/cancel` | Cancel run |
-| `GET/POST /api/runs/:id/review` | `GET/POST /api/pipelines/:id/review` | HITL review |
+| Route | Purpose |
+|-------|---------|
+| `POST /api/process-crosstab` | Create project + run in Convex, upload to R2, start pipeline |
+| `POST /api/runs/:id/cancel` | Cancel run (Convex + AbortController) |
+| `POST /api/runs/:id/review` | Submit HITL review decisions, resume pipeline |
+| `GET/POST /api/runs/:id/feedback` | Read/submit run feedback (Convex + disk) |
+| `GET /api/runs/:id/download/:filename` | Download output via R2 signed URL |
 
-5. **Old routes deprecated** (not removed — UI still uses them until 3.3/3.4 rebuild):
-   - Every old route gets `@deprecated` JSDoc pointing to its replacement
-   - Extract duplicated `findPipelineDir()` into shared utility while we're touching these files
+5. **Shared review module**: `src/lib/api/reviewCompletion.ts` — extracted `applyDecisions()`, `completePipeline()`, `waitAndCompletePipeline()` for reuse.
 
 6. **CLI unchanged**: `test-pipeline.ts` and `batch-pipeline.ts` write directly to filesystem — they don't go through the API layer and don't need to change.
 
@@ -150,9 +153,7 @@ Wire the pipeline orchestrator and API routes to use Convex and R2 instead of in
 - Signed URLs for downloads (time-limited)
 - Input validation with Zod on all API routes
 
-**Deliverables**: Pipeline runs against Convex + R2. Jobs persist across restarts. Old routes deprecated with clear markers. New routes functional. UI still works via old routes (migration in next phases).
-
-**Level of Effort**: High (orchestrator refactor + new routes + R2 integration + Convex mutations)
+**Level of Effort**: High (orchestrator refactor + new routes + R2 integration + Convex mutations + full UI migration)
 
 ---
 

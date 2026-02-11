@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, use } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery } from 'convex/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,33 +30,17 @@ import {
   MessageSquare,
   X,
 } from 'lucide-react';
-import type { PipelineDetails, FileInfo } from '@/app/api/pipelines/[pipelineId]/route';
+import { api } from '../../../../../convex/_generated/api';
+import type { Id } from '../../../../../convex/_generated/dataModel';
 
-function formatDate(timestamp: string): string {
-  const date = new Date(timestamp);
+function formatDate(timestampMs: number): string {
+  const date = new Date(timestampMs);
   return date.toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
-}
-
-function formatDateTime(timestamp: string): string {
-  const date = new Date(timestamp);
-  return date.toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function FileIcon({ filename }: { filename: string }) {
@@ -100,6 +85,7 @@ function StatusBadge({ status }: { status: string }) {
         </Badge>
       );
     case 'in_progress':
+    case 'resuming':
       return (
         <Badge variant="secondary" className="bg-blue-500/20 text-blue-700 dark:text-blue-400">
           <Clock className="h-3 w-3 mr-1" />
@@ -120,13 +106,6 @@ function StatusBadge({ status }: { status: string }) {
           Cancelled
         </Badge>
       );
-    case 'awaiting_tables':
-      return (
-        <Badge variant="secondary" className="bg-purple-500/20 text-purple-700 dark:text-purple-400">
-          <Clock className="h-3 w-3 mr-1" />
-          Completing...
-        </Badge>
-      );
     default:
       return (
         <Badge variant="secondary">
@@ -137,39 +116,12 @@ function StatusBadge({ status }: { status: string }) {
   }
 }
 
-function FileCard({ file, pipelineId }: { file: FileInfo; pipelineId: string }) {
-  const isPrimaryOutput = file.name === 'crosstabs.xlsx';
-
-  return (
-    <Card className={`${isPrimaryOutput ? 'border-primary' : ''}`}>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <FileIcon filename={file.name} />
-            <div>
-              <p className="font-medium text-sm">{file.name}</p>
-              <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
-            </div>
-          </div>
-          <a
-            href={`/api/pipelines/${encodeURIComponent(pipelineId)}/files/${encodeURIComponent(file.path)}`}
-            download={file.name}
-          >
-            <Button variant={isPrimaryOutput ? 'default' : 'outline'} size="sm">
-              <Download className="h-4 w-4 mr-1" />
-              Download
-            </Button>
-          </a>
-        </div>
-        {isPrimaryOutput && (
-          <Badge variant="secondary" className="mt-2 text-xs">
-            Primary Output
-          </Badge>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
+// Downloadable files from R2
+const DOWNLOAD_FILES = [
+  { filename: 'crosstabs.xlsx', label: 'Crosstabs Excel', primary: true },
+  { filename: 'tables.json', label: 'Tables JSON', primary: false },
+  { filename: 'master.R', label: 'R Script', primary: false },
+];
 
 export default function ProjectDetailPage({
   params,
@@ -177,10 +129,7 @@ export default function ProjectDetailPage({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = use(params);
-  const pipelineId = projectId;
-  const [details, setDetails] = useState<PipelineDetails | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
   const [isCancelling, setIsCancelling] = useState(false);
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [feedbackNotes, setFeedbackNotes] = useState('');
@@ -188,7 +137,17 @@ export default function ProjectDetailPage({
   const [tableIdInput, setTableIdInput] = useState('');
   const [tableIds, setTableIds] = useState<string[]>([]);
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
-  const router = useRouter();
+
+  // Convex subscriptions — real-time, no polling
+  const project = useQuery(api.projects.get, { projectId: projectId as Id<"projects"> });
+  const runs = useQuery(api.runs.getByProject, { projectId: projectId as Id<"projects"> });
+
+  // Latest run (runs are sorted desc)
+  const latestRun = runs?.[0];
+  const runResult = latestRun?.result as Record<string, unknown> | undefined;
+  const summary = runResult?.summary as Record<string, number> | undefined;
+  const r2Files = runResult?.r2Files as { outputs?: Record<string, string> } | undefined;
+  const hasR2Outputs = r2Files?.outputs && Object.keys(r2Files.outputs).length > 0;
 
   const addTableIdsFromInput = () => {
     const raw = tableIdInput.trim();
@@ -209,12 +168,12 @@ export default function ProjectDetailPage({
   };
 
   const submitFeedback = async () => {
-    if (!details) return;
-    if (isSubmittingFeedback) return;
+    if (!latestRun || isSubmittingFeedback) return;
+    const runIdStr = String(latestRun._id);
 
     setIsSubmittingFeedback(true);
     try {
-      const res = await fetch(`/api/pipelines/${encodeURIComponent(pipelineId)}/feedback`, {
+      const res = await fetch(`/api/runs/${encodeURIComponent(runIdStr)}/feedback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -233,10 +192,6 @@ export default function ProjectDetailPage({
         description: 'Thanks — this helps us improve the pipeline.',
       });
 
-      if (data?.summary) {
-        setDetails(prev => prev ? { ...prev, feedback: data.summary } : prev);
-      }
-
       setFeedbackNotes('');
       setFeedbackRating('0');
       setTableIds([]);
@@ -251,9 +206,10 @@ export default function ProjectDetailPage({
   };
 
   const handleCancel = async () => {
+    if (!latestRun) return;
     setIsCancelling(true);
     try {
-      const res = await fetch(`/api/pipelines/${encodeURIComponent(pipelineId)}/cancel`, {
+      const res = await fetch(`/api/runs/${encodeURIComponent(String(latestRun._id))}/cancel`, {
         method: 'POST',
       });
 
@@ -262,62 +218,17 @@ export default function ProjectDetailPage({
         throw new Error(errData.error || 'Failed to cancel pipeline');
       }
 
-      router.push('/dashboard');
+      // Status update will come through Convex subscription
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      toast.error('Failed to cancel', {
+        description: err instanceof Error ? err.message : 'Unknown error',
+      });
       setIsCancelling(false);
     }
   };
 
-  // Initial fetch
-  useEffect(() => {
-    const fetchDetails = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`/api/pipelines/${encodeURIComponent(pipelineId)}`);
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.error || 'Failed to fetch pipeline details');
-        }
-        const data = await res.json();
-        setDetails(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchDetails();
-  }, [pipelineId]);
-
-  // Poll for updates when status is active
-  const currentStatus = details?.status;
-  useEffect(() => {
-    const activeStatuses = ['in_progress', 'pending_review', 'awaiting_tables'];
-    if (!currentStatus || !activeStatuses.includes(currentStatus)) {
-      return;
-    }
-
-    const pollDetails = async () => {
-      try {
-        const res = await fetch(`/api/pipelines/${encodeURIComponent(pipelineId)}`);
-        if (res.ok) {
-          const data = await res.json();
-          setDetails(data);
-        }
-      } catch {
-        // Ignore polling errors
-      }
-    };
-
-    const pollInterval = setInterval(pollDetails, 3000);
-
-    return () => clearInterval(pollInterval);
-  }, [pipelineId, currentStatus]);
-
-  if (isLoading) {
+  // Loading state
+  if (project === undefined || runs === undefined) {
     return (
       <div className="py-12">
         <div className="max-w-4xl mx-auto">
@@ -329,7 +240,8 @@ export default function ProjectDetailPage({
     );
   }
 
-  if (error || !details) {
+  // Not found
+  if (project === null) {
     return (
       <div className="py-12">
         <div className="max-w-4xl mx-auto">
@@ -340,9 +252,9 @@ export default function ProjectDetailPage({
             ]}
           />
           <div className="text-center mt-8">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Pipeline Not Found</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">Project Not Found</h1>
             <p className="text-muted-foreground">
-              {error || 'The requested pipeline could not be found.'}
+              The requested project could not be found.
             </p>
             <Button variant="outline" size="sm" onClick={() => router.push('/dashboard')} className="mt-4">
               Back to Dashboard
@@ -353,18 +265,17 @@ export default function ProjectDetailPage({
     );
   }
 
-  const outputFiles = details.files.filter((f) => f.type === 'output');
-  const inputFiles = details.files.filter((f) => f.type === 'input');
-  const isActive = details.status === 'in_progress' || details.status === 'pending_review' || details.status === 'awaiting_tables';
-  const hasOutputs = details.outputs.tables > 0 || details.outputs.cuts > 0;
-  const feedbackAvailable = !isActive;
+  const status = latestRun?.status || 'pending';
+  const isActive = status === 'in_progress' || status === 'pending_review' || status === 'resuming';
+  const hasOutputs = (summary?.tables ?? 0) > 0 || (summary?.cuts ?? 0) > 0;
+  const feedbackAvailable = !isActive && (status === 'success' || status === 'partial');
 
   return (
     <div>
       <AppBreadcrumbs
         segments={[
           { label: 'Dashboard', href: '/dashboard' },
-          { label: details.dataset },
+          { label: project.name },
         ]}
       />
 
@@ -372,24 +283,31 @@ export default function ProjectDetailPage({
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold tracking-tight mb-2">
-            {details.dataset}
+            {project.name}
           </h1>
           <p className="text-muted-foreground text-sm">
-            Run on {formatDate(details.timestamp)}
+            Created on {formatDate(project._creationTime)}
           </p>
         </div>
 
         {/* Status and Duration */}
         <div className="flex items-center gap-4 mb-8">
-          <StatusBadge status={details.status} />
-          <Badge variant="outline">
-            <Clock className="h-3 w-3 mr-1" />
-            {isActive ? details.duration.formatted : `Duration: ${details.duration.formatted}`}
-          </Badge>
+          <StatusBadge status={status} />
+          {summary?.durationMs && (
+            <Badge variant="outline">
+              <Clock className="h-3 w-3 mr-1" />
+              Duration: {(summary.durationMs / 1000).toFixed(1)}s
+            </Badge>
+          )}
+          {latestRun?.progress !== undefined && isActive && (
+            <Badge variant="outline">
+              {latestRun.progress}%
+            </Badge>
+          )}
         </div>
 
         {/* Review Required Banner */}
-        {details.status === 'pending_review' && details.review && (
+        {status === 'pending_review' && (
           <Card className="mb-8 border-yellow-500/50 bg-yellow-500/5">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -398,11 +316,11 @@ export default function ProjectDetailPage({
                   <div>
                     <p className="font-medium">Human Review Required</p>
                     <p className="text-sm text-muted-foreground">
-                      {details.review.flaggedColumnCount} banner column{details.review.flaggedColumnCount !== 1 ? 's' : ''} need your attention before processing can continue.
+                      Some banner columns need your attention before processing can continue.
                     </p>
                   </div>
                 </div>
-                <Button onClick={() => router.push(`/projects/${encodeURIComponent(pipelineId)}/review`)}>
+                <Button onClick={() => router.push(`/projects/${encodeURIComponent(projectId)}/review`)}>
                   <Play className="h-4 w-4 mr-2" />
                   Review Now
                 </Button>
@@ -412,7 +330,7 @@ export default function ProjectDetailPage({
         )}
 
         {/* Processing Banner */}
-        {details.status === 'in_progress' && (
+        {(status === 'in_progress' || status === 'resuming') && (
           <Card className="mb-8 border-blue-500/50 bg-blue-500/5">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -421,9 +339,7 @@ export default function ProjectDetailPage({
                   <div>
                     <p className="font-medium">Processing Crosstabs</p>
                     <p className="text-sm text-muted-foreground">
-                      {details.currentStage
-                        ? `Currently: ${details.currentStage.replace(/_/g, ' ')}`
-                        : 'Your crosstabs are being generated. This may take several minutes.'}
+                      {latestRun?.message || 'Your crosstabs are being generated. This may take several minutes.'}
                     </p>
                   </div>
                 </div>
@@ -450,7 +366,7 @@ export default function ProjectDetailPage({
         )}
 
         {/* Cancelled Banner */}
-        {details.status === 'cancelled' && (
+        {status === 'cancelled' && (
           <Card className="mb-8 border-gray-500/50 bg-gray-500/5">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
@@ -466,16 +382,16 @@ export default function ProjectDetailPage({
           </Card>
         )}
 
-        {/* Awaiting Tables Banner */}
-        {details.status === 'awaiting_tables' && (
-          <Card className="mb-8 border-purple-500/50 bg-purple-500/5">
+        {/* Error Banner */}
+        {status === 'error' && (
+          <Card className="mb-8 border-red-500/50 bg-red-500/5">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <Loader2 className="h-5 w-5 text-purple-500 animate-spin" />
+                <AlertCircle className="h-5 w-5 text-red-500" />
                 <div>
-                  <p className="font-medium">Completing Pipeline</p>
+                  <p className="font-medium">Pipeline Error</p>
                   <p className="text-sm text-muted-foreground">
-                    Your review has been saved. Waiting for table data to finish processing before generating final output.
+                    {latestRun?.error || 'An error occurred during processing.'}
                   </p>
                 </div>
               </div>
@@ -484,7 +400,7 @@ export default function ProjectDetailPage({
         )}
 
         {/* Summary Stats */}
-        {(hasOutputs || (!isActive && details.status !== 'cancelled')) && (
+        {(hasOutputs || (!isActive && status !== 'cancelled' && status !== 'error')) && summary && (
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="text-lg">Summary Statistics</CardTitle>
@@ -493,48 +409,89 @@ export default function ProjectDetailPage({
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-3 bg-muted rounded-lg">
                   <Table className="h-5 w-5 mx-auto mb-1 text-primary" />
-                  <p className="text-2xl font-bold">{details.outputs.tables}</p>
+                  <p className="text-2xl font-bold">{summary.tables ?? 0}</p>
                   <p className="text-xs text-muted-foreground">Tables</p>
                 </div>
                 <div className="text-center p-3 bg-muted rounded-lg">
                   <BarChart3 className="h-5 w-5 mx-auto mb-1 text-primary" />
-                  <p className="text-2xl font-bold">{details.outputs.cuts}</p>
+                  <p className="text-2xl font-bold">{summary.cuts ?? 0}</p>
                   <p className="text-xs text-muted-foreground">Cuts</p>
                 </div>
                 <div className="text-center p-3 bg-muted rounded-lg">
                   <Layers className="h-5 w-5 mx-auto mb-1 text-primary" />
-                  <p className="text-2xl font-bold">{details.outputs.bannerGroups}</p>
+                  <p className="text-2xl font-bold">{summary.bannerGroups ?? 0}</p>
                   <p className="text-xs text-muted-foreground">Banner Groups</p>
                 </div>
                 <div className="text-center p-3 bg-muted rounded-lg">
                   <FileText className="h-5 w-5 mx-auto mb-1 text-primary" />
-                  <p className="text-2xl font-bold">{details.outputs.variables}</p>
-                  <p className="text-xs text-muted-foreground">Variables</p>
+                  <p className="text-2xl font-bold">{(summary.durationMs ?? 0) > 0 ? `${((summary.durationMs ?? 0) / 1000).toFixed(0)}s` : '-'}</p>
+                  <p className="text-xs text-muted-foreground">Duration</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Output Files */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-lg">Output Files</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {outputFiles.length > 0 ? (
+        {/* Output Files (R2-backed downloads) */}
+        {hasR2Outputs && latestRun && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="text-lg">Output Files</CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {outputFiles.map((file) => (
-                  <FileCard key={file.path} file={file} pipelineId={pipelineId} />
-                ))}
+                {DOWNLOAD_FILES.map((file) => {
+                  const hasFile = r2Files?.outputs?.[file.filename === 'crosstabs.xlsx' ? 'results/crosstabs.xlsx' : file.filename === 'tables.json' ? 'results/tables.json' : file.filename === 'master.R' ? 'r/master.R' : file.filename];
+                  if (!hasFile) return null;
+
+                  return (
+                    <Card key={file.filename} className={file.primary ? 'border-primary' : ''}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <FileIcon filename={file.filename} />
+                            <div>
+                              <p className="font-medium text-sm">{file.label}</p>
+                              <p className="text-xs text-muted-foreground">{file.filename}</p>
+                            </div>
+                          </div>
+                          <a
+                            href={`/api/runs/${encodeURIComponent(String(latestRun._id))}/download/${encodeURIComponent(file.filename)}`}
+                            download={file.filename}
+                          >
+                            <Button variant={file.primary ? 'default' : 'outline'} size="sm">
+                              <Download className="h-4 w-4 mr-1" />
+                              Download
+                            </Button>
+                          </a>
+                        </div>
+                        {file.primary && (
+                          <Badge variant="secondary" className="mt-2 text-xs">
+                            Primary Output
+                          </Badge>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
-            ) : (
+            </CardContent>
+          </Card>
+        )}
+
+        {/* No outputs yet */}
+        {!hasR2Outputs && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="text-lg">Output Files</CardTitle>
+            </CardHeader>
+            <CardContent>
               <p className="text-sm text-muted-foreground">
-                {isActive ? 'Output files will appear here once processing completes.' : 'No output files available'}
+                {isActive ? 'Output files will appear here once processing completes.' : 'No output files available.'}
               </p>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Output Feedback */}
         <Card className="mb-8">
@@ -563,19 +520,6 @@ export default function ProjectDetailPage({
               <p className="text-sm text-muted-foreground">
                 Feedback becomes available once the pipeline completes.
               </p>
-            )}
-
-            {details.feedback?.hasFeedback && (
-              <div className="flex flex-wrap items-center gap-2 text-sm">
-                <Badge variant="secondary">
-                  {details.feedback.entryCount} entr{details.feedback.entryCount === 1 ? 'y' : 'ies'}
-                </Badge>
-                {details.feedback.lastSubmittedAt && (
-                  <span className="text-muted-foreground">
-                    Last submitted {formatDateTime(details.feedback.lastSubmittedAt)}
-                  </span>
-                )}
-              </div>
             )}
 
             {showFeedbackForm && (
@@ -680,23 +624,28 @@ export default function ProjectDetailPage({
           </CardContent>
         </Card>
 
-        {/* Input Files */}
+        {/* Input Files info */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Input Files</CardTitle>
           </CardHeader>
           <CardContent>
-            {inputFiles.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {inputFiles.map((file) => (
-                  <FileCard key={file.path} file={file} pipelineId={pipelineId} />
-                ))}
+            {project.intake ? (
+              <div className="text-sm text-muted-foreground space-y-1">
+                {(() => {
+                  const intake = project.intake as Record<string, string | null>;
+                  return (
+                    <>
+                      <p>Data Map: {intake.dataMap || 'N/A'}</p>
+                      <p>Banner Plan: {intake.bannerPlan || 'N/A'}</p>
+                      <p>SPSS Data: {intake.dataFile || 'N/A'}</p>
+                      {intake.survey && <p>Survey: {intake.survey}</p>}
+                    </>
+                  );
+                })()}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                No input files available. Input files from: {details.inputs.datamap}, {details.inputs.banner}, {details.inputs.spss}
-                {details.inputs.survey && `, ${details.inputs.survey}`}
-              </p>
+              <p className="text-sm text-muted-foreground">No input file information available.</p>
             )}
           </CardContent>
         </Card>

@@ -1,52 +1,69 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery } from 'convex/react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Loader2 } from 'lucide-react';
-import { PipelineListCard } from '@/components/PipelineListCard';
+import { PipelineListCard, type ProjectListItem } from '@/components/PipelineListCard';
 import { AppBreadcrumbs } from '@/components/app-breadcrumbs';
-import type { PipelineListItem } from '@/app/api/pipelines/route';
+import { useAuthContext } from '@/providers/auth-provider';
+import { api } from '../../../../convex/_generated/api';
+import type { Id } from '../../../../convex/_generated/dataModel';
 
 export default function DashboardPage() {
-  const [pipelines, setPipelines] = useState<PipelineListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { convexOrgId } = useAuthContext();
 
-  useEffect(() => {
-    let cancelled = false;
-    const fetchPipelines = async () => {
-      try {
-        const res = await fetch('/api/pipelines');
-        if (!res.ok) throw new Error('Failed to fetch pipelines');
-        const data = await res.json();
-        if (!cancelled) {
-          setPipelines(data.pipelines || []);
-          setIsLoading(false);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Unknown error');
-          setIsLoading(false);
-        }
+  const projects = useQuery(
+    api.projects.listByOrg,
+    convexOrgId ? { orgId: convexOrgId as Id<"organizations"> } : 'skip',
+  );
+
+  const runs = useQuery(
+    api.runs.listByOrg,
+    convexOrgId ? { orgId: convexOrgId as Id<"organizations"> } : 'skip',
+  );
+
+  // Join projects with their latest run to build the list
+  const projectList: ProjectListItem[] = useMemo(() => {
+    if (!projects || !runs) return [];
+
+    // Group runs by project, taking the most recent (runs are already sorted desc)
+    const latestRunByProject = new Map<string, (typeof runs)[number]>();
+    for (const run of runs) {
+      const pid = String(run.projectId);
+      if (!latestRunByProject.has(pid)) {
+        latestRunByProject.set(pid, run);
       }
-    };
+    }
 
-    fetchPipelines();
-    const interval = setInterval(fetchPipelines, 10000);
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []);
+    return projects.map((project) => {
+      const latestRun = latestRunByProject.get(String(project._id));
+      const result = latestRun?.result as Record<string, unknown> | undefined;
+      const summary = result?.summary as Record<string, number> | undefined;
 
-  const handleSelect = (pipelineId: string) => {
-    const pipeline = pipelines.find(p => p.pipelineId === pipelineId);
-    if (pipeline?.status === 'pending_review') {
-      router.push(`/projects/${encodeURIComponent(pipelineId)}/review`);
+      return {
+        projectId: String(project._id),
+        name: project.name,
+        createdAt: project._creationTime,
+        latestRunId: latestRun ? String(latestRun._id) : undefined,
+        status: latestRun?.status || 'pending',
+        tables: summary?.tables,
+        cuts: summary?.cuts,
+        durationMs: summary?.durationMs,
+      };
+    }).sort((a, b) => b.createdAt - a.createdAt);
+  }, [projects, runs]);
+
+  const isLoading = projects === undefined || runs === undefined;
+
+  const handleSelect = (projectId: string) => {
+    const project = projectList.find(p => p.projectId === projectId);
+    if (project?.status === 'pending_review') {
+      router.push(`/projects/${encodeURIComponent(projectId)}/review`);
     } else {
-      router.push(`/projects/${encodeURIComponent(pipelineId)}`);
+      router.push(`/projects/${encodeURIComponent(projectId)}`);
     }
   };
 
@@ -71,11 +88,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      ) : error ? (
-        <div className="text-center py-20">
-          <p className="text-sm text-destructive">{error}</p>
-        </div>
-      ) : pipelines.length === 0 ? (
+      ) : projectList.length === 0 ? (
         <div className="text-center py-20">
           <p className="text-muted-foreground mb-4">
             No projects yet. Upload your first dataset to get started.
@@ -87,10 +100,10 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="space-y-3 max-w-2xl">
-          {pipelines.map((pipeline) => (
+          {projectList.map((project) => (
             <PipelineListCard
-              key={pipeline.pipelineId}
-              pipeline={pipeline}
+              key={project.projectId}
+              pipeline={project}
               onClick={handleSelect}
             />
           ))}

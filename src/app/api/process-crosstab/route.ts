@@ -1,20 +1,21 @@
 // Single API endpoint for complete crosstab processing workflow
-// Reference: Architecture doc "Single Endpoint Implementation"
 
 /**
  * POST /api/process-crosstab
  * Purpose: Single entrypoint for upload → full pipeline processing
- * Reads: formData(dataMap, bannerPlan, dataFile, surveyDocument?)
- * Writes: outputs/{dataset}/pipeline-{timestamp}/
- * Status: Job tracked via /api/process-crosstab/status?jobId=...
+ * Creates Convex project + run, then fires pipeline in background.
+ * UI subscribes to run status via Convex (no polling).
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { createJob, updateJob, getAbortSignal } from '../../../lib/jobStore';
 import { generateSessionId } from '../../../lib/storage';
 import { logAgentExecution } from '../../../lib/tracing';
 import { validateEnvironment } from '../../../lib/env';
-import { parseUploadFormData, validateUploadedFiles, saveFilesToStorage } from '../../../lib/api/fileHandler';
+import { parseUploadFormData, validateUploadedFiles, saveFilesToStorage, sanitizeDatasetName } from '../../../lib/api/fileHandler';
 import { runPipelineFromUpload } from '../../../lib/api/pipelineOrchestrator';
+import { requireConvexAuth } from '../../../lib/requireConvexAuth';
+import { getConvexClient } from '../../../lib/convex';
+import { api } from '../../../../convex/_generated/api';
+import { createAbortController } from '../../../lib/abortStore';
 import {
   persistSystemError,
   getGlobalSystemOutputDir,
@@ -23,12 +24,11 @@ import {
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
   const sessionId = generateSessionId();
-  const job = createJob();
-
-  // Get the abort signal for this job (used for cancellation support)
-  const abortSignal = getAbortSignal(job.jobId);
 
   try {
+    // Authenticate and get Convex IDs
+    const auth = await requireConvexAuth();
+
     // Validate environment configuration
     const envValidation = validateEnvironment();
     if (!envValidation.valid) {
@@ -61,10 +61,57 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Save files to temporary storage
-    updateJob(job.jobId, { stage: 'parsing', percent: 10, message: 'Validating and saving files...' });
+    const convex = getConvexClient();
+    const datasetName = sanitizeDatasetName(parsed.dataFile.name);
 
-    const savedPaths = await saveFilesToStorage(parsed, sessionId);
+    // Create Convex project first (need projectId for R2 key structure)
+    const projectId = await convex.mutation(api.projects.create, {
+      orgId: auth.convexOrgId,
+      name: datasetName,
+      projectType: 'crosstab',
+      config: {
+        loopStatTestingMode: parsed.loopStatTestingMode,
+      },
+      intake: {
+        dataMap: parsed.dataMapFile.name,
+        bannerPlan: parsed.bannerPlanFile.name,
+        dataFile: parsed.dataFile.name,
+        survey: parsed.surveyFile?.name ?? null,
+      },
+      fileKeys: [],
+      createdBy: auth.convexUserId,
+    });
+
+    // Save files to temporary storage + upload to R2 in parallel
+    const savedPaths = await saveFilesToStorage(parsed, sessionId, {
+      orgId: String(auth.convexOrgId),
+      projectId: String(projectId),
+    });
+
+    // Update project with R2 file keys if available
+    if (savedPaths.r2Keys) {
+      const keys = Object.values(savedPaths.r2Keys).filter((k): k is string => k !== null);
+      if (keys.length > 0) {
+        await convex.mutation(api.projects.updateFileKeys, {
+          projectId,
+          fileKeys: keys,
+        });
+      }
+    }
+
+    // Create Convex run
+    const runId = await convex.mutation(api.runs.create, {
+      projectId,
+      orgId: auth.convexOrgId,
+      config: {
+        loopStatTestingMode: parsed.loopStatTestingMode,
+      },
+    });
+
+    const runIdStr = String(runId);
+
+    // Create AbortController for this run
+    const abortSignal = createAbortController(runIdStr);
 
     // Log successful file upload
     const fileCount = parsed.surveyFile ? 4 : 3;
@@ -74,10 +121,12 @@ export async function POST(request: NextRequest) {
       Date.now() - startTime
     );
 
-    // Kick off background processing and return immediately so client can poll
+    // Kick off background processing and return immediately
     runPipelineFromUpload({
-      jobId: job.jobId,
+      runId: runIdStr,
       sessionId,
+      convexOrgId: String(auth.convexOrgId),
+      convexProjectId: String(projectId),
       fileNames: {
         dataMap: parsed.dataMapFile.name,
         bannerPlan: parsed.bannerPlanFile.name,
@@ -91,7 +140,12 @@ export async function POST(request: NextRequest) {
       console.error('[API] Unhandled pipeline error:', error);
     });
 
-    return NextResponse.json({ accepted: true, jobId: job.jobId, sessionId });
+    return NextResponse.json({
+      accepted: true,
+      runId: runIdStr,
+      projectId: String(projectId),
+      sessionId,
+    });
 
   } catch (error) {
     console.error('[API] Early processing error:', error);
@@ -105,12 +159,11 @@ export async function POST(request: NextRequest) {
         severity: 'fatal',
         actionTaken: 'failed_pipeline',
         error,
-        meta: { jobId: job.jobId, sessionId },
+        meta: { sessionId },
       });
     } catch {
       // ignore
     }
-    updateJob(job.jobId, { stage: 'error', percent: 100, message: 'Processing error', error: error instanceof Error ? error.message : 'Unknown processing error' });
     return NextResponse.json(
       {
         error: 'Data processing failed',
@@ -118,7 +171,6 @@ export async function POST(request: NextRequest) {
         details: process.env.NODE_ENV === 'development'
           ? (error instanceof Error ? error.message : String(error))
           : 'Processing error occurred',
-        jobId: job.jobId
       },
       { status: 500 }
     );

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, use, useMemo } from 'react';
+import { useState, use, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery } from 'convex/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,8 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
+import { api } from '../../../../../../convex/_generated/api';
+import type { Id } from '../../../../../../convex/_generated/dataModel';
 
 function stripEmojis(text: string): string {
   return text
@@ -56,17 +59,6 @@ interface FlaggedCrosstabColumn {
   alternatives: Alternative[];
   uncertainties: string[];
   expressionType?: string;
-}
-
-interface CrosstabReviewState {
-  reviewType: 'crosstab' | 'banner';
-  pipelineId: string;
-  status: 'awaiting_review' | 'approved' | 'cancelled';
-  createdAt: string;
-  flaggedColumns: FlaggedCrosstabColumn[];
-  pathBStatus: 'completed' | 'running' | 'error';
-  totalColumns: number;
-  decisions: CrosstabDecision[];
 }
 
 interface CrosstabDecision {
@@ -278,16 +270,41 @@ export default function ReviewPage({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = use(params);
-  const pipelineId = projectId;
-  const [reviewState, setReviewState] = useState<CrosstabReviewState | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [decisions, setDecisions] = useState<Map<string, CrosstabDecision>>(new Map());
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [decisions, setDecisions] = useState<Map<string, CrosstabDecision>>(new Map());
+  const [decisionsInitialized, setDecisionsInitialized] = useState(false);
+
+  // Convex subscriptions — real-time, no polling
+  const runs = useQuery(api.runs.getByProject, { projectId: projectId as Id<"projects"> });
+
+  // Latest run
+  const latestRun = runs?.[0];
+  const runId = latestRun ? String(latestRun._id) : null;
+  const runResult = latestRun?.result as Record<string, unknown> | undefined;
+
+  // Review state from Convex (reactive — updates automatically when PathB completes)
+  const reviewState = runResult?.reviewState as {
+    status: string;
+    flaggedColumns: FlaggedCrosstabColumn[];
+    pathBStatus: 'running' | 'completed' | 'error';
+    totalColumns: number;
+  } | undefined;
+
+  // Initialize decisions when reviewState first arrives
+  if (reviewState && reviewState.flaggedColumns && !decisionsInitialized) {
+    const initialDecisions = new Map<string, CrosstabDecision>();
+    for (const col of reviewState.flaggedColumns) {
+      const key = `${col.groupName}/${col.columnName}`;
+      initialDecisions.set(key, { action: 'approve' });
+    }
+    setDecisions(initialDecisions);
+    setDecisionsInitialized(true);
+  }
 
   const groupedColumns = useMemo(() => {
-    if (!reviewState) return new Map<string, FlaggedCrosstabColumn[]>();
+    if (!reviewState?.flaggedColumns) return new Map<string, FlaggedCrosstabColumn[]>();
     const groups = new Map<string, FlaggedCrosstabColumn[]>();
     for (const col of reviewState.flaggedColumns) {
       const existing = groups.get(col.groupName) || [];
@@ -295,57 +312,7 @@ export default function ReviewPage({
       groups.set(col.groupName, existing);
     }
     return groups;
-  }, [reviewState]);
-
-  useEffect(() => {
-    const fetchReviewState = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`/api/pipelines/${encodeURIComponent(pipelineId)}/review`);
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.error || 'Failed to fetch review state');
-        }
-        const data = await res.json() as CrosstabReviewState;
-        setReviewState(data);
-
-        const initialDecisions = new Map<string, CrosstabDecision>();
-        for (const col of data.flaggedColumns) {
-          const key = `${col.groupName}/${col.columnName}`;
-          initialDecisions.set(key, { action: 'approve' });
-        }
-        setDecisions(initialDecisions);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchReviewState();
-  }, [pipelineId]);
-
-  const pathBStatus = reviewState?.pathBStatus;
-  useEffect(() => {
-    if (!pathBStatus || pathBStatus !== 'running') return;
-
-    const pollInterval = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/pipelines/${encodeURIComponent(pipelineId)}/review`);
-        if (!res.ok) return;
-        const data = await res.json() as CrosstabReviewState;
-
-        if (data.pathBStatus !== pathBStatus) {
-          setReviewState(prev => prev ? { ...prev, pathBStatus: data.pathBStatus } : null);
-        }
-      } catch {
-        // Ignore polling errors
-      }
-    }, 3000);
-
-    return () => clearInterval(pollInterval);
-  }, [pipelineId, pathBStatus]);
+  }, [reviewState?.flaggedColumns]);
 
   const handleDecisionChange = (groupName: string, columnName: string, decision: CrosstabDecision) => {
     const key = `${groupName}/${columnName}`;
@@ -353,9 +320,10 @@ export default function ReviewPage({
   };
 
   const handleSubmit = async () => {
-    if (!reviewState) return;
+    if (!reviewState || !runId) return;
 
     setIsSubmitting(true);
+    setError(null);
     try {
       const decisionsArray = reviewState.flaggedColumns.map((col) => {
         const key = `${col.groupName}/${col.columnName}`;
@@ -369,7 +337,7 @@ export default function ReviewPage({
         };
       });
 
-      const res = await fetch(`/api/pipelines/${encodeURIComponent(pipelineId)}/review`, {
+      const res = await fetch(`/api/runs/${encodeURIComponent(runId)}/review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ decisions: decisionsArray }),
@@ -381,7 +349,7 @@ export default function ReviewPage({
       }
 
       await res.json();
-      router.push(`/projects/${encodeURIComponent(pipelineId)}`);
+      router.push(`/projects/${encodeURIComponent(projectId)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
       setIsSubmitting(false);
@@ -389,9 +357,10 @@ export default function ReviewPage({
   };
 
   const handleCancel = async () => {
+    if (!runId) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch(`/api/pipelines/${encodeURIComponent(pipelineId)}/cancel`, {
+      const res = await fetch(`/api/runs/${encodeURIComponent(runId)}/cancel`, {
         method: 'POST',
       });
 
@@ -407,7 +376,8 @@ export default function ReviewPage({
     }
   };
 
-  if (isLoading) {
+  // Loading state
+  if (runs === undefined) {
     return (
       <div className="py-12">
         <div className="max-w-4xl mx-auto">
@@ -419,7 +389,8 @@ export default function ReviewPage({
     );
   }
 
-  if (error || !reviewState) {
+  // No run or no review state
+  if (!latestRun || !reviewState || !reviewState.flaggedColumns) {
     return (
       <div className="py-12">
         <div className="max-w-4xl mx-auto">
@@ -431,7 +402,7 @@ export default function ReviewPage({
           />
           <PageHeader
             title="Review Not Available"
-            description={error || 'This pipeline does not require review or has already been reviewed.'}
+            description={error || 'This project does not require review or has already been reviewed.'}
             actions={
               <Button variant="outline" onClick={() => router.push('/dashboard')}>
                 Back to Dashboard
@@ -443,7 +414,8 @@ export default function ReviewPage({
     );
   }
 
-  if (reviewState.status !== 'awaiting_review') {
+  // Already reviewed (run moved past pending_review)
+  if (latestRun.status !== 'pending_review' && reviewState.status !== 'awaiting_review') {
     return (
       <div className="py-12">
         <div className="max-w-4xl mx-auto">
@@ -457,8 +429,8 @@ export default function ReviewPage({
             title="Review Already Completed"
             description="This pipeline has already been reviewed."
             actions={
-              <Button variant="outline" onClick={() => router.push(`/projects/${encodeURIComponent(pipelineId)}`)}>
-                View Pipeline
+              <Button variant="outline" onClick={() => router.push(`/projects/${encodeURIComponent(projectId)}`)}>
+                View Project
               </Button>
             }
           />
@@ -477,7 +449,7 @@ export default function ReviewPage({
       <AppBreadcrumbs
         segments={[
           { label: 'Dashboard', href: '/dashboard' },
-          { label: 'Project', href: `/projects/${encodeURIComponent(pipelineId)}` },
+          { label: 'Project', href: `/projects/${encodeURIComponent(projectId)}` },
           { label: 'Review' },
         ]}
       />
@@ -487,6 +459,15 @@ export default function ReviewPage({
           title="Quick Review Needed"
           description={`The AI wasn't certain about ${reviewState.flaggedColumns.length} matches. Please confirm or correct.`}
         />
+
+        {/* Error Banner */}
+        {error && (
+          <Card className="mb-6 border-red-500/50 bg-red-500/5">
+            <CardContent className="p-4">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Status */}
         <div className="flex items-center gap-4 mb-6">

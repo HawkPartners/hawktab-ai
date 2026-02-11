@@ -2,7 +2,11 @@
  * Core pipeline orchestration: Path A/B coordination, R validation, Excel generation.
  * Extracted from process-crosstab/route.ts to keep the HTTP handler slim.
  */
-import { updateJob } from '@/lib/jobStore';
+import { getConvexClient } from '@/lib/convex';
+import { api } from '../../../convex/_generated/api';
+import { cleanupAbort } from '@/lib/abortStore';
+import { uploadPipelineOutputs, type R2FileManifest } from '@/lib/r2/R2FileManager';
+import type { Id } from '../../../convex/_generated/dataModel';
 import { BannerAgent } from '@/agents/BannerAgent';
 import { processAllGroups as processCrosstabGroups } from '@/agents/CrosstabAgent';
 import { verifyAllTablesParallel } from '@/agents/VerificationAgent';
@@ -76,6 +80,37 @@ export async function updatePipelineSummary(
   }
 }
 
+// -------------------------------------------------------------------------
+// Convex Status Helper
+// -------------------------------------------------------------------------
+
+type RunStatus = "in_progress" | "pending_review" | "resuming" | "success" | "partial" | "error" | "cancelled";
+
+async function updateRunStatus(runId: string, updates: {
+  status: RunStatus;
+  stage?: string;
+  progress?: number;
+  message?: string;
+  result?: Record<string, unknown>;
+  error?: string;
+}): Promise<void> {
+  try {
+    const convex = getConvexClient();
+    await convex.mutation(api.runs.updateStatus, {
+      runId: runId as Id<"runs">,
+      status: updates.status,
+      ...(updates.stage !== undefined && { stage: updates.stage }),
+      ...(updates.progress !== undefined && { progress: updates.progress }),
+      ...(updates.message !== undefined && { message: updates.message }),
+      ...(updates.result !== undefined && { result: updates.result }),
+      ...(updates.error !== undefined && { error: updates.error }),
+    });
+  } catch (err) {
+    // Log but don't fail pipeline on status update errors
+    console.warn('[API] Failed to update Convex run status:', err);
+  }
+}
+
 /**
  * Helper to check if an error is an AbortError
  */
@@ -94,20 +129,18 @@ export function isAbortError(error: unknown): boolean {
  */
 export async function handleCancellation(
   outputDir: string,
-  jobId: string,
-  pipelineId: string,
-  datasetName: string,
+  runId: string,
   reason: string
 ): Promise<void> {
   console.log(`[API] Pipeline cancelled: ${reason}`);
 
-  updateJob(jobId, {
+  await updateRunStatus(runId, {
+    status: 'cancelled',
     stage: 'cancelled',
-    percent: 100,
+    progress: 100,
     message: 'Pipeline cancelled by user',
-    pipelineId,
-    dataset: datasetName
   });
+  cleanupAbort(runId);
 
   try {
     await updatePipelineSummary(outputDir, {
@@ -280,8 +313,10 @@ async function executePathB(
 // -------------------------------------------------------------------------
 
 export interface PipelineRunParams {
-  jobId: string;
+  runId: string;
   sessionId: string;
+  convexOrgId?: string;
+  convexProjectId?: string;
   fileNames: {
     dataMap: string;
     bannerPlan: string;
@@ -295,13 +330,15 @@ export interface PipelineRunParams {
 
 /**
  * Run the full pipeline from uploaded files.
- * This is the background processing function — it updates job status via polling
- * and writes results to disk. All errors are handled internally.
+ * This is the background processing function — it updates run status via Convex
+ * and writes results to disk (dual-write). All errors are handled internally.
  */
 export async function runPipelineFromUpload(params: PipelineRunParams): Promise<void> {
   const {
-    jobId,
+    runId,
     sessionId,
+    convexOrgId,
+    convexProjectId,
     fileNames,
     savedPaths,
     abortSignal,
@@ -346,12 +383,11 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     // -------------------------------------------------------------------------
     // Step 1: DataMapProcessor
     // -------------------------------------------------------------------------
-    updateJob(jobId, {
+    await updateRunStatus(runId, {
+      status: 'in_progress',
       stage: 'parsing',
-      percent: 15,
+      progress: 15,
       message: 'Processing data map...',
-      pipelineId,
-      dataset: datasetName
     });
     console.log('[API] Step 1: Processing data map...');
 
@@ -406,22 +442,20 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       const overallPercent = 20 + Math.floor(pathPercent * 0.6);
       if (overallPercent > currentParallelPercent) {
         currentParallelPercent = overallPercent;
-        updateJob(jobId, {
+        updateRunStatus(runId, {
+          status: 'in_progress',
           stage: 'parallel_processing',
-          percent: currentParallelPercent,
+          progress: currentParallelPercent,
           message: 'Processing banner and tables...',
-          pipelineId,
-          dataset: datasetName
         });
       }
     };
 
-    updateJob(jobId, {
+    await updateRunStatus(runId, {
+      status: 'in_progress',
       stage: 'parallel_processing',
-      percent: 20,
+      progress: 20,
       message: 'Processing banner and tables...',
-      pipelineId,
-      dataset: datasetName
     });
 
     console.log('[API] Starting parallel paths...');
@@ -430,7 +464,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     // Check for cancellation before starting parallel paths
     if (abortSignal?.aborted) {
       console.log('[API] Pipeline cancelled before parallel paths');
-      await handleCancellation(outputDir, jobId, pipelineId, datasetName, 'Cancelled before processing');
+      await handleCancellation(outputDir, runId, 'Cancelled before processing');
       return;
     }
 
@@ -461,6 +495,22 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         };
         await fs.writeFile(pathBStatusPath, JSON.stringify(completedStatus, null, 2));
         console.log('[API] Path B completed and result saved to disk');
+
+        // Update Convex reviewState.pathBStatus for real-time UI
+        try {
+          const convex = getConvexClient();
+          const run = await convex.query(api.runs.get, { runId: runId as Id<"runs"> });
+          const existingReviewState = (run?.result as Record<string, unknown>)?.reviewState as Record<string, unknown> | undefined;
+          if (existingReviewState) {
+            await convex.mutation(api.runs.updateReviewState, {
+              runId: runId as Id<"runs">,
+              reviewState: { ...existingReviewState, pathBStatus: 'completed' },
+            });
+          }
+        } catch (err) {
+          console.warn('[API] Failed to update pathBStatus in Convex:', err);
+        }
+
         return result;
       })
       .catch(async (error) => {
@@ -474,6 +524,22 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         };
         await fs.writeFile(pathBStatusPath, JSON.stringify(errorStatus, null, 2));
         console.error(`[API] Path B failed: ${errorMsg}`);
+
+        // Update Convex reviewState.pathBStatus for real-time UI
+        try {
+          const convex = getConvexClient();
+          const run = await convex.query(api.runs.get, { runId: runId as Id<"runs"> });
+          const existingReviewState = (run?.result as Record<string, unknown>)?.reviewState as Record<string, unknown> | undefined;
+          if (existingReviewState) {
+            await convex.mutation(api.runs.updateReviewState, {
+              runId: runId as Id<"runs">,
+              reviewState: { ...existingReviewState, pathBStatus: 'error' },
+            });
+          }
+        } catch (err) {
+          console.warn('[API] Failed to update pathBStatus error in Convex:', err);
+        }
+
         throw error;
       });
 
@@ -485,7 +551,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     } catch (pathAError) {
       if (isAbortError(pathAError)) {
         console.log('[API] Pipeline was cancelled during Path A');
-        await handleCancellation(outputDir, jobId, pipelineId, datasetName, 'Cancelled during agent processing');
+        await handleCancellation(outputDir, runId, 'Cancelled during agent processing');
         return;
       }
 
@@ -511,14 +577,14 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         JSON.stringify(failureSummary, null, 2)
       );
 
-      updateJob(jobId, {
+      await updateRunStatus(runId, {
+        status: 'error',
         stage: 'error',
-        percent: 100,
+        progress: 100,
         message: 'Banner extraction failed',
         error: errorMsg,
-        pipelineId,
-        dataset: datasetName
       });
+      cleanupAbort(runId);
       return;
     }
 
@@ -561,6 +627,24 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       );
       console.log('[API] Review state saved to crosstab-review-state.json');
 
+      // Push review state to Convex for real-time UI subscriptions
+      try {
+        const convex = getConvexClient();
+        await convex.mutation(api.runs.updateReviewState, {
+          runId: runId as Id<"runs">,
+          reviewState: {
+            status: 'awaiting_review',
+            flaggedColumns: flaggedCrosstabColumns,
+            pathBStatus: 'running',
+            totalColumns: reviewState.crosstabResult.bannerCuts.reduce(
+              (sum: number, g: { columns: unknown[] }) => sum + g.columns.length, 0
+            ),
+          },
+        });
+      } catch (err) {
+        console.warn('[API] Failed to push review state to Convex:', err);
+      }
+
       const reviewUrl = `/projects/${encodeURIComponent(pipelineId)}/review`;
       await updatePipelineSummary(outputDir, {
         status: 'pending_review',
@@ -571,20 +655,21 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         }
       });
 
-      updateJob(jobId, {
+      await updateRunStatus(runId, {
+        status: 'pending_review',
         stage: 'crosstab_review_required',
-        percent: 50,
+        progress: 50,
         message: `Review required - ${flaggedCrosstabColumns.length} columns need mapping verification`,
-        sessionId,
-        pipelineId,
-        dataset: datasetName,
-        reviewRequired: true,
-        reviewUrl,
-        flaggedColumnCount: flaggedCrosstabColumns.length
+        result: {
+          pipelineId,
+          outputDir,
+          reviewUrl,
+          flaggedColumnCount: flaggedCrosstabColumns.length,
+        },
       });
 
       console.log('[API] Pipeline paused for human review. Path B continues in background.');
-      console.log(`[API] Resume via POST /api/pipelines/${pipelineId}/review`);
+      console.log(`[API] Resume via POST /api/runs/${runId}/review`);
       return;
     }
 
@@ -598,7 +683,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     } catch (pathBError) {
       if (isAbortError(pathBError)) {
         console.log('[API] Pipeline was cancelled during Path B');
-        await handleCancellation(outputDir, jobId, pipelineId, datasetName, 'Cancelled during agent processing');
+        await handleCancellation(outputDir, runId, 'Cancelled during agent processing');
         return;
       }
 
@@ -624,14 +709,14 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         JSON.stringify(failureSummary, null, 2)
       );
 
-      updateJob(jobId, {
+      await updateRunStatus(runId, {
+        status: 'error',
         stage: 'error',
-        percent: 100,
+        progress: 100,
         message: 'Table processing failed',
         error: errorMsg,
-        pipelineId,
-        dataset: datasetName
       });
+      cleanupAbort(runId);
       return;
     }
 
@@ -649,19 +734,18 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
     if (abortSignal?.aborted) {
       console.log('[API] Pipeline cancelled before R validation');
-      await handleCancellation(outputDir, jobId, pipelineId, datasetName, 'Cancelled before R validation');
+      await handleCancellation(outputDir, runId, 'Cancelled before R validation');
       return;
     }
 
     // -------------------------------------------------------------------------
     // Step 6: R Validation with Retry Loop
     // -------------------------------------------------------------------------
-    updateJob(jobId, {
+    await updateRunStatus(runId, {
+      status: 'in_progress',
       stage: 'validating_r',
-      percent: 75,
+      progress: 75,
       message: 'Validating R code per table...',
-      pipelineId,
-      dataset: datasetName
     });
     console.log('[API] Step 6: Validating R code per table...');
 
@@ -688,19 +772,18 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
     if (abortSignal?.aborted) {
       console.log('[API] Pipeline cancelled before R script generation');
-      await handleCancellation(outputDir, jobId, pipelineId, datasetName, 'Cancelled before R script generation');
+      await handleCancellation(outputDir, runId, 'Cancelled before R script generation');
       return;
     }
 
     // -------------------------------------------------------------------------
     // Step 7: R Script Generation
     // -------------------------------------------------------------------------
-    updateJob(jobId, {
+    await updateRunStatus(runId, {
+      status: 'in_progress',
       stage: 'generating_r',
-      percent: 80,
+      progress: 80,
       message: 'Generating R script...',
-      pipelineId,
-      dataset: datasetName
     });
     console.log('[API] Step 7: Generating R script...');
 
@@ -732,12 +815,11 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     // -------------------------------------------------------------------------
     // Step 8: R Execution
     // -------------------------------------------------------------------------
-    updateJob(jobId, {
+    await updateRunStatus(runId, {
+      status: 'in_progress',
       stage: 'executing_r',
-      percent: 85,
+      progress: 85,
       message: 'Executing R script...',
-      pipelineId,
-      dataset: datasetName
     });
     console.log('[API] Step 8: Executing R script...');
 
@@ -789,12 +871,11 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         // -------------------------------------------------------------------------
         // Step 9: Excel Export
         // -------------------------------------------------------------------------
-        updateJob(jobId, {
+        await updateRunStatus(runId, {
+          status: 'in_progress',
           stage: 'writing_outputs',
-          percent: 95,
+          progress: 95,
           message: 'Generating Excel workbook...',
-          pipelineId,
-          dataset: datasetName
         });
         console.log('[API] Step 9: Generating Excel workbook...');
 
@@ -847,7 +928,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
     if (abortSignal?.aborted) {
       console.log('[API] Pipeline cancelled - not writing final summary');
-      await handleCancellation(outputDir, jobId, pipelineId, datasetName, 'Cancelled before completion');
+      await handleCancellation(outputDir, runId, 'Cancelled before completion');
       return;
     }
 
@@ -942,43 +1023,52 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     const costSummaryText = await getPipelineCostSummary();
     console.log(costSummaryText);
 
-    // Update job status
-    if (excelGenerated) {
-      updateJob(jobId, {
-        stage: 'complete',
-        percent: 100,
-        message: `Complete! Generated ${allTablesForR.length} crosstab tables in ${durationSec}s`,
-        sessionId,
-        pipelineId,
-        dataset: datasetName,
-        downloadUrl: `/api/pipelines/${encodeURIComponent(pipelineId)}/files/results/crosstabs.xlsx`
-      });
-    } else if (rExecutionSuccess) {
-      updateJob(jobId, {
-        stage: 'complete',
-        percent: 100,
-        message: 'R execution complete but Excel generation failed.',
-        sessionId,
-        pipelineId,
-        dataset: datasetName,
-        warning: 'Excel generation failed. Check results/tables.json'
-      });
-    } else {
-      updateJob(jobId, {
-        stage: 'complete',
-        percent: 100,
-        message: 'R scripts generated. Execution failed - check R installation.',
-        sessionId,
-        pipelineId,
-        dataset: datasetName,
-        warning: 'R execution failed. Scripts saved in r/master.R'
-      });
+    // Upload outputs to R2 (non-blocking — log but don't fail on R2 errors)
+    let r2Manifest: R2FileManifest | undefined;
+    if (convexOrgId && convexProjectId) {
+      try {
+        r2Manifest = await uploadPipelineOutputs(convexOrgId, convexProjectId, runId, outputDir);
+        console.log(`[API] Uploaded ${Object.keys(r2Manifest.outputs).length} output files to R2`);
+      } catch (r2Error) {
+        console.warn('[API] R2 output upload failed (non-fatal):', r2Error);
+      }
     }
+
+    // Update Convex run status
+    const terminalStatus: RunStatus = excelGenerated ? 'success' : (rExecutionSuccess ? 'partial' : 'error');
+    const terminalMessage = excelGenerated
+      ? `Complete! Generated ${allTablesForR.length} crosstab tables in ${durationSec}s`
+      : rExecutionSuccess
+        ? 'R execution complete but Excel generation failed.'
+        : 'R scripts generated. Execution failed - check R installation.';
+
+    await updateRunStatus(runId, {
+      status: terminalStatus,
+      stage: 'complete',
+      progress: 100,
+      message: terminalMessage,
+      result: {
+        pipelineId,
+        outputDir,
+        downloadUrl: excelGenerated
+          ? `/api/runs/${encodeURIComponent(runId)}/download/crosstabs.xlsx`
+          : undefined,
+        dataset: datasetName,
+        r2Files: r2Manifest ? { inputs: r2Manifest.inputs, outputs: r2Manifest.outputs } : undefined,
+        summary: {
+          tables: allTablesForR.length,
+          cuts: cutsSpec.cuts.length,
+          bannerGroups: groupCount,
+          durationMs,
+        },
+      },
+    });
+    cleanupAbort(runId);
 
   } catch (processingError) {
     if (isAbortError(processingError)) {
       console.log('[API] Pipeline processing was cancelled');
-      await handleCancellation(outputDir, jobId, pipelineId, datasetName, 'Pipeline cancelled');
+      await handleCancellation(outputDir, runId, 'Pipeline cancelled');
       return;
     }
 
@@ -993,18 +1083,18 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         severity: 'fatal',
         actionTaken: 'failed_pipeline',
         error: processingError,
-        meta: { jobId },
+        meta: { runId },
       });
     } catch {
       // ignore
     }
-    updateJob(jobId, {
+    await updateRunStatus(runId, {
+      status: 'error',
       stage: 'error',
-      percent: 100,
+      progress: 100,
       message: 'Processing error',
       error: processingError instanceof Error ? processingError.message : 'Unknown error',
-      pipelineId,
-      dataset: datasetName
     });
+    cleanupAbort(runId);
   }
 }

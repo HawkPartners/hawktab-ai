@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useQuery } from "convex/react";
 import {
   LayoutDashboard,
   PlusCircle,
@@ -27,7 +28,9 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import type { PipelineListItem } from "@/app/api/pipelines/route";
+import { useAuthContext } from "@/providers/auth-provider";
+import { api } from "../../convex/_generated/api";
+import type { Id } from "../../convex/_generated/dataModel";
 
 function StatusIcon({ status }: { status: string }) {
   switch (status) {
@@ -38,7 +41,7 @@ function StatusIcon({ status }: { status: string }) {
     case "error":
       return <AlertCircle className="h-3 w-3 text-red-500" />;
     case "in_progress":
-    case "awaiting_tables":
+    case "resuming":
       return <Loader2 className="h-3 w-3 text-blue-500 animate-spin" />;
     case "pending_review":
       return <AlertTriangle className="h-3 w-3 text-yellow-500" />;
@@ -49,10 +52,9 @@ function StatusIcon({ status }: { status: string }) {
   }
 }
 
-function formatRelativeTime(timestamp: string): string {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
+function formatRelativeTime(timestampMs: number): string {
+  const now = Date.now();
+  const diffMs = now - timestampMs;
   const diffMinutes = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMinutes / 60);
   const diffDays = Math.floor(diffHours / 24);
@@ -64,42 +66,60 @@ function formatRelativeTime(timestamp: string): string {
   return "Just now";
 }
 
+interface SidebarProject {
+  projectId: string;
+  name: string;
+  createdAt: number;
+  status: string;
+}
+
 export function AppSidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const [pipelines, setPipelines] = useState<PipelineListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { convexOrgId } = useAuthContext();
 
-  useEffect(() => {
-    let cancelled = false;
-    const fetchPipelines = async () => {
-      try {
-        const res = await fetch("/api/pipelines");
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!cancelled) {
-          setPipelines((data.pipelines || []).slice(0, 5));
-          setIsLoading(false);
-        }
-      } catch {
-        if (!cancelled) setIsLoading(false);
+  const projects = useQuery(
+    api.projects.listByOrg,
+    convexOrgId ? { orgId: convexOrgId as Id<"organizations"> } : "skip",
+  );
+
+  const runs = useQuery(
+    api.runs.listByOrg,
+    convexOrgId ? { orgId: convexOrgId as Id<"organizations"> } : "skip",
+  );
+
+  const recentProjects: SidebarProject[] = useMemo(() => {
+    if (!projects || !runs) return [];
+
+    const latestRunByProject = new Map<string, (typeof runs)[number]>();
+    for (const run of runs) {
+      const pid = String(run.projectId);
+      if (!latestRunByProject.has(pid)) {
+        latestRunByProject.set(pid, run);
       }
-    };
+    }
 
-    fetchPipelines();
-    // Refresh every 10 seconds for active pipelines
-    const interval = setInterval(fetchPipelines, 10000);
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []);
+    return projects
+      .map((project) => {
+        const latestRun = latestRunByProject.get(String(project._id));
+        return {
+          projectId: String(project._id),
+          name: project.name,
+          createdAt: project._creationTime,
+          status: latestRun?.status || "pending",
+        };
+      })
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, 5);
+  }, [projects, runs]);
 
-  const handlePipelineClick = (pipeline: PipelineListItem) => {
-    if (pipeline.status === "pending_review") {
-      router.push(`/projects/${encodeURIComponent(pipeline.pipelineId)}/review`);
+  const isLoading = projects === undefined || runs === undefined;
+
+  const handleProjectClick = (project: SidebarProject) => {
+    if (project.status === "pending_review") {
+      router.push(`/projects/${encodeURIComponent(project.projectId)}/review`);
     } else {
-      router.push(`/projects/${encodeURIComponent(pipeline.pipelineId)}`);
+      router.push(`/projects/${encodeURIComponent(project.projectId)}`);
     }
   };
 
@@ -169,7 +189,7 @@ export function AppSidebar() {
                     <span className="text-muted-foreground">Loading...</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ) : pipelines.length === 0 ? (
+              ) : recentProjects.length === 0 ? (
                 <SidebarMenuItem>
                   <SidebarMenuButton disabled>
                     <span className="text-muted-foreground text-xs">
@@ -178,18 +198,18 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ) : (
-                pipelines.map((pipeline) => (
-                  <SidebarMenuItem key={pipeline.pipelineId}>
+                recentProjects.map((project) => (
+                  <SidebarMenuItem key={project.projectId}>
                     <SidebarMenuButton
-                      onClick={() => handlePipelineClick(pipeline)}
+                      onClick={() => handleProjectClick(project)}
                       className="cursor-pointer"
-                      isActive={pathname?.includes(pipeline.pipelineId)}
+                      isActive={pathname?.includes(project.projectId)}
                     >
-                      <StatusIcon status={pipeline.status} />
-                      <span className="truncate">{pipeline.dataset}</span>
+                      <StatusIcon status={project.status} />
+                      <span className="truncate">{project.name}</span>
                     </SidebarMenuButton>
                     <SidebarMenuBadge>
-                      {formatRelativeTime(pipeline.timestamp)}
+                      {formatRelativeTime(project.createdAt)}
                     </SidebarMenuBadge>
                   </SidebarMenuItem>
                 ))

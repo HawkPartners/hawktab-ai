@@ -4,8 +4,7 @@ import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useValidationQueue } from '@/hooks/useValidationQueue';
 import { useLoopDetection } from '@/hooks/useLoopDetection';
-import { useJobRecovery } from '@/hooks/useJobRecovery';
-import { useJobPolling } from '@/hooks/useJobPolling';
+import { useRunProgress } from '@/hooks/useRunProgress';
 import { UploadForm, type UploadedFiles } from '@/components/upload-form';
 import { AppBreadcrumbs } from '@/components/app-breadcrumbs';
 import { Button } from '@/components/ui/button';
@@ -13,24 +12,20 @@ import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/PageHeader';
 import { toast } from 'sonner';
 
-const ACTIVE_JOB_KEY = 'crosstab-active-job';
-const ACTIVE_PIPELINE_KEY = 'crosstab-active-pipeline';
-
 export default function NewProjectPage() {
   const [dataFile, setDataFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [jobId, setJobId] = useState<string | null>(null);
-  const [jobError, setJobError] = useState<string | null>(null);
+  const [runId, setRunId] = useState<string | null>(null);
+  const [, setRunError] = useState<string | null>(null);
   const router = useRouter();
   const { counts, refresh } = useValidationQueue();
   const { loopDetection, isDetectingLoops, loopStatTestingMode, setLoopStatTestingMode } = useLoopDetection(dataFile);
 
-  useJobRecovery({ setJobId, setIsProcessing });
-  useJobPolling(jobId, jobError, { setJobId, setIsProcessing, setJobError, refresh });
+  useRunProgress(runId, { setRunId, setIsProcessing, setRunError: setRunError, refresh });
 
   const handleSubmit = useCallback(async (files: UploadedFiles) => {
     setIsProcessing(true);
-    setJobError(null);
+    setRunError(null);
 
     toast.loading('Processing pipeline...', {
       id: 'pipeline-progress',
@@ -61,12 +56,8 @@ export default function NewProjectPage() {
       }
 
       const result = await response.json();
-      if (result.jobId) {
-        setJobId(result.jobId);
-        localStorage.setItem(ACTIVE_JOB_KEY, result.jobId);
-      }
-      if (result.pipelineId) {
-        localStorage.setItem(ACTIVE_PIPELINE_KEY, result.pipelineId);
+      if (result.runId) {
+        setRunId(result.runId);
       }
     } catch (error) {
       console.error('Processing error:', error);
@@ -79,7 +70,7 @@ export default function NewProjectPage() {
   }, [loopDetection, loopStatTestingMode]);
 
   const handleCancel = useCallback(async () => {
-    if (!jobId) {
+    if (!runId) {
       setIsProcessing(false);
       toast.dismiss('pipeline-progress');
       return;
@@ -92,27 +83,18 @@ export default function NewProjectPage() {
     });
 
     try {
-      const statusRes = await fetch(`/api/process-crosstab/status?jobId=${encodeURIComponent(jobId)}`);
-      if (statusRes.ok) {
-        const statusData = await statusRes.json();
-        const pipelineId = statusData.pipelineId;
-        if (pipelineId) {
-          await fetch(`/api/pipelines/${encodeURIComponent(pipelineId)}/cancel`, { method: 'POST' });
-        }
-      }
+      await fetch(`/api/runs/${encodeURIComponent(runId)}/cancel`, { method: 'POST' });
     } catch (error) {
       console.error('[Cancel] Error cancelling pipeline:', error);
     }
 
     setIsProcessing(false);
-    setJobId(null);
-    setJobError(null);
-    localStorage.removeItem(ACTIVE_JOB_KEY);
-    localStorage.removeItem(ACTIVE_PIPELINE_KEY);
+    setRunId(null);
+    setRunError(null);
     toast.dismiss('pipeline-progress');
     refresh();
     toast.info('Pipeline cancelled', { description: 'The processing has been stopped.' });
-  }, [jobId, refresh]);
+  }, [runId, refresh]);
 
   return (
     <div>

@@ -166,4 +166,10 @@ export interface SavedFilePaths {
   bannerPlanPath: string;
   spssPath: string;
   surveyPath: string | null;
+  r2Keys?: {
+    dataMap: string;
+    bannerPlan: string;
+    spss: string;
+    survey: string | null;
+  };
 }

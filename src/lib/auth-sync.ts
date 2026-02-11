@@ -1,17 +1,30 @@
 import { getConvexClient } from "./convex";
-import { anyApi } from "convex/server";
+import { api } from "../../convex/_generated/api";
 import type { AuthContext } from "./auth";
+import type { Id } from "../../convex/_generated/dataModel";
 
-// Use anyApi until Convex codegen runs (npx convex dev).
-// After that, switch to: import { api } from "../../convex/_generated/api";
-const api = anyApi;
+export interface ConvexIds {
+  orgId: Id<"organizations">;
+  userId: Id<"users">;
+}
+
+// In-memory cache keyed by workosUserId → { orgId, userId, expiresAt }
+const authCache = new Map<string, { ids: ConvexIds; expiresAt: number }>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 /**
  * Sync a WorkOS user and org into Convex.
  * Idempotent — safe to call on every login/request.
- * In bypass mode, creates the hardcoded dev records.
+ * Returns Convex IDs for the org and user.
+ * Results are cached for 5 minutes per workosUserId.
  */
-export async function syncAuthToConvex(auth: AuthContext): Promise<void> {
+export async function syncAuthToConvex(auth: AuthContext): Promise<ConvexIds> {
+  // Check cache first
+  const cached = authCache.get(auth.userId);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.ids;
+  }
+
   const convex = getConvexClient();
 
   // Upsert the organization
@@ -34,4 +47,14 @@ export async function syncAuthToConvex(auth: AuthContext): Promise<void> {
     orgId,
     role: "admin",
   });
+
+  const ids: ConvexIds = { orgId, userId };
+
+  // Cache the result
+  authCache.set(auth.userId, {
+    ids,
+    expiresAt: Date.now() + CACHE_TTL_MS,
+  });
+
+  return ids;
 }
