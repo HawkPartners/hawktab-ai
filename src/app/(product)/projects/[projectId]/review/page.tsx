@@ -14,8 +14,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { PageHeader } from '@/components/PageHeader';
+import { AppBreadcrumbs } from '@/components/app-breadcrumbs';
 import {
-  ArrowLeft,
   AlertTriangle,
   CheckCircle,
   SkipForward,
@@ -28,9 +28,6 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
-/**
- * Strip emoji characters from text for professional display
- */
 function stripEmojis(text: string): string {
   return text
     .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
@@ -42,7 +39,6 @@ function stripEmojis(text: string): string {
     .trim();
 }
 
-// Crosstab review interfaces
 interface Alternative {
   expression: string;
   rank: number;
@@ -137,7 +133,6 @@ function CrosstabColumnCard({
     onDecisionChange({ action: 'select_alternative', selectedAlternative: index });
   };
 
-  // Get the currently selected expression (either proposed or selected alternative)
   const getSelectedExpression = () => {
     if (decision.action === 'select_alternative' && decision.selectedAlternative !== undefined) {
       return column.alternatives[decision.selectedAlternative]?.expression || column.proposed;
@@ -154,12 +149,10 @@ function CrosstabColumnCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* User summary - plain language explanation */}
         {column.userSummary && (
           <p className="text-sm text-muted-foreground">{stripEmojis(column.userSummary)}</p>
         )}
 
-        {/* Banner says vs AI suggests - simplified layout */}
         <div className="space-y-2">
           <div className="flex items-baseline gap-3">
             <Label className="text-xs text-muted-foreground w-24 shrink-0">Banner says:</Label>
@@ -181,7 +174,6 @@ function CrosstabColumnCard({
           </div>
         </div>
 
-        {/* Action buttons - horizontal layout */}
         <div className="flex flex-wrap gap-2 pt-2">
           <Button
             variant={decision.action === 'approve' ? 'default' : 'outline'}
@@ -235,7 +227,6 @@ function CrosstabColumnCard({
           </Button>
         </div>
 
-        {/* Hint input - shown when give hint is selected */}
         {decision.action === 'provide_hint' && (
           <div className="space-y-1">
             <Label className="text-xs text-muted-foreground">Your hint (e.g., &ldquo;use variable Q5&rdquo;)</Label>
@@ -248,7 +239,6 @@ function CrosstabColumnCard({
           </div>
         )}
 
-        {/* AI Concerns - collapsed by default */}
         {column.uncertainties && column.uncertainties.length > 0 && (
           <div className="pt-2">
             <button
@@ -269,7 +259,7 @@ function CrosstabColumnCard({
               <ul className="text-sm text-muted-foreground space-y-1 mt-2 ml-6">
                 {column.uncertainties.map((u, i) => (
                   <li key={i} className="flex items-start gap-1">
-                    <span className="mt-0.5">•</span>
+                    <span className="mt-0.5">-</span>
                     <span>{stripEmojis(u)}</span>
                   </li>
                 ))}
@@ -285,9 +275,10 @@ function CrosstabColumnCard({
 export default function ReviewPage({
   params,
 }: {
-  params: Promise<{ pipelineId: string }>;
+  params: Promise<{ projectId: string }>;
 }) {
-  const { pipelineId } = use(params);
+  const { projectId } = use(params);
+  const pipelineId = projectId;
   const [reviewState, setReviewState] = useState<CrosstabReviewState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -295,7 +286,6 @@ export default function ReviewPage({
   const [decisions, setDecisions] = useState<Map<string, CrosstabDecision>>(new Map());
   const router = useRouter();
 
-  // Group flagged columns by groupName
   const groupedColumns = useMemo(() => {
     if (!reviewState) return new Map<string, FlaggedCrosstabColumn[]>();
     const groups = new Map<string, FlaggedCrosstabColumn[]>();
@@ -320,7 +310,6 @@ export default function ReviewPage({
         const data = await res.json() as CrosstabReviewState;
         setReviewState(data);
 
-        // Initialize decisions (default to approve)
         const initialDecisions = new Map<string, CrosstabDecision>();
         for (const col of data.flaggedColumns) {
           const key = `${col.groupName}/${col.columnName}`;
@@ -337,7 +326,6 @@ export default function ReviewPage({
     fetchReviewState();
   }, [pipelineId]);
 
-  // Poll for Path B status updates while it's still running
   const pathBStatus = reviewState?.pathBStatus;
   useEffect(() => {
     if (!pathBStatus || pathBStatus !== 'running') return;
@@ -393,7 +381,7 @@ export default function ReviewPage({
       }
 
       await res.json();
-      router.push(`/pipelines/${encodeURIComponent(pipelineId)}`);
+      router.push(`/projects/${encodeURIComponent(pipelineId)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
       setIsSubmitting(false);
@@ -412,7 +400,7 @@ export default function ReviewPage({
         throw new Error(errData.error || 'Failed to cancel pipeline');
       }
 
-      router.push('/');
+      router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
       setIsSubmitting(false);
@@ -421,7 +409,7 @@ export default function ReviewPage({
 
   if (isLoading) {
     return (
-      <div className="py-12 px-4">
+      <div className="py-12">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -433,15 +421,20 @@ export default function ReviewPage({
 
   if (error || !reviewState) {
     return (
-      <div className="py-12 px-4">
+      <div className="py-12">
         <div className="max-w-4xl mx-auto">
+          <AppBreadcrumbs
+            segments={[
+              { label: 'Dashboard', href: '/dashboard' },
+              { label: 'Review Not Available' },
+            ]}
+          />
           <PageHeader
             title="Review Not Available"
             description={error || 'This pipeline does not require review or has already been reviewed.'}
             actions={
-              <Button variant="outline" onClick={() => router.push('/')}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Home
+              <Button variant="outline" onClick={() => router.push('/dashboard')}>
+                Back to Dashboard
               </Button>
             }
           />
@@ -452,14 +445,19 @@ export default function ReviewPage({
 
   if (reviewState.status !== 'awaiting_review') {
     return (
-      <div className="py-12 px-4">
+      <div className="py-12">
         <div className="max-w-4xl mx-auto">
+          <AppBreadcrumbs
+            segments={[
+              { label: 'Dashboard', href: '/dashboard' },
+              { label: 'Review Completed' },
+            ]}
+          />
           <PageHeader
             title="Review Already Completed"
             description="This pipeline has already been reviewed."
             actions={
-              <Button variant="outline" onClick={() => router.push(`/pipelines/${encodeURIComponent(pipelineId)}`)}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
+              <Button variant="outline" onClick={() => router.push(`/projects/${encodeURIComponent(pipelineId)}`)}>
                 View Pipeline
               </Button>
             }
@@ -475,17 +473,19 @@ export default function ReviewPage({
   const skipCount = Array.from(decisions.values()).filter(d => d.action === 'skip').length;
 
   return (
-    <div className="py-12 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div>
+      <AppBreadcrumbs
+        segments={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Project', href: `/projects/${encodeURIComponent(pipelineId)}` },
+          { label: 'Review' },
+        ]}
+      />
+
+      <div className="max-w-4xl mt-6">
         <PageHeader
           title="Quick Review Needed"
           description={`The AI wasn't certain about ${reviewState.flaggedColumns.length} matches. Please confirm or correct.`}
-          actions={
-            <Button variant="outline" onClick={() => router.push('/')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Button>
-          }
         />
 
         {/* Status */}
@@ -514,7 +514,7 @@ export default function ReviewPage({
           </Badge>
         </div>
 
-        {/* Flagged Columns - grouped by banner group */}
+        {/* Flagged Columns */}
         <div className="space-y-6 mb-8">
           {Array.from(groupedColumns.entries()).map(([groupName, columns]) => (
             <div key={groupName}>

@@ -287,7 +287,7 @@ export async function GET(
     if (displayStatus === 'pending_review' && summary.review) {
       details.review = {
         flaggedColumnCount: summary.review.flaggedColumnCount || 0,
-        reviewUrl: summary.review.reviewUrl || `/pipelines/${encodeURIComponent(pipelineId)}/review`,
+        reviewUrl: summary.review.reviewUrl || `/projects/${encodeURIComponent(pipelineId)}/review`,
       };
     }
 

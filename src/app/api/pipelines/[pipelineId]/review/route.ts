@@ -437,7 +437,7 @@ async function completePipeline(
       } : undefined,
       review: {
         flaggedColumnCount: reviewState.flaggedColumns.length,
-        reviewUrl: `/pipelines/${pipelineId}/review`,
+        reviewUrl: `/projects/${pipelineId}/review`,
         decisions,
         completedAt: completionTime.toISOString()
       },
@@ -728,7 +728,7 @@ export async function POST(
         currentStage: 'waiting_for_tables',
         review: {
           flaggedColumnCount: reviewState.flaggedColumns.length,
-          reviewUrl: `/pipelines/${pipelineId}/review`,
+          reviewUrl: `/projects/${pipelineId}/review`,
           decisions
         }
       });

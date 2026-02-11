@@ -1,3 +1,11 @@
+/**
+ * @deprecated This component is no longer used. The AppSidebar "Recent Projects"
+ * section and the Dashboard page (PipelineListCard grid) replaced this slide-out
+ * sheet in the Phase A route group restructure.
+ *
+ * Safe to delete once confirmed no external references remain.
+ * Last known import locations: none (verified Feb 11, 2026).
+ */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -48,9 +56,9 @@ export function PipelineHistory() {
     // Find the pipeline to check its status
     const pipeline = pipelines.find(p => p.pipelineId === pipelineId);
     if (pipeline?.status === 'pending_review') {
-      router.push(`/pipelines/${encodeURIComponent(pipelineId)}/review`);
+      router.push(`/projects/${encodeURIComponent(pipelineId)}/review`);
     } else {
-      router.push(`/pipelines/${encodeURIComponent(pipelineId)}`);
+      router.push(`/projects/${encodeURIComponent(pipelineId)}`);
     }
   };
 

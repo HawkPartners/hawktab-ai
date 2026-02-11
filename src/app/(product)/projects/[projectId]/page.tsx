@@ -10,8 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { AppBreadcrumbs } from '@/components/app-breadcrumbs';
 import {
-  ArrowLeft,
   Download,
   CheckCircle,
   AlertCircle,
@@ -31,9 +31,6 @@ import {
 } from 'lucide-react';
 import type { PipelineDetails, FileInfo } from '@/app/api/pipelines/[pipelineId]/route';
 
-/**
- * Format date for display (e.g., "Monday, January 12, 2026")
- */
 function formatDate(timestamp: string): string {
   const date = new Date(timestamp);
   return date.toLocaleDateString('en-US', {
@@ -55,18 +52,12 @@ function formatDateTime(timestamp: string): string {
   });
 }
 
-/**
- * Format file size for display
- */
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-/**
- * Get file icon based on filename
- */
 function FileIcon({ filename }: { filename: string }) {
   const ext = filename.split('.').pop()?.toLowerCase();
   switch (ext) {
@@ -85,9 +76,6 @@ function FileIcon({ filename }: { filename: string }) {
   }
 }
 
-/**
- * Status badge component
- */
 function StatusBadge({ status }: { status: string }) {
   switch (status) {
     case 'success':
@@ -149,9 +137,6 @@ function StatusBadge({ status }: { status: string }) {
   }
 }
 
-/**
- * File card component for downloads
- */
 function FileCard({ file, pipelineId }: { file: FileInfo; pipelineId: string }) {
   const isPrimaryOutput = file.name === 'crosstabs.xlsx';
 
@@ -186,12 +171,13 @@ function FileCard({ file, pipelineId }: { file: FileInfo; pipelineId: string }) 
   );
 }
 
-export default function PipelineDetailPage({
+export default function ProjectDetailPage({
   params,
 }: {
-  params: Promise<{ pipelineId: string }>;
+  params: Promise<{ projectId: string }>;
 }) {
-  const { pipelineId } = use(params);
+  const { projectId } = use(params);
+  const pipelineId = projectId;
   const [details, setDetails] = useState<PipelineDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -251,7 +237,6 @@ export default function PipelineDetailPage({
         setDetails(prev => prev ? { ...prev, feedback: data.summary } : prev);
       }
 
-      // Reset form but keep it open so users can add more if desired
       setFeedbackNotes('');
       setFeedbackRating('0');
       setTableIds([]);
@@ -277,8 +262,7 @@ export default function PipelineDetailPage({
         throw new Error(errData.error || 'Failed to cancel pipeline');
       }
 
-      // Navigate to home
-      router.push('/');
+      router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
       setIsCancelling(false);
@@ -309,7 +293,6 @@ export default function PipelineDetailPage({
   }, [pipelineId]);
 
   // Poll for updates when status is active
-  // We intentionally only depend on details?.status to avoid polling restarts on every state update
   const currentStatus = details?.status;
   useEffect(() => {
     const activeStatuses = ['in_progress', 'pending_review', 'awaiting_tables'];
@@ -329,14 +312,14 @@ export default function PipelineDetailPage({
       }
     };
 
-    const pollInterval = setInterval(pollDetails, 3000); // Poll every 3 seconds
+    const pollInterval = setInterval(pollDetails, 3000);
 
     return () => clearInterval(pollInterval);
   }, [pipelineId, currentStatus]);
 
   if (isLoading) {
     return (
-      <div className="py-12 px-4">
+      <div className="py-12">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -348,51 +331,56 @@ export default function PipelineDetailPage({
 
   if (error || !details) {
     return (
-      <div className="py-12 px-4">
+      <div className="py-12">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center">
-            <Button variant="outline" size="sm" onClick={() => router.push('/')} className="mb-6">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Button>
+          <AppBreadcrumbs
+            segments={[
+              { label: 'Dashboard', href: '/dashboard' },
+              { label: 'Not Found' },
+            ]}
+          />
+          <div className="text-center mt-8">
             <h1 className="text-3xl font-bold tracking-tight mb-2">Pipeline Not Found</h1>
             <p className="text-muted-foreground">
               {error || 'The requested pipeline could not be found.'}
             </p>
+            <Button variant="outline" size="sm" onClick={() => router.push('/dashboard')} className="mt-4">
+              Back to Dashboard
+            </Button>
           </div>
         </div>
       </div>
     );
   }
 
-  // Filter files by type
   const outputFiles = details.files.filter((f) => f.type === 'output');
   const inputFiles = details.files.filter((f) => f.type === 'input');
-
-  // Check if pipeline is still active
   const isActive = details.status === 'in_progress' || details.status === 'pending_review' || details.status === 'awaiting_tables';
   const hasOutputs = details.outputs.tables > 0 || details.outputs.cuts > 0;
   const feedbackAvailable = !isActive;
 
   return (
-    <div className="py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Centered Header */}
-        <div className="text-center mb-8">
-          <Button variant="outline" size="sm" onClick={() => router.push('/')} className="mb-6">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
-          </Button>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">
-            Pipeline: {details.dataset}
+    <div>
+      <AppBreadcrumbs
+        segments={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: details.dataset },
+        ]}
+      />
+
+      <div className="max-w-4xl mt-6">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold tracking-tight mb-2">
+            {details.dataset}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Run on {formatDate(details.timestamp)}
           </p>
         </div>
 
-        {/* Status and Duration - Centered */}
-        <div className="flex items-center justify-center gap-4 mb-8">
+        {/* Status and Duration */}
+        <div className="flex items-center gap-4 mb-8">
           <StatusBadge status={details.status} />
           <Badge variant="outline">
             <Clock className="h-3 w-3 mr-1" />
@@ -414,7 +402,7 @@ export default function PipelineDetailPage({
                     </p>
                   </div>
                 </div>
-                <Button onClick={() => router.push(details.review!.reviewUrl)}>
+                <Button onClick={() => router.push(`/projects/${encodeURIComponent(pipelineId)}/review`)}>
                   <Play className="h-4 w-4 mr-2" />
                   Review Now
                 </Button>
@@ -423,7 +411,7 @@ export default function PipelineDetailPage({
           </Card>
         )}
 
-        {/* Processing Banner for in_progress */}
+        {/* Processing Banner */}
         {details.status === 'in_progress' && (
           <Card className="mb-8 border-blue-500/50 bg-blue-500/5">
             <CardContent className="p-6">
@@ -495,7 +483,7 @@ export default function PipelineDetailPage({
           </Card>
         )}
 
-        {/* Summary Stats - only show if we have data or pipeline is complete (and not cancelled) */}
+        {/* Summary Stats */}
         {(hasOutputs || (!isActive && details.status !== 'cancelled')) && (
           <Card className="mb-8">
             <CardHeader>
@@ -558,7 +546,7 @@ export default function PipelineDetailPage({
                   Output Feedback
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Tell us what was wrong or missing in this output. This does not re-run anything; it’s for improving future runs.
+                  Tell us what was wrong or missing in this output. This does not re-run anything; it&apos;s for improving future runs.
                 </p>
               </div>
               <Button
@@ -616,7 +604,7 @@ export default function PipelineDetailPage({
                       <Input
                         value={tableIdInput}
                         onChange={(e) => setTableIdInput(e.target.value)}
-                        placeholder="Paste one or more table IDs (comma/newline separated)"
+                        placeholder="Paste one or more table IDs"
                         disabled={!feedbackAvailable || isSubmittingFeedback}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
@@ -660,7 +648,7 @@ export default function PipelineDetailPage({
                   <Textarea
                     value={feedbackNotes}
                     onChange={(e) => setFeedbackNotes(e.target.value)}
-                    placeholder="e.g., missing NETs, wrong table structure, tables that should be excluded, bad labels…"
+                    placeholder="e.g., missing NETs, wrong table structure, tables that should be excluded, bad labels..."
                     disabled={!feedbackAvailable || isSubmittingFeedback}
                   />
                 </div>
