@@ -86,8 +86,10 @@ Set up the cloud services that everything else builds on. No UI features — jus
 | Role | Can Do |
 |------|--------|
 | Admin | Create projects, invite members, manage org settings, view all projects |
-| Member | Create projects, view own projects, view shared projects |
-| External Partner | View projects explicitly shared with them, download results |
+| Member (internal) | Create projects, view own projects, view shared projects |
+| External | Same access as Member — create projects, view own/shared projects. Distinguished from Member only by being external to the organization (e.g., a client or partner). |
+
+> **Note**: Role enforcement (who can do what) is not part of Phase 3.3. The role definitions are in place from 3.1 (WorkOS). Enforcement surfaces in 3.4/3.5 as needed.
 
 **R2 file organization**: `{orgId}/{projectId}/{runId}/{filename}` — scoped for multi-tenancy by construction.
 
@@ -161,24 +163,38 @@ Wire the pipeline orchestrator and API routes to use Convex and R2 instead of in
 
 Replace the flat upload form with a multi-step wizard that exposes all pipeline configuration options. This is where every pipeline feature gets a UI surface.
 
-**Wizard flow**: `Step 1: Upload Files → Step 2: Project Setup → Step 3: Configuration → Step 4: Review & Launch`
+**Wizard flow**: `Step 1: Project Setup → Step 2A: Upload Files → Step 2B: Data Validation → Step 3: Configuration → Step 4: Review & Launch`
 
-**Step 1 — Upload Files**:
-- Data file (.sav) — required. Helper text: "Qualified respondents only."
-- Survey document (PDF, DOCX) — required
-- Banner plan (PDF, DOCX) — optional (if not provided, Step 2 activates AI-generated banner flow)
-- On .sav upload: trigger loop detection + weight candidate detection
+Setup comes first so we know what files to ask for. Upload only shows the files relevant to the user's answers. After upload, the system validates the data and surfaces findings (weights, stacked detection) before the user configures the run.
 
-**Step 2 — Project Setup**:
-- Project name (auto-suggested from data file)
-- Project type select: Standard, ATU, Segmentation, MaxDiff, Demand, Concept Test, Tracking
-- Conditional questions per type:
-  - **Segmentation**: "Does your data include segment assignments?"
-  - **MaxDiff**: "Upload message list?" + "Anchored probability scores?"
-  - **Conjoint/DCM**: "Upload choice task definitions?"
-- If no banner plan: research objectives text area + cut suggestions text area → AI-generated banner flow
+**Step 1 — Project Setup**:
+- Project name — required text field
+- Research objectives — optional text area. Not tied to banner logic — collected for every project. Useful as context for any agent (banner generation, verification, etc.) and for future regeneration workflows.
+- Project type select: **Standard** / **Segmentation** / **MaxDiff**
+  - **Standard** covers all survey types that don't need extra inputs (ATU, Demand, Concept Test, Tracking, Primary, Secondary, etc.). If someone runs a conjoint survey through the system, it processes as Standard — reports on whatever's in the .sav.
+  - **Segmentation** → conditional question: "Does your data include segment assignments?"
+  - **MaxDiff** → conditional questions: "Upload message list?" + "Are anchored probability scores appended to the file?"
+- Banner plan: "Do you have a banner plan, or would you like us to auto-generate one?"
+  - If yes: banner plan upload appears in Step 2
+  - If no (auto-generate): no banner file needed in Step 2
+- Banner hints — optional text area, shown regardless of banner plan choice. "Any specific areas or cuts you'd like us to focus on?" Wired to BannerGenerateAgent as prompt context (user-specified focus areas). Also useful when a banner plan is provided — hints can guide the CrosstabAgent on cut priorities.
 
-**Step 3 — Configuration** (all pipeline features):
+**Step 2A — Upload Files** (conditional based on Step 1):
+- Data file (.sav) — always required. Helper text: "Qualified respondents only, wide format."
+- Survey document (PDF, DOCX) — always required
+- Banner plan (PDF, DOCX) — only shown if user said they have one in Step 1
+- Message list (Excel) — only shown if MaxDiff selected in Step 1
+
+**Step 2B — Data Validation** (runs automatically after .sav upload):
+
+On .sav upload, the system reads the file and surfaces findings before the user proceeds:
+
+- **Stacked data detection**: If the data appears to already be stacked (long format), surface a warning: "This data appears to be in stacked/long format. Please re-upload a wide-format version." Block progression until resolved. The .sav helper text ("wide format") sets expectations upfront.
+- **Weight candidate detection**: If weight variables are detected, surface them: "We found [variable] — is this a weight variable?" User confirms yes/no. Confirmed weight feeds into Step 3 config and downstream pipeline behavior.
+- **Loop detection**: Runs internally but is **not surfaced** to the user for now. The user's insight on loops doesn't change what we do, and the variable names are often cryptic. We detect and handle loops automatically.
+- **Data quality checks**: Surface any issues — corrupt file, zero respondents, missing value labels, etc. — as blockers or warnings before the user proceeds.
+
+**Step 3 — Configuration**:
 
 | Setting | Control | Default |
 |---------|---------|---------|
@@ -187,32 +203,32 @@ Replace the flat upload form with a multi-step wizard that exposes all pipeline 
 | Color theme | Theme picker with 6 swatches | Classic |
 | Stat testing thresholds | Numeric input(s) | 90% |
 | Min base size | Number input | 0 |
-| Proportion test | Select | Unpooled z-test |
-| Mean test | Select | Welch's t-test |
-| Weight variable | Select from detected candidates | Off |
-| Loop stat testing | Radio: Suppress / Complement (visible when loops detected) | Suppress |
+| Weight variable | Select from detected candidates (pre-populated from 2B) | Off |
 | Stop after verification | Toggle (advanced, collapsed) | Off |
 
-**Step 4 — Review & Launch**:
-- Summary of all selections
-- "Launch Pipeline" → creates project in Convex, uploads files to R2, starts run
+Note: Proportion test method, mean test method, and loop stat testing are **not user-configurable** — they use sensible defaults (unpooled z-test, Welch's t-test, suppress within-group for entity-anchored loops). These are surfaced as read-only in Step 4's Statistical Assumptions section.
 
-**Variable selection persistence** (deterministic re-runs):
-- When a user confirms cut mappings via HITL or accepts a successful run, lock those selections in Convex
-- On re-run, CrosstabAgent prompt includes "locked selections" — these variables are not re-evaluated
-- Eliminates "it worked last time but not this time"
+**Step 4 — Review & Launch**:
+- Summary of all selections (project info, files, configuration)
+- Collapsible **"Statistical Assumptions"** section — read-only, shows what the system will assume for this run:
+  - Proportion test: Unpooled z-test
+  - Mean test: Welch's t-test
+  - Loop stat testing: Suppress within-group comparisons for entity-anchored groups
+  - Any other methodological defaults
+  - This sets the foundation for future "Configurable Assumptions" work (see Long-term Vision) where users can override these.
+- "Launch Pipeline" → creates project in Convex, uploads files to R2, starts run
 
 **API changes**: `POST /api/projects/:id/runs` accepts all configuration options. The orchestrator passes them to `PipelineRunner.runPipeline()` — same function the CLI calls. No pipeline logic changes needed.
 
-**Deliverables**: 4-step wizard. All pipeline features exposed. Project type intake questions. AI banner flow. Variable selection persistence. Writes to Convex + R2.
+**Deliverables**: 4-step wizard with data validation. Project type intake (Standard/Segmentation/MaxDiff). AI banner flow with optional hints. Research objectives collected. Weight/stacked detection surfaced. Statistical assumptions displayed. Writes to Convex + R2.
 
-**Level of Effort**: High (multi-step wizard + all config surfaces + API extensions)
+**Level of Effort**: High (multi-step wizard + data validation + config surfaces + API extensions)
 
 ---
 
 ### 3.4 Dashboard, Results & Supportability — `NOT STARTED`
 
-Build the project management experience — where users see their projects, track progress, and download results.
+Build the project management experience — where users see their projects, track progress, and download results. Also implements role enforcement and user management surfaces.
 
 **Dashboard** (`(product)/dashboard/`):
 - Project list from Convex (real-time — no polling, Convex subscriptions)
@@ -237,6 +253,18 @@ Build the project management experience — where users see their projects, trac
 - Re-uses persisted cut mappings for deterministic results
 - Previous runs visible in "Run History" section
 
+**Role enforcement & user management**:
+
+The role definitions exist (3.1: schema + WorkOS), and auth-sync now defaults new users to `member` without overwriting existing roles. What's left is enforcement and management surfaces:
+
+- **Permission gates**: Check role before actions. Admins see all projects in the org; members see only their own + shared. Admins can manage org settings and invite members. External users have same access as members.
+- **User profile menu**: Logout button, current user/org display in app header
+- **Org selector**: When a user belongs to multiple orgs, show a switcher in the header
+- **Member management** (admin only): Invite users, view member list, assign roles (admin/member/external)
+- **Settings page**: Org settings (name, branding), member list — admin-only sections gated by role
+
+> **Foundation already in place**: Convex schema has `orgMemberships` with `admin`/`member`/`external_partner` roles. Auth-sync preserves existing roles on login (doesn't overwrite). All API routes already filter by `orgId`. What's needed is the UI and the role-checking middleware.
+
 **Supportability** (when things break for Antares):
 - **Debug bundle**: single zip per run containing pipeline-summary.json, errors.ndjson, scratchpad files, R script, event log
 - **Error visibility**: agent/pipeline errors surfaced on project detail page in plain language, not buried in disappeared toasts
@@ -247,9 +275,9 @@ Build the project management experience — where users see their projects, trac
 - Write to Convex `aiUsage` table at pipeline completion
 - No dashboard for MVP — query Convex directly
 
-**Deliverables**: Real-time dashboard, enhanced results page, progress timeline, re-run, debug bundles, error visibility, cost persistence.
+**Deliverables**: Real-time dashboard, enhanced results page, progress timeline, re-run, role enforcement, user/member management, debug bundles, error visibility, cost persistence.
 
-**Level of Effort**: High (dashboard + results rebuild + progress timeline + debug bundle + cost persistence)
+**Level of Effort**: High (dashboard + results rebuild + progress timeline + role enforcement + member management + debug bundle + cost persistence)
 
 ---
 
@@ -384,15 +412,17 @@ The idea: before running the full pipeline (45+ minutes), assess whether the sys
 
 ---
 
-### Variable Selection Persistence — `IN PHASE 3.3`
+### Variable Selection Persistence — `DEFERRED`
 
 The crosstab agent's variable selection is non-deterministic — same dataset can produce different variable mappings across runs. Once a user confirms a mapping via HITL or accepts a successful run's output, lock those selections as project-level overrides so future re-runs don't re-roll the dice.
 
-**What gets saved:** Banner group name → variable mappings, confirmation source ("user_confirmed" or "accepted_from_run_N"). Stored as `confirmed-cuts.json` in the project folder. The crosstab agent prompt includes a "locked selections" section — variables in this list are not re-evaluated.
+**What gets saved:** Banner group name → variable mappings, confirmation source ("user_confirmed" or "accepted_from_run_N"). Stored in Convex on the project record. The crosstab agent prompt includes a "locked selections" section — variables in this list are not re-evaluated.
 
 **Why it matters:** Eliminates "it worked last time but not this time." First step toward accumulating project-level knowledge across runs.
 
-**Level of Effort:** Low (JSON persistence + prompt section, no architectural changes)
+**Why deferred:** Only matters when re-runs exist, and re-runs are a Phase 3.4 feature. No point building plumbing with no UI to exercise it. Pull forward when we build re-run support.
+
+**Level of Effort:** Low (Convex persistence + prompt section, no architectural changes)
 
 ---
 
@@ -481,7 +511,7 @@ Documented as of February 2026. These are areas where the system has known limit
 
 | Gap | Severity | Mitigation | Status |
 |-----|----------|------------|--------|
-| **Non-deterministic variable selection** — Same dataset can produce different variable mappings across runs. | Medium | Hidden variable hints help steer. Variable selection persistence (Phase 3.3) locks in confirmed choices. HITL for low-confidence cuts. | Partially mitigated |
+| **Non-deterministic variable selection** — Same dataset can produce different variable mappings across runs. | Medium | Hidden variable hints help steer. Variable selection persistence (deferred, see Long-term Vision) locks in confirmed choices. HITL for low-confidence cuts. | Partially mitigated |
 | **Hidden variable conventions vary by platform** — h-prefix and d-prefix patterns are Decipher/FocusVision conventions. Other platforms (Qualtrics, SurveyMonkey, Confirmit) use different naming. | Low-Medium | Expand hint patterns as we encounter new platforms. The datamap description is platform-agnostic and usually contains enough signal. | Platform-specific hints added |
 | **Overlapping banner cuts (non-loop)** — If a user provides overlapping respondent-anchored cuts, pairwise A-vs-B letters still run even when overlap makes comparisons questionable. | Medium | Consider optional suppression or complement testing for overlapping groups if demand warrants it. | Known limitation |
 
@@ -491,7 +521,7 @@ Documented as of February 2026. These are areas where the system has known limit
 |-----|----------|------------|--------|
 | **No pre-flight confidence assessment** — Pipeline runs for 45+ minutes before discovering it can't handle a dataset reliably. | Medium-High | Long-term: predictive confidence scoring (see Long-term Vision). Requires failure data across 50+ datasets before a predictor is viable. Near-term: project intake questions (3.3) set expectations upfront. | Deferred to Long-term Vision |
 | **No methodology documentation in output** — Users receive numbers without explanation of how they were computed. Assumptions are implicit. | Medium | Methodology sheet in Excel (Configurable Assumptions vision). Policy agent + validation results provide the content. | Planned |
-| **No project-level knowledge accumulation** — Each pipeline run starts fresh. Confirmed variable mappings, user preferences, and past decisions aren't carried forward. | Low-Medium | Variable selection persistence (Phase 3.3) is the first step. Longer-term: project-level config that accumulates across runs. | Identified |
+| **No project-level knowledge accumulation** — Each pipeline run starts fresh. Confirmed variable mappings, user preferences, and past decisions aren't carried forward. | Low-Medium | Variable selection persistence (deferred to Long-term Vision) is the first step. Longer-term: project-level config that accumulates across runs. | Identified |
 | **Hidden assignment variables don't produce distribution tables** — When a question's answers are stored as hidden variables (e.g., `hLOCATIONr1–r16` for S9), the pipeline correctly hides them but misses the distribution table that shows assignment frequency. Requires parent-variable linking in DataMapProcessor or verification agent awareness. | Low | Accept gap for now. Future: detect when hidden variable families relate to a visible question and auto-generate distribution tables. | Known limitation |
 | **No dual-base reporting for skip logic questions** — When a question has skip logic, only the filtered base is reported. An experienced analyst might also report the same table with an all-respondents base for context (e.g., "what share of everyone had 2+ people present" vs "among those not alone, group size distribution"). Current behavior is correct; this is a future quality-of-life enhancement. | Low | Future: optional "also report unfiltered" flag on skip logic tables, generating both versions with clear base text. | Known limitation |
 | **`deriveBaseParent()` doesn't collapse parent references for loop variables** — In LoopCollapser.ts, when a collapsed variable's parent is itself a loop variable being collapsed, `deriveBaseParent()` returns the uncollapsed parent name (e.g., `A7_1` instead of `A7`). DataMapGrouper then uses this uncollapsed parent as the `questionId`, causing loop variables like A7 to appear with inconsistent naming (e.g., `a7_1` instead of `a7`). Non-loop parents like A4 are unaffected. | Low | Fix `deriveBaseParent()` to check if the derived parent is in the collapse map and resolve it to the collapsed form. Straightforward code fix. | Known limitation |

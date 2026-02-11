@@ -20,10 +20,12 @@ export const upsert = mutation({
   args: {
     userId: v.id("users"),
     orgId: v.id("organizations"),
-    role: v.union(
-      v.literal("admin"),
-      v.literal("member"),
-      v.literal("external_partner")
+    role: v.optional(
+      v.union(
+        v.literal("admin"),
+        v.literal("member"),
+        v.literal("external_partner")
+      )
     ),
   },
   handler: async (ctx, args) => {
@@ -35,14 +37,18 @@ export const upsert = mutation({
       .unique();
 
     if (existing) {
-      await ctx.db.patch(existing._id, { role: args.role });
+      // Don't overwrite role on subsequent logins — only update if explicitly provided
+      if (args.role) {
+        await ctx.db.patch(existing._id, { role: args.role });
+      }
       return existing._id;
     }
 
+    // New membership: use provided role or default to "member"
     return await ctx.db.insert("orgMemberships", {
       userId: args.userId,
       orgId: args.orgId,
-      role: args.role,
+      role: args.role ?? "member",
     });
   },
 });

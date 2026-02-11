@@ -41,11 +41,11 @@ export async function syncAuthToConvex(auth: AuthContext): Promise<ConvexIds> {
     name: auth.name,
   });
 
-  // Upsert the membership
+  // Upsert the membership — no role passed, so existing roles are preserved.
+  // New users default to "member". Roles are managed via admin UI or direct Convex mutation.
   await convex.mutation(api.orgMemberships.upsert, {
     userId,
     orgId,
-    role: "admin",
   });
 
   const ids: ConvexIds = { orgId, userId };
