@@ -6,9 +6,9 @@ import { anyApi } from 'convex/server';
 const api = anyApi;
 
 async function main() {
-  const url = process.env.CONVEX_URL;
+  const url = process.env.CONVEX_URL || process.env.NEXT_PUBLIC_CONVEX_URL;
   if (!url) {
-    console.error('CONVEX_URL is not set. Run `npx convex dev` first and add CONVEX_URL to .env.local');
+    console.error('CONVEX_URL or NEXT_PUBLIC_CONVEX_URL is not set. Run `npx convex dev` first.');
     process.exit(1);
   }
 
