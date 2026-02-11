@@ -51,9 +51,11 @@ The UI foundation is in place. Route groups, app shell, and API refactoring were
 
 ---
 
-### 3.1 Cloud Infrastructure Setup — `NOT STARTED`
+### 3.1 Cloud Infrastructure Setup — `CODE COMPLETE — MANUAL SETUP PENDING`
 
 Set up the cloud services that everything else builds on. No UI features — just the foundation.
+
+> **Status**: All code written — Convex schema/functions, R2 wrapper, WorkOS auth/middleware, Docker, health check, seed script. Cloud services need manual provisioning before code is functional. See `docs/phase-3.1-setup-checklist.md` for step-by-step setup instructions.
 
 | Service | Purpose | Why This One |
 |---------|---------|--------------|

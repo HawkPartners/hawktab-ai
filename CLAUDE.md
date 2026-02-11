@@ -70,7 +70,9 @@ ACTIVE WORK: `docs/implementation-plans/product-roadmap.md` — Phase 3 (Product
 
 **Current Phase**: Phase 3 — Productization. Wiring up the UI so users can interact with HITL aspects (variable confirmation, alternative selection) during the pipeline run, not just review static Excel output after.
 
-**Key focus**: 3.1 Local UI Overhaul — the full web experience (new project wizard, HITL review, job progress, results page) architected cloud-ready.
+**Phase 3.1 (Cloud Infrastructure)**: CODE COMPLETE — manual setup pending. All code written (Convex schema, R2 wrapper, WorkOS auth, Docker, health check). Cloud services need provisioning before functional. See `docs/phase-3.1-setup-checklist.md`.
+
+**Next**: After manual setup, Phase 3.2 (Pipeline Cloud Migration) wires existing API routes and pipeline to use Convex + R2 instead of in-memory state and filesystem.
 
 FEEDBACK: `docs/latest-runs-feedback.md` — Tracks all issues from pipeline runs with problem/fix summaries.
 </current_focus>
