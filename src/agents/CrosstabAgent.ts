@@ -146,6 +146,8 @@ Begin validation now.
     for (const m of matches) {
       if (rKeywords.has(m)) continue;
       if (/^\d+$/.test(m)) continue;
+      // Skip R dot-notation functions: is.na, is.null, as.numeric, as.factor, etc.
+      if (/^(is|as|na)\.[a-z]+$/i.test(m)) continue;
       vars.add(m);
     }
     return [...vars];
@@ -213,6 +215,9 @@ Begin validation now.
       }
       if (invalidVars.length > 0) {
         const unique = [...new Set(invalidVars)].slice(0, 25);
+        // Log what the agent actually produced so we can debug validation failures
+        const attemptedExprs = output.columns.map((c: { name: string; adjusted?: string }) => `  ${c.name}: ${c.adjusted || '(empty)'}`).join('\n');
+        console.warn(`[CrosstabAgent] Validation failed for group "${group.groupName}" — agent attempted:\n${attemptedExprs}`);
         throw new Error(
           `INVALID VARIABLES: ${unique.join(', ')}. Use ONLY variables from the data map; do not synthesize names.`
         );
@@ -320,6 +325,8 @@ Begin validation now.
         }
         if (invalidVars.length > 0) {
           const unique = [...new Set(invalidVars)].slice(0, 25);
+          const attemptedExpr = output.columns[0].adjusted || '(empty)';
+          console.warn(`[CrosstabAgent] Validation failed for column "${col.name}" (group "${group.groupName}") — agent attempted: ${attemptedExpr}`);
           throw new Error(`INVALID VARIABLES: ${unique.join(', ')}. Use ONLY variables from the data map; do not synthesize names.`);
         }
 
