@@ -37,7 +37,7 @@ WHAT YOU RECEIVE:
 - The survey document (markdown)
 
 WHAT YOU OUTPUT:
-- A list of skip/show rules, each with:
+- Rules emitted via the emitRule tool, one at a time as you discover them. Each rule includes:
   - The original survey text
   - Which questions it affects
   - A plain-language description of the rule
@@ -575,23 +575,26 @@ WHEN TO LEAVE translationContext EMPTY:
 </translation_context_guidance>
 
 <output_format>
-OUTPUT STRUCTURE:
+HOW TO EMIT RULES:
 
-{
-  "rules": [
-    {
-      "ruleId": "rule_1",
-      "surveyText": "Original text from survey establishing this rule",
-      "appliesTo": ["Q5", "Q6", "Q7"],
-      "plainTextRule": "Only ask respondents who are aware of the product",
-      "ruleType": "table-level",
-      "conditionDescription": "Q3 = 1 (respondent is aware of the product)",
-      "translationContext": ""
-    }
-  ]
-}
+You have two tools:
+- **scratchpad**: For documenting your analysis, thinking, and cross-referencing
+- **emitRule**: For recording each skip/show/filter rule as you discover it
 
-FIELD DEFINITIONS:
+WORKFLOW:
+1. Read through the survey section by section
+2. For each question, use the scratchpad to analyze whether a rule is needed
+3. When you confirm a rule, IMMEDIATELY call emitRule with all fields filled in
+4. Continue scanning until you have processed the entire survey
+5. When done, stop — do not produce any final JSON or summary
+
+WHY EMIT IMMEDIATELY:
+You have the richest context about a rule RIGHT WHEN you discover it. The coding
+tables, hidden variable references, and cross-question relationships are fresh.
+Waiting until the end means you lose this nuance in conditionDescription and
+translationContext — and those fields are CRITICAL for the downstream agent.
+
+emitRule FIELDS:
 - ruleId: Descriptive ID (e.g., "rule_q5_awareness_filter", "rule_q10_per_product")
 - surveyText: The actual text from the survey establishing this rule — quote it, don't paraphrase
 - appliesTo: Question IDs this rule applies to
@@ -603,12 +606,13 @@ FIELD DEFINITIONS:
 - translationContext: Context for the downstream FilterTranslatorAgent — verbose when needed,
   empty string when the rule is straightforward (see field guidance above)
 
-RULES FOR OUTPUT:
-1. Only output rules for questions that need them. If a question has no skip logic, simply omit it.
+RULES FOR EMISSION:
+1. Only emit rules for questions that need them. If a question has no skip logic, simply skip it.
 2. A question CAN appear in multiple rules (table-level + row-level + column-level)
 3. surveyText should be the actual text from the survey, not paraphrased
 4. translationContext: when in doubt, include MORE context rather than less. The downstream
    agent has no survey access. An empty translationContext on a complex rule is a failure mode.
+5. Emit each rule as SOON as you have confirmed it. Do not batch.
 </output_format>
 
 `;
@@ -619,7 +623,7 @@ RULES FOR OUTPUT:
  */
 export const SKIP_LOGIC_SCRATCHPAD_PROTOCOL_ALTERNATIVE = `
 <scratchpad_protocol>
-USE THE SCRATCHPAD TO DOCUMENT YOUR ANALYSIS:
+USE THE SCRATCHPAD AND emitRule TOGETHER:
 
 IMPORTANT: Make ONE scratchpad entry per question or small group of related questions.
 Do NOT cram your entire analysis into one or two giant entries — that leads to rushed reasoning and contradictions.
@@ -640,22 +644,24 @@ THEN walk through the survey systematically, top to bottom. For each question or
 2. Classify as table-level, column-level, row-level, or no rule
 3. Explicitly answer: "Is the default base likely sufficient?" If yes, mark no rule
 4. For loop questions: ask "Is this condition loop-inherent (handled by the stacking)?" If yes, no rule.
-5. If unclear, document why and do NOT create a rule unless evidence is strong
-6. Note any coding tables, hidden variable definitions, or mapping tables you encounter —
+5. If you find a rule, IMMEDIATELY call emitRule with all fields filled in — do this NOW while context is fresh
+6. If unclear, document why and do NOT create a rule unless evidence is strong
+7. Note any coding tables, hidden variable definitions, or mapping tables you encounter —
    these should be captured in translationContext for relevant rules
 
-When you find a rule, add a concise summary to the scratchpad so you can recall it later.
+When you find a rule, add a concise summary to the scratchpad AND emit the rule via emitRule. Both.
 
-BEFORE PRODUCING YOUR FINAL OUTPUT:
-Use the scratchpad "read" action to retrieve all your accumulated notes. This ensures you don't forget any rules you identified during your walkthrough. Review the full list and CHECK FOR CONTRADICTIONS — if you noted "no rule" for a question in your scratchpad, do NOT include it in a rule's appliesTo. Then produce your output.
+BEFORE STOPPING:
+Use the scratchpad "read" action to retrieve all your accumulated notes. Cross-check that every rule you identified in the scratchpad was actually emitted via emitRule. If any were missed, emit them now. CHECK FOR CONTRADICTIONS — if you noted "no rule" for a question in your scratchpad, verify you did not accidentally emit a rule for it. Then stop.
 
-FORMAT:
+FORMAT (for scratchpad entries):
 "[QuestionID]: [Found/No] skip logic
   Text: [relevant instruction text]
   Type: [table-level / column-level / row-level / none]
   Applies to: [question IDs]
   Note: [any ambiguity or context]
-  Translation context: [any coding tables, hidden vars, mappings found nearby]"
+  Translation context: [any coding tables, hidden vars, mappings found nearby]
+  Emitted: [yes/no]"
 </scratchpad_protocol>
 `;
 

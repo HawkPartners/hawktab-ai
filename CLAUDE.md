@@ -361,7 +361,7 @@ When tuning agent prompts:
    Before full pipeline, run isolated agent tests.
 
 BEFORE CHANGING PROMPTS: Check `.env.local` for the active `*_PROMPT_VERSION` for each agent.
-All agents are currently set to `production`. Do not change the env without explicit instruction.
+All agents are currently set to `alternative`. Do not change the env without explicit instruction.
 
 PROMPT FILE LOCATIONS (each agent has production.ts + alternative.ts, selected via env var):
 - `src/prompts/verification/` — VerificationAgent

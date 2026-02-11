@@ -13,10 +13,9 @@
  * Writes: {outputDir}/skiplogic/ outputs
  */
 
-import { generateText, Output, stepCountIs } from 'ai';
+import { generateText, stepCountIs } from 'ai';
 import { RESEARCH_DATA_PREAMBLE, sanitizeForAzureContentFilter } from '../lib/promptSanitization';
 import {
-  SkipLogicExtractionOutputSchema,
   type SkipLogicResult,
   type SkipRule,
 } from '../schemas/skipLogicSchema';
@@ -36,6 +35,14 @@ import {
   createContextScratchpadTool,
   getAllContextScratchpadEntries,
 } from './tools/scratchpad';
+import {
+  createRuleEmitterTool,
+  getEmittedRules,
+  clearEmittedRules,
+  createContextRuleEmitterTool,
+  getContextEmittedRules,
+  clearAllContextEmitters,
+} from './tools/ruleEmitter';
 import { getSkipLogicPrompt, getSkipLogicCoreInstructions } from '../prompts/skiplogic';
 import { retryWithPolicyHandling, type RetryContext } from '../lib/retryWithPolicyHandling';
 import { recordAgentMetrics } from '../lib/observability';
@@ -153,10 +160,14 @@ async function extractSkipLogicSinglePass(
     throw new DOMException('SkipLogicAgent aborted', 'AbortError');
   }
 
-  // Clear scratchpad from any previous runs (only once at the start)
+  // Clear scratchpad and rule emitter from any previous runs (only once at the start)
   clearScratchpadEntries();
+  clearEmittedRules();
 
-  // Build base prompts (will be enhanced with scratchpad context on retries)
+  // Create emitRule tool
+  const emitRule = createRuleEmitterTool('SkipLogicAgent');
+
+  // Build base prompts (will be enhanced with scratchpad + emitted rules context on retries)
   const baseSystemPrompt = `
 ${RESEARCH_DATA_PREAMBLE}${getSkipLogicAgentInstructions()}
 
@@ -170,43 +181,62 @@ ${sanitizeForAzureContentFilter(surveyMarkdown)}
 
 Be conservative: if you cannot point to clear evidence in the survey that the default base would be wrong, DO NOT create a rule.
 
-Walk through the survey systematically, section by section. Use the scratchpad to document your analysis for each question.
+Walk through the survey systematically, section by section. Use the scratchpad to document your analysis for each question. When you confirm a rule, IMMEDIATELY call emitRule with all fields.
 
-Output the complete list of rules and no-rule questions.`;
+When you have finished scanning the entire survey, stop.`;
 
   const retryResult = await retryWithPolicyHandling(
     async (ctx: RetryContext) => {
       // Policy-safe fallback: if Azure repeatedly content-filters the full survey,
-      // return empty rules rather than failing the entire pipeline.
+      // return whatever rules were emitted so far rather than failing the pipeline.
       if (ctx.shouldUsePolicySafeVariant) {
-        console.warn('[SkipLogicAgent] Policy-safe mode triggered — returning empty rules to continue pipeline');
-        return { rules: [] };
+        const partialRules = getEmittedRules();
+        console.warn(`[SkipLogicAgent] Policy-safe mode triggered — returning ${partialRules.length} emitted rules to continue pipeline`);
+        return { rules: partialRules };
       }
 
-      // Get scratchpad state before the call (for error context and prompt enhancement)
+      // Get scratchpad state and emitted rules before the call (for error context and prompt enhancement)
       const scratchpadBeforeCall = getScratchpadEntries().filter(e => e.agentName === 'SkipLogicAgent');
+      const rulesBeforeCall = getEmittedRules();
 
-      // Enhance prompts with scratchpad context if this is a retry
+      // Enhance prompts with scratchpad + emitted rules context if this is a retry
       let systemPrompt = baseSystemPrompt;
       let userPrompt = baseUserPrompt;
 
-      if (scratchpadBeforeCall.length > 0) {
-        // This is a retry - include existing scratchpad entries so agent can resume
-        const scratchpadContext = scratchpadBeforeCall
-          .map((e, i) => `[${i + 1}] (${e.action}) ${e.content}`)
-          .join('\n\n');
+      if (scratchpadBeforeCall.length > 0 || rulesBeforeCall.length > 0) {
+        // This is a retry - include existing context so agent can resume
+        const scratchpadContext = scratchpadBeforeCall.length > 0
+          ? scratchpadBeforeCall
+              .map((e, i) => `[${i + 1}] (${e.action}) ${e.content}`)
+              .join('\n\n')
+          : '';
 
-        systemPrompt = `${baseSystemPrompt}
+        const retryParts: string[] = [baseSystemPrompt];
 
+        if (scratchpadContext) {
+          retryParts.push(`
 ## Previous Analysis (from scratchpad)
 You have already analyzed part of this survey. Here are your previous scratchpad entries:
-${scratchpadContext}
+${scratchpadContext}`);
+        }
 
-IMPORTANT: You are RETRYING after a previous attempt failed. Continue from where you left off - do NOT restart from the beginning. Use the scratchpad "read" action to see all your previous entries, then continue your analysis.`;
+        if (rulesBeforeCall.length > 0) {
+          retryParts.push(`
+## Rules Already Emitted (${rulesBeforeCall.length} rules saved — do NOT re-emit)
+<already_emitted>
+${formatAccumulatedRules(rulesBeforeCall)}
+</already_emitted>
+Continue scanning from where you left off. Only emit NEW rules.`);
+        }
+
+        retryParts.push(`
+IMPORTANT: You are RETRYING after a previous attempt failed. Continue from where you left off — do NOT restart from the beginning.`);
+
+        systemPrompt = retryParts.join('\n');
 
         userPrompt = `${baseUserPrompt}
 
-NOTE: This is a retry attempt. You have already documented analysis for ${scratchpadBeforeCall.length} questions in your scratchpad. Use the scratchpad "read" action first to review your previous work, then continue analyzing the remaining questions. Do not duplicate work you've already done.`;
+NOTE: This is a retry attempt. ${rulesBeforeCall.length > 0 ? `${rulesBeforeCall.length} rules have already been emitted — do NOT re-emit them.` : ''} ${scratchpadBeforeCall.length > 0 ? `You have ${scratchpadBeforeCall.length} scratchpad entries from previous analysis.` : ''} Use the scratchpad "read" action first to review your previous work, then continue analyzing the remaining questions.`;
       }
 
       try {
@@ -217,35 +247,19 @@ NOTE: This is a retry attempt. You have already documented analysis for ${scratc
           prompt: userPrompt,
           tools: {
             scratchpad: skipLogicScratchpadTool,
+            emitRule,
           },
-          stopWhen: stepCountIs(25),
+          stopWhen: stepCountIs(40),
           maxOutputTokens: Math.min(getSkipLogicModelTokenLimit(), 100000),
           providerOptions: {
             openai: {
               reasoningEffort: getSkipLogicReasoningEffort(),
             },
           },
-          output: Output.object({
-            schema: SkipLogicExtractionOutputSchema,
-          }),
           abortSignal,
         });
 
-        const { output, usage } = result;
-
-        // Get scratchpad state after the call
-        const scratchpadAfterCall = getScratchpadEntries().filter(e => e.agentName === 'SkipLogicAgent');
-
-        if (!output) {
-          // Enhanced error message with context
-          const errorDetails = [
-            `Scratchpad entries: ${scratchpadAfterCall.length} (had ${scratchpadBeforeCall.length} before call)`,
-            `Usage: ${usage?.inputTokens || 0} input, ${usage?.outputTokens || 0} output tokens`,
-            `Result keys: ${Object.keys(result).join(', ')}`,
-          ].join('; ');
-
-          throw new Error(`Invalid output from SkipLogicAgent - ${errorDetails}`);
-        }
+        const { usage } = result;
 
         // Record metrics
         const durationMs = Date.now() - startTime;
@@ -256,10 +270,15 @@ NOTE: This is a retry attempt. You have already documented analysis for ${scratc
           durationMs
         );
 
-        return output;
+        // Collect rules from emitter (deduplicated by ruleId as safety net)
+        const allEmitted = getEmittedRules();
+        const dedupedRules = deduplicateEmittedRules(allEmitted);
+
+        return { rules: dedupedRules };
       } catch (error) {
-        // Enhanced error logging with scratchpad context
+        // Enhanced error logging with scratchpad + emitter context
         const scratchpadAfterError = getScratchpadEntries().filter(e => e.agentName === 'SkipLogicAgent');
+        const rulesAfterError = getEmittedRules();
         const errorMessage = error instanceof Error ? error.message : String(error);
         const errorType = error instanceof Error ? error.constructor.name : typeof error;
 
@@ -267,6 +286,7 @@ NOTE: This is a retry attempt. You have already documented analysis for ${scratc
           error: errorMessage,
           type: errorType,
           scratchpadEntries: scratchpadAfterError.length,
+          emittedRules: rulesAfterError.length,
           lastScratchpadEntry: scratchpadAfterError.length > 0
             ? scratchpadAfterError[scratchpadAfterError.length - 1].content.substring(0, 200)
             : 'none',
@@ -283,18 +303,17 @@ NOTE: This is a retry attempt. You have already documented analysis for ${scratc
           throw err;
         }
 
-        // Enhanced retry logging with scratchpad context
-        const scratchpadEntries = getScratchpadEntries().filter(e => e.agentName === 'SkipLogicAgent');
+        // Enhanced retry logging with scratchpad + emitter context
+        const scratchpadEntriesCount = getScratchpadEntries().filter(e => e.agentName === 'SkipLogicAgent').length;
+        const emittedRulesCount = getEmittedRules().length;
         const errorMessage = err instanceof Error ? err.message : String(err);
         const errorType = err instanceof Error ? err.constructor.name : typeof err;
 
         console.warn(
           `[SkipLogicAgent] Retry ${attempt}/${maxAttempts}: ${errorMessage.substring(0, 200)}` +
           ` | Type: ${errorType}` +
-          ` | Scratchpad entries preserved: ${scratchpadEntries.length}` +
-          (scratchpadEntries.length > 0
-            ? ` | Last entry: ${scratchpadEntries[scratchpadEntries.length - 1].content.substring(0, 100)}`
-            : '')
+          ` | Scratchpad entries: ${scratchpadEntriesCount}` +
+          ` | Emitted rules preserved: ${emittedRulesCount}`
         );
       },
     }
@@ -325,15 +344,38 @@ NOTE: This is a retry attempt. You have already documented analysis for ${scratc
     return result;
   }
 
-  // Handle abort
+  // Handle abort — still return any rules emitted before abort
   if (retryResult.error === 'Operation was cancelled') {
+    const partialRules = getEmittedRules();
+    if (partialRules.length > 0) {
+      console.warn(`[SkipLogicAgent] Aborted but returning ${partialRules.length} emitted rules`);
+      return {
+        extraction: { rules: deduplicateEmittedRules(partialRules) },
+        metadata: {
+          rulesExtracted: partialRules.length,
+          durationMs: Date.now() - startTime,
+        },
+      };
+    }
     throw new DOMException('SkipLogicAgent aborted', 'AbortError');
   }
 
-  // All retries failed — return empty result
+  // All retries failed — return whatever rules were emitted (partial success)
+  const partialRules = getEmittedRules();
   const errorMessage = retryResult.error || 'Unknown error';
-  console.error(`[SkipLogicAgent] Extraction failed: ${errorMessage}`);
 
+  if (partialRules.length > 0) {
+    console.warn(`[SkipLogicAgent] Extraction failed but returning ${partialRules.length} emitted rules: ${errorMessage}`);
+    return {
+      extraction: { rules: deduplicateEmittedRules(partialRules) },
+      metadata: {
+        rulesExtracted: partialRules.length,
+        durationMs: Date.now() - startTime,
+      },
+    };
+  }
+
+  console.error(`[SkipLogicAgent] Extraction failed: ${errorMessage}`);
   return {
     extraction: { rules: [] },
     metadata: {
@@ -397,8 +439,12 @@ async function extractSkipLogicChunked(
     console.log(`[SkipLogicAgent]   Chunk ${i + 1}: ${chunks[i].length} chars (~${Math.ceil(chunks[i].length / 4)} tokens)`);
   }
 
+  // Clear context-isolated emitters from any previous runs
+  clearAllContextEmitters();
+
   // Step 3: Process chunks sequentially
   const allRules: SkipRule[] = [];
+  const rulesPerChunk: number[] = [];
   let totalInputTokens = 0;
   let totalOutputTokens = 0;
 
@@ -412,9 +458,10 @@ async function extractSkipLogicChunked(
     const chunkStartTime = Date.now();
     console.log(`[SkipLogicAgent] Processing chunk ${chunkNum}/${chunks.length}...`);
 
-    // Create context-isolated scratchpad for this chunk
+    // Create context-isolated scratchpad and rule emitter for this chunk
     const chunkContextId = `chunk-${chunkNum}`;
     const chunkScratchpad = createContextScratchpadTool('SkipLogicAgent', chunkContextId);
+    const chunkEmitter = createContextRuleEmitterTool('SkipLogicAgent', chunkContextId);
 
     // Build chunk-specific prompts
     const systemPrompt = buildChunkedSystemPrompt(
@@ -429,10 +476,11 @@ async function extractSkipLogicChunked(
 
     const retryResult = await retryWithPolicyHandling(
       async (ctx: RetryContext) => {
-        // Policy-safe fallback: skip this chunk rather than failing or looping.
+        // Policy-safe fallback: return rules emitted so far for this chunk.
         if (ctx.shouldUsePolicySafeVariant) {
-          console.warn(`[SkipLogicAgent] Chunk ${chunkNum}: policy-safe mode triggered — returning empty rules for this chunk`);
-          return { rules: [] };
+          const partialChunkRules = getContextEmittedRules(chunkContextId);
+          console.warn(`[SkipLogicAgent] Chunk ${chunkNum}: policy-safe mode triggered — returning ${partialChunkRules.length} emitted rules for this chunk`);
+          return { rules: partialChunkRules };
         }
 
         const result = await generateText({
@@ -442,25 +490,19 @@ async function extractSkipLogicChunked(
           prompt: userPrompt,
           tools: {
             scratchpad: chunkScratchpad,
+            emitRule: chunkEmitter,
           },
-          stopWhen: stepCountIs(20), // Bumped from 15 — gives 5 more reasoning steps per chunk
+          stopWhen: stepCountIs(30),
           maxOutputTokens: Math.min(getSkipLogicModelTokenLimit(), 100000),
           providerOptions: {
             openai: {
               reasoningEffort: getSkipLogicReasoningEffort(),
             },
           },
-          output: Output.object({
-            schema: SkipLogicExtractionOutputSchema,
-          }),
           abortSignal,
         });
 
-        const { output, usage } = result;
-
-        if (!output) {
-          throw new Error(`Invalid output from SkipLogicAgent chunk ${chunkNum} - no structured output`);
-        }
+        const { usage } = result;
 
         // Record metrics per chunk
         const chunkDurationMs = Date.now() - chunkStartTime;
@@ -474,7 +516,9 @@ async function extractSkipLogicChunked(
         totalInputTokens += usage?.inputTokens || 0;
         totalOutputTokens += usage?.outputTokens || 0;
 
-        return output;
+        // Collect rules from context-isolated emitter
+        const chunkRules = getContextEmittedRules(chunkContextId);
+        return { rules: chunkRules };
       },
       {
         abortSignal,
@@ -483,8 +527,10 @@ async function extractSkipLogicChunked(
           if (err instanceof DOMException && err.name === 'AbortError') {
             throw err;
           }
+          const emittedSoFar = getContextEmittedRules(chunkContextId).length;
           console.warn(
-            `[SkipLogicAgent] Chunk ${chunkNum} retry ${attempt}/${maxAttempts}: ${err.message.substring(0, 200)}`
+            `[SkipLogicAgent] Chunk ${chunkNum} retry ${attempt}/${maxAttempts}: ${err.message.substring(0, 200)}` +
+            ` | Emitted rules preserved: ${emittedSoFar}`
           );
         },
       }
@@ -492,12 +538,24 @@ async function extractSkipLogicChunked(
 
     if (retryResult.success && retryResult.result) {
       const chunkRules = retryResult.result.rules;
-      console.log(`[SkipLogicAgent] Chunk ${chunkNum}: extracted ${chunkRules.length} rules`);
+      console.log(`[SkipLogicAgent] Chunk ${chunkNum}: emitted ${chunkRules.length} rules`);
       allRules.push(...chunkRules);
+      rulesPerChunk.push(chunkRules.length);
     } else {
-      console.error(
-        `[SkipLogicAgent] Chunk ${chunkNum} failed: ${retryResult.error || 'Unknown error'} — continuing with remaining chunks`
-      );
+      // Still collect any rules emitted before the failure
+      const partialChunkRules = getContextEmittedRules(chunkContextId);
+      if (partialChunkRules.length > 0) {
+        console.warn(
+          `[SkipLogicAgent] Chunk ${chunkNum} failed but collected ${partialChunkRules.length} emitted rules: ${retryResult.error || 'Unknown error'}`
+        );
+        allRules.push(...partialChunkRules);
+        rulesPerChunk.push(partialChunkRules.length);
+      } else {
+        console.error(
+          `[SkipLogicAgent] Chunk ${chunkNum} failed: ${retryResult.error || 'Unknown error'} — continuing with remaining chunks`
+        );
+        rulesPerChunk.push(0);
+      }
       // Don't abort the whole pipeline — continue with other chunks
     }
   }
@@ -542,6 +600,8 @@ async function extractSkipLogicChunked(
       rulesAfterDedup: deduplicatedRules.length,
       totalInputTokens,
       totalOutputTokens,
+      emissionMode: 'incremental',
+      rulesPerChunk,
     });
   }
 
@@ -597,10 +657,10 @@ ${formatAccumulatedRules(accumulatedRules)}
 </previous_rules>`);
   }
 
-  // Structured scratchpad protocol for chunks — mirrors single-pass discipline
+  // Structured scratchpad + emitRule protocol for chunks
   parts.push(`
 <scratchpad_protocol>
-USE THE SCRATCHPAD TO DOCUMENT YOUR ANALYSIS IN THESE STEPS:
+USE THE SCRATCHPAD AND emitRule TOGETHER:
 
 **Step 1 — Chunk Survey Map** (do BEFORE extracting any rules):
 - List all question IDs present in this chunk
@@ -614,15 +674,17 @@ ${chunkNum > 1 ? '- Note which of your questions are already covered by prior ru
 - Explicitly ask: "Is the default base sufficient, or does the survey text require a restriction?"
 - Check for loop-inherent conditions (e.g., "for each product you selected")
 - Note coding tables or hidden variable definitions that affect gating
+- When you find a rule, IMMEDIATELY call emitRule with all fields — do this NOW while context is fresh
 
 **Step 3 — Cross-Chunk Awareness:**
 - Review the survey outline for questions in OTHER chunks that have [SKIP:] annotations referencing variables in your chunk — but do NOT create rules for questions outside your chunk
-- Cross-check your extracted rules against "Rules Already Extracted" — do NOT re-extract
+- Cross-check your emitted rules against "Rules Already Extracted" — do NOT re-emit
 
 **Step 4 — Final Review:**
 - Use the scratchpad "read" action to review all your notes
-- Verify each rule has clear survey text evidence
-- Then produce your final output
+- Cross-check that all identified rules were emitted via emitRule — emit any missing ones
+- Verify each emitted rule has clear survey text evidence
+- Then stop — do not produce any final JSON or summary
 </scratchpad_protocol>`);
 
   // The chunk content itself
@@ -660,10 +722,27 @@ function buildChunkedUserPrompt(
   }
 
   parts.push(
-    `Use the scratchpad to document your analysis, then output the rules you found in this chunk.`
+    `Use the scratchpad to document your analysis. When you confirm a rule, IMMEDIATELY call emitRule. When done scanning this chunk, stop.`
   );
 
   return parts.join('\n\n');
+}
+
+// =============================================================================
+// Helpers
+// =============================================================================
+
+/**
+ * Deduplicate emitted rules by ruleId (safety net for retries where
+ * the model might re-emit a rule it already emitted in a prior attempt).
+ * Keeps the last occurrence of each ruleId (later emission = more context).
+ */
+function deduplicateEmittedRules(rules: SkipRule[]): SkipRule[] {
+  const seen = new Map<string, SkipRule>();
+  for (const rule of rules) {
+    seen.set(rule.ruleId, rule);
+  }
+  return Array.from(seen.values());
 }
 
 // =============================================================================
@@ -682,6 +761,8 @@ async function saveSkipLogicOutputs(
     rulesAfterDedup: number;
     totalInputTokens: number;
     totalOutputTokens: number;
+    emissionMode?: string;
+    rulesPerChunk?: number[];
   }
 ): Promise<void> {
   try {
@@ -700,6 +781,7 @@ async function saveSkipLogicOutputs(
         aiProvider: 'azure-openai',
         model: getSkipLogicModelName(),
         reasoningEffort: getSkipLogicReasoningEffort(),
+        emissionMode: 'incremental' as const,
         ...(chunkingInfo && { chunking: chunkingInfo }),
       },
     };
