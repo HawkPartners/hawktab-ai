@@ -11,7 +11,7 @@ export default function MarketingLayout({
       <header className="border-b">
         <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
           <Link href="/" className="font-semibold">
-            HawkTab AI
+            CrossTab AI
           </Link>
           <div className="flex items-center gap-3">
             <Link

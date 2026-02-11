@@ -1,5 +1,5 @@
 /**
- * Observability utilities for HawkTab AI pipeline
+ * Observability utilities for CrossTab AI pipeline
  *
  * Provides token usage tracking and cost estimation across all agents.
  */

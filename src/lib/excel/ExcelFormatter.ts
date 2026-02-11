@@ -109,7 +109,7 @@ export class ExcelFormatter {
 
   constructor(options: ExcelFormatOptions = {}) {
     this.workbook = new ExcelJS.Workbook();
-    this.workbook.creator = 'HawkTab AI';
+    this.workbook.creator = 'CrossTab AI';
     this.workbook.created = new Date();
     this.options = {
       format: options.format ?? 'joe',
@@ -197,7 +197,7 @@ export class ExcelFormatter {
 
       // Build second workbook for counts
       this.secondWorkbook = new ExcelJS.Workbook();
-      this.secondWorkbook.creator = 'HawkTab AI';
+      this.secondWorkbook.creator = 'CrossTab AI';
       this.secondWorkbook.created = new Date();
       renderTableOfContents(this.secondWorkbook, tableArray, { subtitle: tocSubtitle });
       const countSheet = this.secondWorkbook.addWorksheet('Crosstabs', {

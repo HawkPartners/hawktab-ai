@@ -1,6 +1,6 @@
 # Pipeline Configuration Reference
 
-A complete inventory of every configuration option in the HawkTab AI pipeline. Use this to know what the UI needs to surface, what stays internal, and what's hardcoded.
+A complete inventory of every configuration option in the CrossTab AI pipeline. Use this to know what the UI needs to surface, what stays internal, and what's hardcoded.
 
 *Created: February 8, 2026*
 

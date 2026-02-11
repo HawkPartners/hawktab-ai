@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ConvexClientProvider } from "./ConvexClientProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HawkTab AI",
+  title: "CrossTab AI",
   description: "Automated crosstab generation using AI-powered data processing",
 };
 
@@ -28,12 +29,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ThemeProvider>
-          <TooltipProvider>
-            {children}
-          </TooltipProvider>
-          <Toaster />
-        </ThemeProvider>
+        <ConvexClientProvider>
+          <ThemeProvider>
+            <TooltipProvider>
+              {children}
+            </TooltipProvider>
+            <Toaster />
+          </ThemeProvider>
+        </ConvexClientProvider>
       </body>
     </html>
   );

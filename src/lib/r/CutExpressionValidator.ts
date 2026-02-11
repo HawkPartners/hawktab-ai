@@ -80,7 +80,7 @@ export function generateCutValidationScript(
   const lines: string[] = [];
 
   // Header
-  lines.push('# HawkTab AI - Cut Expression Validation Script');
+  lines.push('# CrossTab AI - Cut Expression Validation Script');
   lines.push(`# Generated: ${new Date().toISOString()}`);
   lines.push('');
 

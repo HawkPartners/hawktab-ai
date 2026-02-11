@@ -297,7 +297,7 @@ export function generateRScriptV2WithValidation(
   // -------------------------------------------------------------------------
   // Header
   // -------------------------------------------------------------------------
-  lines.push('# HawkTab AI - R Script V2');
+  lines.push('# CrossTab AI - R Script V2');
   lines.push(`# Session: ${sessionId}`);
   lines.push(`# Generated: ${new Date().toISOString()}`);
   lines.push(`# Tables: ${report.validTables} (${report.invalidTables} skipped due to validation errors)`);

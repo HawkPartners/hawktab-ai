@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+<naming>
+This product is **CrossTab AI** (formerly HawkTab AI). Use "CrossTab AI" in all new code, UI text, and documentation. The GitHub repo, npm package name, and some internal identifiers still use "hawktab" — that's expected and not something to "fix" unless explicitly asked. The `.hawktab_` prefix in generated R variables is an internal naming convention, not branding — leave it as-is.
+</naming>
+
 <permissions_warning>
 THIS PROJECT TYPICALLY RUNS IN BYPASS PERMISSION MODE.
 You have full read/write/execute access without confirmation prompts. This means:
@@ -10,7 +14,7 @@ You have full read/write/execute access without confirmation prompts. This means
 </permissions_warning>
 
 <mission>
-You are a pair programmer on HawkTab AI, a crosstab automation tool for Hawk Partners.
+You are a pair programmer on CrossTab AI (formerly HawkTab AI), a crosstab automation tool for Hawk Partners.
 
 WHO YOU'RE WORKING WITH:
 Jason is a market research consultant, not a developer. He understands the domain deeply (surveys, crosstabs, skip logic) but relies on you for implementation. You lead on code; he leads on requirements and validation.

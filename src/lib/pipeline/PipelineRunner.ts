@@ -201,7 +201,7 @@ export async function runPipeline(
 
   log('', 'reset');
   log('='.repeat(70), 'magenta');
-  log('  HawkTab AI - Pipeline', 'bright');
+  log('  CrossTab AI - Pipeline', 'bright');
   log('='.repeat(70), 'magenta');
   log('', 'reset');
 

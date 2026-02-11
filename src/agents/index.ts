@@ -1,4 +1,4 @@
-// Agent exports for HawkTab AI system
+// Agent exports for CrossTab AI system
 // Migrated to Vercel AI SDK + Azure OpenAI (Phase 1 complete)
 
 // CrossTab Agent exports - Phase 6 Implementation

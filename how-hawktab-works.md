@@ -1,4 +1,4 @@
-# How HawkTab AI Works
+# How CrossTab AI Works
 
 ## The Problem
 
@@ -6,7 +6,7 @@ Market research runs on crosstabs. Every survey, every study, every strategic re
 
 Building these crosstabs has traditionally been slow, manual, and expensive. A researcher receives a data file, a banner plan describing how to slice the data, and a survey document. They then spend hours — sometimes days — translating all of that into executable code, running the numbers, and formatting the output into something a client can actually read. Hawk Partners, like most research firms, outsourced much of this work.
 
-HawkTab AI replaces that process with an intelligent pipeline. Upload your files, and the system reads, reasons about, validates, and executes the entire workflow — producing publication-ready Excel crosstabs.
+CrossTab AI replaces that process with an intelligent pipeline. Upload your files, and the system reads, reasons about, validates, and executes the entire workflow — producing publication-ready Excel crosstabs.
 
 The key to making this work isn't a single AI model. It's six specialized agents, each focused on one piece of the puzzle, orchestrated by a pipeline that knows when to think and when to just compute.
 
@@ -14,7 +14,7 @@ The key to making this work isn't a single AI model. It's six specialized agents
 
 ## The Architecture: Think Where It Matters, Compute Where You Can
 
-HawkTab draws a sharp line between what requires intelligence and what doesn't. Some steps in crosstab generation — like figuring out what a banner plan is asking for — genuinely require reasoning. Others — like building a table structure from a known data schema — are entirely mechanical.
+CrossTab draws a sharp line between what requires intelligence and what doesn't. Some steps in crosstab generation — like figuring out what a banner plan is asking for — genuinely require reasoning. Others — like building a table structure from a known data schema — are entirely mechanical.
 
 The system has six AI agents and several deterministic processors. The agents handle ambiguity, interpretation, and validation. The deterministic components handle everything else. This isn't just an efficiency play — it's a reliability one. Every time you can avoid asking an AI to do something, you remove a source of variability.
 
@@ -53,7 +53,7 @@ The agent converts the document into images and uses vision capabilities to read
 
 The Banner Agent tells us *what* the client wants. The Crosstab Agent figures out *how* to get it from the actual data.
 
-This is where the data map enters the picture. When HawkTab first ingests an SPSS data file, a validation step extracts a detailed map of every variable — its name, type, labels, value ranges, and distribution. The Crosstab Agent takes this map alongside the banner groups from the Banner Agent and attempts to match each requested cut to real variables in the dataset.
+This is where the data map enters the picture. When CrossTab first ingests an SPSS data file, a validation step extracts a detailed map of every variable — its name, type, labels, value ranges, and distribution. The Crosstab Agent takes this map alongside the banner groups from the Banner Agent and attempts to match each requested cut to real variables in the dataset.
 
 A banner column labeled "Male" needs to become something like `Q2 == 1` — a concrete R expression that filters the data correctly. The agent processes each banner group independently, validating that the variables it references actually exist and that its expressions make logical sense.
 

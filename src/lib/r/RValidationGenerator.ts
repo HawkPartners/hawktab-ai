@@ -58,7 +58,7 @@ export function generateValidationScript(
   // -------------------------------------------------------------------------
   // Header
   // -------------------------------------------------------------------------
-  lines.push('# HawkTab AI - R Validation Script');
+  lines.push('# CrossTab AI - R Validation Script');
   lines.push(`# Generated: ${new Date().toISOString()}`);
   lines.push(`# Tables to validate: ${tablesToValidate.length}`);
   lines.push('');
@@ -164,7 +164,7 @@ export function generateSingleTableValidationScript(
   // -------------------------------------------------------------------------
   // Header
   // -------------------------------------------------------------------------
-  lines.push('# HawkTab AI - Single Table Validation');
+  lines.push('# CrossTab AI - Single Table Validation');
   lines.push(`# Table: ${table.tableId}`);
   lines.push(`# Generated: ${new Date().toISOString()}`);
   lines.push('');

@@ -1,4 +1,4 @@
-# HawkTab AI
+# CrossTab AI
 
 **Crosstab Automation for Hawk Partners**
 

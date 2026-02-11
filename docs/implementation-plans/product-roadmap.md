@@ -2,7 +2,7 @@
 
 ## Overview
 
-HawkTab AI is a crosstab automation pipeline that turns survey data files into publication-ready Excel crosstabs. The pipeline is **reliable** (15 datasets tested, R-based validation, HITL review) and **feature-complete** (output formats, stat testing, weights, themes, AI-generated banners, loop/stacked data). The UI foundation is in place (Next.js app shell with route groups, sidebar, providers, refactored API layer).
+CrossTab AI is a crosstab automation pipeline that turns survey data files into publication-ready Excel crosstabs. The pipeline is **reliable** (15 datasets tested, R-based validation, HITL review) and **feature-complete** (output formats, stat testing, weights, themes, AI-generated banners, loop/stacked data). The UI foundation is in place (Next.js app shell with route groups, sidebar, providers, refactored API layer).
 
 **This document tracks the remaining work: getting from localhost to a production URL that Antares can log into and use.**
 
@@ -260,7 +260,7 @@ Ship it. Antares gets a link.
 - Environment: Convex production deployment, R2 production bucket, WorkOS production mode
 
 **Landing page** (`(marketing)/page.tsx` — already has placeholder):
-- Logo + "HawkTab AI"
+- Logo + "CrossTab AI"
 - Subhead: "Upload your .sav, configure your project, download publication-ready crosstabs."
 - "Log In" button → WorkOS hosted login → redirect to dashboard
 - Professional, clean, confident. Not a sales pitch.
@@ -298,7 +298,7 @@ Ship it. Antares gets a link.
 
 **Completing Phase 3.5 = MVP = The Product.**
 
-At this point, HawkTab AI is a cloud-hosted, authenticated service. Antares logs in, uploads their .sav + banner plan, configures their project, runs the pipeline, reviews HITL decisions, and downloads publication-ready crosstabs — without touching a terminal or asking us for help.
+At this point, CrossTab AI is a cloud-hosted, authenticated service. Antares logs in, uploads their .sav + banner plan, configures their project, runs the pipeline, reviews HITL decisions, and downloads publication-ready crosstabs — without touching a terminal or asking us for help.
 
 The path from here to MVP is: infrastructure (3.1) → migration (3.2) → wizard (3.3) → dashboard (3.4) → deploy (3.5). Each phase is independently testable. Detailed implementation plans are created per-phase before building.
 
@@ -326,13 +326,13 @@ The path from here to MVP is: infrastructure (3.1) → migration (3.2) → wizar
 
 Bob's observation from the Antares conversation: *"I've not seen anybody kind of going down this road... commercially speaking."*
 
-What makes HawkTab unique is the **validated data foundation**. Every crosstab run produces artifacts that already executed successfully—verified variables, working R expressions, human-approved cuts. This foundation could eventually support follow-up queries and conversational exploration without the hallucination problems that plague other AI-on-data tools.
+What makes CrossTab unique is the **validated data foundation**. Every crosstab run produces artifacts that already executed successfully—verified variables, working R expressions, human-approved cuts. This foundation could eventually support follow-up queries and conversational exploration without the hallucination problems that plague other AI-on-data tools.
 
 But that only matters if the core system is reliable. That's what we're focused on now.
 
 ### Configurable Assumptions & Regeneration
 
-HawkTab makes defensible statistical assumptions when generating crosstabs — particularly for looped/stacked data. These assumptions are specific choices from a finite set of valid approaches:
+CrossTab makes defensible statistical assumptions when generating crosstabs — particularly for looped/stacked data. These assumptions are specific choices from a finite set of valid approaches:
 
 **Example: Needs State on stacked occasion tables**
 
@@ -459,7 +459,7 @@ The Loop Semantics Policy Agent uses a single prompt regardless of how much dete
 
 ## Known Gaps & Limitations
 
-Documented as of February 2026. These are areas where the system has known limitations — some with mitigation paths already identified, others that may define the boundary of what HawkTab can handle. Even where solutions exist, it's important to be aware of these when communicating capabilities externally or testing against new datasets.
+Documented as of February 2026. These are areas where the system has known limitations — some with mitigation paths already identified, others that may define the boundary of what CrossTab can handle. Even where solutions exist, it's important to be aware of these when communicating capabilities externally or testing against new datasets.
 
 ### Loop Semantics
 

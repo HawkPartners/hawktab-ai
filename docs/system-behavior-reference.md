@@ -1,6 +1,6 @@
-# HawkTab AI — System Behavior Reference
+# CrossTab AI — System Behavior Reference
 
-How HawkTab AI makes decisions, what it handles, and what it doesn't.
+How CrossTab AI makes decisions, what it handles, and what it doesn't.
 
 ---
 
@@ -8,7 +8,7 @@ How HawkTab AI makes decisions, what it handles, and what it doesn't.
 
 **Non-loop tables:** One row per respondent. Bases = respondent counts.
 
-**Loop tables (stacked data):** One row per entity (occasion, medication, brand, etc.). When a survey asks the same questions multiple times (e.g., "describe your first drinking occasion, then your second"), HawkTab stacks the data so each row represents one loop iteration. A respondent with 2 occasions produces 2 rows.
+**Loop tables (stacked data):** One row per entity (occasion, medication, brand, etc.). When a survey asks the same questions multiple times (e.g., "describe your first drinking occasion, then your second"), CrossTab stacks the data so each row represents one loop iteration. A respondent with 2 occasions produces 2 rows.
 
 - **Total base on loop tables** = total entity count (e.g., 7,420 occasions), not respondent count
 - **Banner bases on loop tables** = entity counts within the banner segment
@@ -28,7 +28,7 @@ Example: "Location: Own Home" (`S9r1 == 1`) — the respondent drinks at home. B
 
 Example: "Connection/Belonging" needs state — occasion 1 uses S10a, occasion 2 uses S11a. On the stacked frame, an alias column selects the correct source per row.
 
-**Default behavior:** HawkTab uses a combination of metadata scanning and AI classification to determine anchor type for each banner group. Entity-anchored groups get alias columns on the stacked frame; respondent-anchored groups are left unchanged.
+**Default behavior:** CrossTab uses a combination of metadata scanning and AI classification to determine anchor type for each banner group. Entity-anchored groups get alias columns on the stacked frame; respondent-anchored groups are left unchanged.
 
 ---
 
@@ -64,7 +64,7 @@ Each banner column receives a letter (A, B, C, ...). When column A is statistica
 
 ## Table Types
 
-HawkTab produces two types of tables:
+CrossTab produces two types of tables:
 
 **Frequency tables** — For categorical variables (single-select, multi-select, rankings, grids). Each row shows a count and percentage for one answer option. Rankings, grids, and multi-selects are all handled as frequency tables with appropriate row structures.
 
@@ -74,7 +74,7 @@ HawkTab produces two types of tables:
 
 ## Summary Rows (NETs, T2B, B2B)
 
-HawkTab automatically adds summary rows based on question type:
+CrossTab automatically adds summary rows based on question type:
 
 | Question Type | Summary Rows Added |
 |---------------|-------------------|
@@ -123,7 +123,7 @@ This is the default in Tukey's original definition (1977) and the most widely us
 
 ### Known discrepancy
 
-Different analysts may use different outlier methods (percentile trimming, standard deviation cutoffs, different IQR multipliers). If HawkTab's trimmed mean differs from another source, the method difference — not a bug — is the most likely explanation. The untrimmed mean ("Mean (overall)") is always reported alongside for comparison.
+Different analysts may use different outlier methods (percentile trimming, standard deviation cutoffs, different IQR multipliers). If CrossTab's trimmed mean differs from another source, the method difference — not a bug — is the most likely explanation. The untrimmed mean ("Mean (overall)") is always reported alongside for comparison.
 
 ---
 
@@ -151,7 +151,7 @@ This is a known gap. When implemented, weights will be applied to frequency coun
 
 ## Loop Detection
 
-HawkTab automatically detects looped survey structures by analyzing variable naming patterns in the .sav file (e.g., `A2_1`, `A2_2` indicating 2 iterations of question A2).
+CrossTab automatically detects looped survey structures by analyzing variable naming patterns in the .sav file (e.g., `A2_1`, `A2_2` indicating 2 iterations of question A2).
 
 **What triggers loop detection:**
 - Variable families with `_1`, `_2`, `_3`... suffixes
@@ -165,17 +165,17 @@ HawkTab automatically detects looped survey structures by analyzing variable nam
 
 **What we don't handle:**
 - **Already-stacked data.** If the .sav file is pre-stacked (one row per entity already), the pipeline blocks with a warning rather than double-stacking.
-- **Roster/value-to-row linking.** When you need to map an assigned value (e.g., "Treatment_1 = Fintepla") to a specific grid row (e.g., knowledge of that medication), HawkTab does not perform this linkage. This is a specialized feature beyond iteration gating.
+- **Roster/value-to-row linking.** When you need to map an assigned value (e.g., "Treatment_1 = Fintepla") to a specific grid row (e.g., knowledge of that medication), CrossTab does not perform this linkage. This is a specialized feature beyond iteration gating.
 
 ---
 
 ## Loop Reporting Philosophy
 
-When a survey contains looped questions (e.g., two occasions, two medications), HawkTab makes two key decisions that affect what appears in the output. Both are defensible defaults. Neither produces wrong data — they answer different questions than an alternative approach would.
+When a survey contains looped questions (e.g., two occasions, two medications), CrossTab makes two key decisions that affect what appears in the output. Both are defensible defaults. Neither produces wrong data — they answer different questions than an alternative approach would.
 
 ### Decision 1: Report all loops
 
-**Default:** HawkTab reports tables for all loop iterations — not just loop 1.
+**Default:** CrossTab reports tables for all loop iterations — not just loop 1.
 
 If a survey asks the same questions for Occasion 1 and Occasion 2, the output includes tables for both. Silently dropping loop 2 data would be a bigger surprise than including everything. The user's expectation when they don't specify anything is "give me all the data."
 
@@ -185,7 +185,7 @@ If a survey asks the same questions for Occasion 1 and Occasion 2, the output in
 
 ### Decision 2: Inclusive banner groups (binary flags)
 
-**Default:** When a banner group references a looped variable (e.g., "Assigned Location: Home"), HawkTab uses the inclusive approach — capturing all respondents who matched that condition in **any** loop iteration.
+**Default:** When a banner group references a looped variable (e.g., "Assigned Location: Home"), CrossTab uses the inclusive approach — capturing all respondents who matched that condition in **any** loop iteration.
 
 This means banner groups can overlap. A respondent assigned to "Home" in loop 1 and "Bar" in loop 2 appears in both the "Home" and "Bar" banner columns. The base sizes may be larger than a first-loop-only approach, and groups are not mutually exclusive.
 
@@ -197,22 +197,22 @@ This means banner groups can overlap. A respondent assigned to "Home" in loop 1 
 - The overlap is real — these respondents genuinely experienced both conditions
 - vs-Total stat testing remains valid regardless of overlap
 
-**Trade-off:** Within-group stat testing (A-vs-B) can be invalid when groups overlap, because the same respondents contribute to both sides. HawkTab detects overlap on loop tables and will suppress invalid within-group stat letters when overlap is present. vs-Total comparisons remain valid.
+**Trade-off:** Within-group stat testing (A-vs-B) can be invalid when groups overlap, because the same respondents contribute to both sides. CrossTab detects overlap on loop tables and will suppress invalid within-group stat letters when overlap is present. vs-Total comparisons remain valid.
 
 **Future:** This will be configurable. Users who want non-overlapping, assignment-variable-based groups can switch to that mode. The default gives you everything.
 
 ### Known discrepancy vs. other analysts
 
-These defaults mean HawkTab's output may differ from an analyst who uses first-loop-only reporting with assignment variables. The differences are:
+These defaults mean CrossTab's output may differ from an analyst who uses first-loop-only reporting with assignment variables. The differences are:
 
-| What differs | HawkTab default | Alternative approach |
+| What differs | CrossTab default | Alternative approach |
 |-------------|----------------|---------------------|
 | Loop tables reported | All iterations | Loop 1 only |
 | Banner group overlap | Groups can overlap | Groups are mutually exclusive |
 | Base sizes | May be larger (inclusive) | Smaller (one loop only) |
 | Within-group stat testing | Suppressed when overlap detected | Valid (non-overlapping) |
 
-Neither approach is wrong. They answer different questions. HawkTab's defaults prioritize completeness and transparency; the alternative prioritizes simplicity and traditional convention. Both are statistically valid.
+Neither approach is wrong. They answer different questions. CrossTab's defaults prioritize completeness and transparency; the alternative prioritizes simplicity and traditional convention. Both are statistically valid.
 
 ---
 
@@ -231,7 +231,7 @@ Both formats include:
 
 ---
 
-## What HawkTab Determines Automatically vs What Requires Human Input
+## What CrossTab Determines Automatically vs What Requires Human Input
 
 ### Automatic (no human input needed)
 

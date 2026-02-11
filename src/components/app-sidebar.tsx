@@ -114,10 +114,10 @@ export function AppSidebar() {
               className="cursor-pointer"
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
-                HT
+                CT
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-semibold">HawkTab AI</span>
+                <span className="font-semibold">CrossTab AI</span>
                 <span className="text-xs text-muted-foreground">
                   Hawk Partners
                 </span>
