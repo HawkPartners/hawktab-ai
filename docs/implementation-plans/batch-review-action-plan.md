@@ -309,30 +309,30 @@ This preserves useful peripheral context while removing long-tail noise.
 
 *Every agent gets a fresh production prompt. Remove contradictions, align with schemas.*
 
-- [ ] **Prompt rotation across all agents.** After this review: current production prompts become alternatives. Write fresh production prompts that align with current schemas, incorporate learnings from this review, and remove contradictions.
+- [x] **Prompt rotation across all agents.** After this review: current production prompts become alternatives. Write fresh production prompts that align with current schemas, incorporate learnings from this review, and remove contradictions.
   - All 6 agents: BannerAgent, CrosstabAgent, SkipLogicAgent, FilterTranslatorAgent, VerificationAgent, LoopSemanticsPolicyAgent, BannerGenerate
   - Ref: CrosstabAgent report 3.6
 
-- [ ] **Remove confidence scoring contradictions.** The CrosstabAgent prompt says "exact match = 0.95" but also "multiple candidates = max 0.75." These conflict when an exact match also has alternatives. Add clear precedence rules.
+- [X] **Remove confidence scoring contradictions.** The CrosstabAgent prompt says "exact match = 0.95" but also "multiple candidates = max 0.75." These conflict when an exact match also has alternatives. Add clear precedence rules.
   - Ref: CrosstabAgent report 3.5, 4.7
 
-- [ ] **Simplify confidence scoring across all agents.** Replace granular rubrics with fewer tiers and clearer boundaries. The distinction between 0.90 and 0.95, or 0.85 and 0.88, causes token-wasting deliberation without changing downstream behavior. "ONE penalty applies. Pick the LOWEST applicable tier and move on."
-  - [CONSIDER] What granularity is actually useful? Per-column? Per-group? Per-extraction? Fewer tiers = less agent deliberation.
+- [REJECTED] **Simplify confidence scoring across all agents.** Replace granular rubrics with fewer tiers and clearer boundaries. The distinction between 0.90 and 0.95, or 0.85 and 0.88, causes token-wasting deliberation without changing downstream behavior. "ONE penalty applies. Pick the LOWEST applicable tier and move on."
+  - [REJECTED] What granularity is actually useful? Per-column? Per-group? Per-extraction? Fewer tiers = less agent deliberation.
   - Ref: BannerAgent report 3.2, CrosstabAgent report 3.4/3.5/4.4
 
-- [ ] **Require scratchpad usage in LoopSemanticsPolicyAgent prompt.** The model never invoked the scratchpad despite it being available. Add explicit instruction requiring scratchpad entries before output.
+- [x] **Require scratchpad usage in LoopSemanticsPolicyAgent prompt.** The model never invoked the scratchpad despite it being available. Add explicit instruction requiring scratchpad entries before output.
   - Ref: LoopPolicyAgent report
 
-- [ ] **Add "Neutral is never a NET" rule to VerificationAgent prompt.** A NET must aggregate 2+ distinct answer values. A single scale point like "Neutral" or "Neither agree nor disagree" is a regular row, never a NET.
+- [x] **Add "Neutral is never a NET" rule to VerificationAgent prompt.** A NET must aggregate 2+ distinct answer values. A single scale point like "Neutral" or "Neither agree nor disagree" is a regular row, never a NET.
   - Ref: VerificationAgent report 3.4
 
-- [ ] **Standardize 7-point scale box score rules in VerificationAgent prompt.** Default to T2B (top 2), M3B (middle 3), B2B (bottom 2) for 7-point scales. Only use T3B/B3B for scales wider than 7 points. Optionally show both: primary grouping (T2B/M3B/B2B) + secondary block below a category header break (T3B/B3B).
+- [x] **Standardize 7-point scale box score rules in VerificationAgent prompt.** Default to T2B (top 2), M3B (middle 3), B2B (bottom 2) for 7-point scales. Only use T3B/B3B for scales wider than 7 points. Optionally show both: primary grouping (T2B/M3B/B2B) + secondary block below a category header break (T3B/B3B).
   - Ref: VerificationAgent report 3.11
 
-- [ ] **Add binning best practices to VerificationAgent prompt.** Light guidance for consistency across similar variables within the same dataset. Not critical (regeneration is the real fix), but helps.
+- [x] **Add binning best practices to VerificationAgent prompt.** Light guidance for consistency across similar variables within the same dataset. Not critical (regeneration is the real fix), but helps.
   - Ref: VerificationAgent report 3.10
 
-- [ ] **Strengthen variable hallucination guard in VerificationAgent prompt.** Add: "You may ONLY reference variable names that appear in the datamap context provided. Do NOT construct, infer, or synthesize variable names."
+- [x] **Strengthen variable hallucination guard in VerificationAgent prompt.** Add: "You may ONLY reference variable names that appear in the datamap context provided. Do NOT construct, infer, or synthesize variable names."
   - Ref: VerificationAgent report 3.1
 
 - [REJECTED] **Write more aggressive/detailed prompts now that context inputs are being trimmed.** The freed-up context budget from survey/datamap reduction means we can write longer, more detailed system prompts. Test this: copy current prompts as alternatives, write verbose production prompts, compare quality.

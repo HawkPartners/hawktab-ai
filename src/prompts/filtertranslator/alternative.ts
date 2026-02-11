@@ -44,8 +44,8 @@ genuinely exhausted the search and found nothing plausible.
 </mission>
 
 <task_context>
-WHAT YOU RECEIVE:
-- A list of skip/show rules from SkipLogicAgent (with ruleId, appliesTo, plainTextRule, ruleType, conditionDescription, translationContext)
+WHAT YOU RECEIVE (per call — you process ONE rule at a time):
+- A single skip/show rule from SkipLogicAgent (with ruleId, appliesTo, plainTextRule, ruleType, conditionDescription, translationContext)
 - The COMPLETE datamap (all variables with descriptions, types, and values)
 
 IMPORTANT — translationContext:
@@ -55,7 +55,7 @@ IMPORTANT — translationContext:
 - When translationContext is empty, rely solely on the rule description and datamap.
 
 WHAT YOU OUTPUT:
-- For each rule, one or more translated filters with:
+- One or more translated filters (one per questionId in the rule's appliesTo list), each with:
   - The R filter expression
   - Base text (human-readable description)
   - Alternative expressions with confidence/reasoning
@@ -326,6 +326,7 @@ option codes belong to which parent category.
    {
      "rowVariables": ["Q20br1", "Q20br2", "Q20br3"],
      "filterExpression": "Q20a == 1",
+     "baseText": "Those in Category 1",
      "splitLabel": "Category 1 options"
    }
 
@@ -759,9 +760,16 @@ RULES — NEVER VIOLATE:
    The default base already filters out NA for the question being asked.
    Your expression adds constraints ON TOP of this.
 
-6. BASE TEXT IN PLAIN ENGLISH
-   WRONG: "Q3 == 1 & Q4 > 0"
+6. BASE TEXT IS MANDATORY AND IN PLAIN ENGLISH
+   Every filter MUST have a non-empty baseText. This text appears in the Excel output as
+   "Base: [your text]" — it is the user's only way to understand the table's base without
+   reading R code.
+   WRONG: "" (empty — leaves users in the dark)
+   WRONG: "Q3 == 1 & Q4 > 0" (raw code — not human-readable)
    RIGHT: "Those aware of the product who have used it"
+   RIGHT: "Respondents who selected 1 or 2 at the screening question"
+   Format: "[Group] who [condition]" or "Those who [condition]"
+   A slightly imprecise description is infinitely better than an empty one.
 
 7. LOOP INSTANCE ALIGNMENT
    When a rule involves multiple conditions in a looped survey, make sure ALL condition
@@ -790,11 +798,11 @@ RULES — NEVER VIOLATE:
 USE THE SCRATCHPAD TO DOCUMENT YOUR TRANSLATION:
 
 FIRST PASS — SURVEY STRUCTURE SCAN:
-Before translating any individual rule, scan the datamap once to understand the survey structure:
+Before translating the rule, scan the datamap to understand the survey structure:
 1. Identify LOOP VARIABLES: Which questions have _1/_2 suffixes? This tells you the loop structure.
 2. Identify HIDDEN VARIABLES: Which variables start with h or d? Note their types and values.
 3. Identify NAMING CONVENTIONS: Does this survey use r# for rows, c# for columns, _# for loops?
-Document these findings — they will help you translate every rule more confidently.
+Document these findings — they inform your variable resolution for this rule.
 
 PER-RULE TRANSLATION:
 For each rule:

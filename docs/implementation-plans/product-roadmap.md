@@ -705,6 +705,41 @@ Redis is likely overkill for MVP—Convex handles real-time well. Consider Redis
 
 ---
 
+### 3.6 Message Testing & MaxDiff Utility Score Support — `NOT STARTED`
+
+**Goal**: Support message testing surveys (and MaxDiff studies with utility scores) by allowing users to upload message lists that get integrated into the datamap, enabling agents to properly reference actual message text instead of generic "Message 1", "Message 2" labels.
+
+**Why It Matters**: Message testing is a popular survey type. When questions reference messages by number (e.g., "How likely are you to purchase Message 1?"), the output tables show generic labels rather than the actual message text. This makes the crosstabs less useful for report writing. Similarly, MaxDiff studies often include utility scores that should be surfaced in the output.
+
+**User Flow** (in 3.1 New Project Flow):
+
+1. **Intake form question**: "What type of project is this?" → User selects "Message Testing" or "MaxDiff"
+2. **Conditional follow-up**: If Message Testing or MaxDiff selected → "Does this survey include messages that need to be linked to question responses?"
+3. **If yes**: "Please upload your message list" with format guidance:
+   - Preferred format: Excel file with columns matching survey question numbering
+   - Alternative: Word document (will require parsing)
+   - Format specification: Messages should be numbered/ordered to match how they appear in the survey (e.g., Message 1 = row 1, Message 2 = row 2)
+4. **Message integration**: System parses uploaded file and enriches the datamap with message text, linking message numbers to actual content
+5. **Agent awareness**: VerificationAgent and other downstream agents receive enriched datamap with message text, enabling proper labeling in table output
+
+**For MaxDiff Utility Scores**:
+
+- If MaxDiff selected and utility scores exist in the data file, detect and surface them appropriately in output
+- Reference datasets with MaxDiff utility scores exist for testing
+
+**Implementation Considerations**:
+
+- **Message file parsing**: Excel parsing is straightforward (column-based). Word document parsing may require more complex logic to extract structured message lists
+- **Datamap enrichment**: Add message text to relevant datamap entries, preserving the link between question variables and message content
+- **Format validation**: Ensure uploaded message list matches survey structure (same count, proper numbering)
+- **Backward compatibility**: Datasets without message lists continue to work as before
+
+**Deferral Note**: This feature is likely to be deferred until after the February 16th deadline, as it requires UI work (intake form updates), file parsing logic, and datamap enrichment infrastructure. However, it's an important feature for message testing surveys and should be prioritized post-MVP.
+
+**Level of Effort**: Medium (intake form updates + message file parsing + datamap enrichment + agent prompt updates)
+
+---
+
 ## MVP Complete
 
 **Completing Phase 3 = MVP = The Product.**

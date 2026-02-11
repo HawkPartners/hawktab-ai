@@ -36,6 +36,7 @@ Tables may include a \`meta\` field with structural hints:
 - rowCount: Total rows in the table
 - gridDimensions: { rows, cols } if a grid pattern was detected
 - valueRange: [min, max] of allowed values for scale questions
+- distribution: { n, min, max, mean, median, q1, q3 } for numeric (mean_rows) tables
 
 Use these hints to inform decisions, but always verify against survey context.
 
@@ -66,6 +67,9 @@ PASS A: CLASSIFY + PLAN (scratchpad entry 1)
   - GRID/MATRIX (rXcY pattern, or items × scale) → Add comparison views and detail views
   - CATEGORICAL with logical groupings → Add NET rows where meaningful
   - NUMERIC (mean_rows) → Consider binned distribution if spread is interesting
+  CAUTION: If a question is NOT found in the survey, enrich conservatively. Keep original
+  labels and structure. Do NOT add box score rollups unless you can confirm from the survey
+  that the question is a scale — value ranges in the data alone do not confirm scale semantics.
 
 □ A4: ASSESS READABILITY
   How many rows will the enriched table have? If large (20+ rows), split into readable pieces.
@@ -133,10 +137,15 @@ BOX GROUPING BY SCALE SIZE:
 - Middle Box: 3 (neutral)
 - Bottom 2 Box (B2B): 1,2 (negative end)
 
-7-POINT SCALE:
-- Top 2 Box (T2B): 6,7 OR Top 3 Box (T3B): 5,6,7
-- Middle Box: 4 OR Middle 3 Box: 3,4,5
-- Bottom 2 Box (B2B): 1,2 OR Bottom 3 Box (B3B): 1,2,3
+7-POINT SCALE (default — use this unless domain conventions dictate otherwise):
+PRIMARY GROUPING:
+- Top 2 Box (T2B): 6,7 (positive end)
+- Middle 3 Box (M3B): 3,4,5 (neutral zone)
+- Bottom 2 Box (B2B): 1,2 (negative end)
+OPTIONAL SECONDARY BLOCK (add below primary, separated by a category header):
+- Top 3 Box (T3B): 5,6,7
+- Bottom 3 Box (B3B): 1,2,3
+The secondary block provides an alternate cut. Include when both views add analytical value.
 
 10-POINT SCALE (e.g., NPS-style):
 - Top 3 Box (T3B): 8,9,10 (promoters)
@@ -158,12 +167,21 @@ IMPLEMENTATION EXAMPLE (5-point likelihood scale):
 { "variable": "Q8", "label": "Somewhat unlikely", "filterValue": "2", "isNet": false, "indent": 1 },
 { "variable": "Q8", "label": "Not at all likely", "filterValue": "1", "isNet": false, "indent": 1 }
 
+RULE: T2B/B2B are same-variable NETs. They use filterValue for aggregation (e.g., "4,5"). Set netComponents: [] — component variable names are only needed for multi-variable NETs.
+
+RULE: The Middle Box row is NOT a NET. A single scale point (e.g., "Neutral", "Neither agree nor disagree") is never isNet: true — it is a regular row with isNet: false, indent: 0. Only rows that combine 2+ distinct values are NETs.
+
 RULE: Check for reverse scales. If 1 = Strongly agree and 5 = Strongly disagree, then T2B is 1,2 (not 4,5). Always verify scale direction from the survey.
 
 
 TOOL 2: NET ROWS
 
 WHEN TO USE: Categorical questions where logical groupings add analytical value
+
+TWO NET MECHANISMS — understand the difference:
+- SAME-VARIABLE NET (types A and C below): filterValue holds the combined value codes (e.g., "4,5"). netComponents stays []. R aggregates by OR-ing the filter values on one variable.
+- MULTI-VARIABLE NET (type B below): filterValue is "". netComponents lists exact variable names from the datamap. R aggregates by OR-ing across the listed variables.
+T2B and B2B are same-variable NETs. They use filterValue, not netComponents.
 
 THREE TYPES OF NETs:
 
@@ -267,6 +285,8 @@ RANGE FORMAT: "0-4" means values 0, 1, 2, 3, 4 (inclusive at both ends)
 { "variable": "Q15", "label": "15+ years", "filterValue": "15-99", "isNet": false, "indent": 0 }
 
 GUIDELINE: Create sensible bins based on data range and what distinctions matter analytically.
+
+CRITICAL: Binned rows MUST use the SAME variable name as the source table. You are creating new filterValue ranges on an existing variable, NOT inventing new variables. If the source variable is "Q15", every bin row uses variable: "Q15" with different filterValue ranges (e.g., "0-4", "5-9"). NEVER construct a new variable name like "Q15_0_4".
 
 WHEN DISTRIBUTION DATA IS AVAILABLE:
 
@@ -467,7 +487,12 @@ RULES - NEVER VIOLATE:
    These are SPSS column names that must match exactly. Only update the label field.
 
 2. NEVER invent variables
-   Only use variables present in the input table. NETs use existing variables with combined filterValues.
+   You may ONLY reference variable names that appear in the input table or the datamap context.
+   - Do NOT construct variable names by combining prefixes, suffixes, or value codes (e.g., never create "Q2_21_24" from variable "Q2")
+   - Do NOT infer variable names from patterns (e.g., if you see Q3r1 and Q3r2, do not assume Q3r3 exists unless it is in the datamap)
+   - For multi-variable NETs, every entry in netComponents must be an EXACT variable name from the datamap
+   - For binned distributions, use the SAME variable name with different filterValue ranges — never create new variable names
+   If a variable name is not explicitly listed in the datamap context, it does not exist.
 
 3. filterValue must match actual data values
    Use comma-separated for merged values: "4,5"
@@ -523,6 +548,14 @@ GUIDELINES - USE JUDGMENT:
      (If selecting affiliations terminates, "Any affiliation (NET)" = 0%)
 
    If a NET would be trivial, don't create it. Look for meaningful sub-groupings instead.
+
+10. A NET MUST AGGREGATE 2+ DISTINCT VALUES
+    A row with isNet: true must combine multiple distinct answer values. A single value is never a NET.
+    WRONG: { "label": "Neutral", "filterValue": "3", "isNet": true } — single value, not a NET
+    RIGHT: { "label": "Neutral", "filterValue": "3", "isNet": false } — regular row
+    This applies to middle-box scale points, standalone categories, and any row representing
+    exactly one answer option. If filterValue contains only one value (no commas, no ranges)
+    and netComponents is empty, isNet must be false.
 </constraints>
 
 <pre_applied_filters>
@@ -568,11 +601,7 @@ COMPLETE OUTPUT:
 {
   "tables": [/* ExtendedTableDefinition objects */],
   "changes": [
-    {
-      "tableId": "string",
-      "action": "labels" | "t2b" | "nets" | "split" | "exclude" | "no_change",
-      "description": "string"   // What you found and what you did
-    }
+    "string"    // Brief descriptions of changes, e.g., "Updated labels from survey", "Added T2B/B2B rollups"
   ],
   "confidence": 0.0-1.0,
   "userSummary": "string"   // 1-sentence summary of what you changed, for a non-technical user. No table IDs or variable names.

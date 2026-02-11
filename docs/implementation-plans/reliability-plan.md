@@ -149,8 +149,12 @@ The batch runner produces `outputs/batch-summary-<timestamp>.json` with cross-da
 | 9 | `UCB-W3` | Caregiver ATU wave 3 | Ready |
 | 10 | `UCB-Caregiver-ATU-W4-Data_8.16.24` | Caregiver ATU wave 4 | Ready |
 | 11 | `UCB-Caregiver-ATU-W5-Data_1.7.25` | Caregiver ATU wave 5 | Ready |
+| 12 | `GVHD-Data_12.27.22` | GVHD (pharma) | Ready |
+| 13 | `Leqvio-Demand-W1_3.13.23` | HCP Demand wave 1 | Ready |
+| 14 | `Leqvio-Demand-W2_8.16.24 v2` | HCP Demand wave 2 | Ready |
+| 15 | `Leqvio-Segmentation-Patients-Data_7.7.23` | Patient Segmentation (pharma) | Ready |
 
-**Not ready** (missing banner or survey): `GVHD-Data`, `Leqvio-Demand-W1`, `Leqvio-Demand-W2`, `Leqvio-Segmentation-Patients-Data`
+**All datasets in `data/` folder are now available for batch processing.** Previously listed as "Not ready" datasets have been opened and are included in testing.
 
 **Coverage gaps**: No MaxDiff dataset yet. Good range of HCP segmentation, ATU (5 waves), demand, access perceptions, and consumer/beverage with loops.
 
