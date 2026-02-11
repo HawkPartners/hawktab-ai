@@ -136,6 +136,8 @@ Begin validation now.
       'with', 'data', 'eval', 'parse', 'text',
       'is', 'na', 'as', 'numeric', 'character', 'logical',
       'sum', 'mean', 'max', 'min', 'length',
+      'median', 'quantile', 'probs',        // statistical functions for splits
+      'na.rm',                                // common R argument
       'grepl', 'nchar', 'paste', 'paste0',
     ]);
 
