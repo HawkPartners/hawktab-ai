@@ -106,6 +106,23 @@ CRITICAL SYNTAX REQUIREMENTS:
 - All R syntax must be executable code only—no comments, explanations, or recommendations in the adjusted field
 </r_syntax_rules>
 
+<variable_types>
+Each variable in the data map may include a "Type" field indicating its classification:
+
+- "binary_flag": 0/1 checkbox (Unchecked/Checked). Use == 0 or == 1.
+- "categorical_select": Single choice from labeled options. Use == or %in% with value codes.
+- "numeric_range": Numeric input with no predefined categories. Supports >, <, >=, <=, median(), quantile().
+
+IMPORTANT:
+- Only use statistical functions (median, quantile) on "numeric_range" variables.
+  Categorical variables do NOT support quantile splits — use value codes instead.
+- If a variable has no Type or Answer_Options, it may be an unlabeled field.
+  Do NOT use quantile/median on variables without confirmed numeric ranges.
+- When generating placeholder expressions (TYPE 6), prefer median/quantile ONLY
+  if the target variable is "numeric_range". For categorical variables, use value
+  code groupings instead.
+</variable_types>
+
 <variable_search_protocol>
 MANDATORY: Search the ENTIRE data map before selecting any variable.
 

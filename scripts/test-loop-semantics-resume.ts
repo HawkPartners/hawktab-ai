@@ -411,6 +411,7 @@ async function main() {
         })),
         deterministicFindings,
         datamapExcerpt: buildDatamapExcerpt(verboseDataMap, cuts, deterministicFindings),
+        loopMappings,
         outputDir: pipelinePath,
       });
 

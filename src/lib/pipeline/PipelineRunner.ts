@@ -585,12 +585,26 @@ export async function runPipeline(
 
     const parallelStartTime = Date.now();
 
-    // Build simple data structures for CrosstabAgent
-    const agentDataMap = dataMapResult.agent.map(v => ({
-      Column: v.Column,
-      Description: v.Description,
-      Answer_Options: v.Answer_Options,
-    }));
+    // Build filtered data structures for CrosstabAgent — exclude variables agents can't use
+    const excludedNormalizedTypes = new Set(['admin', 'text_open', 'weight']);
+    const excludedColumns = new Set(
+      verboseDataMap
+        .filter(v => excludedNormalizedTypes.has(v.normalizedType || ''))
+        .map(v => v.column)
+    );
+
+    const agentDataMap = dataMapResult.agent
+      .filter(v => !excludedColumns.has(v.Column))
+      .map(v => {
+        const verbose = verboseDataMap.find(vv => vv.column === v.Column);
+        return {
+          Column: v.Column,
+          Description: v.Description,
+          Answer_Options: v.Answer_Options,
+          Type: verbose?.normalizedType || '',
+        };
+      });
+    log(`  Agent datamap: ${agentDataMap.length} variables (filtered ${excludedColumns.size} admin/text_open/weight)`, 'dim');
 
     // Capture context sizes for observability
     contextSizes['verboseDataMapEntries'] = verboseDataMap.length;
@@ -1260,6 +1274,7 @@ export async function runPipeline(
           })),
           deterministicFindings: deterministicFindings || { iterationLinkedVariables: [], evidenceSummary: '' },
           datamapExcerpt: buildDatamapExcerpt(verboseDataMap, cutsSpec.cuts, deterministicFindings),
+          loopMappings,
           outputDir,
           abortSignal: pipelineSignal,
         });

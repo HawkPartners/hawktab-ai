@@ -9,7 +9,8 @@ export const DataMapItemSchema = z.object({
   Description: z.string(),            // Question text
   Value_Type: z.string().optional(),  // e.g., "Values: 0-1"
   Answer_Options: z.string().optional(), // "1=Cardiologist,2=..."
-  Context: z.string().optional()
+  Context: z.string().optional(),
+  Type: z.string().optional()            // normalizedType: binary_flag, categorical_select, numeric_range
 });
 
 export const DataMapSchema = z.array(DataMapItemSchema);

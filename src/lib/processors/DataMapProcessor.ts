@@ -154,20 +154,15 @@ export class DataMapProcessor {
     const normalized = variables.map((variable) => {
       const enriched = { ...variable };
 
-      // Skip admin fields — but rescue geographic demographics (state, region, division)
-      // that are hidden variables with real value labels
+      // Skip admin fields — but rescue variables with value labels (they're analytically useful)
+      // e.g., hRESPONDENT with "1=Type A,2=Type B" is a real segmentation variable,
+      // while record/uuid/qtime with no labels are truly system metadata
       if (this.isAdminField(variable.column)) {
-        if (this.isGeographicDemographic(variable)) {
+        const hasValueLabels = variable.answerOptions && variable.answerOptions !== 'NA';
+        if (hasValueLabels || this.isGeographicDemographic(variable)) {
           // Don't mark as admin — let it flow through to normal type classification
         } else {
           enriched.normalizedType = 'admin';
-          // Still parse value labels so FilterTranslator can resolve h*/d* variables deterministically
-          if (variable.answerOptions && variable.answerOptions !== 'NA') {
-            const allowedVals = this.extractAllowedValues(variable.answerOptions);
-            if (allowedVals.length > 0) enriched.allowedValues = allowedVals;
-            const labels = this.parseScaleLabels(variable.answerOptions);
-            if (labels.length > 0) enriched.scaleLabels = labels;
-          }
           return enriched;
         }
       }

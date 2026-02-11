@@ -351,6 +351,11 @@ export function generateRScriptV2WithValidation(
   lines.push('print(paste("Loaded", nrow(data), "rows and", ncol(data), "columns"))');
   lines.push('');
 
+  // Initialize cut error accumulator (used by tryCatch wrappers in cut definitions)
+  lines.push('# Error accumulator for cut expression failures');
+  lines.push('.hawktab_cut_errors <- c()');
+  lines.push('');
+
   // Weight vector setup
   if (isWeighted) {
     const safeWeightVar = escapeRString(weightVariable);
@@ -700,6 +705,17 @@ function generateStackingPreamble(
             caseLines.push(`    .loop_iter == ${iter} ~ ${sanitizeRColumnName(sourceVar)}`);
           }
         }
+
+        // If no valid branches, skip this alias entirely rather than creating an all-NA column
+        if (caseLines.length === 0) {
+          console.warn(
+            `[RScriptGenerator] Skipping alias "${aliasName}" entirely: ` +
+            `no valid source variables found in ${frameName}. ` +
+            `Cuts referencing this alias will produce empty columns.`,
+          );
+          continue;
+        }
+
         caseLines.push('    TRUE ~ NA_real_');
 
         mutateArgs.push(
@@ -707,14 +723,22 @@ function generateStackingPreamble(
         );
       }
 
-      lines.push(mutateArgs.join(',\n'));
-      lines.push(')');
-      lines.push(`print(paste("Added ${aliasesForFrame.length} alias column(s) to ${frameName}"))`);
+      if (mutateArgs.length > 0) {
+        lines.push(mutateArgs.join(',\n'));
+        lines.push(')');
+        lines.push(`print(paste("Added ${mutateArgs.length} alias column(s) to ${frameName}"))`);
+      } else {
+        // No valid aliases — remove the dangling mutate( line
+        lines.pop(); // Remove the `dplyr::mutate(` line
+        lines.pop(); // Remove the `frameName <- frameName %>%` line
+        lines.push(`# No valid alias columns for ${frameName} — all source variables missing`);
+        lines.push(`print("WARNING: No alias columns created for ${frameName} — source variables not found in stacked frame")`);
+      }
       lines.push('');
     }
 
-    // Pre-compute cuts for this stacked frame
-    lines.push(`# Cuts for ${frameName}`);
+    // Pre-compute cuts for this stacked frame — wrapped in tryCatch for resilience
+    lines.push(`# Cuts for ${frameName} (each wrapped in tryCatch for resilience)`);
     lines.push(`cuts_${frameName} <- list(`);
     lines.push(`  Total = rep(TRUE, nrow(${frameName}))`);
 
@@ -722,6 +746,9 @@ function generateStackingPreamble(
       if (cut.name === 'Total') continue; // Total already hardcoded above
       let expr = cut.rExpression.replace(/^\s*#.*$/gm, '').trim();
       if (!expr || expr.startsWith('#')) continue;
+
+      // Replace quantile() with safe_quantile() to handle haven_labelled vectors
+      expr = expr.replace(/\bquantile\s*\(/g, 'safe_quantile(');
 
       // Check if this cut belongs to an entity-anchored group — transform if so
       const policy = entityPolicies.get(cut.groupName);
@@ -735,7 +762,10 @@ function generateStackingPreamble(
       }
 
       const safeName = cut.name.replace(/`/g, "'");
-      lines.push(`,  \`${safeName}\` = with(${frameName}, ${expr})`);
+      lines.push(`,  \`${safeName}\` = tryCatch(with(${frameName}, ${expr}), error = function(e) {`);
+      lines.push(`    .hawktab_cut_errors <<- c(.hawktab_cut_errors, paste0("Cut '${safeName}' on ${frameName}: ", e$message))`);
+      lines.push(`    rep(FALSE, nrow(${frameName}))`);
+      lines.push(`  })`);
     }
 
     lines.push(')');
@@ -773,20 +803,30 @@ function generateCutsDefinition(
   lines.push('# =============================================================================');
   lines.push('');
 
-  // Define cuts list
-  lines.push('# Cut masks');
+  // Define cuts list — each cut wrapped in tryCatch so a bad variable reference
+  // produces an empty (all-FALSE) column instead of crashing the whole script
+  lines.push('# Cut masks (each wrapped in tryCatch for resilience)');
   lines.push('cuts <- list(');
   lines.push('  Total = rep(TRUE, nrow(data))');
 
   for (const cut of cuts) {
-    const expr = cut.rExpression.replace(/^\s*#.*$/gm, '').trim();
+    let expr = cut.rExpression.replace(/^\s*#.*$/gm, '').trim();
     if (expr && !expr.startsWith('#')) {
+      // Replace quantile() with safe_quantile() to handle haven_labelled vectors
+      expr = expr.replace(/\bquantile\s*\(/g, 'safe_quantile(');
       const safeName = cut.name.replace(/`/g, "'");
-      lines.push(`,  \`${safeName}\` = with(data, ${expr})`);
+      lines.push(`,  \`${safeName}\` = tryCatch(with(data, ${expr}), error = function(e) {`);
+      lines.push(`    .hawktab_cut_errors <<- c(.hawktab_cut_errors, paste0("Cut '${safeName}': ", e$message))`);
+      lines.push(`    rep(FALSE, nrow(data))`);
+      lines.push(`  })`);
     }
   }
 
   lines.push(')');
+  lines.push('if (length(.hawktab_cut_errors) > 0) {');
+  lines.push('  cat("\\nWARNING: The following cut expressions failed (columns will be empty):\\n")');
+  lines.push('  for (err in .hawktab_cut_errors) cat("  -", err, "\\n")');
+  lines.push('}');
   lines.push('');
 
   // Define stat letter mapping
@@ -1069,6 +1109,15 @@ function generateHelperFunctions(lines: string[], isWeighted: boolean = false): 
   lines.push('    return(data[[var_name]])');
   lines.push('  }');
   lines.push('  return(NULL)');
+  lines.push('}');
+  lines.push('');
+
+  // Safe quantile for haven-labelled vectors
+  // haven::read_sav() produces haven_labelled vectors; quantile() fails on them.
+  // This wrapper coerces to numeric first — used by cut expressions with tertile splits.
+  lines.push('# Safe quantile that handles haven_labelled vectors');
+  lines.push('safe_quantile <- function(x, ...) {');
+  lines.push('  quantile(as.numeric(x), ...)');
   lines.push('}');
   lines.push('');
 
@@ -2172,6 +2221,10 @@ function generateJsonOutput(
   }
   lines.push('print(paste("  Cuts applied:", length(cuts)))');
   lines.push('print(paste("  Significance level:", p_threshold))');
+  lines.push('if (length(.hawktab_cut_errors) > 0) {');
+  lines.push('  print(paste("  CUT ERRORS:", length(.hawktab_cut_errors), "cut(s) failed — those columns are empty"))');
+  lines.push('  for (err in .hawktab_cut_errors) print(paste("    -", err))');
+  lines.push('}');
   lines.push('print(paste(rep("=", 60), collapse = ""))');
 }
 

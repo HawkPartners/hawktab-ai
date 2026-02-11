@@ -363,19 +363,32 @@ function generateMeanRowsTableValidation(
 // =============================================================================
 
 function generateCutsDefinitionMinimal(lines: string[], cuts: CutDefinition[]): void {
-  lines.push('# Cuts Definition (minimal for validation)');
+  // Wrap each cut in tryCatch so a bad cut expression (e.g., quantile on haven_labelled)
+  // doesn't crash the entire validation script. Failed cuts become all-FALSE (empty columns)
+  // and the table can still validate with other cuts.
+  lines.push('# Cuts Definition (each wrapped in tryCatch for resilience)');
+  lines.push('.hawktab_cut_errors <- c()');
   lines.push('cuts <- list(');
   lines.push('  Total = rep(TRUE, nrow(data))');
 
   for (const cut of cuts) {
-    const expr = cut.rExpression.replace(/^\s*#.*$/gm, '').trim();
+    let expr = cut.rExpression.replace(/^\s*#.*$/gm, '').trim();
     if (expr && !expr.startsWith('#')) {
+      // Replace quantile() with safe_quantile() to handle haven_labelled vectors
+      expr = expr.replace(/\bquantile\s*\(/g, 'safe_quantile(');
       const safeName = cut.name.replace(/`/g, "'");
-      lines.push(`,  \`${safeName}\` = with(data, ${expr})`);
+      lines.push(`,  \`${safeName}\` = tryCatch(with(data, ${expr}), error = function(e) {`);
+      lines.push(`    .hawktab_cut_errors <<- c(.hawktab_cut_errors, paste0("Cut '${safeName}': ", e$message))`);
+      lines.push(`    rep(FALSE, nrow(data))`);
+      lines.push(`  })`);
     }
   }
 
   lines.push(')');
+  lines.push('if (length(.hawktab_cut_errors) > 0) {');
+  lines.push('  cat("\\nWARNING: Cut expression errors (columns will be empty):\\n")');
+  lines.push('  for (err in .hawktab_cut_errors) cat("  -", err, "\\n")');
+  lines.push('}');
   lines.push('');
 }
 
@@ -396,6 +409,13 @@ function generateHelperFunctionsMinimal(lines: string[]): void {
   lines.push('safe_get_var <- function(data, var_name) {');
   lines.push('  if (var_name %in% names(data)) return(data[[var_name]])');
   lines.push('  return(NULL)');
+  lines.push('}');
+  lines.push('');
+
+  // Safe quantile for haven-labelled vectors
+  lines.push('# Safe quantile that handles haven_labelled vectors');
+  lines.push('safe_quantile <- function(x, ...) {');
+  lines.push('  quantile(as.numeric(x), ...)');
   lines.push('}');
   lines.push('');
 }
