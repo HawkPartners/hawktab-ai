@@ -21,7 +21,7 @@ export const BannerGroupPolicySchema = z.object({
   shouldPartition: z.boolean(),
 
   /** How to handle within-group significance testing on loop tables */
-  comparisonMode: z.enum(['suppress', 'complement']).default('suppress'),
+  comparisonMode: z.enum(['suppress', 'complement']),
 
   /** Which stacked frame this applies to (empty string if respondent-anchored) */
   stackedFrameName: z.string(),
@@ -68,10 +68,10 @@ export const LoopSemanticsPolicySchema = z.object({
   reasoning: z.string(),
 
   /** True when agent failed and all groups defaulted to respondent-anchored (for UI surfacing) */
-  fallbackApplied: z.boolean().optional(),
+  fallbackApplied: z.boolean(),
 
   /** Human-readable reason when fallback was used (for UI surfacing) */
-  fallbackReason: z.string().optional(),
+  fallbackReason: z.string(),
 });
 
 export type LoopSemanticsPolicy = z.infer<typeof LoopSemanticsPolicySchema>;

@@ -141,7 +141,7 @@ export const TableFilterSchema = z.object({
   splits: z.array(SplitDefinitionSchema),
 
   /** Column split definitions (empty array if filter or split) */
-  columnSplits: z.array(ColumnSplitDefinitionSchema).default([]),
+  columnSplits: z.array(ColumnSplitDefinitionSchema),
 
   /** Alternative R expressions with confidence/reasoning (like CrosstabAgent) */
   alternatives: z.array(FilterAlternativeSchema),
