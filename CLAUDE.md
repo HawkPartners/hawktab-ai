@@ -58,20 +58,15 @@ AVOID SHALLOW IMPLEMENTATIONS:
 </engineering_philosophy>
 
 <current_focus>
-ACTIVE WORK: `docs/implementation-plans/reliability-plan.md` — Part 4
+ACTIVE WORK: `docs/implementation-plans/product-roadmap.md` — Phase 3 (Productization)
 
-| Part | Description | Status |
-|------|-------------|--------|
-| 1 | Stable System for Testing | Complete |
-| 2 | Leqvio Testing (iteration loop) | Complete |
-| 3 | Loop/Stacked Data Support | Complete |
-| 4 | Broader Testing | **In Progress** |
+**Reliability (Phase 1)**: COMPLETE. Pipeline reliably produces usable crosstabs across 15 datasets. Cut expression validator with R-based pre-validation and CrosstabAgent retry loop. Remaining edge cases addressable via UI HITL review.
 
-**Part 4 process**: Batch run 11 datasets → consolidate feedback → tweak at highest level → repeat. Using `scripts/batch-pipeline.ts` for overnight runs with cross-dataset analytics (`outputs/batch-summary-*.json`).
+**Feature Completeness (Phase 2)**: COMPLETE. Output formats, stat testing, loop-aware stat testing, input flexibility, AI-generated banner, weight detection, HITL review overhaul, table ID visibility, output feedback, Excel themes — all implemented.
 
-**Test coverage**: 11 ready datasets spanning HCP segmentation, ATU (5 waves), demand, access perceptions, consumer/beverage with loops. No MaxDiff dataset yet.
+**Current Phase**: Phase 3 — Productization. Wiring up the UI so users can interact with HITL aspects (variable confirmation, alternative selection) during the pipeline run, not just review static Excel output after.
 
-**Part 2 Issues**: 3 edge cases documented in `docs/implementation-plans/pipeline-feedback.md` (multi-column grids, ranking questions).
+**Key focus**: 3.1 Local UI Overhaul — the full web experience (new project wizard, HITL review, job progress, results page) architected cloud-ready.
 
 FEEDBACK: `docs/latest-runs-feedback.md` — Tracks all issues from pipeline runs with problem/fix summaries.
 </current_focus>

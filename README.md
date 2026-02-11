@@ -91,32 +91,22 @@ An AI-powered system that:
 
 ## Next Steps
 
-### Current: Reliability Testing (Part 4 — Broader Testing)
+### Current: Phase 3 — Productization (UI Overhaul)
 
-Working through the reliability plan to ensure consistent, publication-quality output across diverse survey types.
-
-| Part | Description | Status |
-|------|-------------|--------|
-| 1 | Stable System for Testing | Complete |
-| 2 | Leqvio Testing (iteration loop) | Complete |
-| 3 | Loop/Stacked Data Support | Complete |
-| 4 | Broader Testing | **In Progress** |
-
-**Current approach**: Batch pipeline runs across 11 datasets (HCP segmentation, ATU, demand, access perceptions, consumer/beverage with loops). Consolidate feedback, make high-leverage fixes, repeat.
+Phases 1 (Reliability) and 2 (Feature Completeness) are complete. Pipeline reliably produces usable crosstabs across 15 datasets. Now wiring up the full UI experience so users can interact with HITL review during the pipeline run.
 
 **Deadline**: Send updated version to Antares by February 16th.
-
-See `docs/implementation-plans/reliability-plan.md`
 
 ### Roadmap
 
 | Phase | Goal | Status |
 |-------|------|--------|
-| **1. Azure OpenAI** | Switch to Azure (compliance) | **Complete** |
-| **1.5. Reliability** | Match Joe's output quality | **In Progress** |
-| **2. Decipher + Reliability** | Skip logic from source, agent flow improvements | Not started |
-| **3. Team Access** | Deploy, auth, shared storage | Not started |
-| **Checkpoint** | Hawk Partners internal launch | — |
+| **1. Reliability** | Stable pipeline across diverse datasets | **Complete** |
+| **2. Feature Completeness** | Output formats, stat testing, weights, HITL, themes | **Complete** |
+| **3. Productization** | UI overhaul, cloud deployment, auth | **In Progress** |
+| **Checkpoint** | Hawk Partners internal launch / Antares demo | — |
+
+See `docs/implementation-plans/product-roadmap.md` for full details.
 
 ---
 
@@ -282,7 +272,7 @@ hawktab-ai/
 
 | Document | Purpose |
 |----------|---------|
-| `docs/implementation-plans/reliability-plan.md` | Current work: reliability testing and evaluation |
+| `docs/implementation-plans/product-roadmap.md` | Product roadmap: Phase 1-3 status and plans |
 | `docs/implementation-plans/table-agent-architecture.md` | Table/Verification agent architecture |
 | `docs/implementation-plans/pre-phase-2-testing-plan.md` | Testing milestones |
 | `docs/architecture-refactor-prd.md` | Overall architecture and roadmap |
