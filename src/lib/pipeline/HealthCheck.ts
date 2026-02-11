@@ -1,7 +1,8 @@
 /**
- * Azure Deployment Health Check
+ * AI Model Health Check
  *
- * Probes each unique Azure OpenAI deployment before the pipeline starts.
+ * Probes each unique model deployment before the pipeline starts.
+ * Works with both Azure OpenAI and direct OpenAI API.
  * Catches bad API keys, expired deployments, or quota exhaustion in ~5 seconds
  * instead of failing 10-15 minutes into the pipeline.
  *
@@ -9,7 +10,7 @@
  */
 
 import { generateText } from 'ai';
-import { getAzureProvider, getEnvironmentConfig } from '../env';
+import { getActiveProvider, getEnvironmentConfig } from '../env';
 
 export interface DeploymentHealthResult {
   name: string;
@@ -45,7 +46,7 @@ export async function runHealthCheck(abortSignal?: AbortSignal): Promise<HealthC
     };
   }
 
-  const provider = getAzureProvider();
+  const provider = getActiveProvider();
 
   // Deduplicate deployments (7 agents often share 2-3 models)
   const deploymentMap = new Map<string, string[]>();

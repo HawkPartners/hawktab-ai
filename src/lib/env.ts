@@ -1,17 +1,20 @@
 /**
  * Environment configuration
- * Purpose: Resolve Azure OpenAI model, token limits, prompt versions, reasoning effort, and validation
- * Required: AZURE_API_KEY, AZURE_RESOURCE_NAME
- * Optional: Per-agent MODEL, MODEL_TOKENS, PROMPT_VERSION, REASONING_EFFORT
+ * Purpose: Resolve AI model provider, token limits, prompt versions, reasoning effort, and validation
  *
- * Per-Agent Configuration Pattern:
+ * Provider selection:
+ * - AI_PROVIDER=azure (default): Uses Azure OpenAI. Requires AZURE_API_KEY, AZURE_RESOURCE_NAME.
+ * - AI_PROVIDER=openai: Uses OpenAI directly. Requires OPENAI_API_KEY.
+ *
+ * Per-Agent Configuration Pattern (works with both providers):
  * - CROSSTAB_MODEL, CROSSTAB_MODEL_TOKENS, CROSSTAB_PROMPT_VERSION, CROSSTAB_REASONING_EFFORT
  * - BANNER_MODEL, BANNER_MODEL_TOKENS, BANNER_PROMPT_VERSION, BANNER_REASONING_EFFORT
  * - VERIFICATION_MODEL, VERIFICATION_MODEL_TOKENS, VERIFICATION_PROMPT_VERSION, VERIFICATION_REASONING_EFFORT
  */
 
 import { createAzure } from '@ai-sdk/azure';
-import { EnvironmentConfig, ReasoningEffort } from './types';
+import { createOpenAI } from '@ai-sdk/openai';
+import { EnvironmentConfig, AIProvider, ReasoningEffort } from './types';
 
 // =============================================================================
 // Stat Testing Configuration
@@ -75,43 +78,93 @@ function parseReasoningEffort(value: string | undefined, agentName: string): Rea
   return 'medium';
 }
 
-// Create Azure provider instance (cached)
+// =============================================================================
+// Provider Management
+// =============================================================================
+
+// Cached provider instances
 let azureProvider: ReturnType<typeof createAzure> | null = null;
+let openaiProvider: ReturnType<typeof createOpenAI> | null = null;
+
+/**
+ * Resolve which AI provider to use from AI_PROVIDER env var.
+ * Default: 'azure' for backward compatibility.
+ */
+function resolveAIProvider(): AIProvider {
+  const value = (process.env.AI_PROVIDER || 'azure').toLowerCase().trim();
+  if (value === 'openai') return 'openai';
+  if (value === 'azure') return 'azure';
+  console.warn(`[env.ts] Invalid AI_PROVIDER "${value}", falling back to "azure"`);
+  return 'azure';
+}
 
 export const getAzureProvider = () => {
   if (!azureProvider) {
     const config = getEnvironmentConfig();
+    if (!config.azureApiKey || !config.azureResourceName) {
+      throw new Error('Azure provider requires AZURE_API_KEY and AZURE_RESOURCE_NAME');
+    }
     azureProvider = createAzure({
       resourceName: config.azureResourceName,
       apiKey: config.azureApiKey,
-      // Use explicit API version for Azure AI Foundry compatibility
       apiVersion: config.azureApiVersion,
-      // Use deployment-based URLs (standard Azure OpenAI format)
-      // URL format: https://{resourceName}.openai.azure.com/openai/deployments/{deploymentId}/...?api-version={apiVersion}
       useDeploymentBasedUrls: true,
     });
   }
   return azureProvider;
 };
 
+export const getOpenAIProvider = () => {
+  if (!openaiProvider) {
+    const config = getEnvironmentConfig();
+    if (!config.openaiApiKey) {
+      throw new Error('OpenAI provider requires OPENAI_API_KEY');
+    }
+    openaiProvider = createOpenAI({
+      apiKey: config.openaiApiKey,
+    });
+  }
+  return openaiProvider;
+};
+
+/**
+ * Get the active chat model provider based on AI_PROVIDER setting.
+ * Returns a function that accepts a model/deployment name and returns an AI SDK model.
+ */
+export const getActiveProvider = () => {
+  const provider = resolveAIProvider();
+  if (provider === 'openai') {
+    return getOpenAIProvider();
+  }
+  return getAzureProvider();
+};
+
 export const getEnvironmentConfig = (): EnvironmentConfig => {
-  // Validate required Azure environment variables
-  const azureApiKey = process.env.AZURE_API_KEY;
-  const azureResourceName = process.env.AZURE_RESOURCE_NAME;
+  const aiProvider = resolveAIProvider();
 
-  if (!azureApiKey) {
-    throw new Error('AZURE_API_KEY environment variable is required');
-  }
-  if (!azureResourceName) {
-    throw new Error('AZURE_RESOURCE_NAME environment variable is required');
+  // Validate credentials based on selected provider
+  const azureApiKey = process.env.AZURE_API_KEY || '';
+  const azureResourceName = process.env.AZURE_RESOURCE_NAME || '';
+  const openaiApiKey = process.env.OPENAI_API_KEY;
+
+  if (aiProvider === 'azure') {
+    if (!azureApiKey) {
+      throw new Error('AZURE_API_KEY environment variable is required when AI_PROVIDER=azure');
+    }
+    if (!azureResourceName) {
+      throw new Error('AZURE_RESOURCE_NAME environment variable is required when AI_PROVIDER=azure');
+    }
+  } else if (aiProvider === 'openai') {
+    if (!openaiApiKey) {
+      throw new Error('OPENAI_API_KEY environment variable is required when AI_PROVIDER=openai');
+    }
   }
 
-  // Azure API version (for Azure AI Foundry compatibility)
-  // See: https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-lifecycle
+  // Azure API version (only relevant for Azure provider)
   const azureApiVersion = process.env.AZURE_API_VERSION || '2025-01-01-preview';
 
-  // Per-agent model configuration (Azure deployment names)
-  // Each agent has its own model configuration for flexibility
+  // Per-agent model configuration (Azure deployment names / OpenAI model IDs)
+  // Model names are the same for both providers (gpt-5-mini, o4-mini, etc.)
   const crosstabModel = process.env.CROSSTAB_MODEL || process.env.REASONING_MODEL || 'o4-mini';
   const bannerModel = process.env.BANNER_MODEL || process.env.BASE_MODEL || 'gpt-5-nano';
   const verificationModel = process.env.VERIFICATION_MODEL || process.env.TABLE_MODEL || 'gpt-5-mini';
@@ -125,7 +178,6 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   const baseModel = process.env.BASE_MODEL || bannerModel;
 
   // Per-agent reasoning effort configuration
-  // Defaults to 'medium' (AI SDK default) if not specified
   const crosstabReasoningEffort = parseReasoningEffort(process.env.CROSSTAB_REASONING_EFFORT, 'CROSSTAB');
   const bannerReasoningEffort = parseReasoningEffort(process.env.BANNER_REASONING_EFFORT, 'BANNER');
   const bannerGenerateReasoningEffort = parseReasoningEffort(process.env.BANNER_GENERATE_REASONING_EFFORT || 'high', 'BANNER_GENERATE');
@@ -137,9 +189,11 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
   const nodeEnv = (process.env.NODE_ENV as 'development' | 'production') || 'development';
 
   return {
+    aiProvider,
     azureApiKey,
     azureResourceName,
     azureApiVersion,
+    openaiApiKey,
 
     // Legacy model configuration (for backward compatibility)
     reasoningModel,
@@ -154,11 +208,8 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
     filterTranslatorModel,
     loopSemanticsModel,
 
-    // Deprecated
-    openaiApiKey: process.env.OPENAI_API_KEY,  // Optional, deprecated
-
     nodeEnv,
-    tracingEnabled: process.env.TRACING_ENABLED !== 'false',  // Default: enabled
+    tracingEnabled: process.env.TRACING_ENABLED !== 'false',
     promptVersions: {
       crosstabPromptVersion: process.env.CROSSTAB_PROMPT_VERSION || 'production',
       bannerPromptVersion: process.env.BANNER_PROMPT_VERSION || 'production',
@@ -171,10 +222,8 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
     processingLimits: {
       maxDataMapVariables: parseInt(process.env.MAX_DATA_MAP_VARIABLES || '1000'),
       maxBannerColumns: parseInt(process.env.MAX_BANNER_COLUMNS || '100'),
-      // Legacy token limits (for backward compatibility)
       reasoningModelTokens: parseInt(process.env.REASONING_MODEL_TOKENS || '100000'),
       baseModelTokens: parseInt(process.env.BASE_MODEL_TOKENS || '128000'),
-      // Per-agent token limits
       crosstabModelTokens: parseInt(process.env.CROSSTAB_MODEL_TOKENS || process.env.REASONING_MODEL_TOKENS || '100000'),
       bannerModelTokens: parseInt(process.env.BANNER_MODEL_TOKENS || process.env.BASE_MODEL_TOKENS || '128000'),
       bannerGenerateModelTokens: parseInt(process.env.BANNER_GENERATE_MODEL_TOKENS || process.env.VERIFICATION_MODEL_TOKENS || '128000'),
@@ -197,81 +246,52 @@ export const getEnvironmentConfig = (): EnvironmentConfig => {
 
 /**
  * Per-Agent Model Selection
- * Each agent has its own model configuration for flexibility:
- * - CrosstabAgent: Complex validation, R syntax generation (requires reasoning)
- * - BannerAgent: Vision/extraction tasks (requires multimodal support)
+ * Each agent has its own model configuration for flexibility.
+ * Uses getActiveProvider() to route through Azure or OpenAI based on AI_PROVIDER.
  *
  * NOTE: Using .chat() for Chat Completions API instead of Responses API
- * The Responses API (default in AI SDK v6) may not be available on all Azure deployments
+ * The Responses API (default in AI SDK v6) may not be available on all Azure deployments.
  */
 
-/**
- * Get CrosstabAgent model for complex validation tasks
- * Used by: CrosstabAgent (requires deep reasoning for R syntax generation)
- */
 export const getCrosstabModel = () => {
   const config = getEnvironmentConfig();
-  const provider = getAzureProvider();
+  const provider = getActiveProvider();
   return provider.chat(config.crosstabModel);
 };
 
-/**
- * Get BannerAgent model for vision/extraction tasks
- * Used by: BannerAgent (requires vision capability, simpler reasoning)
- */
 export const getBannerModel = () => {
   const config = getEnvironmentConfig();
-  const provider = getAzureProvider();
+  const provider = getActiveProvider();
   return provider.chat(config.bannerModel);
 };
 
-/**
- * Get BannerGenerateAgent model for AI-generated banner cuts
- * Used by: BannerGenerateAgent (text-based cut design from datamap)
- */
 export const getBannerGenerateModel = () => {
   const config = getEnvironmentConfig();
-  const provider = getAzureProvider();
+  const provider = getActiveProvider();
   return provider.chat(config.bannerGenerateModel);
 };
 
-/**
- * Get VerificationAgent model for survey-aware table enhancement
- * Used by: VerificationAgent (enhances table output using survey document)
- */
 export const getVerificationModel = () => {
   const config = getEnvironmentConfig();
-  const provider = getAzureProvider();
+  const provider = getActiveProvider();
   return provider.chat(config.verificationModel);
 };
 
-/**
- * Get SkipLogicAgent model for survey rule extraction
- * Used by: SkipLogicAgent (reads survey, extracts skip/show rules)
- */
 export const getSkipLogicModel = () => {
   const config = getEnvironmentConfig();
-  const provider = getAzureProvider();
+  const provider = getActiveProvider();
   return provider.chat(config.skipLogicModel);
 };
 
-/**
- * Get FilterTranslatorAgent model for R expression translation
- * Used by: FilterTranslatorAgent (translates rules to R using datamap)
- */
 export const getFilterTranslatorModel = () => {
   const config = getEnvironmentConfig();
-  const provider = getAzureProvider();
+  const provider = getActiveProvider();
   return provider.chat(config.filterTranslatorModel);
 };
 
-/**
- * Get LoopSemanticsPolicyAgent model for loop classification
- * Used by: LoopSemanticsPolicyAgent (classifies banner groups as entity/respondent-anchored)
- */
 export const getLoopSemanticsModel = () => {
   const config = getEnvironmentConfig();
-  const provider = getAzureProvider();
+  const provider = getActiveProvider();
   return provider.chat(config.loopSemanticsModel);
 };
 
@@ -280,37 +300,37 @@ export const getLoopSemanticsModel = () => {
  */
 export const getCrosstabModelName = (): string => {
   const config = getEnvironmentConfig();
-  return `azure/${config.crosstabModel}`;
+  return `${config.aiProvider}/${config.crosstabModel}`;
 };
 
 export const getBannerModelName = (): string => {
   const config = getEnvironmentConfig();
-  return `azure/${config.bannerModel}`;
+  return `${config.aiProvider}/${config.bannerModel}`;
 };
 
 export const getBannerGenerateModelName = (): string => {
   const config = getEnvironmentConfig();
-  return `azure/${config.bannerGenerateModel}`;
+  return `${config.aiProvider}/${config.bannerGenerateModel}`;
 };
 
 export const getVerificationModelName = (): string => {
   const config = getEnvironmentConfig();
-  return `azure/${config.verificationModel}`;
+  return `${config.aiProvider}/${config.verificationModel}`;
 };
 
 export const getSkipLogicModelName = (): string => {
   const config = getEnvironmentConfig();
-  return `azure/${config.skipLogicModel}`;
+  return `${config.aiProvider}/${config.skipLogicModel}`;
 };
 
 export const getFilterTranslatorModelName = (): string => {
   const config = getEnvironmentConfig();
-  return `azure/${config.filterTranslatorModel}`;
+  return `${config.aiProvider}/${config.filterTranslatorModel}`;
 };
 
 export const getLoopSemanticsModelName = (): string => {
   const config = getEnvironmentConfig();
-  return `azure/${config.loopSemanticsModel}`;
+  return `${config.aiProvider}/${config.loopSemanticsModel}`;
 };
 
 /**
@@ -527,21 +547,19 @@ export function formatStatTestingConfig(config: StatTestingConfig): string {
 
 /**
  * @deprecated Use getCrosstabModel() instead
- * Get reasoning model for complex validation tasks
  */
 export const getReasoningModel = () => {
   const config = getEnvironmentConfig();
-  const provider = getAzureProvider();
+  const provider = getActiveProvider();
   return provider.chat(config.reasoningModel);
 };
 
 /**
  * @deprecated Use getBannerModel() instead
- * Get base model for vision/extraction tasks
  */
 export const getBaseModel = () => {
   const config = getEnvironmentConfig();
-  const provider = getAzureProvider();
+  const provider = getActiveProvider();
   return provider.chat(config.baseModel);
 };
 
@@ -550,7 +568,7 @@ export const getBaseModel = () => {
  */
 export const getReasoningModelName = (): string => {
   const config = getEnvironmentConfig();
-  return `azure/${config.reasoningModel}`;
+  return `${config.aiProvider}/${config.reasoningModel}`;
 };
 
 /**
@@ -558,7 +576,7 @@ export const getReasoningModelName = (): string => {
  */
 export const getBaseModelName = (): string => {
   const config = getEnvironmentConfig();
-  return `azure/${config.baseModel}`;
+  return `${config.aiProvider}/${config.baseModel}`;
 };
 
 /**
@@ -588,14 +606,18 @@ export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
   try {
     const config = getEnvironmentConfig();
 
-    // Azure API key format is flexible (not sk-* like OpenAI)
-    if (config.azureApiKey.length < 10) {
-      errors.push('AZURE_API_KEY appears too short');
-    }
-
-    // Validate resource name format
-    if (!/^[a-zA-Z0-9-]+$/.test(config.azureResourceName)) {
-      errors.push('AZURE_RESOURCE_NAME should only contain alphanumeric characters and hyphens');
+    // Provider-specific credential validation
+    if (config.aiProvider === 'azure') {
+      if (config.azureApiKey.length < 10) {
+        errors.push('AZURE_API_KEY appears too short');
+      }
+      if (!/^[a-zA-Z0-9-]+$/.test(config.azureResourceName)) {
+        errors.push('AZURE_RESOURCE_NAME should only contain alphanumeric characters and hyphens');
+      }
+    } else if (config.aiProvider === 'openai') {
+      if (!config.openaiApiKey || config.openaiApiKey.length < 10) {
+        errors.push('OPENAI_API_KEY appears too short or missing');
+      }
     }
 
     // Validate processing limits
@@ -607,7 +629,6 @@ export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
       errors.push('MAX_BANNER_COLUMNS must be greater than 0');
     }
 
-    // Legacy token limit validation (for backward compatibility)
     if (config.processingLimits.reasoningModelTokens < 1000) {
       errors.push('REASONING_MODEL_TOKENS must be at least 1000');
     }
@@ -616,7 +637,6 @@ export const validateEnvironment = (): { valid: boolean; errors: string[] } => {
       errors.push('BASE_MODEL_TOKENS must be at least 1000');
     }
 
-    // Per-agent token limit validation
     if (config.processingLimits.crosstabModelTokens < 1000) {
       errors.push('CROSSTAB_MODEL_TOKENS must be at least 1000');
     }

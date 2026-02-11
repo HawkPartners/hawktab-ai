@@ -154,10 +154,13 @@ export async function runPipeline(
   }
   const clearPipelineTimeout = () => { if (timeoutHandle) clearTimeout(timeoutHandle); };
 
-  // Circuit breaker: abort pipeline after consecutive infrastructure failures
+  // Circuit breaker: abort pipeline after consecutive infrastructure failures.
+  // NOTE: rate_limit is NOT included — rate limits are normal operational behavior
+  // (Azure saying "slow down for N seconds") and are handled by retry backoff.
+  // The breaker should only trip on genuine infrastructure failures (5xx, timeouts, network errors).
   const circuitBreaker = new CircuitBreaker({
     threshold: 3,
-    classifications: ['rate_limit', 'transient'],
+    classifications: ['transient'],
     onTrip: (info) => {
       log(`CIRCUIT BREAKER: ${info.consecutiveCount} consecutive ${info.classification} failures — aborting pipeline`, 'red');
       pipelineAbortController.abort(
@@ -211,9 +214,10 @@ export async function runPipeline(
   const outputDir = path.join(process.cwd(), 'outputs', datasetNameGuess, outputFolder);
   await fs.mkdir(outputDir, { recursive: true });
 
-  // Pre-flight: Azure deployment health check
+  // Pre-flight: model deployment health check
   if (process.env.SKIP_HEALTH_CHECK !== 'true') {
-    log('Pre-flight: checking Azure deployments...', 'cyan');
+    const providerLabel = (process.env.AI_PROVIDER || 'azure').toLowerCase() === 'openai' ? 'OpenAI' : 'Azure';
+    log(`Pre-flight: checking ${providerLabel} deployments...`, 'cyan');
     const { runHealthCheck } = await import('./HealthCheck');
     const health = await runHealthCheck(pipelineSignal);
     if (health.success) {

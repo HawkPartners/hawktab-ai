@@ -53,17 +53,25 @@ export interface PromptVersions {
   bannerGeneratePromptVersion: string;
 }
 
+export type AIProvider = 'azure' | 'openai';
+
 export interface EnvironmentConfig {
-  // Azure OpenAI (required)
+  // Provider selection
+  aiProvider: AIProvider;  // 'azure' or 'openai' (default: 'azure')
+
+  // Azure OpenAI (required when aiProvider === 'azure')
   azureApiKey: string;
   azureResourceName: string;
   azureApiVersion: string;  // e.g., '2024-10-21' for Azure AI Foundry
+
+  // OpenAI API key (required when aiProvider === 'openai')
+  openaiApiKey?: string;
 
   // Legacy model configuration (for backward compatibility)
   reasoningModel: string;  // e.g., 'o4-mini' - alias for crosstabModel
   baseModel: string;       // e.g., 'gpt-5-nano' - alias for bannerModel
 
-  // Per-agent model configuration (Azure deployment names)
+  // Per-agent model configuration (deployment names for Azure, model IDs for OpenAI)
   crosstabModel: string;   // e.g., 'o4-mini' - used by CrosstabAgent (complex validation)
   bannerModel: string;     // e.g., 'gpt-5-nano' - used by BannerAgent (vision/extraction)
   bannerGenerateModel: string; // e.g., 'gpt-5-mini' - used by BannerGenerateAgent (text-based cut design)
@@ -71,9 +79,6 @@ export interface EnvironmentConfig {
   skipLogicModel: string;    // e.g., 'gpt-5-mini' - used by SkipLogicAgent (survey rule extraction)
   filterTranslatorModel: string; // e.g., 'o4-mini' - used by FilterTranslatorAgent (R expression translation)
   loopSemanticsModel: string;    // e.g., 'gpt-5-mini' - used by LoopSemanticsPolicyAgent (loop classification)
-
-  // Deprecated (optional, for rollback purposes)
-  openaiApiKey?: string;
 
   nodeEnv: 'development' | 'production';
   tracingEnabled: boolean;  // Renamed from tracingDisabled (positive naming)

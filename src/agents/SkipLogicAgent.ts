@@ -249,7 +249,7 @@ NOTE: This is a retry attempt. ${rulesBeforeCall.length > 0 ? `${rulesBeforeCall
             scratchpad: skipLogicScratchpadTool,
             emitRule,
           },
-          stopWhen: stepCountIs(40),
+          stopWhen: stepCountIs(80),
           maxOutputTokens: Math.min(getSkipLogicModelTokenLimit(), 100000),
           providerOptions: {
             openai: {
@@ -492,7 +492,7 @@ async function extractSkipLogicChunked(
             scratchpad: chunkScratchpad,
             emitRule: chunkEmitter,
           },
-          stopWhen: stepCountIs(30),
+          stopWhen: stepCountIs(50),
           maxOutputTokens: Math.min(getSkipLogicModelTokenLimit(), 100000),
           providerOptions: {
             openai: {

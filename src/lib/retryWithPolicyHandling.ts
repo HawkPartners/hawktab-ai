@@ -285,6 +285,68 @@ function summarizeErrorForRetry(error: unknown): { summary: string; responseBody
   return { summary: getErrorMessage(error).substring(0, 200) };
 }
 
+/**
+ * Extract the server-suggested retry delay from a 429 error.
+ *
+ * Handles both providers:
+ * - Azure:  "Please retry after 17 seconds."
+ * - OpenAI: "Please try again in 6s." or "Please try again in 0.015s."
+ *
+ * Returns delay in milliseconds, or 0 if not found.
+ */
+function extractRetryAfterMs(error: unknown): number {
+  if (!error) return 0;
+
+  const chain = unwrapErrorChain(error);
+  for (const e of chain) {
+    const ms = parseRetryAfterFromText(e.message);
+    if (ms > 0) return ms;
+
+    // Check the response body (both Azure and OpenAI wrap as { error: { message: "..." } })
+    if (APICallError.isInstance(e) && e.responseBody) {
+      try {
+        const bodyStr = typeof e.responseBody === 'string'
+          ? e.responseBody
+          : JSON.stringify(e.responseBody);
+        const bodyMs = parseRetryAfterFromText(bodyStr);
+        if (bodyMs > 0) return bodyMs;
+      } catch {
+        // ignore parse errors
+      }
+    }
+  }
+  return 0;
+}
+
+/**
+ * Parse retry delay from error text. Supports:
+ * - "retry after 17 seconds" (Azure)
+ * - "try again in 6s" (OpenAI, whole seconds)
+ * - "try again in 0.015s" (OpenAI, fractional seconds)
+ * - "try again in 1m30s" (OpenAI, minutes+seconds, rare)
+ */
+function parseRetryAfterFromText(text: string): number {
+  if (!text) return 0;
+
+  // Azure: "retry after N seconds"
+  const azureMatch = text.match(/retry after (\d+) second/i);
+  if (azureMatch) return parseInt(azureMatch[1], 10) * 1000;
+
+  // OpenAI: "try again in Ns" or "try again in N.NNNs"
+  const openaiMatch = text.match(/try again in (\d+\.?\d*)s/i);
+  if (openaiMatch) return Math.ceil(parseFloat(openaiMatch[1]) * 1000);
+
+  // OpenAI: "try again in NmNs" (e.g., "1m30s")
+  const openaiMinMatch = text.match(/try again in (\d+)m(\d+\.?\d*)s/i);
+  if (openaiMinMatch) {
+    const mins = parseInt(openaiMinMatch[1], 10);
+    const secs = parseFloat(openaiMinMatch[2]);
+    return Math.ceil((mins * 60 + secs) * 1000);
+  }
+
+  return 0;
+}
+
 function computeDelayMs(args: {
   classification: RetryClassification;
   attempt: number;
@@ -293,6 +355,7 @@ function computeDelayMs(args: {
   maxDelayMs: number;
   rateLimitMaxDelayMs: number;
   random: () => number;
+  serverRetryAfterMs?: number;
 }): number {
   const {
     classification,
@@ -302,6 +365,7 @@ function computeDelayMs(args: {
     maxDelayMs,
     rateLimitMaxDelayMs,
     random,
+    serverRetryAfterMs,
   } = args;
 
   const exp = Math.pow(2, Math.max(0, attempt - 1));
@@ -311,7 +375,18 @@ function computeDelayMs(args: {
 
   // Equal jitter: [raw/2, raw]
   const jittered = Math.floor(rawDelay / 2 + random() * (rawDelay / 2));
-  return Math.max(250, jittered); // never hammer the API at 0ms
+  const computed = Math.max(250, jittered); // never hammer the API at 0ms
+
+  // For rate limits: if Azure told us how long to wait, respect that as a floor
+  // Add 1s buffer to avoid retrying right at the boundary
+  if (serverRetryAfterMs && serverRetryAfterMs > 0) {
+    const serverWithBuffer = serverRetryAfterMs + 1000;
+    if (serverWithBuffer > computed) {
+      return serverWithBuffer;
+    }
+  }
+
+  return computed;
 }
 
 /**
@@ -433,7 +508,13 @@ export async function retryWithPolicyHandling<T>(
 
       // Log 429 response body for diagnostics
       if (lastResponseBody) {
-        console.warn(`[retryWithPolicyHandling] 429 response body: ${JSON.stringify(lastResponseBody).substring(0, 500)}`);
+        const retryAfterSec = lastClassification === 'rate_limit'
+          ? extractRetryAfterMs(error) / 1000
+          : 0;
+        console.warn(
+          `[retryWithPolicyHandling] 429 response body: ${JSON.stringify(lastResponseBody).substring(0, 500)}`
+          + (retryAfterSec > 0 ? ` | server says retry after ${retryAfterSec}s` : '')
+        );
       }
 
       // Notify circuit breaker (may abort the pipeline signal)
@@ -456,6 +537,11 @@ export async function retryWithPolicyHandling<T>(
         break;
       }
 
+      // Extract server-suggested retry delay from Azure 429 responses
+      const serverRetryAfterMs = lastClassification === 'rate_limit'
+        ? extractRetryAfterMs(error)
+        : 0;
+
       const nextDelayMs = computeDelayMs({
         classification: lastClassification,
         attempt,
@@ -464,6 +550,7 @@ export async function retryWithPolicyHandling<T>(
         maxDelayMs,
         rateLimitMaxDelayMs,
         random,
+        serverRetryAfterMs,
       });
 
       // Notify about retry
