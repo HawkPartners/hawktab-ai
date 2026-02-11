@@ -1,22 +1,23 @@
-# UI Overhaul Implementation Plan
+# Phase 3.1 Implementation Plan
 
 ## Overview
 
-This document architects the transformation of HawkTab AI's web application from its current state (a functional but minimal upload interface) into a production-grade, cloud-ready product that external parties like Antares can use. It covers the complete journey from today's codebase to Phase 3.1 of the product roadmap, designed to be implemented incrementally.
+This document architects the transformation of HawkTab AI from a functional CLI + minimal web interface into a production product that Antares, Segoe, Tesset, and future partners can use. It covers the complete Phase 3.1 scope: UI, abstractions, auth, and the groundwork that makes cloud deployment (Phase 3.2) a configuration swap rather than a rewrite.
 
 **Current State**: A single-page Next.js app with file upload, polling-based job tracking, basic HITL review, and a slide-out pipeline history. No route groups, no auth, no persistent job store, no storage abstraction. All Phase 2 pipeline features (stat testing, weights, themes, AI banner, display modes, loop handling) are implemented in the CLI/pipeline but have no UI exposure.
 
-**Target State**: A multi-page web application with marketing pages, an enterprise-grade project management experience, full exposure of all pipeline configuration options, cloud-ready abstractions, and a foundation for auth and multi-tenancy.
+**Target State**: A multi-page, authenticated web application with an enterprise-grade project management experience, full exposure of all pipeline configuration options, persistent abstractions ready for cloud backends, and multi-tenant data scoping. When deployed (Phase 3.2), external partners log in, upload their files, configure their project, run the pipeline, review HITL decisions, and download results — without ever touching a terminal or talking to us.
 
-**Philosophy**: Each phase delivers a shippable improvement, but we will **design for the hosted reality from day one** (long-running background jobs, secure storage, org-scoped data). “Local-first” is a development strategy, not a product constraint. The abstraction layers we build in early phases make cloud migration a configuration swap, not a rewrite.
+**Philosophy**: Build the real product. Every interface, every data model, every route is designed for the hosted, multi-tenant reality. The local implementations of StorageProvider, JobStore, and ProjectStore exist only as thin development stubs — they let us test the UI without cloud infrastructure, but they are not the product. The product is what gets deployed.
 
 *Created: February 9, 2026*
+*Revised: February 11, 2026 — Reframed from "local UI overhaul" to production product build. Auth pulled forward into Phase D. Marketing simplified.*
 
 ---
 
 ## What’s Missing Today (for Antares to actually use it)
 
-The plan correctly focuses on local UI structure, but **external usability requires a few non-negotiables** that are easy to accidentally defer because they aren’t “UI.”
+These are the non-negotiables for someone outside Hawk to trust the system. They aren't "UI" in the traditional sense, but they're as critical as the wizard or dashboard.
 
 ### Non-Negotiables for an External Pilot
 
@@ -96,20 +97,17 @@ These are all **implemented and working** in the pipeline (Phase 2 complete) but
 ### Phase A: Foundation & App Shell
 *Restructure the app, build the skeleton, establish patterns.*
 
-### Phase D: Abstractions & Cloud Readiness (Pulled Forward)
-*Introduce `StorageProvider` / `JobStore` / `ProjectStore` seams early so Phase B/C are built on persistent primitives and don’t need a rewrite for cloud.*
+### Phase D: Abstractions, Auth & Cloud Readiness (Pulled Forward)
+*Introduce `StorageProvider` / `JobStore` / `ProjectStore` / WorkOS auth / org model early so Phase B/C are built on persistent, scoped primitives. This is where multi-tenancy is born.*
 
 ### Phase B: New Project Experience
 *Replace the flat upload form with a guided wizard that exposes all pipeline config.*
 
 ### Phase C: Project Management & Results
-*Dashboard, project list, enhanced results page, pipeline progress.*
+*Dashboard, project list, enhanced results page, pipeline progress, supportability.*
 
-### Phase F: Auth & Multi-Tenancy Foundation
-*Org-scoped data model + middleware scaffolding now; WorkOS enforcement later.*
-
-### Phase E: Marketing & Polish
-*Landing page, visual identity, onboarding. Can run in parallel once product routes exist.*
+### Phase E: Landing Page
+*Minimal authenticated landing — what partners see before the dashboard. Not a marketing website.*
 
 Each phase is described in detail below.
 
@@ -463,7 +461,33 @@ When a user wants to adjust settings and re-run:
 - Re-uses persisted, user-confirmed decisions where possible (e.g., locked banner cut mappings) so the re-run is deterministic
 - Previous runs are accessible via a "Run History" expandable section
 
-### C.5 Deliverables
+### C.5 Supportability (Debug When Things Break)
+
+When Antares hits an issue, you need to diagnose it without screen-sharing. This isn't a nice-to-have — it's the difference between "we'll look into it" and actually fixing the problem.
+
+**Debug bundle**: A single downloadable archive per pipeline run containing:
+- `pipeline-summary.json` — what ran, how long, what configuration
+- `errors/errors.ndjson` — all agent and system errors (already persisted)
+- Scratchpad files — agent reasoning traces
+- R script that was generated (for manual inspection)
+- Pipeline event log — stage transitions with timestamps
+
+**Already exists (just needs to be assembled):**
+- Error persistence (`src/lib/errors/ErrorPersistence.ts`) — agent errors already write to `errors.ndjson`
+- Pipeline summary — already generated
+- Scratchpad files — already written per-agent
+- R script — already saved to `r/master.R`
+
+**What's new:**
+- "Download Debug Bundle" button on the project detail page (zip the above files)
+- Error summary section on the project detail page — shows agent errors in plain language, not raw stack traces
+- If a pipeline fails, the error is surfaced prominently (not buried in a toast that disappears)
+
+**Future (Phase 3.2+):**
+- Sentry integration for automatic error alerting
+- "Share with support" link that gives Hawk staff read access to the debug bundle without the partner having to download and email it
+
+### C.6 Deliverables
 
 | Deliverable | Description |
 |-------------|-------------|
@@ -472,12 +496,14 @@ When a user wants to adjust settings and re-run:
 | Progress timeline | Visual stage-by-stage tracking |
 | Re-run support | Pre-populate config from previous run |
 | Sidebar integration | Recent projects in sidebar, auto-update |
+| Debug bundle | Downloadable archive for pipeline troubleshooting |
+| Error visibility | Agent/pipeline errors surfaced on project detail page |
 
 ---
 
-## Phase D: Abstractions & Cloud Readiness
+## Phase D: Abstractions, Auth & Cloud Readiness
 
-**Goal**: Introduce the interface abstractions that make Phase 3.2 (Cloud Deployment) a configuration swap. Everything continues to work locally, but the seams are in place.
+**Goal**: Introduce the interface abstractions and authentication that make Phase 3.2 (Cloud Deployment) a configuration swap. This is the most architecturally important phase — it's where we define the contracts that every subsequent feature builds on. Auth is here (not deferred) because org-scoping must be baked into every interface from the start. When Segoe or Tesset joins after Antares, they should get their own org with zero retrofitting.
 
 ### D.0 Project/Run API Shape (to avoid cloud rewrites)
 
@@ -614,108 +640,18 @@ export interface StatusBroadcaster {
 
 **Cloud implementation**: `ConvexStatusBroadcaster` — Convex real-time subscriptions.
 
-### D.5 Wiring It Up
+### D.5 Auth & Organization Model (WorkOS)
 
-Create a central `services.ts` that instantiates the right implementations:
+Auth is not a separate phase. It's an abstraction layer like StorageProvider or JobStore — it provides identity context (`userId`, `orgId`) that every other abstraction consumes. Building it alongside the other interfaces means org-scoping is native, not retrofitted.
 
-```typescript
-// src/lib/services.ts
-import { LocalStorageProvider } from './storage/LocalStorageProvider';
-import { FileJobStore } from './jobs/FileJobStore';
-import { FileProjectStore } from './projects/FileProjectStore';
-import { PollingStatusBroadcaster } from './realtime/PollingStatusBroadcaster';
+**Why WorkOS (and why now, not later):**
+- Free for 1M MAUs — no cost concern for pilot
+- Handles login/signup UI — we don't build auth pages, WorkOS hosts them
+- SSO/SAML available when enterprise clients need it
+- Organization management built-in — creating a new org for Segoe or Tesset is a WorkOS API call
+- The alternative (building without auth and adding it later) means retrofitting `orgId` scoping into every store, every API route, and every file path. That's a rewrite.
 
-// In cloud deployment, these imports change to cloud implementations
-export const storageProvider = new LocalStorageProvider();
-export const jobStore = new FileJobStore();
-export const projectStore = new FileProjectStore();
-export const statusBroadcaster = new PollingStatusBroadcaster();
-```
-
-All API routes and pipeline code import from `services.ts` instead of directly accessing the filesystem or in-memory Map.
-
-### D.6 Migration Path
-
-1. Define interfaces
-2. Implement local versions that match current behavior
-3. Refactor API routes to use interfaces (one route at a time)
-4. Verify no regressions
-5. The cloud swap (Phase 3.2) only touches `services.ts` imports
-
-### D.7 Deliverables
-
-| Deliverable | Description |
-|-------------|-------------|
-| StorageProvider | Interface + LocalStorageProvider |
-| JobStore | Interface + FileJobStore (persistent across restarts) |
-| ProjectStore | Interface + FileProjectStore |
-| StatusBroadcaster | Interface + PollingStatusBroadcaster |
-| services.ts | Central service registry |
-| All API routes migrated | Use interfaces instead of direct fs/Map access |
-| Pipeline integration | PipelineRunner uses StorageProvider + JobStore |
-
----
-
-## Phase E: Marketing & Polish
-
-**Goal**: Build the public-facing marketing page and establish visual identity. This is what Antares (and future prospects) see before they log in.
-
-### E.1 Landing Page
-
-`(marketing)/page.tsx` — Single scroll page with clear sections:
-
-1. **Hero**: Bold headline + value proposition + "Get Started" CTA
-   - "Publication-Ready Crosstabs, Automated."
-   - Subhead explaining the .sav → Excel pipeline
-
-2. **How It Works**: 3-step visual (Upload → Configure → Download)
-
-3. **Capabilities**: Feature cards
-   - 6 AI agents working in parallel
-   - Statistical testing with configurable thresholds
-   - Loop/stacked data support
-   - Weight detection and dual-pass output
-   - HITL review for quality assurance
-   - 6 color themes
-
-4. **For Research Teams**: Enterprise pitch
-   - Multi-project management
-   - Consistent output across analysts
-   - Audit trail and provenance tracking
-
-5. **CTA Footer**: "Log In" button (routes to WorkOS, or directly to dashboard pre-auth)
-
-### E.2 Marketing Layout
-
-`(marketing)/layout.tsx`:
-- Minimal header: Logo + "Log In" button
-- No sidebar
-- Footer with basic links
-
-### E.3 Visual Identity
-
-- **Color palette**: Derive from the `classic` theme palette (professional blues/greens)
-- **Typography**: System font stack (already in place) or upgrade to a professional sans-serif
-- **Logo**: HawkTab AI wordmark (design separately)
-- **Tone**: Professional, confident, not flashy. Enterprise research audience.
-
-### E.4 Deliverables
-
-| Deliverable | Description |
-|-------------|-------------|
-| Landing page | Hero + How It Works + Capabilities + CTA |
-| Marketing layout | Separate from product layout |
-| Visual consistency | Color palette and typography aligned |
-
----
-
-## Phase F: Auth & Multi-Tenancy Foundation
-
-**Goal**: Lay the groundwork for WorkOS authentication and organization structure. This phase builds the data model and UI scaffolding — actual WorkOS integration happens in Phase 3.3 of the product roadmap.
-
-### F.1 Organization Data Model
-
-Extend ProjectStore with organization context:
+**Organization data model:**
 
 ```typescript
 export interface Organization {
@@ -732,16 +668,14 @@ export interface OrgMembership {
 }
 ```
 
-**Local implementation**: Single hardcoded org ("HawkPartners") with a single user. The data model exists; enforcement comes with WorkOS.
-
-### F.2 Auth Middleware Scaffold
+**Auth middleware:**
 
 ```typescript
 // src/middleware.ts
 export function middleware(request: NextRequest) {
-  // Phase F: Pass through (no auth enforcement)
-  // Phase 3.3: Validate WorkOS session, inject userId/orgId
-  return NextResponse.next();
+  // Validate WorkOS session, inject userId/orgId into request context
+  // Protect all (product) routes and API routes
+  // Marketing routes pass through unauthenticated
 }
 
 export const config = {
@@ -749,37 +683,128 @@ export const config = {
 };
 ```
 
-The middleware exists but is a no-op. When WorkOS is integrated, it validates the session and attaches user/org context.
-
-### F.3 UI Auth Scaffolding
-
-- **Org selector** in header: Shows hardcoded "HawkPartners" for now. Will become a dropdown when multi-org is live.
-- **User menu**: Shows "Demo User" for now. Will show actual user name/avatar post-auth.
-- **Login/logout**: "Log In" button routes to dashboard (no actual auth). Post-WorkOS, routes to WorkOS hosted login.
-
-### F.4 Scoped Data Access
-
-Even before auth is enforced, design all data access to be org-scoped:
+**Scoped data access — this is the key payoff:**
 
 ```typescript
-// All queries include orgId
+// Every store query includes orgId — this is not optional
 projectStore.list(orgId, { status: 'active' });
 storageProvider.list(`${orgId}/${projectId}/`);
 jobStore.listByProject(projectId); // projectId already scoped to org
 ```
 
-This means the cloud migration doesn't need to retrofit scoping — it's already there.
+**File path convention:** `{orgId}/{projectId}/{runId}/{filename}` — same as StorageProvider key naming. When Antares uploads a file, it lands in their org namespace. When Segoe uploads, it lands in theirs. No cross-org data leakage by construction.
 
-### F.5 Deliverables
+**UI integration:**
+- **Org selector** in AppHeader — dropdown when user belongs to multiple orgs (e.g., Hawk staff might access both HawkPartners and Antares orgs for support)
+- **User menu** — name, avatar, logout (all from WorkOS session)
+- **Login flow** — "Log In" button → WorkOS hosted login → callback → redirect to dashboard
+- **Invite flow** — Admin invites user by email → WorkOS sends invite → user signs up → auto-added to org
+
+**Roles:**
+
+| Role | Can Do |
+|------|--------|
+| Admin | Create projects, invite members, manage org settings, view all projects |
+| Member | Create projects, view own projects, view shared projects |
+| External Partner | View projects explicitly shared with them, download results |
+
+**For local development:** Use WorkOS in development mode (they provide a sandbox). Or: add an `AUTH_BYPASS=true` env var that injects a hardcoded user/org for dev, while keeping all the scoping active. This way we test the real auth flow in staging but can develop without WorkOS round-trips locally.
+
+### D.6 Wiring It Up
+
+Create a central `services.ts` that instantiates the right implementations:
+
+```typescript
+// src/lib/services.ts
+import { LocalStorageProvider } from './storage/LocalStorageProvider';
+import { FileJobStore } from './jobs/FileJobStore';
+import { FileProjectStore } from './projects/FileProjectStore';
+import { PollingStatusBroadcaster } from './realtime/PollingStatusBroadcaster';
+
+// In cloud deployment, these imports change to cloud implementations:
+//   LocalStorageProvider → R2StorageProvider
+//   FileJobStore → ConvexJobStore
+//   FileProjectStore → ConvexProjectStore
+//   PollingStatusBroadcaster → ConvexStatusBroadcaster
+export const storageProvider = new LocalStorageProvider();
+export const jobStore = new FileJobStore();
+export const projectStore = new FileProjectStore();
+export const statusBroadcaster = new PollingStatusBroadcaster();
+```
+
+All API routes and pipeline code import from `services.ts` instead of directly accessing the filesystem or in-memory Map. Auth (WorkOS) is not in `services.ts` — it's in the middleware and doesn't need a swap for cloud because it's already cloud-native.
+
+### D.7 Migration Path
+
+1. Define all interfaces (StorageProvider, JobStore, ProjectStore, StatusBroadcaster)
+2. Implement thin local versions for development
+3. Set up WorkOS integration (middleware, callback route, session management)
+4. Refactor API routes to use interfaces + auth context (one route at a time)
+5. Verify no regressions with `AUTH_BYPASS=true`
+6. Test real WorkOS flow in staging
+7. The cloud swap (Phase 3.2) only touches `services.ts` imports — auth is already live
+
+### D.8 Deliverables
 
 | Deliverable | Description |
 |-------------|-------------|
-| Organization model | Interface + local implementation |
-| Auth middleware scaffold | No-op middleware ready for WorkOS |
-| Org-scoped data access | All stores query by orgId |
-| UI placeholders | Org selector, user menu, login button |
+| StorageProvider | Interface + LocalStorageProvider |
+| JobStore | Interface + FileJobStore (persistent across restarts) |
+| ProjectStore | Interface + FileProjectStore |
+| StatusBroadcaster | Interface + PollingStatusBroadcaster |
+| services.ts | Central service registry |
+| WorkOS auth | Middleware, login/callback routes, session management |
+| Organization model | Org + membership interfaces, org-scoped data access |
+| All API routes migrated | Use interfaces + auth context instead of direct fs/Map access |
+| Pipeline integration | PipelineRunner uses StorageProvider + JobStore |
 
 ---
+
+## Phase E: Landing Page
+
+**Goal**: Give unauthenticated visitors a minimal, professional entry point. This is NOT a marketing website — Antares, Segoe, and Tesset already know what HawkTab does because we showed them. This is the door they walk through to get to the product.
+
+**What Antares needs to see when they hit the URL:**
+1. "HawkTab AI" — confirms they're in the right place
+2. A one-sentence description — "Publication-ready crosstabs from your SPSS data"
+3. A "Log In" button — routes to WorkOS hosted login
+4. Professional, clean, confident. Not a sales pitch.
+
+### E.1 Landing Page
+
+`(marketing)/page.tsx` — Single page, minimal:
+
+- **Logo + headline**: "HawkTab AI"
+- **Subhead**: "Upload your .sav, configure your project, download publication-ready crosstabs."
+- **"Log In" button** — prominent, routes to WorkOS
+- **Optional**: A brief "How It Works" section (3 icons: Upload → Configure → Download) if we want to give first-time visitors context. But this is secondary to the login button.
+
+### E.2 Marketing Layout
+
+`(marketing)/layout.tsx`:
+- Minimal header: Logo only
+- No sidebar, no footer beyond basic copyright
+- Clean background, professional typography
+
+### E.3 Visual Identity
+
+- **Color palette**: Professional blues/greens derived from the `classic` theme
+- **Typography**: System font stack (already in place)
+- **Logo**: HawkTab AI wordmark (design separately — can be text-only for now)
+- **Tone**: Professional, confident, understated
+
+**Why this is enough:** Our partners aren't finding us through Google. They're getting a link from Jason or Bob. The landing page's job is to confirm they're in the right place and get them logged in. A full marketing site with feature cards, enterprise pitch sections, and capability breakdowns can come later when we're marketing to people who haven't already been sold in a meeting.
+
+### E.4 Deliverables
+
+| Deliverable | Description |
+|-------------|-------------|
+| Landing page | Logo + description + login button |
+| Marketing layout | Separate from product layout, minimal chrome |
+
+---
+
+> **Note**: Auth & multi-tenancy (formerly Phase F) has been merged into Phase D. WorkOS integration, org model, and scoped data access are built alongside the other abstractions — not deferred. See D.5.
 
 ## Implementation Sequence & Dependencies
 
@@ -787,28 +812,25 @@ This means the cloud migration doesn't need to retrofit scoping — it's already
 Phase A ─────────────────────────────────────────────────────────
   (Foundation)   Route groups, app shell, API refactor
          │
-         ├──────────────> Phase D ──────────────────────────────
-         │                  (Abstractions: stores + storage seams)
-         │                         │
-         │                         ├──────> Phase B ────────────
-         │                         │          (New Project Wizard)
-         │                         │
-         │                         └──────> Phase C ────────────
-         │                                    (Dashboard + Results)
-         │
-         └──────────────> Phase E ──────────────────────────────
-                           (Marketing — can run in parallel)
-
-Phase C + Phase D ──────> Phase F ──────────────────────────────
-                           (Auth Foundation)
+         └──────────────> Phase D ──────────────────────────────
+                            (Abstractions + Auth + Org model)
+                                   │
+                                   ├──────> Phase B ────────────
+                                   │          (New Project Wizard)
+                                   │
+                                   ├──────> Phase C ────────────
+                                   │          (Dashboard + Results + Supportability)
+                                   │
+                                   └──────> Phase E ────────────
+                                              (Landing page — trivial, parallel)
 ```
 
 **Key dependencies**:
-- Phase A must complete before D (route structure + refactors)
-- Phase D should start immediately after A and land early (so B/C are built on persistent primitives)
-- Phase B and C can be interleaved (wizard needed before dashboard is useful)
-- Phase E (Marketing) can run in parallel once `(marketing)/` routes exist — it's independent
-- Phase F depends on C (project management) and D (abstractions)
+- Phase A must complete before D (route structure needed for auth middleware + app shell)
+- Phase D is the critical path — defines every interface that B/C build on, plus auth
+- Phase B and C can be interleaved after D (wizard needed before dashboard is useful)
+- Phase E is trivial and can happen anytime after `(marketing)/` route group exists
+- There is no Phase F — auth is in Phase D where it belongs
 
 ---
 
@@ -818,21 +840,28 @@ Phase C + Phase D ──────> Phase F ───────────�
 - Current pipeline outputs are in `outputs/<dataset>/pipeline-<timestamp>/` with no org/project wrapper
 - Phase D's FileProjectStore needs to index existing outputs retroactively
 - Write a one-time migration script that creates project records from existing `pipeline-summary.json` files
+- Existing outputs can be assigned to a default org ("HawkPartners") during migration
 
 ### API Route Backward Compatibility
 - The current API serves both the web UI and potentially CLI tooling
 - Phase B adds new FormData fields to `process-crosstab` — must remain backward compatible (new fields are optional)
-- Consider versioning the API if breaking changes are needed
+- The D.0 API shape (separate project/run endpoints) is a parallel path — the old endpoint can coexist during transition
 
 ### Long-Running Pipeline + Server Restarts
 - The FileJobStore (Phase D) persists job records, but if the server restarts mid-pipeline, the Node.js process dies and the pipeline is lost
-- For local: accept this limitation (user re-runs)
+- For local development: accept this limitation (developer re-runs)
 - For cloud (Phase 3.2): Railway container persistence + checkpoint-based resume
 
 ### Performance with Many Projects
 - The current `GET /api/pipelines` scans the filesystem on every request
 - With 50+ projects, this becomes slow
 - Phase D's ProjectStore with a JSON index file makes listing fast (no directory scanning)
+
+### WorkOS Integration Complexity
+- WorkOS AuthKit for Next.js is well-documented and handles most of the auth flow
+- Main risk: session management across API routes and middleware needs careful testing
+- Mitigation: `AUTH_BYPASS=true` env var for local development decouples UI work from WorkOS availability
+- WorkOS sandbox mode is free and available for development/staging
 
 ---
 
@@ -843,29 +872,30 @@ These are explicitly out of scope for this plan and belong to their respective r
 | Item | Where It Lives |
 |------|---------------|
 | Cloud deployment (Vercel, R2, Railway, Convex) | Product Roadmap Phase 3.2 |
-| WorkOS integration (actual auth) | Product Roadmap Phase 3.3 |
 | Cost tracking persistence & dashboard | Product Roadmap Phase 3.4 |
 | Structured logging & Sentry | Product Roadmap Phase 3.5 |
 | Interactive table review (browser rendering) | Long-term Vision |
 | Configurable assumptions & regeneration | Long-term Vision |
 | Variable selection persistence | Long-term Vision |
 | Predictive confidence scoring | Long-term Vision |
+| Full marketing website | Post-MVP — when we're selling to people who haven't had a demo |
 
-This plan builds the foundation that those features will plug into. The abstractions in Phase D are specifically designed so that Phase 3.2-3.5 are configuration changes, not rewrites.
+**Note**: WorkOS auth (formerly Phase 3.3 / Phase F) is now **in scope** — it's part of Phase D. The abstractions in Phase D are designed so that Phase 3.2 (cloud deployment) is a configuration swap: change the implementation classes in `services.ts`, deploy to Vercel/Railway, point StorageProvider at R2, point JobStore at Convex. Auth is already live.
 
 ---
 
 ## Success Criteria
 
-The UI overhaul is complete when:
+Phase 3.1 is complete when:
 
-1. **All Phase 2 pipeline features** are accessible from the web UI (no CLI-only features remain)
-2. **A new user** can upload files, configure their project, launch a pipeline, review HITL decisions, and download results — without touching the terminal
-3. **The dashboard** shows all projects with status, and users can navigate between them
-4. **Cloud readiness**: Swapping to R2/Convex/WorkOS requires only changing implementation classes in `services.ts`
-5. **No regressions**: The CLI pipeline (`test-pipeline.ts`, `batch-pipeline.ts`) continues to work unchanged
-6. **The landing page** communicates what HawkTab does to someone who has never seen it
+1. **A partner (Antares, Segoe, Tesset) can complete a project end-to-end** — log in, upload files, configure their project, launch the pipeline, review HITL decisions, download results — without touching a terminal or asking us for help
+2. **All Phase 2 pipeline features** are accessible from the web UI (no CLI-only features remain)
+3. **Auth works** — partners log in via WorkOS, see only their own org's projects, can't access other orgs' data
+4. **The dashboard** shows all projects with status, and users can navigate between them
+5. **When something breaks**, the error is visible in the UI and a debug bundle is downloadable — we can diagnose issues without screen-sharing
+6. **Cloud readiness**: Swapping to R2/Convex requires only changing implementation classes in `services.ts` — auth is already live
+7. **No regressions**: The CLI pipeline (`test-pipeline.ts`, `batch-pipeline.ts`) continues to work unchanged
 
 ---
 
-*This plan should be iterated phase by phase. Start with Phase A (foundation), validate the architecture with Phase B (the most user-facing change), and adjust the remaining phases based on what we learn.*
+*This plan should be iterated phase by phase. Start with Phase A (foundation), validate the architecture with Phase D (the most critical for cloud readiness), build the user-facing features in B/C, and adjust based on what we learn.*

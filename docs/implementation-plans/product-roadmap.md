@@ -36,9 +36,9 @@ This document outlines the path from HawkTab AI's current state (reliable local 
 | **Phase 2.10** Output Feedback | Complete | Feedback form on results page, stored as feedback.json, history badge |
 | **Phase 2.11** Excel Themes | Complete | 6 themes: classic, coastal, blush, tropical, bold, earth. `--theme` CLI flag. |
 | **Phase 2.12** ~~Browser Review~~ | Deferred | Consolidated into Long-term Vision → Interactive Table Review |
-| **Phase 3.1** Local UI | Partial (~40%) | Basic pipeline UI; no enterprise structure |
+| **Phase 3.1** Product UI + Auth | Partial (~40%) | Basic pipeline UI; no enterprise structure. Auth (WorkOS) pulled into 3.1 — see `ui-overhaul-plan.md` Phase D. |
 | **Phase 3.2** Cloud Deployment | Not Started | No Convex/R2/Railway/Sentry/PostHog |
-| **Phase 3.3** Auth (WorkOS) | Not Started | Zero authentication |
+| **Phase 3.3** ~~Auth (WorkOS)~~ | Merged into 3.1 | Pulled forward — org-scoping must be baked in from the start, not retrofitted |
 | **Phase 3.4** Cost Tracking | Partial (~30%) | Metrics collected, not persisted |
 | **Phase 3.5** Logging | Minimal (~20%) | Basic tracing scaffold only |
 
