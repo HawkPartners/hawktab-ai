@@ -109,66 +109,36 @@ export default function LandingPage() {
           </p>
 
           {/* Three Steps */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <div className="bg-card border border-border rounded-lg p-6 hover:border-ring transition-colors">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-card border border-border rounded-lg p-8 hover:border-ring transition-colors">
               <span className="font-mono text-xs text-muted-foreground">01</span>
-              <h3 className="font-serif text-2xl mt-2 mb-2">Upload</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h3 className="font-serif text-2xl mt-3 mb-3">Upload</h3>
+              <p className="text-base text-muted-foreground leading-relaxed">
                 Drop your SPSS data file, banner plan, and optional survey document. The system validates everything before it begins.
               </p>
-              <div className="flex gap-2 mt-4 flex-wrap">
+              <div className="flex gap-2 mt-5 flex-wrap">
                 <span className="font-mono text-[11px] px-2 py-0.5 bg-secondary border border-border rounded">.sav</span>
                 <span className="font-mono text-[11px] px-2 py-0.5 bg-secondary border border-border rounded">.pdf</span>
                 <span className="font-mono text-[11px] px-2 py-0.5 bg-secondary border border-border rounded">.docx</span>
               </div>
             </div>
-            <div className="bg-card border border-border rounded-lg p-6 hover:border-ring transition-colors">
+            <div className="bg-card border border-border rounded-lg p-8 hover:border-ring transition-colors">
               <span className="font-mono text-xs text-muted-foreground">02</span>
-              <h3 className="font-serif text-2xl mt-2 mb-2">Process</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h3 className="font-serif text-2xl mt-3 mb-3">Process</h3>
+              <p className="text-base text-muted-foreground leading-relaxed">
                 The pipeline reads your data, interprets your spec, builds tables, applies filters, and validates every expression &mdash; checking in with you only when it needs to.
               </p>
-              <div className="flex gap-2 mt-4 flex-wrap">
-                <span className="font-mono text-[11px] px-2 py-0.5 bg-secondary border border-border rounded">AI reasoning</span>
-                <span className="font-mono text-[11px] px-2 py-0.5 bg-secondary border border-border rounded">Deterministic computation</span>
-              </div>
             </div>
-            <div className="bg-card border border-border rounded-lg p-6 hover:border-ring transition-colors">
+            <div className="bg-card border border-border rounded-lg p-8 hover:border-ring transition-colors">
               <span className="font-mono text-xs text-muted-foreground">03</span>
-              <h3 className="font-serif text-2xl mt-2 mb-2">Download</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h3 className="font-serif text-2xl mt-3 mb-3">Download</h3>
+              <p className="text-base text-muted-foreground leading-relaxed">
                 Client-ready Excel with statistical testing, proper NET rows, and formatting your clients expect. Ready to deliver.
               </p>
-              <div className="flex gap-2 mt-4 flex-wrap">
+              <div className="flex gap-2 mt-5 flex-wrap">
                 <span className="font-mono text-[11px] px-2 py-0.5 bg-secondary border border-border rounded">.xlsx</span>
               </div>
             </div>
-          </div>
-
-          {/* AI + Deterministic Concept */}
-          <div className="bg-card border border-border rounded-lg p-8 relative overflow-hidden"
-            style={{ backgroundImage: "radial-gradient(circle, var(--border) 1px, transparent 1px)", backgroundSize: "20px 20px" }}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-              <div className="bg-ct-violet-dim border border-ct-violet/20 rounded-lg p-6">
-                <p className="font-mono text-xs text-ct-violet uppercase tracking-wider mb-3">AI Reasoning</p>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Interprets your banner plan. Matches cuts to real variables. Reads skip logic from the survey.
-                  Fixes labels and adds NET rows using domain knowledge. Retries when something doesn&apos;t validate.
-                </p>
-                <p className="font-mono text-[10px] text-muted-foreground mt-3">Used where judgment is needed</p>
-              </div>
-              <div className="bg-ct-blue-dim border border-ct-blue/20 rounded-lg p-6">
-                <p className="font-mono text-xs text-ct-blue uppercase tracking-wider mb-3">Deterministic Computation</p>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Builds table structures from the actual data. Applies filters mechanically. Generates R scripts.
-                  Runs statistical tests. Formats Excel output. No guessing &mdash; just math.
-                </p>
-                <p className="font-mono text-[10px] text-muted-foreground mt-3">Used where precision is needed</p>
-              </div>
-            </div>
-            <p className="text-center text-sm text-muted-foreground max-w-lg mx-auto mt-6 relative z-10">
-              The pipeline can never make up data because the system won&apos;t let it. Intelligence is used intentionally &mdash; only where it genuinely helps.
-            </p>
           </div>
         </div>
       </section>
@@ -182,107 +152,48 @@ export default function LandingPage() {
             Other tools output tables. Crosstab AI understands your project, your data, and how you want your research delivered.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-card border border-border rounded-lg p-6 hover:border-ring transition-colors relative overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-card border border-border rounded-lg p-8 hover:border-ring transition-colors relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-ct-violet" />
-              <h3 className="text-base font-semibold mb-2">Finds the right cuts</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h3 className="font-serif text-xl mb-3">Finds the right cuts</h3>
+              <p className="text-base text-muted-foreground leading-relaxed">
                 Reads your banner plan and matches each cut to the actual variables in your data. Validates every expression before anything runs.
               </p>
-              <span className="inline-block font-mono text-[10px] text-muted-foreground mt-3 px-2 py-0.5 bg-secondary rounded">Banner interpretation &rarr; Validated cuts</span>
             </div>
-            <div className="bg-card border border-border rounded-lg p-6 hover:border-ring transition-colors relative overflow-hidden">
+            <div className="bg-card border border-border rounded-lg p-8 hover:border-ring transition-colors relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-ct-emerald" />
-              <h3 className="text-base font-semibold mb-2">Builds the right tables</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h3 className="font-serif text-xl mb-3">Builds the right tables</h3>
+              <p className="text-base text-muted-foreground leading-relaxed">
                 Adds NET rows, Top 2 Box, Bottom 2 Box. Fixes labels to match the survey wording. Splits tables when they need splitting.
               </p>
-              <span className="inline-block font-mono text-[10px] text-muted-foreground mt-3 px-2 py-0.5 bg-secondary rounded">Domain-aware table construction</span>
             </div>
-            <div className="bg-card border border-border rounded-lg p-6 hover:border-ring transition-colors relative overflow-hidden">
+            <div className="bg-card border border-border rounded-lg p-8 hover:border-ring transition-colors relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-ct-amber" />
-              <h3 className="text-base font-semibold mb-2">Respects your survey logic</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h3 className="font-serif text-xl mb-3">Respects your survey logic</h3>
+              <p className="text-base text-muted-foreground leading-relaxed">
                 Reads skip logic and filter rules from the survey document. Only the right respondents appear in the right tables.
               </p>
-              <span className="inline-block font-mono text-[10px] text-muted-foreground mt-3 px-2 py-0.5 bg-secondary rounded">Automatic base filtering</span>
             </div>
-            <div className="bg-card border border-border rounded-lg p-6 hover:border-ring transition-colors relative overflow-hidden">
+            <div className="bg-card border border-border rounded-lg p-8 hover:border-ring transition-colors relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-ct-blue" />
-              <h3 className="text-base font-semibold mb-2">Handles complex data</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h3 className="font-serif text-xl mb-3">Handles complex data</h3>
+              <p className="text-base text-muted-foreground leading-relaxed">
                 Looped data, stacked structures, weighted samples. The system detects these automatically and handles them correctly.
               </p>
-              <span className="inline-block font-mono text-[10px] text-muted-foreground mt-3 px-2 py-0.5 bg-secondary rounded">Loops, weights, multi-response</span>
             </div>
-            <div className="bg-card border border-border rounded-lg p-6 hover:border-ring transition-colors relative overflow-hidden">
+            <div className="bg-card border border-border rounded-lg p-8 hover:border-ring transition-colors relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-ct-red" />
-              <h3 className="text-base font-semibold mb-2">Data you can trust</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h3 className="font-serif text-xl mb-3">Data you can trust</h3>
+              <p className="text-base text-muted-foreground leading-relaxed">
                 Every expression is validated against the real data before execution. Hallucinations are caught and corrected. The pipeline can never make up a number.
               </p>
-              <span className="inline-block font-mono text-[10px] text-muted-foreground mt-3 px-2 py-0.5 bg-secondary rounded">Validated at every step</span>
             </div>
-            <div className="bg-card border border-border rounded-lg p-6 hover:border-ring transition-colors relative overflow-hidden">
+            <div className="bg-card border border-border rounded-lg p-8 hover:border-ring transition-colors relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-muted-foreground" />
-              <h3 className="text-base font-semibold mb-2">Human in the loop</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h3 className="font-serif text-xl mb-3">Human in the loop</h3>
+              <p className="text-base text-muted-foreground leading-relaxed">
                 When the system isn&apos;t sure, it asks. You review flagged items, provide corrections, and the pipeline continues. Your expertise stays in the process.
               </p>
-              <span className="inline-block font-mono text-[10px] text-muted-foreground mt-3 px-2 py-0.5 bg-secondary rounded">AI asks, you decide</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============ RESOURCES ============ */}
-      <section className="py-24 px-6 border-t border-border">
-        <div className="max-w-5xl mx-auto">
-          <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-4">Resources</p>
-          <h2 className="font-serif text-3xl sm:text-4xl leading-tight mb-4">Guides & insights</h2>
-          <p className="text-lg text-muted-foreground max-w-xl leading-relaxed mb-12">
-            Practical guidance on getting the most from your crosstab workflow.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-card border border-border rounded-lg overflow-hidden hover:border-ring transition-colors">
-              <div className="h-40 bg-secondary border-b border-border flex items-center justify-center"
-                style={{ backgroundImage: "radial-gradient(circle, var(--border) 1px, transparent 1px)", backgroundSize: "16px 16px" }}>
-                <span className="text-4xl text-muted-foreground/30">&#9638;</span>
-              </div>
-              <div className="p-6">
-                <p className="font-mono text-[10px] text-ct-blue uppercase tracking-wider mb-2">Guide</p>
-                <h3 className="font-serif text-xl mb-2">Understanding banner plans</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  How to structure your banner plan for optimal AI interpretation and accurate cut generation.
-                </p>
-              </div>
-            </div>
-            <div className="bg-card border border-border rounded-lg overflow-hidden hover:border-ring transition-colors">
-              <div className="h-40 bg-secondary border-b border-border flex items-center justify-center"
-                style={{ backgroundImage: "radial-gradient(circle, var(--border) 1px, transparent 1px)", backgroundSize: "16px 16px" }}>
-                <span className="text-4xl text-muted-foreground/30">&#9641;</span>
-              </div>
-              <div className="p-6">
-                <p className="font-mono text-[10px] text-ct-blue uppercase tracking-wider mb-2">Deep Dive</p>
-                <h3 className="font-serif text-xl mb-2">The review process</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  When and why the AI asks for your input, and how your corrections improve future runs.
-                </p>
-              </div>
-            </div>
-            <div className="bg-card border border-border rounded-lg overflow-hidden hover:border-ring transition-colors">
-              <div className="h-40 bg-secondary border-b border-border flex items-center justify-center"
-                style={{ backgroundImage: "radial-gradient(circle, var(--border) 1px, transparent 1px)", backgroundSize: "16px 16px" }}>
-                <span className="text-4xl text-muted-foreground/30">&#9643;</span>
-              </div>
-              <div className="p-6">
-                <p className="font-mono text-[10px] text-ct-blue uppercase tracking-wider mb-2">Technical</p>
-                <h3 className="font-serif text-xl mb-2">Statistical testing explained</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  How Crosstab AI runs significance tests and what the column letters in your output mean.
-                </p>
-              </div>
             </div>
           </div>
         </div>
