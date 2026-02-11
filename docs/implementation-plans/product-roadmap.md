@@ -1,754 +1,328 @@
-# Product Roadmap: Reliability → Production
+# Product Roadmap: Productization
 
 ## Overview
 
-This document outlines the path from HawkTab AI's current state (reliable local pipeline) to a production product that external parties like Antares could use.
+HawkTab AI is a crosstab automation pipeline that turns survey data files into publication-ready Excel crosstabs. The pipeline is **reliable** (15 datasets tested, R-based validation, HITL review) and **feature-complete** (output formats, stat testing, weights, themes, AI-generated banners, loop/stacked data). The UI foundation is in place (Next.js app shell with route groups, sidebar, providers, refactored API layer).
 
-**Current State**: Phase 1 (Reliability) and Phase 2 (Feature Completeness) complete. Moving to Phase 3 (Productization).
+**This document tracks the remaining work: getting from localhost to a production URL that Antares can log into and use.**
 
-**Target State**: Cloud-hosted service with multi-tenant support, configurable output options, and self-service UI.
+**Target State**: Antares receives a URL, logs in, and uses the system end-to-end — upload files, configure their project, run the pipeline, review HITL decisions, download results.
 
-**Philosophy**: Ship incrementally. Each phase delivers usable value while building toward the full vision.
+**Philosophy**: Build against real cloud services from the start. Convex has dev environments, R2 has dev buckets, WorkOS has sandbox mode — no local abstractions that get thrown away.
 
----
-
-### Implementation Status Summary (Feb 11, 2026)
-
-| Item | Status | Notes |
-|------|--------|-------|
-| **Phase 1.1** Stable System | Complete | R validation, retry logic, per-table isolation |
-| **Phase 1.2** Leqvio Dataset | Complete | 3 edge cases documented |
-| **Phase 1.3** Loop/Stacked Data | Complete | Full deterministic resolver + semantics agent |
-| **Phase 1.4** Broader Testing | Complete | 15 datasets tested, cut expression validator + retry loop added |
-| **Phase 1.5** ~~Pre-Flight Confidence~~ | Reorganized | Intake questions → 3.1; predictive scoring → Long-term Vision |
-| **Phase 2.1** Output Formats | Complete | frequency, counts, both (same workbook or separate) |
-| **Phase 2.4** Stat Testing Config | Complete | Env vars, pipeline summary, `--show-defaults` |
-| **Phase 2.4b** Loop-Aware Stat Testing | Complete | Suppress (default) or vs-complement for entity-anchored groups |
-| **Phase 2.4c** Variable Persistence | Deferred | Moved to Long-term Vision |
-| **Phase 2.4d** Dual-Mode Loop Prompt | Deferred | Moved to Long-term Vision |
-| **Phase 2.5** Upfront Context | Consolidated | Merged into 3.1 (Project Intake Questions) |
-| **Phase 2.5a** Input Flexibility | Complete | PDF/DOCX for survey + banner; .sav for data |
-| **Phase 2.5b** AI-Generated Banner | Complete | BannerAgent generate-cuts prompt + HITL gate |
-| **Phase 2.6** Weight Detection | Complete | Detection + `--weight=VAR` CLI + dual-pass R + separate weighted/unweighted workbooks |
-| **Phase 2.7** ~~Survey Classification~~ | Consolidated | Classification → 3.1 intake; confidence scoring → Long-term Vision |
-| **Phase 2.8** HITL Review Overhaul | Complete | Agent output audit, `humanReviewRequired` removed (derived by pipeline), `userSummary` fields, rank-based alternatives, shared review thresholds |
-| **Phase 2.9** Table ID Visibility | Complete | IDs render, excluded sheet works. Interactive control → Long-term Vision |
-| **Phase 2.10** Output Feedback | Complete | Feedback form on results page, stored as feedback.json, history badge |
-| **Phase 2.11** Excel Themes | Complete | 6 themes: classic, coastal, blush, tropical, bold, earth. `--theme` CLI flag. |
-| **Phase 2.12** ~~Browser Review~~ | Deferred | Consolidated into Long-term Vision → Interactive Table Review |
-| **Phase 3.1** Product UI + Auth | Partial (~40%) | Basic pipeline UI; no enterprise structure. Auth (WorkOS) pulled into 3.1 — see `ui-overhaul-plan.md` Phase D. |
-| **Phase 3.2** Cloud Deployment | Not Started | No Convex/R2/Railway/Sentry/PostHog |
-| **Phase 3.3** ~~Auth (WorkOS)~~ | Merged into 3.1 | Pulled forward — org-scoping must be baked in from the start, not retrofitted |
-| **Phase 3.4** Cost Tracking | Partial (~30%) | Metrics collected, not persisted |
-| **Phase 3.5** Logging | Minimal (~20%) | Basic tracing scaffold only |
-
-**Also verified as implemented (not separate roadmap items):**
-- TablePostProcessor: 8 deterministic rules (exceeds the 7 specified)
-- Provenance tracking: `sourceTableId`, `splitFromTableId`, `lastModifiedBy` all in schemas
-- SkipLogicAgent + FilterTranslatorAgent: Fully functional
-- LoopDetector + LoopContextResolver + LoopCollapser: Fully functional
-- Batch pipeline runner with cross-dataset analytics
+> **Prior phases** (Reliability, Feature Completeness, UI Foundation) are complete and documented in git history. This document focuses exclusively on what's left to build.
 
 ---
 
-## Phase 1: Reliability — `COMPLETE`
+### Status Summary (Feb 11, 2026)
 
-| Part | Description | Status |
-|------|-------------|--------|
-| 1 | Stable System for Testing (R validation, bug fixes, retry logic) | Complete |
-| 2 | Finalize Leqvio Dataset (golden datasets, 3x consistency runs) | Complete |
-| 3 | Loop/Stacked Data + Weights (Tito's dataset) | Complete |
-| 4 | Strategic Broader Testing (15 datasets across survey types) | Complete |
-
-**Result**: Pipeline reliably produces usable crosstabs across 15 datasets spanning HCP segmentation, ATU (5 waves), demand, access perceptions, and consumer/beverage with loops. Cut expression validator with R-based pre-validation and CrosstabAgent retry loop added as final safety net. Remaining edge cases are addressable via UI HITL review (agent surfaces alternatives with confidence scores and plain-language summaries).
-
-### ~~1.5 Pipeline Confidence Pre-Flight~~ — `REORGANIZED`
-
-> **Decision (Feb 8, 2026):** This item originally combined two different ideas that have been separated:
->
-> 1. **Intake questions** (asking users about project type, missing files, etc.) — moved to **3.1** as part of the New Project Flow. This is a UI/UX concern that belongs in the upload experience, not a pipeline pre-check.
->
-> 2. **Predictive confidence scoring** (can the pipeline handle this dataset?) — moved to **Long-term Vision**. We don't yet have enough failure data across datasets to build a reliable predictor. Most pipeline failures come from AI agent behavior, not data characteristics — and you can't predict agent success without running the agents. Premature confidence tiers would either give false assurance (green on a dataset that fails) or meaningless noise (yellow on everything). Revisit after 50+ dataset runs with documented failure modes.
->
-> The basic sanity checks that already exist (validation catches corrupt data, loop detection flags structural issues) continue to run as part of the pipeline. No new work needed in Phase 1.
+| Sub-phase | Description | Status |
+|-----------|-------------|--------|
+| **UI Foundation** | Route groups, app shell, sidebar, providers, API refactor | Complete |
+| **3.1** Cloud Infrastructure Setup | Convex, R2, WorkOS, Docker/Railway | Not Started |
+| **3.2** Pipeline Cloud Migration | Wire orchestrator to Convex/R2, new API routes, deprecate old | Not Started |
+| **3.3** New Project Experience | Multi-step wizard exposing all pipeline features in UI | Not Started |
+| **3.4** Dashboard & Supportability | Real-time dashboard, debug bundles, error visibility | Not Started |
+| **3.5** Deploy & Launch | Railway deployment, DNS, landing page, Sentry | Not Started |
 
 ---
 
-## Phase 2: Feature Completeness
+## Phase 3: Productization
 
-Features needed before external users can rely on the system for real projects.
+### Current State (UI Foundation — Complete)
 
-### 2.1 Output Format Options — `COMPLETE`
+The UI foundation is in place. Route groups, app shell, and API refactoring were completed as Phase A of the UI overhaul (see `ui-overhaul-plan.md`).
 
-**Percents Only / Frequencies Only**
+**What exists now:**
+- Next.js app with `(marketing)/` and `(product)/` route groups
+- App shell: collapsible sidebar with navigation + recent projects, header with branding, breadcrumbs on all pages
+- Pages: dashboard (project list), new project (upload form), project detail (status + downloads), HITL review (crosstab cut validation), settings (placeholder)
+- Providers: `ProjectProvider` (active project/job tracking), `PipelineStatusProvider` (subscription-based polling)
+- Hooks: `useJobPolling`, `useJobRecovery`, `useLoopDetection`, `useValidationQueue`
+- API refactored: `process-crosstab/route.ts` down from 1,312 → 137 lines, extracted to `pipelineOrchestrator.ts`, `hitlManager.ts`, `fileHandler.ts`
+- Old `/pipelines/[pipelineId]` URLs redirect to `/projects/[projectId]`
 
-Bob asked: "Is it possible to add in an option to say I only want percents or frequencies?"
-
-| Option | What It Shows |
-|--------|---------------|
-| Both (default) | Count and percentage in each cell |
-| Percents only | Just percentages |
-| Frequencies only | Just counts |
-
-**Current State**: All options implemented.
-
-- `--display=frequency` — percentages only (default)
-- `--display=counts` — raw counts only
-- `--display=both` — two sheets in one workbook (Percentages + Counts)
-- `--display=both --separate-workbooks` — two separate .xlsx files: `crosstabs.xlsx` (percentages) + `crosstabs-counts.xlsx` (counts). Each workbook gets its own TOC and Excluded Tables sheet.
-
----
+**What's missing:**
+- No auth (anyone can access everything)
+- No cloud hosting (runs on `localhost:3000`)
+- No persistent job tracking (in-memory Map, lost on restart)
+- No project configuration wizard (upload form is flat, doesn't expose pipeline features like themes, stat testing, weights)
+- No multi-tenancy (no org-scoping)
 
 ---
 
-### 2.4 Stat Testing Configuration — `COMPLETE`
+### 3.1 Cloud Infrastructure Setup — `NOT STARTED`
 
-**Current State**: Fully implemented.
+Set up the cloud services that everything else builds on. No UI features — just the foundation.
 
-- **Environment variables**: `STAT_THRESHOLDS`, `STAT_PROPORTION_TEST`, `STAT_MEAN_TEST`, `STAT_MIN_BASE`
-- **Supports**: Dual thresholds (uppercase/lowercase letter notation), unpooled/pooled z-tests, Welch/Student t-tests, minimum base size
-- **Validated on startup**, formatted for display, stored in `pipeline-summary.json`
-- **All defaults** flow from a single config source: `getStatTestingConfig()` in `src/lib/env.ts`
-- **`--show-defaults`** CLI flag displays current configuration without running pipeline
+| Service | Purpose | Why This One |
+|---------|---------|--------------|
+| **Convex** | Database + real-time subscriptions | TypeScript-native, `npx convex dev` for local dev, real-time built-in (replaces polling) |
+| **Cloudflare R2** | File storage (uploads, pipeline outputs) | S3-compatible, no egress fees, dev/prod buckets |
+| **WorkOS** | Auth + org management | Free for 1M MAUs, hosted login UI, SSO/SAML when needed, org management built-in |
+| **Railway** | Docker container for pipeline execution | Supports long-running processes, Node + R in one container |
 
----
+**Convex schema** (core tables):
 
-### 2.4b Loop-Aware Stat Testing — `COMPLETE`
+| Table | Key Fields | Purpose |
+|-------|------------|---------|
+| `organizations` | `orgId`, `name`, `slug` | Multi-tenancy scoping (synced from WorkOS) |
+| `users` | `userId`, `email`, `name` | User records (synced from WorkOS on first login) |
+| `orgMemberships` | `userId`, `orgId`, `role` | Who belongs to which org, with what permissions |
+| `projects` | `projectId`, `orgId`, `name`, `projectType`, `config`, `intake`, `fileKeys` | Project records — the user-facing container |
+| `runs` | `runId`, `projectId`, `orgId`, `status`, `stage`, `progress`, `config`, `result`, `error` | Pipeline execution records — replaces in-memory jobStore |
 
-**Problem**: When entity-anchored banner groups exist on stacked/loop data, within-group pairwise stat testing (A-vs-B) can be invalid if groups overlap. The system now consults the loop semantics policy before generating within-group stat letters.
+**Auth (WorkOS)**:
+- `@workos-inc/authkit-nextjs` for session management
+- `src/middleware.ts` protecting `(product)/` routes and `/api/*`
+- Hosted login UI — we don't build auth pages, WorkOS handles it
+- `AUTH_BYPASS=true` env var for local development (hardcoded dev user/org)
+- Org selector in AppHeader when user belongs to multiple orgs
 
-**What is implemented (two modes, default = suppress):**
+**Roles**:
 
-| Mode | Behavior | When to use |
-|------|----------|-------------|
-| **Suppress** (default) | Skip within-group stat letters entirely for entity-anchored groups on stacked data. Still show vs-Total comparison. | Safe default. No invalid letters. |
-| **vs-Complement** (optional) | Instead of A-vs-B, compute A-vs-not-A for each cut. Always statistically valid regardless of overlap. | User wants significance testing on loop tables and understands the tradeoff. |
+| Role | Can Do |
+|------|--------|
+| Admin | Create projects, invite members, manage org settings, view all projects |
+| Member | Create projects, view own projects, view shared projects |
+| External Partner | View projects explicitly shared with them, download results |
 
-**Implementation (now live):**
+**R2 file organization**: `{orgId}/{projectId}/{runId}/{filename}` — scoped for multi-tenancy by construction.
 
-1. **Schema** — Add `comparisonMode: 'suppress' | 'complement'` to `BannerGroupPolicySchema` in `loopSemanticsPolicySchema.ts`. Default: `'suppress'`.
+**Docker container** (Railway):
+- Base image with Node.js + R + haven package
+- Same codebase as local dev — just different environment variables pointing at cloud services
+- Pipeline runs in-process (same as today, not a separate worker — simplest architecture for MVP)
 
-2. **R script generation** — In `generateSignificanceTesting()` (`RScriptGeneratorV2.ts`):
-   - Pass the loop semantics policy into the function (currently it receives nothing)
-   - For each group, check if it's entity-anchored with `shouldPartition=true`
-   - If `suppress`: skip the within-group comparison loop for that group
-   - If `complement`: generate R code that computes complement mask (`!cut_mask`) and tests cut proportions/means against the complement set using the same z-test/t-test logic
+**Deliverables**: Convex project with schema + dev environment running. R2 bucket created. WorkOS sandbox configured. Dockerfile that builds and runs locally. All services accessible from `npm run dev`.
 
-3. **Config** — Exposed as a pipeline option. In the UI, the toggle only appears when loops are detected. Default to suppress.
-
-**Level of Effort**: Medium (R script generation changes + schema addition + config wiring)
-
----
-
-### ~~2.4c Crosstab Agent Variable Selection Persistence~~ — `DEFERRED`
-
-> Moved to Long-term Vision. Not blocking for MVP — hidden variable hints and HITL provide sufficient reliability for now.
-
----
-
-### ~~2.4d Dual-Mode Loop Semantics Prompt~~ — `DEFERRED`
-
-> Moved to Long-term Vision. Single prompt works well when deterministic evidence exists. Revisit if batch testing reveals failures on low-evidence datasets.
+**Level of Effort**: Medium (setup + schema design + WorkOS wiring + Docker)
 
 ---
 
-### ~~2.5 Upfront Context Capture~~ — `CONSOLIDATED`
+### 3.2 Pipeline Cloud Migration — `NOT STARTED`
 
-> Merged into 3.1 (Project Intake Questions in the New Project Flow). All context capture happens through the UI upload experience.
+Wire the pipeline orchestrator and API routes to use Convex and R2 instead of in-memory state and filesystem scanning.
 
----
+**What changes:**
 
-### 2.5a Input Format Flexibility — `COMPLETE`
+1. **Job tracking → Convex** (replaces in-memory `Map<string, JobStatus>`):
+   - `pipelineOrchestrator.ts` writes status updates to Convex `runs` table instead of calling `updateJob()`
+   - Status polling replaced by Convex real-time subscriptions (no more `setInterval` every 5s)
+   - Jobs survive server restarts — Convex is the source of truth
+   - Cancellation: set `cancelRequested: true` in Convex + in-memory AbortController for the running process
 
-| Input Type | Accepted Formats | Notes |
-|------------|------------------|-------|
-| Survey | PDF, DOCX | BannerAgent converts via LibreOffice headless + pdf2pic |
-| Banner Plan | PDF, DOCX | Same conversion pipeline as survey |
-| Data File | SPSS (.sav) only | Source of truth for variables and values |
+2. **File storage → R2**:
+   - Uploaded files stored in R2 at `{orgId}/{projectId}/inputs/{filename}`
+   - Pipeline downloads files from R2 to local temp dir for R execution (R needs filesystem paths)
+   - Pipeline outputs (Excel, tables.json, R script) uploaded back to R2 after completion
+   - Downloads use signed R2 URLs (time-limited, org-scoped)
 
-**Not supported (by design):** Excel banner plans, TXT files for survey or banner. These are edge cases not worth the preprocessing complexity. If a client has an Excel banner plan, they can export it to PDF first.
+3. **Project/run metadata → Convex** (replaces `pipeline-summary.json` filesystem scanning):
+   - `GET /api/pipelines` (filesystem scan) → Convex query on `runs` table filtered by `orgId`
+   - Project detail, HITL review state, feedback — all in Convex
 
-Question numbering flexibility (Q_S2, S2, QS2, etc.) is handled by AI pattern matching — no special work needed.
+4. **New API routes** (alongside old, which get `@deprecated` markers):
 
----
+| New Route | Replaces | Purpose |
+|-----------|----------|---------|
+| `POST /api/projects` | — | Create project record in Convex |
+| `POST /api/projects/:id/files` | Part of `process-crosstab` | Upload files to R2 |
+| `POST /api/projects/:id/runs` | `POST /api/process-crosstab` | Start pipeline run |
+| `GET /api/runs/:id` | `GET /api/process-crosstab/status` | Get run status (Convex query) |
+| `POST /api/runs/:id/cancel` | `POST /api/pipelines/:id/cancel` | Cancel run |
+| `GET/POST /api/runs/:id/review` | `GET/POST /api/pipelines/:id/review` | HITL review |
 
-### 2.5b AI-Generated Banner from Research Objectives — `COMPLETE`
+5. **Old routes deprecated** (not removed — UI still uses them until 3.3/3.4 rebuild):
+   - Every old route gets `@deprecated` JSDoc pointing to its replacement
+   - Extract duplicated `findPipelineDir()` into shared utility while we're touching these files
 
-When no banner plan is provided — or the user explicitly chooses "AI generate cuts" — the system generates a suggested banner from the datamap and optional research objectives.
+6. **CLI unchanged**: `test-pipeline.ts` and `batch-pipeline.ts` write directly to filesystem — they don't go through the API layer and don't need to change.
 
-**Why It Matters**: Many projects don't have formal banner plans. Internally, we have datasets we can't test because the pipeline expects a banner plan. Externally, Antares mentioned clients who send plans with "just words" or no spec at all. This feature unblocks both scenarios and is a commercial differentiator — no other tool generates banner groups from data + objectives.
+**R execution constraint**: R needs local filesystem paths. The pipeline downloads input files from R2 to a temp directory, runs R against local files, then uploads results back to R2. This is handled in the orchestrator — the API routes never touch the filesystem.
 
-**User Flow** (UI context for future 3.1, but the logic is pipeline-level):
+**Security**:
+- All Convex queries filter by `orgId` — no cross-org data leakage
+- R2 keys scoped by `orgId/projectId` — org isolation by construction
+- File uploads validated server-side (types, sizes)
+- Signed URLs for downloads (time-limited)
+- Input validation with Zod on all API routes
 
-1. User completes intake form (project type, research objectives — if provided)
-2. At the banner plan step, user has three options:
-   - **Upload a banner plan** → existing BannerAgent flow (no change)
-   - **Provide optional cut suggestions** → text hints like "cut by specialty tier and region" that steer the agent
-   - **Skip / let AI generate** → system generates cuts from datamap + objectives
-3. If generating: BannerAgent (generate mode) proposes 3-5 banner groups
-4. **HITL gate**: User reviews proposed groups before pipeline continues — "Here's what we'd cut by. Add, remove, or modify." This is mandatory for generated banners (unlike parsed banners where the user already made the decisions).
-5. User confirms → output feeds into CrosstabAgent as normal
+**Deliverables**: Pipeline runs against Convex + R2. Jobs persist across restarts. Old routes deprecated with clear markers. New routes functional. UI still works via old routes (migration in next phases).
 
-**Architecture**:
-
-The BannerAgent handles both paths. Same agent, different prompt. The output schema (`BannerGroup[]`) is unchanged — downstream pipeline doesn't know or care whether groups were parsed from a PDF or generated from data.
-
-```
-src/prompts/banner/
-├── with-plan.ts          # Current: parse provided banner plan
-├── generate-cuts.ts      # New: generate cuts from datamap + objectives
-└── shared/               # Common output format instructions, best practices
-```
-
-This follows a broader pattern we'll adopt as agents handle more scenarios: **scenario-based prompts** rather than just production/alternative tuning variants. Each prompt is optimized for a specific input situation.
-
-**Key input for generation is the datamap, not the survey.** The .sav-derived datamap has everything needed: variable names, labels, value labels, category counts, `nUnique`. The survey PDF is supplemental context (question wording helps understand intent), but the datamap is the engine.
-
-**What the generate-cuts prompt reasons about:**
-
-| Signal | Source | How It's Used |
-|--------|--------|---------------|
-| Demographics | Datamap variable names + labels (age, gender, region) | Almost always included as cuts |
-| Project type | Intake form (segmentation, ATU, MaxDiff, etc.) | Informs which variables matter (e.g., segment variable for segmentation studies) |
-| Research objectives | User-provided text (optional) | Prioritizes variables relevant to what the user is trying to learn |
-| Cut suggestions | User-provided hints (optional) | Direct steering — "cut by specialty tier" |
-| Variable suitability | Datamap `nUnique`, value labels | Categorical variables with 2-8 categories make good cuts; 50-category variables don't |
-| Sample size | Datamap or quick R query | Cuts need sufficient n per cell to be meaningful |
-
-**What "good" generated cuts look like:**
-
-- **Group 1**: Total (always)
-- **Groups 2-4**: Demographics — the "usual suspects" that almost every study cuts by
-- **Group 5**: Study-specific — driven by research objectives or project type (e.g., segment assignments, awareness tiers, usage levels)
-- Each group has 2-6 cuts with clear labels and stat testing letters
-
-**Pipeline branching logic:**
-
-```
-if (bannerPlanProvided) {
-  // Existing flow — parse banner plan PDF/DOCX
-  BannerAgent(prompt: 'with-plan', input: bannerPlan + survey)
-} else {
-  // New flow — generate cuts from data
-  BannerAgent(prompt: 'generate-cuts', input: datamap + objectives + cutSuggestions)
-  → HITL gate (user reviews/edits proposed groups)
-}
-→ CrosstabAgent (unchanged — receives BannerGroup[] either way)
-```
-
-**Why this is more feasible than originally scoped:**
-
-- Output format is unchanged — no downstream pipeline changes
-- BannerAgent already handles structured output with the right schema
-- Datamap already contains everything needed (variables, labels, types, category counts)
-- HITL pattern already exists for crosstab cuts — we add a similar gate earlier
-- The prompt engineering is the main work, not plumbing
-
-**What's genuinely hard:** The current BannerAgent prompt is optimized for *parsing* — reading a document and extracting structure. The generate-cuts prompt is a different cognitive task — *designing* banner groups from raw data. The prompt will need real iteration. But the infrastructure (agent call, schema, pipeline integration) is straightforward.
-
-**Level of Effort**: Medium (prompt engineering + pipeline branching + HITL gate. No new schemas, no new agents, no downstream changes.)
+**Level of Effort**: High (orchestrator refactor + new routes + R2 integration + Convex mutations)
 
 ---
 
-### 2.6 Weight Detection & Application — `COMPLETE`
+### 3.3 New Project Experience — `NOT STARTED`
 
-> **Implementation Status (Feb 2026):** Fully implemented. Weight detection via heuristic scoring in ValidationRunner. CLI flags `--weight=VAR` and `--no-weight`. Dual-pass R script generates both weighted and unweighted tables in a single execution. Manual weighted formulas (not R `survey` package) for counts, bases, means, and effective n. Significance testing uses Kish's effective sample size. Loop stacking carries weight column through `bind_rows`. Dual JSON output (`tables-weighted.json` + `tables-unweighted.json`). Dual Excel workbooks with weighted/unweighted TOC annotations. Weight variable excluded from table generation via `normalizedType: 'weight'`.
+Replace the flat upload form with a multi-step wizard that exposes all pipeline configuration options. This is where every pipeline feature gets a UI surface.
 
-**Architecture**:
+**Wizard flow**: `Step 1: Upload Files → Step 2: Project Setup → Step 3: Configuration → Step 4: Review & Launch`
 
-| Component | Implementation |
-|-----------|---------------|
-| Detection | `WeightDetector.ts` — heuristic scoring (name pattern, mean≈1.0, no value labels, numeric class, plausible range). Threshold ≥ 0.5. Runs as Stage 4 in ValidationRunner. |
-| CLI | `--weight=varName` applies that weight. No flag + candidate detected → warning logged, continues unweighted. `--no-weight` suppresses warnings. |
-| R script | One `master.R` with dual-pass loop (`for weight_mode in c("unweighted", "weighted")`). Manual formulas: `sum(w[mask])` for counts, `sum(w[!is.na(var)])` for bases, `sum(w*x)/sum(w)` for means, `(sum(w))^2/sum(w^2)` for effective n. |
-| JSON output | `tables-weighted.json` + `tables-unweighted.json` (each with `metadata.weighted` flag). Without `--weight`: single `tables.json` (backward compatible). |
-| Excel output | `crosstabs-weighted.xlsx` + `crosstabs-unweighted.xlsx`, each with TOC subtitle ("Weighted results" / "Unweighted results"). Respects `--display` and `--separate-workbooks` flags. |
-| Exclusion | Weight variable marked `normalizedType: 'weight'` in datamap, excluded from table generation (same as admin/text_open). |
+**Step 1 — Upload Files**:
+- Data file (.sav) — required. Helper text: "Qualified respondents only."
+- Survey document (PDF, DOCX) — required
+- Banner plan (PDF, DOCX) — optional (if not provided, Step 2 activates AI-generated banner flow)
+- On .sav upload: trigger loop detection + weight candidate detection
 
-**Key design decisions**:
-- Manual weighted formulas instead of R `survey` package (existing code builds R as strings; `svydesign()` would require restructuring)
-- One R script, dual JSON output (avoids loading .sav twice)
-- Non-blocking detection (CLI flag, not interactive prompt during pipeline)
-- Backward compatible — unweighted pipelines produce identical output
+**Step 2 — Project Setup**:
+- Project name (auto-suggested from data file)
+- Project type select: Standard, ATU, Segmentation, MaxDiff, Demand, Concept Test, Tracking
+- Conditional questions per type:
+  - **Segmentation**: "Does your data include segment assignments?"
+  - **MaxDiff**: "Upload message list?" + "Anchored probability scores?"
+  - **Conjoint/DCM**: "Upload choice task definitions?"
+- If no banner plan: research objectives text area + cut suggestions text area → AI-generated banner flow
 
----
+**Step 3 — Configuration** (all pipeline features):
 
-### ~~2.7 Survey Classification & Confidence Scoring~~ — `CONSOLIDATED`
+| Setting | Control | Default |
+|---------|---------|---------|
+| Display mode | Radio: Percentages / Counts / Both | Percentages |
+| Separate workbooks | Toggle (visible when Both) | Off |
+| Color theme | Theme picker with 6 swatches | Classic |
+| Stat testing thresholds | Numeric input(s) | 90% |
+| Min base size | Number input | 0 |
+| Proportion test | Select | Unpooled z-test |
+| Mean test | Select | Welch's t-test |
+| Weight variable | Select from detected candidates | Off |
+| Loop stat testing | Radio: Suppress / Complement (visible when loops detected) | Suppress |
+| Stop after verification | Toggle (advanced, collapsed) | Off |
 
-> **Decision (Feb 8, 2026):** This item combined two ideas that are already covered elsewhere:
->
-> 1. **Survey classification** (detecting project type to prompt for missing context) — covered in **3.1** as part of Project Intake Questions. The user selects their project type during intake, and the system asks conditional follow-ups per type (Segmentation → segment assignments, MaxDiff → message list, Conjoint → choice task definitions). Asking the user is simpler and more reliable than auto-detecting from variable names.
->
-> 2. **Multi-dimensional confidence scoring** (assessing pipeline readiness across dimensions like structure, parent-child, variable types) — covered in **Long-term Vision → Predictive Confidence Scoring**. Same conclusion applies: we don't yet have enough failure data to build a reliable predictor. Revisit after 50+ dataset runs.
+**Step 4 — Review & Launch**:
+- Summary of all selections
+- "Launch Pipeline" → creates project in Convex, uploads files to R2, starts run
 
----
+**Variable selection persistence** (deterministic re-runs):
+- When a user confirms cut mappings via HITL or accepts a successful run, lock those selections in Convex
+- On re-run, CrosstabAgent prompt includes "locked selections" — these variables are not re-evaluated
+- Eliminates "it worked last time but not this time"
 
-### 2.8 HITL Review Overhaul (Agent Output + User Experience) — `COMPLETE`
+**API changes**: `POST /api/projects/:id/runs` accepts all configuration options. The orchestrator passes them to `PipelineRunner.runPipeline()` — same function the CLI calls. No pipeline logic changes needed.
 
-> **Implementation Status (Feb 2026):** Part A (Agent Output Simplification) fully implemented. `humanReviewRequired` removed from all 4 AI agent schemas — now derived by pipeline via centralized `shouldFlagForReview(confidence, threshold, expressionType)` with env-configurable thresholds. Field names standardized (`reason` → `reasoning`, `inferenceReason` → `reasoning`). `userSummary` (plain-language) fields added to CrosstabAgent columns and VerificationAgent output. Alternatives switched from confidence-scored to rank-ordered with `userSummary`. BannerAgent `processingMetadata` counts removed from AI output and derived deterministically. Shared review infrastructure in `src/lib/review/`. Review page updated to display `userSummary` and ranked alternatives. Part B (base sizes via R query) moved to Long-term Vision as a separate effort.
+**Deliverables**: 4-step wizard. All pipeline features exposed. Project type intake questions. AI banner flow. Variable selection persistence. Writes to Convex + R2.
 
-**Problem**: The current HITL flow surfaces raw agent output — confidence decimals, R expressions, developer-facing reasoning. This works for debugging but is wrong for users. A non-technical person reviewing cuts doesn't care that `hLOCATIONr1` has 0.75 confidence vs `dLOCATIONr1` at 0.65. They want: "We found multiple variables for 'Own Home.' Here are your options, ranked. Option 1 has 156 respondents, Option 2 has 23."
-
-This item has two sides: simplifying what agents produce, and improving what users see.
-
----
-
-**Part A: Agent Output Simplification**
-
-Audit agent output schemas across the pipeline and ask: is this field necessary? Is it redundant? Could it be derived deterministically? Agents should produce what only agents can produce — don't make them do work that code can do better.
-
-| Current | Problem | Fix |
-|---------|---------|-----|
-| Per-alternative `confidence` scores (0.75, 0.65, 0.60) | Granularity is false precision. Users don't know what 0.65 vs 0.60 means. | **Rank alternatives by preference** (1st, 2nd, 3rd). Agent picks its recommendation (#1) and orders the rest. No decimals. |
-| `humanReviewRequired` flag set by agent per-column | Agent decides when to escalate — inconsistent, non-auditable. | **Derive deterministically.** Agent outputs a single group-level confidence score. Pipeline applies a threshold (e.g., <0.8 → review). Consistent, tunable, no agent discretion. |
-| Per-column confidence + per-alternative confidence + group-level confidence | Confidence at every level is redundant. | **One confidence score per group.** If any column in the group is uncertain, the group gets flagged. Simpler schema, same outcome. |
-| `reason` and `uncertainties` written in developer language | "Found hLOCATIONr1 (HOME - HIDDEN: LOCATIONS) → selected because it is a direct 0/1 flag corresponding to Assigned S9_1" is not user-facing. | **Separate internal reasoning from user-facing summary.** Agent produces both: (1) detailed reasoning for debugging/scratchpad, (2) plain-language summary for the user written as if speaking to a non-technical research manager. |
-| `expressionType` field | Internal classification. User doesn't need to see this. | **Keep in schema for pipeline use, don't surface in HITL UI.** |
-
-**The principle:** Agents output a recommendation with a confidence level and plain-language reasoning. Everything else (whether to escalate, base sizes, ranking presentation) is handled deterministically by the pipeline.
+**Level of Effort**: High (multi-step wizard + all config surfaces + API extensions)
 
 ---
 
-**Part B: HITL Review Experience**
+### 3.4 Dashboard, Results & Supportability — `NOT STARTED`
 
-What the user sees when a banner group needs review:
+Build the project management experience — where users see their projects, track progress, and download results.
 
-1. **Group-level summary** — "We need your input on the **Location** group. We found variables that could work but want to confirm."
+**Dashboard** (`(product)/dashboard/`):
+- Project list from Convex (real-time — no polling, Convex subscriptions)
+- Columns: Project Name, Status, Tables, Created, Duration, Actions
+- Sort, filter by status, search by name
+- Empty state with "Create New Project" CTA
 
-2. **For each cut in the group**, show:
-   - Cut name from the banner plan (e.g., "Own Home")
-   - Our recommendation — plain-language description of what variable we chose and why
-   - Sample size (n=156) — **deterministically calculated via R query**, not AI-generated
-   - Ranked alternatives if they exist — each with plain-language description and sample size
-   - If n=0 on any option → flag it ("This variable has no matching respondents — likely wrong mapping")
-   - If n<30 on recommended option → warning ("Low sample size — significance testing may be unreliable")
+**Enhanced Project Detail** (`(product)/projects/[projectId]/`):
+- Status bar with pipeline stage + action buttons (Download, Review, Re-run, Cancel)
+- Pipeline progress timeline (visual stage-by-stage, replaces toast-based polling):
+  ```
+  ✅ Files uploaded → ✅ Banner analyzed → ⏳ Table generation → ⬜ Verification → ⬜ Excel
+  ```
+- Results section: summary cards (tables, cuts, groups, duration, cost), download buttons
+- Configuration summary (what settings were used)
+- If weighted: separate download buttons for weighted/unweighted
+- If separate workbooks: separate download buttons
 
-3. **User actions per cut**:
-   - Accept recommendation (default)
-   - Pick an alternative
-   - Flag for manual handling ("I'll fix this in the Excel myself")
+**Re-run support**:
+- Pre-populate wizard Step 3 with previous run's settings
+- Allow swapping data file (interim → final workflow)
+- Re-uses persisted cut mappings for deterministic results
+- Previous runs visible in "Run History" section
 
-4. **User actions per group**:
-   - Accept all recommendations
-   - Review individually
+**Supportability** (when things break for Antares):
+- **Debug bundle**: single zip per run containing pipeline-summary.json, errors.ndjson, scratchpad files, R script, event log
+- **Error visibility**: agent/pipeline errors surfaced on project detail page in plain language, not buried in disappeared toasts
+- **"Download Debug Bundle"** button on project detail page
 
-**Base size calculation**: Run a quick R query against the .sav file for each proposed expression and its alternatives. This happens once when HITL review is triggered — lightweight and deterministic. Users often know roughly how many respondents should be in a segment ("we expected ~150 Tier 1 HCPs"), so sample size is the single most useful signal for confirming whether a mapping is correct.
+**Cost tracking persistence** (folded in here — not a separate phase):
+- `AgentMetricsCollector` already tracks per-call costs
+- Write to Convex `aiUsage` table at pipeline completion
+- No dashboard for MVP — query Convex directly
 
----
+**Deliverables**: Real-time dashboard, enhanced results page, progress timeline, re-run, debug bundles, error visibility, cost persistence.
 
-**What this replaces in the schema:**
-
-```
-Before (per-column):
-  confidence: 0.75
-  reason: "Found hLOCATIONr1 (HOME - HIDDEN: LOCATIONS)..."
-  alternatives: [{ expression, confidence: 0.65, reason }]
-  uncertainties: ["Multiple variables encode..."]
-  humanReviewRequired: true
-
-After (per-column):
-  rank: 1                           # Agent's preference order
-  userSummary: "We chose the binary  # Plain language for the user
-    location flag (156 respondents).
-    There are similar variables in
-    the data — see alternatives."
-  alternatives: [{ expression,       # Ranked by preference, no confidence decimals
-    rank: 2, userSummary }]
-  baseSize: 156                      # Deterministic (R query, not AI)
-
-After (per-group):
-  confidence: 0.72                   # Single score for the group
-  reviewRequired: true               # Derived: confidence < threshold
-```
-
-**Scope**: This audit applies primarily to the CrosstabAgent (banner cut mappings), which is where HITL review happens today. The same principles (simplify output, separate internal/user-facing language, derive what you can deterministically) should inform future schema changes across other agents.
-
-**Level of Effort**: Medium (schema changes + prompt updates for plain-language output + R query for base sizes + HITL UI refresh). The UI component belongs in 3.1 but the schema and prompt work is Phase 2.
+**Level of Effort**: High (dashboard + results rebuild + progress timeline + debug bundle + cost persistence)
 
 ---
 
-### 2.9 Table ID Visibility — `COMPLETE`
-
-> **Implementation Status (Feb 2026):** Table IDs render in Excel output (`[tableId]` in context column). Excluded Tables sheet exists with full rendering. Tables have `excluded` and `excludeReason` schema fields. This is sufficient for MVP.
-
-Table IDs in the Excel output are already useful — users can reference specific tables when giving feedback. The interactive include/exclude control and regeneration functionality that was originally scoped here has been moved to **Long-term Vision → Interactive Table Review** as part of a larger consolidated vision (former 2.9, 2.10, 2.12).
-
-No additional work needed for MVP.
-
----
-
-### 2.10 Output Feedback Collection — `COMPLETE`
-
-> **Implementation Status (Feb 2026):** Feedback collection fully implemented. Users can submit feedback on completed pipeline runs via a "Leave Feedback" form on the results page (`/pipelines/[pipelineId]`). Feedback stored as `feedback.json` in pipeline output folder. Includes: free-text notes, optional quality rating (1-5), optional table ID tags. Pipeline history shows a "Feedback" badge when feedback exists. API endpoints: `GET/POST /api/pipelines/[pipelineId]/feedback`. Schema: `pipelineFeedbackSchema.ts`.
-
-> *Replaces former "Table Feedback & Regeneration." Per-table regeneration moved to Long-term Vision → Interactive Table Review.*
-
-**Problem**: When a user reviews their crosstab output and finds issues — wrong table structures, missing NETs, tables that should be excluded — there's no structured way to capture that feedback. Currently it's ad-hoc (Slack messages, emails, notes in a doc).
-
-**What's Needed**: A lightweight feedback mechanism per pipeline run. Not per-table regeneration (that's Long-term Vision), just a way for users to say "here's what was wrong with this output."
-
-**Implementation**:
-- After a pipeline run completes, the user can submit feedback on the output as a whole
-- Stored as `feedback.json` in the pipeline output folder (or in the project record once we have Convex)
-- Simple structured format: free-text notes, optional table IDs referenced, overall quality rating
-- This is for *us to learn from* — helps prioritize agent/prompt improvements based on real user pain points
-- In the UI (3.1): a "Leave Feedback" button on the results page. Textarea + optional table ID tags.
-
-**What this is NOT**:
-- Not per-table regeneration (that's the Interactive Table Review vision)
-- Not real-time — feedback is collected after the fact, not acted on during the run
-- Not blocking anything downstream — just a feedback collection mechanism
-
-**Level of Effort**: Low (JSON storage + simple UI form)
-
----
-
-### 2.11 Excel Color Themes — `COMPLETE`
-
-**Current State**: Fully implemented. 6 color themes available via `--theme` CLI flag.
-
-| Theme | Description |
-|-------|-------------|
-| `classic` (default) | Original blue/green/yellow/peach/purple/teal palette |
-| `coastal` | Sky blue, sand, warm orange, slate, taupe |
-| `blush` | Soft pinks, peach, mauve, lavender, coral |
-| `tropical` | Teal, pink, indigo, amber, cream |
-| `bold` | Navy, cream, gold, red, olive |
-| `earth` | Brown, yellow, mint green, olive, red |
-
-**Architecture**: `src/lib/excel/themes.ts` defines `ThemePalette` interface with semantic color roles (header, context, base, label, 6 banner group A/B shade pairs, sig letter color). `setActiveTheme()` in `styles.ts` mutates `FILLS` and `FONTS` in place — zero renderer changes needed. Accent colors are lightened via formula to produce cell-appropriate pastel backgrounds.
-
-**CLI**: `--theme=coastal` (or any theme name). Default: `classic`. Works in both `test-pipeline.ts` and `batch-pipeline.ts`.
-
-**Phase 3**: UI dropdown in project settings.
-
-**Preview script**: `npx tsx scripts/test-themes.ts [tables.json]` generates one Excel per theme in `outputs/theme-preview/`.
-
----
-
-### ~~2.12 Interactive Browser Review~~ — `DEFERRED`
-
-> **Decision (Feb 8, 2026):** The **full** interactive review experience — browser rendering, pixel-close previews, targeted per-table regeneration — is a compelling post-MVP feature. However, a **basic table list + include/exclude toggles + fast Excel-only regeneration** is valuable enough to pull into **Phase 3.1** (no HTML table rendering required). See Long-term Vision for the complete version.
-
----
-
-## Phase 3: Productization (Current)
-
-Taking the reliable, feature-rich CLI and bringing it to a self-service UI that external parties like Antares can use.
-
-### 3.1 Local UI Overhaul (Cloud-Ready) — `PARTIAL (~40%)`
-
-> **Implementation Status (Feb 2026):** Basic Next.js app works: file upload UI, pipeline history, job progress polling with toast notifications, job cancellation, HITL review page for crosstab cuts. Missing: No `(marketing)/` or `(product)/` route groups, no dashboard/project list, no new project wizard, no organization structure. `StorageProvider` not abstracted (hardcoded `/tmp/hawktab-ai/`). `JobStore` is in-memory only (Map, no persistence across restarts). Not cloud-ready.
-
-**Goal**: Build the complete web experience locally, but architected so deployment to cloud is just configuration changes—not rewrites.
-
-**Reference**: Discuss.io for organization/project structure (not styling). The functionality pattern—organizations, projects, roles—is what enterprise clients expect.
-
-**What's Needed**:
-
-1. **Marketing Pages** (`(marketing)/` route group):
-   - Landing page with value proposition
-   - Login button (routes directly to dashboard—no custom auth pages, WorkOS handles this)
-   - Simple, bold, professional aesthetic
-
-2. **Product Pages** (`(product)/` route group):
-   - **Dashboard**: Project list with columns (Project Name, Private/Public, Team, Date Created, Your Role, Status)
-   - **New Project Flow**: File upload (SPSS, datamap, survey, banner plan), configuration options
-     - *Note*: Data file upload should include helper text or tooltip clarifying "qualified respondents only"—the system assumes terminated/disqualified respondents are already filtered out.
-   - **Project Intake Questions** *(consolidates former 1.5 and 2.5)*: After file upload, ask qualifying questions based on project type. Not every survey type needs extra context, but some do:
-     - "What type of project is this?" → Segmentation, MaxDiff, ATU, Conjoint, Standard, etc.
-     - **Segmentation**: "Does your data file have the segment assignments?" If no → warn that segment banner cuts won't work.
-     - **MaxDiff with message testing**: "Can you upload the message list?" (so we can link questions to actual message text, not just "Message 1"). "Does your data file have the anchored probability scores?" If no → warn that MaxDiff utility results won't be available.
-     - **Conjoint/DCM**: "Can you upload your choice task definitions?" Needed to interpret utility scores and choice shares.
-     - **General**: Set expectations about what the system can and can't do for this project type, before burning 45 minutes of pipeline time.
-     - Context captured here gets injected into agent prompts (e.g., VerificationAgent knows this is a MaxDiff study and can label tables appropriately).
-     - This is about giving the pipeline the context it needs to succeed, not about predicting success. Start with the 2-3 project types that require extra files or context. Expand as we encounter more.
-   - **HITL Review**: Uncertain variable mappings with base sizes (from 2.8)
-   - **Run determinism (must-have for external trust)**: Persist user-confirmed cut mappings and re-use them on re-runs so results don’t “change just because” the LLM made a different choice. (Formerly Long-term Vision → Variable Selection Persistence; pull into Phase 3.1 because it’s low effort and high impact.)
-   - **Job Progress**: Real-time status updates
-   - **Results**: Download Excel, view a table list, include/exclude toggles with fast Excel-only regeneration, feedback per table (tableId-linked)
-
-3. **Organization Structure Foundation**:
-   - UI assumes organization context (like "HawkPartners" in Discuss.io header)
-   - Roles: Admin, Member, External Partner
-   - Projects belong to organizations
-   - This is the data model foundation—auth enforcement comes in 3.3
-
-4. **Route Structure**:
-```
-/app
-├── (marketing)/           # Public pages
-│   ├── page.tsx           # Landing page at /
-│   └── layout.tsx         # Marketing layout (no sidebar)
-│
-├── (product)/             # Logged-in experience
-│   ├── dashboard/         # Project list
-│   ├── projects/[id]/     # Single project view
-│   ├── projects/new/      # New project wizard
-│   └── layout.tsx         # Product layout (sidebar, org header)
-```
-
-**Cloud-Ready Architecture** (critical for smooth 3.2 transition):
-
-| Concern | Local Implementation | Cloud Swap |
-|---------|---------------------|------------|
-| File storage | Abstract `StorageProvider` interface → local disk | Swap to R2 |
-| Job state | Abstract `JobStore` interface → JSON files or SQLite | Swap to Convex |
-| File downloads | Serve from local `/temp-outputs/` | Signed R2 URLs |
-| Real-time updates | Polling local endpoint | Convex subscriptions |
-
-**Don't do this**:
-- Hardcode file paths like `/temp-outputs/project-123/`
-- Store job state in memory only
-- Assume single-user, single-job execution
-
-**Do this instead**:
-- Use `storageProvider.upload(file)` / `storageProvider.download(key)`
-- Use `jobStore.getStatus(jobId)` / `jobStore.updateStatus(jobId, status)`
-- Design for concurrent jobs from day one (even if we test with one)
-
-**Design Principles**:
-- Bold yet professional (not generic SaaS slop)
-- Enterprise-focused from day one
-- Placeholders for future features are fine
-- Assume logged-in state for now (auth comes later)
-
-**Audit First**: Before building, audit current CLI features and map each to a UI component.
-
-**Level of Effort**: High (full UI build with proper abstractions)
-
----
-
-### 3.2 Cloud Deployment — `NOT STARTED`
-
-**Current**: Runs locally via CLI and local Next.js dev server
-
-**Target**: Cloud-hosted service that Antares can rely on—not just functional, but reliable and secure.
-
-**Core Infrastructure**:
-
-| Component | Service | Why |
-|-----------|---------|-----|
-| UI Hosting | Vercel | Easy Next.js deployment, edge functions |
-| Database | Convex | Real-time subscriptions, TypeScript-native |
-| File Storage | Cloudflare R2 | S3-compatible, no egress fees |
-| R Execution | Railway (Docker) | Supports long-running processes |
-| Error Monitoring | Sentry | Know when things break |
-| Analytics | PostHog | Usage tracking (minimal) |
-
-**Job Management** (pipeline runs 30-60 mins with 4 agents):
-
-1. **Job Queue**:
-   - User submits job → Create job record in Convex (status: `queued`)
-   - Background worker picks up job → status: `running`
-   - Track progress: `banner_complete`, `crosstab_complete`, `table_complete`, `verification_complete`, `r_running`, `excel_generating`
-   - On completion → status: `completed`, store result URLs
-   - On failure → status: `failed`, store error details
-
-2. **Concurrent Jobs**:
-   - Each job is isolated (own file namespace, own R session)
-   - Don't assume single-user—Antares might run 3 projects at once
-   - Railway can scale horizontally if needed
-
-3. **HITL Pause/Resume**:
-   - When HITL is needed → status: `awaiting_review`, store pending decisions
-   - User can close browser, come back later
-   - On review submission → resume pipeline from checkpoint
-
-**Caching & Performance**:
-
-| What to Cache | Where | Why |
-|---------------|-------|-----|
-| Parsed datamap | Convex or R2 | Don't re-parse on HITL resume |
-| Banner output | Convex | Reuse if user re-runs with same banner |
-| R script (pre-execution) | R2 | Debug/audit trail |
-| Intermediate agent outputs | R2 | Resume from checkpoint on failure |
-
-Redis is likely overkill for MVP—Convex handles real-time well. Consider Redis later if we need:
-- Rate limiting at scale
-- Session caching across edge functions
-- Sub-second cache invalidation
-
-**Security Fundamentals**:
-
-- **File uploads**: Validate file types server-side (not just client), scan for malicious content, size limits
-- **Direct-to-storage uploads**: Use signed upload URLs so the browser uploads large files straight to R2/S3 (avoid Vercel timeouts/memory limits)
-- **API routes**: All `/api/` routes behind auth middleware (after 3.3)
-- **Signed URLs**: R2 downloads use time-limited signed URLs, not public buckets
-- **Input validation**: Zod schemas on all API inputs
-- **CORS**: Restrict to known origins
-- **Rate limiting**: Prevent abuse (especially on expensive AI calls)
-- **Secrets**: All API keys in environment variables, never in client code
-- **Data lifecycle**: Retention and deletion (per-project delete that reliably deletes artifacts + inputs). Add optional auto-expiration for pilot.
-- **Supportability**: “Download debug bundle” (logs + artifacts manifest + error trace) so failures are diagnosable without screen-sharing.
-- **Claude Security Audit Skill**: `security_audit`
-
-**Reliability Patterns**:
-
-- **Retries with backoff**: Agent calls can fail—retry 3x with exponential backoff
-- **Graceful degradation**: If one table fails R validation, continue with others (already doing this)
-- **Health checks**: Endpoint for monitoring (Vercel cron or external)
-- **Idempotent operations**: Re-running a job with same inputs should be safe
-
-**Deployment Checklist**:
-- [ ] Swap `StorageProvider` to R2 implementation
-- [ ] Swap `JobStore` to Convex implementation
-- [ ] Configure Railway R container with HTTP endpoint
-- [ ] Set up Sentry error tracking
-- [ ] Configure environment variables in Vercel
-- [ ] Test full pipeline in staging before production
-- [ ] Set up basic monitoring/alerting
-
-**Level of Effort**: High (1-2 weeks for reliable deployment, not just "it works")
-
----
-
-### 3.3 Multi-Tenant & Auth (WorkOS Integration) — `NOT STARTED`
-
-**Context**: At this point, we have a cloud-deployed app with proper abstractions (3.1) and reliable infrastructure (3.2). Now we layer on authentication and organization management to make it ready for external users like Antares.
-
-**Why WorkOS AuthKit**:
-- Free for 1M MAUs (plenty of headroom)
-- Handles login/signup UI—we don't build auth pages
-- SSO/SAML available when enterprise clients need it
-- Organization management built-in
-
-**What WorkOS Provides**:
-- User authentication (email, Google, SSO)
-- Organization creation and management
-- User ↔ Organization membership
-- Role assignment (Admin, Member)
-- Hosted login/signup pages (redirect flow)
-
-**What We Build on Top**:
-
-1. **Auth Middleware**:
-   - Protect all `(product)/` routes
-   - Validate WorkOS session token
-   - Inject `userId` and `orgId` into request context
-
-2. **Convex Schema Extensions**:
-   - `users` table (synced from WorkOS on first login)
-   - `organizations` table (synced from WorkOS)
-   - `projects` table already has `orgId` foreign key (from 3.1)
-   - `orgMemberships` for role lookups
-
-3. **Role-Based Access**:
-   | Role | Can Do |
-   |------|--------|
-   | Admin | Create projects, invite members, manage org settings, view all projects |
-   | Member | Create projects, view own projects, view shared projects |
-   | External Partner | View projects explicitly shared with them, download results |
-
-4. **Invite Flow**:
-   - Admin invites user by email → WorkOS sends invite
-   - User signs up/logs in → Automatically added to org
-   - For external partners: invite with limited role
-
-5. **Organization Switcher** (if user belongs to multiple orgs):
-   - Dropdown in header (like Discuss.io "HawkPartners" selector)
-   - Context switches all data to selected org
-
-**Integration Points**:
-- Login button → `WorkOS.redirectToLogin()`
-- Callback route → Validate token, create session, redirect to dashboard
-- Logout → Clear session, redirect to marketing page
-- API routes → Check `req.auth.orgId` matches resource ownership
-
-**Security Enforcement**:
-- All file access scoped to org: `r2.get(orgId/projectId/file.xlsx)`
-- All Convex queries filter by `orgId`
-- No cross-org data leakage possible by design
-
-**Level of Effort**: Medium (WorkOS does heavy lifting, we wire it up and enforce scoping)
-
----
-
-### 3.4 Cost Tracking — `PARTIAL (~30%)`
-
-> **Implementation Status (Feb 2026):** `AgentMetricsCollector` tracks token usage per agent call. `CostCalculator` uses LiteLLM pricing for cost estimation. Cost summary printed to console after pipeline completion. Missing: No database persistence (metrics are lost when process ends). No per-org aggregation, no dashboard, no historical tracking. Needs a database (Convex) to be useful.
-
-**Goal**: Track AI costs so we can price the product appropriately. This is for us, not exposed to users.
-
-**What to Track**:
-- Token usage per agent call (BannerAgent, CrosstabAgent, TableAgent, VerificationAgent)
-- Token usage for regenerations (2.10)
-- Store in Convex: `aiUsage` table with `jobId`, `orgId`, `operation`, `tokens`, `timestamp`
-
-**Pricing**: After Antares trial period (2-4 weeks), review actual usage and set pricing. Ballpark: ~$300/project or ~$3,000/month. Revisit once we have real data.
-
-**No dashboard for MVP**. Query Convex directly or export to spreadsheet. Build a dashboard later if needed.
-
-**Level of Effort**: Low (just log the data)
-
----
-
-### 3.5 Logging and Observability — `MINIMAL (~20%)`
-
-> **Implementation Status (Feb 2026):** Basic tracing config exists (`src/lib/tracing.ts`) with `TRACING_ENABLED` env var. Pipeline event bus emits internal events. Agent metrics record duration. Missing: No Sentry integration, no structured logging with levels, no correlation IDs, no PostHog analytics. Logging is ad-hoc `console.log` throughout.
-
-**Goal**: When something breaks for Antares, we can debug it.
-
-**Structured Logging** (see `logging-implementation-plan.md` for details):
-- Centralized logger with log levels (error, warn, info, debug)
-- Correlation IDs to trace a job through all stages
-- Sentry for error alerting
-
-**Product Analytics** (lightweight for MVP):
-- Track key events: `project_created`, `job_completed`, `job_failed`, `download_completed`
-- PostHog JS SDK in frontend
-- Enough to understand usage patterns; expand later based on what questions we have
-
-**Level of Effort**: Low-Medium (logging foundation + basic event tracking)
-
----
-
-### 3.6 Message Testing & MaxDiff Utility Score Support — `NOT STARTED`
-
-**Goal**: Support message testing surveys (and MaxDiff studies with utility scores) by allowing users to upload message lists that get integrated into the datamap, enabling agents to properly reference actual message text instead of generic "Message 1", "Message 2" labels.
-
-**Why It Matters**: Message testing is a popular survey type. When questions reference messages by number (e.g., "How likely are you to purchase Message 1?"), the output tables show generic labels rather than the actual message text. This makes the crosstabs less useful for report writing. Similarly, MaxDiff studies often include utility scores that should be surfaced in the output.
-
-**User Flow** (in 3.1 New Project Flow):
-
-1. **Intake form question**: "What type of project is this?" → User selects "Message Testing" or "MaxDiff"
-2. **Conditional follow-up**: If Message Testing or MaxDiff selected → "Does this survey include messages that need to be linked to question responses?"
-3. **If yes**: "Please upload your message list" with format guidance:
-   - Preferred format: Excel file with columns matching survey question numbering
-   - Alternative: Word document (will require parsing)
-   - Format specification: Messages should be numbered/ordered to match how they appear in the survey (e.g., Message 1 = row 1, Message 2 = row 2)
-4. **Message integration**: System parses uploaded file and enriches the datamap with message text, linking message numbers to actual content
-5. **Agent awareness**: VerificationAgent and other downstream agents receive enriched datamap with message text, enabling proper labeling in table output
-
-**For MaxDiff Utility Scores**:
-
-- If MaxDiff selected and utility scores exist in the data file, detect and surface them appropriately in output
-- Reference datasets with MaxDiff utility scores exist for testing
-
-**Implementation Considerations**:
-
-- **Message file parsing**: Excel parsing is straightforward (column-based). Word document parsing may require more complex logic to extract structured message lists
-- **Datamap enrichment**: Add message text to relevant datamap entries, preserving the link between question variables and message content
-- **Format validation**: Ensure uploaded message list matches survey structure (same count, proper numbering)
-- **Backward compatibility**: Datasets without message lists continue to work as before
-
-**Deferral Note**: This feature is likely to be deferred until after the February 16th deadline, as it requires UI work (intake form updates), file parsing logic, and datamap enrichment infrastructure. However, it's an important feature for message testing surveys and should be prioritized post-MVP.
-
-**Level of Effort**: Medium (intake form updates + message file parsing + datamap enrichment + agent prompt updates)
+### 3.5 Deploy & Launch — `NOT STARTED`
+
+Ship it. Antares gets a link.
+
+**Deployment**:
+- Railway: Docker container (Node + R), environment variables, health check endpoint
+- DNS: Point domain to Railway (or Vercel if we split UI later)
+- Environment: Convex production deployment, R2 production bucket, WorkOS production mode
+
+**Landing page** (`(marketing)/page.tsx` — already has placeholder):
+- Logo + "HawkTab AI"
+- Subhead: "Upload your .sav, configure your project, download publication-ready crosstabs."
+- "Log In" button → WorkOS hosted login → redirect to dashboard
+- Professional, clean, confident. Not a sales pitch.
+
+**Observability**:
+- Sentry for error monitoring (know when things break)
+- Basic structured logging with correlation IDs (trace a job through all stages)
+- PostHog for lightweight product analytics (project_created, job_completed, job_failed, download_completed) — optional for launch
+
+**Security checklist**:
+- [ ] All `(product)/` routes behind auth middleware
+- [ ] All Convex queries filter by `orgId`
+- [ ] R2 downloads use signed URLs
+- [ ] File uploads validated server-side (types, sizes)
+- [ ] API inputs validated with Zod
+- [ ] CORS restricted to known origins
+- [ ] All secrets in environment variables
+- [ ] Rate limiting on expensive AI calls
+- [ ] Data lifecycle: per-project delete, optional auto-expiration
+- [ ] Security audit skill run before launch
+
+**Reliability**:
+- Retries with backoff on agent calls (already doing this)
+- Graceful degradation (one table fails → continue with others, already doing this)
+- Health check endpoint for monitoring
+- Idempotent operations (re-running with same inputs is safe)
+
+**Deliverables**: Production deployment live. Antares can log in and use the system. Sentry alerting active.
+
+**Level of Effort**: Medium (deployment + DNS + landing page + Sentry + final testing)
 
 ---
 
 ## MVP Complete
 
-**Completing Phase 3 = MVP = The Product.**
+**Completing Phase 3.5 = MVP = The Product.**
 
-At this point, HawkTab AI is a fully functional, cloud-hosted service that external parties like Antares can use to generate publication-quality crosstabs.
+At this point, HawkTab AI is a cloud-hosted, authenticated service. Antares logs in, uploads their .sav + banner plan, configures their project, runs the pipeline, reviews HITL decisions, and downloads publication-ready crosstabs — without touching a terminal or asking us for help.
 
-Some items in Phase 2 and 3 may be deferred or simplified depending on what we learn during implementation. The goal is a reliable, usable product—not feature completeness for its own sake.
+The path from here to MVP is: infrastructure (3.1) → migration (3.2) → wizard (3.3) → dashboard (3.4) → deploy (3.5). Each phase is independently testable. Detailed implementation plans are created per-phase before building.
 
 ---
 
 ## Long-term Vision
+
+---
+
+### Post-MVP: Message Testing & MaxDiff — `DEFERRED`
+
+**Goal**: Support message testing surveys (and MaxDiff studies with utility scores) by allowing users to upload message lists that get integrated into the datamap.
+
+**Why deferred**: Requires intake form updates, file parsing logic, and datamap enrichment infrastructure. Important feature but not blocking the Antares pilot.
+
+**What's needed**:
+- Intake question: "Does this survey include messages?" → upload message list
+- Message file parsing (Excel preferred, Word supported)
+- Datamap enrichment: link message text to question variables
+- Agent awareness: VerificationAgent uses actual message text in table labels
+
+**Level of Effort**: Medium. Prioritize post-MVP based on Antares feedback.
+
+---
 
 Bob's observation from the Antares conversation: *"I've not seen anybody kind of going down this road... commercially speaking."*
 
@@ -775,7 +349,7 @@ None of these are wrong in absolute terms. They answer different questions. The 
 **The vision:** Users receive crosstabs generated with our defaults (which we believe are the most statistically precise). Alongside the output, a Methodology sheet documents every assumption. If a user disagrees with an assumption, they can select an alternative from the finite set of defensible options and regenerate. The system re-runs R with the new configuration — no re-running agents, just swapping the alias/cut strategy.
 
 **What this requires:**
-- Assumptions surfaced in plain language (Methodology sheet — see 2.4b context)
+- Assumptions surfaced in plain language (Methodology sheet)
 - A mapping of each assumption to its alternatives (schema-driven, not free-form)
 - A regeneration path that re-runs R script generation + execution without re-running the full pipeline
 - The resume script (`test-loop-semantics-resume.ts`) is already a prototype of this pattern
@@ -787,8 +361,6 @@ This is a long-term feature — the foundation (correct defaults + validation pr
 ---
 
 ### Predictive Confidence Scoring (Pre-Flight)
-
-*Moved from former Phase 1.5.*
 
 The idea: before running the full pipeline (45+ minutes), assess whether the system can handle a given dataset and flag issues upfront. A three-tier assessment (green/yellow/red) that tells users "we're confident," "proceed with caution," or "we can't handle this reliably."
 
@@ -805,13 +377,11 @@ The idea: before running the full pipeline (45+ minutes), assess whether the sys
 - Data map quality: percentage of variables with value labels, description completeness
 - Variable count and complexity: hidden/admin variable ratios, naming consistency
 
-**When to revisit:** After Part 4 broader testing is complete and we have failure data across 20+ datasets with diverse characteristics. If clear patterns emerge (e.g., "datasets with no deterministic resolver evidence fail 80% of the time"), then a predictor becomes viable.
+**When to revisit:** After we have failure data across 20+ datasets with diverse characteristics. If clear patterns emerge (e.g., "datasets with no deterministic resolver evidence fail 80% of the time"), then a predictor becomes viable.
 
 ---
 
-### Variable Selection Persistence — `MOVED TO PHASE 3.1`
-
-*Originally moved from Phase 2.4c into Long-term Vision, but pulled forward into **Phase 3.1** because it’s low effort and unlocks external trust (deterministic re-runs).*
+### Variable Selection Persistence — `IN PHASE 3.3`
 
 The crosstab agent's variable selection is non-deterministic — same dataset can produce different variable mappings across runs. Once a user confirms a mapping via HITL or accepts a successful run's output, lock those selections as project-level overrides so future re-runs don't re-roll the dice.
 
@@ -824,8 +394,6 @@ The crosstab agent's variable selection is non-deterministic — same dataset ca
 ---
 
 ### Interactive Table Review
-
-*Consolidated from former Phase 2.9 (include/exclude control), 2.10 (table feedback & regeneration), and 2.12 (interactive browser review).*
 
 **The vision:** After a pipeline run completes, the user opens an interactive review in the browser — not a static Excel file. They see every table rendered as HTML, can toggle tables on/off, leave feedback on specific tables, request targeted regeneration, and only generate the final Excel when they're satisfied with the output.
 
@@ -879,8 +447,6 @@ This is the post-MVP experience that replaces the current workflow of: download 
 
 ### Dual-Mode Loop Semantics Prompt
 
-*Moved from Phase 2.4d.*
-
 The Loop Semantics Policy Agent uses a single prompt regardless of how much deterministic evidence is available. When the resolver finds strong evidence, the prompt works well. When there's none, the LLM must infer from cut patterns and datamap descriptions alone — harder and less reliable.
 
 **Solution:** Two prompt variants selected automatically based on `deterministicFindings.iterationLinkedVariables.length`. High-evidence prompt anchors on resolver data. Low-evidence prompt adds pattern-matching guidance for OR expressions, emphasizes datamap descriptions, lowers confidence thresholds for `humanReviewRequired`, and includes more few-shot examples.
@@ -888,10 +454,6 @@ The Loop Semantics Policy Agent uses a single prompt regardless of how much dete
 **Level of Effort:** Low (second prompt file in `src/prompts/loopSemantics/alternative.ts` + selection logic in agent)
 
 **When to revisit:** If batch testing reveals classification failures on datasets where the deterministic resolver finds nothing.
-
----
-
-BANNER_GENERATE_SYSTEM_PROMPT IS out of sync with other prompts.
 
 ---
 
@@ -903,20 +465,20 @@ Documented as of February 2026. These are areas where the system has known limit
 
 | Gap | Severity | Mitigation | Status |
 |-----|----------|------------|--------|
-| **No deterministic evidence** — SPSS file has no label tokens, suffix patterns, or sibling descriptions. LLM must infer entirely from cut patterns and datamap context. | Medium | Dual-mode prompt (2.4d). Long-term: predictive confidence scoring (see Long-term Vision). | Identified, not implemented |
+| **No deterministic evidence** — SPSS file has no label tokens, suffix patterns, or sibling descriptions. LLM must infer entirely from cut patterns and datamap context. | Medium | Dual-mode prompt (see Long-term Vision). Long-term: predictive confidence scoring. | Identified, not implemented |
 | **Irregular parallel variable naming** — Occasion 1 uses Q5a, occasion 2 uses Q7b, occasion 3 uses Q12. No naming relationship. Resolver can't match. | Medium | LLM prompt must handle this from datamap descriptions. Few-shot examples for irregular naming. Some surveys may be unfixable without user hints. | Partially mitigated by LLM |
 | **Complex expression transformation** — `transformCutForAlias` handles `==`, `%in%`, and OR patterns. Expressions with `&` conditions, nested logic, or negations could break transformation. | Low-Medium | Expand transformer for common compound patterns. Flag untransformable expressions for human review. | Common cases handled |
 | **Multiple independent loop groups** — Dataset with both an occasion loop AND a brand loop. Architecturally supported but never tested. | Low | Schema and pipeline support N loop groups. Needs integration testing with a real multi-loop dataset. | Untested |
 | **Nested loops** — A brand loop inside an occasion loop. Not handled. | Low | Not supported. Validation already detects loops; nested loop detection could be added as a basic sanity check. | Not supported |
-| **Weighted stacked data** — Weights exist in the data but aren't applied during stacking or computation. | ~~High~~ | Implemented in 2.6. Weight column carries through `bind_rows` in stacked frames. Manual weighted formulas with effective n for sig testing. | Complete |
+| **Weighted stacked data** — Weights exist in the data but aren't applied during stacking or computation. | ~~High~~ | Implemented. Weight column carries through `bind_rows` in stacked frames. Manual weighted formulas with effective n for sig testing. | Complete |
 | **No clustered standard errors** — Stacked rows from the same respondent are correlated, which overstates significance. Standard tests treat them as independent. This is industry-standard behavior (WinCross, SPSS Tables, Q all do the same). | Low | Accept as industry-standard limitation. Future differentiator if implemented. Would require respondent ID column in stacked frame + cluster-robust R functions. | Known limitation, not planned |
-| **No within-group stat letter suppression for entity-anchored groups** — `generateSignificanceTesting()` didn't consult the loop semantics policy. Within-group pairwise comparisons ran for all groups regardless of overlap. Validation detected overlaps but didn't act on them. | Medium | Implement 2.4b (suppress or vs-complement testing for entity-anchored groups). | Complete |
+| **No within-group stat letter suppression for entity-anchored groups** — `generateSignificanceTesting()` didn't consult the loop semantics policy. Within-group pairwise comparisons ran for all groups regardless of overlap. Validation detected overlaps but didn't act on them. | Medium | Implemented — suppress or vs-complement testing for entity-anchored groups. | Complete |
 
 ### Crosstab Agent
 
 | Gap | Severity | Mitigation | Status |
 |-----|----------|------------|--------|
-| **Non-deterministic variable selection** — Same dataset can produce different variable mappings across runs. | Medium | Hidden variable hints help steer. Variable selection persistence (2.4c) locks in confirmed choices. HITL for low-confidence cuts. | Partially mitigated |
+| **Non-deterministic variable selection** — Same dataset can produce different variable mappings across runs. | Medium | Hidden variable hints help steer. Variable selection persistence (Phase 3.3) locks in confirmed choices. HITL for low-confidence cuts. | Partially mitigated |
 | **Hidden variable conventions vary by platform** — h-prefix and d-prefix patterns are Decipher/FocusVision conventions. Other platforms (Qualtrics, SurveyMonkey, Confirmit) use different naming. | Low-Medium | Expand hint patterns as we encounter new platforms. The datamap description is platform-agnostic and usually contains enough signal. | Platform-specific hints added |
 | **Overlapping banner cuts (non-loop)** — If a user provides overlapping respondent-anchored cuts, pairwise A-vs-B letters still run even when overlap makes comparisons questionable. | Medium | Consider optional suppression or complement testing for overlapping groups if demand warrants it. | Known limitation |
 
@@ -924,9 +486,9 @@ Documented as of February 2026. These are areas where the system has known limit
 
 | Gap | Severity | Mitigation | Status |
 |-----|----------|------------|--------|
-| **No pre-flight confidence assessment** — Pipeline runs for 45+ minutes before discovering it can't handle a dataset reliably. | Medium-High | Long-term: predictive confidence scoring (see Long-term Vision). Requires failure data across 50+ datasets before a predictor is viable. Near-term: project intake questions (3.1) set expectations upfront. | Deferred to Long-term Vision |
+| **No pre-flight confidence assessment** — Pipeline runs for 45+ minutes before discovering it can't handle a dataset reliably. | Medium-High | Long-term: predictive confidence scoring (see Long-term Vision). Requires failure data across 50+ datasets before a predictor is viable. Near-term: project intake questions (3.3) set expectations upfront. | Deferred to Long-term Vision |
 | **No methodology documentation in output** — Users receive numbers without explanation of how they were computed. Assumptions are implicit. | Medium | Methodology sheet in Excel (Configurable Assumptions vision). Policy agent + validation results provide the content. | Planned |
-| **No project-level knowledge accumulation** — Each pipeline run starts fresh. Confirmed variable mappings, user preferences, and past decisions aren't carried forward. | Low-Medium | Variable selection persistence (2.4c) is the first step. Longer-term: project-level config that accumulates across runs. | Identified |
+| **No project-level knowledge accumulation** — Each pipeline run starts fresh. Confirmed variable mappings, user preferences, and past decisions aren't carried forward. | Low-Medium | Variable selection persistence (Phase 3.3) is the first step. Longer-term: project-level config that accumulates across runs. | Identified |
 | **Hidden assignment variables don't produce distribution tables** — When a question's answers are stored as hidden variables (e.g., `hLOCATIONr1–r16` for S9), the pipeline correctly hides them but misses the distribution table that shows assignment frequency. Requires parent-variable linking in DataMapProcessor or verification agent awareness. | Low | Accept gap for now. Future: detect when hidden variable families relate to a visible question and auto-generate distribution tables. | Known limitation |
 | **No dual-base reporting for skip logic questions** — When a question has skip logic, only the filtered base is reported. An experienced analyst might also report the same table with an all-respondents base for context (e.g., "what share of everyone had 2+ people present" vs "among those not alone, group size distribution"). Current behavior is correct; this is a future quality-of-life enhancement. | Low | Future: optional "also report unfiltered" flag on skip logic tables, generating both versions with clear base text. | Known limitation |
 | **`deriveBaseParent()` doesn't collapse parent references for loop variables** — In LoopCollapser.ts, when a collapsed variable's parent is itself a loop variable being collapsed, `deriveBaseParent()` returns the uncollapsed parent name (e.g., `A7_1` instead of `A7`). DataMapGrouper then uses this uncollapsed parent as the `questionId`, causing loop variables like A7 to appear with inconsistent naming (e.g., `a7_1` instead of `a7`). Non-loop parents like A4 are unaffected. | Low | Fix `deriveBaseParent()` to check if the derived parent is in the collapse map and resolve it to the collapsed form. Straightforward code fix. | Known limitation |
@@ -936,4 +498,4 @@ Documented as of February 2026. These are areas where the system has known limit
 
 *Created: January 22, 2026*
 *Updated: February 11, 2026*
-*Status: Phase 1 & 2 complete. Phase 3 (Productization) in progress.*
+*Status: Reliability, features, and UI foundation complete. Phase 3 (Productization) in progress — cloud-first approach.*
