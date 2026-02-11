@@ -1014,7 +1014,14 @@ export async function runPipeline(
           extendedTables,
           surveyMarkdown,
           verboseDataMap,
-          { outputDir, concurrency, abortSignal: pipelineSignal }
+          {
+            outputDir,
+            concurrency,
+            abortSignal: pipelineSignal,
+            onProgress: (completed, total, tableId) => {
+              log(`  [VerificationAgent] ${completed}/${total} tables complete (latest: ${tableId})`, 'dim');
+            },
+          }
         );
         verifiedTables = verificationResult.tables;
 
