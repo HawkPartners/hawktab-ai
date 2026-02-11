@@ -32,11 +32,24 @@ const getCrosstabValidationInstructions = (): string => {
   return getCrosstabPrompt(promptVersions.crosstabPromptVersion);
 };
 
+// R validation errors passed in for retry context
+export interface CutValidationErrorContext {
+  failedAttempt: number;
+  maxAttempts: number;
+  failedExpressions: Array<{
+    cutName: string;
+    rExpression: string;
+    error: string;
+    variableType?: string;  // normalizedType from verbose datamap
+  }>;
+}
+
 // Options for processGroup
 interface ProcessGroupOptions {
   abortSignal?: AbortSignal;
   hint?: string;  // User-provided hint for re-run (e.g., "use variable Q5")
   outputDir?: string;  // For saving scratchpad
+  rValidationErrors?: CutValidationErrorContext;  // Failed R expressions for retry
 }
 
 // Process single banner group using Vercel AI SDK
@@ -54,10 +67,10 @@ export async function processGroup(
     options = optionsOrAbortSignal;
   }
 
-  const { abortSignal, hint, outputDir } = options;
+  const { abortSignal, hint, outputDir, rValidationErrors } = options;
   const startTime = Date.now();
 
-  console.log(`[CrosstabAgent] Processing group: ${group.groupName} (${group.columns.length} columns)${hint ? ` [with hint: ${hint}]` : ''}`);
+  console.log(`[CrosstabAgent] Processing group: ${group.groupName} (${group.columns.length} columns)${hint ? ` [with hint: ${hint}]` : ''}${rValidationErrors ? ` [R validation retry ${rValidationErrors.failedAttempt}/${rValidationErrors.maxAttempts}]` : ''}`);
 
   // Check for cancellation before AI call
   if (abortSignal?.aborted) {
@@ -162,6 +175,34 @@ Begin validation now.
         ? ` Previous attempt failed validation: ${ctx.lastErrorSummary}. Do NOT invent variable names.`
         : '';
 
+      // Build R validation retry context (injected when re-running after cut validation failures)
+      let rValidationRetryPrompt = '';
+      if (rValidationErrors) {
+        const failedList = rValidationErrors.failedExpressions
+          .map(f => `  - "${f.cutName}": ${f.rExpression}\n    R error: ${f.error}${f.variableType ? `\n    Variable type: ${f.variableType}` : ''}`)
+          .join('\n');
+        rValidationRetryPrompt = `
+
+<r_validation_retry>
+RETRY ATTEMPT ${rValidationErrors.failedAttempt}/${rValidationErrors.maxAttempts}
+
+Your previous R expressions for this group failed when tested against the actual .sav data:
+
+FAILED EXPRESSIONS:
+${failedList}
+
+<common_cut_fixes>
+- "object 'X' not found" → Variable name doesn't exist in the data. Check exact spelling/case.
+- "non-numeric argument to binary operator" → Variable is character/factor. Use string comparison.
+- "comparison of these types is not implemented" → Type mismatch. Check if variable is numeric or labelled.
+- haven_labelled error → Use as.numeric() wrapper or safe_quantile() instead of quantile().
+- Result is all-FALSE (0 matches) → Value codes may be wrong. Check Answer_Options.
+</common_cut_fixes>
+
+Fix ONLY the failed expressions. Keep all other columns unchanged.
+</r_validation_retry>`;
+      }
+
       // Escalate maxOutputTokens if consecutive output_validation errors suggest truncation
       const defaultMaxTokens = Math.min(getCrosstabModelTokenLimit(), 100000);
       const maxOutputTokens = ctx.possibleTruncation ? getCrosstabModelTokenLimit() : defaultMaxTokens;
@@ -173,7 +214,7 @@ Begin validation now.
         model: getCrosstabModel(),  // Task-based: crosstab model for complex validation
         system: buildSystemPromptForGroup(group, ctx.shouldUsePolicySafeVariant),
         maxRetries: 0,  // Centralized outer retries via retryWithPolicyHandling
-        prompt: `Validate banner group "${group.groupName}" with ${group.columns.length} columns against the data map.${retryHint}`,
+        prompt: `Validate banner group "${group.groupName}" with ${group.columns.length} columns against the data map.${retryHint}${rValidationRetryPrompt}`,
         tools: {
           scratchpad: crosstabScratchpadTool,
         },

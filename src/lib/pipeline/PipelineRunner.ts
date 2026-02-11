@@ -12,7 +12,8 @@ import { promisify } from 'util';
 // Processors and agents
 import { BannerAgent } from '../../agents/BannerAgent';
 import { generateBannerCuts } from '../../agents/BannerGenerateAgent';
-import { processAllGroups as processCrosstabGroups } from '../../agents/CrosstabAgent';
+import { processAllGroups as processCrosstabGroups, processGroup as processCrosstabGroup } from '../../agents/CrosstabAgent';
+import type { CutValidationErrorContext } from '../../agents/CrosstabAgent';
 import { groupDataMap } from '../tables/DataMapGrouper';
 import { generateTables, convertToLegacyFormat, getGeneratorStats } from '../tables/TableGenerator';
 import { verifyAllTablesParallel } from '../../agents/VerificationAgent';
@@ -22,6 +23,7 @@ import { applyFilters } from '../filters/FilterApplicator';
 import { processSurvey } from '../processors/SurveyProcessor';
 import { generateRScriptV2WithValidation } from '../r/RScriptGeneratorV2';
 import { validateAndFixTables } from '../r/ValidationOrchestrator';
+import { validateCutExpressions } from '../r/CutExpressionValidator';
 import { buildCutsSpec } from '../tables/CutsSpec';
 import { sortTables, getSortingMetadata } from '../tables/sortTables';
 import { normalizePostPass } from '../tables/TablePostProcessor';
@@ -33,7 +35,7 @@ import { getPromptVersions, getStatTestingConfig, formatStatTestingConfig } from
 import type { StatTestingConfig } from '../env';
 import { resetMetricsCollector, getPipelineCostSummary, getMetricsCollector } from '../observability';
 import { getPipelineEventBus, STAGE_NAMES } from '../events';
-import { persistSystemError, readPipelineErrors, summarizePipelineErrors } from '../errors/ErrorPersistence';
+import { persistSystemError, persistAgentErrorAuto, persistSystemErrorAuto, readPipelineErrors, summarizePipelineErrors } from '../errors/ErrorPersistence';
 
 import { CircuitBreaker, setActiveCircuitBreaker } from '../CircuitBreaker';
 import { findDatasetFiles, DEFAULT_DATASET } from './FileDiscovery';
@@ -892,7 +894,7 @@ export async function runPipeline(
     // Path C failure is graceful — tables pass through without filters
 
     // Extract results
-    const { crosstabResult, groupCount, columnCount } = pathAResult.value;
+    const { crosstabResult, agentBanner, groupCount, columnCount } = pathAResult.value;
     const { tableAgentResults } = pathBResult.value;
     const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
 
@@ -1206,7 +1208,155 @@ export async function runPipeline(
     const stepStart8 = Date.now();
     eventBus.emitStageStart(8, STAGE_NAMES[8]);
 
-    const cutsSpec = buildCutsSpec(crosstabResult.result);
+    // ---- Cut Expression Validation + Retry ----
+    // Validate CrosstabAgent R expressions against actual .sav data before proceeding.
+    // Failed expressions get retried through CrosstabAgent with R error context.
+    const MAX_CUT_RETRIES = 2;
+    let validatedCrosstabResult = crosstabResult.result;
+
+    try {
+      let cutReport = await validateCutExpressions(
+        validatedCrosstabResult,
+        outputDir,
+        'dataFile.sav'
+      );
+
+      if (cutReport.failed === 0) {
+        log(`  Cut validation: ${cutReport.passed} passed, 0 failed (${cutReport.durationMs}ms)`, 'green');
+      } else {
+        log(`  Cut validation: ${cutReport.passed} passed, ${cutReport.failed} failed (${cutReport.durationMs}ms)`, 'yellow');
+
+        for (let retryAttempt = 1; retryAttempt <= MAX_CUT_RETRIES && cutReport.failed > 0; retryAttempt++) {
+          const failedGroupNames = [...cutReport.failedByGroup.keys()];
+          log(`  Cut retry attempt ${retryAttempt}/${MAX_CUT_RETRIES}: ${failedGroupNames.length} group(s) with failures`, 'yellow');
+
+          // Build a mutable copy of bannerCuts for replacement
+          const updatedBannerCuts = [...validatedCrosstabResult.bannerCuts];
+
+          for (const groupName of failedGroupNames) {
+            const failedCuts = cutReport.failedByGroup.get(groupName) || [];
+
+            // Find the matching agentBanner group for input
+            const bannerGroup = agentBanner.find(g => g.groupName === groupName);
+            if (!bannerGroup) {
+              log(`    Skipping group "${groupName}" — not found in agentBanner`, 'yellow');
+              continue;
+            }
+
+            // Build rValidationErrors context with variable types from verbose datamap
+            const failedExpressions = failedCuts.map(f => {
+              const varMatch = f.rExpression.match(/\b([A-Za-z][A-Za-z0-9_.]*)\b/);
+              const primaryVar = varMatch?.[1] || '';
+              const verbose = verboseDataMap.find(v => v.column === primaryVar);
+              return {
+                cutName: f.cutName,
+                rExpression: f.rExpression,
+                error: f.error || 'Unknown error',
+                variableType: verbose?.normalizedType || undefined,
+              };
+            });
+
+            const rValidationErrors: CutValidationErrorContext = {
+              failedAttempt: retryAttempt,
+              maxAttempts: MAX_CUT_RETRIES,
+              failedExpressions,
+            };
+
+            try {
+              log(`    Retrying group "${groupName}" (${failedCuts.length} failed expressions)...`, 'cyan');
+              const retryResult = await processCrosstabGroup(
+                agentDataMap,
+                { groupName: bannerGroup.groupName, columns: bannerGroup.columns },
+                { abortSignal: pipelineSignal, outputDir, rValidationErrors }
+              );
+
+              // Replace the group in our result
+              const groupIdx = updatedBannerCuts.findIndex(g => g.groupName === groupName);
+              if (groupIdx >= 0) {
+                updatedBannerCuts[groupIdx] = retryResult;
+                log(`    Group "${groupName}" retried successfully`, 'green');
+              }
+            } catch (retryErr) {
+              log(`    Group "${groupName}" retry failed: ${retryErr instanceof Error ? retryErr.message : String(retryErr)}`, 'red');
+              try {
+                await persistAgentErrorAuto({
+                  outputDir,
+                  agentName: 'CrosstabAgent',
+                  severity: 'error',
+                  actionTaken: 'continued',
+                  itemId: groupName,
+                  error: retryErr,
+                  meta: {
+                    phase: 'cut_validation_retry',
+                    retryAttempt,
+                    maxRetries: MAX_CUT_RETRIES,
+                    failedExpressionCount: failedCuts.length,
+                  },
+                });
+              } catch { /* ignore */ }
+            }
+          }
+
+          // Update result and re-validate
+          validatedCrosstabResult = { bannerCuts: updatedBannerCuts };
+          cutReport = await validateCutExpressions(
+            validatedCrosstabResult,
+            outputDir,
+            'dataFile.sav'
+          );
+
+          if (cutReport.failed === 0) {
+            log(`  Cut re-validation: all ${cutReport.passed} passed`, 'green');
+          } else {
+            log(`  Cut re-validation: ${cutReport.passed} passed, ${cutReport.failed} still failing`, 'yellow');
+          }
+        }
+
+        // If still failing after retries, warn but proceed (tryCatch wrappers handle it)
+        if (cutReport.failed > 0) {
+          log(`  ${cutReport.failed} cut expression(s) still failing after ${MAX_CUT_RETRIES} retries — proceeding with tryCatch safety net`, 'yellow');
+          for (const [groupName, failures] of cutReport.failedByGroup) {
+            for (const f of failures) {
+              try {
+                await persistSystemErrorAuto({
+                  outputDir,
+                  stageNumber: 8,
+                  stageName: 'CutValidation',
+                  severity: 'warning',
+                  actionTaken: 'continued',
+                  error: new Error(`Cut "${f.cutName}" in group "${groupName}" failed: ${f.error}`),
+                  meta: {
+                    cutName: f.cutName,
+                    groupName,
+                    rExpression: f.rExpression,
+                    phase: 'cut_validation_exhausted',
+                  },
+                });
+              } catch { /* ignore */ }
+            }
+          }
+        }
+      }
+    } catch (cutValidationError) {
+      // Cut validation itself failed (e.g., R not found, .sav file issue) — log and proceed
+      log(`  Cut validation failed: ${cutValidationError instanceof Error ? cutValidationError.message : String(cutValidationError)}`, 'yellow');
+      log(`  Proceeding without cut pre-validation`, 'dim');
+      try {
+        await persistSystemError({
+          outputDir,
+          dataset: files.name,
+          pipelineId,
+          stageNumber: 8,
+          stageName: 'CutValidation',
+          severity: 'warning',
+          actionTaken: 'continued',
+          error: cutValidationError,
+          meta: { phase: 'cut_validation_infrastructure' },
+        });
+      } catch { /* ignore */ }
+    }
+
+    const cutsSpec = buildCutsSpec(validatedCrosstabResult);
 
     // Run per-table R validation with retry loop
     const { validTables, excludedTables: newlyExcluded, validationReport: rValidationReport } = await validateAndFixTables(
