@@ -123,76 +123,138 @@ export async function runLoopSemanticsPolicyAgent(
   const systemPrompt = `${RESEARCH_DATA_PREAMBLE}${systemInstructions}`;
 
   // Build user prompt with runtime data
-  const userPrompt = buildUserPrompt(input);
+  const baseUserPrompt = buildUserPrompt(input);
+
+  // Build set of known columns for validation (datamap + deterministic findings)
+  const knownColumns = new Set(input.datamapExcerpt.map(e => e.column));
+  for (const f of input.deterministicFindings.iterationLinkedVariables) {
+    knownColumns.add(f.variableName);
+  }
 
   // Clear scratchpad from any previous runs (only once at the start)
   clearAllContextScratchpads();
 
-  // Create context-isolated scratchpad
-  const scratchpad = createContextScratchpadTool('LoopSemanticsPolicy', 'policy');
+  const maxSemanticRetries = 2; // corrective retries for hallucinated variables
 
   // Wrap the AI call with retry logic for policy errors
   try {
-    const retryResult = await retryWithPolicyHandling(
-      async () => {
-        const { output, usage } = await generateText({
-          model: getLoopSemanticsModel(),
-          system: systemPrompt,
-          maxRetries: 0, // Centralized outer retries via retryWithPolicyHandling
-          prompt: userPrompt,
-          tools: {
-            scratchpad,
-          },
-          stopWhen: stepCountIs(15),
-          maxOutputTokens: Math.min(getLoopSemanticsModelTokenLimit(), 100000),
-          providerOptions: {
-            openai: {
-              reasoningEffort: getLoopSemanticsReasoningEffort(),
-            },
-          },
-          output: Output.object({
-            schema: LoopSemanticsPolicySchema,
-          }),
-          abortSignal: input.abortSignal,
-        });
+    let result: LoopSemanticsPolicy | null = null;
 
-        if (!output || !output.bannerGroups) {
-          throw new Error('Invalid output from LoopSemanticsPolicyAgent');
-        }
-
-        // Record metrics
-        const durationMs = Date.now() - startTime;
-        recordAgentMetrics(
-          'LoopSemanticsPolicyAgent',
-          getLoopSemanticsModelName(),
-          { input: usage?.inputTokens || 0, output: usage?.outputTokens || 0 },
-          durationMs,
+    for (let semanticAttempt = 0; semanticAttempt <= maxSemanticRetries; semanticAttempt++) {
+      // Build prompt — first attempt uses base, retries append correction
+      let currentPrompt = baseUserPrompt;
+      if (semanticAttempt > 0 && result) {
+        const corrections = buildCorrectionPrompt(result, knownColumns);
+        currentPrompt = baseUserPrompt + '\n\n' + corrections;
+        console.log(
+          `[LoopSemanticsPolicyAgent] Semantic retry ${semanticAttempt}/${maxSemanticRetries}: ` +
+          `correcting hallucinated variables`,
         );
+      }
 
-        return output;
-      },
-      {
-        abortSignal: input.abortSignal,
-        maxAttempts,
-        onRetry: (attempt, err) => {
-          if (err instanceof DOMException && err.name === 'AbortError') {
-            throw err;
+      // Create fresh scratchpad for each attempt
+      const scratchpad = createContextScratchpadTool('LoopSemanticsPolicy', `policy-attempt-${semanticAttempt}`);
+
+      const retryResult = await retryWithPolicyHandling(
+        async () => {
+          const { output, usage } = await generateText({
+            model: getLoopSemanticsModel(),
+            system: systemPrompt,
+            maxRetries: 0, // Centralized outer retries via retryWithPolicyHandling
+            prompt: currentPrompt,
+            tools: {
+              scratchpad,
+            },
+            stopWhen: stepCountIs(15),
+            maxOutputTokens: Math.min(getLoopSemanticsModelTokenLimit(), 100000),
+            providerOptions: {
+              openai: {
+                reasoningEffort: getLoopSemanticsReasoningEffort(),
+              },
+            },
+            output: Output.object({
+              schema: LoopSemanticsPolicySchema,
+            }),
+            abortSignal: input.abortSignal,
+          });
+
+          if (!output || !output.bannerGroups) {
+            throw new Error('Invalid output from LoopSemanticsPolicyAgent');
           }
-          console.warn(`[LoopSemanticsPolicyAgent] Retry ${attempt}/${maxAttempts}: ${err.message.substring(0, 120)}`);
+
+          // Record metrics
+          const durationMs = Date.now() - startTime;
+          recordAgentMetrics(
+            'LoopSemanticsPolicyAgent',
+            getLoopSemanticsModelName(),
+            { input: usage?.inputTokens || 0, output: usage?.outputTokens || 0 },
+            durationMs,
+          );
+
+          return output;
         },
-      },
-    );
+        {
+          abortSignal: input.abortSignal,
+          maxAttempts,
+          onRetry: (attempt, err) => {
+            if (err instanceof DOMException && err.name === 'AbortError') {
+              throw err;
+            }
+            console.warn(`[LoopSemanticsPolicyAgent] Retry ${attempt}/${maxAttempts}: ${err.message.substring(0, 120)}`);
+          },
+        },
+      );
 
-    // Handle abort
-    if (retryResult.error === 'Operation was cancelled') {
-      throw new DOMException('LoopSemanticsPolicyAgent aborted', 'AbortError');
+      // Handle abort
+      if (retryResult.error === 'Operation was cancelled') {
+        throw new DOMException('LoopSemanticsPolicyAgent aborted', 'AbortError');
+      }
+
+      if (!retryResult.success || !retryResult.result) {
+        throw new Error(`LoopSemanticsPolicyAgent failed: ${retryResult.error || 'Unknown error'}`);
+      }
+
+      result = retryResult.result;
+
+      // Validate sourcesByIteration against known columns
+      const hallucinations = findHallucinatedVariables(result, knownColumns);
+      if (hallucinations.length === 0) {
+        // Clean — no retries needed
+        break;
+      }
+
+      if (semanticAttempt < maxSemanticRetries) {
+        // Will retry — log what we found
+        console.warn(
+          `[LoopSemanticsPolicyAgent] Found ${hallucinations.length} hallucinated variable(s): ` +
+          hallucinations.map(h => `"${h.variable}" in group "${h.groupName}"`).join(', '),
+        );
+      } else {
+        // Final attempt still has hallucinations — strip them as last resort
+        console.warn(
+          `[LoopSemanticsPolicyAgent] Exhausted ${maxSemanticRetries} semantic retries, ` +
+          `stripping ${hallucinations.length} remaining hallucinated variable(s)`,
+        );
+        for (const bg of result.bannerGroups) {
+          if (bg.implementation.strategy !== 'alias_column') continue;
+          const before = bg.implementation.sourcesByIteration.length;
+          bg.implementation.sourcesByIteration = bg.implementation.sourcesByIteration.filter(
+            s => knownColumns.has(s.variable),
+          );
+          const removed = before - bg.implementation.sourcesByIteration.length;
+          if (removed > 0) {
+            bg.confidence = Math.min(bg.confidence, 0.5);
+            const warning = `${bg.groupName}: Stripped ${removed} hallucinated variable(s) from sourcesByIteration after ${maxSemanticRetries} correction retries`;
+            bg.evidence.push(warning);
+            result.warnings.push(warning);
+          }
+        }
+      }
     }
 
-    if (!retryResult.success || !retryResult.result) {
-      throw new Error(`LoopSemanticsPolicyAgent failed: ${retryResult.error || 'Unknown error'}`);
+    if (!result) {
+      throw new Error('LoopSemanticsPolicyAgent produced no result');
     }
-
-    const result = retryResult.result;
 
     // Save scratchpad trace
     const contextEntries = getAllContextScratchpadEntries();
@@ -314,6 +376,83 @@ function buildUserPrompt(input: LoopSemanticsPolicyInput): string {
 
   sections.push('Output your classification for every banner group listed above.');
   sections.push('Set policyVersion to "1.0".');
+
+  return sections.join('\n');
+}
+
+// =============================================================================
+// Semantic Validation Helpers
+// =============================================================================
+
+interface HallucinatedVariable {
+  groupName: string;
+  variable: string;
+  iteration: string;
+}
+
+/**
+ * Find sourcesByIteration entries that reference variables not in the known column set.
+ */
+function findHallucinatedVariables(
+  policy: LoopSemanticsPolicy,
+  knownColumns: Set<string>,
+): HallucinatedVariable[] {
+  const hallucinations: HallucinatedVariable[] = [];
+  for (const bg of policy.bannerGroups) {
+    if (bg.implementation.strategy !== 'alias_column') continue;
+    for (const s of bg.implementation.sourcesByIteration) {
+      if (!knownColumns.has(s.variable)) {
+        hallucinations.push({
+          groupName: bg.groupName,
+          variable: s.variable,
+          iteration: s.iteration,
+        });
+      }
+    }
+  }
+  return hallucinations;
+}
+
+/**
+ * Build a corrective prompt appendix that tells the agent exactly which variables
+ * it hallucinated and what columns actually exist, so it can fix its output.
+ */
+function buildCorrectionPrompt(
+  previousResult: LoopSemanticsPolicy,
+  knownColumns: Set<string>,
+): string {
+  const sections: string[] = [];
+  sections.push('<correction>');
+  sections.push('IMPORTANT: Your previous output contained variables in sourcesByIteration that DO NOT EXIST in the dataset.');
+  sections.push('The following variables were hallucinated — they are not real columns:\n');
+
+  for (const bg of previousResult.bannerGroups) {
+    if (bg.implementation.strategy !== 'alias_column') continue;
+    const bad = bg.implementation.sourcesByIteration.filter(s => !knownColumns.has(s.variable));
+    if (bad.length === 0) continue;
+
+    const good = bg.implementation.sourcesByIteration.filter(s => knownColumns.has(s.variable));
+    sections.push(`Group "${bg.groupName}":`);
+    sections.push(`  INVALID variables (do NOT exist): ${bad.map(s => `${s.variable} (iteration ${s.iteration})`).join(', ')}`);
+    if (good.length > 0) {
+      sections.push(`  VALID variables (do exist): ${good.map(s => `${s.variable} (iteration ${s.iteration})`).join(', ')}`);
+    }
+
+    // Show nearby columns that might be what the agent intended
+    const badPrefixes = bad.map(s => s.variable.replace(/\d+$/, ''));
+    const suggestions = [...knownColumns].filter(col => {
+      return badPrefixes.some(prefix => col.startsWith(prefix));
+    });
+    if (suggestions.length > 0) {
+      sections.push(`  Similar columns that DO exist: ${suggestions.join(', ')}`);
+    }
+    sections.push('');
+  }
+
+  sections.push('Please re-classify all banner groups with ONLY variables that exist in the datamap.');
+  sections.push('If a variable does not exist for a given iteration, OMIT that iteration from sourcesByIteration.');
+  sections.push('It is acceptable to have fewer entries than loop iterations — missing iterations map to NA.');
+  sections.push('</correction>');
 
   return sections.join('\n');
 }

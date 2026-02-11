@@ -663,6 +663,16 @@ function generateStackingPreamble(
       bp => bp.stackedFrameName === frameName || bp.stackedFrameName === ''
     );
     if (aliasesForFrame.length > 0) {
+      // Build set of all real column names available in the stacked frame
+      // (original column names from all iterations across all variable families)
+      const realColumns = new Set<string>();
+      for (const v of mapping.variables) {
+        realColumns.add(v.baseName);
+        for (const origCol of Object.values(v.iterationColumns)) {
+          realColumns.add(origCol);
+        }
+      }
+
       lines.push(`# Create alias columns for entity-anchored banner groups`);
       lines.push(`${frameName} <- ${frameName} %>% dplyr::mutate(`);
 
@@ -679,6 +689,14 @@ function generateStackingPreamble(
         for (const iter of mapping.iterations) {
           const sourceVar = sourcesMap.get(iter);
           if (sourceVar) {
+            // Safety net: only emit case_when branch if the variable actually exists
+            if (!realColumns.has(sourceVar)) {
+              console.warn(
+                `[RScriptGenerator] Skipping alias branch for iteration ${iter}: ` +
+                `variable "${sourceVar}" not found in ${frameName} columns`,
+              );
+              continue;
+            }
             caseLines.push(`    .loop_iter == ${iter} ~ ${sanitizeRColumnName(sourceVar)}`);
           }
         }

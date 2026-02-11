@@ -134,15 +134,20 @@ PITFALL 2: Assuming all banner groups need transformation.
   - When in doubt, "respondent" is the safer default — it preserves current behavior.
 
 PITFALL 3: Getting sourcesByIteration wrong.
-  - The number of entries in sourcesByIteration MUST match the number of loop iterations.
+  - ONLY include variables that ACTUALLY EXIST in the datamap_excerpt or deterministic_findings.
+    NEVER invent or extrapolate variable names. If the datamap has B4r1, B4r2, B4r3 but NOT B4r4,
+    you MUST NOT include B4r4 — even if the loop has 4 iterations. Not every variable family
+    spans all iterations. The datamap is the ground truth for what columns exist.
+  - It is ACCEPTABLE for sourcesByIteration to have FEWER entries than the number of loop
+    iterations. Missing iterations will fall through to NA in the alias column, which is correct.
   - The "iteration" field in each entry must be the exact iteration value from the
     loop_summary input (these are the .loop_iter values in the stacked frame). Do not
     assume they are sequential integers — use the exact identifiers provided
     (e.g., "1", "2" or "brand_a", "brand_b").
   - Each entry maps an iteration value to the source variable for that iteration.
     Do NOT reverse the mapping.
-  - If you cannot confidently assign every iteration to a source variable, set
-    low confidence on the group rather than guessing.
+  - If you cannot confidently assign every iteration to a source variable, OMIT those
+    iterations from sourcesByIteration and set low confidence on the group. Do NOT guess.
 </common_pitfalls>
 
 <few_shot_examples>
