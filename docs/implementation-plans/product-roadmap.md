@@ -23,7 +23,11 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 | **3.2** Pipeline Cloud Migration | Wire orchestrator to Convex/R2, new API routes, deprecate old | Complete |
 | **3.3** New Project Experience | Multi-step wizard exposing all pipeline features in UI | Complete |
 | **3.4** Dashboard, Detail, Roles & Cost | Real-time dashboard, project detail, role enforcement, cost tracking | Complete |
-| **3.5** Deploy & Launch | Railway deployment, DNS, landing page, Sentry | Not Started |
+| **3.5a** Auth Completion | WorkOS production credentials, real login flow | Not Started |
+| **3.5b** Observability | Sentry, correlation IDs, structured logging | Not Started |
+| **3.5c** Security Audit | Full audit with real auth in place, fix findings | Not Started |
+| **3.5d** Deploy & Launch | Railway, DNS, landing page, smoke testing | Not Started |
+| **3.5e** Analytics | PostHog setup, key event tracking | Not Started |
 
 ---
 
@@ -69,35 +73,93 @@ Next.js app shell with `(marketing)/` and `(product)/` route groups, collapsible
 
 ---
 
-### 3.5 Deploy & Launch — `NOT STARTED`
+### 3.5 Deploy & Launch
 
 Ship it. Antares gets a link.
 
+---
+
+#### 3.5a Auth Completion — `NOT STARTED`
+
+**Goal**: Real users can log in. Everything downstream depends on this.
+
+WorkOS auth is fully scaffolded (`middleware.ts`, `auth.ts`, `auth-sync.ts`) with `AUTH_BYPASS=true` for local dev. This step provisions production credentials and validates the real login flow.
+
+- Provision WorkOS production environment (API key, client ID, redirect URI)
+- Test real login → callback → `syncAuthToConvex()` flow with a live user
+- Verify role assignment and org membership propagation
+- Confirm `AUTH_BYPASS=false` works correctly in production config
+
+**Level of Effort**: Small
+
+---
+
+#### 3.5b Observability — `NOT STARTED`
+
+**Goal**: See errors from the very first production request. Know when things break before users tell you.
+
+- Add `@sentry/nextjs` — unhandled error capture, source maps, error boundaries
+- Correlation IDs: generate per-request UUID, propagate through pipeline stages and agent calls (build on existing `src/lib/tracing.ts` scaffolding)
+- Structured logging with Sentry as the sink (breadcrumbs + context per pipeline run)
+- Alerting: Sentry notifications for unhandled exceptions and pipeline failures
+
+**Level of Effort**: Small–Medium
+
+---
+
+#### 3.5c Security Audit — `NOT STARTED`
+
+**Goal**: Audit the complete system with real auth in place, before real users touch it. Fix findings before deploying.
+
+Phase 3.4 hardening pass (RBAC via `canPerform()`, IDOR fixes on feedback/review routes, error detail gating, auth on legacy routes) provides a solid baseline. This is the full audit pass.
+
+- Run comprehensive security audit (auth, authorization, injection, secrets, crypto)
+- Review all API routes for proper auth gates and input validation
+- Verify R2 key scoping and Convex query org-filtering
+- Check for leaked secrets, hardcoded credentials, exposed env vars
+- Fix any findings
+
+**Level of Effort**: Medium
+
+---
+
+#### 3.5d Deploy & Launch — `NOT STARTED`
+
+**Goal**: Production deployment live. Antares gets a URL.
+
 **Deployment**:
 - Railway: Docker container (Node + R), environment variables, health check endpoint
-- DNS: Point domain to Railway (or Vercel if we split UI later)
+- DNS: Point domain to Railway
 - Environment: Convex production deployment, R2 production bucket, WorkOS production mode
 
 **Landing page** (`(marketing)/page.tsx` — already has placeholder):
-- Logo + "CrossTab AI"
+- Logo + "Crosstab AI"
 - Subhead: "Upload your .sav, configure your project, download publication-ready crosstabs."
 - "Log In" button → WorkOS hosted login → redirect to dashboard
 - Professional, clean, confident. Not a sales pitch.
 
-**Observability**:
-- Sentry for error monitoring (know when things break)
-- Basic structured logging with correlation IDs (trace a job through all stages)
-- PostHog for lightweight product analytics (project_created, job_completed, job_failed, download_completed) — optional for launch
+**Smoke testing**: End-to-end test with real WorkOS login, file upload, pipeline run, download.
 
-**Deliverables**: Production deployment live. Antares can log in and use the system. Sentry alerting active.
+**Level of Effort**: Medium
 
-**Level of Effort**: Medium (deployment + DNS + landing page + Sentry + final testing)
+---
+
+#### 3.5e Analytics — `NOT STARTED`
+
+**Goal**: Understand how users interact with the product.
+
+- Add PostHog (`posthog-js` client-side, `@posthog/node` server-side)
+- Initialize in root layout with environment-based API key
+- Track key events: `project_created`, `pipeline_completed`, `pipeline_failed`, `download_completed`
+- Basic session recording (optional, PostHog supports this out of the box)
+
+**Level of Effort**: Small
 
 ---
 
 ## MVP Complete
 
-Completing Phase 3.5 = MVP = The Product. Antares logs in, uploads files, configures their project, runs the pipeline, reviews HITL decisions, and downloads publication-ready crosstabs.
+Completing Phase 3.5 (a through e) = MVP = The Product. Antares logs in, uploads files, configures their project, runs the pipeline, reviews HITL decisions, and downloads publication-ready crosstabs.
 
 Future features, deferred items, and known gaps/limitations are documented in [`future-features.md`](./future-features.md).
 
@@ -105,4 +167,4 @@ Future features, deferred items, and known gaps/limitations are documented in [`
 
 *Created: January 22, 2026*
 *Updated: February 11, 2026*
-*Status: Phase 3 (Productization) in progress. 3.1–3.4 complete. 3.5 next.*
+*Status: Phase 3 (Productization) in progress. 3.1–3.4 complete. 3.5a–3.5e next.*
