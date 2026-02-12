@@ -33,7 +33,7 @@ export default function MarketingLayout({
               href="/dashboard"
               className="text-sm font-medium bg-primary text-primary-foreground px-3.5 py-1.5 rounded-md hover:opacity-90 transition-opacity"
             >
-              Get Started
+              Log In
             </Link>
             <ModeToggle />
           </div>

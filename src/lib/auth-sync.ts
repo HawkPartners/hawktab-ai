@@ -31,7 +31,12 @@ export async function syncAuthToConvex(auth: AuthContext): Promise<ConvexIds> {
   const orgId = await convex.mutation(api.organizations.upsert, {
     workosOrgId: auth.orgId,
     name: auth.orgName || (auth.isBypass ? "Hawk Partners Dev" : "Unknown Org"),
-    slug: auth.isBypass ? "hawk-partners-dev" : auth.orgId,
+    slug: auth.isBypass
+      ? "hawk-partners-dev"
+      : (auth.orgName
+          ? auth.orgName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+          : "")
+        || auth.orgId,
   });
 
   // Upsert the user

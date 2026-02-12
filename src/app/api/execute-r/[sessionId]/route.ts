@@ -9,7 +9,7 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { requireConvexAuth } from '@/lib/requireConvexAuth';
+import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 
 const execAsync = promisify(exec);
 
@@ -132,10 +132,13 @@ export async function GET(
 
   } catch (error) {
     console.error('[R Execution] Error:', error);
+    if (error instanceof AuthenticationError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to execute R script',
-        details: process.env.NODE_ENV === 'development' 
+        details: process.env.NODE_ENV === 'development'
           ? error instanceof Error ? error.message : String(error)
           : undefined
       },

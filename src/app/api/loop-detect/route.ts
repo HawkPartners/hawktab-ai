@@ -7,7 +7,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 import { validate } from '@/lib/validation/ValidationRunner';
-import { requireConvexAuth } from '@/lib/requireConvexAuth';
+import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 
 export async function POST(request: NextRequest) {
   let tmpDir: string | null = null;
@@ -41,6 +41,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ hasLoops, loopCount });
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Loop detection failed' },
       { status: 500 }

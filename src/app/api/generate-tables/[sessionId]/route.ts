@@ -10,7 +10,7 @@ import * as path from 'path';
 import type { ValidationResultType } from '@/schemas/agentOutputSchema';
 import { buildCutTable } from '@/lib/tables/CutTable';
 import { exportCutTableToCSV } from '@/lib/exporters/csv';
-import { requireConvexAuth } from '@/lib/requireConvexAuth';
+import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ sessionId: string }> }) {
   try {
@@ -55,6 +55,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ ses
       averageConfidence: Number(table.stats.averageConfidence.toFixed(3)),
     });
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to generate tables' },
       { status: 500 },

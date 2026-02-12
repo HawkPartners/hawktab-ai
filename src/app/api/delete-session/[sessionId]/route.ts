@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { requireConvexAuth } from '@/lib/requireConvexAuth';
+import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 
 // Delete session folder
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ sessionId: string }> }) {
@@ -58,10 +58,13 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
 
   } catch (error) {
     console.error('[Delete Session] Error deleting session:', error);
+    if (error instanceof AuthenticationError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to delete session folder',
-        details: process.env.NODE_ENV === 'development' 
+        details: process.env.NODE_ENV === 'development'
           ? error instanceof Error ? error.message : String(error)
           : undefined
       },

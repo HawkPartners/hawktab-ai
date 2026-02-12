@@ -16,7 +16,7 @@ import { logAgentExecution } from '../../../lib/tracing';
 import { validateEnvironment } from '../../../lib/env';
 import { parseUploadFormData, validateUploadedFiles, saveFilesToStorage, sanitizeDatasetName } from '../../../lib/api/fileHandler';
 import { runPipelineFromUpload } from '../../../lib/api/pipelineOrchestrator';
-import { requireConvexAuth } from '../../../lib/requireConvexAuth';
+import { requireConvexAuth, AuthenticationError } from '../../../lib/requireConvexAuth';
 import { getConvexClient } from '../../../lib/convex';
 import { api } from '../../../../convex/_generated/api';
 import { createAbortController } from '../../../lib/abortStore';
@@ -153,6 +153,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('[API] Early processing error:', error);
+    if (error instanceof AuthenticationError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     try {
       await persistSystemError({
         outputDir: getGlobalSystemOutputDir(),

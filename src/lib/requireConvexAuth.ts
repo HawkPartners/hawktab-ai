@@ -1,4 +1,5 @@
-import { requireAuth, type AuthContext } from "./auth";
+import { requireAuth, AuthenticationError, type AuthContext } from "./auth";
+export { AuthenticationError };
 import { syncAuthToConvex, type ConvexIds } from "./auth-sync";
 import { getConvexClient } from "./convex";
 import { api } from "../../convex/_generated/api";

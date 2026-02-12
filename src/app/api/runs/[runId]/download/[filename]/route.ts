@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getConvexClient } from '@/lib/convex';
 import { api } from '../../../../../../../convex/_generated/api';
 import { getDownloadUrl } from '@/lib/r2/R2FileManager';
-import { requireConvexAuth } from '@/lib/requireConvexAuth';
+import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import type { Id } from '../../../../../../../convex/_generated/dataModel';
 
 // Map user-friendly filenames to the R2 output keys
@@ -74,10 +74,10 @@ export async function GET(
     return NextResponse.redirect(url);
   } catch (error) {
     console.error('[Download API] Error:', error);
-    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-    if (errorMsg.includes('Authentication required') || errorMsg.includes('Unauthorized')) {
+    if (error instanceof AuthenticationError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       { error: 'Failed to generate download URL', details: process.env.NODE_ENV === 'development' ? errorMsg : undefined },
       { status: 500 },

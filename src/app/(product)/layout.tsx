@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "@/components/app-header";
@@ -15,26 +16,30 @@ export default async function ProductLayout({
   children: React.ReactNode;
 }) {
   const auth = await getAuth();
+
+  // No auth means either not logged in or user has no org — redirect to error page
+  if (!auth) {
+    redirect("/auth/error?reason=no-org");
+  }
+
   let convexOrgId: string | null = null;
   let convexUserId: string | null = null;
   let role: Role | null = null;
 
-  if (auth) {
-    try {
-      const ids = await syncAuthToConvex(auth);
-      convexOrgId = ids.orgId;
-      convexUserId = ids.userId;
+  try {
+    const ids = await syncAuthToConvex(auth);
+    convexOrgId = ids.orgId;
+    convexUserId = ids.userId;
 
-      // Fetch the user's role from their org membership
-      const convex = getConvexClient();
-      const membership = await convex.query(api.orgMemberships.getByUserAndOrg, {
-        userId: ids.userId,
-        orgId: ids.orgId,
-      });
-      role = (membership?.role as Role) ?? 'member';
-    } catch (err) {
-      console.warn('[Layout] Could not sync auth to Convex:', err);
-    }
+    // Fetch the user's role from their org membership
+    const convex = getConvexClient();
+    const membership = await convex.query(api.orgMemberships.getByUserAndOrg, {
+      userId: ids.userId,
+      orgId: ids.orgId,
+    });
+    role = (membership?.role as Role) ?? 'member';
+  } catch (err) {
+    console.warn('[Layout] Could not sync auth to Convex:', err);
   }
 
   return (
@@ -42,8 +47,8 @@ export default async function ProductLayout({
       <AuthProvider
         convexOrgId={convexOrgId}
         convexUserId={convexUserId}
-        email={auth?.email}
-        name={auth?.name}
+        email={auth.email}
+        name={auth.name}
         role={role}
       >
         <SidebarProvider defaultOpen>

@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
-import { requireConvexAuth } from '@/lib/requireConvexAuth';
+import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import { getConvexClient } from '@/lib/convex';
 import { api } from '../../../../../../convex/_generated/api';
 import {
@@ -118,6 +118,9 @@ export async function GET(
     });
   } catch (error) {
     console.error('[Feedback API GET] Error:', error);
+    if (error instanceof AuthenticationError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
       { error: 'Failed to get feedback', details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined },
       { status: 500 }
@@ -228,6 +231,9 @@ export async function POST(
     });
   } catch (error) {
     console.error('[Feedback API POST] Error:', error);
+    if (error instanceof AuthenticationError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
       { error: 'Failed to submit feedback', details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined },
       { status: 500 }

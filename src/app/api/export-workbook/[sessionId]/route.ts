@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { formatTablesFileToBuffer } from '@/lib/excel/ExcelFormatter';
-import { requireConvexAuth } from '@/lib/requireConvexAuth';
+import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 
 export async function GET(
   _req: NextRequest,
@@ -62,6 +62,9 @@ export async function GET(
 
   } catch (error) {
     console.error('[Excel Export] Error:', error);
+    if (error instanceof AuthenticationError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
       {
         error: 'Failed to generate Excel workbook',

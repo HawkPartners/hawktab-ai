@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getConvexClient } from '@/lib/convex';
 import { api } from '../../../../../../convex/_generated/api';
 import { abortRun } from '@/lib/abortStore';
-import { requireConvexAuth } from '@/lib/requireConvexAuth';
+import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import { canPerform } from '@/lib/permissions';
 import type { Id } from '../../../../../../convex/_generated/dataModel';
 
@@ -50,10 +50,10 @@ export async function POST(
     });
   } catch (error) {
     console.error('[Cancel API] Error:', error);
-    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-    if (errorMsg.includes('Authentication required') || errorMsg.includes('Unauthorized')) {
+    if (error instanceof AuthenticationError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       { error: 'Failed to cancel run', details: process.env.NODE_ENV === 'development' ? errorMsg : undefined },
       { status: 500 }

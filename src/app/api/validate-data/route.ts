@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireConvexAuth } from '@/lib/requireConvexAuth';
+import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import { validate } from '@/lib/validation/ValidationRunner';
 import { promises as fs } from 'fs';
 import * as path from 'path';
@@ -81,8 +81,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[validate-data] Error:', error);
 
-    // Auth errors come as thrown errors — check for 401 pattern
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
+    if (error instanceof AuthenticationError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

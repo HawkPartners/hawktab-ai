@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import type { ValidationStatus } from '../../../schemas/humanValidationSchema';
-import { requireConvexAuth } from '@/lib/requireConvexAuth';
+import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 
 interface SessionSummary {
   sessionId: string;
@@ -134,10 +134,13 @@ export async function GET(_request: NextRequest) {
 
   } catch (error) {
     console.error('[Validation Queue] Error reading sessions:', error);
+    if (error instanceof AuthenticationError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to read validation queue',
-        details: process.env.NODE_ENV === 'development' 
+        details: process.env.NODE_ENV === 'development'
           ? error instanceof Error ? error.message : String(error)
           : undefined
       },
@@ -180,10 +183,13 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('[Validation Queue] Error filtering sessions:', error);
+    if (error instanceof AuthenticationError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to filter validation queue',
-        details: process.env.NODE_ENV === 'development' 
+        details: process.env.NODE_ENV === 'development'
           ? error instanceof Error ? error.message : String(error)
           : undefined
       },

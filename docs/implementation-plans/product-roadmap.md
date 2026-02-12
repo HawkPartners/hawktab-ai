@@ -23,7 +23,7 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 | **3.2** Pipeline Cloud Migration | Wire orchestrator to Convex/R2, new API routes, deprecate old | Complete |
 | **3.3** New Project Experience | Multi-step wizard exposing all pipeline features in UI | Complete |
 | **3.4** Dashboard, Detail, Roles & Cost | Real-time dashboard, project detail, role enforcement, cost tracking | Complete |
-| **3.5a** Auth Completion | WorkOS production credentials, real login flow | Not Started |
+| **3.5a** Auth Completion | WorkOS production credentials, real login flow | Complete |
 | **3.5b** Observability | Sentry, correlation IDs, structured logging | Not Started |
 | **3.5c** Security Audit | Full audit with real auth in place, fix findings | Not Started |
 | **3.5d** Deploy & Launch | Railway, DNS, landing page, smoke testing | Not Started |
@@ -79,18 +79,11 @@ Ship it. Antares gets a link.
 
 ---
 
-#### 3.5a Auth Completion — `NOT STARTED`
+#### 3.5a Auth Completion — `COMPLETE`
 
 **Goal**: Real users can log in. Everything downstream depends on this.
 
-WorkOS auth is fully scaffolded (`middleware.ts`, `auth.ts`, `auth-sync.ts`) with `AUTH_BYPASS=true` for local dev. This step provisions production credentials and validates the real login flow.
-
-- Provision WorkOS production environment (API key, client ID, redirect URI)
-- Test real login → callback → `syncAuthToConvex()` flow with a live user
-- Verify role assignment and org membership propagation
-- Confirm `AUTH_BYPASS=false` works correctly in production config
-
-**Level of Effort**: Small
+**What was built**: `getAuth()` fetches org name from WorkOS via `organizations.getOrganization()` with 30-min in-memory cache; returns null for users without orgs. Auth error page (`/auth/error`) with reason-specific messages (`no-org`, `callback-failed`). Product layout redirects to error page instead of rendering broken dashboard. Callback route has `onError` handler redirecting to error page. `/api/health` and `/auth/error` added to unauthenticated paths. Marketing layout button changed to "Log In". Org slug derived from org name (not raw WorkOS ID) with fallback. `AuthenticationError` class added — all 13 API routes use `instanceof` check for consistent 401 responses (previously 9 routes returned 500 on auth failures). Tested with real WorkOS login, Convex sync verified (org name, slug, user, membership all correct), bypass mode regression-tested.
 
 ---
 
@@ -167,4 +160,4 @@ Future features, deferred items, and known gaps/limitations are documented in [`
 
 *Created: January 22, 2026*
 *Updated: February 11, 2026*
-*Status: Phase 3 (Productization) in progress. 3.1–3.4 complete. 3.5a–3.5e next.*
+*Status: Phase 3 (Productization) in progress. 3.1–3.4 and 3.5a complete. 3.5b–3.5e next.*

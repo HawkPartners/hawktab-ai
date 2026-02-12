@@ -16,7 +16,7 @@ import {
   saveWizardFilesToStorage,
 } from '@/lib/api/fileHandler';
 import { runPipelineFromUpload, type PipelineRunParams } from '@/lib/api/pipelineOrchestrator';
-import { requireConvexAuth } from '@/lib/requireConvexAuth';
+import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import { canPerform } from '@/lib/permissions';
 import { getConvexClient } from '@/lib/convex';
 import { api } from '../../../../../convex/_generated/api';
@@ -214,11 +214,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[Launch] Error:', error);
 
-    // Return 401 for auth errors
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    if (errorMsg.includes('Unauthorized') || errorMsg.includes('unauthorized')) {
+    if (error instanceof AuthenticationError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const errorMsg = error instanceof Error ? error.message : String(error);
 
     try {
       await persistSystemError({
