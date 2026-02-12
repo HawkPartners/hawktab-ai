@@ -3,6 +3,41 @@ import { saveUploadedFile } from '@/lib/storage';
 import { uploadInputFile } from '@/lib/r2/R2FileManager';
 import type { SavedFilePaths, ParsedWizardFiles, SavedWizardPaths } from './types';
 
+// ---------------------------------------------------------------------------
+// Per-file size limits (bytes)
+// ---------------------------------------------------------------------------
+const FILE_SIZE_LIMITS = {
+  dataFile:    100 * 1024 * 1024, // 100 MB — .sav files can be large
+  dataMap:      25 * 1024 * 1024, // 25 MB
+  survey:       25 * 1024 * 1024, // 25 MB — PDF/DOCX
+  bannerPlan:   25 * 1024 * 1024, // 25 MB — PDF/DOCX/XLSX
+  messageList:  10 * 1024 * 1024, // 10 MB
+} as const;
+
+function mbString(bytes: number): string {
+  return `${Math.round(bytes / 1024 / 1024)}MB`;
+}
+
+/**
+ * Check a single file against its size limit.
+ * Returns an error string if oversized, or null if OK.
+ */
+function checkFileSize(file: File, limitKey: keyof typeof FILE_SIZE_LIMITS, label: string): string | null {
+  const limit = FILE_SIZE_LIMITS[limitKey];
+  if (file.size > limit) {
+    return `${label} is too large (${mbString(file.size)}). Maximum is ${mbString(limit)}.`;
+  }
+  return null;
+}
+
+/** Thrown when an uploaded file exceeds its per-type size limit. */
+export class FileSizeLimitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'FileSizeLimitError';
+  }
+}
+
 export interface ParsedUploadData {
   dataMapFile: File;
   bannerPlanFile: File;
@@ -14,6 +49,7 @@ export interface ParsedUploadData {
 /**
  * Parse upload form data into typed file objects.
  * Returns null if required files are missing.
+ * Throws with a descriptive message if any file exceeds its size limit.
  */
 export function parseUploadFormData(formData: FormData): ParsedUploadData | null {
   const dataMapFile = formData.get('dataMap') as File | null;
@@ -27,6 +63,18 @@ export function parseUploadFormData(formData: FormData): ParsedUploadData | null
       : undefined;
 
   if (!dataMapFile || !bannerPlanFile || !dataFile) return null;
+
+  // Per-file size limits
+  const sizeErrors = [
+    checkFileSize(dataFile, 'dataFile', 'Data file (.sav)'),
+    checkFileSize(dataMapFile, 'dataMap', 'Data map'),
+    checkFileSize(bannerPlanFile, 'bannerPlan', 'Banner plan'),
+    surveyFile ? checkFileSize(surveyFile, 'survey', 'Survey document') : null,
+  ].filter(Boolean);
+
+  if (sizeErrors.length > 0) {
+    throw new FileSizeLimitError(sizeErrors.join(' '));
+  }
 
   return { dataMapFile, bannerPlanFile, dataFile, surveyFile, loopStatTestingMode };
 }
@@ -121,6 +169,7 @@ async function uploadInputToR2(file: File, orgId: string, projectId: string): Pr
  * Parse wizard FormData into typed file objects.
  * The wizard does NOT require a datamap (the .sav IS the datamap).
  * Returns null if required files are missing.
+ * Throws with a descriptive message if any file exceeds its size limit.
  */
 export function parseWizardFormData(formData: FormData): ParsedWizardFiles | null {
   const dataFile = formData.get('dataFile') as File | null;
@@ -129,6 +178,18 @@ export function parseWizardFormData(formData: FormData): ParsedWizardFiles | nul
   const messageListFile = formData.get('messageList') as File | null;
 
   if (!dataFile || !surveyFile) return null;
+
+  // Per-file size limits
+  const sizeErrors = [
+    checkFileSize(dataFile, 'dataFile', 'Data file (.sav)'),
+    checkFileSize(surveyFile, 'survey', 'Survey document'),
+    bannerPlanFile ? checkFileSize(bannerPlanFile, 'bannerPlan', 'Banner plan') : null,
+    messageListFile ? checkFileSize(messageListFile, 'messageList', 'Message list') : null,
+  ].filter(Boolean);
+
+  if (sizeErrors.length > 0) {
+    throw new FileSizeLimitError(sizeErrors.join(' '));
+  }
 
   return { dataFile, surveyFile, bannerPlanFile, messageListFile };
 }

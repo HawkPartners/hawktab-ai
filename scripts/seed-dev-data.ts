@@ -12,8 +12,16 @@ async function main() {
     process.exit(1);
   }
 
+  const deployKey = process.env.CONVEX_DEPLOY_KEY;
+  if (!deployKey) {
+    console.error('CONVEX_DEPLOY_KEY is not set. Required for calling internalMutation functions.');
+    console.error('Add it to .env.local (find it in the Convex dashboard under Settings > Deploy Key).');
+    process.exit(1);
+  }
+
   console.log('=== Seeding Convex Dev Data ===\n');
   const client = new ConvexHttpClient(url);
+  (client as unknown as { setAdminAuth(token: string): void }).setAdminAuth(deployKey);
 
   // 1. Upsert dev organization
   console.log('1. Upserting dev organization...');

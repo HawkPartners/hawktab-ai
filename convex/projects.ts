@@ -1,13 +1,42 @@
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { query, internalMutation } from "./_generated/server";
 
-export const create = mutation({
+// Typed config validator — mirrors schema.ts configValidator
+const configArg = v.object({
+  projectSubType: v.optional(v.union(v.literal("standard"), v.literal("segmentation"), v.literal("maxdiff"))),
+  bannerMode: v.optional(v.union(v.literal("upload"), v.literal("auto_generate"))),
+  researchObjectives: v.optional(v.string()),
+  bannerHints: v.optional(v.string()),
+  format: v.optional(v.union(v.literal("joe"), v.literal("antares"))),
+  displayMode: v.optional(v.union(v.literal("frequency"), v.literal("counts"), v.literal("both"))),
+  separateWorkbooks: v.optional(v.boolean()),
+  theme: v.optional(v.string()),
+  statTesting: v.optional(v.object({
+    thresholds: v.optional(v.array(v.number())),
+    minBase: v.optional(v.number()),
+  })),
+  weightVariable: v.optional(v.string()),
+  loopStatTestingMode: v.optional(v.union(v.literal("suppress"), v.literal("complement"))),
+  stopAfterVerification: v.optional(v.boolean()),
+});
+
+// Typed intake validator — mirrors schema.ts intakeValidator
+const intakeArg = v.object({
+  dataMap: v.optional(v.union(v.string(), v.null())),
+  dataFile: v.optional(v.union(v.string(), v.null())),
+  bannerPlan: v.optional(v.union(v.string(), v.null())),
+  survey: v.optional(v.union(v.string(), v.null())),
+  messageList: v.optional(v.union(v.string(), v.null())),
+  bannerMode: v.optional(v.union(v.literal("upload"), v.literal("auto_generate"))),
+});
+
+export const create = internalMutation({
   args: {
     orgId: v.id("organizations"),
     name: v.string(),
     projectType: v.union(v.literal("crosstab"), v.literal("other")),
-    config: v.any(),
-    intake: v.any(),
+    config: configArg,
+    intake: intakeArg,
     fileKeys: v.array(v.string()),
     createdBy: v.id("users"),
   },
@@ -31,7 +60,7 @@ export const get = query({
   },
 });
 
-export const updateFileKeys = mutation({
+export const updateFileKeys = internalMutation({
   args: {
     projectId: v.id("projects"),
     fileKeys: v.array(v.string()),

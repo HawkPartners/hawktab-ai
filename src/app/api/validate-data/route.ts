@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
+import { applyRateLimit } from '@/lib/withRateLimit';
 import { validate } from '@/lib/validation/ValidationRunner';
 import { promises as fs } from 'fs';
 import * as path from 'path';
@@ -15,13 +16,26 @@ import * as os from 'os';
 
 // Allow large .sav file uploads and time for validation
 export const maxDuration = 120; // 2 minutes
+const MAX_UPLOAD_BYTES = 100 * 1024 * 1024; // 100 MB
 
 export async function POST(request: NextRequest) {
   // Temp directory for this validation — cleaned up in finally block
   let tempDir: string | null = null;
 
   try {
-    await requireConvexAuth();
+    const auth = await requireConvexAuth();
+
+    const rateLimited = applyRateLimit(String(auth.convexOrgId), 'high', 'validate-data');
+    if (rateLimited) return rateLimited;
+
+    // Reject oversized uploads early
+    const contentLength = Number(request.headers.get('content-length') || 0);
+    if (contentLength > MAX_UPLOAD_BYTES) {
+      return NextResponse.json(
+        { error: `Upload too large (${Math.round(contentLength / 1024 / 1024)}MB). Maximum is 100MB.` },
+        { status: 413 }
+      );
+    }
 
     const formData = await request.formData();
     const dataFile = formData.get('dataFile') as File | null;
@@ -37,6 +51,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Data file must be a .sav (SPSS) file' },
         { status: 400 }
+      );
+    }
+
+    if (dataFile.size > MAX_UPLOAD_BYTES) {
+      return NextResponse.json(
+        { error: `Data file is too large (${Math.round(dataFile.size / 1024 / 1024)}MB). Maximum is 100MB.` },
+        { status: 413 }
       );
     }
 

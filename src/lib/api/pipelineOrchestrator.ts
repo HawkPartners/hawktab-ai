@@ -2,8 +2,9 @@
  * Core pipeline orchestration: Path A/B coordination, R validation, Excel generation.
  * Extracted from process-crosstab/route.ts to keep the HTTP handler slim.
  */
-import { getConvexClient } from '@/lib/convex';
+import { getConvexClient, mutateInternal } from '@/lib/convex';
 import { api } from '../../../convex/_generated/api';
+import { internal } from '../../../convex/_generated/api';
 import { cleanupAbort } from '@/lib/abortStore';
 import { uploadPipelineOutputs, type R2FileManifest } from '@/lib/r2/R2FileManager';
 import type { Id } from '../../../convex/_generated/dataModel';
@@ -109,8 +110,7 @@ async function updateRunStatus(runId: string, updates: {
   error?: string;
 }): Promise<void> {
   try {
-    const convex = getConvexClient();
-    await convex.mutation(api.runs.updateStatus, {
+    await mutateInternal(internal.runs.updateStatus, {
       runId: runId as Id<"runs">,
       status: updates.status,
       ...(updates.stage !== undefined && { stage: updates.stage }),
@@ -649,7 +649,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
           const run = await convex.query(api.runs.get, { runId: runId as Id<"runs"> });
           const existingReviewState = (run?.result as Record<string, unknown>)?.reviewState as Record<string, unknown> | undefined;
           if (existingReviewState) {
-            await convex.mutation(api.runs.updateReviewState, {
+            await mutateInternal(internal.runs.updateReviewState, {
               runId: runId as Id<"runs">,
               reviewState: { ...existingReviewState, pathBStatus: 'completed' },
             });
@@ -678,7 +678,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
           const run = await convex.query(api.runs.get, { runId: runId as Id<"runs"> });
           const existingReviewState = (run?.result as Record<string, unknown>)?.reviewState as Record<string, unknown> | undefined;
           if (existingReviewState) {
-            await convex.mutation(api.runs.updateReviewState, {
+            await mutateInternal(internal.runs.updateReviewState, {
               runId: runId as Id<"runs">,
               reviewState: { ...existingReviewState, pathBStatus: 'error' },
             });
@@ -712,7 +712,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
               const run = await convex.query(api.runs.get, { runId: runId as Id<"runs"> });
               const existingReviewState = (run?.result as Record<string, unknown>)?.reviewState as Record<string, unknown> | undefined;
               if (existingReviewState) {
-                await convex.mutation(api.runs.updateReviewState, {
+                await mutateInternal(internal.runs.updateReviewState, {
                   runId: runId as Id<"runs">,
                   reviewState: { ...existingReviewState, pathCStatus: 'completed' },
                 });
@@ -938,8 +938,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
       // Push review state to Convex for real-time UI subscriptions
       try {
-        const convex = getConvexClient();
-        await convex.mutation(api.runs.updateReviewState, {
+        await mutateInternal(internal.runs.updateReviewState, {
           runId: runId as Id<"runs">,
           reviewState: {
             status: 'awaiting_review',

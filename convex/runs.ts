@@ -1,11 +1,30 @@
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { query, internalMutation } from "./_generated/server";
 
-export const create = mutation({
+// Typed config validator — mirrors schema.ts configValidator
+const configArg = v.object({
+  projectSubType: v.optional(v.union(v.literal("standard"), v.literal("segmentation"), v.literal("maxdiff"))),
+  bannerMode: v.optional(v.union(v.literal("upload"), v.literal("auto_generate"))),
+  researchObjectives: v.optional(v.string()),
+  bannerHints: v.optional(v.string()),
+  format: v.optional(v.union(v.literal("joe"), v.literal("antares"))),
+  displayMode: v.optional(v.union(v.literal("frequency"), v.literal("counts"), v.literal("both"))),
+  separateWorkbooks: v.optional(v.boolean()),
+  theme: v.optional(v.string()),
+  statTesting: v.optional(v.object({
+    thresholds: v.optional(v.array(v.number())),
+    minBase: v.optional(v.number()),
+  })),
+  weightVariable: v.optional(v.string()),
+  loopStatTestingMode: v.optional(v.union(v.literal("suppress"), v.literal("complement"))),
+  stopAfterVerification: v.optional(v.boolean()),
+});
+
+export const create = internalMutation({
   args: {
     projectId: v.id("projects"),
     orgId: v.id("organizations"),
-    config: v.any(),
+    config: configArg,
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("runs", {
@@ -28,7 +47,7 @@ export const get = query({
   },
 });
 
-export const requestCancel = mutation({
+export const requestCancel = internalMutation({
   args: { runId: v.id("runs") },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.runId, {
@@ -61,7 +80,7 @@ export const getByProject = query({
   },
 });
 
-export const updateStatus = mutation({
+export const updateStatus = internalMutation({
   args: {
     runId: v.id("runs"),
     status: v.union(
@@ -80,18 +99,17 @@ export const updateStatus = mutation({
     error: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Runtime guard: if result is provided, it must be an object with a pipelineId string
+    if (args.result !== undefined) {
+      if (typeof args.result !== 'object' || args.result === null || Array.isArray(args.result)) {
+        throw new Error("result must be a non-null, non-array object");
+      }
+      if (typeof (args.result as Record<string, unknown>).pipelineId !== 'string') {
+        throw new Error("result.pipelineId must be a string");
+      }
+    }
     const { runId, ...fields } = args;
     await ctx.db.patch(runId, fields);
-  },
-});
-
-export const updateResult = mutation({
-  args: {
-    runId: v.id("runs"),
-    result: v.any(),
-  },
-  handler: async (ctx, args) => {
-    await ctx.db.patch(args.runId, { result: args.result });
   },
 });
 
@@ -99,12 +117,16 @@ export const updateResult = mutation({
  * Store or update review state inside runs.result.reviewState.
  * Called by the orchestrator when HITL review is needed and when PathB completes.
  */
-export const updateReviewState = mutation({
+export const updateReviewState = internalMutation({
   args: {
     runId: v.id("runs"),
     reviewState: v.any(),
   },
   handler: async (ctx, args) => {
+    if (typeof args.reviewState !== 'object' || args.reviewState === null || Array.isArray(args.reviewState)) {
+      throw new Error("reviewState must be a non-null, non-array object");
+    }
+
     const run = await ctx.db.get(args.runId);
     if (!run) throw new Error("Run not found");
 
@@ -119,12 +141,16 @@ export const updateReviewState = mutation({
  * Append a feedback entry to runs.result.feedback array.
  * Creates the array if it doesn't exist.
  */
-export const addFeedbackEntry = mutation({
+export const addFeedbackEntry = internalMutation({
   args: {
     runId: v.id("runs"),
     entry: v.any(),
   },
   handler: async (ctx, args) => {
+    if (typeof args.entry !== 'object' || args.entry === null || Array.isArray(args.entry)) {
+      throw new Error("entry must be a non-null, non-array object");
+    }
+
     const run = await ctx.db.get(args.runId);
     if (!run) throw new Error("Run not found");
 

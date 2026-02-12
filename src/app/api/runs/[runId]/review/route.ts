@@ -7,8 +7,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
-import { getConvexClient } from '@/lib/convex';
+import { getConvexClient, mutateInternal } from '@/lib/convex';
 import { api } from '../../../../../../convex/_generated/api';
+import { internal } from '../../../../../../convex/_generated/api';
 import { uploadPipelineOutputs } from '@/lib/r2/R2FileManager';
 import {
   applyDecisions,
@@ -18,6 +19,7 @@ import {
 } from '@/lib/api/reviewCompletion';
 import type { Id } from '../../../../../../convex/_generated/dataModel';
 import type { PathBResult, CrosstabReviewState } from '@/lib/api/types';
+import { applyRateLimit } from '@/lib/withRateLimit';
 
 export async function POST(
   request: NextRequest,
@@ -32,6 +34,9 @@ export async function POST(
 
     // Authenticate
     const auth = await requireConvexAuth();
+
+    const rateLimited = applyRateLimit(String(auth.convexOrgId), 'high', 'runs/review');
+    if (rateLimited) return rateLimited;
 
     // Get run from Convex
     const convex = getConvexClient();
@@ -105,7 +110,7 @@ export async function POST(
     await fs.writeFile(reviewStatePath, JSON.stringify(reviewState, null, 2));
 
     // Update Convex: mark run as resuming
-    await convex.mutation(api.runs.updateStatus, {
+    await mutateInternal(internal.runs.updateStatus, {
       runId: runId as Id<"runs">,
       status: 'resuming',
       stage: 'applying_review',
@@ -140,7 +145,7 @@ export async function POST(
 
     if (pathBResult) {
       // Path B complete — run full remaining pipeline
-      await convex.mutation(api.runs.updateStatus, {
+      await mutateInternal(internal.runs.updateStatus, {
         runId: runId as Id<"runs">,
         status: 'resuming',
         stage: 'filtering',
@@ -163,7 +168,7 @@ export async function POST(
       }
 
       // Update Convex with terminal status
-      await convex.mutation(api.runs.updateStatus, {
+      await mutateInternal(internal.runs.updateStatus, {
         runId: runId as Id<"runs">,
         status: result.status,
         stage: 'complete',
@@ -190,7 +195,7 @@ export async function POST(
       // Path B still running — fire-and-forget background completion
       console.log('[Review API] Path B still running - will complete in background');
 
-      await convex.mutation(api.runs.updateStatus, {
+      await mutateInternal(internal.runs.updateStatus, {
         runId: runId as Id<"runs">,
         status: 'resuming',
         stage: 'waiting_for_tables',
@@ -212,7 +217,7 @@ export async function POST(
             // non-fatal
           }
 
-          await convex.mutation(api.runs.updateStatus, {
+          await mutateInternal(internal.runs.updateStatus, {
             runId: runId as Id<"runs">,
             status: result.status,
             stage: 'complete',

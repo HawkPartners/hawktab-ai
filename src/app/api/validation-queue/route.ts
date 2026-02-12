@@ -10,6 +10,7 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import type { ValidationStatus } from '../../../schemas/humanValidationSchema';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
+import { applyRateLimit } from '@/lib/withRateLimit';
 
 interface SessionSummary {
   sessionId: string;
@@ -27,7 +28,11 @@ interface SessionSummary {
 
 export async function GET(_request: NextRequest) {
   try {
-    await requireConvexAuth();
+    const auth = await requireConvexAuth();
+
+    const rateLimited = applyRateLimit(String(auth.convexOrgId), 'low', 'validation-queue');
+    if (rateLimited) return rateLimited;
+
     const tempOutputsDir = path.join(process.cwd(), 'temp-outputs');
     
     // Check if temp-outputs directory exists
@@ -152,7 +157,11 @@ export async function GET(_request: NextRequest) {
 // Filter sessions by status
 export async function POST(request: NextRequest) {
   try {
-    await requireConvexAuth();
+    const authPost = await requireConvexAuth();
+
+    const rateLimitedPost = applyRateLimit(String(authPost.convexOrgId), 'low', 'validation-queue');
+    if (rateLimitedPost) return rateLimitedPost;
+
     const { status } = await request.json();
     
     if (status && !['pending', 'validated'].includes(status)) {

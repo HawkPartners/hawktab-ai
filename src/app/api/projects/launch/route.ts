@@ -15,21 +15,24 @@ import { validateEnvironment } from '@/lib/env';
 import {
   parseWizardFormData,
   saveWizardFilesToStorage,
+  FileSizeLimitError,
 } from '@/lib/api/fileHandler';
 import { runPipelineFromUpload, type PipelineRunParams } from '@/lib/api/pipelineOrchestrator';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import { canPerform } from '@/lib/permissions';
-import { getConvexClient } from '@/lib/convex';
-import { api } from '../../../../../convex/_generated/api';
+import { mutateInternal } from '@/lib/convex';
+import { internal } from '../../../../../convex/_generated/api';
 import { createAbortController } from '@/lib/abortStore';
 import { ProjectConfigSchema } from '@/schemas/projectConfigSchema';
 import {
   persistSystemError,
   getGlobalSystemOutputDir,
 } from '@/lib/errors/ErrorPersistence';
+import { applyRateLimit } from '@/lib/withRateLimit';
 
 // Allow large .sav file uploads and long-running validation
 export const maxDuration = 300; // 5 minutes
+const MAX_UPLOAD_BYTES = 100 * 1024 * 1024; // 100 MB
 
 const ALLOWED_DATA_EXTENSIONS = ['.sav'];
 const ALLOWED_DOCUMENT_EXTENSIONS = ['.pdf', '.docx', '.doc'];
@@ -43,9 +46,21 @@ export async function POST(request: NextRequest) {
     // Authenticate and get Convex IDs
     const auth = await requireConvexAuth();
 
+    const rateLimited = applyRateLimit(String(auth.convexOrgId), 'critical', 'projects/launch');
+    if (rateLimited) return rateLimited;
+
     // Role check — only admin/member can create projects
     if (!canPerform(auth.role, 'create_project')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Reject oversized uploads early
+    const contentLength = Number(request.headers.get('content-length') || 0);
+    if (contentLength > MAX_UPLOAD_BYTES) {
+      return NextResponse.json(
+        { error: `Upload too large (${Math.round(contentLength / 1024 / 1024)}MB). Maximum is 100MB.` },
+        { status: 413 }
+      );
     }
 
     // Validate environment configuration
@@ -120,10 +135,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const convex = getConvexClient();
-
     // Create Convex project
-    const projectId = await convex.mutation(api.projects.create, {
+    const projectId = await mutateInternal(internal.projects.create, {
       orgId: auth.convexOrgId,
       name: projectName,
       projectType: 'crosstab',
@@ -149,7 +162,7 @@ export async function POST(request: NextRequest) {
     if (savedPaths.r2Keys) {
       const keys = Object.values(savedPaths.r2Keys).filter((k): k is string => k !== null);
       if (keys.length > 0) {
-        await convex.mutation(api.projects.updateFileKeys, {
+        await mutateInternal(internal.projects.updateFileKeys, {
           projectId,
           fileKeys: keys,
         });
@@ -157,7 +170,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Convex run with full config
-    const runId = await convex.mutation(api.runs.create, {
+    const runId = await mutateInternal(internal.runs.create, {
       projectId,
       orgId: auth.convexOrgId,
       config,
@@ -222,6 +235,9 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof AuthenticationError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (error instanceof FileSizeLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 413 });
     }
     const errorMsg = error instanceof Error ? error.message : String(error);
 

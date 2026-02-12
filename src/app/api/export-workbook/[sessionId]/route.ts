@@ -9,24 +9,23 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { formatTablesFileToBuffer } from '@/lib/excel/ExcelFormatter';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
+import { applyRateLimit } from '@/lib/withRateLimit';
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
-    await requireConvexAuth();
+    const auth = await requireConvexAuth();
+
+    const rateLimited = applyRateLimit(String(auth.convexOrgId), 'medium', 'export-workbook');
+    if (rateLimited) return rateLimited;
+
     const { sessionId } = await params;
 
-    // Validate sessionId to prevent path traversal
-    if (!sessionId || sessionId.includes('..') || sessionId.includes('/')) {
+    // Strict allowlist — alphanumeric, underscore, hyphen after known prefixes
+    if (!/^(output|test-pipeline)-[a-zA-Z0-9_-]+$/.test(sessionId)) {
       return NextResponse.json({ error: 'Invalid sessionId' }, { status: 400 });
-    }
-
-    // Support both 'output-*' and 'test-pipeline-*' session formats
-    const isValidFormat = sessionId.startsWith('output-') || sessionId.startsWith('test-pipeline-');
-    if (!isValidFormat) {
-      return NextResponse.json({ error: 'Invalid sessionId format' }, { status: 400 });
     }
 
     const sessionPath = path.join(process.cwd(), 'temp-outputs', sessionId);

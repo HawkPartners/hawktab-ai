@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { query, internalMutation } from "./_generated/server";
 
 export const getByWorkosId = query({
   args: { workosOrgId: v.string() },
@@ -18,7 +18,7 @@ export const get = query({
   },
 });
 
-export const upsert = mutation({
+export const upsert = internalMutation({
   args: {
     workosOrgId: v.string(),
     name: v.string(),

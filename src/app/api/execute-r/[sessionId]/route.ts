@@ -10,15 +10,21 @@ import * as path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
+import { applyRateLimit } from '@/lib/withRateLimit';
 
 const execFileAsync = promisify(execFile);
+const isDev = process.env.NODE_ENV === 'development';
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
-    await requireConvexAuth();
+    const auth = await requireConvexAuth();
+
+    const rateLimited = applyRateLimit(String(auth.convexOrgId), 'high', 'execute-r');
+    if (rateLimited) return rateLimited;
+
     const { sessionId } = await params;
 
     // Validate sessionId — strict allowlist to prevent path traversal and shell injection
@@ -89,8 +95,7 @@ export async function GET(
       if (csvFiles.length === 0) {
         return NextResponse.json({
           warning: 'R script executed but no CSV files were generated',
-          stdout,
-          stderr
+          ...(isDev && { stdout, stderr }),
         }, { status: 500 });
       }
 
@@ -103,10 +108,12 @@ export async function GET(
           csvFiles: csvFiles.map(f => `results/${f}`),
           count: csvFiles.length
         },
-        execution: {
-          stdout: stdout.substring(0, 1000), // First 1000 chars
-          stderr: stderr ? stderr.substring(0, 1000) : null
-        },
+        ...(isDev && {
+          execution: {
+            stdout: stdout.substring(0, 1000),
+            stderr: stderr ? stderr.substring(0, 1000) : null
+          },
+        }),
         message: `Successfully generated ${csvFiles.length} crosstab tables`
       });
 
@@ -127,9 +134,11 @@ export async function GET(
 
       return NextResponse.json({
         error: 'Failed to execute R script',
-        details: errorMessage,
-        stdout: errorObj.stdout?.substring(0, 1000),
-        stderr: errorObj.stderr?.substring(0, 1000)
+        ...(isDev && {
+          details: errorMessage,
+          stdout: errorObj.stdout?.substring(0, 1000),
+          stderr: errorObj.stderr?.substring(0, 1000),
+        }),
       }, { status: 500 });
     }
 

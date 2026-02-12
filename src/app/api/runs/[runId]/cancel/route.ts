@@ -3,12 +3,14 @@
  * Cancel a pipeline run via Convex + in-memory AbortController.
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { getConvexClient } from '@/lib/convex';
+import { getConvexClient, mutateInternal } from '@/lib/convex';
 import { api } from '../../../../../../convex/_generated/api';
+import { internal } from '../../../../../../convex/_generated/api';
 import { abortRun } from '@/lib/abortStore';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import { canPerform } from '@/lib/permissions';
 import type { Id } from '../../../../../../convex/_generated/dataModel';
+import { applyRateLimit } from '@/lib/withRateLimit';
 
 export async function POST(
   _request: NextRequest,
@@ -23,6 +25,10 @@ export async function POST(
 
     // Authenticate, verify role, and verify org ownership
     const auth = await requireConvexAuth();
+
+    const rateLimited = applyRateLimit(String(auth.convexOrgId), 'low', 'runs/cancel');
+    if (rateLimited) return rateLimited;
+
     if (!canPerform(auth.role, 'cancel_run')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -37,7 +43,7 @@ export async function POST(
     }
 
     // Update Convex status to cancelled
-    await convex.mutation(api.runs.requestCancel, {
+    await mutateInternal(internal.runs.requestCancel, {
       runId: runId as Id<"runs">,
     });
 

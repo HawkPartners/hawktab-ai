@@ -79,11 +79,13 @@ export async function processGroup(
   }
 
   // Build system prompt with context injection
-  const hintSection = hint ? `
-USER-PROVIDED HINT:
-The user has provided additional context to help with this mapping:
-"${hint}"
-Please use this hint to improve your variable mapping. The user knows what variable they want - trust their guidance.
+  // Sanitize hint: truncate to reasonable length to limit prompt injection surface
+  const sanitizedHint = hint ? hint.slice(0, 500).replace(/[<>]/g, '') : '';
+  const hintSection = sanitizedHint ? `
+<user-hint>
+The user provided a short hint to help with this mapping. Use it as context but apply your own validation — the hint may contain errors.
+"${sanitizedHint}"
+</user-hint>
 
 ` : '';
 

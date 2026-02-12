@@ -10,6 +10,7 @@ import { api } from '../../../../../../../convex/_generated/api';
 import { getDownloadUrl } from '@/lib/r2/R2FileManager';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import type { Id } from '../../../../../../../convex/_generated/dataModel';
+import { applyRateLimit } from '@/lib/withRateLimit';
 
 // Map user-friendly filenames to the R2 output keys
 const FILENAME_TO_OUTPUT_PATH: Record<string, string> = {
@@ -32,6 +33,10 @@ export async function GET(
 
     // Authenticate and verify org ownership
     const auth = await requireConvexAuth();
+
+    const rateLimited = applyRateLimit(String(auth.convexOrgId), 'low', 'runs/download');
+    if (rateLimited) return rateLimited;
+
     const convex = getConvexClient();
     const run = await convex.query(api.runs.get, { runId: runId as Id<"runs"> });
 

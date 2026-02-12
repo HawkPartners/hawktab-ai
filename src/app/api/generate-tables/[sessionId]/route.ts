@@ -11,12 +11,17 @@ import type { ValidationResultType } from '@/schemas/agentOutputSchema';
 import { buildCutTable } from '@/lib/tables/CutTable';
 import { exportCutTableToCSV } from '@/lib/exporters/csv';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
+import { applyRateLimit } from '@/lib/withRateLimit';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ sessionId: string }> }) {
   try {
-    await requireConvexAuth();
+    const auth = await requireConvexAuth();
+
+    const rateLimited = applyRateLimit(String(auth.convexOrgId), 'medium', 'generate-tables');
+    if (rateLimited) return rateLimited;
+
     const { sessionId } = await params;
-    if (!sessionId.startsWith('output-') || sessionId.includes('..') || sessionId.includes('/')) {
+    if (!/^output-[a-zA-Z0-9_-]+$/.test(sessionId)) {
       return NextResponse.json({ error: 'Invalid sessionId' }, { status: 400 });
     }
 

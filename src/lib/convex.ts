@@ -16,7 +16,42 @@ export function getConvexClient(): ConvexHttpClient {
 
   if (!client) {
     client = new ConvexHttpClient(url);
+
+    // Authenticate with deploy key for internalMutation access.
+    // Required after converting all mutations to internalMutation (H7 hardening).
+    const deployKey = process.env.CONVEX_DEPLOY_KEY;
+    if (deployKey) {
+      (client as unknown as { setAdminAuth(token: string): void }).setAdminAuth(deployKey);
+    } else if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        "CONVEX_DEPLOY_KEY is not set. All mutations require deploy key auth. " +
+        "Add CONVEX_DEPLOY_KEY to your environment variables."
+      );
+    } else {
+      console.warn(
+        "[convex] CONVEX_DEPLOY_KEY is not set — internalMutation calls will fail. " +
+        "Add it to .env.local for local development."
+      );
+    }
   }
 
   return client;
+}
+
+/**
+ * Type-erased mutation caller for internal mutations.
+ *
+ * ConvexHttpClient.mutation() is typed for "public" visibility only, but when
+ * authenticated with a deploy key (setAdminAuth), it can call internal functions
+ * at runtime. This helper avoids `as any` casts at every call site.
+ *
+ * Usage:
+ * ```ts
+ * await mutateInternal(internal.runs.updateStatus, { runId, status: 'success' });
+ * ```
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function mutateInternal(ref: any, args: any): Promise<any> {
+  const convex = getConvexClient();
+  return convex.mutation(ref, args);
 }

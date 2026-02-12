@@ -1,6 +1,49 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+// ---------------------------------------------------------------------------
+// Typed sub-validators (replaces v.any() where shape is known)
+// ---------------------------------------------------------------------------
+
+/**
+ * Project/Run config — mirrors ProjectConfigSchema from src/schemas/projectConfigSchema.ts.
+ * All fields optional because the legacy /api/process-crosstab route writes a minimal config.
+ */
+const configValidator = v.object({
+  projectSubType: v.optional(v.union(v.literal("standard"), v.literal("segmentation"), v.literal("maxdiff"))),
+  bannerMode: v.optional(v.union(v.literal("upload"), v.literal("auto_generate"))),
+  researchObjectives: v.optional(v.string()),
+  bannerHints: v.optional(v.string()),
+  format: v.optional(v.union(v.literal("joe"), v.literal("antares"))),
+  displayMode: v.optional(v.union(v.literal("frequency"), v.literal("counts"), v.literal("both"))),
+  separateWorkbooks: v.optional(v.boolean()),
+  theme: v.optional(v.string()),
+  statTesting: v.optional(v.object({
+    thresholds: v.optional(v.array(v.number())),
+    minBase: v.optional(v.number()),
+  })),
+  weightVariable: v.optional(v.string()),
+  loopStatTestingMode: v.optional(v.union(v.literal("suppress"), v.literal("complement"))),
+  stopAfterVerification: v.optional(v.boolean()),
+});
+
+/**
+ * Project intake — the files provided at project creation.
+ * Shape varies between wizard (Phase 3.3) and legacy flow.
+ */
+const intakeValidator = v.object({
+  dataMap: v.optional(v.union(v.string(), v.null())),
+  dataFile: v.optional(v.union(v.string(), v.null())),
+  bannerPlan: v.optional(v.union(v.string(), v.null())),
+  survey: v.optional(v.union(v.string(), v.null())),
+  messageList: v.optional(v.union(v.string(), v.null())),
+  bannerMode: v.optional(v.union(v.literal("upload"), v.literal("auto_generate"))),
+});
+
+// ---------------------------------------------------------------------------
+// Schema
+// ---------------------------------------------------------------------------
+
 export default defineSchema({
   organizations: defineTable({
     workosOrgId: v.string(),
@@ -34,8 +77,8 @@ export default defineSchema({
     orgId: v.id("organizations"),
     name: v.string(),
     projectType: v.union(v.literal("crosstab"), v.literal("other")),
-    config: v.any(),
-    intake: v.any(),
+    config: configValidator,
+    intake: intakeValidator,
     fileKeys: v.array(v.string()),
     createdBy: v.id("users"),
   }).index("by_org", ["orgId"]),
@@ -55,7 +98,10 @@ export default defineSchema({
     stage: v.optional(v.string()),
     progress: v.optional(v.number()),
     message: v.optional(v.string()),
-    config: v.any(),
+    config: configValidator,
+    // result is deeply polymorphic — accumulates pipelineId, outputDir, downloadUrl,
+    // reviewState, feedback, r2Files, costSummary across pipeline stages.
+    // Risk mitigated by internalMutation conversion (H7).
     result: v.optional(v.any()),
     error: v.optional(v.string()),
     cancelRequested: v.boolean(),

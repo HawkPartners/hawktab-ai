@@ -8,8 +8,9 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
-import { getConvexClient } from '@/lib/convex';
+import { getConvexClient, mutateInternal } from '@/lib/convex';
 import { api } from '../../../../../../convex/_generated/api';
+import { internal } from '../../../../../../convex/_generated/api';
 import {
   PipelineFeedbackFileSchema,
   PipelineFeedbackSummarySchema,
@@ -19,6 +20,7 @@ import {
 } from '@/schemas/pipelineFeedbackSchema';
 import { findPipelineDir } from '@/lib/api/reviewCompletion';
 import type { Id } from '../../../../../../convex/_generated/dataModel';
+import { applyRateLimit } from '@/lib/withRateLimit';
 
 function buildSummary(file: PipelineFeedbackFile | null): PipelineFeedbackSummary {
   if (!file || file.entries.length === 0) {
@@ -61,6 +63,9 @@ export async function GET(
     }
 
     const auth = await requireConvexAuth();
+
+    const rateLimitedGet = applyRateLimit(String(auth.convexOrgId), 'low', 'runs/feedback');
+    if (rateLimitedGet) return rateLimitedGet;
 
     // Get run from Convex
     const convex = getConvexClient();
@@ -141,6 +146,9 @@ export async function POST(
 
     const auth = await requireConvexAuth();
 
+    const rateLimitedPost = applyRateLimit(String(auth.convexOrgId), 'low', 'runs/feedback');
+    if (rateLimitedPost) return rateLimitedPost;
+
     // Get run from Convex
     const convex = getConvexClient();
     const run = await convex.query(api.runs.get, { runId: runId as Id<"runs"> });
@@ -191,7 +199,7 @@ export async function POST(
     };
 
     // Write to Convex (real-time)
-    await convex.mutation(api.runs.addFeedbackEntry, {
+    await mutateInternal(internal.runs.addFeedbackEntry, {
       runId: runId as Id<"runs">,
       entry,
     });

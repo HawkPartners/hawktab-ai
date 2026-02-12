@@ -9,15 +9,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
+import { applyRateLimit } from '@/lib/withRateLimit';
 
 // Delete session folder
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ sessionId: string }> }) {
   try {
-    await requireConvexAuth();
+    const auth = await requireConvexAuth();
+
+    const rateLimited = applyRateLimit(String(auth.convexOrgId), 'low', 'delete-session');
+    if (rateLimited) return rateLimited;
+
     const { sessionId } = await params;
 
-    // Security check: ensure sessionId looks like a valid output folder name
-    if (!sessionId.startsWith('output-') || sessionId.includes('..') || sessionId.includes('/')) {
+    // Security check: strict allowlist — only alphanumeric, underscore, hyphen after "output-"
+    if (!/^output-[a-zA-Z0-9_-]+$/.test(sessionId)) {
       return NextResponse.json(
         { error: 'Invalid session ID format' },
         { status: 400 }

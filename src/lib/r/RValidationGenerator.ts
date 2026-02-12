@@ -17,6 +17,7 @@ import {
   sanitizeVarName,
   generateStackingPreamble,
 } from './RScriptGeneratorV2';
+import { sanitizeRExpression } from './sanitizeRExpression';
 import type { LoopGroupMapping } from '../validation/LoopCollapser';
 
 // =============================================================================
@@ -374,6 +375,12 @@ function generateCutsDefinitionMinimal(lines: string[], cuts: CutDefinition[]): 
   for (const cut of cuts) {
     let expr = cut.rExpression.replace(/^\s*#.*$/gm, '').trim();
     if (expr && !expr.startsWith('#')) {
+      // Validate expression against dangerous R functions before interpolation
+      const sanitizeResult = sanitizeRExpression(expr);
+      if (!sanitizeResult.safe) {
+        console.warn(`[RValidationGen] Blocked unsafe cut expression "${cut.name}": ${sanitizeResult.error}`);
+        continue;
+      }
       // Replace quantile() with safe_quantile() to handle haven_labelled vectors
       expr = expr.replace(/\bquantile\s*\(/g, 'safe_quantile(');
       const safeName = cut.name.replace(/`/g, "'");

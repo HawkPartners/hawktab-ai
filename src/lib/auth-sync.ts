@@ -1,5 +1,5 @@
-import { getConvexClient } from "./convex";
-import { api } from "../../convex/_generated/api";
+import { mutateInternal } from "./convex";
+import { internal } from "../../convex/_generated/api";
 import type { AuthContext } from "./auth";
 import type { Id } from "../../convex/_generated/dataModel";
 
@@ -25,10 +25,8 @@ export async function syncAuthToConvex(auth: AuthContext): Promise<ConvexIds> {
     return cached.ids;
   }
 
-  const convex = getConvexClient();
-
   // Upsert the organization
-  const orgId = await convex.mutation(api.organizations.upsert, {
+  const orgId = await mutateInternal(internal.organizations.upsert, {
     workosOrgId: auth.orgId,
     name: auth.orgName || (auth.isBypass ? "Hawk Partners Dev" : "Unknown Org"),
     slug: auth.isBypass
@@ -40,7 +38,7 @@ export async function syncAuthToConvex(auth: AuthContext): Promise<ConvexIds> {
   });
 
   // Upsert the user
-  const userId = await convex.mutation(api.users.upsert, {
+  const userId = await mutateInternal(internal.users.upsert, {
     workosUserId: auth.userId,
     email: auth.email,
     name: auth.name,
@@ -48,7 +46,7 @@ export async function syncAuthToConvex(auth: AuthContext): Promise<ConvexIds> {
 
   // Upsert the membership — no role passed, so existing roles are preserved.
   // New users default to "member". Roles are managed via admin UI or direct Convex mutation.
-  await convex.mutation(api.orgMemberships.upsert, {
+  await mutateInternal(internal.orgMemberships.upsert, {
     userId,
     orgId,
   });

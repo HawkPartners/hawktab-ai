@@ -220,7 +220,7 @@ export async function getColumnFillRates(
   if (columns.length === 0) return {};
 
   const escapedPath = dataPath.replace(/\\/g, '/');
-  const colsArray = columns.map((c) => `"${c}"`).join(', ');
+  const colsArray = columns.map((c) => `"${c.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`).join(', ');
   const scriptPath = path.join(outputDir, '_validation_fillrates.R');
 
   const script = `

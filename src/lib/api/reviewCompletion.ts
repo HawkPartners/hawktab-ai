@@ -80,10 +80,9 @@ async function updateReviewRunStatus(runId: string | undefined, updates: {
 }): Promise<void> {
   if (!runId) return;
   try {
-    const { getConvexClient } = await import('@/lib/convex');
-    const { api } = await import('../../../convex/_generated/api');
-    const convex = getConvexClient();
-    await convex.mutation(api.runs.updateStatus, {
+    const { internal } = await import('../../../convex/_generated/api');
+    const { mutateInternal } = await import('@/lib/convex');
+    await mutateInternal(internal.runs.updateStatus, {
       runId: runId as import('../../../convex/_generated/dataModel').Id<"runs">,
       status: updates.status as "in_progress" | "pending_review" | "resuming" | "success" | "partial" | "error" | "cancelled",
       ...(updates.stage !== undefined && { stage: updates.stage }),
@@ -99,6 +98,11 @@ async function updateReviewRunStatus(runId: string | undefined, updates: {
  * Find a pipeline directory by pipelineId across all datasets.
  */
 export async function findPipelineDir(pipelineId: string): Promise<{ path: string; dataset: string } | null> {
+  // Validate pipelineId — only allow alphanumeric, hyphens, underscores, dots (no path separators)
+  if (!/^[a-zA-Z0-9_.-]+$/.test(pipelineId)) {
+    return null;
+  }
+
   const outputsDir = path.join(process.cwd(), 'outputs');
 
   try {

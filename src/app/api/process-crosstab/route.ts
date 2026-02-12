@@ -14,16 +14,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateSessionId } from '../../../lib/storage';
 import { logAgentExecution } from '../../../lib/tracing';
 import { validateEnvironment } from '../../../lib/env';
-import { parseUploadFormData, validateUploadedFiles, saveFilesToStorage, sanitizeDatasetName } from '../../../lib/api/fileHandler';
+import { parseUploadFormData, validateUploadedFiles, saveFilesToStorage, sanitizeDatasetName, FileSizeLimitError } from '../../../lib/api/fileHandler';
 import { runPipelineFromUpload } from '../../../lib/api/pipelineOrchestrator';
 import { requireConvexAuth, AuthenticationError } from '../../../lib/requireConvexAuth';
-import { getConvexClient } from '../../../lib/convex';
-import { api } from '../../../../convex/_generated/api';
+import { mutateInternal } from '../../../lib/convex';
+import { internal } from '../../../../convex/_generated/api';
 import { createAbortController } from '../../../lib/abortStore';
 import {
   persistSystemError,
   getGlobalSystemOutputDir,
 } from '../../../lib/errors/ErrorPersistence';
+import { applyRateLimit } from '../../../lib/withRateLimit';
+
+const MAX_UPLOAD_BYTES = 100 * 1024 * 1024; // 100 MB
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -32,6 +35,18 @@ export async function POST(request: NextRequest) {
   try {
     // Authenticate and get Convex IDs
     const auth = await requireConvexAuth();
+
+    const rateLimited = applyRateLimit(String(auth.convexOrgId), 'critical', 'process-crosstab');
+    if (rateLimited) return rateLimited;
+
+    // Reject oversized uploads early
+    const contentLength = Number(request.headers.get('content-length') || 0);
+    if (contentLength > MAX_UPLOAD_BYTES) {
+      return NextResponse.json(
+        { error: `Upload too large (${Math.round(contentLength / 1024 / 1024)}MB). Maximum is 100MB.` },
+        { status: 413 }
+      );
+    }
 
     // Validate environment configuration
     const envValidation = validateEnvironment();
@@ -65,11 +80,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const convex = getConvexClient();
     const datasetName = sanitizeDatasetName(parsed.dataFile.name);
 
     // Create Convex project first (need projectId for R2 key structure)
-    const projectId = await convex.mutation(api.projects.create, {
+    const projectId = await mutateInternal(internal.projects.create, {
       orgId: auth.convexOrgId,
       name: datasetName,
       projectType: 'crosstab',
@@ -96,7 +110,7 @@ export async function POST(request: NextRequest) {
     if (savedPaths.r2Keys) {
       const keys = Object.values(savedPaths.r2Keys).filter((k): k is string => k !== null);
       if (keys.length > 0) {
-        await convex.mutation(api.projects.updateFileKeys, {
+        await mutateInternal(internal.projects.updateFileKeys, {
           projectId,
           fileKeys: keys,
         });
@@ -104,7 +118,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Convex run
-    const runId = await convex.mutation(api.runs.create, {
+    const runId = await mutateInternal(internal.runs.create, {
       projectId,
       orgId: auth.convexOrgId,
       config: {
@@ -156,6 +170,9 @@ export async function POST(request: NextRequest) {
     if (error instanceof AuthenticationError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    if (error instanceof FileSizeLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 413 });
+    }
     try {
       await persistSystemError({
         outputDir: getGlobalSystemOutputDir(),
@@ -186,6 +203,13 @@ export async function POST(request: NextRequest) {
 
 // Handle other HTTP methods
 export async function GET() {
+  try {
+    const auth = await requireConvexAuth();
+    const rateLimited = applyRateLimit(String(auth.convexOrgId), 'low', 'process-crosstab');
+    if (rateLimited) return rateLimited;
+  } catch {
+    // Fall through — return 405 regardless so we don't leak auth details on a disallowed method
+  }
   return NextResponse.json(
     {
       error: 'Method not allowed',

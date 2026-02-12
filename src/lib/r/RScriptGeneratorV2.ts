@@ -786,7 +786,9 @@ function sanitizeRColumnName(name: string): string {
   if (/^[a-zA-Z][a-zA-Z0-9_.]*$/.test(name)) {
     return name;
   }
-  return `\`${name}\``;
+  // Escape backticks and backslashes within the column name
+  const escaped = name.replace(/\\/g, '\\\\').replace(/`/g, '\\`');
+  return `\`${escaped}\``;
 }
 
 // =============================================================================
