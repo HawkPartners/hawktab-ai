@@ -11,6 +11,7 @@ import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth'
 import { canPerform } from '@/lib/permissions';
 import type { Id } from '../../../../../../convex/_generated/dataModel';
 import { applyRateLimit } from '@/lib/withRateLimit';
+import { getApiErrorDetails } from '@/lib/api/errorDetails';
 
 export async function POST(
   _request: NextRequest,
@@ -59,9 +60,8 @@ export async function POST(
     if (error instanceof AuthenticationError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to cancel run', details: process.env.NODE_ENV === 'development' ? errorMsg : undefined },
+      { error: 'Failed to cancel run', details: getApiErrorDetails(error) },
       { status: 500 }
     );
   }

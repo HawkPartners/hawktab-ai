@@ -147,6 +147,8 @@ Ship it. Antares gets a link.
 
 ---
 
+#### 3.5f Testing & Iteration — `NOT STARTED`
+
 ## MVP Complete
 
 Completing Phase 3.5 (a through e) = MVP = The Product. Antares logs in, uploads files, configures their project, runs the pipeline, reviews HITL decisions, and downloads publication-ready crosstabs.

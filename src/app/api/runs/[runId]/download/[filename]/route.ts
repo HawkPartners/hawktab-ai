@@ -11,6 +11,7 @@ import { getDownloadUrl } from '@/lib/r2/R2FileManager';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import type { Id } from '../../../../../../../convex/_generated/dataModel';
 import { applyRateLimit } from '@/lib/withRateLimit';
+import { getApiErrorDetails } from '@/lib/api/errorDetails';
 
 // Map user-friendly filenames to the R2 output keys
 const FILENAME_TO_OUTPUT_PATH: Record<string, string> = {
@@ -82,9 +83,8 @@ export async function GET(
     if (error instanceof AuthenticationError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to generate download URL', details: process.env.NODE_ENV === 'development' ? errorMsg : undefined },
+      { error: 'Failed to generate download URL', details: getApiErrorDetails(error) },
       { status: 500 },
     );
   }

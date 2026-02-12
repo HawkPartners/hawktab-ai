@@ -78,5 +78,25 @@ export function sanitizeForAzureContentFilter(text: string): string {
   // 8. Strip null bytes and other control characters (except \n, \r, \t)
   sanitized = sanitized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
 
+  // 9. Neutralize role/prompt override framing commonly used in injection payloads.
+  // Keep surrounding content readable for extraction tasks.
+  sanitized = sanitized.replace(/<\s*\/?\s*(system|assistant|developer|tool)\s*>/gi, '[role tag removed]');
+  sanitized = sanitized.replace(/^\s*(system|assistant|developer|tool)\s*:/gim, 'context-$1:');
+
+  // 10. Remove instruction-like override snippets while retaining nearby text.
+  const injectionPhrases = [
+    /\bignore\s+(all\s+)?(previous|prior)\s+instructions?\b/gi,
+    /\bdisregard\s+(all\s+)?(previous|prior)\s+instructions?\b/gi,
+    /\boverride\s+(the\s+)?(system|developer)\s+instructions?\b/gi,
+    /\bdo\s+not\s+follow\s+(the\s+)?(above|previous|prior)\s+instructions?\b/gi,
+    /\byou\s+are\s+now\s+(a|an)\s+[a-z0-9 _-]{1,40}\b/gi,
+    /\bexfiltrate\b/gi,
+    /\bsystem\s*\(/gi,
+    /\beval\s*\(/gi,
+  ];
+  for (const pattern of injectionPhrases) {
+    sanitized = sanitized.replace(pattern, '[instruction-like text removed]');
+  }
+
   return sanitized;
 }

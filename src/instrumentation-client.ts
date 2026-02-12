@@ -8,8 +8,7 @@ import { scrubSentryEvent } from "@/lib/observability/sentry-scrub";
 const isProd = process.env.NODE_ENV === "production";
 
 Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN ||
-    "https://f21898a3ccc3ebab43828e154c4ad6f9@o4510871214751744.ingest.us.sentry.io/4510871216062464",
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
   environment: process.env.NODE_ENV || "development",
 

@@ -10,6 +10,7 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import { applyRateLimit } from '@/lib/withRateLimit';
+import { getApiErrorDetails } from '@/lib/api/errorDetails';
 
 // Delete session folder
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ sessionId: string }> }) {
@@ -69,9 +70,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     return NextResponse.json(
       {
         error: 'Failed to delete session folder',
-        details: process.env.NODE_ENV === 'development'
-          ? error instanceof Error ? error.message : String(error)
-          : undefined
+        details: getApiErrorDetails(error),
       },
       { status: 500 }
     );

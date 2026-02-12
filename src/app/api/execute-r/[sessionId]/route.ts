@@ -11,9 +11,10 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import { applyRateLimit } from '@/lib/withRateLimit';
+import { getApiErrorDetails, shouldExposeApiErrorDetails } from '@/lib/api/errorDetails';
 
 const execFileAsync = promisify(execFile);
-const isDev = process.env.NODE_ENV === 'development';
+const includeErrorDetails = shouldExposeApiErrorDetails();
 
 export async function GET(
   _req: NextRequest,
@@ -95,7 +96,7 @@ export async function GET(
       if (csvFiles.length === 0) {
         return NextResponse.json({
           warning: 'R script executed but no CSV files were generated',
-          ...(isDev && { stdout, stderr }),
+          ...(includeErrorDetails && { stdout, stderr }),
         }, { status: 500 });
       }
 
@@ -108,7 +109,7 @@ export async function GET(
           csvFiles: csvFiles.map(f => `results/${f}`),
           count: csvFiles.length
         },
-        ...(isDev && {
+        ...(includeErrorDetails && {
           execution: {
             stdout: stdout.substring(0, 1000),
             stderr: stderr ? stderr.substring(0, 1000) : null
@@ -134,8 +135,8 @@ export async function GET(
 
       return NextResponse.json({
         error: 'Failed to execute R script',
-        ...(isDev && {
-          details: errorMessage,
+        ...(includeErrorDetails && {
+          details: getApiErrorDetails(errorMessage),
           stdout: errorObj.stdout?.substring(0, 1000),
           stderr: errorObj.stderr?.substring(0, 1000),
         }),
@@ -150,9 +151,7 @@ export async function GET(
     return NextResponse.json(
       {
         error: 'Failed to execute R script',
-        details: process.env.NODE_ENV === 'development'
-          ? error instanceof Error ? error.message : String(error)
-          : undefined
+        details: getApiErrorDetails(error),
       },
       { status: 500 }
     );

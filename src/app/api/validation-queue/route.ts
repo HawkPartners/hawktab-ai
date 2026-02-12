@@ -11,6 +11,7 @@ import * as path from 'path';
 import type { ValidationStatus } from '../../../schemas/humanValidationSchema';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import { applyRateLimit } from '@/lib/withRateLimit';
+import { getApiErrorDetails } from '@/lib/api/errorDetails';
 
 interface SessionSummary {
   sessionId: string;
@@ -145,9 +146,7 @@ export async function GET(_request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to read validation queue',
-        details: process.env.NODE_ENV === 'development'
-          ? error instanceof Error ? error.message : String(error)
-          : undefined
+        details: getApiErrorDetails(error),
       },
       { status: 500 }
     );
@@ -198,9 +197,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Failed to filter validation queue',
-        details: process.env.NODE_ENV === 'development'
-          ? error instanceof Error ? error.message : String(error)
-          : undefined
+        details: getApiErrorDetails(error),
       },
       { status: 500 }
     );

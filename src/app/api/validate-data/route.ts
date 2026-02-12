@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import { applyRateLimit } from '@/lib/withRateLimit';
 import { validate } from '@/lib/validation/ValidationRunner';
+import { getApiErrorDetails } from '@/lib/api/errorDetails';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -109,9 +110,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Validation failed',
-        details: process.env.NODE_ENV === 'development'
-          ? (error instanceof Error ? error.message : String(error))
-          : 'An error occurred during data validation',
+        details: getApiErrorDetails(error),
       },
       { status: 500 }
     );

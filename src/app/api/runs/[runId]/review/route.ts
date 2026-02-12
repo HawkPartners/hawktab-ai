@@ -20,6 +20,7 @@ import {
 import type { Id } from '../../../../../../convex/_generated/dataModel';
 import type { PathBResult, CrosstabReviewState } from '@/lib/api/types';
 import { applyRateLimit } from '@/lib/withRateLimit';
+import { getApiErrorDetails } from '@/lib/api/errorDetails';
 
 export async function POST(
   request: NextRequest,
@@ -249,7 +250,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     return NextResponse.json(
-      { error: 'Failed to process review', details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined },
+      { error: 'Failed to process review', details: getApiErrorDetails(error) },
       { status: 500 }
     );
   }

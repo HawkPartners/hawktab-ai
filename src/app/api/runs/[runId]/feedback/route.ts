@@ -21,6 +21,7 @@ import {
 import { findPipelineDir } from '@/lib/api/reviewCompletion';
 import type { Id } from '../../../../../../convex/_generated/dataModel';
 import { applyRateLimit } from '@/lib/withRateLimit';
+import { getApiErrorDetails } from '@/lib/api/errorDetails';
 
 function buildSummary(file: PipelineFeedbackFile | null): PipelineFeedbackSummary {
   if (!file || file.entries.length === 0) {
@@ -127,7 +128,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     return NextResponse.json(
-      { error: 'Failed to get feedback', details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined },
+      { error: 'Failed to get feedback', details: getApiErrorDetails(error) },
       { status: 500 }
     );
   }
@@ -243,7 +244,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     return NextResponse.json(
-      { error: 'Failed to submit feedback', details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined },
+      { error: 'Failed to submit feedback', details: getApiErrorDetails(error) },
       { status: 500 }
     );
   }

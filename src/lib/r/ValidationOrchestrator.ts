@@ -13,7 +13,7 @@
  * 6. Return validated tables + validation report
  */
 
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
@@ -26,7 +26,7 @@ import { generateValidationScript, generateSingleTableValidationScript } from '.
 import { verifyTable, type VerificationInput } from '../../agents/VerificationAgent';
 import { persistAgentErrorAuto, persistSystemErrorAuto } from '../errors/ErrorPersistence';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 // =============================================================================
 // Signal Descriptions
@@ -446,7 +446,7 @@ async function executeValidationScript(
   const rPaths = ['/opt/homebrew/bin/Rscript', '/usr/local/bin/Rscript', '/usr/bin/Rscript', 'Rscript'];
   for (const rPath of rPaths) {
     try {
-      await execAsync(`${rPath} --version`, { timeout: 1000 });
+      await execFileAsync(rPath, ['--version'], { timeout: 1000 });
       rCommand = rPath;
       break;
     } catch {
@@ -455,9 +455,14 @@ async function executeValidationScript(
   }
 
   try {
-    const { stdout, stderr } = await execAsync(
-      `cd "${workingDir}" && ${rCommand} "${scriptPath}"`,
-      { maxBuffer: 10 * 1024 * 1024, timeout: 300000 }  // 5 minute timeout
+    const { stdout, stderr } = await execFileAsync(
+      rCommand,
+      [scriptPath],
+      {
+        cwd: workingDir,
+        maxBuffer: 10 * 1024 * 1024,
+        timeout: 300000,
+      }  // 5 minute timeout
     );
 
     // Save logs

@@ -29,6 +29,7 @@ import {
   getGlobalSystemOutputDir,
 } from '@/lib/errors/ErrorPersistence';
 import { applyRateLimit } from '@/lib/withRateLimit';
+import { getApiErrorDetails } from '@/lib/api/errorDetails';
 
 // Allow large .sav file uploads and long-running validation
 export const maxDuration = 300; // 5 minutes
@@ -260,9 +261,7 @@ export async function POST(request: NextRequest) {
       {
         error: 'Project launch failed',
         sessionId,
-        details: process.env.NODE_ENV === 'development'
-          ? errorMsg
-          : 'An error occurred',
+        details: getApiErrorDetails(errorMsg),
       },
       { status: 500 }
     );

@@ -25,6 +25,7 @@ import {
   getGlobalSystemOutputDir,
 } from '../../../lib/errors/ErrorPersistence';
 import { applyRateLimit } from '../../../lib/withRateLimit';
+import { getApiErrorDetails } from '../../../lib/api/errorDetails';
 
 const MAX_UPLOAD_BYTES = 100 * 1024 * 1024; // 100 MB
 
@@ -192,9 +193,7 @@ export async function POST(request: NextRequest) {
       {
         error: 'Data processing failed',
         sessionId,
-        details: process.env.NODE_ENV === 'development'
-          ? (error instanceof Error ? error.message : String(error))
-          : 'Processing error occurred',
+        details: getApiErrorDetails(error),
       },
       { status: 500 }
     );
