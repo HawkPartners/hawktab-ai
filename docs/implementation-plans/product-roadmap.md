@@ -24,11 +24,11 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 
 ---
 
-#### 3.5f Testing & Iteration — `NOT STARTED`
+#### 3.5f Testing & Iteration — `IN PROGRESS`
 
 **Goal**: Fix bugs and polish UX issues found during initial Antares testing. Get the deployed product from "works" to "works well."
 
-**Scope**: 8 work items. Items 1, 6, and 7 complete. Items 7–8 added from post-review infrastructure audit.
+**Scope**: 8 work items. Items 1, 6, 7, and 8 complete. Items 7–8 added from post-review infrastructure audit.
 
 ---
 
@@ -116,21 +116,18 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 
 **Level of Effort**: Medium
 
-**8. Detect and recover stale `resuming` runs** — `HIGH PRIORITY`
+**8. Detect and recover stale `resuming` runs** — `COMPLETE`
 
 **Problem**: After review submission, the pipeline completion runs as a fire-and-forget promise in the API route handler. If the container dies during this work (deploy, OOM, health check timeout), the promise vanishes silently. The Convex status remains `resuming` forever — there's no timeout, no heartbeat, and no reconciliation mechanism. The user sees a pipeline stuck in progress with no way to recover.
 
-This is separate from item 7: even with durable review state, a container restart during `resuming` would still orphan the status because the running Node process is gone.
+**Fix applied**:
+- Added `lastHeartbeat` timestamp field to Convex `runs` table, set at run creation and updated every 30s during active processing via `src/lib/api/heartbeat.ts`
+- Heartbeat integrated into both `pipelineOrchestrator.ts` (initial pipeline) and `reviewCompletion.ts` (post-review completion) with proper `try/finally` cleanup across all 21+ exit paths
+- Convex cron (`convex/crons.ts`) runs every 5 minutes, calling `reconcileStaleRuns` which marks stale runs as `error`: `resuming` after 15 min, `in_progress` after 90 min, `pending_review` after 48 hours
+- Error message surfaces in existing UI error banner — no UI changes needed
+- Post-implementation audit (5 parallel agents) found 7 hardening items, all remediated: threshold tuning, shared `ACTIVE_STATUSES` constant, heartbeat gap coverage after R2 upload, recursive `setTimeout` replacing `setInterval`, `pending_review` expiry, terminal status in route catch, consecutive-failure logging with escalation
 
-**Fix**:
-- Add a `lastHeartbeat` timestamp field to the Convex `runs` table, updated periodically by `updateReviewRunStatus` during pipeline completion
-- Add a Convex scheduled function (cron) or API-triggered check that queries for runs in `resuming` status with `lastHeartbeat` older than N minutes (e.g., 15)
-- Stale runs get transitioned to `error` with message: *"Pipeline interrupted — please re-run your project."*
-- Consider: surface a "Re-run" button on the project page for error'd runs to make recovery easy
-
-**Files**: `convex/schema.ts` (heartbeat field), `convex/runs.ts` (heartbeat update + stale detection query), `src/lib/api/reviewCompletion.ts` (periodic heartbeat writes), new cron or API route for detection
-
-**Level of Effort**: Medium
+**Files**: `convex/schema.ts`, `convex/runs.ts`, `convex/crons.ts`, `src/lib/api/heartbeat.ts`, `src/lib/api/pipelineOrchestrator.ts`, `src/lib/api/reviewCompletion.ts`, `src/app/api/runs/[runId]/review/route.ts`
 
 ---
 
@@ -154,4 +151,4 @@ Future features, deferred items, and known gaps/limitations are documented in [`
 
 *Created: January 22, 2026*
 *Updated: February 12, 2026*
-*Status: Phase 3 (Productization) in progress. 3.1–3.4, 3.5a–3.5e complete. 3.5f (Testing & Iteration) in progress — items 1, 6, and 7 complete.*
+*Status: Phase 3 (Productization) in progress. 3.1–3.4, 3.5a–3.5e complete. 3.5f (Testing & Iteration) in progress — items 1, 6, 7, and 8 complete.*
