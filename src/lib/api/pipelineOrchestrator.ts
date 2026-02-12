@@ -56,10 +56,10 @@ import type {
 } from './types';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 // -------------------------------------------------------------------------
 // Pipeline Summary Helpers
@@ -1496,7 +1496,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     const rPaths = ['/opt/homebrew/bin/Rscript', '/usr/local/bin/Rscript', '/usr/bin/Rscript', 'Rscript'];
     for (const rPath of rPaths) {
       try {
-        await execAsync(`${rPath} --version`, { timeout: 1000 });
+        await execFileAsync(rPath, ['--version'], { timeout: 1000 });
         rCommand = rPath;
         console.log(`[API] Found R at: ${rPath}`);
         break;
@@ -1509,9 +1509,10 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     let excelGenerated = false;
 
     try {
-      await execAsync(
-        `cd "${outputDir}" && ${rCommand} "${masterPath}"`,
-        { maxBuffer: 10 * 1024 * 1024, timeout: 120000 }
+      await execFileAsync(
+        rCommand,
+        [masterPath],
+        { cwd: outputDir, maxBuffer: 10 * 1024 * 1024, timeout: 120000 }
       );
 
       const resultFiles = await fs.readdir(resultsDir);

@@ -10,8 +10,11 @@ const workosMiddleware = authkitMiddleware({
 });
 
 export function middleware(request: NextRequest) {
-  // AUTH_BYPASS mode: skip all auth checks
+  // AUTH_BYPASS mode: skip all auth checks (development only)
   if (process.env.AUTH_BYPASS === "true") {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("AUTH_BYPASS must not be enabled in production");
+    }
     return NextResponse.next();
   }
 

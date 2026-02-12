@@ -28,6 +28,12 @@
 /temp-outputs
 /outputs
 
+# client survey data (proprietary, may contain PII)
+/data
+
+# security audit results (contain secret references)
+/.security-audit
+
 # debug
 npm-debug.log*
 yarn-debug.log*

@@ -9,6 +9,7 @@ interface AuthContextValue {
   email: string | null;
   name: string | null;
   role: Role | null;
+  isBypass: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextValue>({
   email: null,
   name: null,
   role: null,
+  isBypass: false,
 });
 
 interface AuthProviderProps {
@@ -26,6 +28,7 @@ interface AuthProviderProps {
   email?: string | null;
   name?: string | null;
   role?: Role | null;
+  isBypass?: boolean;
 }
 
 export function AuthProvider({
@@ -35,6 +38,7 @@ export function AuthProvider({
   email = null,
   name = null,
   role = null,
+  isBypass = false,
 }: AuthProviderProps) {
   return (
     <AuthContext.Provider
@@ -44,6 +48,7 @@ export function AuthProvider({
         email: email ?? null,
         name: name ?? null,
         role: role ?? null,
+        isBypass,
       }}
     >
       {children}

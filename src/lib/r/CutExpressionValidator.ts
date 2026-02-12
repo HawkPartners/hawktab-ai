@@ -14,6 +14,7 @@ import { writeFileSync, unlinkSync, existsSync, readFileSync } from 'fs';
 import { mkdirSync } from 'fs';
 import path from 'path';
 import type { ValidationResultType } from '../../schemas/agentOutputSchema';
+import { sanitizeRExpression } from './sanitizeRExpression';
 
 // =============================================================================
 // Types
@@ -131,6 +132,18 @@ export function generateCutValidationScript(
       const cutName = escapeForR(col.name);
       const groupName = escapeForR(group.groupName);
       const rExpr = col.adjusted;
+
+      // Validate expression against dangerous R functions before interpolation
+      const sanitizeResult = sanitizeRExpression(rExpr);
+      if (!sanitizeResult.safe) {
+        console.warn(`[CutValidator] Blocked unsafe expression for [${group.groupName}] ${col.name}: ${sanitizeResult.error}`);
+        lines.push(`# [${group.groupName}] ${col.name} — BLOCKED: ${sanitizeResult.error}`);
+        lines.push(`results[["${key}"]] <- list(success = FALSE, cutName = '${cutName}', groupName = '${groupName}',`);
+        lines.push(`     rExpression = 'BLOCKED', error = '${escapeForR(sanitizeResult.error || 'unsafe expression')}')`);
+        lines.push('');
+        cutIndex++;
+        continue;
+      }
 
       lines.push(`# [${group.groupName}] ${col.name}`);
       lines.push(`results[["${key}"]] <- tryCatch({`);

@@ -11,14 +11,14 @@ import { RESEARCH_DATA_PREAMBLE } from '../lib/promptSanitization';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { PDFDocument } from 'pdf-lib';
 import pdf2pic from 'pdf2pic';
 import sharp from 'sharp';
 
 // For LibreOffice headless conversion
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 // Note: mammoth kept for potential future HTML extraction fallback
 // import mammoth from 'mammoth';
@@ -412,7 +412,7 @@ Begin analysis now.
       let libreofficeCommand: string | null = null;
       for (const loPath of libreofficePaths) {
         try {
-          await execAsync(`"${loPath}" --version`, { timeout: 5000 });
+          await execFileAsync(loPath, ['--version'], { timeout: 5000 });
           libreofficeCommand = loPath;
           console.log(`[BannerAgent] Found LibreOffice at: ${loPath}`);
           break;
@@ -433,9 +433,15 @@ Begin analysis now.
       // Convert DOCX to PDF preserving formatting
       // Use isolated user installation to avoid profile conflicts in headless mode
       const userInstallation = `file://${outputDir}/lo-profile`;
-      const loCommand = `"${libreofficeCommand}" "-env:UserInstallation=${userInstallation}" --headless --convert-to pdf --outdir "${outputDir}" "${docPath}"`;
-      console.log(`[BannerAgent] LibreOffice command: ${loCommand}`);
-      const { stdout, stderr } = await execAsync(loCommand, { timeout: 30000 });
+      const loArgs = [
+        `-env:UserInstallation=${userInstallation}`,
+        '--headless',
+        '--convert-to', 'pdf',
+        '--outdir', outputDir,
+        docPath,
+      ];
+      console.log(`[BannerAgent] LibreOffice command: ${libreofficeCommand} ${loArgs.join(' ')}`);
+      const { stdout, stderr } = await execFileAsync(libreofficeCommand, loArgs, { timeout: 30000 });
 
       if (stdout) {
         console.log(`[BannerAgent] LibreOffice stdout: ${stdout}`);

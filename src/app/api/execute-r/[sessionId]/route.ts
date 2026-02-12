@@ -7,11 +7,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 export async function GET(
   _req: NextRequest,
@@ -21,8 +21,8 @@ export async function GET(
     await requireConvexAuth();
     const { sessionId } = await params;
 
-    // Validate sessionId
-    if (!sessionId.startsWith('output-') || sessionId.includes('..') || sessionId.includes('/')) {
+    // Validate sessionId — strict allowlist to prevent path traversal and shell injection
+    if (!/^output-[a-zA-Z0-9_-]+$/.test(sessionId)) {
       return NextResponse.json({ error: 'Invalid sessionId' }, { status: 400 });
     }
 
@@ -44,18 +44,18 @@ export async function GET(
     
     // Execute R script - try different R locations
     let rCommand = 'Rscript';
-    
-    // Check for R in common locations
+
+    // Check for R in common locations (using execFile — no shell)
     const rPaths = [
       '/opt/homebrew/bin/Rscript',  // Homebrew on Apple Silicon
       '/usr/local/bin/Rscript',      // Homebrew on Intel Mac
       '/usr/bin/Rscript',             // System R
       'Rscript'                       // In PATH
     ];
-    
+
     for (const rPath of rPaths) {
       try {
-        await execAsync(`${rPath} --version`, { timeout: 1000 });
+        await execFileAsync(rPath, ['--version'], { timeout: 1000 });
         rCommand = rPath;
         console.log(`[R Execution] Found R at: ${rPath}`);
         break;
@@ -63,13 +63,16 @@ export async function GET(
         // Try next path
       }
     }
-    
+
     try {
-      const { stdout, stderr } = await execAsync(
-        `cd "${sessionPath}" && ${rCommand} "${rScriptPath}"`,
+      // Use execFile with argument array — no shell interpolation
+      const { stdout, stderr } = await execFileAsync(
+        rCommand,
+        [rScriptPath],
         {
+          cwd: sessionPath,           // replaces `cd "${sessionPath}" &&`
           maxBuffer: 10 * 1024 * 1024, // 10MB buffer
-          timeout: 60000 // 60 second timeout
+          timeout: 60000               // 60 second timeout
         }
       );
 

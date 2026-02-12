@@ -10,8 +10,9 @@
  */
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
+import { sanitizeRExpression } from '@/lib/r/sanitizeRExpression';
 import { processGroup } from '@/agents/CrosstabAgent';
 import type { CutValidationErrorContext } from '@/agents/CrosstabAgent';
 import { verifyAllTablesParallel } from '@/agents/VerificationAgent';
@@ -37,7 +38,7 @@ import type { PipelineSummary, FlaggedCrosstabColumn, AgentDataMapItem, PathBRes
 import type { LoopGroupMapping } from '@/lib/validation/LoopCollapser';
 import type { DeterministicResolverResult } from '@/lib/validation/LoopContextResolver';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 // -------------------------------------------------------------------------
 // Types
@@ -182,15 +183,22 @@ export async function applyDecisions(
       }
 
       if (decision?.action === 'edit' && decision.editedExpression) {
-        console.log(`[Review] Using edited expression for: ${key}`);
-        modifiedColumns.push({
-          ...col,
-          adjusted: decision.editedExpression,
-          confidence: 1.0,
-          reason: 'User edited expression directly',
-          humanReviewRequired: false
-        });
-        continue;
+        // Validate user-edited expression before allowing it into R execution
+        const sanitizeResult = sanitizeRExpression(decision.editedExpression);
+        if (!sanitizeResult.safe) {
+          console.warn(`[Review] Rejected unsafe edited expression for ${key}: ${sanitizeResult.error}`);
+          // Fall through to keep the original expression instead of using the unsafe one
+        } else {
+          console.log(`[Review] Using edited expression for: ${key}`);
+          modifiedColumns.push({
+            ...col,
+            adjusted: decision.editedExpression,
+            confidence: 1.0,
+            reason: 'User edited expression directly',
+            humanReviewRequired: false
+          });
+          continue;
+        }
       }
 
       if (decision?.action === 'provide_hint' && decision.hint && flagged) {
@@ -639,7 +647,7 @@ export async function completePipeline(
     const rPaths = ['/opt/homebrew/bin/Rscript', '/usr/local/bin/Rscript', '/usr/bin/Rscript', 'Rscript'];
     for (const rPath of rPaths) {
       try {
-        await execAsync(`${rPath} --version`, { timeout: 1000 });
+        await execFileAsync(rPath, ['--version'], { timeout: 1000 });
         rCommand = rPath;
         break;
       } catch {
@@ -651,9 +659,10 @@ export async function completePipeline(
     let excelGenerated = false;
 
     try {
-      await execAsync(
-        `cd "${outputDir}" && ${rCommand} "${masterPath}"`,
-        { maxBuffer: 10 * 1024 * 1024, timeout: 120000 }
+      await execFileAsync(
+        rCommand,
+        [masterPath],
+        { cwd: outputDir, maxBuffer: 10 * 1024 * 1024, timeout: 120000 }
       );
 
       const resultFiles = await fs.readdir(resultsDir);

@@ -12,14 +12,14 @@
  * Part of VerificationAgent and SkipLogicAgent pipelines - provides survey context.
  */
 
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import TurndownService from 'turndown';
 import { gfm } from 'turndown-plugin-gfm';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 // ===== TYPES =====
 
@@ -333,8 +333,9 @@ export async function processSurvey(
   try {
     // Step 1: DOCX → HTML via LibreOffice
     console.log('[SurveyProcessor] Converting DOCX to HTML...');
-    await execAsync(
-      `"${libreOfficePath}" --headless --convert-to html --outdir "${outputDir}" "${docxPath}"`
+    await execFileAsync(
+      libreOfficePath,
+      ['--headless', '--convert-to', 'html', '--outdir', outputDir, docxPath]
     );
 
     // Step 2: Find and read HTML file

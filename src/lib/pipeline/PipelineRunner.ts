@@ -6,7 +6,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 
 // Processors and agents
@@ -54,7 +54,7 @@ import {
   type LoopSemanticsPolicy,
 } from '../../schemas/loopSemanticsPolicySchema';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 // =============================================================================
 // Signal Descriptions
@@ -1578,7 +1578,7 @@ export async function runPipeline(
     const rPaths = ['/opt/homebrew/bin/Rscript', '/usr/local/bin/Rscript', '/usr/bin/Rscript', 'Rscript'];
     for (const rPath of rPaths) {
       try {
-        await execAsync(`${rPath} --version`, { timeout: 1000 });
+        await execFileAsync(rPath, ['--version'], { timeout: 1000 });
         rCommand = rPath;
         break;
       } catch {
@@ -1605,9 +1605,10 @@ export async function runPipeline(
     };
 
     try {
-      const { stdout, stderr } = await execAsync(
-        `cd "${outputDir}" && ${rCommand} "${masterPath}"`,
-        { maxBuffer: 10 * 1024 * 1024, timeout: 120000 }
+      const { stdout, stderr } = await execFileAsync(
+        rCommand,
+        [masterPath],
+        { cwd: outputDir, maxBuffer: 10 * 1024 * 1024, timeout: 120000 }
       );
 
       const logPath = await saveRLog(stdout, stderr, true);

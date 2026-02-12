@@ -71,6 +71,13 @@ export async function POST(
       );
     }
 
+    // Validate outputDir resolves under the expected outputs directory
+    const resolvedOutput = path.resolve(outputDir);
+    const allowedBase = path.resolve(process.cwd(), 'outputs');
+    if (!resolvedOutput.startsWith(allowedBase + path.sep) && resolvedOutput !== allowedBase) {
+      return NextResponse.json({ error: 'Invalid output path' }, { status: 400 });
+    }
+
     // Read review state from disk (expanded CrosstabReviewState with all context)
     const reviewStatePath = path.join(outputDir, 'crosstab-review-state.json');
     let reviewState: CrosstabReviewState;

@@ -56,9 +56,8 @@ function roleLabel(role: string | null) {
 }
 
 export function AppHeader({ children }: { children?: React.ReactNode }) {
-  const { name, email, role } = useAuthContext();
+  const { name, email, role, isBypass } = useAuthContext();
   const initials = getInitials(name, email);
-  const isBypass = process.env.NEXT_PUBLIC_AUTH_BYPASS === "true";
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">

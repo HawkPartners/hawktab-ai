@@ -60,6 +60,9 @@ async function fetchOrgName(orgId: string): Promise<string> {
  */
 export async function getAuth(): Promise<AuthContext | null> {
   if (process.env.AUTH_BYPASS === "true") {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("AUTH_BYPASS must not be enabled in production");
+    }
     setSentryUser(DEV_USER);
     return DEV_USER;
   }

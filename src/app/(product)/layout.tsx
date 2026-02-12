@@ -50,6 +50,7 @@ export default async function ProductLayout({
         email={auth.email}
         name={auth.name}
         role={role}
+        isBypass={auth.isBypass}
       >
         <SidebarProvider defaultOpen>
           <AppSidebar />
