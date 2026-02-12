@@ -16,6 +16,7 @@ export const ProjectConfigSchema = z.object({
   bannerHints: z.string().optional(),
 
   // Display / Excel
+  format: z.enum(['joe', 'antares']).default('joe'),
   displayMode: z.enum(['frequency', 'counts', 'both']).default('frequency'),
   separateWorkbooks: z.boolean().default(false),
   theme: z.string().default('classic'),
@@ -47,6 +48,7 @@ export function wizardToProjectConfig(wizard: {
   bannerMode?: string;
   researchObjectives?: string;
   bannerHints?: string;
+  format?: string;
   displayMode?: string;
   separateWorkbooks?: boolean;
   theme?: string;
@@ -61,6 +63,7 @@ export function wizardToProjectConfig(wizard: {
     bannerMode: wizard.bannerMode ?? 'upload',
     researchObjectives: wizard.researchObjectives,
     bannerHints: wizard.bannerHints,
+    format: wizard.format ?? 'joe',
     displayMode: wizard.displayMode ?? 'frequency',
     separateWorkbooks: wizard.separateWorkbooks ?? false,
     theme: wizard.theme ?? 'classic',

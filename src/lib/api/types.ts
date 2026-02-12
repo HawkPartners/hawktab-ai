@@ -2,6 +2,10 @@ import type { BannerProcessingResult } from '@/agents/BannerAgent';
 import type { ValidationResultType } from '@/schemas/agentOutputSchema';
 import type { ExtendedTableDefinition } from '@/schemas/verificationAgentSchema';
 import type { TableAgentOutput } from '@/schemas/tableAgentSchema';
+import type { LoopGroupMapping } from '@/lib/validation/LoopCollapser';
+import type { DeterministicResolverResult } from '@/lib/validation/LoopContextResolver';
+import type { FilterTranslationResult } from '@/schemas/skipLogicSchema';
+import type { ProjectConfig } from '@/schemas/projectConfigSchema';
 
 export type PipelineStatus = 'in_progress' | 'pending_review' | 'resuming' | 'success' | 'partial' | 'error' | 'cancelled';
 
@@ -104,8 +108,22 @@ export interface PathAResult {
 
 export interface PathBResult {
   tableAgentResults: TableAgentOutput[];
-  verifiedTables: ExtendedTableDefinition[];
+  /** @deprecated Verification now runs post-join. Present for backward compat with serialized review state. */
+  verifiedTables?: ExtendedTableDefinition[];
   surveyMarkdown: string | null;
+}
+
+export interface PathCStatus {
+  status: 'running' | 'completed' | 'error' | 'skipped';
+  startedAt: string;
+  completedAt: string | null;
+  error: string | null;
+}
+
+export interface PathCResult {
+  filterResult: FilterTranslationResult | null;
+  skipLogicRuleCount: number;
+  filterCount: number;
 }
 
 export interface FlaggedCrosstabColumn {
@@ -143,6 +161,17 @@ export interface CrosstabReviewState {
   outputDir: string;
   pathBStatus: 'running' | 'completed' | 'error';
   pathBResult: PathBResult | null;
+  pathCStatus: 'running' | 'completed' | 'error' | 'skipped';
+  pathCResult: PathCResult | null;
+  // Expanded context for post-review pipeline completion
+  verboseDataMap: import('@/schemas/processingSchemas').VerboseDataMapType[];
+  surveyMarkdown: string | null;
+  spssPath: string;
+  loopMappings: LoopGroupMapping[];
+  baseNameToLoopIndex: Record<string, number>;
+  deterministicFindings?: DeterministicResolverResult;
+  wizardConfig?: ProjectConfig;
+  loopStatTestingMode?: 'suppress' | 'complement';
   decisions?: Array<{
     groupName: string;
     columnName: string;

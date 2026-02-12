@@ -15,10 +15,9 @@ import {
   completePipeline,
   waitAndCompletePipeline,
   type CrosstabDecision,
-  type ReviewState,
 } from '@/lib/api/reviewCompletion';
 import type { Id } from '../../../../../../convex/_generated/dataModel';
-import type { PathBResult } from '@/lib/api/types';
+import type { PathBResult, CrosstabReviewState } from '@/lib/api/types';
 
 export async function POST(
   request: NextRequest,
@@ -72,9 +71,9 @@ export async function POST(
       );
     }
 
-    // Read review state from disk
+    // Read review state from disk (expanded CrosstabReviewState with all context)
     const reviewStatePath = path.join(outputDir, 'crosstab-review-state.json');
-    let reviewState: ReviewState;
+    let reviewState: CrosstabReviewState;
     try {
       reviewState = JSON.parse(await fs.readFile(reviewStatePath, 'utf-8'));
     } catch {
@@ -133,16 +132,16 @@ export async function POST(
     }
 
     if (pathBResult) {
-      // Path B complete — finish pipeline synchronously
+      // Path B complete — run full remaining pipeline
       await convex.mutation(api.runs.updateStatus, {
         runId: runId as Id<"runs">,
         status: 'resuming',
-        stage: 'generating_output',
-        progress: 60,
-        message: 'Generating R script and Excel...',
+        stage: 'filtering',
+        progress: 55,
+        message: 'Applying filters and running verification...',
       });
 
-      const result = await completePipeline(outputDir, pipelineId, modifiedCrosstabResult, pathBResult, reviewState, decisions);
+      const result = await completePipeline(outputDir, pipelineId, modifiedCrosstabResult, pathBResult, reviewState, decisions, runId);
 
       // Upload outputs to R2
       const convexOrgId = String(auth.convexOrgId);
@@ -193,7 +192,7 @@ export async function POST(
       });
 
       // Background completion
-      waitAndCompletePipeline(outputDir, pipelineId, modifiedCrosstabResult, reviewState, decisions)
+      waitAndCompletePipeline(outputDir, pipelineId, modifiedCrosstabResult, reviewState, decisions, runId)
         .then(async (result) => {
           // Upload to R2
           const convexOrgId = String(auth.convexOrgId);

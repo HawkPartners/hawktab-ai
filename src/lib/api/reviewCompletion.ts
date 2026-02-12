@@ -3,21 +3,39 @@
  * Extracted from the old /api/pipelines/[pipelineId]/review route so that
  * both the new /api/runs/[runId]/review route and any future callers can
  * reuse it without duplication.
+ *
+ * After HITL review, completePipeline() runs the FULL remaining pipeline:
+ * FilterApplicator → GridAutoSplitter → VerificationAgent → PostProcessor →
+ * CutValidation + Retry → R Validation → LoopSemantics → R Script → R Exec → Excel
  */
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { processGroup } from '@/agents/CrosstabAgent';
+import type { CutValidationErrorContext } from '@/agents/CrosstabAgent';
+import { verifyAllTablesParallel } from '@/agents/VerificationAgent';
+import { runLoopSemanticsPolicyAgent, buildDatamapExcerpt } from '@/agents/LoopSemanticsPolicyAgent';
 import { buildCutsSpec } from '@/lib/tables/CutsSpec';
 import { sortTables, getSortingMetadata } from '@/lib/tables/sortTables';
+import { normalizePostPass } from '@/lib/tables/TablePostProcessor';
+import { applyFilters } from '@/lib/filters/FilterApplicator';
 import { generateRScriptV2WithValidation } from '@/lib/r/RScriptGeneratorV2';
+import { validateAndFixTables } from '@/lib/r/ValidationOrchestrator';
+import { validateCutExpressions } from '@/lib/r/CutExpressionValidator';
 import { ExcelFormatter } from '@/lib/excel/ExcelFormatter';
+import { persistSystemError } from '@/lib/errors/ErrorPersistence';
+import { AgentMetricsCollector, runWithMetricsCollector, WideEvent } from '@/lib/observability';
+import { extractStreamlinedData } from '@/lib/data/extractStreamlinedData';
 import { formatDuration } from '@/lib/utils/formatDuration';
-import type { TableWithLoopFrame } from '@/schemas/verificationAgentSchema';
+import { toExtendedTable, type ExtendedTableDefinition, type TableWithLoopFrame } from '@/schemas/verificationAgentSchema';
+import { createRespondentAnchoredFallbackPolicy, type LoopSemanticsPolicy } from '@/schemas/loopSemanticsPolicySchema';
 import type { TableAgentOutput } from '@/schemas/tableAgentSchema';
 import type { ValidationResultType, ValidatedGroupType } from '@/schemas/agentOutputSchema';
-import type { FlaggedCrosstabColumn, AgentDataMapItem, PathBResult } from './types';
+import type { VerboseDataMapType } from '@/schemas/processingSchemas';
+import type { PipelineSummary, FlaggedCrosstabColumn, AgentDataMapItem, PathBResult, PathCResult, CrosstabReviewState } from './types';
+import type { LoopGroupMapping } from '@/lib/validation/LoopCollapser';
+import type { DeterministicResolverResult } from '@/lib/validation/LoopContextResolver';
 
 const execAsync = promisify(exec);
 
@@ -34,40 +52,6 @@ export interface CrosstabDecision {
   editedExpression?: string;
 }
 
-export interface ReviewState {
-  pipelineId: string;
-  status: 'awaiting_review' | 'approved' | 'cancelled';
-  createdAt: string;
-  crosstabResult: ValidationResultType;
-  flaggedColumns: FlaggedCrosstabColumn[];
-  agentDataMap: AgentDataMapItem[];
-  outputDir: string;
-  pathBStatus: 'running' | 'completed' | 'error';
-  pathBResult: PathBResult | null;
-  decisions?: CrosstabDecision[];
-}
-
-interface PipelineSummary {
-  pipelineId: string;
-  dataset: string;
-  timestamp: string;
-  source: 'ui' | 'cli';
-  status: string;
-  currentStage?: string;
-  inputs: {
-    datamap: string;
-    banner: string;
-    spss: string;
-    survey: string | null;
-  };
-  duration?: {
-    ms: number;
-    formatted: string;
-  };
-  outputs?: Record<string, unknown>;
-  error?: string;
-  review?: Record<string, unknown>;
-}
 
 // -------------------------------------------------------------------------
 // Helpers
@@ -84,6 +68,29 @@ async function updatePipelineSummary(
     await fs.writeFile(summaryPath, JSON.stringify(updated, null, 2));
   } catch {
     console.warn('[ReviewCompletion] Could not update pipeline summary');
+  }
+}
+
+async function updateReviewRunStatus(runId: string | undefined, updates: {
+  status: string;
+  stage?: string;
+  progress?: number;
+  message?: string;
+}): Promise<void> {
+  if (!runId) return;
+  try {
+    const { getConvexClient } = await import('@/lib/convex');
+    const { api } = await import('../../../convex/_generated/api');
+    const convex = getConvexClient();
+    await convex.mutation(api.runs.updateStatus, {
+      runId: runId as import('../../../convex/_generated/dataModel').Id<"runs">,
+      status: updates.status as "in_progress" | "pending_review" | "resuming" | "success" | "partial" | "error" | "cancelled",
+      ...(updates.stage !== undefined && { stage: updates.stage }),
+      ...(updates.progress !== undefined && { progress: updates.progress }),
+      ...(updates.message !== undefined && { message: updates.message }),
+    });
+  } catch (err) {
+    console.warn('[ReviewCompletion] Failed to update Convex status:', err);
   }
 }
 
@@ -244,7 +251,7 @@ export async function applyDecisions(
 }
 
 // -------------------------------------------------------------------------
-// Complete Pipeline
+// Complete Pipeline (Full Post-Review Pipeline)
 // -------------------------------------------------------------------------
 
 export interface CompletePipelineResult {
@@ -252,36 +259,361 @@ export interface CompletePipelineResult {
   status: 'success' | 'partial' | 'error';
   message: string;
   outputDir: string;
+  tableCount?: number;
+  cutCount?: number;
 }
 
 /**
  * Complete the pipeline after review decisions are applied and Path B is ready.
- * Handles R script generation, R execution, and Excel output.
+ * Runs the FULL remaining pipeline: FilterApplicator → GridAutoSplitter →
+ * VerificationAgent → PostProcessor → CutValidation → R Validation →
+ * LoopSemantics → R Script → R Execution → Excel Export.
  */
 export async function completePipeline(
   outputDir: string,
   pipelineId: string,
   modifiedCrosstabResult: ValidationResultType,
   pathBResult: PathBResult,
-  reviewState: ReviewState,
-  decisions: CrosstabDecision[]
+  reviewState: CrosstabReviewState,
+  _decisions: CrosstabDecision[],
+  runId?: string,
 ): Promise<CompletePipelineResult> {
+  const datasetName = path.basename(path.dirname(outputDir));
+  const metricsCollector = new AgentMetricsCollector();
+  const wideEvent = new WideEvent({
+    pipelineId,
+    dataset: datasetName,
+    userId: runId || pipelineId,
+  });
+  metricsCollector.bindWideEvent(wideEvent);
+
+  return runWithMetricsCollector(metricsCollector, async () => {
   try {
-    const { verifiedTables } = pathBResult;
+    const { tableAgentResults } = pathBResult;
+    const verboseDataMap = reviewState.verboseDataMap as VerboseDataMapType[];
+    const surveyMarkdown = reviewState.surveyMarkdown;
+    const loopMappings: LoopGroupMapping[] = reviewState.loopMappings || [];
+    const baseNameToLoopIndex = new Map<string, number>(
+      Object.entries(reviewState.baseNameToLoopIndex || {}).map(([k, v]) => [k, v])
+    );
+    const deterministicFindings: DeterministicResolverResult | undefined = reviewState.deterministicFindings;
+    const wizardConfig = reviewState.wizardConfig;
+    const loopStatTestingMode = reviewState.loopStatTestingMode;
+
+    // Read Path C results from disk
+    let pathCResult: PathCResult | null = reviewState.pathCResult;
+    if (!pathCResult) {
+      try {
+        const pathCResultPath = path.join(outputDir, 'path-c-result.json');
+        pathCResult = JSON.parse(await fs.readFile(pathCResultPath, 'utf-8'));
+        console.log('[ReviewCompletion] Path C result loaded from disk');
+      } catch {
+        console.log('[ReviewCompletion] No Path C result found — continuing without filters');
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Convert tableAgentResults → ExtendedTableDefinition[]
+    // -------------------------------------------------------------------------
+    let extendedTables: ExtendedTableDefinition[] = tableAgentResults.flatMap(group =>
+      group.tables.map(t => toExtendedTable(t, group.questionId))
+    );
+    console.log(`[ReviewCompletion] ${extendedTables.length} tables from TableGenerator`);
+
+    // -------------------------------------------------------------------------
+    // FilterApplicator (apply Path C filters)
+    // -------------------------------------------------------------------------
+    if (pathCResult?.filterResult && pathCResult.filterResult.translation.filters.length > 0) {
+      await updateReviewRunStatus(runId, { status: 'resuming', stage: 'filtering', progress: 55, message: 'Applying filters...' });
+      console.log('[ReviewCompletion] Applying skip logic filters...');
+      const validVariables = new Set<string>(verboseDataMap.map(v => v.column));
+      const filterApplicatorResult = applyFilters(extendedTables, pathCResult.filterResult.translation, validVariables);
+      const beforeCount = extendedTables.length;
+      extendedTables = filterApplicatorResult.tables;
+      console.log(`[ReviewCompletion] FilterApplicator: ${beforeCount} → ${extendedTables.length} tables`);
+    }
+
+    // -------------------------------------------------------------------------
+    // GridAutoSplitter
+    // -------------------------------------------------------------------------
+    await updateReviewRunStatus(runId, { status: 'resuming', stage: 'splitting', progress: 57, message: 'Splitting oversized grids...' });
+    console.log('[ReviewCompletion] Running GridAutoSplitter...');
+    const { splitOversizedGrids } = await import('@/lib/tables/GridAutoSplitter');
+    const gridSplitResult = splitOversizedGrids(extendedTables, { verboseDataMap });
+    if (gridSplitResult.actions.length > 0) {
+      extendedTables = gridSplitResult.tables;
+      console.log(`[ReviewCompletion] GridAutoSplitter: split ${gridSplitResult.summary.tablesSplit} tables`);
+      await fs.writeFile(
+        path.join(outputDir, 'gridsplitter-report.json'),
+        JSON.stringify({ actions: gridSplitResult.actions, summary: gridSplitResult.summary }, null, 2)
+      );
+    }
+
+    // -------------------------------------------------------------------------
+    // VerificationAgent
+    // -------------------------------------------------------------------------
+    await updateReviewRunStatus(runId, { status: 'resuming', stage: 'verification', progress: 58, message: 'Verifying tables...' });
+    if (surveyMarkdown) {
+      console.log('[ReviewCompletion] Running VerificationAgent (parallel, concurrency: 3)...');
+      try {
+        const verificationResult = await verifyAllTablesParallel(
+          extendedTables,
+          surveyMarkdown,
+          verboseDataMap,
+          { outputDir, concurrency: 3 }
+        );
+        extendedTables = verificationResult.tables;
+        console.log(`[ReviewCompletion] VerificationAgent: ${verificationResult.tables.length} verified tables`);
+      } catch (verifyError) {
+        console.warn(`[ReviewCompletion] VerificationAgent failed — using unverified tables: ${verifyError instanceof Error ? verifyError.message : String(verifyError)}`);
+        try {
+          await persistSystemError({
+            outputDir,
+            dataset: path.basename(path.dirname(outputDir)),
+            pipelineId,
+            stageNumber: 7,
+            stageName: 'VerificationAgent',
+            severity: 'warning',
+            actionTaken: 'continued',
+            error: verifyError,
+            meta: { action: 'verification_failed_passthrough' },
+          });
+        } catch { /* ignore persistence failure */ }
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // TablePostProcessor
+    // -------------------------------------------------------------------------
+    await updateReviewRunStatus(runId, { status: 'resuming', stage: 'post_processing', progress: 69, message: 'Running post-processor...' });
+    console.log('[ReviewCompletion] Running TablePostProcessor...');
+    const postPassResult = normalizePostPass(extendedTables);
+    extendedTables = postPassResult.tables;
+    console.log(`[ReviewCompletion] PostProcessor: ${postPassResult.stats.totalFixes} fixes`);
+
+    const postpassDir = path.join(outputDir, 'postpass');
+    await fs.mkdir(postpassDir, { recursive: true });
+    await fs.writeFile(
+      path.join(postpassDir, 'postpass-report.json'),
+      JSON.stringify({ actions: postPassResult.actions, stats: postPassResult.stats }, null, 2)
+    );
 
     // Sort tables
-    const sortingMetadata = getSortingMetadata(verifiedTables);
-    const sortedTables = sortTables(verifiedTables);
-    console.log(`[ReviewCompletion] Sorted tables: ${sortedTables.length} (screeners: ${sortingMetadata.screenerCount})`);
+    const sortingMetadata = getSortingMetadata(extendedTables);
+    const sortedTables = sortTables(extendedTables);
+    console.log(`[ReviewCompletion] Sorted: ${sortedTables.length} tables (screeners: ${sortingMetadata.screenerCount})`);
 
-    // Generate R script
-    const cutsSpec = buildCutsSpec(modifiedCrosstabResult);
+    // -------------------------------------------------------------------------
+    // Cut Expression Validation + Retry
+    // -------------------------------------------------------------------------
+    await updateReviewRunStatus(runId, { status: 'resuming', stage: 'validating_cuts', progress: 70, message: 'Validating cut expressions...' });
+    console.log('[ReviewCompletion] Validating cut expressions...');
+    let validatedCrosstabResult = modifiedCrosstabResult;
+
+    // Copy SPSS file for validation
+    const inputsDir = path.join(outputDir, 'inputs');
+    try {
+      const inputFiles = await fs.readdir(inputsDir);
+      const spssFile = inputFiles.find(f => f.endsWith('.sav'));
+      if (spssFile) {
+        await fs.copyFile(path.join(inputsDir, spssFile), path.join(outputDir, 'dataFile.sav'));
+      }
+    } catch {
+      console.warn('[ReviewCompletion] Could not copy SPSS file');
+    }
+
+    try {
+      const MAX_CUT_RETRIES = 2;
+      let cutReport = await validateCutExpressions(validatedCrosstabResult, outputDir, 'dataFile.sav');
+      console.log(`[ReviewCompletion] Cut validation: ${cutReport.passed}/${cutReport.totalCuts} passed`);
+
+      for (let retryAttempt = 1; retryAttempt <= MAX_CUT_RETRIES && cutReport.failed > 0; retryAttempt++) {
+        console.log(`[ReviewCompletion] Cut retry ${retryAttempt}/${MAX_CUT_RETRIES}...`);
+        const updatedBannerCuts = [...validatedCrosstabResult.bannerCuts];
+
+        for (const [failedGroupName, failedCuts] of cutReport.failedByGroup) {
+          const failedExpressions = failedCuts.map(f => {
+            const varMatch = f.rExpression.match(/\b([A-Za-z][A-Za-z0-9_.]*)\b/);
+            const primaryVar = varMatch?.[1] || '';
+            const verbose = verboseDataMap.find(v => v.column === primaryVar);
+            return {
+              cutName: f.cutName,
+              rExpression: f.rExpression,
+              error: f.error || 'Unknown error',
+              variableType: verbose?.normalizedType || undefined,
+            };
+          });
+
+          const rValidationErrors: CutValidationErrorContext = {
+            failedAttempt: retryAttempt,
+            maxAttempts: MAX_CUT_RETRIES,
+            failedExpressions,
+          };
+
+          const groupIdx = updatedBannerCuts.findIndex(g => g.groupName === failedGroupName);
+          if (groupIdx === -1) continue;
+          const group = updatedBannerCuts[groupIdx];
+
+          try {
+            const retryResult = await processGroup(
+              reviewState.agentDataMap,
+              { groupName: group.groupName, columns: group.columns.map(c => ({ name: c.name, original: c.name })) },
+              { outputDir, rValidationErrors }
+            );
+            updatedBannerCuts[groupIdx] = retryResult;
+          } catch (retryErr) {
+            console.warn(`[ReviewCompletion] Cut retry failed for ${failedGroupName}:`, retryErr);
+          }
+        }
+
+        validatedCrosstabResult = { bannerCuts: updatedBannerCuts };
+        cutReport = await validateCutExpressions(validatedCrosstabResult, outputDir, 'dataFile.sav');
+        console.log(`[ReviewCompletion] Cut re-validation: ${cutReport.passed}/${cutReport.totalCuts} passed`);
+      }
+    } catch (cutError) {
+      console.warn('[ReviewCompletion] Cut validation infrastructure failed (non-fatal):', cutError);
+      try {
+        await persistSystemError({
+          outputDir,
+          dataset: path.basename(path.dirname(outputDir)),
+          pipelineId,
+          stageNumber: 8,
+          stageName: 'CutValidation',
+          severity: 'warning',
+          actionTaken: 'continued',
+          error: cutError,
+          meta: { phase: 'cut_validation_infrastructure' },
+        });
+      } catch { /* ignore */ }
+    }
+
+    const cutsSpec = buildCutsSpec(validatedCrosstabResult);
+
+    // -------------------------------------------------------------------------
+    // R Validation (per-table)
+    // -------------------------------------------------------------------------
+    await updateReviewRunStatus(runId, { status: 'resuming', stage: 'validating_r', progress: 75, message: 'Validating R code per table...' });
+    console.log('[ReviewCompletion] Validating R code per table...');
+
+    // Tag tables with loopDataFrame
+    let loopTableCount = 0;
+    const tablesWithLoopFrame: TableWithLoopFrame[] = sortedTables.map(table => {
+      let loopDataFrame = '';
+      if (loopMappings.length > 0) {
+        for (const row of table.rows) {
+          const loopIdx = baseNameToLoopIndex.get(row.variable);
+          if (loopIdx !== undefined) {
+            loopDataFrame = loopMappings[loopIdx].stackedFrameName;
+            loopTableCount++;
+            break;
+          }
+        }
+      }
+      return { ...table, loopDataFrame };
+    });
+    if (loopTableCount > 0) {
+      console.log(`[ReviewCompletion] Tagged ${loopTableCount} tables with loopDataFrame`);
+    }
+
+    const { validTables, excludedTables: newlyExcluded, validationReport: rValidationReport } = await validateAndFixTables(
+      tablesWithLoopFrame,
+      cutsSpec.cuts,
+      surveyMarkdown || '',
+      verboseDataMap,
+      {
+        outputDir,
+        maxRetries: 8,
+        dataFilePath: 'dataFile.sav',
+        verbose: true,
+        loopMappings: loopMappings.length > 0 ? loopMappings : undefined,
+      }
+    );
+    console.log(`[ReviewCompletion] R Validation: ${rValidationReport.passedFirstTime} passed, ${rValidationReport.fixedAfterRetry} fixed, ${rValidationReport.excluded} excluded`);
+
+    const allTablesForR = [...validTables, ...newlyExcluded];
+
+    // -------------------------------------------------------------------------
+    // LoopSemanticsPolicyAgent (if loops)
+    // -------------------------------------------------------------------------
+    let loopSemanticsPolicy: LoopSemanticsPolicy | undefined;
+
+    if (loopMappings.length > 0) {
+      await updateReviewRunStatus(runId, { status: 'resuming', stage: 'loop_semantics', progress: 78, message: 'Classifying loop semantics...' });
+      console.log('[ReviewCompletion] Running LoopSemanticsPolicyAgent...');
+      try {
+        loopSemanticsPolicy = await runLoopSemanticsPolicyAgent({
+          loopSummary: loopMappings.map(m => ({
+            stackedFrameName: m.stackedFrameName,
+            iterations: m.iterations,
+            variableCount: m.variables.length,
+            skeleton: m.skeleton,
+          })),
+          bannerGroups: cutsSpec.groups.map(g => ({
+            groupName: g.groupName,
+            columns: g.cuts.map(c => ({ name: c.name, original: c.name })),
+          })),
+          cuts: cutsSpec.cuts.map(c => ({
+            name: c.name,
+            groupName: c.groupName,
+            rExpression: c.rExpression,
+          })),
+          deterministicFindings: deterministicFindings || { iterationLinkedVariables: [], evidenceSummary: '' },
+          datamapExcerpt: buildDatamapExcerpt(verboseDataMap, cutsSpec.cuts, deterministicFindings),
+          loopMappings,
+          outputDir,
+        });
+        console.log(`[ReviewCompletion] LoopSemantics: ${loopSemanticsPolicy.bannerGroups.length} groups classified`);
+      } catch (lspError) {
+        const fallbackReason = lspError instanceof Error ? lspError.message : String(lspError);
+        console.warn(`[ReviewCompletion] LoopSemantics failed — using fallback: ${fallbackReason}`);
+        loopSemanticsPolicy = createRespondentAnchoredFallbackPolicy(
+          cutsSpec.groups.map(g => g.groupName),
+          fallbackReason,
+        );
+        try {
+          await persistSystemError({
+            outputDir,
+            dataset: path.basename(path.dirname(outputDir)),
+            pipelineId,
+            stageNumber: 8,
+            stageName: 'LoopSemanticsPolicyAgent',
+            severity: 'warning',
+            actionTaken: 'continued',
+            error: lspError,
+            meta: { action: 'fallback_to_respondent_anchored' },
+          });
+        } catch { /* ignore */ }
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // R Script Generation
+    // -------------------------------------------------------------------------
+    await updateReviewRunStatus(runId, { status: 'resuming', stage: 'generating_r', progress: 80, message: 'Generating R script...' });
     const rDir = path.join(outputDir, 'r');
     await fs.mkdir(rDir, { recursive: true });
 
-    const tablesForR: TableWithLoopFrame[] = sortedTables.map(t => ({ ...t, loopDataFrame: '' }));
+    const rScriptInput: import('@/lib/r/RScriptGeneratorV2').RScriptV2Input = {
+      tables: allTablesForR,
+      cuts: cutsSpec.cuts,
+      cutGroups: cutsSpec.groups,
+      loopStatTestingMode,
+      ...(loopMappings.length > 0 && { loopMappings }),
+      ...(loopSemanticsPolicy && { loopSemanticsPolicy }),
+      ...(wizardConfig?.weightVariable && { weightVariable: wizardConfig.weightVariable }),
+      ...(wizardConfig?.statTesting && {
+        statTestingConfig: {
+          thresholds: wizardConfig.statTesting.thresholds.map(t => (100 - t) / 100),
+          proportionTest: 'unpooled_z' as const,
+          meanTest: 'welch_t' as const,
+          minBase: wizardConfig.statTesting.minBase,
+        },
+        significanceThresholds: wizardConfig.statTesting.thresholds.map(t => (100 - t) / 100),
+      }),
+    };
+
     const { script: masterScript, validation: validationReport } = generateRScriptV2WithValidation(
-      { tables: tablesForR, cuts: cutsSpec.cuts },
+      rScriptInput,
       { sessionId: pipelineId, outputDir: 'results' }
     );
 
@@ -296,7 +628,10 @@ export async function completePipeline(
       );
     }
 
-    // Execute R script
+    // -------------------------------------------------------------------------
+    // R Execution
+    // -------------------------------------------------------------------------
+    await updateReviewRunStatus(runId, { status: 'resuming', stage: 'executing_r', progress: 85, message: 'Executing R script...' });
     const resultsDir = path.join(outputDir, 'results');
     await fs.mkdir(resultsDir, { recursive: true });
 
@@ -315,20 +650,6 @@ export async function completePipeline(
     let rExecutionSuccess = false;
     let excelGenerated = false;
 
-    // Copy SPSS file for R execution
-    const inputsDir = path.join(outputDir, 'inputs');
-    try {
-      const inputFiles = await fs.readdir(inputsDir);
-      const spssFile = inputFiles.find(f => f.endsWith('.sav'));
-      if (spssFile) {
-        const spssSource = path.join(inputsDir, spssFile);
-        const spssDest = path.join(outputDir, 'dataFile.sav');
-        await fs.copyFile(spssSource, spssDest);
-      }
-    } catch {
-      console.warn('[ReviewCompletion] Could not copy SPSS file - R may fail');
-    }
-
     try {
       await execAsync(
         `cd "${outputDir}" && ${rCommand} "${masterPath}"`,
@@ -336,26 +657,140 @@ export async function completePipeline(
       );
 
       const resultFiles = await fs.readdir(resultsDir);
-      if (resultFiles.includes('tables.json')) {
+      const weightVariable = wizardConfig?.weightVariable;
+
+      // Check for weighted dual-output first (tables-weighted.json + tables-unweighted.json)
+      if (weightVariable && resultFiles.includes('tables-weighted.json') && resultFiles.includes('tables-unweighted.json')) {
+        console.log('[ReviewCompletion] Found dual weighted/unweighted output');
+        rExecutionSuccess = true;
+
+        // Streamlined data from weighted output
+        try {
+          const wContent = await fs.readFile(path.join(resultsDir, 'tables-weighted.json'), 'utf-8');
+          const streamlined = extractStreamlinedData(JSON.parse(wContent));
+          await fs.writeFile(path.join(resultsDir, 'data-streamlined.json'), JSON.stringify(streamlined, null, 2), 'utf-8');
+        } catch { /* non-fatal */ }
+
+        // ---------------------------------------------------------------
+        // Dual Excel Export (weighted + unweighted)
+        // ---------------------------------------------------------------
+        await updateReviewRunStatus(runId, { status: 'resuming', stage: 'writing_outputs', progress: 95, message: 'Generating weighted & unweighted Excel workbooks...' });
+        try {
+          if (wizardConfig?.theme) {
+            const { setActiveTheme } = await import('@/lib/excel/styles');
+            setActiveTheme(wizardConfig.theme);
+          }
+          const fmtOpts = {
+            format: wizardConfig?.format ?? 'joe',
+            displayMode: wizardConfig?.displayMode ?? 'frequency',
+            separateWorkbooks: wizardConfig?.separateWorkbooks ?? false,
+          };
+          // Weighted workbook
+          const wFormatter = new ExcelFormatter(fmtOpts);
+          await wFormatter.formatFromFile(path.join(resultsDir, 'tables-weighted.json'));
+          await wFormatter.saveToFile(path.join(resultsDir, 'crosstabs-weighted.xlsx'));
+          if (wFormatter.hasSecondWorkbook()) {
+            await wFormatter.saveSecondWorkbook(path.join(resultsDir, 'crosstabs-weighted-counts.xlsx'));
+          }
+          // Unweighted workbook
+          const uwFormatter = new ExcelFormatter(fmtOpts);
+          await uwFormatter.formatFromFile(path.join(resultsDir, 'tables-unweighted.json'));
+          await uwFormatter.saveToFile(path.join(resultsDir, 'crosstabs-unweighted.xlsx'));
+          if (uwFormatter.hasSecondWorkbook()) {
+            await uwFormatter.saveSecondWorkbook(path.join(resultsDir, 'crosstabs-unweighted-counts.xlsx'));
+          }
+          excelGenerated = true;
+          console.log('[ReviewCompletion] Generated dual Excel: crosstabs-weighted.xlsx + crosstabs-unweighted.xlsx');
+        } catch (excelError) {
+          console.error('[ReviewCompletion] Dual Excel generation failed:', excelError);
+          try {
+            await persistSystemError({
+              outputDir,
+              dataset: datasetName,
+              pipelineId,
+              stageNumber: 11,
+              stageName: 'ExcelFormatter',
+              severity: 'error',
+              actionTaken: 'continued',
+              error: excelError,
+              meta: { phase: 'dual_excel_generation' },
+            });
+          } catch { /* ignore */ }
+        }
+      } else if (resultFiles.includes('tables.json')) {
+        // Single-output path (non-weighted or weighted files missing)
         console.log('[ReviewCompletion] R execution successful');
         rExecutionSuccess = true;
 
         const tablesJsonPath = path.join(resultsDir, 'tables.json');
-        const excelPath = path.join(resultsDir, 'crosstabs.xlsx');
 
+        // Extract streamlined data
         try {
-          const formatter = new ExcelFormatter();
+          const tablesJsonContent = await fs.readFile(tablesJsonPath, 'utf-8');
+          const tablesJsonData = JSON.parse(tablesJsonContent);
+          const streamlinedData = extractStreamlinedData(tablesJsonData);
+          await fs.writeFile(path.join(resultsDir, 'data-streamlined.json'), JSON.stringify(streamlinedData, null, 2), 'utf-8');
+        } catch (err) {
+          console.warn('[ReviewCompletion] Could not generate streamlined data:', err);
+        }
+
+        // ---------------------------------------------------------------
+        // Excel Export
+        // ---------------------------------------------------------------
+        await updateReviewRunStatus(runId, { status: 'resuming', stage: 'writing_outputs', progress: 95, message: 'Generating Excel workbook...' });
+        const excelPath = path.join(resultsDir, 'crosstabs.xlsx');
+        try {
+          if (wizardConfig?.theme) {
+            const { setActiveTheme } = await import('@/lib/excel/styles');
+            setActiveTheme(wizardConfig.theme);
+          }
+          const formatter = new ExcelFormatter({
+            format: wizardConfig?.format ?? 'joe',
+            displayMode: wizardConfig?.displayMode ?? 'frequency',
+            separateWorkbooks: wizardConfig?.separateWorkbooks ?? false,
+          });
           await formatter.formatFromFile(tablesJsonPath);
           await formatter.saveToFile(excelPath);
+          if (wizardConfig?.separateWorkbooks && wizardConfig?.displayMode === 'both') {
+            try {
+              await formatter.saveSecondWorkbook(path.join(resultsDir, 'crosstabs-counts.xlsx'));
+            } catch { /* expected for non-both modes */ }
+          }
           excelGenerated = true;
           console.log('[ReviewCompletion] Excel generated successfully');
         } catch (excelError) {
           console.error('[ReviewCompletion] Excel generation failed:', excelError);
+          try {
+            await persistSystemError({
+              outputDir,
+              dataset: datasetName,
+              pipelineId,
+              stageNumber: 11,
+              stageName: 'ExcelFormatter',
+              severity: 'error',
+              actionTaken: 'continued',
+              error: excelError,
+              meta: { phase: 'excel_generation' },
+            });
+          } catch { /* ignore */ }
         }
       }
     } catch (rError) {
       const errorMsg = rError instanceof Error ? rError.message : String(rError);
       console.error('[ReviewCompletion] R execution failed:', errorMsg.substring(0, 200));
+      try {
+        await persistSystemError({
+          outputDir,
+          dataset: path.basename(path.dirname(outputDir)),
+          pipelineId,
+          stageNumber: 10,
+          stageName: 'RExecution',
+          severity: 'error',
+          actionTaken: 'continued',
+          error: rError,
+          meta: { phase: 'r_script_execution' },
+        });
+      } catch { /* ignore */ }
     }
 
     // Cleanup temp SPSS
@@ -389,34 +824,61 @@ export async function completePipeline(
       review: {
         flaggedColumnCount: reviewState.flaggedColumns.length,
         reviewUrl: `/projects/${pipelineId}/review`,
-        decisions,
-        completedAt: completionTime.toISOString()
       },
       outputs: {
-        variables: 0,
-        tableAgentTables: reviewState.pathBResult?.tableAgentResults?.flatMap((r: TableAgentOutput) => r.tables).length || 0,
+        variables: verboseDataMap.length,
+        tableGeneratorTables: tableAgentResults.flatMap((r: TableAgentOutput) => r.tables).length,
         verifiedTables: sortedTables.length,
-        tables: sortedTables.length,
+        validatedTables: validTables.length,
+        excludedTables: newlyExcluded.length,
+        totalTablesInR: allTablesForR.length,
         cuts: cutsSpec.cuts.length,
         bannerGroups: modifiedCrosstabResult.bannerCuts.length,
         sorting: {
           screeners: sortingMetadata.screenerCount,
           main: sortingMetadata.mainCount,
           other: sortingMetadata.otherCount
+        },
+        rValidation: {
+          passedFirstTime: rValidationReport.passedFirstTime,
+          fixedAfterRetry: rValidationReport.fixedAfterRetry,
+          excluded: rValidationReport.excluded,
+          durationMs: rValidationReport.durationMs,
         }
       }
     });
 
     console.log(`[ReviewCompletion] Pipeline completed in ${formatDuration(totalDurationMs)}`);
 
+    metricsCollector.unbindWideEvent();
+    wideEvent.set('tableCount', allTablesForR.length);
+    wideEvent.finish(finalStatus === 'success' ? 'success' : 'partial');
+
     return {
       success: true,
       status: finalStatus as 'success' | 'partial' | 'error',
       message: excelGenerated ? 'Pipeline completed successfully' : (rExecutionSuccess ? 'R complete but Excel failed' : 'R execution failed'),
       outputDir,
+      tableCount: allTablesForR.length,
+      cutCount: cutsSpec.cuts.length,
     };
   } catch (error) {
     console.error('[ReviewCompletion] Background completion failed:', error);
+    metricsCollector.unbindWideEvent();
+    wideEvent.finish('error', error instanceof Error ? error.message : 'Background completion failed');
+    try {
+      await persistSystemError({
+        outputDir,
+        dataset: datasetName,
+        pipelineId,
+        stageNumber: 0,
+        stageName: 'ReviewCompletion',
+        severity: 'fatal',
+        actionTaken: 'failed_pipeline',
+        error,
+        meta: { phase: 'complete_pipeline' },
+      });
+    } catch { /* ignore */ }
     await updatePipelineSummary(outputDir, {
       status: 'error',
       error: error instanceof Error ? error.message : 'Background completion failed'
@@ -429,6 +891,7 @@ export async function completePipeline(
       outputDir,
     };
   }
+  }); // end runWithMetricsCollector
 }
 
 /**
@@ -438,8 +901,9 @@ export async function waitAndCompletePipeline(
   outputDir: string,
   pipelineId: string,
   modifiedCrosstabResult: ValidationResultType,
-  reviewState: ReviewState,
-  decisions: CrosstabDecision[]
+  reviewState: CrosstabReviewState,
+  decisions: CrosstabDecision[],
+  runId?: string,
 ): Promise<CompletePipelineResult> {
   const pathBResultPath = path.join(outputDir, 'path-b-result.json');
   const pathBStatusPath = path.join(outputDir, 'path-b-status.json');
@@ -454,7 +918,7 @@ export async function waitAndCompletePipeline(
     try {
       const pathBResult = JSON.parse(await fs.readFile(pathBResultPath, 'utf-8'));
       console.log('[ReviewCompletion] Path B completed - starting pipeline completion');
-      return await completePipeline(outputDir, pipelineId, modifiedCrosstabResult, pathBResult, reviewState, decisions);
+      return await completePipeline(outputDir, pipelineId, modifiedCrosstabResult, pathBResult, reviewState, decisions, runId);
     } catch { /* not ready yet */ }
 
     try {

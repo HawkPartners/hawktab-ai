@@ -8,21 +8,33 @@ import { cleanupAbort } from '@/lib/abortStore';
 import { uploadPipelineOutputs, type R2FileManifest } from '@/lib/r2/R2FileManager';
 import type { Id } from '../../../convex/_generated/dataModel';
 import { BannerAgent } from '@/agents/BannerAgent';
-import { processAllGroups as processCrosstabGroups } from '@/agents/CrosstabAgent';
+import { processAllGroups as processCrosstabGroups, processGroup as processCrosstabGroup } from '@/agents/CrosstabAgent';
+import type { CutValidationErrorContext } from '@/agents/CrosstabAgent';
 import { verifyAllTablesParallel } from '@/agents/VerificationAgent';
+import { extractSkipLogic } from '@/agents/SkipLogicAgent';
+import { translateSkipRules } from '@/agents/FilterTranslatorAgent';
+import { runLoopSemanticsPolicyAgent, buildDatamapExcerpt } from '@/agents/LoopSemanticsPolicyAgent';
 import { groupDataMap } from '@/lib/tables/DataMapGrouper';
 import { generateTables, convertToLegacyFormat } from '@/lib/tables/TableGenerator';
 import { processSurvey } from '@/lib/processors/SurveyProcessor';
 import { buildCutsSpec } from '@/lib/tables/CutsSpec';
 import { sortTables, getSortingMetadata } from '@/lib/tables/sortTables';
+import { normalizePostPass } from '@/lib/tables/TablePostProcessor';
+import { applyFilters } from '@/lib/filters/FilterApplicator';
 import { generateRScriptV2WithValidation } from '@/lib/r/RScriptGeneratorV2';
 import { validateAndFixTables } from '@/lib/r/ValidationOrchestrator';
+import { validateCutExpressions } from '@/lib/r/CutExpressionValidator';
 import { extractStreamlinedData } from '@/lib/data/extractStreamlinedData';
 import { AgentMetricsCollector, runWithMetricsCollector, getPipelineCostSummary, WideEvent } from '@/lib/observability';
 import { ExcelFormatter } from '@/lib/excel/ExcelFormatter';
 import { toExtendedTable, type ExtendedTableDefinition, type TableWithLoopFrame } from '@/schemas/verificationAgentSchema';
+import { createRespondentAnchoredFallbackPolicy, type LoopSemanticsPolicy } from '@/schemas/loopSemanticsPolicySchema';
 import type { TableAgentOutput } from '@/schemas/tableAgentSchema';
 import type { VerboseDataMapType } from '@/schemas/processingSchemas';
+import { collapseLoopVariables } from '@/lib/validation/LoopCollapser';
+import type { LoopGroupMapping } from '@/lib/validation/LoopCollapser';
+import { resolveIterationLinkedVariables } from '@/lib/validation/LoopContextResolver';
+import type { DeterministicResolverResult } from '@/lib/validation/LoopContextResolver';
 import {
   persistSystemError,
   getGlobalSystemOutputDir,
@@ -37,6 +49,8 @@ import type {
   PathAResult,
   PathBResult,
   PathBStatus,
+  PathCStatus,
+  PathCResult,
   CrosstabReviewState,
   SavedFilePaths,
 } from './types';
@@ -218,14 +232,14 @@ async function executePathA(
 }
 
 /**
- * Path B: TableGenerator → VerificationAgent
+ * Path B: TableGenerator + DistributionStats
  *
- * Uses deterministic TableGenerator (replaces LLM-based TableAgent) followed by
- * parallel VerificationAgent processing.
+ * Uses deterministic TableGenerator followed by distribution stats enrichment.
+ * VerificationAgent now runs AFTER filtering/splitting in the post-join block.
  */
 async function executePathB(
   verboseDataMap: VerboseDataMapType[],
-  surveyPath: string | null,
+  spssPath: string,
   outputDir: string,
   onProgress: (percent: number) => void,
   abortSignal?: AbortSignal
@@ -235,77 +249,75 @@ async function executePathB(
     throw new DOMException('Path B aborted', 'AbortError');
   }
 
-  // 1. Process survey document (needed for VerificationAgent)
-  let surveyMarkdown: string | null = null;
-  if (surveyPath) {
-    console.log('[PathB] Processing survey document...');
-    const surveyResult = await processSurvey(surveyPath, outputDir);
-    surveyMarkdown = surveyResult.markdown;
-    if (surveyMarkdown) {
-      console.log(`[PathB] Survey processed: ${surveyMarkdown.length} characters`);
-    } else {
-      console.warn(`[PathB] Survey processing failed: ${surveyResult.warnings.join(', ')}`);
-    }
-  }
-
-  if (abortSignal?.aborted) {
-    console.log('[PathB] Aborted after survey processing');
-    throw new DOMException('Path B aborted', 'AbortError');
-  }
-
-  // 2. Generate tables deterministically (instant, no LLM)
+  // 1. Generate tables deterministically (instant, no LLM)
   console.log('[PathB] Running TableGenerator...');
   const groups = groupDataMap(verboseDataMap);
   const generatorOutputs = generateTables(groups);
-  const tableAgentResults: TableAgentOutput[] = convertToLegacyFormat(generatorOutputs);
+  let tableAgentResults: TableAgentOutput[] = convertToLegacyFormat(generatorOutputs);
   const tableCount = tableAgentResults.flatMap(r => r.tables).length;
   console.log(`[PathB] TableGenerator: ${tableCount} tables generated`);
-  onProgress(30);
+  onProgress(50);
 
   if (abortSignal?.aborted) {
     console.log('[PathB] Aborted after table generation');
     throw new DOMException('Path B aborted', 'AbortError');
   }
 
-  // 3. Run VerificationAgent
-  if (!surveyMarkdown) {
-    // Passthrough mode - no enhancement
-    console.log('[PathB] No survey - using passthrough mode');
-    const verifiedTables: ExtendedTableDefinition[] = tableAgentResults.flatMap(group =>
-      group.tables.map(t => toExtendedTable(t, group.questionId))
-    );
-
-    // Save passthrough verification output
-    const verificationDir = path.join(outputDir, 'verification');
-    await fs.mkdir(verificationDir, { recursive: true });
-    await fs.writeFile(
-      path.join(verificationDir, 'verification-output-raw.json'),
-      JSON.stringify({ tables: verifiedTables }, null, 2),
-      'utf-8'
-    );
-
-    onProgress(100);
-    console.log(`[PathB] Complete (passthrough): ${verifiedTables.length} tables`);
-    return { tableAgentResults, verifiedTables, surveyMarkdown };
+  // 2. Enrich with distribution stats (mean/median for numeric variables)
+  try {
+    const { enrichTableResultsWithStats } = await import('@/lib/stats/DistributionCalculator');
+    tableAgentResults = await enrichTableResultsWithStats(tableAgentResults, spssPath, outputDir);
+    console.log('[PathB] Distribution stats enriched');
+  } catch (statsError) {
+    console.warn('[PathB] Distribution stats enrichment failed (non-fatal):', statsError);
   }
 
-  // Run VerificationAgent in parallel
-  console.log('[PathB] Starting VerificationAgent (parallel, concurrency: 3)...');
-  const verificationResult = await verifyAllTablesParallel(
-    tableAgentResults,
-    surveyMarkdown,
-    verboseDataMap,
-    { outputDir, concurrency: 3, abortSignal }
-  );
-
   onProgress(100);
-  console.log(`[PathB] Complete: ${verificationResult.tables.length} verified tables`);
+  console.log(`[PathB] Complete: ${tableCount} tables (verification deferred to post-join)`);
 
-  return {
-    tableAgentResults,
-    verifiedTables: verificationResult.tables,
-    surveyMarkdown
-  };
+  return { tableAgentResults, surveyMarkdown: null };
+}
+
+/**
+ * Path C: SkipLogicAgent → FilterTranslatorAgent
+ *
+ * Extracts skip logic rules from the survey, then translates them to R filter expressions.
+ * Failure is graceful — the pipeline continues without filters.
+ */
+async function executePathC(
+  surveyMarkdown: string,
+  verboseDataMap: VerboseDataMapType[],
+  outputDir: string,
+  abortSignal?: AbortSignal
+): Promise<PathCResult> {
+  if (abortSignal?.aborted) {
+    throw new DOMException('Path C aborted', 'AbortError');
+  }
+
+  console.log('[PathC] Starting SkipLogicAgent...');
+  const skipLogicResult = await extractSkipLogic(surveyMarkdown, { outputDir, abortSignal });
+  const ruleCount = skipLogicResult.extraction.rules.length;
+  console.log(`[PathC] SkipLogicAgent: ${ruleCount} rules extracted`);
+
+  if (ruleCount === 0) {
+    console.log('[PathC] No skip logic rules — skipping FilterTranslator');
+    return { filterResult: null, skipLogicRuleCount: 0, filterCount: 0 };
+  }
+
+  if (abortSignal?.aborted) {
+    throw new DOMException('Path C aborted', 'AbortError');
+  }
+
+  console.log('[PathC] Starting FilterTranslatorAgent...');
+  const filterResult = await translateSkipRules(
+    skipLogicResult.extraction.rules,
+    verboseDataMap,
+    { outputDir, abortSignal }
+  );
+  const filterCount = filterResult.translation.filters.length;
+  console.log(`[PathC] FilterTranslator: ${filterCount} filters translated`);
+
+  return { filterResult, skipLogicRuleCount: ruleCount, filterCount };
 }
 
 // -------------------------------------------------------------------------
@@ -417,8 +429,99 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       validationPassed: false, confidence: 0,
       errors: ['Validation failed'], warnings: [],
     };
-    const verboseDataMap = dataMapResult.verbose as VerboseDataMapType[];
+    let verboseDataMap = dataMapResult.verbose as VerboseDataMapType[];
     console.log(`[API] Processed ${verboseDataMap.length} variables`);
+
+    // Mark weight variable so TableGenerator excludes it
+    if (wizardConfig?.weightVariable) {
+      const weightVar = wizardConfig.weightVariable;
+      verboseDataMap = verboseDataMap.map(v =>
+        v.column === weightVar ? { ...v, normalizedType: 'weight' as const } : v
+      );
+    }
+
+    // -------------------------------------------------------------------------
+    // Step 1b: Loop Detection + Collapse
+    // -------------------------------------------------------------------------
+    let loopMappings: LoopGroupMapping[] = [];
+    let baseNameToLoopIndex: Map<string, number> = new Map();
+    let collapsedVariableNames: Set<string> = new Set();
+    let deterministicFindings: DeterministicResolverResult | undefined;
+
+    if (validationResult.loopDetection?.hasLoops) {
+      await updateRunStatus(runId, {
+        status: 'in_progress',
+        stage: 'loop_handling',
+        progress: 17,
+        message: 'Detecting loop variables...',
+      });
+      console.log('[API] Step 1b: Loop detection found loops — collapsing...');
+
+      try {
+        const collapseResult = collapseLoopVariables(
+          verboseDataMap,
+          validationResult.loopDetection,
+        );
+        verboseDataMap = collapseResult.collapsedDataMap as VerboseDataMapType[];
+        loopMappings = collapseResult.loopMappings;
+        baseNameToLoopIndex = collapseResult.baseNameToLoopIndex;
+        collapsedVariableNames = collapseResult.collapsedVariableNames;
+        console.log(`[API] Loop collapse: ${loopMappings.length} loop groups, ${collapsedVariableNames.size} collapsed variables`);
+
+        // Save loop summary
+        await fs.writeFile(
+          path.join(outputDir, 'loop-summary.json'),
+          JSON.stringify({
+            loopCount: loopMappings.length,
+            collapsedVariableCount: collapsedVariableNames.size,
+            mappings: loopMappings.map(m => ({
+              stackedFrameName: m.stackedFrameName,
+              iterations: m.iterations,
+              variableCount: m.variables.length,
+            })),
+          }, null, 2)
+        );
+
+        // Deterministic resolver
+        deterministicFindings = resolveIterationLinkedVariables(
+          verboseDataMap,
+          loopMappings,
+          collapsedVariableNames,
+        );
+        console.log(`[API] Deterministic resolver: ${deterministicFindings.iterationLinkedVariables.length} linked variables`);
+
+        const loopPolicyDir = path.join(outputDir, 'loop-policy');
+        await fs.mkdir(loopPolicyDir, { recursive: true });
+        await fs.writeFile(
+          path.join(loopPolicyDir, 'deterministic-resolver.json'),
+          JSON.stringify(deterministicFindings, null, 2)
+        );
+      } catch (loopError) {
+        console.error('[API] Loop handling failed (non-fatal):', loopError);
+        // Continue without loop handling — tables will be treated as non-loop
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Step 1c: Survey Processing (shared by Path B verification + Path C skip logic)
+    // -------------------------------------------------------------------------
+    let surveyMarkdown: string | null = null;
+    if (surveyPath) {
+      await updateRunStatus(runId, {
+        status: 'in_progress',
+        stage: 'survey_processing',
+        progress: 18,
+        message: 'Processing survey document...',
+      });
+      console.log('[API] Step 1c: Processing survey document...');
+      const surveyResult = await processSurvey(surveyPath, outputDir);
+      surveyMarkdown = surveyResult.markdown;
+      if (surveyMarkdown) {
+        console.log(`[API] Survey processed: ${surveyMarkdown.length} characters`);
+      } else {
+        console.warn(`[API] Survey processing failed: ${surveyResult.warnings.join(', ')}`);
+      }
+    }
 
     // Write initial pipeline summary immediately (for sidebar visibility)
     const initialSummary: PipelineSummary = {
@@ -454,17 +557,17 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       Answer_Options: v.Answer_Options,
     }));
 
-    // Progress tracking for parallel execution (20-80% range)
+    // Progress tracking for parallel execution (20-50% range)
     let currentParallelPercent = 20;
     const updateParallelProgress = (pathPercent: number) => {
-      const overallPercent = 20 + Math.floor(pathPercent * 0.6);
+      const overallPercent = 20 + Math.floor(pathPercent * 0.3);
       if (overallPercent > currentParallelPercent) {
         currentParallelPercent = overallPercent;
         updateRunStatus(runId, {
           status: 'in_progress',
           stage: 'parallel_processing',
           progress: currentParallelPercent,
-          message: 'Processing banner and tables...',
+          message: 'Processing banner, tables, and skip logic...',
         });
       }
     };
@@ -473,7 +576,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       status: 'in_progress',
       stage: 'parallel_processing',
       progress: 20,
-      message: 'Processing banner and tables...',
+      message: 'Processing banner, tables, and skip logic...',
     });
 
     console.log('[API] Starting parallel paths...');
@@ -490,9 +593,11 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
     const bannerAgent = new BannerAgent();
 
-    // Write initial Path B status (will be running)
+    // Write initial Path B + C status (will be running)
     const pathBStatusPath = path.join(outputDir, 'path-b-status.json');
     const pathBResultPath = path.join(outputDir, 'path-b-result.json');
+    const pathCStatusPath = path.join(outputDir, 'path-c-status.json');
+    const pathCResultPath = path.join(outputDir, 'path-c-result.json');
     const pathBStartedAt = new Date().toISOString();
     const initialPathBStatus: PathBStatus = {
       status: 'running',
@@ -503,8 +608,30 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     await fs.writeFile(pathBStatusPath, JSON.stringify(initialPathBStatus, null, 2));
     console.log('[API] Path B status initialized: running');
 
+    // Initialize Path C status
+    const pathCStartedAt = new Date().toISOString();
+    if (surveyMarkdown) {
+      const initialPathCStatus: PathCStatus = {
+        status: 'running',
+        startedAt: pathCStartedAt,
+        completedAt: null,
+        error: null
+      };
+      await fs.writeFile(pathCStatusPath, JSON.stringify(initialPathCStatus, null, 2));
+      console.log('[API] Path C status initialized: running');
+    } else {
+      const skippedPathCStatus: PathCStatus = {
+        status: 'skipped',
+        startedAt: pathCStartedAt,
+        completedAt: pathCStartedAt,
+        error: null
+      };
+      await fs.writeFile(pathCStatusPath, JSON.stringify(skippedPathCStatus, null, 2));
+      console.log('[API] Path C skipped (no survey document)');
+    }
+
     // Start Path B as fire-and-forget (writes result to disk when complete)
-    const pathBPromise = executePathB(verboseDataMap, surveyPath ?? null, outputDir, updateParallelProgress, abortSignal)
+    const pathBPromise = executePathB(verboseDataMap, spssPath, outputDir, updateParallelProgress, abortSignal)
       .then(async (result) => {
         await fs.writeFile(pathBResultPath, JSON.stringify(result, null, 2));
         const completedStatus: PathBStatus = {
@@ -562,6 +689,58 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
         throw error;
       });
+
+    // Start Path C as fire-and-forget (skip logic + filter translation)
+    let pathCResult: PathCResult | null = null;
+    const pathCPromise: Promise<PathCResult | null> = surveyMarkdown
+      ? executePathC(surveyMarkdown, verboseDataMap, outputDir, abortSignal)
+          .then(async (result) => {
+            pathCResult = result;
+            await fs.writeFile(pathCResultPath, JSON.stringify(result, null, 2));
+            const completedStatus: PathCStatus = {
+              status: 'completed',
+              startedAt: pathCStartedAt,
+              completedAt: new Date().toISOString(),
+              error: null
+            };
+            await fs.writeFile(pathCStatusPath, JSON.stringify(completedStatus, null, 2));
+            console.log('[API] Path C completed and result saved to disk');
+
+            // Update Convex reviewState.pathCStatus for real-time UI
+            try {
+              const convex = getConvexClient();
+              const run = await convex.query(api.runs.get, { runId: runId as Id<"runs"> });
+              const existingReviewState = (run?.result as Record<string, unknown>)?.reviewState as Record<string, unknown> | undefined;
+              if (existingReviewState) {
+                await convex.mutation(api.runs.updateReviewState, {
+                  runId: runId as Id<"runs">,
+                  reviewState: { ...existingReviewState, pathCStatus: 'completed' },
+                });
+              }
+            } catch (err) {
+              console.warn('[API] Failed to update pathCStatus in Convex:', err);
+            }
+
+            return result;
+          })
+          .catch(async (error) => {
+            const errorMsg = error instanceof Error ? error.message : String(error);
+            const isAborted = isAbortError(error);
+            if (isAborted) {
+              throw error; // Re-throw abort errors
+            }
+            // Path C failure is graceful — log and continue without filters
+            console.warn(`[API] Path C failed (non-fatal): ${errorMsg}`);
+            const errorStatus: PathCStatus = {
+              status: 'error',
+              startedAt: pathCStartedAt,
+              completedAt: new Date().toISOString(),
+              error: errorMsg
+            };
+            await fs.writeFile(pathCStatusPath, JSON.stringify(errorStatus, null, 2));
+            return null;
+          })
+      : Promise.resolve(null);
 
     // Await ONLY Path A — this is what we need for review check
     // When wizardConfig.bannerMode === 'auto_generate', skip BannerAgent and use BannerGenerateAgent
@@ -737,7 +916,18 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         agentDataMap,
         outputDir,
         pathBStatus: 'running',
-        pathBResult: null
+        pathBResult: null,
+        pathCStatus: surveyMarkdown ? 'running' : 'skipped',
+        pathCResult: pathCResult,
+        // Expanded context for post-review pipeline completion
+        verboseDataMap,
+        surveyMarkdown,
+        spssPath,
+        loopMappings,
+        baseNameToLoopIndex: Object.fromEntries(baseNameToLoopIndex),
+        deterministicFindings,
+        wizardConfig,
+        loopStatTestingMode,
       };
 
       await fs.writeFile(
@@ -755,6 +945,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
             status: 'awaiting_review',
             flaggedColumns: flaggedCrosstabColumns,
             pathBStatus: 'running',
+            pathCStatus: surveyMarkdown ? 'running' : 'skipped',
             totalColumns: reviewState.crosstabResult.bannerCuts.reduce(
               (sum: number, g: { columns: unknown[] }) => sum + g.columns.length, 0
             ),
@@ -796,9 +987,9 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       return;
     }
 
-    // No review needed — wait for Path B now, then continue to R script generation
+    // No review needed — wait for Path B + C, then run full post-join pipeline
     console.log('[API] All CrosstabAgent mappings have high confidence - no review needed');
-    console.log('[API] Waiting for Path B to complete...');
+    console.log('[API] Waiting for Path B and Path C to complete...');
 
     let pathBResultData: PathBResult;
     try {
@@ -847,25 +1038,181 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       return;
     }
 
-    const { tableAgentResults, verifiedTables, surveyMarkdown } = pathBResultData;
+    // Wait for Path C (non-blocking — already may be done)
+    try {
+      const pathCFinalResult = await pathCPromise;
+      if (pathCFinalResult) pathCResult = pathCFinalResult;
+    } catch (pathCError) {
+      if (isAbortError(pathCError)) {
+        console.log('[API] Pipeline was cancelled during Path C');
+        metricsCollector.unbindWideEvent();
+        wideEvent.finish('cancelled', 'Cancelled during Path C');
+        await handleCancellation(outputDir, runId, 'Cancelled during agent processing');
+        return;
+      }
+      // Path C failure is graceful — already handled in catch above
+    }
+
+    const { tableAgentResults } = pathBResultData;
     const tableAgentTables = tableAgentResults.flatMap(r => r.tables);
     const parallelDuration = Date.now() - parallelStartTime;
-    console.log(`[API] Both paths completed in ${(parallelDuration / 1000).toFixed(1)}s`);
-    console.log(`[API] Path B: ${tableAgentTables.length} table definitions, ${verifiedTables.length} verified`);
+    console.log(`[API] All paths completed in ${(parallelDuration / 1000).toFixed(1)}s`);
+    console.log(`[API] Path B: ${tableAgentTables.length} table definitions`);
+    if (pathCResult?.filterResult) {
+      console.log(`[API] Path C: ${pathCResult.filterCount} filters from ${pathCResult.skipLogicRuleCount} rules`);
+    }
+
+    // -------------------------------------------------------------------------
+    // Step 6: FilterApplicator (apply Path C filters)
+    // -------------------------------------------------------------------------
+    // Convert tableAgentResults → ExtendedTableDefinition[]
+    let extendedTables: ExtendedTableDefinition[] = tableAgentResults.flatMap(group =>
+      group.tables.map(t => toExtendedTable(t, group.questionId))
+    );
+    console.log(`[API] Converted to ${extendedTables.length} ExtendedTableDefinitions`);
+
+    if (pathCResult?.filterResult && pathCResult.filterResult.translation.filters.length > 0) {
+      await updateRunStatus(runId, {
+        status: 'in_progress',
+        stage: 'filtering',
+        progress: 55,
+        message: 'Applying skip logic filters...',
+      });
+      console.log('[API] Step 6: Applying skip logic filters...');
+
+      const validVariables = new Set<string>(verboseDataMap.map(v => v.column));
+      const filterApplicatorResult = applyFilters(extendedTables, pathCResult.filterResult.translation, validVariables);
+      const beforeCount = extendedTables.length;
+      extendedTables = filterApplicatorResult.tables;
+      console.log(`[API] FilterApplicator: ${beforeCount} → ${extendedTables.length} tables`);
+    }
+
+    if (abortSignal?.aborted) {
+      console.log('[API] Pipeline cancelled after filtering');
+      metricsCollector.unbindWideEvent();
+      wideEvent.finish('cancelled', 'Cancelled after filtering');
+      await handleCancellation(outputDir, runId, 'Cancelled after filtering');
+      return;
+    }
+
+    // -------------------------------------------------------------------------
+    // Step 6b: GridAutoSplitter
+    // -------------------------------------------------------------------------
+    await updateRunStatus(runId, {
+      status: 'in_progress',
+      stage: 'splitting',
+      progress: 57,
+      message: 'Splitting oversized tables...',
+    });
+    console.log('[API] Step 6b: GridAutoSplitter...');
+
+    const { splitOversizedGrids } = await import('@/lib/tables/GridAutoSplitter');
+    const gridSplitResult = splitOversizedGrids(extendedTables, { verboseDataMap });
+    if (gridSplitResult.actions.length > 0) {
+      console.log(`[API] GridAutoSplitter: split ${gridSplitResult.summary.tablesSplit} tables (${gridSplitResult.summary.totalInput} → ${gridSplitResult.summary.totalOutput})`);
+      extendedTables = gridSplitResult.tables;
+
+      // Save report
+      await fs.writeFile(
+        path.join(outputDir, 'gridsplitter-report.json'),
+        JSON.stringify({ actions: gridSplitResult.actions, summary: gridSplitResult.summary }, null, 2)
+      );
+    } else {
+      console.log('[API] GridAutoSplitter: no splits needed');
+    }
+
+    if (abortSignal?.aborted) {
+      console.log('[API] Pipeline cancelled after grid splitting');
+      metricsCollector.unbindWideEvent();
+      wideEvent.finish('cancelled', 'Cancelled after grid splitting');
+      await handleCancellation(outputDir, runId, 'Cancelled after grid splitting');
+      return;
+    }
+
+    // -------------------------------------------------------------------------
+    // Step 7: VerificationAgent (now sees filtered + split tables)
+    // -------------------------------------------------------------------------
+    await updateRunStatus(runId, {
+      status: 'in_progress',
+      stage: 'verification',
+      progress: 58,
+      message: 'Verifying tables...',
+    });
+
+    if (surveyMarkdown) {
+      console.log('[API] Step 7: VerificationAgent (parallel, concurrency: 3)...');
+      try {
+        const verificationResult = await verifyAllTablesParallel(
+          extendedTables,
+          surveyMarkdown,
+          verboseDataMap,
+          { outputDir, concurrency: 3, abortSignal }
+        );
+        extendedTables = verificationResult.tables;
+        console.log(`[API] VerificationAgent: ${verificationResult.tables.length} verified tables`);
+      } catch (verifyError) {
+        console.warn(`[API] VerificationAgent failed — using unverified tables: ${verifyError instanceof Error ? verifyError.message : String(verifyError)}`);
+        try {
+          await persistSystemError({
+            outputDir,
+            dataset: datasetName,
+            pipelineId,
+            stageNumber: 7,
+            stageName: 'VerificationAgent',
+            severity: 'warning',
+            actionTaken: 'continued',
+            error: verifyError,
+            meta: { action: 'verification_failed_passthrough' },
+          });
+        } catch { /* ignore persistence failure */ }
+      }
+    } else {
+      console.log('[API] Step 7: No survey — skipping VerificationAgent (passthrough)');
+    }
+
+    await updateRunStatus(runId, {
+      status: 'in_progress',
+      stage: 'verification',
+      progress: 68,
+      message: 'Verification complete',
+    });
+
+    if (abortSignal?.aborted) {
+      console.log('[API] Pipeline cancelled after verification');
+      metricsCollector.unbindWideEvent();
+      wideEvent.finish('cancelled', 'Cancelled after verification');
+      await handleCancellation(outputDir, runId, 'Cancelled after verification');
+      return;
+    }
+
+    // -------------------------------------------------------------------------
+    // Step 7b: TablePostProcessor (deterministic 7-rule cleanup)
+    // -------------------------------------------------------------------------
+    await updateRunStatus(runId, {
+      status: 'in_progress',
+      stage: 'post_processing',
+      progress: 69,
+      message: 'Running post-processor...',
+    });
+    console.log('[API] Step 7b: TablePostProcessor...');
+
+    const postPassResult = normalizePostPass(extendedTables);
+    extendedTables = postPassResult.tables;
+    console.log(`[API] PostProcessor: ${postPassResult.stats.totalFixes} fixes, ${postPassResult.stats.totalWarnings} warnings`);
+
+    // Save postpass report
+    const postpassDir = path.join(outputDir, 'postpass');
+    await fs.mkdir(postpassDir, { recursive: true });
+    await fs.writeFile(
+      path.join(postpassDir, 'postpass-report.json'),
+      JSON.stringify({ actions: postPassResult.actions, stats: postPassResult.stats }, null, 2)
+    );
 
     // Sort tables for logical Excel output order
     console.log('[API] Sorting tables...');
-    const sortingMetadata = getSortingMetadata(verifiedTables);
-    const sortedTables = sortTables(verifiedTables);
+    const sortingMetadata = getSortingMetadata(extendedTables);
+    const sortedTables = sortTables(extendedTables);
     console.log(`[API] Screeners: ${sortingMetadata.screenerCount}, Main: ${sortingMetadata.mainCount}, Other: ${sortingMetadata.otherCount}`);
-
-    if (abortSignal?.aborted) {
-      console.log('[API] Pipeline cancelled before R validation');
-      metricsCollector.unbindWideEvent();
-      wideEvent.finish('cancelled', 'Cancelled before R validation');
-      await handleCancellation(outputDir, runId, 'Cancelled before R validation');
-      return;
-    }
 
     // Stop after verification (wizard config)
     if (wizardConfig?.stopAfterVerification) {
@@ -886,7 +1233,96 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     }
 
     // -------------------------------------------------------------------------
-    // Step 6: R Validation with Retry Loop
+    // Step 8: Cut Expression Validation + Retry
+    // -------------------------------------------------------------------------
+    await updateRunStatus(runId, {
+      status: 'in_progress',
+      stage: 'validating_cuts',
+      progress: 70,
+      message: 'Validating cut expressions...',
+    });
+    console.log('[API] Step 8: Cut expression validation...');
+
+    let validatedCrosstabResult = crosstabResult.result;
+    try {
+      const MAX_CUT_RETRIES = 2;
+      let cutReport = await validateCutExpressions(validatedCrosstabResult, outputDir, 'dataFile.sav');
+      console.log(`[API] Cut validation: ${cutReport.passed}/${cutReport.totalCuts} passed`);
+
+      for (let retryAttempt = 1; retryAttempt <= MAX_CUT_RETRIES && cutReport.failed > 0; retryAttempt++) {
+        console.log(`[API] Cut retry attempt ${retryAttempt}/${MAX_CUT_RETRIES} for ${cutReport.failed} failed cuts...`);
+        const failedGroupNames = Array.from(cutReport.failedByGroup.keys());
+        const updatedBannerCuts = [...validatedCrosstabResult.bannerCuts];
+
+        for (const failedGroupName of failedGroupNames) {
+          const failedCuts = cutReport.failedByGroup.get(failedGroupName) || [];
+
+          // Find the matching agentBanner group for input
+          const bannerGroup = pathAResult.agentBanner.find(g => g.groupName === failedGroupName);
+          if (!bannerGroup) {
+            console.warn(`[API] Skipping group "${failedGroupName}" — not found in agentBanner`);
+            continue;
+          }
+
+          // Build rValidationErrors context with variable types from verbose datamap
+          const failedExpressions = failedCuts.map(f => {
+            const varMatch = f.rExpression.match(/\b([A-Za-z][A-Za-z0-9_.]*)\b/);
+            const primaryVar = varMatch?.[1] || '';
+            const verbose = verboseDataMap.find(v => v.column === primaryVar);
+            return {
+              cutName: f.cutName,
+              rExpression: f.rExpression,
+              error: f.error || 'Unknown error',
+              variableType: verbose?.normalizedType || undefined,
+            };
+          });
+
+          const rValidationErrors: CutValidationErrorContext = {
+            failedAttempt: retryAttempt,
+            maxAttempts: MAX_CUT_RETRIES,
+            failedExpressions,
+          };
+
+          try {
+            const retryResult = await processCrosstabGroup(
+              agentDataMap,
+              { groupName: bannerGroup.groupName, columns: bannerGroup.columns },
+              { abortSignal, outputDir, rValidationErrors }
+            );
+            const groupIdx = updatedBannerCuts.findIndex(g => g.groupName === failedGroupName);
+            if (groupIdx >= 0) {
+              updatedBannerCuts[groupIdx] = retryResult;
+            }
+          } catch (retryErr) {
+            console.warn(`[API] Cut retry failed for group ${failedGroupName}:`, retryErr);
+          }
+        }
+
+        validatedCrosstabResult = { bannerCuts: updatedBannerCuts };
+        cutReport = await validateCutExpressions(validatedCrosstabResult, outputDir, 'dataFile.sav');
+        console.log(`[API] Cut re-validation: ${cutReport.passed}/${cutReport.totalCuts} passed`);
+      }
+
+      if (cutReport.failed > 0) {
+        console.warn(`[API] ${cutReport.failed} cuts still failing after retries — proceeding (R tryCatch safety net)`);
+      }
+    } catch (cutValidationError) {
+      console.warn('[API] Cut expression validation infrastructure failed (non-fatal):', cutValidationError);
+      // Proceed without cut pre-validation — same as CLI behavior
+    }
+
+    const cutsSpec = buildCutsSpec(validatedCrosstabResult);
+
+    if (abortSignal?.aborted) {
+      console.log('[API] Pipeline cancelled after cut validation');
+      metricsCollector.unbindWideEvent();
+      wideEvent.finish('cancelled', 'Cancelled after cut validation');
+      await handleCancellation(outputDir, runId, 'Cancelled after cut validation');
+      return;
+    }
+
+    // -------------------------------------------------------------------------
+    // Step 8b: R Validation with Retry Loop (per-table)
     // -------------------------------------------------------------------------
     await updateRunStatus(runId, {
       status: 'in_progress',
@@ -894,11 +1330,27 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       progress: 75,
       message: 'Validating R code per table...',
     });
-    console.log('[API] Step 6: Validating R code per table...');
+    console.log('[API] Step 8b: Validating R code per table...');
 
-    const cutsSpec = buildCutsSpec(crosstabResult.result);
-
-    const tablesWithLoopFrame: TableWithLoopFrame[] = sortedTables.map(t => ({ ...t, loopDataFrame: '' }));
+    // Tag tables with loopDataFrame
+    let loopTableCount = 0;
+    const tablesWithLoopFrame: TableWithLoopFrame[] = sortedTables.map(table => {
+      let loopDataFrame = '';
+      if (loopMappings.length > 0) {
+        for (const row of table.rows) {
+          const loopIdx = baseNameToLoopIndex.get(row.variable);
+          if (loopIdx !== undefined) {
+            loopDataFrame = loopMappings[loopIdx].stackedFrameName;
+            loopTableCount++;
+            break;
+          }
+        }
+      }
+      return { ...table, loopDataFrame };
+    });
+    if (loopTableCount > 0) {
+      console.log(`[API] Tagged ${loopTableCount} tables with loopDataFrame`);
+    }
 
     const { validTables, excludedTables: newlyExcluded, validationReport: rValidationReport } = await validateAndFixTables(
       tablesWithLoopFrame,
@@ -910,6 +1362,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         maxRetries: 8,
         dataFilePath: 'dataFile.sav',
         verbose: true,
+        loopMappings: loopMappings.length > 0 ? loopMappings : undefined,
       }
     );
 
@@ -918,15 +1371,63 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     const allTablesForR = [...validTables, ...newlyExcluded];
 
     if (abortSignal?.aborted) {
-      console.log('[API] Pipeline cancelled before R script generation');
+      console.log('[API] Pipeline cancelled before loop semantics');
       metricsCollector.unbindWideEvent();
-      wideEvent.finish('cancelled', 'Cancelled before R script generation');
-      await handleCancellation(outputDir, runId, 'Cancelled before R script generation');
+      wideEvent.finish('cancelled', 'Cancelled before loop semantics');
+      await handleCancellation(outputDir, runId, 'Cancelled before loop semantics');
       return;
     }
 
     // -------------------------------------------------------------------------
-    // Step 7: R Script Generation
+    // Step 8.5: LoopSemanticsPolicyAgent (if loops)
+    // -------------------------------------------------------------------------
+    let loopSemanticsPolicy: LoopSemanticsPolicy | undefined;
+
+    if (loopMappings.length > 0) {
+      await updateRunStatus(runId, {
+        status: 'in_progress',
+        stage: 'loop_semantics',
+        progress: 78,
+        message: 'Classifying loop semantics...',
+      });
+      console.log('[API] Step 8.5: LoopSemanticsPolicyAgent...');
+
+      try {
+        loopSemanticsPolicy = await runLoopSemanticsPolicyAgent({
+          loopSummary: loopMappings.map(m => ({
+            stackedFrameName: m.stackedFrameName,
+            iterations: m.iterations,
+            variableCount: m.variables.length,
+            skeleton: m.skeleton,
+          })),
+          bannerGroups: cutsSpec.groups.map(g => ({
+            groupName: g.groupName,
+            columns: g.cuts.map(c => ({ name: c.name, original: c.name })),
+          })),
+          cuts: cutsSpec.cuts.map(c => ({
+            name: c.name,
+            groupName: c.groupName,
+            rExpression: c.rExpression,
+          })),
+          deterministicFindings: deterministicFindings || { iterationLinkedVariables: [], evidenceSummary: '' },
+          datamapExcerpt: buildDatamapExcerpt(verboseDataMap, cutsSpec.cuts, deterministicFindings),
+          loopMappings,
+          outputDir,
+          abortSignal,
+        });
+        console.log(`[API] LoopSemantics: ${loopSemanticsPolicy.bannerGroups.length} groups classified`);
+      } catch (lspError) {
+        const fallbackReason = lspError instanceof Error ? lspError.message : String(lspError);
+        console.warn(`[API] LoopSemanticsPolicyAgent failed — using respondent-anchored fallback: ${fallbackReason}`);
+        loopSemanticsPolicy = createRespondentAnchoredFallbackPolicy(
+          cutsSpec.groups.map(g => g.groupName),
+          fallbackReason,
+        );
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Step 9: R Script Generation
     // -------------------------------------------------------------------------
     await updateRunStatus(runId, {
       status: 'in_progress',
@@ -934,7 +1435,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       progress: 80,
       message: 'Generating R script...',
     });
-    console.log('[API] Step 7: Generating R script...');
+    console.log('[API] Step 9: Generating R script...');
 
     const rDir = path.join(outputDir, 'r');
     await fs.mkdir(rDir, { recursive: true });
@@ -945,10 +1446,11 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       cuts: cutsSpec.cuts,
       cutGroups: cutsSpec.groups,
       loopStatTestingMode,
+      ...(loopMappings.length > 0 && { loopMappings }),
+      ...(loopSemanticsPolicy && { loopSemanticsPolicy }),
       ...(wizardConfig?.weightVariable && { weightVariable: wizardConfig.weightVariable }),
       ...(wizardConfig?.statTesting && {
         statTestingConfig: {
-          // Convert confidence % to alpha: 90% confidence → p < 0.10
           thresholds: wizardConfig.statTesting.thresholds.map(t => (100 - t) / 100),
           proportionTest: 'unpooled_z' as const,
           meanTest: 'welch_t' as const,
@@ -976,7 +1478,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     console.log(`[API] Tables in script: ${allTablesForR.length} (${validTables.length} valid, ${newlyExcluded.length} excluded)`);
 
     // -------------------------------------------------------------------------
-    // Step 8: R Execution
+    // Step 10: R Execution
     // -------------------------------------------------------------------------
     await updateRunStatus(runId, {
       status: 'in_progress',
@@ -984,7 +1486,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       progress: 85,
       message: 'Executing R script...',
     });
-    console.log('[API] Step 8: Executing R script...');
+    console.log('[API] Step 10: Executing R script...');
 
     const resultsDir = path.join(outputDir, 'results');
     await fs.mkdir(resultsDir, { recursive: true });
@@ -1013,8 +1515,63 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       );
 
       const resultFiles = await fs.readdir(resultsDir);
-      if (resultFiles.includes('tables.json')) {
-        console.log(`[API] Successfully generated tables.json`);
+      const weightVariable = wizardConfig?.weightVariable;
+
+      // Check for weighted dual-output first (tables-weighted.json + tables-unweighted.json)
+      if (weightVariable && resultFiles.includes('tables-weighted.json') && resultFiles.includes('tables-unweighted.json')) {
+        console.log('[API] Found dual weighted/unweighted output');
+        rExecutionSuccess = true;
+
+        // Streamlined data from weighted output
+        try {
+          const wContent = await fs.readFile(path.join(resultsDir, 'tables-weighted.json'), 'utf-8');
+          const streamlined = extractStreamlinedData(JSON.parse(wContent));
+          await fs.writeFile(path.join(resultsDir, 'data-streamlined.json'), JSON.stringify(streamlined, null, 2), 'utf-8');
+        } catch { /* non-fatal */ }
+
+        // -------------------------------------------------------------------------
+        // Step 11: Dual Excel Export (weighted + unweighted)
+        // -------------------------------------------------------------------------
+        await updateRunStatus(runId, {
+          status: 'in_progress',
+          stage: 'writing_outputs',
+          progress: 95,
+          message: 'Generating weighted & unweighted Excel workbooks...',
+        });
+        console.log('[API] Step 11: Generating dual Excel workbooks...');
+
+        try {
+          if (wizardConfig?.theme) {
+            const { setActiveTheme } = await import('@/lib/excel/styles');
+            setActiveTheme(wizardConfig.theme);
+          }
+          const fmtOpts = {
+            format: wizardConfig?.format ?? 'joe',
+            displayMode: wizardConfig?.displayMode ?? 'frequency',
+            separateWorkbooks: wizardConfig?.separateWorkbooks ?? false,
+          };
+          // Weighted workbook
+          const wFormatter = new ExcelFormatter(fmtOpts);
+          await wFormatter.formatFromFile(path.join(resultsDir, 'tables-weighted.json'));
+          await wFormatter.saveToFile(path.join(resultsDir, 'crosstabs-weighted.xlsx'));
+          if (wFormatter.hasSecondWorkbook()) {
+            await wFormatter.saveSecondWorkbook(path.join(resultsDir, 'crosstabs-weighted-counts.xlsx'));
+          }
+          // Unweighted workbook
+          const uwFormatter = new ExcelFormatter(fmtOpts);
+          await uwFormatter.formatFromFile(path.join(resultsDir, 'tables-unweighted.json'));
+          await uwFormatter.saveToFile(path.join(resultsDir, 'crosstabs-unweighted.xlsx'));
+          if (uwFormatter.hasSecondWorkbook()) {
+            await uwFormatter.saveSecondWorkbook(path.join(resultsDir, 'crosstabs-unweighted-counts.xlsx'));
+          }
+          excelGenerated = true;
+          console.log('[API] Generated dual Excel: crosstabs-weighted.xlsx + crosstabs-unweighted.xlsx');
+        } catch (excelError) {
+          console.error('[API] Dual Excel generation failed:', excelError);
+        }
+      } else if (resultFiles.includes('tables.json')) {
+        // Single-output path (non-weighted or weighted files missing)
+        console.log('[API] Successfully generated tables.json');
         rExecutionSuccess = true;
 
         const tablesJsonPath = path.join(resultsDir, 'tables.json');
@@ -1026,13 +1583,13 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
           const streamlinedData = extractStreamlinedData(tablesJsonData);
           const streamlinedPath = path.join(resultsDir, 'data-streamlined.json');
           await fs.writeFile(streamlinedPath, JSON.stringify(streamlinedData, null, 2), 'utf-8');
-          console.log(`[API] Generated data-streamlined.json`);
+          console.log('[API] Generated data-streamlined.json');
         } catch (err) {
           console.warn('[API] Could not generate streamlined data:', err);
         }
 
         // -------------------------------------------------------------------------
-        // Step 9: Excel Export
+        // Step 11: Excel Export
         // -------------------------------------------------------------------------
         await updateRunStatus(runId, {
           status: 'in_progress',
@@ -1040,7 +1597,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
           progress: 95,
           message: 'Generating Excel workbook...',
         });
-        console.log('[API] Step 9: Generating Excel workbook...');
+        console.log('[API] Step 11: Generating Excel workbook...');
 
         const excelPath = path.join(resultsDir, 'crosstabs.xlsx');
 
@@ -1051,6 +1608,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
             setActiveTheme(wizardConfig.theme);
           }
           const formatter = new ExcelFormatter({
+            format: wizardConfig?.format ?? 'joe',
             displayMode: wizardConfig?.displayMode ?? 'frequency',
             separateWorkbooks: wizardConfig?.separateWorkbooks ?? false,
           });
@@ -1061,15 +1619,15 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
             try {
               const countsPath = path.join(resultsDir, 'crosstabs-counts.xlsx');
               await formatter.saveSecondWorkbook(countsPath);
-              console.log(`[API] Generated crosstabs-counts.xlsx`);
+              console.log('[API] Generated crosstabs-counts.xlsx');
             } catch {
               console.warn('[API] Second workbook not available (expected for non-both modes)');
             }
           }
           excelGenerated = true;
-          console.log(`[API] Generated crosstabs.xlsx`);
+          console.log('[API] Generated crosstabs.xlsx');
         } catch (excelError) {
-          console.error(`[API] Excel generation failed:`, excelError);
+          console.error('[API] Excel generation failed:', excelError);
         }
       }
     } catch (rError) {

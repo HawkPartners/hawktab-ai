@@ -99,13 +99,7 @@ Ship it. Antares gets a link.
 
 **Goal**: Audit the complete system with real auth in place, before real users touch it. Fix findings before deploying.
 
-Phase 3.4 hardening pass (RBAC via `canPerform()`, IDOR fixes on feedback/review routes, error detail gating, auth on legacy routes) provides a solid baseline. This is the full audit pass.
-
-- Run comprehensive security audit (auth, authorization, injection, secrets, crypto)
-- Review all API routes for proper auth gates and input validation
-- Verify R2 key scoping and Convex query org-filtering
-- Check for leaked secrets, hardcoded credentials, exposed env vars
-- Fix any findings
+- Run Claude Code `security-audit` skill to audit the codebase
 
 **Level of Effort**: Medium
 
