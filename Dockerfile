@@ -25,16 +25,21 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install R and required packages
+# Install R, build tools (needed to compile haven/dplyr from source), and system libs
 RUN apt-get update && apt-get install -y --no-install-recommends \
     r-base \
+    r-base-dev \
+    build-essential \
+    gfortran \
     libcurl4-openssl-dev \
     libssl-dev \
     libxml2-dev \
+    zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install R packages
-RUN R -e "install.packages(c('haven', 'dplyr', 'jsonlite'), repos='https://cloud.r-project.org/')"
+# Install R packages and verify haven loaded successfully
+RUN R -e "install.packages(c('haven', 'dplyr', 'jsonlite'), repos='https://cloud.r-project.org/')" \
+    && Rscript -e "library(haven); cat('haven OK\n')"
 
 # Copy standalone build output
 COPY --from=builder /app/.next/standalone ./
