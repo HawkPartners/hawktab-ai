@@ -278,6 +278,7 @@ export default function ReviewPage({
   const [decisionsInitialized, setDecisionsInitialized] = useState(false);
 
   // Convex subscriptions — real-time, no polling
+  const project = useQuery(api.projects.get, { projectId: projectId as Id<"projects"> });
   const runs = useQuery(api.runs.getByProject, { projectId: projectId as Id<"projects"> });
 
   // Latest run
@@ -401,13 +402,38 @@ export default function ReviewPage({
   };
 
   // Loading state
-  if (runs === undefined) {
+  if (runs === undefined || project === undefined) {
     return (
       <div className="py-12">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Project was deleted
+  if (project === null) {
+    return (
+      <div className="py-12">
+        <div className="max-w-4xl mx-auto">
+          <AppBreadcrumbs
+            segments={[
+              { label: 'Dashboard', href: '/dashboard' },
+              { label: 'Project Not Found' },
+            ]}
+          />
+          <PageHeader
+            title="Project Not Found"
+            description="This project may have been deleted."
+            actions={
+              <Button variant="outline" onClick={() => router.push('/dashboard')}>
+                Back to Dashboard
+              </Button>
+            }
+          />
         </div>
       </div>
     );

@@ -56,7 +56,9 @@ export const create = internalMutation({
 export const get = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.projectId);
+    const project = await ctx.db.get(args.projectId);
+    if (project?.isDeleted) return null;
+    return project;
   },
 });
 
@@ -73,10 +75,31 @@ export const updateFileKeys = internalMutation({
 export const listByOrg = query({
   args: { orgId: v.id("organizations") },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const projects = await ctx.db
       .query("projects")
       .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
       .order("desc")
       .collect();
+    return projects.filter((p) => !p.isDeleted);
+  },
+});
+
+export const softDelete = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    orgId: v.id("organizations"),
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project || project.orgId !== args.orgId) {
+      throw new Error("Project not found in organization");
+    }
+    if (project.isDeleted) {
+      throw new Error("Project has already been deleted");
+    }
+    await ctx.db.patch(args.projectId, {
+      isDeleted: true,
+      deletedAt: Date.now(),
+    });
   },
 });

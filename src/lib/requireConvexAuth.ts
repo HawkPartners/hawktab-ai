@@ -25,7 +25,13 @@ export async function requireConvexAuth(): Promise<ConvexAuthContext> {
     userId: ids.userId,
     orgId: ids.orgId,
   });
-  const role = (membership?.role as Role) ?? 'member';
+
+  // No active membership means the user was removed by an admin
+  if (!membership) {
+    throw new AuthenticationError('User is not a member of this organization');
+  }
+
+  const role = membership.role as Role;
 
   return {
     ...auth,

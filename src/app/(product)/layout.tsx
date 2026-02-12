@@ -37,7 +37,13 @@ export default async function ProductLayout({
       userId: ids.userId,
       orgId: ids.orgId,
     });
-    role = (membership?.role as Role) ?? 'member';
+
+    // No active membership means the user was removed by an admin
+    if (!membership) {
+      redirect("/auth/error?reason=removed");
+    }
+
+    role = membership.role as Role;
   } catch (err) {
     console.warn('[Layout] Could not sync auth to Convex:', err);
   }

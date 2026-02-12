@@ -1,10 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery } from 'convex/react';
+import posthog from 'posthog-js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Building2, User, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, Building2, User, Users, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { AppBreadcrumbs } from '@/components/app-breadcrumbs';
+import { ConfirmDestructiveDialog } from '@/components/confirm-destructive-dialog';
 import { useAuthContext } from '@/providers/auth-provider';
 import { canPerform } from '@/lib/permissions';
 import { api } from '../../../../convex/_generated/api';
@@ -35,6 +40,12 @@ function roleLabel(role: string) {
 export default function SettingsPage() {
   const { convexOrgId, convexUserId, name, email, role } = useAuthContext();
   const canViewSettings = canPerform(role, 'view_settings');
+  const canRemoveMember = canPerform(role, 'remove_member');
+  const [removingMember, setRemovingMember] = useState<{
+    id: string;
+    email: string;
+    name: string;
+  } | null>(null);
 
   const org = useQuery(
     api.organizations.get,
@@ -47,6 +58,25 @@ export default function SettingsPage() {
   );
 
   const isLoading = org === undefined;
+
+  const handleRemoveMember = async () => {
+    if (!removingMember) return;
+    const res = await fetch(`/api/members/${encodeURIComponent(removingMember.id)}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      toast.error('Failed to remove member', {
+        description: data?.error || 'Unknown error',
+      });
+      throw new Error(data?.error || 'Failed to remove member');
+    }
+    posthog.capture('member_removed', {
+      removed_member_id: removingMember.id,
+    });
+    toast.success(`${removingMember.name} has been removed`);
+    setRemovingMember(null);
+  };
 
   return (
     <div>
@@ -150,9 +180,28 @@ export default function SettingsPage() {
                             </p>
                             <p className="text-xs text-muted-foreground truncate">{member.email}</p>
                           </div>
-                          <Badge variant={roleBadgeVariant(member.role)} className="ml-2 shrink-0">
-                            {roleLabel(member.role)}
-                          </Badge>
+                          <div className="flex items-center gap-2 ml-2 shrink-0">
+                            <Badge variant={roleBadgeVariant(member.role)}>
+                              {roleLabel(member.role)}
+                            </Badge>
+                            {canRemoveMember && !isYou && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground hover:text-red-500"
+                                onClick={() =>
+                                  setRemovingMember({
+                                    id: String(member._id),
+                                    email: member.email,
+                                    name: member.name,
+                                  })
+                                }
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Remove {member.name}</span>
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
@@ -162,6 +211,19 @@ export default function SettingsPage() {
             </Card>
           </div>
         )}
+
+        <ConfirmDestructiveDialog
+          open={removingMember !== null}
+          onOpenChange={(open) => {
+            if (!open) setRemovingMember(null);
+          }}
+          title="Remove member"
+          description={`This will remove ${removingMember?.name ?? 'this member'} from the organization. They will lose access immediately.`}
+          confirmText={removingMember?.email ?? ''}
+          confirmLabel="Type their email address to confirm"
+          destructiveLabel="Remove Member"
+          onConfirm={handleRemoveMember}
+        />
       </div>
     </div>
   );

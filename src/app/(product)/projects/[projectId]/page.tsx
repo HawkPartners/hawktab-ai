@@ -34,7 +34,9 @@ import {
   MessageSquare,
   X,
   Settings2,
+  Trash2,
 } from 'lucide-react';
+import { ConfirmDestructiveDialog } from '@/components/confirm-destructive-dialog';
 import { api } from '../../../../../convex/_generated/api';
 import type { Id } from '../../../../../convex/_generated/dataModel';
 
@@ -171,7 +173,9 @@ export default function ProjectDetailPage({
   const router = useRouter();
   const { role } = useAuthContext();
   const canCancel = canPerform(role, 'cancel_run');
+  const canDelete = canPerform(role, 'delete_project');
   const [isCancelling, setIsCancelling] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [feedbackNotes, setFeedbackNotes] = useState('');
   const [feedbackRating, setFeedbackRating] = useState('0');
@@ -282,6 +286,22 @@ export default function ProjectDetailPage({
       });
       setIsCancelling(false);
     }
+  };
+
+  const handleDeleteProject = async () => {
+    const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      toast.error('Failed to delete project', {
+        description: data?.error || 'Unknown error',
+      });
+      throw new Error(data?.error || 'Failed to delete project');
+    }
+    posthog.capture('project_deleted', { project_id: projectId });
+    toast.success('Project deleted');
+    router.push('/dashboard');
   };
 
   // Loading state
@@ -727,7 +747,7 @@ export default function ProjectDetailPage({
 
         {/* Config Summary */}
         {configEntries.length > 0 && (
-          <Card>
+          <Card className="mb-8">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Settings2 className="h-5 w-5 text-muted-foreground" />
@@ -748,6 +768,46 @@ export default function ProjectDetailPage({
             </CardContent>
           </Card>
         )}
+
+        {/* Danger Zone (admin only) */}
+        {canDelete && (
+          <Card className="border-red-500/50">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2 text-red-500">
+                <Trash2 className="h-5 w-5" />
+                Danger Zone
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Delete this project</p>
+                  <p className="text-xs text-muted-foreground">
+                    Permanently removes this project, all its runs, and associated files. This action cannot be undone.
+                  </p>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowDeleteDialog(true)}
+                >
+                  Delete Project
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <ConfirmDestructiveDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          title="Delete project"
+          description={`This will permanently delete "${project.name}" and all its runs and files. This action cannot be undone.`}
+          confirmText={project.name}
+          confirmLabel="Type the project name to confirm"
+          destructiveLabel="Delete Project"
+          onConfirm={handleDeleteProject}
+        />
       </div>
     </div>
   );

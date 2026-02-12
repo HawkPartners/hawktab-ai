@@ -69,6 +69,7 @@ export default defineSchema({
       v.literal("member"),
       v.literal("external_partner")
     ),
+    removedAt: v.optional(v.number()),
   })
     .index("by_user_and_org", ["userId", "orgId"])
     .index("by_org", ["orgId"]),
@@ -81,6 +82,8 @@ export default defineSchema({
     intake: intakeValidator,
     fileKeys: v.array(v.string()),
     createdBy: v.id("users"),
+    isDeleted: v.optional(v.boolean()),
+    deletedAt: v.optional(v.number()),
   }).index("by_org", ["orgId"]),
 
   runs: defineTable({

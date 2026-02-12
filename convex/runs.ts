@@ -228,6 +228,29 @@ export const heartbeat = internalMutation({
  *   - "pending_review" runs: stale after 48 hours (review expired or state lost)
  * Uses `lastHeartbeat` with `_creationTime` as fallback for pre-existing runs.
  */
+export const deleteByProject = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    orgId: v.id("organizations"),
+  },
+  handler: async (ctx, args) => {
+    const runs = await ctx.db
+      .query("runs")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+    // Verify all runs belong to the expected org
+    for (const run of runs) {
+      if (run.orgId !== args.orgId) {
+        throw new Error("Run does not belong to the expected organization");
+      }
+    }
+    for (const run of runs) {
+      await ctx.db.delete(run._id);
+    }
+    return runs.length;
+  },
+});
+
 export const reconcileStaleRuns = internalMutation({
   handler: async (ctx) => {
     const now = Date.now();

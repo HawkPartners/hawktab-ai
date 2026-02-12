@@ -88,7 +88,7 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 
 ---
 
-**5. Project deletion and member management** — `LOWER PRIORITY`
+**5. Project deletion and member management** — `COMPLETE`
 
 **Feature request**: Users should be able to delete projects. Admins should be able to remove members.
 

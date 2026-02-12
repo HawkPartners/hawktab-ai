@@ -3,6 +3,7 @@ import {
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
+  DeleteObjectsCommand,
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -142,4 +143,93 @@ export async function listFiles(prefix: string): Promise<string[]> {
   return (response.Contents ?? [])
     .map((obj) => obj.Key)
     .filter((key): key is string => key !== undefined);
+}
+
+/**
+ * List ALL files under a prefix in R2, handling pagination.
+ * Use this instead of listFiles when the result set may exceed 1000 objects.
+ */
+export async function listAllFiles(prefix: string): Promise<string[]> {
+  const keys: string[] = [];
+  let continuationToken: string | undefined;
+
+  do {
+    const response = await getClient().send(
+      new ListObjectsV2Command({
+        Bucket: getBucket(),
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      })
+    );
+
+    for (const obj of response.Contents ?? []) {
+      if (obj.Key) keys.push(obj.Key);
+    }
+
+    continuationToken = response.IsTruncated
+      ? response.NextContinuationToken
+      : undefined;
+  } while (continuationToken);
+
+  return keys;
+}
+
+/**
+ * Delete all files under a prefix in R2 (batch delete, 1000 per call).
+ * Best-effort: logs errors but does not throw.
+ * Returns the number of files deleted and errors encountered.
+ *
+ * Safety: prefix must be org-scoped (contains at least one `/` and is
+ * sufficiently long) to prevent accidental wide-scope deletion.
+ */
+export async function deletePrefix(
+  prefix: string
+): Promise<{ deleted: number; errors: number }> {
+  // Safety guard: refuse dangerously broad prefixes
+  if (!prefix || !prefix.includes('/') || prefix.length < 5) {
+    throw new Error(
+      `deletePrefix: refusing dangerous prefix "${prefix}" — must be org-scoped (e.g., "orgId/projectId/")`
+    );
+  }
+
+  const keys = await listAllFiles(prefix);
+  if (keys.length === 0) return { deleted: 0, errors: 0 };
+
+  let deleted = 0;
+  let errors = 0;
+  const BATCH_SIZE = 1000;
+
+  for (let i = 0; i < keys.length; i += BATCH_SIZE) {
+    const batch = keys.slice(i, i + BATCH_SIZE);
+    try {
+      const response = await getClient().send(
+        new DeleteObjectsCommand({
+          Bucket: getBucket(),
+          Delete: {
+            Objects: batch.map((Key) => ({ Key })),
+            Quiet: true,
+          },
+        })
+      );
+      // With Quiet: true, only errors are returned (not successes).
+      // Check for individual object failures.
+      const batchErrors = response.Errors?.length ?? 0;
+      deleted += batch.length - batchErrors;
+      errors += batchErrors;
+      if (batchErrors > 0) {
+        console.error(
+          `[R2] deletePrefix: ${batchErrors} object(s) failed in batch (prefix=${prefix}):`,
+          response.Errors
+        );
+      }
+    } catch (err) {
+      console.error(
+        `[R2] deletePrefix batch error (prefix=${prefix}, batch=${i / BATCH_SIZE}):`,
+        err
+      );
+      errors += batch.length;
+    }
+  }
+
+  return { deleted, errors };
 }

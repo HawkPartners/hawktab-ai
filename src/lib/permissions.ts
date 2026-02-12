@@ -4,13 +4,17 @@ export type Action =
   | 'create_project'
   | 'cancel_run'
   | 'view_settings'
-  | 'manage_members';
+  | 'manage_members'
+  | 'delete_project'
+  | 'remove_member';
 
 const PERMISSION_MAP: Record<Action, Role[]> = {
   create_project: ['admin', 'member'],
   cancel_run: ['admin', 'member'],
   view_settings: ['admin', 'member'],
   manage_members: ['admin'],
+  delete_project: ['admin'],
+  remove_member: ['admin'],
 };
 
 export function canPerform(role: Role | null, action: Action): boolean {
