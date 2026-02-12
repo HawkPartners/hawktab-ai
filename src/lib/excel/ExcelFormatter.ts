@@ -188,6 +188,10 @@ export class ExcelFormatter {
     // 2. Render main crosstabs sheet(s)
     let headerInfo: JoeHeaderInfo | null = null;
 
+    if (displayMode === 'both') {
+      console.log(`[ExcelFormatter] Display mode: both, separateWorkbooks: ${this.options.separateWorkbooks}`);
+    }
+
     if (displayMode === 'both' && this.options.separateWorkbooks) {
       // Separate workbooks: primary = Percentages, secondWorkbook = Counts
       const pctSheet = this.workbook.addWorksheet('Crosstabs', {

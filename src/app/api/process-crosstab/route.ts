@@ -40,6 +40,8 @@ export async function POST(request: NextRequest) {
     const rateLimited = applyRateLimit(String(auth.convexOrgId), 'critical', 'process-crosstab');
     if (rateLimited) return rateLimited;
 
+    console.warn('[API:process-crosstab] DEPRECATED: config not passed — displayMode/separateWorkbooks will use defaults. Use /api/projects/launch instead.');
+
     // Reject oversized uploads early
     const contentLength = Number(request.headers.get('content-length') || 0);
     if (contentLength > MAX_UPLOAD_BYTES) {

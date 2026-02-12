@@ -316,6 +316,7 @@ export async function completePipeline(
     );
     const deterministicFindings: DeterministicResolverResult | undefined = reviewState.deterministicFindings;
     const wizardConfig = reviewState.wizardConfig;
+    console.log(`[ReviewCompletion] wizardConfig restored: present=${wizardConfig !== undefined}, displayMode=${wizardConfig?.displayMode ?? 'undefined'}, separateWorkbooks=${wizardConfig?.separateWorkbooks ?? 'undefined'}`);
     const loopStatTestingMode = reviewState.loopStatTestingMode;
 
     // Read Path C results from disk
@@ -704,6 +705,7 @@ export async function completePipeline(
             displayMode: wizardConfig?.displayMode ?? 'frequency',
             separateWorkbooks: wizardConfig?.separateWorkbooks ?? false,
           };
+          console.log('[ReviewCompletion] Dual-output fmtOpts:', JSON.stringify(fmtOpts));
           // Weighted workbook
           const wFormatter = new ExcelFormatter(fmtOpts);
           await wFormatter.formatFromFile(path.join(resultsDir, 'tables-weighted.json'));
@@ -763,17 +765,18 @@ export async function completePipeline(
             const { setActiveTheme } = await import('@/lib/excel/styles');
             setActiveTheme(wizardConfig.theme);
           }
-          const formatter = new ExcelFormatter({
+          const fmtOpts = {
             format: wizardConfig?.format ?? 'joe',
             displayMode: wizardConfig?.displayMode ?? 'frequency',
             separateWorkbooks: wizardConfig?.separateWorkbooks ?? false,
-          });
+          };
+          console.log('[ReviewCompletion] Single-output fmtOpts:', JSON.stringify(fmtOpts));
+          const formatter = new ExcelFormatter(fmtOpts);
           await formatter.formatFromFile(tablesJsonPath);
           await formatter.saveToFile(excelPath);
-          if (wizardConfig?.separateWorkbooks && wizardConfig?.displayMode === 'both') {
-            try {
-              await formatter.saveSecondWorkbook(path.join(resultsDir, 'crosstabs-counts.xlsx'));
-            } catch { /* expected for non-both modes */ }
+          if (formatter.hasSecondWorkbook()) {
+            await formatter.saveSecondWorkbook(path.join(resultsDir, 'crosstabs-counts.xlsx'));
+            console.log('[ReviewCompletion] Generated crosstabs-counts.xlsx');
           }
           excelGenerated = true;
           console.log('[ReviewCompletion] Excel generated successfully');

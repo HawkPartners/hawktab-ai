@@ -363,6 +363,8 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     config: wizardConfig,
   } = params;
 
+  console.log(`[API] wizardConfig: displayMode=${wizardConfig?.displayMode ?? 'undefined'}, separateWorkbooks=${wizardConfig?.separateWorkbooks ?? 'undefined'}, format=${wizardConfig?.format ?? 'undefined'}`);
+
   const processingStartTime = Date.now();
 
   // Create output folder path — same pattern as test-pipeline.ts
@@ -974,7 +976,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         path.join(outputDir, 'crosstab-review-state.json'),
         JSON.stringify(reviewState, null, 2)
       );
-      console.log('[API] Review state saved to crosstab-review-state.json');
+      console.log(`[API] Review state saved to crosstab-review-state.json (wizardConfig included: ${wizardConfig !== undefined})`);
 
       // Upload review files to R2 for resilience against container restarts
       let reviewR2Keys: ReviewR2Keys | undefined;
@@ -1615,6 +1617,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
             displayMode: wizardConfig?.displayMode ?? 'frequency',
             separateWorkbooks: wizardConfig?.separateWorkbooks ?? false,
           };
+          console.log('[API] Dual-output fmtOpts:', JSON.stringify(fmtOpts));
           // Weighted workbook
           const wFormatter = new ExcelFormatter(fmtOpts);
           await wFormatter.formatFromFile(path.join(resultsDir, 'tables-weighted.json'));
@@ -1672,22 +1675,20 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
             const { setActiveTheme } = await import('@/lib/excel/styles');
             setActiveTheme(wizardConfig.theme);
           }
-          const formatter = new ExcelFormatter({
+          const fmtOpts = {
             format: wizardConfig?.format ?? 'joe',
             displayMode: wizardConfig?.displayMode ?? 'frequency',
             separateWorkbooks: wizardConfig?.separateWorkbooks ?? false,
-          });
+          };
+          console.log('[API] Single-output fmtOpts:', JSON.stringify(fmtOpts));
+          const formatter = new ExcelFormatter(fmtOpts);
           await formatter.formatFromFile(tablesJsonPath);
           await formatter.saveToFile(excelPath);
-          // Save second workbook if separateWorkbooks mode
-          if (wizardConfig?.separateWorkbooks && wizardConfig?.displayMode === 'both') {
-            try {
-              const countsPath = path.join(resultsDir, 'crosstabs-counts.xlsx');
-              await formatter.saveSecondWorkbook(countsPath);
-              console.log('[API] Generated crosstabs-counts.xlsx');
-            } catch {
-              console.warn('[API] Second workbook not available (expected for non-both modes)');
-            }
+          // Save second workbook if formatter created one
+          if (formatter.hasSecondWorkbook()) {
+            const countsPath = path.join(resultsDir, 'crosstabs-counts.xlsx');
+            await formatter.saveSecondWorkbook(countsPath);
+            console.log('[API] Generated crosstabs-counts.xlsx');
           }
           excelGenerated = true;
           console.log('[API] Generated crosstabs.xlsx');

@@ -146,6 +146,7 @@ export async function POST(
       );
     }
 
+    console.log(`[Review API] wizardConfig in review state: present=${reviewState.wizardConfig !== undefined}, displayMode=${reviewState.wizardConfig?.displayMode ?? 'undefined'}, separateWorkbooks=${reviewState.wizardConfig?.separateWorkbooks ?? 'undefined'}`);
     console.log(`[Review API] Processing review for run ${runId} with ${decisions.length} decisions`);
 
     // Save decisions to review state on disk

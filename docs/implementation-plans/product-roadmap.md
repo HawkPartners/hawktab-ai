@@ -30,26 +30,6 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 
 ---
 
-**3. Audit configuration passthrough (display mode + separate workbooks)** — `MEDIUM PRIORITY`
-
-**Bug**: User configured "Both (Percentages + Counts)" with "Separate workbooks" enabled, but only one workbook was produced.
-
-**Investigation findings**: The full config pipeline IS wired correctly in code — wizard → `wizardToProjectConfig()` → launch API → orchestrator → `ExcelFormatter`. The `ExcelFormatter.formatJoeStyle()` method (lines 191-228) correctly handles all three cases: separate workbooks, two sheets in one workbook, and single-mode output.
-
-**Suspected root cause**: Config may be lost during HITL review state save/restore. When the pipeline pauses for review, `wizardConfig` is saved to `crosstab-review-state.json` (orchestrator line 931). On resume, `reviewCompletion.ts` reads it back (line 699). If `wizardConfig` is missing or malformed in the saved state, defaults are used — which would explain the single-workbook behavior. THOUGH CONDUCT YOUR OWN INVESTIGATION AND CONFIRM THE ROOT CAUSE.
-
-**Fix**:
-- Add logging in `reviewCompletion.ts` at the point where `wizardConfig` is read from review state to confirm values
-- Add logging in `ExcelFormatter` around the display mode decision (lines 191-228) to trace the actual config received
-- Test the full flow: wizard → configure "Both + Separate" → run → HITL review → verify config survives round-trip
-- If config IS being lost, fix the serialization/deserialization path in review state
-
-**Files**: `src/lib/api/reviewCompletion.ts`, `src/lib/api/pipelineOrchestrator.ts`, `src/lib/excel/ExcelFormatter.ts`
-
-**Level of Effort**: Small–Medium (diagnosis may reveal a simple serialization bug, or may require deeper tracing)
-
----
-
 ### Ongoing Feedback Log
 
 > Items below are raw feedback captured during testing. As issues are confirmed and scoped, they get promoted to numbered items above or filed as new work items.
