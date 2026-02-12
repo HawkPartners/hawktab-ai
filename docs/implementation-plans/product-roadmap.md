@@ -21,7 +21,7 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 | **UI Foundation** | Route groups, app shell, sidebar, providers, API refactor | Complete |
 | **3.1** Cloud Infrastructure Setup | Convex, R2, WorkOS, Docker/Railway | Complete |
 | **3.2** Pipeline Cloud Migration | Wire orchestrator to Convex/R2, new API routes, deprecate old | Complete |
-| **3.3** New Project Experience | Multi-step wizard exposing all pipeline features in UI | In Progress |
+| **3.3** New Project Experience | Multi-step wizard exposing all pipeline features in UI | Complete |
 | **3.4** Dashboard & Supportability | Real-time dashboard, debug bundles, error visibility | Not Started |
 | **3.5** Deploy & Launch | Railway deployment, DNS, landing page, Sentry | Not Started |
 
@@ -159,7 +159,7 @@ Wire the pipeline orchestrator and API routes to use Convex and R2 instead of in
 
 ---
 
-### 3.3 New Project Experience — `NOT STARTED`
+### 3.3 New Project Experience — `COMPLETE`
 
 Replace the flat upload form with a multi-step wizard that exposes all pipeline configuration options. This is where every pipeline feature gets a UI surface.
 
@@ -352,6 +352,30 @@ The path from here to MVP is: infrastructure (3.1) → migration (3.2) → wizar
 - Agent awareness: VerificationAgent uses actual message text in table labels
 
 **Level of Effort**: Medium. Prioritize post-MVP based on Antares feedback.
+
+#### Smart Data Validation by Project Type
+
+The wizard currently asks users to self-report project-type details (segment assignments, anchored scores, message list). Post-MVP, the validate-data step should **auto-detect** these from the .sav itself, reducing user burden and catching mismatches before the pipeline runs.
+
+**Segmentation auto-detection**:
+- Scan for likely segment assignment variables (e.g., single categorical column with a small number of mutually exclusive groups, named with segment/cluster/group patterns)
+- If found: pre-select as a banner cut candidate, confirm with user
+- If not found: surface the same soft info alert ("segments won't be part of cuts") but based on data evidence, not user self-report
+
+**MaxDiff auto-detection**:
+- Detect anchored probability index (API) score variables — continuous 0–1 range columns appended at the end of the .sav, often with "anchor" or "API" in labels
+- If not found and user said MaxDiff: hard blocker with clear message ("have your simulator analyst append these scores")
+- Detect raw MaxDiff choice variables (best/worst columns) to confirm the data is actually MaxDiff
+- If message list not uploaded: attempt to extract item labels from variable labels in the .sav (fallback)
+
+**General .sav integrity checks** (extend current ValidationRunner):
+- File corruption detection (haven parse failures, unexpected EOF)
+- Zero-row or zero-column files
+- Excessive missing data (>90% missing across most variables)
+- Duplicate respondent IDs
+- Mixed data types in columns that should be uniform
+
+These checks would run as part of the existing `/api/validate-data` endpoint. The infrastructure is in place (ValidationRunner + validate-data route) — it's the detection heuristics that need building.
 
 ---
 

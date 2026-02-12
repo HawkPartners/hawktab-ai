@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { BarChart3, Layers, Shuffle } from 'lucide-react';
+import { BarChart3, Info, Layers, Shuffle, XCircle } from 'lucide-react';
 
 const PROJECT_TYPES = [
   {
@@ -42,6 +42,9 @@ const PROJECT_TYPES = [
 export function StepProjectSetup() {
   const form = useFormContext<WizardFormValues>();
   const projectSubType = form.watch('projectSubType');
+  const segmentationHasAssignments = form.watch('segmentationHasAssignments');
+  const maxdiffHasMessageList = form.watch('maxdiffHasMessageList');
+  const maxdiffHasAnchoredScores = form.watch('maxdiffHasAnchoredScores');
   const bannerMode = form.watch('bannerMode');
 
   return (
@@ -122,23 +125,33 @@ export function StepProjectSetup() {
 
       {/* Conditional: segmentation */}
       {projectSubType === 'segmentation' && (
-        <FormField
-          control={form.control}
-          name="segmentationHasAssignments"
-          render={({ field }) => (
-            <FormItem className="flex items-center gap-3 rounded-lg border p-4">
-              <FormControl>
-                <Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
-              </FormControl>
-              <div className="space-y-0.5">
-                <FormLabel className="text-sm">My data includes segment assignments</FormLabel>
-                <FormDescription>
-                  The .sav file has a column assigning each respondent to a segment.
-                </FormDescription>
-              </div>
-            </FormItem>
+        <div className="space-y-3">
+          <FormField
+            control={form.control}
+            name="segmentationHasAssignments"
+            render={({ field }) => (
+              <FormItem className="flex items-center gap-3 rounded-lg border p-4">
+                <FormControl>
+                  <Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
+                </FormControl>
+                <div className="space-y-0.5">
+                  <FormLabel className="text-sm">My data includes segment assignments</FormLabel>
+                  <FormDescription>
+                    The .sav file has a column assigning each respondent to a segment.
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+          {segmentationHasAssignments === false && (
+            <div className="flex items-start gap-3 rounded-lg border border-ct-blue/30 bg-ct-blue/5 p-4">
+              <Info className="h-4 w-4 text-ct-blue mt-0.5 shrink-0" />
+              <p className="text-sm text-muted-foreground">
+                Crosstab AI can still generate your tabs, but segments won&apos;t be included as banner cuts.
+              </p>
+            </div>
           )}
-        />
+        </div>
       )}
 
       {/* Conditional: maxdiff */}
@@ -161,6 +174,15 @@ export function StepProjectSetup() {
               </FormItem>
             )}
           />
+          {maxdiffHasMessageList === false && (
+            <div className="flex items-start gap-3 rounded-lg border border-ct-blue/30 bg-ct-blue/5 p-4">
+              <Info className="h-4 w-4 text-ct-blue mt-0.5 shrink-0" />
+              <p className="text-sm text-muted-foreground">
+                Crosstab AI can still generate your crosstabs, but message labels may be truncated or use item codes instead of full text.
+              </p>
+            </div>
+          )}
+
           <FormField
             control={form.control}
             name="maxdiffHasAnchoredScores"
@@ -178,6 +200,14 @@ export function StepProjectSetup() {
               </FormItem>
             )}
           />
+          {maxdiffHasAnchoredScores === false && (
+            <div className="flex items-start gap-3 rounded-lg border border-ct-red/40 bg-ct-red/5 p-4">
+              <XCircle className="h-4 w-4 text-ct-red mt-0.5 shrink-0" />
+              <p className="text-sm text-ct-red">
+                Anchored probability scores must be appended to the .sav file before running MaxDiff crosstabs. Have your simulator analyst append these scores and re-upload.
+              </p>
+            </div>
+          )}
         </div>
       )}
 

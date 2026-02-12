@@ -99,6 +99,13 @@ export default function NewProjectPage() {
           await form.trigger(['projectName', 'projectSubType', 'bannerMode']);
           return false;
         }
+        // MaxDiff hard blocker: anchored scores must be appended
+        if (values.projectSubType === 'maxdiff' && !values.maxdiffHasAnchoredScores) {
+          toast.error('Anchored probability scores are required for MaxDiff projects', {
+            description: 'Have your simulator analyst append these scores to the .sav file before proceeding.',
+          });
+          return false;
+        }
         return true;
       }
       case 2: {
