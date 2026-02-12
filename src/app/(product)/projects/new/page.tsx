@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import posthog from 'posthog-js';
 
 import { WizardFormSchema, Step1Schema, Step3Schema, type WizardFormValues } from '@/schemas/wizardSchema';
 import { wizardToProjectConfig } from '@/schemas/projectConfigSchema';
@@ -58,6 +59,17 @@ export default function NewProjectPage() {
   // Pre-select best weight candidate when validation succeeds
   const handleFileChange = useCallback(<K extends keyof WizardFiles>(key: K, file: WizardFiles[K]) => {
     setFiles((prev) => ({ ...prev, [key]: file }));
+
+    // Track file upload event
+    if (file) {
+      const fileObj = file as File;
+      posthog.capture('file_uploaded', {
+        file_type: key,
+        file_name: fileObj.name,
+        file_size_bytes: fileObj.size,
+        file_extension: fileObj.name.split('.').pop()?.toLowerCase(),
+      });
+    }
   }, []);
 
   // Auto-select best weight candidate when validation succeeds
@@ -169,6 +181,12 @@ export default function NewProjectPage() {
       // Launch
       await handleLaunch();
     } else {
+      // Track wizard step completion
+      posthog.capture('wizard_step_completed', {
+        step_number: currentStep,
+        step_name: ['project_setup', 'upload_files', 'configuration', 'review'][currentStep - 1],
+      });
+
       setCurrentStep((prev) => Math.min(prev + 1, 4));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -211,6 +229,17 @@ export default function NewProjectPage() {
       }
 
       const result = await response.json();
+
+      // Track successful project creation
+      posthog.capture('project_created', {
+        project_id: result.projectId,
+        project_name: values.projectName,
+        project_type: values.projectSubType,
+        banner_mode: values.bannerMode,
+        has_weight_variable: !!values.weightVariable,
+        display_mode: values.displayMode,
+        theme: values.theme,
+      });
 
       toast.success('Pipeline started', {
         description: 'Tracking progress on the project page.',

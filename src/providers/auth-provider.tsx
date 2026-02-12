@@ -1,7 +1,8 @@
 'use client';
 
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import type { Role } from '@/lib/permissions';
+import posthog from 'posthog-js';
 
 interface AuthContextValue {
   convexOrgId: string | null;
@@ -40,6 +41,18 @@ export function AuthProvider({
   role = null,
   isBypass = false,
 }: AuthProviderProps) {
+  // Identify user in PostHog when authenticated (opaque IDs only — no PII)
+  useEffect(() => {
+    if (convexUserId) {
+      posthog.identify(convexUserId, {
+        org_id: convexOrgId ?? undefined,
+        role: role ?? undefined,
+      });
+    } else {
+      posthog.reset();
+    }
+  }, [convexUserId, convexOrgId, role]);
+
   return (
     <AuthContext.Provider
       value={{

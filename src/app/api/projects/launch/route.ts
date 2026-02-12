@@ -31,6 +31,7 @@ import {
 } from '@/lib/errors/ErrorPersistence';
 import { applyRateLimit } from '@/lib/withRateLimit';
 import { getApiErrorDetails } from '@/lib/api/errorDetails';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 // Allow large .sav file uploads and long-running validation
 export const maxDuration = 300; // 5 minutes
@@ -47,10 +48,12 @@ const ALLOWED_MESSAGE_LIST_EXTENSIONS = ['.xlsx', '.xls', '.csv'];
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
   const sessionId = generateSessionId();
+  let authUserId: string | null = null;
 
   try {
     // Authenticate and get Convex IDs
     const auth = await requireConvexAuth();
+    authUserId = String(auth.convexUserId);
 
     const rateLimited = applyRateLimit(String(auth.convexOrgId), 'critical', 'projects/launch');
     if (rateLimited) return rateLimited;
@@ -189,6 +192,26 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Launch] Project ${String(projectId)} run ${runIdStr} created in ${Date.now() - startTime}ms`);
 
+    // Track successful project launch (server-side)
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: String(auth.convexUserId),
+      event: 'project_launch_success',
+      properties: {
+        project_id: String(projectId),
+        run_id: runIdStr,
+        session_id: sessionId,
+        org_id: String(auth.convexOrgId),
+        project_type: config.projectSubType,
+        banner_mode: config.bannerMode,
+        has_weight_variable: !!config.weightVariable,
+        data_file_name: parsed.dataFile.name,
+        survey_file_name: parsed.surveyFile.name,
+        has_banner_plan: !!parsed.bannerPlanFile,
+        setup_duration_ms: Date.now() - startTime,
+      },
+    });
+
     // Build PipelineRunParams — synthesize the legacy SavedFilePaths shape.
     // dataMapPath === spssPath since .sav IS the datamap in wizard flow.
     // bannerPlanPath is the real path or empty string (orchestrator guards empty paths).
@@ -238,6 +261,19 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('[Launch] Error:', error);
+
+    // Track launch error (server-side)
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: authUserId || 'anonymous',
+      event: 'project_launch_error',
+      properties: {
+        session_id: sessionId,
+        error_message: error instanceof Error ? error.message : String(error),
+        error_type: error instanceof AuthenticationError ? 'authentication' :
+                    error instanceof FileSizeLimitError ? 'file_size_limit' : 'unknown',
+      },
+    });
 
     if (error instanceof AuthenticationError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

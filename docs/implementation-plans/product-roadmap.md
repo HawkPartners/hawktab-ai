@@ -27,7 +27,7 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 | **3.5b** Observability | Sentry, correlation IDs, structured logging | Complete |
 | **3.5c** Security Audit | 19 findings across 4 severity tiers, all remediated | Complete |
 | **3.5d** Deploy & Launch | Railway, DNS, landing page, smoke testing | Complete |
-| **3.5e** Analytics | PostHog setup, key event tracking | Not Started |
+| **3.5e** Analytics | PostHog setup, key event tracking | Complete |
 
 ---
 
@@ -123,14 +123,20 @@ Ship it. Antares gets a link.
 
 ---
 
-#### 3.5e Analytics — `NOT STARTED`
+#### 3.5e Analytics — `COMPLETE`
 
 **Goal**: Understand how users interact with the product.
 
-- Add PostHog (`posthog-js` client-side, `@posthog/node` server-side)
-- Initialize in root layout with environment-based API key
-- Track key events: `project_created`, `pipeline_completed`, `pipeline_failed`, `download_completed`
-- Basic session recording (optional, PostHog supports this out of the box)
+**What was built**: PostHog integration via `posthog-js` (client-side) and `posthog-node` (server-side). Client initialized via `instrumentation-client.ts` (Next.js 15.3+ approach). Reverse proxy rewrites through `/ingest/*` to bypass ad blockers. User identification with opaque IDs only (no PII). Server-side client with graceful no-op fallback when API key is missing.
+
+**14 events tracked across the full user journey**:
+- **Acquisition**: `cta_clicked` (landing page hero + bottom CTA)
+- **Onboarding**: `wizard_step_completed`, `file_uploaded`, `project_created`
+- **Pipeline**: `project_launch_success`, `project_launch_error` (server-side), `pipeline_completed`, `pipeline_failed` (server-side)
+- **Engagement**: `project_selected`, `review_decision_made`, `review_submitted`, `pipeline_cancelled`
+- **Output**: `file_downloaded`, `feedback_submitted`
+
+**PostHog dashboard**: Pre-built with project creation funnel, download breakdown, review decisions, feedback ratings, and pipeline success rate insights.
 
 **Level of Effort**: Small
 
@@ -148,4 +154,4 @@ Future features, deferred items, and known gaps/limitations are documented in [`
 
 *Created: January 22, 2026*
 *Updated: February 12, 2026*
-*Status: Phase 3 (Productization) in progress. 3.1–3.4, 3.5a–3.5d complete. 3.5e (Analytics) next.*
+*Status: Phase 3 (Productization) in progress. 3.1–3.4, 3.5a–3.5e complete. 3.5f (Testing & Iteration) next.*

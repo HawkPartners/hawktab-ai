@@ -56,6 +56,7 @@ import type {
   CrosstabReviewState,
   SavedFilePaths,
 } from './types';
+import { getPostHogClient } from '@/lib/posthog-server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { execFile } from 'child_process';
@@ -1836,6 +1837,25 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     });
     cleanupAbort(runId);
 
+    // Track pipeline completion (server-side)
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: convexOrgId || 'anonymous',
+      event: 'pipeline_completed',
+      properties: {
+        run_id: runId,
+        pipeline_id: pipelineId,
+        status: terminalStatus,
+        table_count: allTablesForR.length,
+        cut_count: cutsSpec.cuts.length,
+        duration_sec: durationSec,
+        excel_generated: excelGenerated,
+        r2_upload_failed: r2UploadFailed,
+        total_cost_usd: costMetrics.totals.estimatedCostUsd,
+        total_tokens: costMetrics.totals.totalTokens,
+      },
+    });
+
     // Clean up temp session files (/tmp/hawktab-ai/{sessionId}/)
     try { await cleanupSession(sessionId); } catch { /* best-effort */ }
 
@@ -1876,6 +1896,18 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       error: processingError instanceof Error ? processingError.message : 'Unknown error',
     });
     cleanupAbort(runId);
+
+    // Track pipeline failure (server-side)
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: convexOrgId || 'anonymous',
+      event: 'pipeline_failed',
+      properties: {
+        run_id: runId,
+        pipeline_id: pipelineId || '',
+        error_message: procErrorMsg,
+      },
+    });
 
     // Clean up temp session files on error too
     try { await cleanupSession(sessionId); } catch { /* best-effort */ }

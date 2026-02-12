@@ -3,6 +3,7 @@
 import { useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from 'convex/react';
+import posthog from 'posthog-js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -232,6 +233,15 @@ export default function ProjectDetailPage({
         description: 'Thanks — this helps us improve the pipeline.',
       });
 
+      // Track feedback submission
+      posthog.capture('feedback_submitted', {
+        project_id: projectId,
+        run_id: runIdStr,
+        rating: Number(feedbackRating) || 0,
+        has_notes: feedbackNotes.trim().length > 0,
+        table_ids_count: tableIds.length,
+      });
+
       setFeedbackNotes('');
       setFeedbackRating('0');
       setTableIds([]);
@@ -257,6 +267,13 @@ export default function ProjectDetailPage({
         const errData = await res.json();
         throw new Error(errData.error || 'Failed to cancel pipeline');
       }
+
+      // Track pipeline cancellation
+      posthog.capture('pipeline_cancelled', {
+        project_id: projectId,
+        run_id: String(latestRun._id),
+        previous_status: latestRun.status,
+      });
 
       // Status update will come through Convex subscription
     } catch (err) {
@@ -508,6 +525,14 @@ export default function ProjectDetailPage({
                           <a
                             href={`/api/runs/${encodeURIComponent(String(latestRun._id))}/download/${encodeURIComponent(file.filename)}`}
                             download={file.filename}
+                            onClick={() => {
+                              posthog.capture('file_downloaded', {
+                                project_id: projectId,
+                                run_id: String(latestRun._id),
+                                filename: file.filename,
+                                is_primary: file.primary,
+                              });
+                            }}
                           >
                             <Button variant={file.primary ? 'default' : 'outline'} size="sm">
                               <Download className="h-4 w-4 mr-1" />

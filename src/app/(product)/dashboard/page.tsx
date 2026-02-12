@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from 'convex/react';
+import posthog from 'posthog-js';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -106,6 +107,15 @@ export default function DashboardPage() {
 
   const handleSelect = (projectId: string) => {
     const project = projectList.find(p => p.projectId === projectId);
+
+    // Track project selection
+    posthog.capture('project_selected', {
+      project_id: projectId,
+      project_name: project?.name,
+      project_status: project?.status,
+      destination: project?.status === 'pending_review' ? 'review' : 'detail',
+    });
+
     if (project?.status === 'pending_review') {
       router.push(`/projects/${encodeURIComponent(projectId)}/review`);
     } else {

@@ -105,11 +105,15 @@ ACTIVE WORK: `docs/implementation-plans/product-roadmap.md` — Phase 3 (Product
 
 **Feature Completeness (Phase 2)**: COMPLETE. Output formats, stat testing, loop-aware stat testing, input flexibility, AI-generated banner, weight detection, HITL review overhaul, table ID visibility, output feedback, Excel themes — all implemented.
 
-**Current Phase**: Phase 3 — Productization. Wiring up the UI so users can interact with HITL aspects (variable confirmation, alternative selection) during the pipeline run, not just review static Excel output after.
+**Current Phase**: Phase 3 — Productization. All sub-phases through 3.5e complete. Product is deployed, observable, secure, and instrumented with analytics.
 
 **Phase 3.5c (Security Audit)**: COMPLETE. Full audit with 19 findings across 4 severity tiers, all remediated. Patterns documented in `<security_patterns>` section below. Audit artifacts in `.security-audit/findings/`.
 
-**Next**: Phase 3.5d (Deploy & Launch) — Railway deployment, DNS, landing page, smoke testing. Then 3.5e (Analytics).
+**Phase 3.5d (Deploy & Launch)**: COMPLETE. Railway deployment, Docker hardening, production Convex/R2/WorkOS, end-to-end smoke test passed.
+
+**Phase 3.5e (Analytics)**: COMPLETE. PostHog integration with 14 events across the full user journey. Server-side pipeline tracking, client-side UI tracking, reverse proxy for ad-blocker bypass.
+
+**Next**: Phase 3.5f (Testing & Iteration) — polish, UX fixes, and user feedback from Antares.
 
 FEEDBACK: `docs/latest-runs-feedback.md` — Tracks all issues from pipeline runs with problem/fix summaries.
 </current_focus>

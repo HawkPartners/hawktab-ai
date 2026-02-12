@@ -3,6 +3,7 @@
 import { useState, use, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from 'convex/react';
+import posthog from 'posthog-js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -317,6 +318,17 @@ export default function ReviewPage({
   const handleDecisionChange = (groupName: string, columnName: string, decision: CrosstabDecision) => {
     const key = `${groupName}/${columnName}`;
     setDecisions(new Map(decisions.set(key, decision)));
+
+    // Track individual review decision
+    posthog.capture('review_decision_made', {
+      project_id: projectId,
+      run_id: runId,
+      group_name: groupName,
+      column_name: columnName,
+      action: decision.action,
+      has_hint: decision.action === 'provide_hint' && !!decision.hint,
+      alternative_index: decision.selectedAlternative,
+    });
   };
 
   const handleSubmit = async () => {
@@ -349,6 +361,18 @@ export default function ReviewPage({
       }
 
       await res.json();
+
+      // Track successful review submission
+      posthog.capture('review_submitted', {
+        project_id: projectId,
+        run_id: runId,
+        total_flagged_columns: reviewState.flaggedColumns.length,
+        approved_count: approveCount,
+        alternative_count: altCount,
+        hint_count: hintCount,
+        skip_count: skipCount,
+      });
+
       router.push(`/projects/${encodeURIComponent(projectId)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');

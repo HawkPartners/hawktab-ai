@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TrackedLink } from "@/components/TrackedLink";
 
 export default function LandingPage() {
   return (
@@ -25,10 +26,14 @@ export default function LandingPage() {
 
           <div className="flex gap-4 justify-center flex-wrap">
             <Button asChild size="lg">
-              <Link href="/dashboard">
+              <TrackedLink
+                href="/dashboard"
+                eventName="cta_clicked"
+                eventProperties={{ location: 'hero', cta_text: 'Upload Your First Dataset' }}
+              >
                 Upload Your First Dataset
                 <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+              </TrackedLink>
             </Button>
             <Button variant="outline" size="lg" asChild>
               <Link href="#how-it-works">
@@ -207,10 +212,14 @@ export default function LandingPage() {
           Answer your clients&apos; questions sooner. Understand your data better. Spend your time on the analysis, not the tables.
         </p>
         <Button asChild size="lg" className="relative">
-          <Link href="/dashboard">
+          <TrackedLink
+            href="/dashboard"
+            eventName="cta_clicked"
+            eventProperties={{ location: 'bottom_cta', cta_text: 'Upload Your First Dataset' }}
+          >
             Upload Your First Dataset
             <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
+          </TrackedLink>
         </Button>
       </section>
 
