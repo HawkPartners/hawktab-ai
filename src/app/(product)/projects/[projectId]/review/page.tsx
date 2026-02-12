@@ -404,9 +404,17 @@ export default function ReviewPage({
             title="Review Not Available"
             description={error || 'This project does not require review or has already been reviewed.'}
             actions={
-              <Button variant="outline" onClick={() => router.push('/dashboard')}>
-                Back to Dashboard
-              </Button>
+              <div className="flex gap-2">
+                {latestRun && ['in_progress', 'pending_review', 'resuming'].includes(latestRun.status) && (
+                  <Button variant="destructive" onClick={handleCancel} disabled={isSubmitting}>
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Cancel Run
+                  </Button>
+                )}
+                <Button variant="outline" onClick={() => router.push('/dashboard')}>
+                  Back to Dashboard
+                </Button>
+              </div>
             }
           />
         </div>

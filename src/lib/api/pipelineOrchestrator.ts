@@ -937,7 +937,33 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       );
       console.log('[API] Review state saved to crosstab-review-state.json');
 
-      // Push review state to Convex for real-time UI subscriptions
+      const reviewUrl = `/projects/${encodeURIComponent(pipelineId)}/review`;
+
+      // Order matters: updateRunStatus overwrites `result`, updateReviewState merges into it.
+      // So we set base result fields first, then merge reviewState on top.
+      await updateRunStatus(runId, {
+        status: 'pending_review',
+        stage: 'crosstab_review_required',
+        progress: 50,
+        message: `Review required - ${flaggedCrosstabColumns.length} columns need mapping verification`,
+        result: {
+          pipelineId,
+          outputDir,
+          reviewUrl,
+          flaggedColumnCount: flaggedCrosstabColumns.length,
+        },
+      });
+
+      await updatePipelineSummary(outputDir, {
+        status: 'pending_review',
+        currentStage: 'crosstab_review',
+        review: {
+          flaggedColumnCount: flaggedCrosstabColumns.length,
+          reviewUrl
+        }
+      });
+
+      // Push review state to Convex — merges into existing result, preserving fields above
       try {
         await mutateInternal(internal.runs.updateReviewState, {
           runId: runId as Id<"runs">,
@@ -954,29 +980,6 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       } catch (err) {
         console.warn('[API] Failed to push review state to Convex:', err);
       }
-
-      const reviewUrl = `/projects/${encodeURIComponent(pipelineId)}/review`;
-      await updatePipelineSummary(outputDir, {
-        status: 'pending_review',
-        currentStage: 'crosstab_review',
-        review: {
-          flaggedColumnCount: flaggedCrosstabColumns.length,
-          reviewUrl
-        }
-      });
-
-      await updateRunStatus(runId, {
-        status: 'pending_review',
-        stage: 'crosstab_review_required',
-        progress: 50,
-        message: `Review required - ${flaggedCrosstabColumns.length} columns need mapping verification`,
-        result: {
-          pipelineId,
-          outputDir,
-          reviewUrl,
-          flaggedColumnCount: flaggedCrosstabColumns.length,
-        },
-      });
 
       console.log('[API] Pipeline paused for human review. Path B continues in background.');
       console.log(`[API] Resume via POST /api/runs/${runId}/review`);
