@@ -41,6 +41,18 @@ export const create = internalMutation({
     createdBy: v.id("users"),
   },
   handler: async (ctx, args) => {
+    // Belt-and-suspenders: reject duplicate project names within the same org
+    const existing = await ctx.db
+      .query("projects")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .collect();
+    const nameTaken = existing.some(
+      (p) => !p.isDeleted && p.name.toLowerCase() === args.name.toLowerCase(),
+    );
+    if (nameTaken) {
+      throw new Error(`A project named "${args.name}" already exists in this organization`);
+    }
+
     return await ctx.db.insert("projects", {
       orgId: args.orgId,
       name: args.name,

@@ -21,8 +21,8 @@ import { runPipelineFromUpload, type PipelineRunParams } from '@/lib/api/pipelin
 import pLimit from 'p-limit';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import { canPerform } from '@/lib/permissions';
-import { mutateInternal } from '@/lib/convex';
-import { internal } from '../../../../../convex/_generated/api';
+import { getConvexClient, mutateInternal } from '@/lib/convex';
+import { api, internal } from '../../../../../convex/_generated/api';
 import { createAbortController } from '@/lib/abortStore';
 import { ProjectConfigSchema } from '@/schemas/projectConfigSchema';
 import {
@@ -141,6 +141,21 @@ export async function POST(request: NextRequest) {
           details: parseError instanceof Error ? parseError.message : 'Config validation failed',
         },
         { status: 400 }
+      );
+    }
+
+    // Check for duplicate project name within this org
+    const convex = getConvexClient();
+    const existingProjects = await convex.query(api.projects.listByOrg, {
+      orgId: auth.convexOrgId,
+    });
+    const nameTaken = existingProjects.some(
+      (p) => p.name.toLowerCase() === projectName.toLowerCase(),
+    );
+    if (nameTaken) {
+      return NextResponse.json(
+        { error: `A project named "${projectName}" already exists. Please choose a different name.` },
+        { status: 409 },
       );
     }
 

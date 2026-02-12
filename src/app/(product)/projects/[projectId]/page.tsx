@@ -57,12 +57,12 @@ function FileIcon({ filename }: { filename: string }) {
     case 'xls':
     case 'csv':
       return <FileSpreadsheet className="h-5 w-5 text-green-600" />;
-    case 'json':
+    case 'pdf':
+    case 'docx':
+    case 'doc':
       return <FileText className="h-5 w-5 text-blue-600" />;
-    case 'r':
-      return <FileText className="h-5 w-5 text-purple-600" />;
-    case 'md':
-      return <FileText className="h-5 w-5 text-gray-600" />;
+    case 'sav':
+      return <File className="h-5 w-5 text-violet-600" />;
     default:
       return <File className="h-5 w-5 text-gray-500" />;
   }
@@ -123,12 +123,28 @@ function StatusBadge({ status }: { status: string }) {
   }
 }
 
-// Downloadable files from R2
-const DOWNLOAD_FILES = [
-  { filename: 'crosstabs.xlsx', label: 'Crosstabs Excel', primary: true },
-  { filename: 'tables.json', label: 'Tables JSON', primary: false },
-  { filename: 'master.R', label: 'R Script', primary: false },
-];
+// Human-readable labels for crosstab Excel variants
+const CROSSTAB_LABELS: Record<string, string> = {
+  'results/crosstabs.xlsx': 'Crosstabs',
+  'results/crosstabs-weighted.xlsx': 'Crosstabs (Weighted)',
+  'results/crosstabs-unweighted.xlsx': 'Crosstabs (Unweighted)',
+  'results/crosstabs-counts.xlsx': 'Crosstabs (Counts)',
+  'results/crosstabs-weighted-counts.xlsx': 'Crosstabs (Weighted Counts)',
+};
+
+/** Extract the user-friendly download filename from an R2 output path */
+function outputPathToFilename(outputPath: string): string {
+  return outputPath.replace('results/', '');
+}
+
+/** Human-readable labels for input file fields */
+const INPUT_FIELD_LABELS: Record<string, string> = {
+  dataFile: 'Data File',
+  dataMap: 'Data Map',
+  bannerPlan: 'Banner Plan',
+  survey: 'Survey Document',
+  messageList: 'Message List',
+};
 
 // Config field display labels
 const CONFIG_LABELS: Record<string, string> = {
@@ -519,60 +535,66 @@ export default function ProjectDetailPage({
           </Card>
         )}
 
-        {/* Output Files (R2-backed downloads) */}
-        {hasR2Outputs && latestRun && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="text-lg">Output Files</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {DOWNLOAD_FILES.map((file) => {
-                  const hasFile = r2Files?.outputs?.[file.filename === 'crosstabs.xlsx' ? 'results/crosstabs.xlsx' : file.filename === 'tables.json' ? 'results/tables.json' : file.filename === 'master.R' ? 'r/master.R' : file.filename];
-                  if (!hasFile) return null;
+        {/* Output Files (R2-backed downloads) — crosstab Excel files only */}
+        {hasR2Outputs && latestRun && (() => {
+          // Dynamically detect which .xlsx files are available in R2 outputs
+          const xlsxOutputs = Object.keys(r2Files?.outputs ?? {})
+            .filter((path) => path.endsWith('.xlsx'))
+            .sort(); // consistent ordering
+          if (xlsxOutputs.length === 0) return null;
 
-                  return (
-                    <Card key={file.filename} className={file.primary ? 'border-primary' : ''}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <FileIcon filename={file.filename} />
-                            <div>
-                              <p className="font-medium text-sm">{file.label}</p>
-                              <p className="text-xs text-muted-foreground">{file.filename}</p>
+          const isSingleFile = xlsxOutputs.length === 1;
+
+          return (
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle className="text-lg">Output Files</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {xlsxOutputs.map((outputPath, idx) => {
+                    const filename = outputPathToFilename(outputPath);
+                    const label = CROSSTAB_LABELS[outputPath] ?? filename;
+                    const isPrimary = isSingleFile || idx === 0;
+
+                    return (
+                      <Card key={outputPath} className={isPrimary ? 'border-primary' : ''}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <FileSpreadsheet className="h-5 w-5 text-green-600" />
+                              <div>
+                                <p className="font-medium text-sm">{label}</p>
+                                <p className="text-xs text-muted-foreground">{filename}</p>
+                              </div>
                             </div>
+                            <a
+                              href={`/api/runs/${encodeURIComponent(String(latestRun._id))}/download/${encodeURIComponent(filename)}`}
+                              download={filename}
+                              onClick={() => {
+                                posthog.capture('file_downloaded', {
+                                  project_id: projectId,
+                                  run_id: String(latestRun._id),
+                                  filename,
+                                  is_primary: isPrimary,
+                                });
+                              }}
+                            >
+                              <Button variant={isPrimary ? 'default' : 'outline'} size="sm">
+                                <Download className="h-4 w-4 mr-1" />
+                                Download
+                              </Button>
+                            </a>
                           </div>
-                          <a
-                            href={`/api/runs/${encodeURIComponent(String(latestRun._id))}/download/${encodeURIComponent(file.filename)}`}
-                            download={file.filename}
-                            onClick={() => {
-                              posthog.capture('file_downloaded', {
-                                project_id: projectId,
-                                run_id: String(latestRun._id),
-                                filename: file.filename,
-                                is_primary: file.primary,
-                              });
-                            }}
-                          >
-                            <Button variant={file.primary ? 'default' : 'outline'} size="sm">
-                              <Download className="h-4 w-4 mr-1" />
-                              Download
-                            </Button>
-                          </a>
-                        </div>
-                        {file.primary && (
-                          <Badge variant="secondary" className="mt-2 text-xs">
-                            Primary Output
-                          </Badge>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* No outputs yet */}
         {!hasR2Outputs && (
@@ -719,24 +741,55 @@ export default function ProjectDetailPage({
           </CardContent>
         </Card>
 
-        {/* Input Files info */}
+        {/* Input Files — downloadable */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="text-lg">Input Files</CardTitle>
           </CardHeader>
           <CardContent>
             {project.intake ? (
-              <div className="text-sm text-muted-foreground space-y-1">
+              <div className="space-y-3">
                 {(() => {
                   const intake = project.intake as Record<string, string | null>;
-                  return (
-                    <>
-                      <p>Data Map: {intake.dataMap || intake.dataFile || 'N/A'}</p>
-                      <p>Banner Plan: {intake.bannerPlan || 'N/A'}</p>
-                      <p>SPSS Data: {intake.dataFile || 'N/A'}</p>
-                      {intake.survey && <p>Survey: {intake.survey}</p>}
-                    </>
-                  );
+                  // Build list of input files with their field labels
+                  const inputFiles = Object.entries(INPUT_FIELD_LABELS)
+                    .map(([field, label]) => ({ field, label, filename: intake[field] }))
+                    .filter((f): f is { field: string; label: string; filename: string } =>
+                      typeof f.filename === 'string' && f.filename.length > 0,
+                    );
+
+                  if (inputFiles.length === 0) {
+                    return <p className="text-sm text-muted-foreground">No input file information available.</p>;
+                  }
+
+                  return inputFiles.map(({ field, label, filename }) => (
+                    <div key={field} className="flex items-center justify-between py-2 border-b last:border-b-0">
+                      <div className="flex items-center gap-3">
+                        <FileIcon filename={filename} />
+                        <div>
+                          <p className="text-sm font-medium">{label}</p>
+                          <p className="text-xs text-muted-foreground">{filename}</p>
+                        </div>
+                      </div>
+                      <a
+                        href={`/api/projects/${encodeURIComponent(projectId)}/download/${encodeURIComponent(filename)}`}
+                        download={filename}
+                        onClick={() => {
+                          posthog.capture('file_downloaded', {
+                            project_id: projectId,
+                            filename,
+                            file_type: 'input',
+                            input_field: field,
+                          });
+                        }}
+                      >
+                        <Button variant="outline" size="sm">
+                          <Download className="h-4 w-4 mr-1" />
+                          Download
+                        </Button>
+                      </a>
+                    </div>
+                  ));
                 })()}
               </div>
             ) : (

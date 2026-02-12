@@ -13,12 +13,15 @@ import type { Id } from '../../../../../../../convex/_generated/dataModel';
 import { applyRateLimit } from '@/lib/withRateLimit';
 import { getApiErrorDetails } from '@/lib/api/errorDetails';
 
-// Map user-friendly filenames to the R2 output keys
+// Map user-friendly filenames to the R2 output keys — crosstab Excel files only.
+// Internal files (tables.json, master.R, pipeline-summary.json) are intentionally
+// excluded to avoid leaking implementation details to end users.
 const FILENAME_TO_OUTPUT_PATH: Record<string, string> = {
   'crosstabs.xlsx': 'results/crosstabs.xlsx',
-  'tables.json': 'results/tables.json',
-  'master.R': 'r/master.R',
-  'pipeline-summary.json': 'pipeline-summary.json',
+  'crosstabs-weighted.xlsx': 'results/crosstabs-weighted.xlsx',
+  'crosstabs-unweighted.xlsx': 'results/crosstabs-unweighted.xlsx',
+  'crosstabs-counts.xlsx': 'results/crosstabs-counts.xlsx',
+  'crosstabs-weighted-counts.xlsx': 'results/crosstabs-weighted-counts.xlsx',
 };
 
 export async function GET(
@@ -60,7 +63,7 @@ export async function GET(
     const outputPath = FILENAME_TO_OUTPUT_PATH[filename];
     if (!outputPath) {
       return NextResponse.json(
-        { error: `Unknown file: ${filename}`, available: Object.keys(FILENAME_TO_OUTPUT_PATH) },
+        { error: 'File not found' },
         { status: 404 },
       );
     }
