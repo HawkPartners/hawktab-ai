@@ -28,6 +28,7 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 | **3.5c** Security Audit | 19 findings across 4 severity tiers, all remediated | Complete |
 | **3.5d** Deploy & Launch | Railway, DNS, landing page, smoke testing | Complete |
 | **3.5e** Analytics | PostHog setup, key event tracking | Complete |
+| **3.5f** Testing & Iteration | 6 items: review timeline fix, unique names, config audit, download filtering, deletion, stats display | Not Started |
 
 ---
 
@@ -144,9 +145,151 @@ Ship it. Antares gets a link.
 
 #### 3.5f Testing & Iteration — `NOT STARTED`
 
+**Goal**: Fix bugs and polish UX issues found during initial Antares testing. Get the deployed product from "works" to "works well."
+
+**Scope**: 6 issues identified, collapsed into 5 work items after investigation.
+
+---
+
+**1. Fix post-review timeline regression** — `HIGH PRIORITY`
+
+**Bug**: After submitting a HITL review, the project page timeline "forgets" progress and appears to restart from step 1. Two symptoms, one root cause.
+
+**Root cause**: The review API handler (`/api/runs/[runId]/review/route.ts`, line 152) sets `stage: 'filtering'` after review submission, but the `PipelineTimeline` component (`src/components/pipeline-timeline.tsx`) has no mapping for the `'filtering'` stage. The `getStepStatuses()` function can't find the current stage in any `TIMELINE_STEPS` entry, so `foundCurrent` stays false and the timeline falls back to showing the first step as active.
+
+**Secondary issue**: When Path B (table generation) is still running at review time, the run is set to `stage: 'waiting_for_tables'` with progress stuck at 55%. Background completion via `waitAndCompletePipeline()` is fire-and-forget with no UI feedback.
+
+**Fix**:
+- Add `'filtering'` to the appropriate stage group in `TIMELINE_STEPS` (or replace with a mapped stage like `'applying_review'` in the review handler)
+- Ensure ALL post-review stages (`filtering`, `splitting`, `verification`, `post_processing`) are mapped to timeline steps
+- Verify the `router.push()` navigation after review submission is working (it exists at line 376 of review/page.tsx)
+
+**Files**: `src/components/pipeline-timeline.tsx`, `src/app/api/runs/[runId]/review/route.ts`, `src/lib/api/pipelineOrchestrator.ts`
+
+**Level of Effort**: Small
+
+---
+
+**2. Enforce unique project names per organization** — `MEDIUM PRIORITY`
+
+**Bug**: Users can create multiple projects with the same name in the same org. No uniqueness check at any layer — not in the wizard, not in the API, not in Convex.
+
+**Root cause**: The Convex `projects` table only indexes on `orgId` (no compound unique index on `orgId + name`). Neither the launch API route nor the Convex `create` mutation check for existing projects with the same name.
+
+**Fix**:
+- Add a pre-creation check in `/api/projects/launch/route.ts`: query projects by org, check for name collision, return 409 Conflict if found
+- Add a defensive check in the Convex `projects.create` mutation (belt-and-suspenders)
+- Return a user-friendly error in the wizard if the name is taken
+- Optional: add compound unique index to schema later for database-level enforcement
+
+**Files**: `src/app/api/projects/launch/route.ts`, `convex/projects.ts`, `convex/schema.ts`
+
+**Level of Effort**: Small
+
+---
+
+**3. Audit configuration passthrough (display mode + separate workbooks)** — `MEDIUM PRIORITY`
+
+**Bug**: User configured "Both (Percentages + Counts)" with "Separate workbooks" enabled, but only one workbook was produced.
+
+**Investigation findings**: The full config pipeline IS wired correctly in code — wizard → `wizardToProjectConfig()` → launch API → orchestrator → `ExcelFormatter`. The `ExcelFormatter.formatJoeStyle()` method (lines 191-228) correctly handles all three cases: separate workbooks, two sheets in one workbook, and single-mode output.
+
+**Suspected root cause**: Config may be lost during HITL review state save/restore. When the pipeline pauses for review, `wizardConfig` is saved to `crosstab-review-state.json` (orchestrator line 931). On resume, `reviewCompletion.ts` reads it back (line 699). If `wizardConfig` is missing or malformed in the saved state, defaults are used — which would explain the single-workbook behavior.
+
+**Fix**:
+- Add logging in `reviewCompletion.ts` at the point where `wizardConfig` is read from review state to confirm values
+- Add logging in `ExcelFormatter` around the display mode decision (lines 191-228) to trace the actual config received
+- Test the full flow: wizard → configure "Both + Separate" → run → HITL review → verify config survives round-trip
+- If config IS being lost, fix the serialization/deserialization path in review state
+
+**Files**: `src/lib/api/reviewCompletion.ts`, `src/lib/api/pipelineOrchestrator.ts`, `src/lib/excel/ExcelFormatter.ts`
+
+**Level of Effort**: Small–Medium (diagnosis may reveal a simple serialization bug, or may require deeper tracing)
+
+---
+
+**4. Restrict downloadable files to crosstabs only** — `MEDIUM PRIORITY`
+
+**Bug**: The download UI and API expose internal files (`tables.json`, `master.R`, `pipeline-summary.json`) that users don't need and shouldn't see. These leak implementation details — R script logic, internal data structures, pipeline costs.
+
+**Current state**: Download API route (`/api/runs/[runId]/download/[filename]/route.ts`) has a 4-entry allowlist: `crosstabs.xlsx`, `tables.json`, `master.R`, `pipeline-summary.json`. The project detail page renders download buttons for the first three. `pipeline-summary.json` is API-accessible but not shown in UI.
+
+**Fix**:
+- Update `DOWNLOAD_FILES` in project detail page to only show `crosstabs.xlsx` (and second workbook if separate workbooks was configured)
+- Update `FILENAME_TO_OUTPUT_PATH` allowlist in the download API to only permit Excel files (enforce at API level, not just UI)
+- R2 upload list in `R2FileManager.ts` can stay as-is (internal files useful for debugging)
+- Consider: add an admin-only "debug downloads" section for internal users
+
+**Files**: `src/app/(product)/projects/[projectId]/page.tsx` (lines 125-129), `src/app/api/runs/[runId]/download/[filename]/route.ts` (lines 17-22)
+
+**Level of Effort**: Small
+
+---
+
+**5. Project deletion and member management** — `LOWER PRIORITY`
+
+**Feature request**: Users should be able to delete projects. Admins should be able to remove members.
+
+**Current state**: Neither exists. No delete mutations in Convex, no delete API routes, no delete UI. The settings page shows members read-only. The permission system has `manage_members` action defined but nothing wired to it.
+
+**What to build**:
+
+*Project deletion:*
+- Add soft-delete fields to projects schema (`isDeleted`, `deletedAt`)
+- Add `deleteProject` internal mutation to `convex/projects.ts`
+- Add delete API route with auth + org ownership + role check + `critical` rate limiting
+- Add delete button to project detail page with confirmation dialog
+- Cascade: delete associated runs, clean up R2 files (`{orgId}/{projectId}/*`)
+- Update dashboard query to filter out deleted projects
+
+*Member management (admin-only):*
+- Add `remove` and `updateRole` mutations to `convex/orgMemberships.ts`
+- Add API routes for member removal and role changes
+- Add action buttons to the Members card on settings page
+- Guard: cannot remove last admin, cannot remove yourself
+
+*Account deletion*: Deferred — high complexity (WorkOS sync, data retention, GDPR implications). Not needed for MVP.
+
+**Files**: `convex/projects.ts`, `convex/orgMemberships.ts`, `convex/schema.ts`, `src/app/(product)/projects/[projectId]/page.tsx`, `src/app/(product)/settings/page.tsx`, new API routes
+
+**Level of Effort**: Medium
+
+---
+
+**6. Verify pipeline run statistics display in UI** — `MEDIUM PRIORITY`
+
+**Issue**: Pipeline stats (duration, table count, cut count, banner group count) should be visible on the project page after a run completes. The backend collects `summary: { tables, cuts, bannerGroups, durationMs }` and persists it to Convex `runs.result.summary`. A Summary Statistics card exists in the project detail page (lines 470-499).
+
+**What to verify**:
+- Are the stats actually rendering in production after a completed run? (The data is stored, but is the UI reading it correctly?)
+- Does the summary survive the HITL review flow? (Same concern as item 3 — does post-review completion persist the summary?)
+- Is the duration accurate and human-readable? (Currently stored as `durationMs`, formatted as seconds)
+- Are table/cut/banner group counts correct and meaningful to the user?
+
+**Fix (if broken)**:
+- Trace `runs.result.summary` from orchestrator completion through Convex to the UI component
+- Ensure `completePipeline()` in `reviewCompletion.ts` also persists the summary (not just the main path)
+- Format duration as "X min Y sec" instead of raw seconds for better readability
+
+**Files**: `src/app/(product)/projects/[projectId]/page.tsx`, `src/lib/api/pipelineOrchestrator.ts`, `src/lib/api/reviewCompletion.ts`
+
+**Level of Effort**: Small
+
+---
+
+### Ongoing Feedback Log
+
+> Items below are raw feedback captured during testing. As issues are confirmed and scoped, they get promoted to numbered items above or filed as new work items.
+
+*(No additional feedback yet — add items here as testing continues.)*
+
+---
+
 ## MVP Complete
 
 Completing Phase 3.5 (a through e) = MVP = The Product. Antares logs in, uploads files, configures their project, runs the pipeline, reviews HITL decisions, and downloads publication-ready crosstabs.
+
+Phase 3.5f is polish and bug fixes to ensure the MVP is solid for real users.
 
 Future features, deferred items, and known gaps/limitations are documented in [`future-features.md`](./future-features.md).
 
