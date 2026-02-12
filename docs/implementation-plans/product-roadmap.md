@@ -24,7 +24,7 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 | **3.3** New Project Experience | Multi-step wizard exposing all pipeline features in UI | Complete |
 | **3.4** Dashboard, Detail, Roles & Cost | Real-time dashboard, project detail, role enforcement, cost tracking | Complete |
 | **3.5a** Auth Completion | WorkOS production credentials, real login flow | Complete |
-| **3.5b** Observability | Sentry, correlation IDs, structured logging | Not Started |
+| **3.5b** Observability | Sentry, correlation IDs, structured logging | Complete |
 | **3.5c** Security Audit | Full audit with real auth in place, fix findings | Not Started |
 | **3.5d** Deploy & Launch | Railway, DNS, landing page, smoke testing | Not Started |
 | **3.5e** Analytics | PostHog setup, key event tracking | Not Started |
@@ -87,16 +87,11 @@ Ship it. Antares gets a link.
 
 ---
 
-#### 3.5b Observability — `NOT STARTED`
+#### 3.5b Observability — `COMPLETE`
 
 **Goal**: See errors from the very first production request. Know when things break before users tell you.
 
-- Add `@sentry/nextjs` — unhandled error capture, source maps, error boundaries
-- Correlation IDs: generate per-request UUID, propagate through pipeline stages and agent calls (build on existing `src/lib/tracing.ts` scaffolding)
-- Structured logging with Sentry as the sink (breadcrumbs + context per pipeline run)
-- Alerting: Sentry notifications for unhandled exceptions and pipeline failures
-
-**Level of Effort**: Small–Medium
+**What was built**: WideEvent class (canonical log line per pipeline run — stages, agent calls, costs, outcome). Sentry pipeline span helpers with `startInactiveSpan` for proper parent-child trace hierarchy. AgentMetricsCollector auto-enriches WideEvent + Sentry breadcrumbs on every agent call. Pipeline-scoped metrics via `AsyncLocalStorage` for concurrent run isolation. `beforeSend` data scrubbing on all three Sentry configs (server, edge, client) with recursive key redaction. `setSentryUser` sets opaque userId only (no email PII). Both `PipelineRunner.ts` (CLI) and `pipelineOrchestrator.ts` (web UI) instrumented at all exit paths. Sentry example pages deleted, DSN externalized to env vars.
 
 ---
 
@@ -160,4 +155,4 @@ Future features, deferred items, and known gaps/limitations are documented in [`
 
 *Created: January 22, 2026*
 *Updated: February 11, 2026*
-*Status: Phase 3 (Productization) in progress. 3.1–3.4 and 3.5a complete. 3.5b–3.5e next.*
+*Status: Phase 3 (Productization) in progress. 3.1–3.4, 3.5a, and 3.5b complete. 3.5c–3.5e next.*

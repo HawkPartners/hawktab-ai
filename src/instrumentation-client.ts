@@ -3,6 +3,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import { scrubSentryEvent } from "@/lib/observability/sentry-scrub";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -30,6 +31,9 @@ Sentry.init({
 
   // Pipeline cancellation is not an error
   ignoreErrors: ["AbortError"],
+
+  // Strip sensitive data before sending
+  beforeSend: scrubSentryEvent,
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

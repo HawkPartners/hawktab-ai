@@ -8,6 +8,7 @@
  * Replaces /api/process-crosstab for the wizard flow.
  */
 
+import * as Sentry from '@sentry/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 import { generateSessionId } from '@/lib/storage';
 import { validateEnvironment } from '@/lib/env';
@@ -203,6 +204,11 @@ export async function POST(request: NextRequest) {
     // Kick off background processing
     runPipelineFromUpload(pipelineParams).catch((error) => {
       console.error('[Launch] Unhandled pipeline error:', error);
+      // Ensure unhandled pipeline errors reach Sentry (the internal try/catch
+      // in pipelineOrchestrator covers most cases, but this is the safety net)
+      Sentry.captureException(error, {
+        tags: { pipeline_id: sessionId, run_id: runIdStr },
+      });
     });
 
     return NextResponse.json({

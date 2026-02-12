@@ -18,7 +18,7 @@ import { sortTables, getSortingMetadata } from '@/lib/tables/sortTables';
 import { generateRScriptV2WithValidation } from '@/lib/r/RScriptGeneratorV2';
 import { validateAndFixTables } from '@/lib/r/ValidationOrchestrator';
 import { extractStreamlinedData } from '@/lib/data/extractStreamlinedData';
-import { resetMetricsCollector, getMetricsCollector, getPipelineCostSummary, WideEvent } from '@/lib/observability';
+import { AgentMetricsCollector, runWithMetricsCollector, getPipelineCostSummary, WideEvent } from '@/lib/observability';
 import { ExcelFormatter } from '@/lib/excel/ExcelFormatter';
 import { toExtendedTable, type ExtendedTableDefinition, type TableWithLoopFrame } from '@/schemas/verificationAgentSchema';
 import type { TableAgentOutput } from '@/schemas/tableAgentSchema';
@@ -356,17 +356,18 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
   const pipelineId = `pipeline-${timestamp}`;
   const outputDir = path.join(process.cwd(), 'outputs', datasetName, pipelineId);
 
-  // Observability: WideEvent for canonical pipeline log (declared at function scope for catch access)
-  resetMetricsCollector();
+  // Observability: pipeline-scoped metrics collector (isolated from concurrent runs via AsyncLocalStorage)
+  const metricsCollector = new AgentMetricsCollector();
   const wideEvent = new WideEvent({
     pipelineId,
     dataset: datasetName,
     orgId: convexOrgId,
     userId: runId,
   });
-  const metricsCollector = getMetricsCollector();
   metricsCollector.bindWideEvent(wideEvent);
 
+  // All recordAgentMetrics() calls within this scope use this collector, not the global
+  return runWithMetricsCollector(metricsCollector, async () => {
   try {
 
     console.log(`[API] Starting full pipeline processing for session: ${sessionId}`);
@@ -788,7 +789,10 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
       console.log('[API] Pipeline paused for human review. Path B continues in background.');
       console.log(`[API] Resume via POST /api/runs/${runId}/review`);
-      // Don't finish wideEvent here — pipeline resumes after review
+      // Finish WideEvent with 'partial' — the post-review phase won't be captured,
+      // but this prevents the WideEvent and metrics collector from leaking.
+      metricsCollector.unbindWideEvent();
+      wideEvent.finish('partial', 'Paused for HITL review');
       return;
     }
 
@@ -1115,7 +1119,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     const durationMs = processingEndTime - processingStartTime;
     const durationSec = (durationMs / 1000).toFixed(1);
 
-    const costMetrics = await getMetricsCollector().getSummary();
+    const costMetrics = await metricsCollector.getSummary();
 
     const pipelineSummary: PipelineSummary = {
       pipelineId,
@@ -1190,6 +1194,8 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       const existing = JSON.parse(await fs.readFile(summaryPath, 'utf-8'));
       if (existing.status === 'cancelled') {
         console.log('[API] Pipeline was cancelled - not overwriting summary');
+        metricsCollector.unbindWideEvent();
+        wideEvent.finish('cancelled', 'Pipeline already cancelled');
         return;
       }
     } catch {
@@ -1298,4 +1304,5 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     });
     cleanupAbort(runId);
   }
+  }); // end runWithMetricsCollector
 }

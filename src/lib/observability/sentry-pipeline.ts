@@ -3,7 +3,7 @@
  *
  * Thin wrapper that keeps Sentry SDK details out of PipelineRunner.
  * Pipeline runs happen outside the HTTP request lifecycle, so we use
- * `Sentry.startSpanManual` for manual span management.
+ * `Sentry.startInactiveSpan` for manual span management.
  */
 
 import * as Sentry from '@sentry/nextjs';
@@ -35,62 +35,58 @@ interface PipelineTransactionOpts {
 /**
  * Start a manual Sentry span for a background pipeline run.
  * Returns a context object with helpers for child spans.
+ *
+ * Uses `startInactiveSpan` (not `startSpanManual`) because the pipeline
+ * is a long-lived background process — the span outlives any callback scope.
+ * Child spans use explicit `parentSpan` to maintain the trace hierarchy.
  */
 export function startPipelineTransaction(opts: PipelineTransactionOpts): PipelineSpanContext {
-  let rootSpanRef: Sentry.Span | undefined;
+  const rootSpan = Sentry.startInactiveSpan({
+    name: 'pipeline.run',
+    op: 'pipeline',
+    attributes: {
+      'pipeline.id': opts.pipelineId,
+      'pipeline.dataset': opts.dataset,
+      ...(opts.orgId ? { 'pipeline.org_id': opts.orgId } : {}),
+    },
+  });
 
-  // Start the root span via Sentry's manual API.
-  // `startSpanManual` gives us a span we must explicitly end.
-  Sentry.startSpanManual(
-    {
-      name: 'pipeline.run',
-      op: 'pipeline',
-      attributes: {
-        'pipeline.id': opts.pipelineId,
-        'pipeline.dataset': opts.dataset,
-        ...(opts.orgId ? { 'pipeline.org_id': opts.orgId } : {}),
-      },
-    },
-    (span) => {
-      rootSpanRef = span;
-    },
-  );
+  let finished = false;
 
   return {
     startStage(name: string): StageSpan {
-      let stageSpanRef: Sentry.Span | undefined;
-
-      Sentry.startSpanManual(
-        {
-          name: `pipeline.stage.${name}`,
-          op: 'pipeline.stage',
-          attributes: { 'stage.name': name },
-        },
-        (span) => {
-          stageSpanRef = span;
-        },
-      );
+      const stageSpan = rootSpan
+        ? Sentry.startInactiveSpan({
+            name: `pipeline.stage.${name}`,
+            op: 'pipeline.stage',
+            attributes: { 'stage.name': name },
+            parentSpan: rootSpan,
+          })
+        : undefined;
 
       return {
         finish(status: 'ok' | 'error') {
-          if (stageSpanRef) {
-            stageSpanRef.setStatus({
+          if (stageSpan) {
+            stageSpan.setStatus({
               code: status === 'ok' ? 1 : 2, // 1 = OK, 2 = ERROR in OpenTelemetry
               message: status,
             });
-            stageSpanRef.end();
+            stageSpan.end();
           }
         },
       };
     },
 
     finish(status: 'ok' | 'error') {
-      if (rootSpanRef) {
-        rootSpanRef.setStatus({
+      if (finished) return;
+      finished = true;
+
+      if (rootSpan) {
+        rootSpan.setStatus({
           code: status === 'ok' ? 1 : 2,
           message: status,
         });
-        rootSpanRef.end();
+        rootSpan.end();
       }
     },
   };
@@ -98,8 +94,9 @@ export function startPipelineTransaction(opts: PipelineTransactionOpts): Pipelin
 
 /**
  * Set Sentry user context from auth.
+ * Only sends opaque userId — no email or PII.
  */
 export function setSentryUser(auth: AuthContext): void {
-  Sentry.setUser({ id: auth.userId, email: auth.email });
+  Sentry.setUser({ id: auth.userId });
   Sentry.setTag('org_id', auth.orgId);
 }

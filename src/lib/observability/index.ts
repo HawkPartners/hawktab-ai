@@ -18,6 +18,7 @@ export {
   AgentMetricsCollector,
   getMetricsCollector,
   resetMetricsCollector,
+  runWithMetricsCollector,
   recordAgentMetrics,
   getPipelineCostSummary,
   type AgentMetric,

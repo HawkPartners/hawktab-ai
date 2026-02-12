@@ -14,6 +14,7 @@
  *   const summary = await metrics.getSummary();
  */
 
+import { AsyncLocalStorage } from 'node:async_hooks';
 import * as Sentry from '@sentry/nextjs';
 import {
   calculateCost,
@@ -275,15 +276,27 @@ export class AgentMetricsCollector {
 }
 
 // =============================================================================
-// Singleton Instance (for pipeline-wide tracking)
+// Pipeline-scoped metrics (AsyncLocalStorage for concurrent run isolation)
 // =============================================================================
 
+const pipelineMetricsStorage = new AsyncLocalStorage<AgentMetricsCollector>();
+
+/** Global fallback for CLI/scripts (one pipeline at a time). */
 let globalCollector: AgentMetricsCollector | null = null;
 
 /**
- * Get the global metrics collector (creates one if needed)
+ * Get the metrics collector for the current pipeline run.
+ *
+ * Prefers the pipeline-scoped collector (set via `runWithMetricsCollector`)
+ * over the global singleton. This ensures concurrent web API pipeline runs
+ * each get their own collector, while CLI scripts (which don't use
+ * AsyncLocalStorage) fall back to the global singleton.
  */
 export function getMetricsCollector(): AgentMetricsCollector {
+  return pipelineMetricsStorage.getStore() ?? getGlobalCollector();
+}
+
+function getGlobalCollector(): AgentMetricsCollector {
   if (!globalCollector) {
     globalCollector = new AgentMetricsCollector();
   }
@@ -291,10 +304,29 @@ export function getMetricsCollector(): AgentMetricsCollector {
 }
 
 /**
- * Reset the global metrics collector
+ * Reset the global metrics collector.
+ * Used by CLI scripts (PipelineRunner) that run one pipeline at a time.
  */
 export function resetMetricsCollector(): void {
   globalCollector = new AgentMetricsCollector();
+}
+
+/**
+ * Run a function with a pipeline-scoped metrics collector.
+ *
+ * All `recordAgentMetrics()` / `getMetricsCollector()` calls within `fn`
+ * (and its async descendants) will use this collector instead of the global.
+ * This isolates concurrent pipeline runs from each other.
+ *
+ * Usage (in pipelineOrchestrator):
+ *   const collector = new AgentMetricsCollector();
+ *   await runWithMetricsCollector(collector, async () => { ... });
+ */
+export function runWithMetricsCollector<T>(
+  collector: AgentMetricsCollector,
+  fn: () => T,
+): T {
+  return pipelineMetricsStorage.run(collector, fn);
 }
 
 // =============================================================================
@@ -302,7 +334,7 @@ export function resetMetricsCollector(): void {
 // =============================================================================
 
 /**
- * Record metrics to the global collector
+ * Record metrics to the current pipeline's collector
  */
 export function recordAgentMetrics(
   agentName: string,
@@ -314,7 +346,7 @@ export function recordAgentMetrics(
 }
 
 /**
- * Get and format the global summary
+ * Get and format the current pipeline's summary
  */
 export async function getPipelineCostSummary(): Promise<string> {
   return getMetricsCollector().formatSummary();

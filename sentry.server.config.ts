@@ -3,6 +3,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import { scrubSentryEvent } from "@/lib/observability/sentry-scrub";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -25,22 +26,5 @@ Sentry.init({
   ignoreErrors: ["AbortError"],
 
   // Strip sensitive data before sending
-  beforeSend(event) {
-    // Remove any env vars that might leak
-    if (event.extra) {
-      for (const key of Object.keys(event.extra)) {
-        const lower = key.toLowerCase();
-        if (
-          lower.includes("key") ||
-          lower.includes("secret") ||
-          lower.includes("password") ||
-          lower.includes("token") ||
-          lower.includes("dsn")
-        ) {
-          event.extra[key] = "[REDACTED]";
-        }
-      }
-    }
-    return event;
-  },
+  beforeSend: scrubSentryEvent,
 });

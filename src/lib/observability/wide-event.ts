@@ -48,6 +48,12 @@ export type WideEventOutcome = 'success' | 'error' | 'partial' | 'cancelled';
 // WideEvent
 // =============================================================================
 
+/** Keys that should never be set on a WideEvent (prevents accidental secret leakage). */
+const BLOCKED_KEYS = /key|secret|password|token|credential|dsn|authorization/i;
+
+/** Max serialized size for a .set() value (10 KB). */
+const MAX_VALUE_SIZE = 10_240;
+
 export class WideEvent {
   private readonly pipelineId: string;
   private readonly dataset: string;
@@ -68,8 +74,22 @@ export class WideEvent {
     this.startTime = Date.now();
   }
 
-  /** Accumulate an arbitrary key-value pair. */
+  /** Accumulate an arbitrary key-value pair. Rejects sensitive keys and oversized values. */
   set(key: string, value: unknown): void {
+    if (BLOCKED_KEYS.test(key)) {
+      console.warn(`[WideEvent] Blocked sensitive key: "${key}"`);
+      return;
+    }
+    try {
+      const serialized = JSON.stringify(value);
+      if (serialized && serialized.length > MAX_VALUE_SIZE) {
+        console.warn(`[WideEvent] Value for "${key}" exceeds ${MAX_VALUE_SIZE} bytes, truncating`);
+        this.fields[key] = `[TRUNCATED: ${serialized.length} bytes]`;
+        return;
+      }
+    } catch {
+      // non-serializable value — store as-is, Sentry will handle
+    }
     this.fields[key] = value;
   }
 
