@@ -107,9 +107,9 @@ ACTIVE WORK: `docs/implementation-plans/product-roadmap.md` — Phase 3 (Product
 
 **Current Phase**: Phase 3 — Productization. Wiring up the UI so users can interact with HITL aspects (variable confirmation, alternative selection) during the pipeline run, not just review static Excel output after.
 
-**Phase 3.1 (Cloud Infrastructure)**: CODE COMPLETE — manual setup pending. All code written (Convex schema, R2 wrapper, WorkOS auth, Docker, health check). Cloud services need provisioning before functional. See `docs/phase-3.1-setup-checklist.md`.
+**Phase 3.5c (Security Audit)**: COMPLETE. Full audit with 19 findings across 4 severity tiers, all remediated. Patterns documented in `<security_patterns>` section below. Audit artifacts in `.security-audit/findings/`.
 
-**Next**: After manual setup, Phase 3.2 (Pipeline Cloud Migration) wires existing API routes and pipeline to use Convex + R2 instead of in-memory state and filesystem.
+**Next**: Phase 3.5d (Deploy & Launch) — Railway deployment, DNS, landing page, smoke testing. Then 3.5e (Analytics).
 
 FEEDBACK: `docs/latest-runs-feedback.md` — Tracks all issues from pipeline runs with problem/fix summaries.
 </current_focus>
@@ -260,6 +260,64 @@ VERIFICATION_PROMPT_VERSION=production
 
 Getters: `getVerificationModel()`, `getVerificationModelName()`, `getVerificationReasoningEffort()`
 </code_patterns>
+
+<security_patterns>
+SECURITY IS BUILT IN, NOT BOLTED ON.
+
+Every new route, mutation, file operation, and external call should follow these patterns from the start. We did a full security audit and these are the conventions that came out of it. Don't create work for a future audit — build it right the first time.
+
+AUTHENTICATION & AUTHORIZATION:
+- Every API route starts with `const auth = await requireConvexAuth()` — no exceptions except `/api/health`
+- Rate limiting comes immediately after auth: `const rateLimited = applyRateLimit(String(auth.convexOrgId), tier, routeKey)`
+- Role checks via `canPerform(auth.role, action)` for privileged operations
+- Org ownership checks on any resource access (runs, projects) — never trust route params alone
+
+CONVEX MUTATIONS:
+- All mutations are `internalMutation` — never public `mutation()`. Browsers cannot call them.
+- All queries are public `query` — required for client-side `useQuery` subscriptions.
+- Server-side code calls mutations via `mutateInternal(internal.X.Y, args)` from `src/lib/convex.ts`
+- The `ConvexHttpClient` singleton authenticates with `CONVEX_DEPLOY_KEY` via `setAdminAuth()`
+- Client-side code uses `useQuery` only — never `useMutation`. If you need to mutate from client, go through an API route.
+- New schema fields should use typed validators. `v.any()` is tech debt — only acceptable for deeply polymorphic accumulator fields (like `result`) behind `internalMutation`.
+
+RATE LIMITING (`src/lib/rateLimit.ts`, `src/lib/withRateLimit.ts`):
+- 4 tiers: `critical` (5/10min), `high` (15/min), `medium` (30/min), `low` (60/min)
+- Pipeline-triggering routes → `critical`. R/AI-calling routes → `high`. File generation → `medium`. CRUD/read → `low`.
+- Keyed by `orgId:routeKey` from auth context — never from user input
+
+INPUT VALIDATION:
+- File uploads: check `Content-Length` header at route level + per-file size limits in `fileHandler.ts`
+- Session IDs / pipeline IDs: strict allowlist regex (`/^[a-zA-Z0-9_.-]+$/`). Never blocklist.
+- Path construction: validate components BEFORE `path.join()`. Never pass user input directly into filesystem paths.
+- FormData fields: validate/parse with Zod before use
+
+R CODE GENERATION:
+- ALL R expressions from AI or user input must pass through `sanitizeRExpression()` (`src/lib/r/sanitizeRExpression.ts`) before interpolation
+- Column names interpolated into R strings need escaping: `escapeRString()` for `"quoted"` contexts, backtick-escape for `` `backtick` `` contexts
+- Use `execFile()` with argument arrays — never `exec()` with string interpolation. No shell.
+- R data file paths: `escapedPath = path.replace(/\\/g, '/')` before embedding in R scripts
+
+AI PROMPT SAFETY:
+- User-provided text going into AI prompts: truncate to reasonable length, strip `<>` tags, wrap in XML delimiters (`<user-hint>...</user-hint>`)
+- Never amplify user input with instructions like "trust their guidance" — the AI should validate, not blindly follow
+- See also `<prompt_hygiene>` section for dataset contamination rules
+
+ERROR RESPONSES:
+- Production: return generic error messages only. No stack traces, no internal paths, no stdout/stderr.
+- Development: gate detailed errors behind `process.env.NODE_ENV === 'development'` (opt-in, not opt-out)
+- Auth failures: always 401 with `{ error: 'Unauthorized' }` — no detail about why
+
+ENVIRONMENT VARIABLES:
+- Critical secrets (`CONVEX_DEPLOY_KEY`, API keys): throw in production if missing, warn in development
+- Feature flags (dev multiplier, etc.): use `=== 'development'` (opt-in), never `!== 'production'` (opt-out)
+- Never hardcode secrets as fallback values. If the env var is missing, fail loudly.
+
+DEPRECATION:
+- Mark deprecated code with `@deprecated` JSDoc tag and a note about what replaces it
+- Don't delete deprecated routes/functions unless explicitly asked — they may have callers you can't see
+- When a pattern is superseded (e.g., `mutation()` → `internalMutation()`), update ALL call sites in the same PR. Don't leave a mix of old and new patterns — that's how things get missed in audits.
+- Dead code with no callers: safe to delete. Confirm with a codebase search first.
+</security_patterns>
 
 <constraints>
 RULES - NEVER VIOLATE:

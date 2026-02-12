@@ -14,7 +14,7 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 
 ---
 
-### Status Summary (Feb 11, 2026)
+### Status Summary (Feb 12, 2026)
 
 | Sub-phase | Description | Status |
 |-----------|-------------|--------|
@@ -25,7 +25,7 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 | **3.4** Dashboard, Detail, Roles & Cost | Real-time dashboard, project detail, role enforcement, cost tracking | Complete |
 | **3.5a** Auth Completion | WorkOS production credentials, real login flow | Complete |
 | **3.5b** Observability | Sentry, correlation IDs, structured logging | Complete |
-| **3.5c** Security Audit | Full audit with real auth in place, fix findings | Not Started |
+| **3.5c** Security Audit | 19 findings across 4 severity tiers, all remediated | Complete |
 | **3.5d** Deploy & Launch | Railway, DNS, landing page, smoke testing | Not Started |
 | **3.5e** Analytics | PostHog setup, key event tracking | Not Started |
 
@@ -95,13 +95,21 @@ Ship it. Antares gets a link.
 
 ---
 
-#### 3.5c Security Audit — `NOT STARTED`
+#### 3.5c Security Audit — `COMPLETE`
 
 **Goal**: Audit the complete system with real auth in place, before real users touch it. Fix findings before deploying.
 
-- Run Claude Code `security-audit` skill to audit the codebase
+**What was done**: Full multi-agent security audit (`security-audit` skill) followed by independent multi-agent validation. All findings remediated across 3 commits, 20+ files.
 
-**Level of Effort**: Medium
+**Findings addressed (19 total)**:
+- **CRITICAL (4)**: Next.js RCE (CVE-2025-55182, CVE-2025-66478) + React SSR vulnerability → upgraded to Next.js 15.5.12 + React 19.1.5. R code injection via `exec()` → replaced with `execFile()` + argument arrays across 5 files.
+- **HIGH (8)**: Shell injection in R/validation paths → `execFile` migration. Auth bypass guard in production. Security headers (CSP, HSTS, X-Frame-Options). Rate limiting on all 13 API routes (in-memory sliding window, 4 tiers). Convex mutations converted to `internalMutation` with deploy key auth. `v.any()` replaced with typed validators for `config` and `intake` fields.
+- **MEDIUM (7)**: R expression sanitization (`sanitizeRExpression` blocklist + character allowlist). Column name escaping for R string/backtick contexts. Path traversal hardened to allowlist regex on all session routes. `pipelineId` path validation. Prompt injection mitigation for user hint text (truncation, XML delimiters). Hardcoded Sentry DSN removed.
+- **LOW (5)**: Per-file upload size limits (100MB .sav, 25MB docs, 10MB message lists). Info disclosure gated behind `NODE_ENV`. Dependency vulnerabilities resolved (`npm audit` clean).
+
+**Audit artifacts**: `.security-audit/findings/audit-2026-02-12.md`
+
+**Established patterns**: Documented in `CLAUDE.md` `<security_patterns>` section — all new code should follow these patterns from the ground up.
 
 ---
 
@@ -148,5 +156,5 @@ Future features, deferred items, and known gaps/limitations are documented in [`
 ---
 
 *Created: January 22, 2026*
-*Updated: February 11, 2026*
-*Status: Phase 3 (Productization) in progress. 3.1–3.4, 3.5a, and 3.5b complete. 3.5c–3.5e next.*
+*Updated: February 12, 2026*
+*Status: Phase 3 (Productization) in progress. 3.1–3.4, 3.5a–3.5c complete. 3.5d–3.5e next.*
