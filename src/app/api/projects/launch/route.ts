@@ -18,6 +18,7 @@ import {
   FileSizeLimitError,
 } from '@/lib/api/fileHandler';
 import { runPipelineFromUpload, type PipelineRunParams } from '@/lib/api/pipelineOrchestrator';
+import pLimit from 'p-limit';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import { canPerform } from '@/lib/permissions';
 import { mutateInternal } from '@/lib/convex';
@@ -34,6 +35,10 @@ import { getApiErrorDetails } from '@/lib/api/errorDetails';
 // Allow large .sav file uploads and long-running validation
 export const maxDuration = 300; // 5 minutes
 const MAX_UPLOAD_BYTES = 100 * 1024 * 1024; // 100 MB
+
+// Limit concurrent pipeline runs to prevent resource starvation.
+// Each run spawns an R process that uses significant CPU/memory.
+const pipelineLimit = pLimit(3);
 
 const ALLOWED_DATA_EXTENSIONS = ['.sav'];
 const ALLOWED_DOCUMENT_EXTENSIONS = ['.pdf', '.docx', '.doc'];
@@ -215,8 +220,8 @@ export async function POST(request: NextRequest) {
       config,
     };
 
-    // Kick off background processing
-    runPipelineFromUpload(pipelineParams).catch((error) => {
+    // Kick off background processing (concurrency-limited to 3 simultaneous runs)
+    pipelineLimit(() => runPipelineFromUpload(pipelineParams)).catch((error) => {
       console.error('[Launch] Unhandled pipeline error:', error);
       // Ensure unhandled pipeline errors reach Sentry (the internal try/catch
       // in pipelineOrchestrator covers most cases, but this is the safety net)

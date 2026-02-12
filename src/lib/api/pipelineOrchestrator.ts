@@ -6,6 +6,7 @@ import { getConvexClient, mutateInternal } from '@/lib/convex';
 import { api } from '../../../convex/_generated/api';
 import { internal } from '../../../convex/_generated/api';
 import { cleanupAbort } from '@/lib/abortStore';
+import { cleanupSession } from '@/lib/storage';
 import { uploadPipelineOutputs, type R2FileManifest } from '@/lib/r2/R2FileManager';
 import type { Id } from '../../../convex/_generated/dataModel';
 import { BannerAgent } from '@/agents/BannerAgent';
@@ -1511,7 +1512,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       await execFileAsync(
         rCommand,
         [masterPath],
-        { cwd: outputDir, maxBuffer: 10 * 1024 * 1024, timeout: 120000 }
+        { cwd: outputDir, maxBuffer: 50 * 1024 * 1024, timeout: 120000 }
       );
 
       const resultFiles = await fs.readdir(resultsDir);
@@ -1771,21 +1772,28 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     wideEvent.set('tableCount', allTablesForR.length);
     wideEvent.finish(excelGenerated ? 'success' : (rExecutionSuccess ? 'partial' : 'error'));
 
-    // Upload outputs to R2 (non-blocking — log but don't fail on R2 errors)
+    // Upload outputs to R2
     let r2Manifest: R2FileManifest | undefined;
+    let r2UploadFailed = false;
     if (convexOrgId && convexProjectId) {
       try {
         r2Manifest = await uploadPipelineOutputs(convexOrgId, convexProjectId, runId, outputDir);
         console.log(`[API] Uploaded ${Object.keys(r2Manifest.outputs).length} output files to R2`);
       } catch (r2Error) {
-        console.warn('[API] R2 output upload failed (non-fatal):', r2Error);
+        r2UploadFailed = true;
+        console.error('[API] R2 output upload failed — downloads will be unavailable:', r2Error);
       }
     }
 
     // Update Convex run status
-    const terminalStatus: RunStatus = excelGenerated ? 'success' : (rExecutionSuccess ? 'partial' : 'error');
+    // Downgrade to 'partial' if Excel was generated but R2 upload failed (files can't be downloaded)
+    const terminalStatus: RunStatus = excelGenerated
+      ? (r2UploadFailed ? 'partial' : 'success')
+      : (rExecutionSuccess ? 'partial' : 'error');
     const terminalMessage = excelGenerated
-      ? `Complete! Generated ${allTablesForR.length} crosstab tables in ${durationSec}s`
+      ? r2UploadFailed
+        ? `Generated ${allTablesForR.length} tables but file upload failed — contact support.`
+        : `Complete! Generated ${allTablesForR.length} crosstab tables in ${durationSec}s`
       : rExecutionSuccess
         ? 'R execution complete but Excel generation failed.'
         : 'R scripts generated. Execution failed - check R installation.';
@@ -1825,12 +1833,16 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     });
     cleanupAbort(runId);
 
+    // Clean up temp session files (/tmp/hawktab-ai/{sessionId}/)
+    try { await cleanupSession(sessionId); } catch { /* best-effort */ }
+
   } catch (processingError) {
     if (isAbortError(processingError)) {
       console.log('[API] Pipeline processing was cancelled');
       metricsCollector.unbindWideEvent();
       wideEvent.finish('cancelled', 'Pipeline cancelled');
       await handleCancellation(outputDir, runId, 'Pipeline cancelled');
+      try { await cleanupSession(sessionId); } catch { /* best-effort */ }
       return;
     }
 
@@ -1861,6 +1873,9 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       error: processingError instanceof Error ? processingError.message : 'Unknown error',
     });
     cleanupAbort(runId);
+
+    // Clean up temp session files on error too
+    try { await cleanupSession(sessionId); } catch { /* best-effort */ }
   }
   }); // end runWithMetricsCollector
 }
