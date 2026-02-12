@@ -25,7 +25,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install R, build tools (needed to compile haven/dplyr from source), and system libs
+# Install system dependencies:
+# - R + build tools: statistical computation, .sav file processing
+# - LibreOffice: DOCX → PDF/HTML conversion (BannerAgent, SurveyProcessor)
+# - GraphicsMagick + Ghostscript: PDF → PNG conversion (pdf2pic for AI vision)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     r-base \
     r-base-dev \
@@ -35,6 +38,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl-dev \
     libxml2-dev \
     zlib1g-dev \
+    libreoffice-writer \
+    graphicsmagick \
+    ghostscript \
     && rm -rf /var/lib/apt/lists/*
 
 # Install R packages and verify haven loaded successfully
