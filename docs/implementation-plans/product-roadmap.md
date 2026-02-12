@@ -21,7 +21,7 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 | **UI Foundation** | Route groups, app shell, sidebar, providers, API refactor | Complete |
 | **3.1** Cloud Infrastructure Setup | Convex, R2, WorkOS, Docker/Railway | Complete |
 | **3.2** Pipeline Cloud Migration | Wire orchestrator to Convex/R2, new API routes, deprecate old | Complete |
-| **3.3** New Project Experience | Multi-step wizard exposing all pipeline features in UI | Not Started |
+| **3.3** New Project Experience | Multi-step wizard exposing all pipeline features in UI | In Progress |
 | **3.4** Dashboard & Supportability | Real-time dashboard, debug bundles, error visibility | Not Started |
 | **3.5** Deploy & Launch | Railway deployment, DNS, landing page, Sentry | Not Started |
 

@@ -326,6 +326,8 @@ export interface PipelineRunParams {
   savedPaths: SavedFilePaths;
   abortSignal?: AbortSignal;
   loopStatTestingMode?: 'suppress' | 'complement';
+  /** Full project config from wizard (Phase 3.3). When present, overrides individual fields. */
+  config?: import('@/schemas/projectConfigSchema').ProjectConfig;
 }
 
 /**
@@ -343,6 +345,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     savedPaths,
     abortSignal,
     loopStatTestingMode,
+    config: wizardConfig,
   } = params;
 
   const processingStartTime = Date.now();
@@ -368,8 +371,13 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     // Copy input files to inputs/ folder with original names
     const inputsDir = path.join(outputDir, 'inputs');
     await fs.mkdir(inputsDir, { recursive: true });
-    await fs.copyFile(dataMapPath, path.join(inputsDir, fileNames.dataMap));
-    await fs.copyFile(bannerPlanPath, path.join(inputsDir, fileNames.bannerPlan));
+    // dataMapPath may equal spssPath in wizard flow (.sav IS the datamap)
+    if (dataMapPath && dataMapPath !== spssPath && fileNames.dataMap) {
+      await fs.copyFile(dataMapPath, path.join(inputsDir, fileNames.dataMap));
+    }
+    if (bannerPlanPath && fileNames.bannerPlan) {
+      await fs.copyFile(bannerPlanPath, path.join(inputsDir, fileNames.bannerPlan));
+    }
     await fs.copyFile(spssPath, path.join(inputsDir, fileNames.dataFile));
     if (surveyPath && fileNames.survey) {
       await fs.copyFile(surveyPath, path.join(inputsDir, fileNames.survey));
@@ -544,48 +552,137 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       });
 
     // Await ONLY Path A — this is what we need for review check
-    console.log('[API] Awaiting Path A (Banner → Crosstab)...');
+    // When wizardConfig.bannerMode === 'auto_generate', skip BannerAgent and use BannerGenerateAgent
     let pathAResult: PathAResult;
-    try {
-      pathAResult = await executePathA(bannerAgent, bannerPlanPath, agentDataMap, outputDir, updateParallelProgress, abortSignal);
-    } catch (pathAError) {
-      if (isAbortError(pathAError)) {
-        console.log('[API] Pipeline was cancelled during Path A');
-        await handleCancellation(outputDir, runId, 'Cancelled during agent processing');
+
+    if (wizardConfig?.bannerMode === 'auto_generate') {
+      console.log('[API] Auto-generate mode: using BannerGenerateAgent instead of Path A...');
+      try {
+        const { generateBannerCuts } = await import('@/agents/BannerGenerateAgent');
+        const genResult = await generateBannerCuts({
+          verboseDataMap: verboseDataMap as import('@/agents/BannerGenerateAgent').BannerGenerateInput['verboseDataMap'],
+          researchObjectives: wizardConfig.researchObjectives,
+          cutSuggestions: wizardConfig.bannerHints,
+          projectType: wizardConfig.projectSubType,
+          outputDir,
+          abortSignal,
+        });
+        updateParallelProgress(40);
+        console.log(`[API] BannerGenerateAgent: ${genResult.agent.length} groups generated (confidence: ${genResult.confidence})`);
+
+        // Run CrosstabAgent on generated banner
+        const crosstabResult = await processCrosstabGroups(
+          agentDataMap,
+          { bannerCuts: genResult.agent.map(g => ({ groupName: g.groupName, columns: g.columns })) },
+          outputDir,
+          (completed, total) => {
+            const percent = 40 + Math.floor((completed / total) * 60);
+            updateParallelProgress(percent);
+          },
+          abortSignal
+        );
+        updateParallelProgress(100);
+
+        const now = new Date().toISOString();
+        pathAResult = {
+          bannerResult: {
+            success: true,
+            confidence: genResult.confidence,
+            verbose: {
+              success: true,
+              timestamp: now,
+              data: {
+                success: true,
+                extractionType: 'auto_generate',
+                timestamp: now,
+                extractedStructure: {
+                  bannerCuts: genResult.agent,
+                  notes: [],
+                  processingMetadata: {
+                    totalColumns: genResult.agent.reduce((s, g) => s + g.columns.length, 0),
+                  },
+                },
+                errors: [],
+                warnings: [],
+              },
+            },
+            agent: genResult.agent,
+            errors: [],
+            warnings: [],
+          } as unknown as PathAResult['bannerResult'],
+          crosstabResult,
+          agentBanner: genResult.agent,
+          reviewRequired: false,
+        };
+      } catch (genError) {
+        if (isAbortError(genError)) {
+          console.log('[API] Pipeline was cancelled during auto-generate');
+          await handleCancellation(outputDir, runId, 'Cancelled during agent processing');
+          return;
+        }
+        const errorMsg = genError instanceof Error ? genError.message : String(genError);
+        console.error(`[API] Auto-generate failed: ${errorMsg}`);
+        await updateRunStatus(runId, {
+          status: 'error', stage: 'error', progress: 100,
+          message: 'Auto-generate banner failed', error: errorMsg,
+        });
+        cleanupAbort(runId);
         return;
       }
-
-      const errorMsg = pathAError instanceof Error ? pathAError.message : String(pathAError);
-      console.error(`[API] Path A failed: ${errorMsg}`);
-
-      const failureSummary = {
-        pipelineId,
-        dataset: datasetName,
-        timestamp: new Date().toISOString(),
-        source: 'ui',
-        status: 'error',
-        error: `Banner/Crosstab processing failed: ${errorMsg}`,
-        inputs: {
-          datamap: fileNames.dataMap,
-          banner: fileNames.bannerPlan,
-          spss: fileNames.dataFile,
-          survey: fileNames.survey,
+    } else {
+      // Guard: banner plan path must be a real file when using upload mode
+      if (!bannerPlanPath) {
+        const errorMsg = 'Banner plan file is required when banner mode is "upload". No file was provided.';
+        console.error(`[API] ${errorMsg}`);
+        await updateRunStatus(runId, {
+          status: 'error', stage: 'error', progress: 100,
+          message: errorMsg, error: errorMsg,
+        });
+        cleanupAbort(runId);
+        return;
+      }
+      console.log('[API] Awaiting Path A (Banner → Crosstab)...');
+      try {
+        pathAResult = await executePathA(bannerAgent, bannerPlanPath, agentDataMap, outputDir, updateParallelProgress, abortSignal);
+      } catch (pathAError) {
+        if (isAbortError(pathAError)) {
+          console.log('[API] Pipeline was cancelled during Path A');
+          await handleCancellation(outputDir, runId, 'Cancelled during agent processing');
+          return;
         }
-      };
-      await fs.writeFile(
-        path.join(outputDir, 'pipeline-summary.json'),
-        JSON.stringify(failureSummary, null, 2)
-      );
 
-      await updateRunStatus(runId, {
-        status: 'error',
-        stage: 'error',
-        progress: 100,
-        message: 'Banner extraction failed',
-        error: errorMsg,
-      });
-      cleanupAbort(runId);
-      return;
+        const errorMsg = pathAError instanceof Error ? pathAError.message : String(pathAError);
+        console.error(`[API] Path A failed: ${errorMsg}`);
+
+        const failureSummary = {
+          pipelineId,
+          dataset: datasetName,
+          timestamp: new Date().toISOString(),
+          source: 'ui',
+          status: 'error',
+          error: `Banner/Crosstab processing failed: ${errorMsg}`,
+          inputs: {
+            datamap: fileNames.dataMap,
+            banner: fileNames.bannerPlan,
+            spss: fileNames.dataFile,
+            survey: fileNames.survey,
+          }
+        };
+        await fs.writeFile(
+          path.join(outputDir, 'pipeline-summary.json'),
+          JSON.stringify(failureSummary, null, 2)
+        );
+
+        await updateRunStatus(runId, {
+          status: 'error',
+          stage: 'error',
+          progress: 100,
+          message: 'Banner extraction failed',
+          error: errorMsg,
+        });
+        cleanupAbort(runId);
+        return;
+      }
     }
 
     const pathADuration = Date.now() - parallelStartTime;
@@ -738,6 +835,21 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       return;
     }
 
+    // Stop after verification (wizard config)
+    if (wizardConfig?.stopAfterVerification) {
+      console.log('[API] stopAfterVerification=true — completing with partial status');
+      await updateRunStatus(runId, {
+        status: 'partial',
+        stage: 'complete',
+        progress: 100,
+        message: `Verification complete: ${sortedTables.length} tables. R/Excel generation skipped.`,
+        result: { pipelineId, outputDir, dataset: datasetName },
+      });
+      cleanupAbort(runId);
+      await updatePipelineSummary(outputDir, { status: 'partial', currentStage: 'verification_only' });
+      return;
+    }
+
     // -------------------------------------------------------------------------
     // Step 6: R Validation with Retry Loop
     // -------------------------------------------------------------------------
@@ -790,13 +902,27 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     const rDir = path.join(outputDir, 'r');
     await fs.mkdir(rDir, { recursive: true });
 
+    // Build R script input with wizard config overrides
+    const rScriptInput: import('@/lib/r/RScriptGeneratorV2').RScriptV2Input = {
+      tables: allTablesForR,
+      cuts: cutsSpec.cuts,
+      cutGroups: cutsSpec.groups,
+      loopStatTestingMode,
+      ...(wizardConfig?.weightVariable && { weightVariable: wizardConfig.weightVariable }),
+      ...(wizardConfig?.statTesting && {
+        statTestingConfig: {
+          // Convert confidence % to alpha: 90% confidence → p < 0.10
+          thresholds: wizardConfig.statTesting.thresholds.map(t => (100 - t) / 100),
+          proportionTest: 'unpooled_z' as const,
+          meanTest: 'welch_t' as const,
+          minBase: wizardConfig.statTesting.minBase,
+        },
+        significanceThresholds: wizardConfig.statTesting.thresholds.map(t => (100 - t) / 100),
+      }),
+    };
+
     const { script: masterScript, validation: staticValidationReport } = generateRScriptV2WithValidation(
-      {
-        tables: allTablesForR,
-        cuts: cutsSpec.cuts,
-        cutGroups: cutsSpec.groups,
-        loopStatTestingMode,
-      },
+      rScriptInput,
       { sessionId: pipelineId, outputDir: 'results' }
     );
 
@@ -882,9 +1008,27 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         const excelPath = path.join(resultsDir, 'crosstabs.xlsx');
 
         try {
-          const formatter = new ExcelFormatter();
+          // Apply wizard config: theme + display mode
+          if (wizardConfig?.theme) {
+            const { setActiveTheme } = await import('@/lib/excel/styles');
+            setActiveTheme(wizardConfig.theme);
+          }
+          const formatter = new ExcelFormatter({
+            displayMode: wizardConfig?.displayMode ?? 'frequency',
+            separateWorkbooks: wizardConfig?.separateWorkbooks ?? false,
+          });
           await formatter.formatFromFile(tablesJsonPath);
           await formatter.saveToFile(excelPath);
+          // Save second workbook if separateWorkbooks mode
+          if (wizardConfig?.separateWorkbooks && wizardConfig?.displayMode === 'both') {
+            try {
+              const countsPath = path.join(resultsDir, 'crosstabs-counts.xlsx');
+              await formatter.saveSecondWorkbook(countsPath);
+              console.log(`[API] Generated crosstabs-counts.xlsx`);
+            } catch {
+              console.warn('[API] Second workbook not available (expected for non-both modes)');
+            }
+          }
           excelGenerated = true;
           console.log(`[API] Generated crosstabs.xlsx`);
         } catch (excelError) {

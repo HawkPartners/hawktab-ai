@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Upload, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface FileUploadProps {
   title: string;
@@ -64,7 +65,13 @@ export default function FileUpload({
 
   const validateFile = (file: File): boolean => {
     const fileName = file.name.toLowerCase();
-    return fileExtensions.some(ext => fileName.endsWith(ext.toLowerCase()));
+    const isValid = fileExtensions.some(ext => fileName.endsWith(ext.toLowerCase()));
+    if (!isValid) {
+      toast.error(`Invalid file type for ${title}`, {
+        description: `Accepted formats: ${fileExtensions.join(', ')}`,
+      });
+    }
+    return isValid;
   };
 
   const handleClick = () => {

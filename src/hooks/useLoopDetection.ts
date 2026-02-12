@@ -1,3 +1,7 @@
+/**
+ * @deprecated Phase 3.3 — Replaced by useDataValidation which includes loop detection,
+ * weight detection, and stacked-data detection in a single validation pass.
+ */
 import { useState, useEffect } from 'react';
 
 export interface LoopDetectionResult {

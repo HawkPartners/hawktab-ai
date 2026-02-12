@@ -16,8 +16,8 @@ export interface PipelineSummary {
     loopStatTestingMode?: 'suppress' | 'complement';
   };
   inputs: {
-    datamap: string;
-    banner: string;
+    datamap?: string;
+    banner?: string;
     spss: string;
     survey: string | null;
   };
@@ -171,5 +171,27 @@ export interface SavedFilePaths {
     bannerPlan: string;
     spss: string;
     survey: string | null;
+  };
+}
+
+// --- Wizard-specific types (Phase 3.3) ---
+
+export interface ParsedWizardFiles {
+  dataFile: File;
+  surveyFile: File;
+  bannerPlanFile: File | null;
+  messageListFile: File | null;
+}
+
+export interface SavedWizardPaths {
+  spssPath: string;
+  surveyPath: string;
+  bannerPlanPath: string | null;
+  messageListPath: string | null;
+  r2Keys?: {
+    spss: string;
+    survey: string;
+    bannerPlan: string | null;
+    messageList: string | null;
   };
 }

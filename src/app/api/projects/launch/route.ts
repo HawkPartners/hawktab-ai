@@ -1,0 +1,243 @@
+/**
+ * POST /api/projects/launch
+ *
+ * New project launch endpoint (Phase 3.3).
+ * Accepts wizard FormData: dataFile, surveyDocument, optional bannerPlan/messageList,
+ * config (JSON), projectName. Creates Convex project + run, saves files, fires pipeline.
+ *
+ * Replaces /api/process-crosstab for the wizard flow.
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { generateSessionId } from '@/lib/storage';
+import { validateEnvironment } from '@/lib/env';
+import {
+  parseWizardFormData,
+  saveWizardFilesToStorage,
+} from '@/lib/api/fileHandler';
+import { runPipelineFromUpload, type PipelineRunParams } from '@/lib/api/pipelineOrchestrator';
+import { requireConvexAuth } from '@/lib/requireConvexAuth';
+import { getConvexClient } from '@/lib/convex';
+import { api } from '../../../../../convex/_generated/api';
+import { createAbortController } from '@/lib/abortStore';
+import { ProjectConfigSchema } from '@/schemas/projectConfigSchema';
+import {
+  persistSystemError,
+  getGlobalSystemOutputDir,
+} from '@/lib/errors/ErrorPersistence';
+
+// Allow large .sav file uploads and long-running validation
+export const maxDuration = 300; // 5 minutes
+
+const ALLOWED_DATA_EXTENSIONS = ['.sav'];
+const ALLOWED_DOCUMENT_EXTENSIONS = ['.pdf', '.docx', '.doc'];
+const ALLOWED_MESSAGE_LIST_EXTENSIONS = ['.xlsx', '.xls', '.csv'];
+
+export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  const sessionId = generateSessionId();
+
+  try {
+    // Authenticate and get Convex IDs
+    const auth = await requireConvexAuth();
+
+    // Validate environment configuration
+    const envValidation = validateEnvironment();
+    if (!envValidation.valid) {
+      return NextResponse.json(
+        { error: 'Environment configuration invalid', details: envValidation.errors },
+        { status: 500 }
+      );
+    }
+
+    // Parse form data
+    const formData = await request.formData();
+    const parsed = parseWizardFormData(formData);
+    if (!parsed) {
+      return NextResponse.json(
+        { error: 'Missing required files: dataFile and surveyDocument are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate file formats
+    const fileErrors: string[] = [];
+    const dataExt = '.' + parsed.dataFile.name.split('.').pop()?.toLowerCase();
+    if (!ALLOWED_DATA_EXTENSIONS.includes(dataExt)) {
+      fileErrors.push(`Data file must be .sav (got ${dataExt})`);
+    }
+    const surveyExt = '.' + parsed.surveyFile.name.split('.').pop()?.toLowerCase();
+    if (!ALLOWED_DOCUMENT_EXTENSIONS.includes(surveyExt)) {
+      fileErrors.push(`Survey document must be PDF or DOCX (got ${surveyExt})`);
+    }
+    if (parsed.bannerPlanFile) {
+      const bannerExt = '.' + parsed.bannerPlanFile.name.split('.').pop()?.toLowerCase();
+      if (!ALLOWED_DOCUMENT_EXTENSIONS.includes(bannerExt)) {
+        fileErrors.push(`Banner plan must be PDF or DOCX (got ${bannerExt})`);
+      }
+    }
+    if (parsed.messageListFile) {
+      const msgExt = '.' + parsed.messageListFile.name.split('.').pop()?.toLowerCase();
+      if (!ALLOWED_MESSAGE_LIST_EXTENSIONS.includes(msgExt)) {
+        fileErrors.push(`Message list must be Excel or CSV (got ${msgExt})`);
+      }
+    }
+    if (fileErrors.length > 0) {
+      return NextResponse.json(
+        { error: 'Invalid file format', details: fileErrors },
+        { status: 400 }
+      );
+    }
+
+    // Parse and validate config
+    const configRaw = formData.get('config') as string | null;
+    const projectName = formData.get('projectName') as string | null;
+
+    if (!configRaw || !projectName) {
+      return NextResponse.json(
+        { error: 'Missing required fields: config and projectName' },
+        { status: 400 }
+      );
+    }
+
+    let config;
+    try {
+      config = ProjectConfigSchema.parse(JSON.parse(configRaw));
+    } catch (parseError) {
+      return NextResponse.json(
+        {
+          error: 'Invalid config',
+          details: parseError instanceof Error ? parseError.message : 'Config validation failed',
+        },
+        { status: 400 }
+      );
+    }
+
+    const convex = getConvexClient();
+
+    // Create Convex project
+    const projectId = await convex.mutation(api.projects.create, {
+      orgId: auth.convexOrgId,
+      name: projectName,
+      projectType: 'crosstab',
+      config,
+      intake: {
+        dataFile: parsed.dataFile.name,
+        survey: parsed.surveyFile.name,
+        bannerPlan: parsed.bannerPlanFile?.name ?? null,
+        messageList: parsed.messageListFile?.name ?? null,
+        bannerMode: config.bannerMode,
+      },
+      fileKeys: [],
+      createdBy: auth.convexUserId,
+    });
+
+    // Save files to temporary storage + upload to R2 in parallel
+    const savedPaths = await saveWizardFilesToStorage(parsed, sessionId, {
+      orgId: String(auth.convexOrgId),
+      projectId: String(projectId),
+    });
+
+    // Update project with R2 file keys if available
+    if (savedPaths.r2Keys) {
+      const keys = Object.values(savedPaths.r2Keys).filter((k): k is string => k !== null);
+      if (keys.length > 0) {
+        await convex.mutation(api.projects.updateFileKeys, {
+          projectId,
+          fileKeys: keys,
+        });
+      }
+    }
+
+    // Create Convex run with full config
+    const runId = await convex.mutation(api.runs.create, {
+      projectId,
+      orgId: auth.convexOrgId,
+      config,
+    });
+
+    const runIdStr = String(runId);
+
+    // Create AbortController for this run
+    const abortSignal = createAbortController(runIdStr);
+
+    console.log(`[Launch] Project ${String(projectId)} run ${runIdStr} created in ${Date.now() - startTime}ms`);
+
+    // Build PipelineRunParams — synthesize the legacy SavedFilePaths shape.
+    // dataMapPath === spssPath since .sav IS the datamap in wizard flow.
+    // bannerPlanPath is the real path or empty string (orchestrator guards empty paths).
+    const pipelineParams: PipelineRunParams = {
+      runId: runIdStr,
+      sessionId,
+      convexOrgId: String(auth.convexOrgId),
+      convexProjectId: String(projectId),
+      fileNames: {
+        dataMap: parsed.dataFile.name, // .sav acts as datamap
+        bannerPlan: parsed.bannerPlanFile?.name ?? '',
+        dataFile: parsed.dataFile.name,
+        survey: parsed.surveyFile.name,
+      },
+      savedPaths: {
+        dataMapPath: savedPaths.spssPath, // .sav IS the datamap
+        bannerPlanPath: savedPaths.bannerPlanPath ?? '',
+        spssPath: savedPaths.spssPath,
+        surveyPath: savedPaths.surveyPath,
+        r2Keys: savedPaths.r2Keys ? {
+          dataMap: savedPaths.r2Keys.spss,
+          bannerPlan: savedPaths.r2Keys.bannerPlan ?? '',
+          spss: savedPaths.r2Keys.spss,
+          survey: savedPaths.r2Keys.survey ?? null,
+        } : undefined,
+      },
+      abortSignal,
+      loopStatTestingMode: config.loopStatTestingMode,
+      config,
+    };
+
+    // Kick off background processing
+    runPipelineFromUpload(pipelineParams).catch((error) => {
+      console.error('[Launch] Unhandled pipeline error:', error);
+    });
+
+    return NextResponse.json({
+      accepted: true,
+      runId: runIdStr,
+      projectId: String(projectId),
+      sessionId,
+    });
+  } catch (error) {
+    console.error('[Launch] Error:', error);
+
+    // Return 401 for auth errors
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    if (errorMsg.includes('Unauthorized') || errorMsg.includes('unauthorized')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    try {
+      await persistSystemError({
+        outputDir: getGlobalSystemOutputDir(),
+        dataset: '',
+        pipelineId: '',
+        stageNumber: 0,
+        stageName: 'Launch',
+        severity: 'fatal',
+        actionTaken: 'failed_pipeline',
+        error,
+        meta: { sessionId },
+      });
+    } catch {
+      // ignore
+    }
+    return NextResponse.json(
+      {
+        error: 'Project launch failed',
+        sessionId,
+        details: process.env.NODE_ENV === 'development'
+          ? errorMsg
+          : 'An error occurred',
+      },
+      { status: 500 }
+    );
+  }
+}

@@ -1,3 +1,8 @@
+/**
+ * @deprecated Phase 3.3 — Replaced by the wizard flow at /projects/new.
+ * The wizard uses StepUploadFiles + StepDataValidation instead.
+ * Keep for backward compatibility; will be removed in a future cleanup.
+ */
 'use client';
 
 import { useState } from 'react';

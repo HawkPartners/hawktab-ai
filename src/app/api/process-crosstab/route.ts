@@ -1,6 +1,10 @@
 // Single API endpoint for complete crosstab processing workflow
 
 /**
+ * @deprecated Phase 3.3 — Replaced by POST /api/projects/launch.
+ * The new endpoint accepts the wizard payload (no dataMap required, full config).
+ * This endpoint is preserved for backward compatibility only.
+ *
  * POST /api/process-crosstab
  * Purpose: Single entrypoint for upload → full pipeline processing
  * Creates Convex project + run, then fires pipeline in background.
