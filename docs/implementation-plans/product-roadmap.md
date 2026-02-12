@@ -28,7 +28,7 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 | **3.5c** Security Audit | 19 findings across 4 severity tiers, all remediated | Complete |
 | **3.5d** Deploy & Launch | Railway, DNS, landing page, smoke testing | Complete |
 | **3.5e** Analytics | PostHog setup, key event tracking | Complete |
-| **3.5f** Testing & Iteration | 8 items: ~~review timeline fix~~, unique names, config audit, download filtering, deletion, ~~stats display~~, review state durability, stale run recovery | In Progress |
+| **3.5f** Testing & Iteration | 8 items: ~~review timeline fix~~, unique names, config audit, download filtering, deletion, ~~stats display~~, ~~review state durability~~, stale run recovery | In Progress |
 
 ---
 
@@ -147,7 +147,7 @@ Ship it. Antares gets a link.
 
 **Goal**: Fix bugs and polish UX issues found during initial Antares testing. Get the deployed product from "works" to "works well."
 
-**Scope**: 8 work items. Items 1 and 6 complete (audit + fix). Items 7–8 added from post-review infrastructure audit.
+**Scope**: 8 work items. Items 1, 6, and 7 complete. Items 7–8 added from post-review infrastructure audit.
 
 ---
 
@@ -267,21 +267,18 @@ Ship it. Antares gets a link.
 
 ---
 
-**7. Persist review state to durable storage** — `HIGH PRIORITY`
+**7. Persist review state to durable storage** — `COMPLETE`
 
 **Problem**: When the pipeline pauses for HITL review (`pending_review`), the entire review context lives on the container's ephemeral filesystem: `crosstab-review-state.json` (~1-5 MB), `path-b-result.json`, and the SPSS file in `inputs/`. If Railway redeploys the container during the review window (any push to dev/main, or a container restart), these files vanish. The user clicks "Submit Review" and gets a 404: *"Review state not found."* No recovery path — they'd have to re-run the entire 45-60 minute pipeline.
 
-R2 doesn't save us here because output files are only uploaded at the very end of the pipeline, after R execution and Excel generation. The intermediate review state is never persisted to durable storage.
+**Fix applied**:
+- Eager R2 upload at `pending_review` entry: review state JSON, pipeline summary, and SPSS R2 key stored via `uploadReviewFile()`. Path B and Path C results uploaded on completion via `mergeReviewR2Key` atomic Convex mutation.
+- Two-tier loading in review route: local disk first, R2 fallback with recovered output dir (`outputs/_recovered/{runId}`).
+- Full audit with 4 parallel agents found 3 blocking issues (race condition on R2 keys, corrupt file polling loop, stuck `resuming` status) — all fixed.
+- 10 warnings also remediated: `runId` allowlist regex, runtime `ReviewR2Keys` validation, context-aware error messages, `_recovered/` cleanup, `datasetName` recovery fallback, `maxBuffer` parity (50MB), weighted file upload list, auto-enumerate `deleteReviewFiles`.
+- R2 review files cleaned up after pipeline completion in both sync and async branches.
 
-**Fix**:
-- When pipeline enters `pending_review`, upload the review state JSON and Path B result to R2 under a `review/` prefix (e.g., `{orgId}/{projectId}/{runId}/review/crosstab-review-state.json`)
-- The review route downloads from R2 instead of reading from local disk
-- The SPSS file is already in R2 (uploaded at intake) — download it to temp dir when needed for R validation
-- Remove dependency on local `outputs/` directory for the review flow entirely
-
-**Files**: `src/lib/api/pipelineOrchestrator.ts` (upload at pause), `src/app/api/runs/[runId]/review/route.ts` (download from R2), `src/lib/api/reviewCompletion.ts` (SPSS from R2), `src/lib/r2/R2FileManager.ts` (new upload/download helpers)
-
-**Level of Effort**: Medium
+**Files**: `convex/runs.ts` (`mergeReviewR2Key` mutation), `src/lib/r2/R2FileManager.ts` (upload/download/delete review files, weighted output list), `src/lib/api/pipelineOrchestrator.ts` (R2 upload at pause + atomic key merge), `src/app/api/runs/[runId]/review/route.ts` (two-tier loading, recovery, cleanup), `src/lib/api/reviewCompletion.ts` (maxBuffer fix, datasetName fix)
 
 ---
 
@@ -323,4 +320,4 @@ Future features, deferred items, and known gaps/limitations are documented in [`
 
 *Created: January 22, 2026*
 *Updated: February 12, 2026*
-*Status: Phase 3 (Productization) in progress. 3.1–3.4, 3.5a–3.5e complete. 3.5f (Testing & Iteration) in progress — items 1 and 6 complete.*
+*Status: Phase 3 (Productization) in progress. 3.1–3.4, 3.5a–3.5e complete. 3.5f (Testing & Iteration) in progress — items 1, 6, and 7 complete.*

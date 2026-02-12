@@ -10,7 +10,7 @@ import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth'
 import { getConvexClient, mutateInternal } from '@/lib/convex';
 import { api } from '../../../../../../convex/_generated/api';
 import { internal } from '../../../../../../convex/_generated/api';
-import { uploadPipelineOutputs } from '@/lib/r2/R2FileManager';
+import { uploadPipelineOutputs, downloadReviewFiles, downloadToTemp, deleteReviewFiles, type ReviewR2Keys } from '@/lib/r2/R2FileManager';
 import {
   applyDecisions,
   completePipeline,
@@ -29,7 +29,7 @@ export async function POST(
   try {
     const { runId } = await params;
 
-    if (!runId) {
+    if (!runId || !/^[a-zA-Z0-9_.-]+$/.test(runId)) {
       return NextResponse.json({ error: 'Run ID is required' }, { status: 400 });
     }
 
@@ -84,16 +84,55 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid output path' }, { status: 400 });
     }
 
-    // Read review state from disk (expanded CrosstabReviewState with all context)
+    // Read review state from disk, with R2 fallback for container restart recovery
     const reviewStatePath = path.join(outputDir, 'crosstab-review-state.json');
     let reviewState: CrosstabReviewState;
+    let recoveredFromR2 = false;
+    let recoveredOutputDir = outputDir;
+    // Runtime-validate reviewR2Keys shape from v.any() Convex field
+    const rawR2Keys = runResult?.reviewR2Keys;
+    const reviewR2Keys: ReviewR2Keys | undefined =
+      rawR2Keys && typeof rawR2Keys === 'object' && !Array.isArray(rawR2Keys) &&
+      (typeof (rawR2Keys as Record<string, unknown>).reviewState === 'string' ||
+       typeof (rawR2Keys as Record<string, unknown>).reviewState === 'undefined')
+        ? (rawR2Keys as ReviewR2Keys)
+        : undefined;
+
     try {
       reviewState = JSON.parse(await fs.readFile(reviewStatePath, 'utf-8'));
     } catch {
-      return NextResponse.json(
-        { error: 'Review state not found - pipeline may not require review' },
-        { status: 404 }
-      );
+      // Local file missing — try R2 recovery
+      if (reviewR2Keys?.reviewState) {
+        console.log('[Review API] Local review state missing — attempting R2 recovery');
+        try {
+          recoveredOutputDir = path.join(process.cwd(), 'outputs', '_recovered', runId);
+          await downloadReviewFiles(reviewR2Keys, recoveredOutputDir);
+
+          const recoveredPath = path.join(recoveredOutputDir, 'crosstab-review-state.json');
+          reviewState = JSON.parse(await fs.readFile(recoveredPath, 'utf-8'));
+          // Update outputDir reference in review state to point to recovered location
+          reviewState.outputDir = recoveredOutputDir;
+          recoveredFromR2 = true;
+          console.log('[Review API] Successfully recovered review state from R2');
+        } catch (r2Err) {
+          console.error('[Review API] R2 recovery failed:', r2Err);
+          const isReviewRun = run.status === 'pending_review';
+          return NextResponse.json(
+            { error: isReviewRun
+                ? 'Review state was lost after a server restart. Please start a new run.'
+                : 'Review state not found - pipeline may not require review' },
+            { status: isReviewRun ? 409 : 404 }
+          );
+        }
+      } else {
+        const isReviewRun = run.status === 'pending_review';
+        return NextResponse.json(
+          { error: isReviewRun
+              ? 'Review state was lost after a server restart. Please start a new run.'
+              : 'Review state not found - pipeline may not require review' },
+          { status: isReviewRun ? 409 : 404 }
+        );
+      }
     }
 
     if (reviewState.status !== 'awaiting_review') {
@@ -108,7 +147,11 @@ export async function POST(
     // Save decisions to review state on disk
     reviewState.status = 'approved';
     reviewState.decisions = decisions;
-    await fs.writeFile(reviewStatePath, JSON.stringify(reviewState, null, 2));
+    const activeOutputDir = recoveredFromR2 ? recoveredOutputDir : outputDir;
+    await fs.writeFile(
+      path.join(activeOutputDir, 'crosstab-review-state.json'),
+      JSON.stringify(reviewState, null, 2)
+    );
 
     // Update Convex: mark run as resuming
     await mutateInternal(internal.runs.updateStatus, {
@@ -125,22 +168,66 @@ export async function POST(
       reviewState.flaggedColumns,
       decisions,
       reviewState.agentDataMap,
-      outputDir
+      activeOutputDir
     );
 
     const totalColumns = modifiedCrosstabResult.bannerCuts.reduce((sum, g) => sum + g.columns.length, 0);
     console.log(`[Review API] Applied decisions: ${modifiedCrosstabResult.bannerCuts.length} groups, ${totalColumns} columns`);
 
-    // Check if Path B is complete
-    const pathBResultPath = path.join(outputDir, 'path-b-result.json');
+    // Check if Path B is complete (local disk → R2 fallback)
+    const pathBResultPath = path.join(activeOutputDir, 'path-b-result.json');
     let pathBResult: PathBResult | null = reviewState.pathBResult;
 
     if (!pathBResult) {
       try {
         pathBResult = JSON.parse(await fs.readFile(pathBResultPath, 'utf-8'));
         console.log('[Review API] Path B result loaded from disk');
-      } catch {
-        pathBResult = null;
+      } catch (pathBErr: unknown) {
+        // Distinguish file-not-found from corrupt JSON to avoid 30-min polling loop
+        const isFileNotFound = pathBErr instanceof Error && 'code' in pathBErr && (pathBErr as NodeJS.ErrnoException).code === 'ENOENT';
+        if (!isFileNotFound && !recoveredFromR2) {
+          // File exists but is corrupt — don't enter polling loop
+          console.error('[Review API] path-b-result.json exists but failed to parse:', pathBErr);
+          return NextResponse.json(
+            { error: 'Table processing results are corrupted. Please start a new run.' },
+            { status: 500 }
+          );
+        }
+        // If we recovered from R2, the download already tried to fetch path-b-result.json.
+        // Check if it was downloaded during recovery; if not, try to determine status.
+        if (recoveredFromR2) {
+          // Check Convex reviewState.pathBStatus
+          const convexReviewState = (runResult?.reviewState as Record<string, unknown>) || {};
+          const pathBStatus = convexReviewState.pathBStatus as string | undefined;
+
+          if (pathBStatus === 'completed') {
+            // Path B finished but file wasn't in R2 (race condition or upload failure)
+            // Try R2 key directly
+            if (reviewR2Keys?.pathBResult) {
+              try {
+                await downloadToTemp(reviewR2Keys.pathBResult, pathBResultPath);
+                pathBResult = JSON.parse(await fs.readFile(pathBResultPath, 'utf-8'));
+                console.log('[Review API] Path B result loaded from R2 (direct key)');
+              } catch {
+                // R2 key exists but download failed
+                pathBResult = null;
+              }
+            }
+          } else if (pathBStatus === 'running') {
+            // Path B process was running on the old container — it's dead now
+            return NextResponse.json(
+              { error: 'Table processing was interrupted by a server restart. Please start a new run.' },
+              { status: 409 }
+            );
+          } else if (pathBStatus === 'error') {
+            return NextResponse.json(
+              { error: 'Table processing failed. Please start a new run.' },
+              { status: 500 }
+            );
+          }
+        } else {
+          pathBResult = null;
+        }
       }
     }
 
@@ -154,7 +241,16 @@ export async function POST(
         message: 'Applying filters and running verification...',
       });
 
-      const result = await completePipeline(outputDir, pipelineId, modifiedCrosstabResult, pathBResult, reviewState, decisions, runId);
+      let result;
+      try {
+        result = await completePipeline(activeOutputDir, pipelineId, modifiedCrosstabResult, pathBResult, reviewState, decisions, runId);
+      } catch (pipeErr) {
+        // Clean up R2 review files even on pipeline failure (prevent orphans)
+        if (reviewR2Keys) {
+          try { await deleteReviewFiles(reviewR2Keys); } catch { /* non-fatal */ }
+        }
+        throw pipeErr;
+      }
 
       // Upload outputs to R2
       const convexOrgId = String(auth.convexOrgId);
@@ -162,12 +258,27 @@ export async function POST(
       let r2Outputs: Record<string, string> | undefined;
       let r2UploadFailed = false;
       try {
-        const manifest = await uploadPipelineOutputs(convexOrgId, projectId, runId, outputDir);
+        const manifest = await uploadPipelineOutputs(convexOrgId, projectId, runId, activeOutputDir);
         r2Outputs = manifest.outputs;
         console.log(`[Review API] Uploaded ${Object.keys(r2Outputs).length} outputs to R2`);
       } catch (r2Error) {
         r2UploadFailed = true;
         console.error('[Review API] R2 upload failed — downloads will be unavailable:', r2Error);
+      }
+
+      // Clean up R2 review state files (non-fatal)
+      if (reviewR2Keys) {
+        try {
+          await deleteReviewFiles(reviewR2Keys);
+          console.log('[Review API] Cleaned up R2 review files');
+        } catch (cleanupErr) {
+          console.warn('[Review API] R2 review file cleanup failed (non-fatal):', cleanupErr);
+        }
+      }
+
+      // Clean up recovered directory (non-fatal, ephemeral disk handles this on redeploy)
+      if (recoveredFromR2 && recoveredOutputDir !== outputDir) {
+        fs.rm(recoveredOutputDir, { recursive: true }).catch(() => { /* best-effort */ });
       }
 
       // Downgrade to 'partial' if pipeline succeeded but R2 upload failed (files can't be downloaded)
@@ -206,6 +317,12 @@ export async function POST(
         status: terminalStatus,
         message: terminalMessage,
       });
+    } else if (recoveredFromR2) {
+      // Recovered from R2 but Path B result is unavailable — can't poll local disk on new container
+      return NextResponse.json(
+        { error: 'Table processing results could not be recovered after server restart. Please start a new run.' },
+        { status: 409 }
+      );
     } else {
       // Path B still running — fire-and-forget background completion
       console.log('[Review API] Path B still running - will complete in background');
@@ -219,7 +336,7 @@ export async function POST(
       });
 
       // Background completion
-      waitAndCompletePipeline(outputDir, pipelineId, modifiedCrosstabResult, reviewState, decisions, runId)
+      waitAndCompletePipeline(activeOutputDir, pipelineId, modifiedCrosstabResult, reviewState, decisions, runId)
         .then(async (result) => {
           // Upload to R2
           const convexOrgId = String(auth.convexOrgId);
@@ -227,10 +344,22 @@ export async function POST(
           let r2Outputs: Record<string, string> | undefined;
           let r2Failed = false;
           try {
-            const manifest = await uploadPipelineOutputs(convexOrgId, projectId, runId, outputDir);
+            const manifest = await uploadPipelineOutputs(convexOrgId, projectId, runId, activeOutputDir);
             r2Outputs = manifest.outputs;
           } catch {
             r2Failed = true;
+          }
+
+          // Clean up R2 review state files (non-fatal)
+          if (reviewR2Keys) {
+            try {
+              await deleteReviewFiles(reviewR2Keys);
+            } catch { /* non-fatal */ }
+          }
+
+          // Clean up recovered directory (non-fatal)
+          if (recoveredFromR2 && recoveredOutputDir !== outputDir) {
+            fs.rm(recoveredOutputDir, { recursive: true }).catch(() => { /* best-effort */ });
           }
 
           // Downgrade to 'partial' if pipeline succeeded but R2 upload failed
@@ -262,7 +391,19 @@ export async function POST(
             ...(bgTerminalStatus === 'error' ? { error: bgTerminalMessage } : {}),
           });
         })
-        .catch(err => console.error('[Review API] Background completion error:', err));
+        .catch(async (err) => {
+          console.error('[Review API] Background completion error:', err);
+          try {
+            await mutateInternal(internal.runs.updateStatus, {
+              runId: runId as Id<"runs">,
+              status: 'error',
+              stage: 'complete',
+              progress: 100,
+              message: 'Pipeline failed during background completion',
+              error: err instanceof Error ? err.message : String(err),
+            });
+          } catch { /* last resort — Convex may be unreachable */ }
+        });
 
       return NextResponse.json({
         success: true,

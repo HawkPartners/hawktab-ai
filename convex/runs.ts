@@ -138,6 +138,32 @@ export const updateReviewState = internalMutation({
 });
 
 /**
+ * Atomically merge a single key into runs.result.reviewR2Keys.
+ * Eliminates race conditions when Path B and Path C complete concurrently.
+ */
+export const mergeReviewR2Key = internalMutation({
+  args: {
+    runId: v.id("runs"),
+    key: v.string(),
+    value: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const run = await ctx.db.get(args.runId);
+    if (!run) throw new Error("Run not found");
+
+    const existingResult = (run.result ?? {}) as Record<string, unknown>;
+    const existingR2Keys = (existingResult.reviewR2Keys ?? {}) as Record<string, unknown>;
+
+    await ctx.db.patch(args.runId, {
+      result: {
+        ...existingResult,
+        reviewR2Keys: { ...existingR2Keys, [args.key]: args.value },
+      },
+    });
+  },
+});
+
+/**
  * Append a feedback entry to runs.result.feedback array.
  * Creates the array if it doesn't exist.
  */

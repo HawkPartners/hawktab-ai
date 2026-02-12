@@ -7,7 +7,7 @@ import { api } from '../../../convex/_generated/api';
 import { internal } from '../../../convex/_generated/api';
 import { cleanupAbort } from '@/lib/abortStore';
 import { cleanupSession } from '@/lib/storage';
-import { uploadPipelineOutputs, type R2FileManifest } from '@/lib/r2/R2FileManager';
+import { uploadPipelineOutputs, uploadReviewFile, type R2FileManifest, type ReviewR2Keys } from '@/lib/r2/R2FileManager';
 import type { Id } from '../../../convex/_generated/dataModel';
 import { BannerAgent } from '@/agents/BannerAgent';
 import { processAllGroups as processCrosstabGroups, processGroup as processCrosstabGroup } from '@/agents/CrosstabAgent';
@@ -645,6 +645,24 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         await fs.writeFile(pathBStatusPath, JSON.stringify(completedStatus, null, 2));
         console.log('[API] Path B completed and result saved to disk');
 
+        // Upload Path B result to R2 for container restart resilience
+        if (convexOrgId && convexProjectId) {
+          try {
+            const pathBR2Key = await uploadReviewFile(
+              convexOrgId, convexProjectId, runId, pathBResultPath, 'path-b-result.json'
+            );
+            // Atomically merge pathBResult key into reviewR2Keys in Convex
+            await mutateInternal(internal.runs.mergeReviewR2Key, {
+              runId: runId as Id<"runs">,
+              key: 'pathBResult',
+              value: pathBR2Key,
+            });
+            console.log('[API] Path B result uploaded to R2');
+          } catch (r2Err) {
+            console.warn('[API] Failed to upload Path B result to R2 (non-fatal):', r2Err);
+          }
+        }
+
         // Update Convex reviewState.pathBStatus for real-time UI
         try {
           const convex = getConvexClient();
@@ -707,6 +725,24 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
             };
             await fs.writeFile(pathCStatusPath, JSON.stringify(completedStatus, null, 2));
             console.log('[API] Path C completed and result saved to disk');
+
+            // Upload Path C result to R2 for container restart resilience
+            if (convexOrgId && convexProjectId) {
+              try {
+                const pathCR2Key = await uploadReviewFile(
+                  convexOrgId, convexProjectId, runId, pathCResultPath, 'path-c-result.json'
+                );
+                // Atomically merge pathCResult key into reviewR2Keys in Convex
+                await mutateInternal(internal.runs.mergeReviewR2Key, {
+                  runId: runId as Id<"runs">,
+                  key: 'pathCResult',
+                  value: pathCR2Key,
+                });
+                console.log('[API] Path C result uploaded to R2');
+              } catch (r2Err) {
+                console.warn('[API] Failed to upload Path C result to R2 (non-fatal):', r2Err);
+              }
+            }
 
             // Update Convex reviewState.pathCStatus for real-time UI
             try {
@@ -938,6 +974,27 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       );
       console.log('[API] Review state saved to crosstab-review-state.json');
 
+      // Upload review files to R2 for resilience against container restarts
+      let reviewR2Keys: ReviewR2Keys | undefined;
+      if (convexOrgId && convexProjectId) {
+        try {
+          const reviewStateKey = await uploadReviewFile(
+            convexOrgId, convexProjectId, runId, path.join(outputDir, 'crosstab-review-state.json'), 'crosstab-review-state.json'
+          );
+          const summaryKey = await uploadReviewFile(
+            convexOrgId, convexProjectId, runId, path.join(outputDir, 'pipeline-summary.json'), 'pipeline-summary.json'
+          );
+          reviewR2Keys = {
+            reviewState: reviewStateKey,
+            pipelineSummary: summaryKey,
+            spssInput: savedPaths.r2Keys?.spss,
+          };
+          console.log('[API] Review state files uploaded to R2');
+        } catch (r2Err) {
+          console.warn('[API] Failed to upload review state to R2 (non-fatal):', r2Err);
+        }
+      }
+
       const reviewUrl = `/projects/${encodeURIComponent(pipelineId)}/review`;
 
       // Order matters: updateRunStatus overwrites `result`, updateReviewState merges into it.
@@ -952,6 +1009,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
           outputDir,
           reviewUrl,
           flaggedColumnCount: flaggedCrosstabColumns.length,
+          ...(reviewR2Keys && { reviewR2Keys }),
         },
       });
 

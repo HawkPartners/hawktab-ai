@@ -292,7 +292,9 @@ export async function completePipeline(
   _decisions: CrosstabDecision[],
   runId?: string,
 ): Promise<CompletePipelineResult> {
-  const datasetName = path.basename(path.dirname(outputDir));
+  // For recovered dirs (outputs/_recovered/{runId}), fall back to pipelineId for observability
+  const rawDatasetName = path.basename(path.dirname(outputDir));
+  const datasetName = rawDatasetName === '_recovered' ? pipelineId : rawDatasetName;
   const metricsCollector = new AgentMetricsCollector();
   const wideEvent = new WideEvent({
     pipelineId,
@@ -668,7 +670,7 @@ export async function completePipeline(
       await execFileAsync(
         rCommand,
         [masterPath],
-        { cwd: outputDir, maxBuffer: 10 * 1024 * 1024, timeout: 120000 }
+        { cwd: outputDir, maxBuffer: 50 * 1024 * 1024, timeout: 120000 }
       );
 
       const resultFiles = await fs.readdir(resultsDir);
