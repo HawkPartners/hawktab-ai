@@ -56,6 +56,7 @@ import type {
   CrosstabReviewState,
   SavedFilePaths,
 } from './types';
+import { startHeartbeatInterval } from './heartbeat';
 import { getPostHogClient } from '@/lib/posthog-server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
@@ -382,6 +383,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
   // All recordAgentMetrics() calls within this scope use this collector, not the global
   return runWithMetricsCollector(metricsCollector, async () => {
+  const stopHeartbeat = startHeartbeatInterval(runId);
   try {
 
     console.log(`[API] Starting full pipeline processing for session: ${sessionId}`);
@@ -1969,6 +1971,8 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
     // Clean up temp session files on error too
     try { await cleanupSession(sessionId); } catch { /* best-effort */ }
+  } finally {
+    stopHeartbeat();
   }
   }); // end runWithMetricsCollector
 }

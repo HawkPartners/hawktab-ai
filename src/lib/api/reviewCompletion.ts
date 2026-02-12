@@ -29,6 +29,7 @@ import { persistSystemError } from '@/lib/errors/ErrorPersistence';
 import { AgentMetricsCollector, runWithMetricsCollector, WideEvent } from '@/lib/observability';
 import { extractStreamlinedData } from '@/lib/data/extractStreamlinedData';
 import { formatDuration } from '@/lib/utils/formatDuration';
+import { sendHeartbeat, startHeartbeatInterval } from './heartbeat';
 import { toExtendedTable, type ExtendedTableDefinition, type TableWithLoopFrame } from '@/schemas/verificationAgentSchema';
 import { createRespondentAnchoredFallbackPolicy, type LoopSemanticsPolicy } from '@/schemas/loopSemanticsPolicySchema';
 import type { TableAgentOutput } from '@/schemas/tableAgentSchema';
@@ -304,6 +305,7 @@ export async function completePipeline(
   metricsCollector.bindWideEvent(wideEvent);
 
   return runWithMetricsCollector(metricsCollector, async () => {
+  const stopHeartbeat = runId ? startHeartbeatInterval(runId) : () => {};
   try {
     const { tableAgentResults } = pathBResult;
     const verboseDataMap = reviewState.verboseDataMap as VerboseDataMapType[];
@@ -909,6 +911,8 @@ export async function completePipeline(
       message: error instanceof Error ? error.message : 'Background completion failed',
       outputDir,
     };
+  } finally {
+    stopHeartbeat();
   }
   }); // end runWithMetricsCollector
 }
@@ -929,11 +933,19 @@ export async function waitAndCompletePipeline(
 
   const maxWaitMs = 1800000; // 30 minutes
   const pollIntervalMs = 5000;
+  const heartbeatIntervalMs = 30_000;
   const startTime = Date.now();
+  let lastHeartbeatTime = 0;
 
   console.log(`[ReviewCompletion] Waiting for Path B to complete (up to 30 min)...`);
 
   while (Date.now() - startTime < maxWaitMs) {
+    // Emit heartbeat every ~30s during polling (non-fatal)
+    if (runId && Date.now() - lastHeartbeatTime >= heartbeatIntervalMs) {
+      sendHeartbeat(runId);
+      lastHeartbeatTime = Date.now();
+    }
+
     try {
       const pathBResult = JSON.parse(await fs.readFile(pathBResultPath, 'utf-8'));
       console.log('[ReviewCompletion] Path B completed - starting pipeline completion');

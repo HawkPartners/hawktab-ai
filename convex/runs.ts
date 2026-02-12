@@ -36,6 +36,7 @@ export const create = internalMutation({
       message: "Starting pipeline...",
       config: args.config,
       cancelRequested: false,
+      lastHeartbeat: Date.now(),
     });
   },
 });
@@ -109,7 +110,12 @@ export const updateStatus = internalMutation({
       }
     }
     const { runId, ...fields } = args;
-    await ctx.db.patch(runId, fields);
+    // Auto-refresh heartbeat on active statuses (belt-and-suspenders)
+    const activeStatuses = new Set(["in_progress", "resuming"]);
+    const patch = activeStatuses.has(args.status)
+      ? { ...fields, lastHeartbeat: Date.now() }
+      : fields;
+    await ctx.db.patch(runId, patch);
   },
 });
 
@@ -189,5 +195,78 @@ export const addFeedbackEntry = internalMutation({
         feedback: [...existingFeedback, args.entry],
       },
     });
+  },
+});
+
+/**
+ * Heartbeat — update the lastHeartbeat timestamp for an active run.
+ * Called every ~30s by the pipeline/review-completion process.
+ * Only patches runs in active states; ignores terminal states silently.
+ */
+export const heartbeat = internalMutation({
+  args: {
+    runId: v.id("runs"),
+  },
+  handler: async (ctx, args) => {
+    const run = await ctx.db.get(args.runId);
+    if (!run) return;
+
+    const activeStatuses = new Set(["in_progress", "resuming"]);
+    if (!activeStatuses.has(run.status)) return;
+
+    await ctx.db.patch(args.runId, { lastHeartbeat: Date.now() });
+  },
+});
+
+/**
+ * Reconcile stale runs — called by a cron every 5 minutes.
+ * Marks runs as "error" if they haven't sent a heartbeat within the threshold:
+ *   - "resuming" runs: stale after 10 minutes
+ *   - "in_progress" runs: stale after 90 minutes
+ * Uses `lastHeartbeat` with `_creationTime` as fallback for pre-existing runs.
+ */
+export const reconcileStaleRuns = internalMutation({
+  handler: async (ctx) => {
+    const now = Date.now();
+    const RESUMING_STALE_MS = 10 * 60 * 1000;   // 10 minutes
+    const IN_PROGRESS_STALE_MS = 90 * 60 * 1000; // 90 minutes
+
+    // Check resuming runs
+    const resumingRuns = await ctx.db
+      .query("runs")
+      .withIndex("by_status", (q) => q.eq("status", "resuming"))
+      .collect();
+
+    for (const run of resumingRuns) {
+      const lastAlive = run.lastHeartbeat ?? run._creationTime;
+      if (now - lastAlive > RESUMING_STALE_MS) {
+        console.log(`[reconcileStaleRuns] Marking resuming run ${run._id} as error (last heartbeat: ${new Date(lastAlive).toISOString()})`);
+        await ctx.db.patch(run._id, {
+          status: "error",
+          error: "Pipeline interrupted — please re-run your project.",
+          stage: "error",
+          message: "Pipeline interrupted — please re-run your project.",
+        });
+      }
+    }
+
+    // Check in_progress runs
+    const inProgressRuns = await ctx.db
+      .query("runs")
+      .withIndex("by_status", (q) => q.eq("status", "in_progress"))
+      .collect();
+
+    for (const run of inProgressRuns) {
+      const lastAlive = run.lastHeartbeat ?? run._creationTime;
+      if (now - lastAlive > IN_PROGRESS_STALE_MS) {
+        console.log(`[reconcileStaleRuns] Marking in_progress run ${run._id} as error (last heartbeat: ${new Date(lastAlive).toISOString()})`);
+        await ctx.db.patch(run._id, {
+          status: "error",
+          error: "Pipeline interrupted — please re-run your project.",
+          stage: "error",
+          message: "Pipeline interrupted — please re-run your project.",
+        });
+      }
+    }
   },
 });

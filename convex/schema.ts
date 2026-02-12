@@ -105,7 +105,9 @@ export default defineSchema({
     result: v.optional(v.any()),
     error: v.optional(v.string()),
     cancelRequested: v.boolean(),
+    lastHeartbeat: v.optional(v.number()),
   })
     .index("by_project", ["projectId"])
-    .index("by_org", ["orgId"]),
+    .index("by_org", ["orgId"])
+    .index("by_status", ["status"]),
 });
