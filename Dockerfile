@@ -9,6 +9,13 @@ FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# NEXT_PUBLIC_* vars must be present at build time (inlined into JS bundle).
+# Railway passes service variables as Docker build args automatically.
+ARG NEXT_PUBLIC_CONVEX_URL
+ARG NEXT_PUBLIC_SENTRY_DSN
+ARG NEXT_PUBLIC_WORKOS_REDIRECT_URI
+
 RUN npm run build
 
 # Stage 3: Production runner with R
