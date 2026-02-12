@@ -34,7 +34,9 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 
 > Items below are raw feedback captured during testing. As issues are confirmed and scoped, they get promoted to numbered items above or filed as new work items.
 
-*(No additional feedback yet — add items here as testing continues.)*
+ - still bit auto-routing from review page to product page when i press "Save & Continue" Now the timeline issue is fixed but the auto-routing issue is still present
+ - human readable time instead of 921 seconds
+ - strip the overuse of non clean icons; follow the design system and think B2B
 
 ---
 
