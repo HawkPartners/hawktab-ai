@@ -273,6 +273,8 @@ export interface CompletePipelineResult {
   outputDir: string;
   tableCount?: number;
   cutCount?: number;
+  bannerGroups?: number;
+  durationMs?: number;
 }
 
 /**
@@ -874,6 +876,8 @@ export async function completePipeline(
       outputDir,
       tableCount: allTablesForR.length,
       cutCount: cutsSpec.cuts.length,
+      bannerGroups: modifiedCrosstabResult.bannerCuts.length,
+      durationMs: totalDurationMs,
     };
   } catch (error) {
     console.error('[ReviewCompletion] Background completion failed:', error);

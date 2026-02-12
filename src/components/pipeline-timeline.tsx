@@ -18,7 +18,7 @@ const TIMELINE_STEPS: TimelineStep[] = [
     id: 'parsing',
     label: 'Parsing Data',
     description: 'Extracting variables, labels, and structure from SPSS file',
-    stages: ['uploading', 'parsing'],
+    stages: ['uploading', 'parsing', 'loop_handling', 'survey_processing'],
   },
   {
     id: 'analyzing',
@@ -34,15 +34,15 @@ const TIMELINE_STEPS: TimelineStep[] = [
   },
   {
     id: 'validating',
-    label: 'Validating',
-    description: 'Validating R expressions and fixing errors',
-    stages: ['validating_r'],
+    label: 'Validating & Refining',
+    description: 'Filtering, verification, and R expression validation',
+    stages: ['filtering', 'splitting', 'verification', 'post_processing', 'validating_cuts', 'validating_r', 'loop_semantics'],
   },
   {
     id: 'running',
     label: 'Running Analysis',
     description: 'Generating and executing R scripts',
-    stages: ['generating_r', 'executing_r', 'generating_output'],
+    stages: ['generating_r', 'executing_r'],
   },
   {
     id: 'output',
@@ -127,6 +127,14 @@ function getStepStatuses(
     }
   }
 
+  // When resuming after review, the review step must be completed (user already
+  // submitted decisions). This handles the edge case where stage='waiting_for_tables'
+  // maps to 'analyzing' (before 'review' in step order), which would otherwise
+  // leave review as 'pending'.
+  if (runStatus === 'resuming' && result.get('review') === 'pending') {
+    result.set('review', 'completed');
+  }
+
   return result;
 }
 
@@ -163,7 +171,7 @@ export function PipelineTimeline({
   const stepStatuses = getStepStatuses(stage, status);
 
   // Only show the review step if the pipeline paused there or is currently there
-  const showReview = !hideReview || stage === 'crosstab_review_required' || status === 'pending_review';
+  const showReview = !hideReview || stage === 'crosstab_review_required' || status === 'pending_review' || status === 'resuming';
   const visibleSteps = TIMELINE_STEPS.filter(
     (s) => s.id !== 'review' || showReview,
   );

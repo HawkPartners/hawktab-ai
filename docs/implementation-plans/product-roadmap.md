@@ -28,7 +28,7 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 | **3.5c** Security Audit | 19 findings across 4 severity tiers, all remediated | Complete |
 | **3.5d** Deploy & Launch | Railway, DNS, landing page, smoke testing | Complete |
 | **3.5e** Analytics | PostHog setup, key event tracking | Complete |
-| **3.5f** Testing & Iteration | 6 items: review timeline fix, unique names, config audit, download filtering, deletion, stats display | Not Started |
+| **3.5f** Testing & Iteration | 8 items: ~~review timeline fix~~, unique names, config audit, download filtering, deletion, ~~stats display~~, review state durability, stale run recovery | In Progress |
 
 ---
 
@@ -147,26 +147,27 @@ Ship it. Antares gets a link.
 
 **Goal**: Fix bugs and polish UX issues found during initial Antares testing. Get the deployed product from "works" to "works well."
 
-**Scope**: 6 issues identified, collapsed into 5 work items after investigation.
+**Scope**: 8 work items. Items 1 and 6 complete (audit + fix). Items 7–8 added from post-review infrastructure audit.
 
 ---
 
-**1. Fix post-review timeline regression** — `HIGH PRIORITY`
+**1. Fix post-review timeline regression** — `COMPLETE`
 
-**Bug**: After submitting a HITL review, the project page timeline "forgets" progress and appears to restart from step 1. Two symptoms, one root cause.
+**Bug**: After submitting a HITL review, the project page timeline "forgot" progress and appeared to restart from step 1. Summary Statistics card showed nothing after completion via the review path.
 
-**Root cause**: The review API handler (`/api/runs/[runId]/review/route.ts`, line 152) sets `stage: 'filtering'` after review submission, but the `PipelineTimeline` component (`src/components/pipeline-timeline.tsx`) has no mapping for the `'filtering'` stage. The `getStepStatuses()` function can't find the current stage in any `TIMELINE_STEPS` entry, so `foundCurrent` stays false and the timeline falls back to showing the first step as active.
+**Root causes (3)**:
+1. *Unmapped stages*: Pipeline emits ~15 stage strings but timeline only mapped ~8. Any unmapped stage caused fallback to "first step active."
+2. *Review step visibility*: After review submission, the review step disappeared because `showReview` didn't account for the `resuming` status.
+3. *Missing summary data*: The review completion path never wrote a `summary` object to Convex, even though the project page reads it.
 
-**Secondary issue**: When Path B (table generation) is still running at review time, the run is set to `stage: 'waiting_for_tables'` with progress stuck at 55%. Background completion via `waitAndCompletePipeline()` is fire-and-forget with no UI feedback.
+**Fix applied**:
+- `TIMELINE_STEPS` expanded to map all 15 orchestrator stages across 6 steps. Removed dead `generating_output` stage.
+- `showReview` condition updated to include `status === 'resuming'`.
+- `summary` object added to both sync and async Convex `updateStatus` calls in review route.
+- Post-audit: forced review step to `completed` when `runStatus === 'resuming'` (fixes edge case where `waiting_for_tables` maps before `review` in step order).
+- Post-audit: R2 upload failure now downgrades terminal status to `partial` (matching orchestrator behavior).
 
-**Fix**:
-- Add `'filtering'` to the appropriate stage group in `TIMELINE_STEPS` (or replace with a mapped stage like `'applying_review'` in the review handler)
-- Ensure ALL post-review stages (`filtering`, `splitting`, `verification`, `post_processing`) are mapped to timeline steps
-- Verify the `router.push()` navigation after review submission is working (it exists at line 376 of review/page.tsx)
-
-**Files**: `src/components/pipeline-timeline.tsx`, `src/app/api/runs/[runId]/review/route.ts`, `src/lib/api/pipelineOrchestrator.ts`
-
-**Level of Effort**: Small
+**Files**: `src/components/pipeline-timeline.tsx`, `src/app/api/runs/[runId]/review/route.ts`, `src/lib/api/reviewCompletion.ts`
 
 ---
 
@@ -256,24 +257,49 @@ Ship it. Antares gets a link.
 
 ---
 
-**6. Verify pipeline run statistics display in UI** — `MEDIUM PRIORITY`
+**6. Verify pipeline run statistics display in UI** — `COMPLETE`
 
-**Issue**: Pipeline stats (duration, table count, cut count, banner group count) should be visible on the project page after a run completes. The backend collects `summary: { tables, cuts, bannerGroups, durationMs }` and persists it to Convex `runs.result.summary`. A Summary Statistics card exists in the project detail page (lines 470-499).
+**Issue**: Pipeline stats (duration, table count, cut count, banner group count) should be visible on the project page after a run completes via the HITL review path. The main pipeline path wrote a `summary` object to Convex, but the review path did not.
 
-**What to verify**:
-- Are the stats actually rendering in production after a completed run? (The data is stored, but is the UI reading it correctly?)
-- Does the summary survive the HITL review flow? (Same concern as item 3 — does post-review completion persist the summary?)
-- Is the duration accurate and human-readable? (Currently stored as `durationMs`, formatted as seconds)
-- Are table/cut/banner group counts correct and meaningful to the user?
+**Audit findings**: Both paths now write identical `summary` objects with the same 4 fields (`tables`, `cuts`, `bannerGroups`, `durationMs`). All consumers (project page, dashboard page) read only these fields with `?? 0` fallbacks. The `CompletePipelineResult` interface has optional fields, but the `?? 0` guards in the review route handle undefined correctly. Parity confirmed across both sync and async review completion branches.
 
-**Fix (if broken)**:
-- Trace `runs.result.summary` from orchestrator completion through Convex to the UI component
-- Ensure `completePipeline()` in `reviewCompletion.ts` also persists the summary (not just the main path)
-- Format duration as "X min Y sec" instead of raw seconds for better readability
+**Fix applied**: `summary` object added to both branches of the review route (item 1 fix). No additional changes needed — the project page correctly reads from `runResult.summary`.
 
-**Files**: `src/app/(product)/projects/[projectId]/page.tsx`, `src/lib/api/pipelineOrchestrator.ts`, `src/lib/api/reviewCompletion.ts`
+---
 
-**Level of Effort**: Small
+**7. Persist review state to durable storage** — `HIGH PRIORITY`
+
+**Problem**: When the pipeline pauses for HITL review (`pending_review`), the entire review context lives on the container's ephemeral filesystem: `crosstab-review-state.json` (~1-5 MB), `path-b-result.json`, and the SPSS file in `inputs/`. If Railway redeploys the container during the review window (any push to dev/main, or a container restart), these files vanish. The user clicks "Submit Review" and gets a 404: *"Review state not found."* No recovery path — they'd have to re-run the entire 45-60 minute pipeline.
+
+R2 doesn't save us here because output files are only uploaded at the very end of the pipeline, after R execution and Excel generation. The intermediate review state is never persisted to durable storage.
+
+**Fix**:
+- When pipeline enters `pending_review`, upload the review state JSON and Path B result to R2 under a `review/` prefix (e.g., `{orgId}/{projectId}/{runId}/review/crosstab-review-state.json`)
+- The review route downloads from R2 instead of reading from local disk
+- The SPSS file is already in R2 (uploaded at intake) — download it to temp dir when needed for R validation
+- Remove dependency on local `outputs/` directory for the review flow entirely
+
+**Files**: `src/lib/api/pipelineOrchestrator.ts` (upload at pause), `src/app/api/runs/[runId]/review/route.ts` (download from R2), `src/lib/api/reviewCompletion.ts` (SPSS from R2), `src/lib/r2/R2FileManager.ts` (new upload/download helpers)
+
+**Level of Effort**: Medium
+
+---
+
+**8. Detect and recover stale `resuming` runs** — `HIGH PRIORITY`
+
+**Problem**: After review submission, the pipeline completion runs as a fire-and-forget promise in the API route handler. If the container dies during this work (deploy, OOM, health check timeout), the promise vanishes silently. The Convex status remains `resuming` forever — there's no timeout, no heartbeat, and no reconciliation mechanism. The user sees a pipeline stuck in progress with no way to recover.
+
+This is separate from item 7: even with durable review state, a container restart during `resuming` would still orphan the status because the running Node process is gone.
+
+**Fix**:
+- Add a `lastHeartbeat` timestamp field to the Convex `runs` table, updated periodically by `updateReviewRunStatus` during pipeline completion
+- Add a Convex scheduled function (cron) or API-triggered check that queries for runs in `resuming` status with `lastHeartbeat` older than N minutes (e.g., 15)
+- Stale runs get transitioned to `error` with message: *"Pipeline interrupted — please re-run your project."*
+- Consider: surface a "Re-run" button on the project page for error'd runs to make recovery easy
+
+**Files**: `convex/schema.ts` (heartbeat field), `convex/runs.ts` (heartbeat update + stale detection query), `src/lib/api/reviewCompletion.ts` (periodic heartbeat writes), new cron or API route for detection
+
+**Level of Effort**: Medium
 
 ---
 
@@ -297,4 +323,4 @@ Future features, deferred items, and known gaps/limitations are documented in [`
 
 *Created: January 22, 2026*
 *Updated: February 12, 2026*
-*Status: Phase 3 (Productization) in progress. 3.1–3.4, 3.5a–3.5e complete. 3.5f (Testing & Iteration) next.*
+*Status: Phase 3 (Productization) in progress. 3.1–3.4, 3.5a–3.5e complete. 3.5f (Testing & Iteration) in progress — items 1 and 6 complete.*

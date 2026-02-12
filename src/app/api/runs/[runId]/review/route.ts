@@ -160,37 +160,51 @@ export async function POST(
       const convexOrgId = String(auth.convexOrgId);
       const projectId = String(run.projectId);
       let r2Outputs: Record<string, string> | undefined;
+      let r2UploadFailed = false;
       try {
         const manifest = await uploadPipelineOutputs(convexOrgId, projectId, runId, outputDir);
         r2Outputs = manifest.outputs;
         console.log(`[Review API] Uploaded ${Object.keys(r2Outputs).length} outputs to R2`);
       } catch (r2Error) {
-        console.warn('[Review API] R2 upload failed (non-fatal):', r2Error);
+        r2UploadFailed = true;
+        console.error('[Review API] R2 upload failed — downloads will be unavailable:', r2Error);
       }
+
+      // Downgrade to 'partial' if pipeline succeeded but R2 upload failed (files can't be downloaded)
+      const terminalStatus = result.status === 'success' && r2UploadFailed ? 'partial' : result.status;
+      const terminalMessage = result.status === 'success' && r2UploadFailed
+        ? `Generated ${result.tableCount ?? 0} tables but file upload failed — contact support.`
+        : result.message;
 
       // Update Convex with terminal status
       await mutateInternal(internal.runs.updateStatus, {
         runId: runId as Id<"runs">,
-        status: result.status,
+        status: terminalStatus,
         stage: 'complete',
         progress: 100,
-        message: result.message,
+        message: terminalMessage,
         result: {
           ...runResult,
-          downloadUrl: result.status === 'success'
+          downloadUrl: terminalStatus === 'success'
             ? `/api/runs/${encodeURIComponent(runId)}/download/crosstabs.xlsx`
             : undefined,
           r2Files: r2Outputs ? { inputs: {}, outputs: r2Outputs } : runResult?.r2Files,
           reviewState: undefined, // Clear review state from result
+          summary: {
+            tables: result.tableCount ?? 0,
+            cuts: result.cutCount ?? 0,
+            bannerGroups: result.bannerGroups ?? 0,
+            durationMs: result.durationMs ?? 0,
+          },
         },
-        ...(result.status === 'error' ? { error: result.message } : {}),
+        ...(terminalStatus === 'error' ? { error: terminalMessage } : {}),
       });
 
       return NextResponse.json({
         success: result.success,
         runId,
-        status: result.status,
-        message: result.message,
+        status: terminalStatus,
+        message: terminalMessage,
       });
     } else {
       // Path B still running — fire-and-forget background completion
@@ -211,28 +225,41 @@ export async function POST(
           const convexOrgId = String(auth.convexOrgId);
           const projectId = String(run.projectId);
           let r2Outputs: Record<string, string> | undefined;
+          let r2Failed = false;
           try {
             const manifest = await uploadPipelineOutputs(convexOrgId, projectId, runId, outputDir);
             r2Outputs = manifest.outputs;
           } catch {
-            // non-fatal
+            r2Failed = true;
           }
+
+          // Downgrade to 'partial' if pipeline succeeded but R2 upload failed
+          const bgTerminalStatus = result.status === 'success' && r2Failed ? 'partial' : result.status;
+          const bgTerminalMessage = result.status === 'success' && r2Failed
+            ? `Generated ${result.tableCount ?? 0} tables but file upload failed — contact support.`
+            : result.message;
 
           await mutateInternal(internal.runs.updateStatus, {
             runId: runId as Id<"runs">,
-            status: result.status,
+            status: bgTerminalStatus,
             stage: 'complete',
             progress: 100,
-            message: result.message,
+            message: bgTerminalMessage,
             result: {
               ...runResult,
-              downloadUrl: result.status === 'success'
+              downloadUrl: bgTerminalStatus === 'success'
                 ? `/api/runs/${encodeURIComponent(runId)}/download/crosstabs.xlsx`
                 : undefined,
               r2Files: r2Outputs ? { inputs: {}, outputs: r2Outputs } : runResult?.r2Files,
               reviewState: undefined,
+              summary: {
+                tables: result.tableCount ?? 0,
+                cuts: result.cutCount ?? 0,
+                bannerGroups: result.bannerGroups ?? 0,
+                durationMs: result.durationMs ?? 0,
+              },
             },
-            ...(result.status === 'error' ? { error: result.message } : {}),
+            ...(bgTerminalStatus === 'error' ? { error: bgTerminalMessage } : {}),
           });
         })
         .catch(err => console.error('[Review API] Background completion error:', err));
