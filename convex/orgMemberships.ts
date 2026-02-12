@@ -16,6 +16,32 @@ export const getByUserAndOrg = query({
   },
 });
 
+export const listByOrg = query({
+  args: { orgId: v.id("organizations") },
+  handler: async (ctx, args) => {
+    const memberships = await ctx.db
+      .query("orgMemberships")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .collect();
+
+    // Join with users table to get name and email
+    const results = await Promise.all(
+      memberships.map(async (m) => {
+        const user = await ctx.db.get(m.userId);
+        return {
+          _id: m._id,
+          role: m.role,
+          userId: m.userId,
+          name: user?.name ?? "Unknown",
+          email: user?.email ?? "",
+        };
+      })
+    );
+
+    return results;
+  },
+});
+
 export const upsert = mutation({
   args: {
     userId: v.id("users"),

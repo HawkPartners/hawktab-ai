@@ -7,11 +7,13 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 import { validate } from '@/lib/validation/ValidationRunner';
+import { requireConvexAuth } from '@/lib/requireConvexAuth';
 
 export async function POST(request: NextRequest) {
   let tmpDir: string | null = null;
 
   try {
+    await requireConvexAuth();
     const formData = await request.formData();
     const dataFile = formData.get('dataFile') as File | null;
 

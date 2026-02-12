@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getConvexClient } from '@/lib/convex';
 import { api } from '../../../../../../../convex/_generated/api';
 import { getDownloadUrl } from '@/lib/r2/R2FileManager';
+import { requireConvexAuth } from '@/lib/requireConvexAuth';
 import type { Id } from '../../../../../../../convex/_generated/dataModel';
 
 // Map user-friendly filenames to the R2 output keys
@@ -29,11 +30,17 @@ export async function GET(
       return NextResponse.json({ error: 'Run ID and filename are required' }, { status: 400 });
     }
 
+    // Authenticate and verify org ownership
+    const auth = await requireConvexAuth();
     const convex = getConvexClient();
     const run = await convex.query(api.runs.get, { runId: runId as Id<"runs"> });
 
     if (!run) {
       return NextResponse.json({ error: 'Run not found' }, { status: 404 });
+    }
+
+    if (String(run.orgId) !== String(auth.convexOrgId)) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
     const result = run.result as Record<string, unknown> | undefined;
@@ -67,8 +74,12 @@ export async function GET(
     return NextResponse.redirect(url);
   } catch (error) {
     console.error('[Download API] Error:', error);
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    if (errorMsg.includes('Authentication required') || errorMsg.includes('Unauthorized')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
-      { error: 'Failed to generate download URL', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to generate download URL', details: process.env.NODE_ENV === 'development' ? errorMsg : undefined },
       { status: 500 },
     );
   }

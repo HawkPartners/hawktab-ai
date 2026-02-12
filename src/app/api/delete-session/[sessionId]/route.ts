@@ -8,12 +8,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import { requireConvexAuth } from '@/lib/requireConvexAuth';
 
 // Delete session folder
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ sessionId: string }> }) {
   try {
+    await requireConvexAuth();
     const { sessionId } = await params;
-    
+
     // Security check: ensure sessionId looks like a valid output folder name
     if (!sessionId.startsWith('output-') || sessionId.includes('..') || sessionId.includes('/')) {
       return NextResponse.json(

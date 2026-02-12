@@ -17,6 +17,7 @@ import {
 } from '@/lib/api/fileHandler';
 import { runPipelineFromUpload, type PipelineRunParams } from '@/lib/api/pipelineOrchestrator';
 import { requireConvexAuth } from '@/lib/requireConvexAuth';
+import { canPerform } from '@/lib/permissions';
 import { getConvexClient } from '@/lib/convex';
 import { api } from '../../../../../convex/_generated/api';
 import { createAbortController } from '@/lib/abortStore';
@@ -40,6 +41,11 @@ export async function POST(request: NextRequest) {
   try {
     // Authenticate and get Convex IDs
     const auth = await requireConvexAuth();
+
+    // Role check — only admin/member can create projects
+    if (!canPerform(auth.role, 'create_project')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     // Validate environment configuration
     const envValidation = validateEnvironment();

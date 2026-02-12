@@ -1205,6 +1205,18 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
           bannerGroups: groupCount,
           durationMs,
         },
+        costSummary: {
+          totalCostUsd: costMetrics.totals.estimatedCostUsd,
+          totalTokens: costMetrics.totals.totalTokens,
+          totalCalls: costMetrics.totals.calls,
+          byAgent: costMetrics.byAgent.map(a => ({
+            agent: a.agentName,
+            model: a.model,
+            calls: a.calls,
+            tokens: a.totalInputTokens + a.totalOutputTokens,
+            costUsd: a.estimatedCostUsd,
+          })),
+        },
       },
     });
     cleanupAbort(runId);

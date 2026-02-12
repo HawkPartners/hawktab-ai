@@ -10,9 +10,11 @@ import * as path from 'path';
 import type { ValidationResultType } from '@/schemas/agentOutputSchema';
 import { buildCutTable } from '@/lib/tables/CutTable';
 import { exportCutTableToCSV } from '@/lib/exporters/csv';
+import { requireConvexAuth } from '@/lib/requireConvexAuth';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ sessionId: string }> }) {
   try {
+    await requireConvexAuth();
     const { sessionId } = await params;
     if (!sessionId.startsWith('output-') || sessionId.includes('..') || sessionId.includes('/')) {
       return NextResponse.json({ error: 'Invalid sessionId' }, { status: 400 });

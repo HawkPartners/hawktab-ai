@@ -5,6 +5,9 @@ import { ConvexClientProvider } from "@/app/ConvexClientProvider";
 import { AuthProvider } from "@/providers/auth-provider";
 import { getAuth } from "@/lib/auth";
 import { syncAuthToConvex } from "@/lib/auth-sync";
+import { getConvexClient } from "@/lib/convex";
+import { api } from "../../../convex/_generated/api";
+import type { Role } from "@/lib/permissions";
 
 export default async function ProductLayout({
   children,
@@ -14,12 +17,21 @@ export default async function ProductLayout({
   const auth = await getAuth();
   let convexOrgId: string | null = null;
   let convexUserId: string | null = null;
+  let role: Role | null = null;
 
   if (auth) {
     try {
       const ids = await syncAuthToConvex(auth);
       convexOrgId = ids.orgId;
       convexUserId = ids.userId;
+
+      // Fetch the user's role from their org membership
+      const convex = getConvexClient();
+      const membership = await convex.query(api.orgMemberships.getByUserAndOrg, {
+        userId: ids.userId,
+        orgId: ids.orgId,
+      });
+      role = (membership?.role as Role) ?? 'member';
     } catch (err) {
       console.warn('[Layout] Could not sync auth to Convex:', err);
     }
@@ -28,10 +40,11 @@ export default async function ProductLayout({
   return (
     <ConvexClientProvider>
       <AuthProvider
-        convexOrgId={convexOrgId as Parameters<typeof AuthProvider>[0]["convexOrgId"]}
-        convexUserId={convexUserId as Parameters<typeof AuthProvider>[0]["convexUserId"]}
+        convexOrgId={convexOrgId}
+        convexUserId={convexUserId}
         email={auth?.email}
         name={auth?.name}
+        role={role}
       >
         <SidebarProvider defaultOpen>
           <AppSidebar />

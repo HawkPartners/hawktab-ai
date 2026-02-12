@@ -60,7 +60,7 @@ export async function GET(
       return NextResponse.json({ error: 'Run ID is required' }, { status: 400 });
     }
 
-    await requireConvexAuth();
+    const auth = await requireConvexAuth();
 
     // Get run from Convex
     const convex = getConvexClient();
@@ -68,6 +68,11 @@ export async function GET(
 
     if (!run) {
       return NextResponse.json({ error: 'Run not found' }, { status: 404 });
+    }
+
+    // Verify org ownership
+    if (String(run.orgId) !== String(auth.convexOrgId)) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
     // Try Convex feedback first
@@ -114,7 +119,7 @@ export async function GET(
   } catch (error) {
     console.error('[Feedback API GET] Error:', error);
     return NextResponse.json(
-      { error: 'Failed to get feedback', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to get feedback', details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined },
       { status: 500 }
     );
   }
@@ -131,7 +136,7 @@ export async function POST(
       return NextResponse.json({ error: 'Run ID is required' }, { status: 400 });
     }
 
-    await requireConvexAuth();
+    const auth = await requireConvexAuth();
 
     // Get run from Convex
     const convex = getConvexClient();
@@ -139,6 +144,11 @@ export async function POST(
 
     if (!run) {
       return NextResponse.json({ error: 'Run not found' }, { status: 404 });
+    }
+
+    // Verify org ownership
+    if (String(run.orgId) !== String(auth.convexOrgId)) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
     // Parse and validate request
@@ -219,7 +229,7 @@ export async function POST(
   } catch (error) {
     console.error('[Feedback API POST] Error:', error);
     return NextResponse.json(
-      { error: 'Failed to submit feedback', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to submit feedback', details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined },
       { status: 500 }
     );
   }

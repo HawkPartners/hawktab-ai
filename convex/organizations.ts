@@ -11,6 +11,13 @@ export const getByWorkosId = query({
   },
 });
 
+export const get = query({
+  args: { orgId: v.id("organizations") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.orgId);
+  },
+});
+
 export const upsert = mutation({
   args: {
     workosOrgId: v.string(),

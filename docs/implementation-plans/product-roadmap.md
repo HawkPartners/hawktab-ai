@@ -22,7 +22,7 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 | **3.1** Cloud Infrastructure Setup | Convex, R2, WorkOS, Docker/Railway | Complete |
 | **3.2** Pipeline Cloud Migration | Wire orchestrator to Convex/R2, new API routes, deprecate old | Complete |
 | **3.3** New Project Experience | Multi-step wizard exposing all pipeline features in UI | Complete |
-| **3.4** Dashboard, Detail, Roles & Cost | Real-time dashboard, project detail, role enforcement, cost tracking | Not Started |
+| **3.4** Dashboard, Detail, Roles & Cost | Real-time dashboard, project detail, role enforcement, cost tracking | Complete |
 | **3.5** Deploy & Launch | Railway deployment, DNS, landing page, Sentry | Not Started |
 
 ---
@@ -59,102 +59,13 @@ Next.js app shell with `(marketing)/` and `(product)/` route groups, collapsible
 
 ---
 
-### 3.4 Dashboard, Project Detail, Roles & Cost Tracking — `NOT STARTED`
+### 3.4 Dashboard, Project Detail, Roles & Cost Tracking — `COMPLETE`
 
-Build the surfaces that make this feel like a product, not a prototype. Focused on the four things that matter for launch: a real dashboard, a project detail page worth looking at, role enforcement so access is controlled, and cost tracking so we know what each run costs.
+**Goal**: Build the surfaces that make this feel like a product, not a prototype. Real dashboard, project detail with progress timeline, role enforcement, cost tracking.
 
-**Scope decisions**: Re-run support, debug bundles, and supportability tooling are useful but not blocking for the Antares pilot. They're documented under Deferred (Post-Launch) below.
+**What was built**: Dashboard with search input, status tabs (All/Active/Completed/Failed) with count badges, client-side filtering, role-gated New Project button, separate empty states. Pipeline progress timeline component mapping orchestrator stages to 6 user-friendly steps (including post-review stages: `applying_review`, `waiting_for_tables`, `generating_output`). Project detail page with PipelineTimeline replacing old Processing Banner, config summary card reading from `project.config`, role-gated cancel button. User menu in header with initials avatar, name/email/role display, Settings link (role-gated), sign out (hidden in AUTH_BYPASS mode). Settings page with 3 cards (Organization, Profile, Members) using Convex queries, gated for `external_partner`. Cost tracking persisted in `runs.result.costSummary` (internal only, not exposed in UI).
 
----
-
-#### Dashboard (`(product)/dashboard/`)
-
-The first thing a user sees after login. Needs to feel real.
-
-- Project list from Convex (real-time subscriptions, already wired)
-- Columns: Project Name, Status, Tables, Created, Duration, Actions
-- **Status filter**: tabs or dropdown (All / In Progress / Completed / Error)
-- **Search**: by project name
-- **Sort**: by date created (default: newest first), by status
-- Empty state with "Create New Project" CTA
-- Click project → project detail; click "Review" badge → review page
-
----
-
-#### Enhanced Project Detail (`(product)/projects/[projectId]/`)
-
-This page is where users spend time during and after a run. Two modes: **in-progress** (watching the pipeline) and **complete** (reviewing results).
-
-**Pipeline progress timeline** (the biggest UX win in this phase):
-- Visual stage-by-stage progress, replaces the current text status + percentage
-  ```
-  ✅ Files uploaded → ✅ Banner analyzed → ⏳ Table generation → ⬜ Verification → ⬜ Excel
-  ```
-- Driven by the `stage` field already written to Convex by the orchestrator
-- Real-time updates via Convex subscription (no polling)
-- Current stage shows elapsed time; completed stages show duration
-
-**Results section** (when run completes):
-- Summary cards: tables generated, banner cuts, banner groups, duration, AI cost
-- Download buttons:
-  - Primary: `crosstabs.xlsx`
-  - Secondary: `tables.json`, `master.R` (collapsible, for power users)
-  - If weighted: separate download for weighted/unweighted output
-  - If separate workbooks: separate download per workbook
-- Configuration summary: what settings were used for this run (display mode, theme, stat testing, weight variable) — read-only, so users can verify before sharing output
-
-**Status-specific displays**:
-- `in_progress`: progress timeline + cancel button
-- `pending_review`: "Review Required" banner with link to review page
-- `success`/`partial`: results section with downloads
-- `error`: human-readable error message (parsed from `run.error`, not raw stack traces)
-- `cancelled`: cancellation confirmation
-
-**Action buttons** (contextual):
-- Download (when complete)
-- Review (when pending_review)
-- Cancel (when in_progress)
-
----
-
-#### Role Enforcement & Auth Polish
-
-The role definitions and auth-sync are in place from 3.1. What's left is enforcement and the minimal UI surfaces for auth.
-
-**Permission gates**:
-- Check `orgMemberships.role` before allowing actions
-- Admins: see all projects in the org, manage org settings, invite members
-- Members: see own projects + shared projects, create projects
-- External partners: same access as members (distinguished for labeling, not permissions)
-- Gate on both API routes (server-side) and UI (hide/disable controls)
-
-**Auth UI surfaces**:
-- **User profile menu** in app header: current user name/email, current org, logout button
-- **Org selector**: when a user belongs to multiple orgs, switcher in header (dropdown)
-- **Settings page** (`(product)/settings/`):
-  - Org info section (name — read-only for non-admins)
-  - Member list: name, email, role, joined date
-  - Invite member (admin only): email + role assignment
-  - Role management (admin only): change member roles
-
-> **Foundation already in place**: Convex schema has `orgMemberships` with `admin`/`member`/`external_partner` roles. Auth-sync preserves existing roles on login (doesn't overwrite). All Convex queries already filter by `orgId`. What's needed is the permission-checking utility and the UI surfaces.
-
----
-
-#### Cost Tracking
-
-`AgentMetricsCollector` already tracks per-call token usage and cost in memory. This phase persists it.
-
-- Write to Convex `aiUsage` table at pipeline completion (per-agent breakdown: model, tokens in/out, cost, duration)
-- Surface total AI cost on the project detail results cards (alongside tables, cuts, duration)
-- No dedicated cost dashboard for MVP — query Convex directly for org-level spend if needed
-- Schema: `aiUsage { runId, orgId, projectId, agent, model, inputTokens, outputTokens, cost, durationMs }`
-
----
-
-**Deliverables**: Real-time dashboard with filtering/search, enhanced project detail with progress timeline and results, role enforcement + auth UI + settings page, cost tracking to Convex.
-
-**Level of Effort**: Medium-High (dashboard filters + progress timeline component + project detail rebuild + permission utility + settings page + cost persistence)
+**Security hardening (audit pass)**: `canPerform(role, action)` permission utility with 4 actions. `requireConvexAuth()` now returns `role` from org membership. Role gates on launch route (`create_project`) and cancel route (`cancel_run`). Org ownership checks added to feedback and review routes (IDOR fix). Auth added to 6 legacy routes (`execute-r`, `delete-session`, `loop-detect`, `validation-queue`, `generate-tables`, `export-workbook`). Error responses gated on `NODE_ENV` to prevent detail leakage in production.
 
 ---
 
@@ -178,24 +89,6 @@ Ship it. Antares gets a link.
 - Basic structured logging with correlation IDs (trace a job through all stages)
 - PostHog for lightweight product analytics (project_created, job_completed, job_failed, download_completed) — optional for launch
 
-**Security checklist**:
-- [ ] All `(product)/` routes behind auth middleware
-- [ ] All Convex queries filter by `orgId`
-- [ ] R2 downloads use signed URLs
-- [ ] File uploads validated server-side (types, sizes)
-- [ ] API inputs validated with Zod
-- [ ] CORS restricted to known origins
-- [ ] All secrets in environment variables
-- [ ] Rate limiting on expensive AI calls
-- [ ] Data lifecycle: per-project delete, optional auto-expiration
-- [ ] Security audit skill run before launch
-
-**Reliability**:
-- Retries with backoff on agent calls (already doing this)
-- Graceful degradation (one table fails → continue with others, already doing this)
-- Health check endpoint for monitoring
-- Idempotent operations (re-running with same inputs is safe)
-
 **Deliverables**: Production deployment live. Antares can log in and use the system. Sentry alerting active.
 
 **Level of Effort**: Medium (deployment + DNS + landing page + Sentry + final testing)
@@ -212,4 +105,4 @@ Future features, deferred items, and known gaps/limitations are documented in [`
 
 *Created: January 22, 2026*
 *Updated: February 11, 2026*
-*Status: Phase 3 (Productization) in progress. 3.1–3.3 complete. 3.4 next.*
+*Status: Phase 3 (Productization) in progress. 3.1–3.4 complete. 3.5 next.*

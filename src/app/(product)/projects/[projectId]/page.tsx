@@ -12,6 +12,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { AppBreadcrumbs } from '@/components/app-breadcrumbs';
+import { PipelineTimeline } from '@/components/pipeline-timeline';
+import { useAuthContext } from '@/providers/auth-provider';
+import { canPerform } from '@/lib/permissions';
 import {
   Download,
   CheckCircle,
@@ -29,6 +32,7 @@ import {
   XCircle,
   MessageSquare,
   X,
+  Settings2,
 } from 'lucide-react';
 import { api } from '../../../../../convex/_generated/api';
 import type { Id } from '../../../../../convex/_generated/dataModel';
@@ -123,6 +127,40 @@ const DOWNLOAD_FILES = [
   { filename: 'master.R', label: 'R Script', primary: false },
 ];
 
+// Config field display labels
+const CONFIG_LABELS: Record<string, string> = {
+  projectSubType: 'Project Type',
+  bannerMode: 'Banner Mode',
+  displayMode: 'Display Mode',
+  separateWorkbooks: 'Separate Workbooks',
+  theme: 'Excel Theme',
+  weightVariable: 'Weight Variable',
+  loopStatTestingMode: 'Loop Stat Testing',
+  stopAfterVerification: 'Stop After Verification',
+};
+
+function formatConfigValue(key: string, config: Record<string, unknown>): string | null {
+  if (key === 'statTesting') {
+    const st = config.statTesting as { thresholds?: number[]; minBase?: number } | undefined;
+    if (!st) return null;
+    const thresholds = st.thresholds?.join(', ') ?? '90';
+    const parts = [`${thresholds}% confidence`];
+    if (st.minBase && st.minBase > 0) parts.push(`min base ${st.minBase}`);
+    return parts.join(', ');
+  }
+  return null;
+}
+
+function ConfigValue({ value }: { value: unknown }) {
+  if (value === null || value === undefined || value === '') {
+    return <span className="text-muted-foreground">Not set</span>;
+  }
+  if (typeof value === 'boolean') {
+    return <span>{value ? 'Yes' : 'No'}</span>;
+  }
+  return <span className="font-mono text-xs">{String(value)}</span>;
+}
+
 export default function ProjectDetailPage({
   params,
 }: {
@@ -130,6 +168,8 @@ export default function ProjectDetailPage({
 }) {
   const { projectId } = use(params);
   const router = useRouter();
+  const { role } = useAuthContext();
+  const canCancel = canPerform(role, 'cancel_run');
   const [isCancelling, setIsCancelling] = useState(false);
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [feedbackNotes, setFeedbackNotes] = useState('');
@@ -270,6 +310,24 @@ export default function ProjectDetailPage({
   const hasOutputs = (summary?.tables ?? 0) > 0 || (summary?.cuts ?? 0) > 0;
   const feedbackAvailable = !isActive && (status === 'success' || status === 'partial');
 
+  // Config for display
+  const config = project.config as Record<string, unknown> | undefined;
+  const configEntries: { key: string; label: string; value: unknown }[] = [];
+  if (config) {
+    // Standard fields from CONFIG_LABELS
+    for (const [key, label] of Object.entries(CONFIG_LABELS)) {
+      const value = config[key];
+      if (value !== undefined && value !== null && value !== '' && value !== false) {
+        configEntries.push({ key, label, value });
+      }
+    }
+    // Special handling for statTesting (nested object)
+    const statTestingStr = formatConfigValue('statTesting', config);
+    if (statTestingStr) {
+      configEntries.push({ key: 'statTesting', label: 'Stat Testing', value: statTestingStr });
+    }
+  }
+
   return (
     <div>
       <AppBreadcrumbs
@@ -306,64 +364,56 @@ export default function ProjectDetailPage({
           )}
         </div>
 
-        {/* Review Required Banner */}
-        {status === 'pending_review' && (
-          <Card className="mb-8 border-yellow-500/50 bg-yellow-500/5">
-            <CardContent className="p-6">
+        {/* Pipeline Progress Timeline (replaces old Processing Banner) */}
+        {(status === 'in_progress' || status === 'resuming' || status === 'pending_review') && (
+          <Card className="mb-8">
+            <CardHeader>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                  <div>
-                    <p className="font-medium">Human Review Required</p>
-                    <p className="text-sm text-muted-foreground">
-                      Some banner columns need your attention before processing can continue.
-                    </p>
-                  </div>
-                </div>
-                <Button onClick={() => router.push(`/projects/${encodeURIComponent(projectId)}/review`)}>
-                  <Play className="h-4 w-4 mr-2" />
-                  Review Now
-                </Button>
+                <CardTitle className="text-lg">Pipeline Progress</CardTitle>
+                {(status === 'in_progress' || status === 'resuming') && canCancel && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCancel}
+                    disabled={isCancelling}
+                  >
+                    {isCancelling ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Cancelling...
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="h-4 w-4 mr-2" />
+                        Cancel
+                      </>
+                    )}
+                  </Button>
+                )}
+                {status === 'pending_review' && (
+                  <Button
+                    size="sm"
+                    onClick={() => router.push(`/projects/${encodeURIComponent(projectId)}/review`)}
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    Review Now
+                  </Button>
+                )}
               </div>
+            </CardHeader>
+            <CardContent>
+              <PipelineTimeline
+                stage={latestRun?.stage ?? undefined}
+                status={status}
+                message={latestRun?.message ?? undefined}
+                progress={latestRun?.progress ?? undefined}
+              />
             </CardContent>
           </Card>
         )}
 
-        {/* Processing Banner */}
-        {(status === 'in_progress' || status === 'resuming') && (
-          <Card className="mb-8 border-blue-500/50 bg-blue-500/5">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />
-                  <div>
-                    <p className="font-medium">Processing Crosstabs</p>
-                    <p className="text-sm text-muted-foreground">
-                      {latestRun?.message || 'Your crosstabs are being generated. This may take several minutes.'}
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={handleCancel}
-                  disabled={isCancelling}
-                >
-                  {isCancelling ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Cancelling...
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Cancel
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Review Required Banner (if not showing timeline) */}
+        {/* Timeline handles review state above, so this is only needed as a legacy fallback */}
 
         {/* Cancelled Banner */}
         {status === 'cancelled' && (
@@ -625,7 +675,7 @@ export default function ProjectDetailPage({
         </Card>
 
         {/* Input Files info */}
-        <Card>
+        <Card className="mb-8">
           <CardHeader>
             <CardTitle className="text-lg">Input Files</CardTitle>
           </CardHeader>
@@ -636,7 +686,7 @@ export default function ProjectDetailPage({
                   const intake = project.intake as Record<string, string | null>;
                   return (
                     <>
-                      <p>Data Map: {intake.dataMap || 'N/A'}</p>
+                      <p>Data Map: {intake.dataMap || intake.dataFile || 'N/A'}</p>
                       <p>Banner Plan: {intake.bannerPlan || 'N/A'}</p>
                       <p>SPSS Data: {intake.dataFile || 'N/A'}</p>
                       {intake.survey && <p>Survey: {intake.survey}</p>}
@@ -649,6 +699,30 @@ export default function ProjectDetailPage({
             )}
           </CardContent>
         </Card>
+
+        {/* Config Summary */}
+        {configEntries.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Settings2 className="h-5 w-5 text-muted-foreground" />
+                Configuration
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                {configEntries.map(({ key, label, value }) => (
+                  <div key={key} className="flex justify-between sm:block">
+                    <dt className="text-muted-foreground">{label}</dt>
+                    <dd className="font-medium mt-0 sm:mt-0.5">
+                      <ConfigValue value={value} />
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

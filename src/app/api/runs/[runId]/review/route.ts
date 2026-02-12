@@ -42,6 +42,11 @@ export async function POST(
       return NextResponse.json({ error: 'Run not found' }, { status: 404 });
     }
 
+    // Verify org ownership
+    if (String(run.orgId) !== String(auth.convexOrgId)) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+
     // Parse request body
     let body: { decisions: CrosstabDecision[] };
     try {
@@ -230,7 +235,7 @@ export async function POST(
   } catch (error) {
     console.error('[Review API POST] Error:', error);
     return NextResponse.json(
-      { error: 'Failed to process review', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to process review', details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined },
       { status: 500 }
     );
   }

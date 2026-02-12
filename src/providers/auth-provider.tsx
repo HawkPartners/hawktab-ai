@@ -1,13 +1,14 @@
 'use client';
 
 import { createContext, useContext, type ReactNode } from 'react';
-import type { Id } from '../../convex/_generated/dataModel';
+import type { Role } from '@/lib/permissions';
 
 interface AuthContextValue {
   convexOrgId: string | null;
   convexUserId: string | null;
   email: string | null;
   name: string | null;
+  role: Role | null;
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -15,14 +16,16 @@ const AuthContext = createContext<AuthContextValue>({
   convexUserId: null,
   email: null,
   name: null,
+  role: null,
 });
 
 interface AuthProviderProps {
   children: ReactNode;
-  convexOrgId?: Id<"organizations"> | null;
-  convexUserId?: Id<"users"> | null;
+  convexOrgId?: string | null;
+  convexUserId?: string | null;
   email?: string | null;
   name?: string | null;
+  role?: Role | null;
 }
 
 export function AuthProvider({
@@ -31,6 +34,7 @@ export function AuthProvider({
   convexUserId = null,
   email = null,
   name = null,
+  role = null,
 }: AuthProviderProps) {
   return (
     <AuthContext.Provider
@@ -39,6 +43,7 @@ export function AuthProvider({
         convexUserId: convexUserId ?? null,
         email: email ?? null,
         name: name ?? null,
+        role: role ?? null,
       }}
     >
       {children}

@@ -9,6 +9,7 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { requireConvexAuth } from '@/lib/requireConvexAuth';
 
 const execAsync = promisify(exec);
 
@@ -17,8 +18,9 @@ export async function GET(
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
+    await requireConvexAuth();
     const { sessionId } = await params;
-    
+
     // Validate sessionId
     if (!sessionId.startsWith('output-') || sessionId.includes('..') || sessionId.includes('/')) {
       return NextResponse.json({ error: 'Invalid sessionId' }, { status: 400 });

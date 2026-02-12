@@ -8,12 +8,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { formatTablesFileToBuffer } from '@/lib/excel/ExcelFormatter';
+import { requireConvexAuth } from '@/lib/requireConvexAuth';
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
+    await requireConvexAuth();
     const { sessionId } = await params;
 
     // Validate sessionId to prevent path traversal
