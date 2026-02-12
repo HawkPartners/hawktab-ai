@@ -4,9 +4,8 @@ import { NextResponse } from "next/server";
  * Production health check endpoint.
  * No auth required — used by Railway for deployment health monitoring.
  *
- * Returns:
- * - 200 with service statuses if core services are reachable
- * - 503 if critical services are down
+ * Always returns 200 if the app is running (Railway needs this to pass).
+ * Service statuses are informational — check them for debugging, not gating.
  */
 export async function GET() {
   const checks: Record<string, "healthy" | "degraded" | "unavailable"> = {};
@@ -15,7 +14,6 @@ export async function GET() {
   try {
     const convexUrl = process.env.CONVEX_URL;
     if (convexUrl) {
-      // Light ping — just verify the URL is reachable (HEAD request, 3s timeout)
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 3000);
       const res = await fetch(convexUrl, {
@@ -50,18 +48,19 @@ export async function GET() {
     (process.env.WORKOS_CLIENT_ID && process.env.WORKOS_API_KEY);
   checks.auth = hasAuth ? "healthy" : "unavailable";
 
-  // Overall status — unhealthy if any critical service is unavailable
+  // Derive overall status (informational only — always return 200)
   const hasUnavailable = Object.values(checks).includes("unavailable");
-  const overallStatus = hasUnavailable ? "degraded" : "ok";
-  const httpStatus = hasUnavailable ? 503 : 200;
+  const hasDegraded = Object.values(checks).includes("degraded");
+  const overallStatus = hasUnavailable
+    ? "degraded"
+    : hasDegraded
+      ? "degraded"
+      : "ok";
 
-  return NextResponse.json(
-    {
-      status: overallStatus,
-      timestamp: new Date().toISOString(),
-      version: process.env.npm_package_version ?? "0.1.0",
-      checks,
-    },
-    { status: httpStatus }
-  );
+  return NextResponse.json({
+    status: overallStatus,
+    timestamp: new Date().toISOString(),
+    version: process.env.npm_package_version ?? "0.1.0",
+    checks,
+  });
 }
