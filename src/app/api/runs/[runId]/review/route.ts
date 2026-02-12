@@ -21,17 +21,21 @@ import type { Id } from '../../../../../../convex/_generated/dataModel';
 import type { PathBResult, CrosstabReviewState } from '@/lib/api/types';
 import { applyRateLimit } from '@/lib/withRateLimit';
 import { getApiErrorDetails } from '@/lib/api/errorDetails';
+import { sendHeartbeat } from '@/lib/api/heartbeat';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ runId: string }> }
 ) {
+  let outerRunId: string | undefined;
   try {
-    const { runId } = await params;
+    const { runId: rawRunId } = await params;
+    outerRunId = rawRunId;
 
-    if (!runId || !/^[a-zA-Z0-9_.-]+$/.test(runId)) {
+    if (!rawRunId || !/^[a-zA-Z0-9_.-]+$/.test(rawRunId)) {
       return NextResponse.json({ error: 'Run ID is required' }, { status: 400 });
     }
+    const runId = rawRunId; // narrowed to string for the rest of the try block
 
     // Authenticate
     const auth = await requireConvexAuth();
@@ -281,6 +285,9 @@ export async function POST(
         fs.rm(recoveredOutputDir, { recursive: true }).catch(() => { /* best-effort */ });
       }
 
+      // Keep heartbeat alive while R2 work completes (heartbeat stopped when completePipeline returned)
+      await sendHeartbeat(runId);
+
       // Downgrade to 'partial' if pipeline succeeded but R2 upload failed (files can't be downloaded)
       const terminalStatus = result.status === 'success' && r2UploadFailed ? 'partial' : result.status;
       const terminalMessage = result.status === 'success' && r2UploadFailed
@@ -362,6 +369,9 @@ export async function POST(
             fs.rm(recoveredOutputDir, { recursive: true }).catch(() => { /* best-effort */ });
           }
 
+          // Keep heartbeat alive while R2 work completes (heartbeat stopped when completePipeline returned)
+          await sendHeartbeat(runId);
+
           // Downgrade to 'partial' if pipeline succeeded but R2 upload failed
           const bgTerminalStatus = result.status === 'success' && r2Failed ? 'partial' : result.status;
           const bgTerminalMessage = result.status === 'success' && r2Failed
@@ -416,6 +426,19 @@ export async function POST(
     console.error('[Review API POST] Error:', error);
     if (error instanceof AuthenticationError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    // Mark run as errored immediately so the UI doesn't show a stuck spinner
+    if (outerRunId) {
+      try {
+        await mutateInternal(internal.runs.updateStatus, {
+          runId: outerRunId as Id<"runs">,
+          status: 'error',
+          stage: 'error',
+          progress: 100,
+          message: 'Unexpected failure during review completion',
+          error: 'Unexpected failure during review completion',
+        });
+      } catch { /* last resort — Convex may be unreachable */ }
     }
     return NextResponse.json(
       { error: 'Failed to process review', details: getApiErrorDetails(error) },

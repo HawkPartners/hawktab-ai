@@ -1,6 +1,10 @@
 import { v } from "convex/values";
 import { query, internalMutation } from "./_generated/server";
 
+/** Statuses that represent an actively-running pipeline (heartbeat expected). */
+const ACTIVE_STATUSES = ["in_progress", "resuming"] as const;
+const ACTIVE_STATUS_SET = new Set<string>(ACTIVE_STATUSES);
+
 // Typed config validator — mirrors schema.ts configValidator
 const configArg = v.object({
   projectSubType: v.optional(v.union(v.literal("standard"), v.literal("segmentation"), v.literal("maxdiff"))),
@@ -111,8 +115,7 @@ export const updateStatus = internalMutation({
     }
     const { runId, ...fields } = args;
     // Auto-refresh heartbeat on active statuses (belt-and-suspenders)
-    const activeStatuses = new Set(["in_progress", "resuming"]);
-    const patch = activeStatuses.has(args.status)
+    const patch = ACTIVE_STATUS_SET.has(args.status)
       ? { ...fields, lastHeartbeat: Date.now() }
       : fields;
     await ctx.db.patch(runId, patch);
@@ -211,8 +214,7 @@ export const heartbeat = internalMutation({
     const run = await ctx.db.get(args.runId);
     if (!run) return;
 
-    const activeStatuses = new Set(["in_progress", "resuming"]);
-    if (!activeStatuses.has(run.status)) return;
+    if (!ACTIVE_STATUS_SET.has(run.status)) return;
 
     await ctx.db.patch(args.runId, { lastHeartbeat: Date.now() });
   },
@@ -221,15 +223,17 @@ export const heartbeat = internalMutation({
 /**
  * Reconcile stale runs — called by a cron every 5 minutes.
  * Marks runs as "error" if they haven't sent a heartbeat within the threshold:
- *   - "resuming" runs: stale after 10 minutes
+ *   - "resuming" runs: stale after 15 minutes
  *   - "in_progress" runs: stale after 90 minutes
+ *   - "pending_review" runs: stale after 48 hours (review expired or state lost)
  * Uses `lastHeartbeat` with `_creationTime` as fallback for pre-existing runs.
  */
 export const reconcileStaleRuns = internalMutation({
   handler: async (ctx) => {
     const now = Date.now();
-    const RESUMING_STALE_MS = 10 * 60 * 1000;   // 10 minutes
-    const IN_PROGRESS_STALE_MS = 90 * 60 * 1000; // 90 minutes
+    const RESUMING_STALE_MS = 15 * 60 * 1000;          // 15 minutes
+    const IN_PROGRESS_STALE_MS = 90 * 60 * 1000;       // 90 minutes
+    const PENDING_REVIEW_STALE_MS = 48 * 60 * 60 * 1000; // 48 hours
 
     // Check resuming runs
     const resumingRuns = await ctx.db
@@ -265,6 +269,25 @@ export const reconcileStaleRuns = internalMutation({
           error: "Pipeline interrupted — please re-run your project.",
           stage: "error",
           message: "Pipeline interrupted — please re-run your project.",
+        });
+      }
+    }
+
+    // Check pending_review runs (no heartbeat expected — use _creationTime / last status update)
+    const pendingReviewRuns = await ctx.db
+      .query("runs")
+      .withIndex("by_status", (q) => q.eq("status", "pending_review"))
+      .collect();
+
+    for (const run of pendingReviewRuns) {
+      const lastAlive = run.lastHeartbeat ?? run._creationTime;
+      if (now - lastAlive > PENDING_REVIEW_STALE_MS) {
+        console.log(`[reconcileStaleRuns] Marking pending_review run ${run._id} as error (created: ${new Date(run._creationTime).toISOString()})`);
+        await ctx.db.patch(run._id, {
+          status: "error",
+          error: "Review expired — please re-run your project.",
+          stage: "error",
+          message: "Review expired — please re-run your project.",
         });
       }
     }
