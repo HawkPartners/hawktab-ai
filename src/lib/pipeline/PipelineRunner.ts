@@ -33,7 +33,7 @@ import { setActiveTheme } from '../excel/styles';
 import { extractStreamlinedData } from '../data/extractStreamlinedData';
 import { getPromptVersions, getStatTestingConfig, formatStatTestingConfig } from '../env';
 import type { StatTestingConfig } from '../env';
-import { resetMetricsCollector, getPipelineCostSummary, getMetricsCollector } from '../observability';
+import { resetMetricsCollector, getPipelineCostSummary, getMetricsCollector, WideEvent, startPipelineTransaction } from '../observability';
 import { getPipelineEventBus, STAGE_NAMES } from '../events';
 import { persistSystemError, persistAgentErrorAuto, persistSystemErrorAuto, readPipelineErrors, summarizePipelineErrors } from '../errors/ErrorPersistence';
 
@@ -216,6 +216,19 @@ export async function runPipeline(
   const outputDir = path.join(process.cwd(), 'outputs', datasetNameGuess, outputFolder);
   await fs.mkdir(outputDir, { recursive: true });
 
+  // Observability: WideEvent + Sentry transaction
+  const wideEvent = new WideEvent({ pipelineId, dataset: datasetNameGuess });
+  const metricsCollector = getMetricsCollector();
+  metricsCollector.bindWideEvent(wideEvent);
+  const pipelineTransaction = startPipelineTransaction({ pipelineId, dataset: datasetNameGuess });
+
+  // Helper to cleanly finish observability on any exit path
+  const finishObservability = (outcome: 'success' | 'error' | 'partial' | 'cancelled', error?: string) => {
+    metricsCollector.unbindWideEvent();
+    wideEvent.finish(outcome, error);
+    pipelineTransaction.finish(outcome === 'success' || outcome === 'partial' ? 'ok' : 'error');
+  };
+
   // Pre-flight: model deployment health check
   if (process.env.SKIP_HEALTH_CHECK !== 'true') {
     const providerLabel = (process.env.AI_PROVIDER || 'azure').toLowerCase() === 'openai' ? 'OpenAI' : 'Azure';
@@ -245,6 +258,7 @@ export async function runPipeline(
         // ignore
       }
       eventBus.emitPipelineFailed(datasetNameGuess, 'Azure health check failed');
+      finishObservability('error', 'Azure health check failed');
       setActiveCircuitBreaker(null);
       clearPipelineTimeout();
       return {
@@ -286,6 +300,7 @@ export async function runPipeline(
       // ignore
     }
     eventBus.emitPipelineFailed(datasetNameGuess, errorMsg);
+    finishObservability('error', errorMsg);
     setActiveCircuitBreaker(null);
     clearPipelineTimeout();
     return {
@@ -346,6 +361,7 @@ export async function runPipeline(
 
     const validationDuration = Date.now() - validationStart;
     stageTiming['validation'] = validationDuration;
+    wideEvent.recordStage('validation', 'ok', validationDuration);
     log(`  Format: ${validationResult.format}`, 'dim');
     log(`  Errors: ${validationResult.errors.length}, Warnings: ${validationResult.warnings.length}`, 'dim');
 
@@ -383,6 +399,7 @@ export async function runPipeline(
         // ignore
       }
       eventBus.emitPipelineFailed(files.name, 'Validation failed: ' + validationResult.errors.map(e => e.message).join('; '));
+      finishObservability('error', 'Validation failed');
       setActiveCircuitBreaker(null);
       clearPipelineTimeout();
       return {
@@ -467,6 +484,7 @@ export async function runPipeline(
         log(`  ${msg}`, 'red');
         if (details) log(`    ${details}`, 'dim');
         eventBus.emitPipelineFailed(files.name, msg);
+        finishObservability('error', msg);
         setActiveCircuitBreaker(null);
         clearPipelineTimeout();
         return {
@@ -554,6 +572,7 @@ export async function runPipeline(
 
     log(`  Effective datamap: ${verboseDataMap.length} variables`, 'green');
     stageTiming['dataMapProcessor'] = Date.now() - stepStart1;
+    wideEvent.recordStage('dataMapProcessor', 'ok', stageTiming['dataMapProcessor']);
     log(`  Duration: ${stageTiming['dataMapProcessor']}ms`, 'dim');
     eventBus.emitStageComplete(1, STAGE_NAMES[1], stageTiming['dataMapProcessor']);
     log('', 'reset');
@@ -759,6 +778,7 @@ export async function runPipeline(
       log(`  [Path A] CrosstabAgent: ${crosstabResult.result.bannerCuts.length} groups validated`, 'green');
       eventBus.emitStageComplete(3, STAGE_NAMES[3], Date.now() - crosstabStart);
       stageTiming['pathA_bannerAndCrosstab'] = Date.now() - pathAStart;
+      wideEvent.recordStage('pathA_bannerAndCrosstab', 'ok', stageTiming['pathA_bannerAndCrosstab']);
       log(`  [Path A] Complete in ${(stageTiming['pathA_bannerAndCrosstab'] / 1000).toFixed(1)}s`, 'dim');
 
       return { crosstabResult, agentBanner, groupCount, columnCount };
@@ -811,6 +831,7 @@ export async function runPipeline(
       }
 
       stageTiming['pathB_tableGenerator'] = Date.now() - pathBStart;
+      wideEvent.recordStage('pathB_tableGenerator', 'ok', stageTiming['pathB_tableGenerator']);
       log(`  [Path B] Complete in ${(stageTiming['pathB_tableGenerator'] / 1000).toFixed(1)}s`, 'dim');
 
       return { tableAgentResults };
@@ -844,6 +865,7 @@ export async function runPipeline(
 
           log(`  [Path C] FilterTranslatorAgent: ${filterResult.metadata.filtersTranslated} filters (${filterResult.metadata.highConfidenceCount} high confidence)`, 'green');
           stageTiming['pathC_skipLogicAndFilter'] = Date.now() - pathCStart;
+          wideEvent.recordStage('pathC_skipLogicAndFilter', 'ok', stageTiming['pathC_skipLogicAndFilter']);
           log(`  [Path C] Complete in ${(stageTiming['pathC_skipLogicAndFilter'] / 1000).toFixed(1)}s`, 'dim');
 
           return { skipLogicResult, filterResult };
@@ -879,6 +901,7 @@ export async function runPipeline(
 
     const parallelDuration = Date.now() - parallelStartTime;
     stageTiming['parallelPaths'] = parallelDuration;
+    wideEvent.recordStage('parallelPaths', 'ok', parallelDuration);
     log('', 'reset');
     log(`Parallel paths completed in ${(parallelDuration / 1000).toFixed(1)}s`, 'green');
 
@@ -982,6 +1005,7 @@ export async function runPipeline(
     }
 
     stageTiming['filterApplicator'] = Date.now() - stepStart6;
+    wideEvent.recordStage('filterApplicator', 'ok', stageTiming['filterApplicator']);
     eventBus.emitStageComplete(6, STAGE_NAMES[6], stageTiming['filterApplicator']);
     log(`  Duration: ${stageTiming['filterApplicator']}ms`, 'dim');
     log('', 'reset');
@@ -1079,6 +1103,7 @@ export async function runPipeline(
     }
 
     stageTiming['verificationAgent'] = Date.now() - stepStart7;
+    wideEvent.recordStage('verificationAgent', 'ok', stageTiming['verificationAgent']);
     log(`  Duration: ${stageTiming['verificationAgent']}ms`, 'dim');
     log('', 'reset');
 
@@ -1156,6 +1181,8 @@ export async function runPipeline(
         outputDir
       );
 
+      wideEvent.set('tableCount', verifiedTables.length);
+      finishObservability('partial');
       setActiveCircuitBreaker(null);
       clearPipelineTimeout();
       return {
@@ -1388,6 +1415,7 @@ export async function runPipeline(
       log(`  Failed R validation: ${failedValidationCount}`, 'red');
     }
     stageTiming['rValidation'] = Date.now() - stepStart8;
+    wideEvent.recordStage('rValidation', 'ok', stageTiming['rValidation']);
     eventBus.emitStageComplete(8, STAGE_NAMES[8], stageTiming['rValidation']);
     log(`  Duration: ${stageTiming['rValidation']}ms`, 'dim');
     log('', 'reset');
@@ -1490,6 +1518,7 @@ export async function runPipeline(
       }
 
       stageTiming['loopSemanticsPolicy'] = Date.now() - stepStartLSP;
+      wideEvent.recordStage('loopSemanticsPolicy', 'ok', stageTiming['loopSemanticsPolicy']);
       log(`  Duration: ${stageTiming['loopSemanticsPolicy']}ms`, 'dim');
       log('', 'reset');
     }
@@ -1529,6 +1558,7 @@ export async function runPipeline(
     log(`  Generated R script (${Math.round(masterScript.length / 1024)} KB)`, 'green');
     log(`  Tables in script: ${allTablesForR.length} (${validTables.length} valid, ${newlyExcluded.length} excluded)`, 'green');
     stageTiming['rScriptGeneration'] = Date.now() - stepStart9;
+    wideEvent.recordStage('rScriptGeneration', 'ok', stageTiming['rScriptGeneration']);
     eventBus.emitStageComplete(9, STAGE_NAMES[9], stageTiming['rScriptGeneration']);
     log(`  Duration: ${stageTiming['rScriptGeneration']}ms`, 'dim');
     log('', 'reset');
@@ -1625,6 +1655,7 @@ export async function runPipeline(
       }
 
       stageTiming['rExecution'] = Date.now() - stepStart10;
+      wideEvent.recordStage('rExecution', 'ok', stageTiming['rExecution']);
       eventBus.emitStageComplete(10, STAGE_NAMES[10], stageTiming['rExecution']);
       log(`  Duration: ${stageTiming['rExecution']}ms`, 'dim');
 
@@ -1679,6 +1710,7 @@ export async function runPipeline(
         }
 
         stageTiming['excelExport'] = Date.now() - stepStart11;
+        wideEvent.recordStage('excelExport', 'ok', stageTiming['excelExport']);
         eventBus.emitStageComplete(11, STAGE_NAMES[11], stageTiming['excelExport']);
         log(`  Duration: ${stageTiming['excelExport']}ms`, 'dim');
       } catch (excelError) {
@@ -1911,6 +1943,8 @@ export async function runPipeline(
       log(`  ${f}`, 'dim');
     }
 
+    wideEvent.set('tableCount', allTablesForR.length);
+    finishObservability('success');
     setActiveCircuitBreaker(null);
     clearPipelineTimeout();
     return {
@@ -1926,9 +1960,11 @@ export async function runPipeline(
     setActiveCircuitBreaker(null);
     clearPipelineTimeout();
     const isTimeout = pipelineSignal.aborted && !opts.abortSignal?.aborted;
+    const isCancelled = !!opts.abortSignal?.aborted;
     const errorMsg = isTimeout
       ? `Pipeline timed out after ${Math.round(timeoutMs / 60000)} minutes`
       : error instanceof Error ? error.message : String(error);
+    finishObservability(isCancelled ? 'cancelled' : 'error', errorMsg);
     log(`ERROR: ${errorMsg}`, 'red');
     try {
       await persistSystemError({

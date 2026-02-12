@@ -1,7 +1,7 @@
 /**
  * Observability utilities for CrossTab AI pipeline
  *
- * Provides token usage tracking and cost estimation across all agents.
+ * Provides token usage tracking, cost estimation, wide events, and Sentry integration.
  */
 
 export {
@@ -24,3 +24,18 @@ export {
   type AgentSummary,
   type PipelineSummary,
 } from './AgentMetrics';
+
+export {
+  WideEvent,
+  type WideEventInit,
+  type StageRecord,
+  type AgentCallRecord,
+  type WideEventOutcome,
+} from './wide-event';
+
+export {
+  startPipelineTransaction,
+  setSentryUser,
+  type PipelineSpanContext,
+  type StageSpan,
+} from './sentry-pipeline';

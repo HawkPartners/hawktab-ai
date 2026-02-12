@@ -4,16 +4,43 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-Sentry.init({
-  dsn: "https://f21898a3ccc3ebab43828e154c4ad6f9@o4510871214751744.ingest.us.sentry.io/4510871216062464",
+const isProd = process.env.NODE_ENV === "production";
 
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
+Sentry.init({
+  dsn: process.env.SENTRY_DSN ||
+    "https://f21898a3ccc3ebab43828e154c4ad6f9@o4510871214751744.ingest.us.sentry.io/4510871216062464",
+
+  environment: process.env.NODE_ENV || "development",
+
+  // Sample 100% in dev, 20% in production
+  tracesSampleRate: isProd ? 0.2 : 1.0,
 
   // Enable logs to be sent to Sentry
   enableLogs: true,
 
-  // Enable sending user PII (Personally Identifiable Information)
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
-  sendDefaultPii: true,
+  // Only send PII in development
+  sendDefaultPii: !isProd,
+
+  // Pipeline cancellation is not an error
+  ignoreErrors: ["AbortError"],
+
+  // Strip sensitive data before sending
+  beforeSend(event) {
+    // Remove any env vars that might leak
+    if (event.extra) {
+      for (const key of Object.keys(event.extra)) {
+        const lower = key.toLowerCase();
+        if (
+          lower.includes("key") ||
+          lower.includes("secret") ||
+          lower.includes("password") ||
+          lower.includes("token") ||
+          lower.includes("dsn")
+        ) {
+          event.extra[key] = "[REDACTED]";
+        }
+      }
+    }
+    return event;
+  },
 });

@@ -18,7 +18,7 @@ import { sortTables, getSortingMetadata } from '@/lib/tables/sortTables';
 import { generateRScriptV2WithValidation } from '@/lib/r/RScriptGeneratorV2';
 import { validateAndFixTables } from '@/lib/r/ValidationOrchestrator';
 import { extractStreamlinedData } from '@/lib/data/extractStreamlinedData';
-import { resetMetricsCollector, getMetricsCollector, getPipelineCostSummary } from '@/lib/observability';
+import { resetMetricsCollector, getMetricsCollector, getPipelineCostSummary, WideEvent } from '@/lib/observability';
 import { ExcelFormatter } from '@/lib/excel/ExcelFormatter';
 import { toExtendedTable, type ExtendedTableDefinition, type TableWithLoopFrame } from '@/schemas/verificationAgentSchema';
 import type { TableAgentOutput } from '@/schemas/tableAgentSchema';
@@ -356,9 +356,18 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
   const pipelineId = `pipeline-${timestamp}`;
   const outputDir = path.join(process.cwd(), 'outputs', datasetName, pipelineId);
 
+  // Observability: WideEvent for canonical pipeline log (declared at function scope for catch access)
+  resetMetricsCollector();
+  const wideEvent = new WideEvent({
+    pipelineId,
+    dataset: datasetName,
+    orgId: convexOrgId,
+    userId: runId,
+  });
+  const metricsCollector = getMetricsCollector();
+  metricsCollector.bindWideEvent(wideEvent);
+
   try {
-    // Reset metrics collector for this pipeline run
-    resetMetricsCollector();
 
     console.log(`[API] Starting full pipeline processing for session: ${sessionId}`);
     console.log(`[API] Output directory: ${outputDir}`);
@@ -472,6 +481,8 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     // Check for cancellation before starting parallel paths
     if (abortSignal?.aborted) {
       console.log('[API] Pipeline cancelled before parallel paths');
+      metricsCollector.unbindWideEvent();
+      wideEvent.finish('cancelled', 'Cancelled before processing');
       await handleCancellation(outputDir, runId, 'Cancelled before processing');
       return;
     }
@@ -617,11 +628,15 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       } catch (genError) {
         if (isAbortError(genError)) {
           console.log('[API] Pipeline was cancelled during auto-generate');
+          metricsCollector.unbindWideEvent();
+          wideEvent.finish('cancelled', 'Cancelled during auto-generate');
           await handleCancellation(outputDir, runId, 'Cancelled during agent processing');
           return;
         }
         const errorMsg = genError instanceof Error ? genError.message : String(genError);
         console.error(`[API] Auto-generate failed: ${errorMsg}`);
+        metricsCollector.unbindWideEvent();
+        wideEvent.finish('error', errorMsg);
         await updateRunStatus(runId, {
           status: 'error', stage: 'error', progress: 100,
           message: 'Auto-generate banner failed', error: errorMsg,
@@ -634,6 +649,8 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       if (!bannerPlanPath) {
         const errorMsg = 'Banner plan file is required when banner mode is "upload". No file was provided.';
         console.error(`[API] ${errorMsg}`);
+        metricsCollector.unbindWideEvent();
+        wideEvent.finish('error', errorMsg);
         await updateRunStatus(runId, {
           status: 'error', stage: 'error', progress: 100,
           message: errorMsg, error: errorMsg,
@@ -647,12 +664,16 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       } catch (pathAError) {
         if (isAbortError(pathAError)) {
           console.log('[API] Pipeline was cancelled during Path A');
+          metricsCollector.unbindWideEvent();
+          wideEvent.finish('cancelled', 'Cancelled during Path A');
           await handleCancellation(outputDir, runId, 'Cancelled during agent processing');
           return;
         }
 
         const errorMsg = pathAError instanceof Error ? pathAError.message : String(pathAError);
         console.error(`[API] Path A failed: ${errorMsg}`);
+        metricsCollector.unbindWideEvent();
+        wideEvent.finish('error', `Path A failed: ${errorMsg}`);
 
         const failureSummary = {
           pipelineId,
@@ -767,6 +788,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
       console.log('[API] Pipeline paused for human review. Path B continues in background.');
       console.log(`[API] Resume via POST /api/runs/${runId}/review`);
+      // Don't finish wideEvent here — pipeline resumes after review
       return;
     }
 
@@ -780,12 +802,16 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     } catch (pathBError) {
       if (isAbortError(pathBError)) {
         console.log('[API] Pipeline was cancelled during Path B');
+        metricsCollector.unbindWideEvent();
+        wideEvent.finish('cancelled', 'Cancelled during Path B');
         await handleCancellation(outputDir, runId, 'Cancelled during agent processing');
         return;
       }
 
       const errorMsg = pathBError instanceof Error ? pathBError.message : String(pathBError);
       console.error(`[API] Path B failed: ${errorMsg}`);
+      metricsCollector.unbindWideEvent();
+      wideEvent.finish('error', `Path B failed: ${errorMsg}`);
 
       const failureSummary = {
         pipelineId,
@@ -831,6 +857,8 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
     if (abortSignal?.aborted) {
       console.log('[API] Pipeline cancelled before R validation');
+      metricsCollector.unbindWideEvent();
+      wideEvent.finish('cancelled', 'Cancelled before R validation');
       await handleCancellation(outputDir, runId, 'Cancelled before R validation');
       return;
     }
@@ -838,6 +866,9 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     // Stop after verification (wizard config)
     if (wizardConfig?.stopAfterVerification) {
       console.log('[API] stopAfterVerification=true — completing with partial status');
+      metricsCollector.unbindWideEvent();
+      wideEvent.set('tableCount', sortedTables.length);
+      wideEvent.finish('partial');
       await updateRunStatus(runId, {
         status: 'partial',
         stage: 'complete',
@@ -884,6 +915,8 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
     if (abortSignal?.aborted) {
       console.log('[API] Pipeline cancelled before R script generation');
+      metricsCollector.unbindWideEvent();
+      wideEvent.finish('cancelled', 'Cancelled before R script generation');
       await handleCancellation(outputDir, runId, 'Cancelled before R script generation');
       return;
     }
@@ -1072,6 +1105,8 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
     if (abortSignal?.aborted) {
       console.log('[API] Pipeline cancelled - not writing final summary');
+      metricsCollector.unbindWideEvent();
+      wideEvent.finish('cancelled', 'Cancelled before completion');
       await handleCancellation(outputDir, runId, 'Cancelled before completion');
       return;
     }
@@ -1167,6 +1202,11 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     const costSummaryText = await getPipelineCostSummary();
     console.log(costSummaryText);
 
+    // Finish observability
+    metricsCollector.unbindWideEvent();
+    wideEvent.set('tableCount', allTablesForR.length);
+    wideEvent.finish(excelGenerated ? 'success' : (rExecutionSuccess ? 'partial' : 'error'));
+
     // Upload outputs to R2 (non-blocking — log but don't fail on R2 errors)
     let r2Manifest: R2FileManifest | undefined;
     if (convexOrgId && convexProjectId) {
@@ -1224,10 +1264,15 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
   } catch (processingError) {
     if (isAbortError(processingError)) {
       console.log('[API] Pipeline processing was cancelled');
+      metricsCollector.unbindWideEvent();
+      wideEvent.finish('cancelled', 'Pipeline cancelled');
       await handleCancellation(outputDir, runId, 'Pipeline cancelled');
       return;
     }
 
+    const procErrorMsg = processingError instanceof Error ? processingError.message : 'Unknown error';
+    metricsCollector.unbindWideEvent();
+    wideEvent.finish('error', procErrorMsg);
     console.error('[API] Pipeline error:', processingError);
     try {
       await persistSystemError({

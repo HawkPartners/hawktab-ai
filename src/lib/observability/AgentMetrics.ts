@@ -14,6 +14,7 @@
  *   const summary = await metrics.getSummary();
  */
 
+import * as Sentry from '@sentry/nextjs';
 import {
   calculateCost,
   calculateCostSync,
@@ -22,6 +23,7 @@ import {
   type CostBreakdown,
 } from './CostCalculator';
 import { getPipelineEventBus } from '../events';
+import type { WideEvent } from './wide-event';
 
 // =============================================================================
 // Types
@@ -67,6 +69,17 @@ export interface PipelineSummary {
 
 export class AgentMetricsCollector {
   private metrics: AgentMetric[] = [];
+  private wideEvent: WideEvent | null = null;
+
+  /** Bind a WideEvent so all subsequent record() calls enrich it. */
+  bindWideEvent(event: WideEvent): void {
+    this.wideEvent = event;
+  }
+
+  /** Unbind the WideEvent (call at pipeline end). */
+  unbindWideEvent(): void {
+    this.wideEvent = null;
+  }
 
   /**
    * Record metrics from an agent call
@@ -101,6 +114,30 @@ export class AgentMetricsCollector {
       costBreakdown.totalCost,
       totalCostUsd
     );
+
+    // Enrich WideEvent (auto-instruments all agents)
+    this.wideEvent?.recordAgentCall({
+      agentName,
+      model,
+      inputTokens: tokens.input,
+      outputTokens: tokens.output,
+      durationMs,
+      costUsd: costBreakdown.totalCost,
+    });
+
+    // Add Sentry breadcrumb for error context
+    Sentry.addBreadcrumb({
+      category: 'agent',
+      message: `${agentName} call completed`,
+      level: 'info',
+      data: {
+        model,
+        inputTokens: tokens.input,
+        outputTokens: tokens.output,
+        durationMs,
+        costUsd: costBreakdown.totalCost,
+      },
+    });
   }
 
   /**

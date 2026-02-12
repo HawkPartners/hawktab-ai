@@ -1,4 +1,5 @@
 import { withAuth, getWorkOS } from "@workos-inc/authkit-nextjs";
+import { setSentryUser } from "@/lib/observability";
 
 /**
  * Typed error for authentication failures.
@@ -59,6 +60,7 @@ async function fetchOrgName(orgId: string): Promise<string> {
  */
 export async function getAuth(): Promise<AuthContext | null> {
   if (process.env.AUTH_BYPASS === "true") {
+    setSentryUser(DEV_USER);
     return DEV_USER;
   }
 
@@ -74,7 +76,7 @@ export async function getAuth(): Promise<AuthContext | null> {
 
     const orgName = await fetchOrgName(orgId);
 
-    return {
+    const ctx: AuthContext = {
       userId: user.id,
       email: user.email ?? "",
       name: [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email || "Unknown",
@@ -82,6 +84,8 @@ export async function getAuth(): Promise<AuthContext | null> {
       orgName,
       isBypass: false,
     };
+    setSentryUser(ctx);
+    return ctx;
   } catch {
     return null;
   }
