@@ -26,7 +26,7 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 | **3.5a** Auth Completion | WorkOS production credentials, real login flow | Complete |
 | **3.5b** Observability | Sentry, correlation IDs, structured logging | Complete |
 | **3.5c** Security Audit | 19 findings across 4 severity tiers, all remediated | Complete |
-| **3.5d** Deploy & Launch | Railway, DNS, landing page, smoke testing | Not Started |
+| **3.5d** Deploy & Launch | Railway, DNS, landing page, smoke testing | Complete |
 | **3.5e** Analytics | PostHog setup, key event tracking | Not Started |
 
 ---
@@ -113,22 +113,11 @@ Ship it. Antares gets a link.
 
 ---
 
-#### 3.5d Deploy & Launch — `NOT STARTED`
+#### 3.5d Deploy & Launch — `COMPLETE`
 
 **Goal**: Production deployment live. Antares gets a URL.
 
-**Deployment**:
-- Railway: Docker container (Node + R), environment variables, health check endpoint
-- DNS: Point domain to Railway
-- Environment: Convex production deployment, R2 production bucket, WorkOS production mode
-
-**Landing page** (`(marketing)/page.tsx` — already has placeholder):
-- Logo + "Crosstab AI"
-- Subhead: "Upload your .sav, configure your project, download publication-ready crosstabs."
-- "Log In" button → WorkOS hosted login → redirect to dashboard
-- Professional, clean, confident. Not a sales pitch.
-
-**Smoke testing**: End-to-end test with real WorkOS login, file upload, pipeline run, download.
+**What was built**: Railway deployment with Docker container (Node.js + R + haven + LibreOffice + GraphicsMagick + Ghostscript). Dockerfile hardened with build tools for R package compilation, `NEXT_PUBLIC_*` vars passed as build args. Convex production deployment, R2 production bucket, WorkOS production mode — all wired up. Health check endpoint at `/api/health`. Landing page with logo, "Crosstab AI" branding, login button routing through WorkOS hosted auth. BaseURL fix for WorkOS callback to prevent `0.0.0.0` redirects. Production hardening: temp file cleanup, R2 error handling, concurrency limiting. HITL review flow bug fixed (Convex mutation ordering race condition). Full end-to-end smoke test passed: real WorkOS login → file upload → pipeline run → HITL review → download.
 
 **Level of Effort**: Medium
 
@@ -159,4 +148,4 @@ Future features, deferred items, and known gaps/limitations are documented in [`
 
 *Created: January 22, 2026*
 *Updated: February 12, 2026*
-*Status: Phase 3 (Productization) in progress. 3.1–3.4, 3.5a–3.5c complete. 3.5d–3.5e next.*
+*Status: Phase 3 (Productization) in progress. 3.1–3.4, 3.5a–3.5d complete. 3.5e (Analytics) next.*
