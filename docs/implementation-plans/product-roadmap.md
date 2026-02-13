@@ -32,19 +32,32 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 
 ### Ongoing Feedback Log
 
-> Items below are raw feedback captured during testing. As issues are confirmed and scoped, they get promoted to numbered items above or filed as new work items.
+> Items below are feedback captured during testing, organized by area. As issues are confirmed and scoped, they get promoted to numbered items above or filed as new work items.
 
- - still bit auto-routing from review page to product page when i press "Save & Continue" Now the timeline issue is fixed but the auto-routing issue is still present
- - human readable time instead of 921 seconds; shows properly on project view but not in the project specific page
- - strip the overuse of non clean icons; follow the design system and think B2B
- - we show too much information after a loop is shown; we only need to show that loop was detected and we will stack the data for you (maybe show what was stacked (but only if users changing it has impact and/or maybe we show it at the end of the pipeline)
- need loading indicator for once someone starts a pipeline run; maybe a spinning circle or a progress bar (so they dont think the app is stuck)
- - ensure pipeline percentage shown is actually accurate (it sits at 50% for a long time)
- add notifcation through email when pipeline is complete (or failed)
- - given any agents provide confidennce how many hitl reviews should we have?
- - use the project name as the crosstab file name, appended by date and other necessary information
- - add configuration to not show excluded tabe=les as a sheet in the excel file (default to show)
- - make debugging scratchpad easier and just debug agen =t behavior (every agent call tool calls cratch pod output should be captured somewhere so we can better debug)
+**Navigation & Routing**
+- "Save & Continue" on the review page auto-routes to the project page instead of staying in flow (timeline issue is fixed, routing issue remains)
+
+**Pipeline Progress & Status**
+- Need a loading indicator when a pipeline run starts (spinning circle or progress bar so users don't think the app is stuck)
+- Pipeline percentage is inaccurate (sits at 50% for a long time before jumping)
+- Human-readable duration (e.g., "15 min 21 sec" instead of "921 seconds") — works on project list view but not on the individual project page
+
+**Notifications**
+- Email notification when pipeline completes or fails
+
+**UI Polish & Design System**
+- Strip overuse of non-clean icons; follow the design system and think B2B
+- Loop detection info is too verbose — just show that a loop was detected and data will be stacked (consider showing stacking details at end of pipeline or only if the user can act on it)
+
+**Output & Downloads**
+- Use the project name as the crosstab filename, appended by date and other necessary info
+- Add configuration to hide excluded tables from the Excel file (default: show them)
+
+**HITL Review**
+- Given that agents provide confidence scores, how should we determine the number of HITL reviews? (e.g., threshold-based: low confidence = more reviews)
+
+**Developer Experience**
+- Make agent debugging easier — every agent's tool calls and scratchpad output should be captured in a single accessible location for post-run inspection
 
 ---
 
@@ -59,5 +72,5 @@ Future features, deferred items, and known gaps/limitations are documented in [`
 ---
 
 *Created: January 22, 2026*
-*Updated: February 12, 2026*
+*Updated: February 13, 2026*
 *Status: Phase 3 (Productization) in progress. 3.1–3.4, 3.5a–3.5e complete. 3.5f (Testing & Iteration) in progress — items 1, 6, 7, and 8 complete.*
