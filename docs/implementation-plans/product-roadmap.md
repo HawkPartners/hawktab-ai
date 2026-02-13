@@ -35,8 +35,16 @@ CrossTab AI is a crosstab automation pipeline that turns survey data files into 
 > Items below are raw feedback captured during testing. As issues are confirmed and scoped, they get promoted to numbered items above or filed as new work items.
 
  - still bit auto-routing from review page to product page when i press "Save & Continue" Now the timeline issue is fixed but the auto-routing issue is still present
- - human readable time instead of 921 seconds
+ - human readable time instead of 921 seconds; shows properly on project view but not in the project specific page
  - strip the overuse of non clean icons; follow the design system and think B2B
+ - we show too much information after a loop is shown; we only need to show that loop was detected and we will stack the data for you (maybe show what was stacked (but only if users changing it has impact and/or maybe we show it at the end of the pipeline)
+ need loading indicator for once someone starts a pipeline run; maybe a spinning circle or a progress bar (so they dont think the app is stuck)
+ - ensure pipeline percentage shown is actually accurate (it sits at 50% for a long time)
+ add notifcation through email when pipeline is complete (or failed)
+ - given any agents provide confidennce how many hitl reviews should we have?
+ - use the project name as the crosstab file name, appended by date and other necessary information
+ - add configuration to not show excluded tabe=les as a sheet in the excel file (default to show)
+ - make debugging scratchpad easier and just debug agen =t behavior (every agent call tool calls cratch pod output should be captured somewhere so we can better debug)
 
 ---
 

@@ -241,6 +241,23 @@ PITFALL 5: Mixed signals within a single banner group.
   - Classify based on the MAJORITY pattern and flag the anomaly in warnings.
   - If the split is close (e.g., 2 entity + 2 respondent cuts), set low confidence
     and flag for review in the warnings array.
+
+PITFALL 6: Classifying as entity-anchored without verifiable alias sources.
+  - BEFORE deciding a group is entity-anchored, verify that the variables you
+    would put in sourcesByIteration are recognized as iteration-specific.
+    A variable is iteration-specific if it appears in EITHER:
+    (a) the target frame's variableBaseNames list (from <loop_summary>), OR
+    (b) the <deterministic_findings> with a linked iteration for that loop group.
+    The variableBaseNames list already includes both sources — if a variable is
+    not in that list, it is a main-data column with the same value across all
+    iterations and cannot be used as an alias source.
+  - The OR pattern "N variables OR-joined + N iterations" is a NECESSARY but
+    NOT SUFFICIENT condition for entity-anchored. The variables must ALSO be
+    iteration-specific as defined above.
+  - Think of it as a two-step test:
+    Step 1: Does the structural pattern suggest entity? (OR-joined, count match)
+    Step 2: Are the variables iteration-specific (in variableBaseNames)?
+    Both must be YES to classify as entity-anchored.
 </common_pitfalls>
 
 <output_specifications>

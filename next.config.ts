@@ -3,6 +3,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Middleware (WorkOS AuthKit) causes Next.js to buffer request bodies.
+  // Default limit is 10MB — raise to 100MB for .sav file uploads.
+  experimental: {
+    middlewareClientMaxBodySize: '100mb',
+  },
   // Required to support PostHog trailing slash API requests
   skipTrailingSlashRedirect: true,
   async rewrites() {

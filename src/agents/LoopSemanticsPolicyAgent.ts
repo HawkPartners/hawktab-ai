@@ -137,9 +137,16 @@ export async function runLoopSemanticsPolicyAgent(
 
   // Build per-stacked-frame column sets for sourcesByIteration validation.
   // A sourcesByIteration variable must exist in the SPECIFIC stacked frame it targets,
-  // not just anywhere in the datamap. The stacked frame only contains its own
-  // loop group's base names + all main data columns carried through by bind_rows.
-  const columnsByFrame = buildPerFrameColumnSets(input.loopMappings, knownColumns);
+  // not just anywhere in the datamap. Valid sources include:
+  // 1. The loop group's own collapsed base names + iteration columns (_1/_2 pattern)
+  // 2. Iteration-linked variables found by the DeterministicResolver (e.g., S10a/S11a)
+  //    that map to the same loop group — these are non-loop columns that are semantically
+  //    tied to specific iterations and are valid alias sources via case_when.
+  const columnsByFrame = buildPerFrameColumnSets(
+    input.loopMappings,
+    knownColumns,
+    input.deterministicFindings,
+  );
 
   // Clear scratchpad from any previous runs (only once at the start)
   clearAllContextScratchpads();
@@ -342,12 +349,28 @@ function buildUserPrompt(input: LoopSemanticsPolicyInput): string {
 
   sections.push('Classify each banner group as respondent-anchored or entity-anchored.\n');
 
-  // Loop summary (enriched with per-frame variable base names)
-  const enrichedLoopSummary = input.loopSummary.map(ls => {
+  // Loop summary (enriched with per-frame variable base names + deterministic resolver variables)
+  const enrichedLoopSummary = input.loopSummary.map((ls, _idx) => {
     const mapping = input.loopMappings.find(m => m.stackedFrameName === ls.stackedFrameName);
+    const groupIdx = mapping ? input.loopMappings.indexOf(mapping) : -1;
+
+    // Start with LoopCollapser's base names (_1/_2 suffix variables)
+    const baseNames = mapping ? mapping.variables.map(v => v.baseName) : [];
+
+    // Add DeterministicResolver variables linked to this loop group.
+    // These are non-loop columns (e.g., S10a/S11a) that the resolver identified
+    // as belonging to specific iterations — valid alias sources the agent should know about.
+    if (groupIdx >= 0) {
+      for (const linked of input.deterministicFindings.iterationLinkedVariables) {
+        if (linked.linkedLoopGroup === groupIdx && !baseNames.includes(linked.variableName)) {
+          baseNames.push(linked.variableName);
+        }
+      }
+    }
+
     return {
       ...ls,
-      variableBaseNames: mapping ? mapping.variables.map(v => v.baseName) : [],
+      variableBaseNames: baseNames,
     };
   });
   sections.push('<loop_summary>');
@@ -507,26 +530,45 @@ function buildCorrectionPrompt(
 /**
  * Build a map of stacked frame name → set of column names valid for alias sourcesByIteration.
  *
- * This mirrors the `realColumns` check in RScriptGeneratorV2.generateStackingPreamble():
- * only the loop group's own base names and original iteration columns are valid sources
- * for a case_when alias. Main data columns are carried through by bind_rows but they
- * have the SAME value across all iterations — using them as alias sources is semantically
+ * Valid alias sources include:
+ * 1. The loop group's own base names and iteration columns (_1/_2 pattern from LoopCollapser)
+ * 2. Iteration-linked variables from the DeterministicResolver that map to the same loop group.
+ *    These are non-loop columns (e.g., S10a/S11a) that are semantically tied to specific
+ *    iterations — they exist on the stacked frame (carried through by bind_rows) and are
+ *    valid case_when sources because each one holds a DIFFERENT iteration's value.
+ *
+ * Main data columns NOT identified by either source are excluded — they have the SAME value
+ * across all iterations for a given respondent, so using them as alias sources is semantically
  * wrong (the case_when would just pick the same value regardless of .loop_iter).
  */
 function buildPerFrameColumnSets(
   loopMappings: LoopGroupMapping[],
   _datamapColumns: Set<string>,
+  deterministicFindings?: DeterministicResolverResult,
 ): Map<string, Set<string>> {
   const result = new Map<string, Set<string>>();
 
-  for (const mapping of loopMappings) {
+  for (let groupIdx = 0; groupIdx < loopMappings.length; groupIdx++) {
+    const mapping = loopMappings[groupIdx];
     const frameColumns = new Set<string>();
 
-    // Only loop group's own variables are valid for alias sourcesByIteration
+    // Source 1: Loop group's own variables (LoopCollapser — _1/_2 suffix pattern)
     for (const v of mapping.variables) {
       frameColumns.add(v.baseName);
       for (const origCol of Object.values(v.iterationColumns)) {
         frameColumns.add(origCol);
+      }
+    }
+
+    // Source 2: Iteration-linked variables from DeterministicResolver
+    // These are non-loop columns (no _1/_2 suffix) that the resolver identified
+    // as belonging to specific iterations of this loop group (e.g., S10a → iter 1,
+    // S11a → iter 2). They exist on the stacked frame and are valid alias sources.
+    if (deterministicFindings) {
+      for (const linked of deterministicFindings.iterationLinkedVariables) {
+        if (linked.linkedLoopGroup === groupIdx) {
+          frameColumns.add(linked.variableName);
+        }
       }
     }
 
