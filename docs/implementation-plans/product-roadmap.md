@@ -2,10 +2,6 @@
 - Strip overuse of non-clean icons; follow the design system and think B2B
 - Loop detection info is too verbose — just show that a loop was detected and data will be stacked (consider showing stacking details at end of pipeline or only if the user can act on it)
 
-**Output & Downloads**
-- Use the project name as the crosstab filename, appended by date and other necessary info
-- Add configuration to hide excluded tables from the Excel file (default: show them)
-
 **Developer Experience**
 - Make agent debugging easier — every agent's tool calls and scratchpad output should be captured in a single accessible location for post-run inspection (context graphs)
 
@@ -22,11 +18,6 @@
 - Show base sizes per cut and how they change — consider making this interactive
 - Include a subtle disclaimer (e.g., "validate base sizes as you see fit") — not heavy-handed, just present
 - General principle: always surface what happened and why, written for non-technical readers
-
-**Error Handling & Recovery**
-- Classify pipeline failures: validation issue (our bug) vs. transient/hallucination error (rerunnable)
-- Tailor error messages accordingly — if the failure is transient, offer a "Rerun pipeline" button in the UI
-- If the failure is a real bug, show a clear error state without the rerun option
 
 **Concurrency & Performance**
 - Test whether multiple pipelines can run simultaneously for different projects
@@ -49,9 +40,6 @@
 - https://github.com/anthropics/claude-code-action (can use this to execute security audits and pattern checks)
 - Document the three `.env` files (`.env.local`, `.env.dev`, `.env.prod`) and their purposes in both `README.md` and `CLAUDE.md`
 - Document the deployment flow: `dev` branch (feature work) → `staging` branch (Railway auto-deploys, cloud testing) → `production`
-
-**Feedback System**
-- Verify end-to-end behavior when a user submits feedback — confirm it's captured, stored, and surfaced correctly
 
 **Future Features**
 - Revisit `future-features.md` to identify items that could realistically be tackled before the Antares deadline

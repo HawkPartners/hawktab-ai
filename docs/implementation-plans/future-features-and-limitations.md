@@ -194,6 +194,11 @@ The Loop Semantics Policy Agent uses a single prompt regardless of how much dete
 
 ---
 
+**Error Handling & Recovery**
+- Classify pipeline failures: validation issue (our bug) vs. transient/hallucination error (rerunnable)
+- Tailor error messages accordingly — if the failure is transient, offer a "Rerun pipeline" button in the UI
+- If the failure is a real bug, show a clear error state without the rerun option
+
 ## Known Gaps & Limitations
 
 Documented as of February 2026. These are areas where the system has known limitations — some with mitigation paths already identified, others that may define the boundary of what CrossTab can handle. Even where solutions exist, it's important to be aware of these when communicating capabilities externally or testing against new datasets.

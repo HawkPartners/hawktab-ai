@@ -10,6 +10,7 @@ const configArg = v.object({
   format: v.optional(v.union(v.literal("joe"), v.literal("antares"))),
   displayMode: v.optional(v.union(v.literal("frequency"), v.literal("counts"), v.literal("both"))),
   separateWorkbooks: v.optional(v.boolean()),
+  hideExcludedTables: v.optional(v.boolean()),
   theme: v.optional(v.string()),
   statTesting: v.optional(v.object({
     thresholds: v.optional(v.array(v.number())),

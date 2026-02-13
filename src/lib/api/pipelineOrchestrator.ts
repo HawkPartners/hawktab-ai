@@ -1619,6 +1619,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
             format: wizardConfig?.format ?? 'joe',
             displayMode: wizardConfig?.displayMode ?? 'frequency',
             separateWorkbooks: wizardConfig?.separateWorkbooks ?? false,
+            hideExcludedTables: wizardConfig?.hideExcludedTables,
           };
           console.log('[API] Dual-output fmtOpts:', JSON.stringify(fmtOpts));
           // Weighted workbook
@@ -1682,6 +1683,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
             format: wizardConfig?.format ?? 'joe',
             displayMode: wizardConfig?.displayMode ?? 'frequency',
             separateWorkbooks: wizardConfig?.separateWorkbooks ?? false,
+            hideExcludedTables: wizardConfig?.hideExcludedTables,
           };
           console.log('[API] Single-output fmtOpts:', JSON.stringify(fmtOpts));
           const formatter = new ExcelFormatter(fmtOpts);

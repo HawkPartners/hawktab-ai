@@ -80,6 +80,7 @@ export interface ExcelFormatOptions {
   format?: ExcelFormat;            // 'joe' (default) or 'antares' (deprecated)
   displayMode?: DisplayMode;       // 'frequency' (default), 'counts', or 'both'
   separateWorkbooks?: boolean;     // When displayMode='both', output two separate .xlsx files instead of two sheets in one
+  hideExcludedTables?: boolean;    // When true, omit the red "Excluded Tables" sheet from output
 }
 
 export interface FormatOptions extends ExcelFormatOptions {
@@ -115,6 +116,7 @@ export class ExcelFormatter {
       format: options.format ?? 'joe',
       displayMode: options.displayMode ?? 'frequency',
       separateWorkbooks: options.separateWorkbooks ?? false,
+      hideExcludedTables: options.hideExcludedTables ?? false,
     };
   }
 
@@ -231,8 +233,8 @@ export class ExcelFormatter {
       headerInfo = this.renderJoeSheet(worksheet, includedTablesRecord, includedTableIds, context, cutCount, valueType);
     }
 
-    // 3. Render Excluded Tables sheet (if any)
-    if (excludedTables.length > 0 && headerInfo) {
+    // 3. Render Excluded Tables sheet (if any, and not hidden by config)
+    if (!this.options.hideExcludedTables && excludedTables.length > 0 && headerInfo) {
       const excludedResult = renderExcludedSheet(
         this.workbook,
         excludedTables,

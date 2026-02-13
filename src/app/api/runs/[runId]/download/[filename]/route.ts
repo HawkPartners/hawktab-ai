@@ -2,7 +2,8 @@
  * GET /api/runs/[runId]/download/[filename]
  * Download a pipeline output file via R2 presigned URL.
  * Looks up the R2 key from the run's result.r2Files, generates
- * a presigned URL, and redirects.
+ * a presigned URL with Content-Disposition for a user-friendly filename,
+ * and redirects.
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getConvexClient } from '@/lib/convex';
@@ -23,6 +24,27 @@ const FILENAME_TO_OUTPUT_PATH: Record<string, string> = {
   'crosstabs-counts.xlsx': 'results/crosstabs-counts.xlsx',
   'crosstabs-weighted-counts.xlsx': 'results/crosstabs-weighted-counts.xlsx',
 };
+
+// Map internal filenames to user-friendly variant suffixes for download naming
+const FILENAME_TO_VARIANT_SUFFIX: Record<string, string> = {
+  'crosstabs.xlsx': '',
+  'crosstabs-weighted.xlsx': ' (Weighted)',
+  'crosstabs-unweighted.xlsx': ' (Unweighted)',
+  'crosstabs-counts.xlsx': ' (Counts)',
+  'crosstabs-weighted-counts.xlsx': ' (Weighted Counts)',
+};
+
+/**
+ * Strip characters that are illegal in filenames across OS platforms.
+ * Trims leading/trailing whitespace and dots.
+ */
+function sanitizeFilename(name: string): string {
+  return name
+    .replace(/[/\\:*?"<>|]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^\.+|\.+$/g, '');
+}
 
 export async function GET(
   _request: NextRequest,
@@ -76,8 +98,24 @@ export async function GET(
       );
     }
 
-    // Generate presigned URL (1 hour expiry)
-    const url = await getDownloadUrl(r2Key, 3600);
+    // Build a user-friendly download filename: "CrosstabAI - {ProjectName} - {date}{variant}.xlsx"
+    let contentDisposition: string | undefined;
+    try {
+      const project = await convex.query(api.projects.get, { projectId: run.projectId });
+      if (project?.name) {
+        const sanitizedName = sanitizeFilename(project.name);
+        // Use run completion time, falling back to creation time
+        const completionDate = new Date(run._creationTime).toISOString().split('T')[0];
+        const variantSuffix = FILENAME_TO_VARIANT_SUFFIX[filename] ?? '';
+        const friendlyFilename = `CrosstabAI - ${sanitizedName} - ${completionDate}${variantSuffix}.xlsx`;
+        contentDisposition = `attachment; filename="${friendlyFilename}"`;
+      }
+    } catch {
+      // Non-fatal — fall back to default filename from R2
+    }
+
+    // Generate presigned URL (1 hour expiry) with optional Content-Disposition
+    const url = await getDownloadUrl(r2Key, 3600, contentDisposition);
 
     // Redirect to presigned URL
     return NextResponse.redirect(url);

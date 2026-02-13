@@ -19,6 +19,7 @@ export const ProjectConfigSchema = z.object({
   format: z.enum(['joe', 'antares']).default('joe'),
   displayMode: z.enum(['frequency', 'counts', 'both']).default('frequency'),
   separateWorkbooks: z.boolean().default(false),
+  hideExcludedTables: z.boolean().default(false),
   theme: z.string().default('classic'),
 
   // Statistical testing

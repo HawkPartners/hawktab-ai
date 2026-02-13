@@ -77,12 +77,14 @@ export async function uploadPipelineOutputs(
 
 /**
  * Get a presigned download URL for an R2 key.
+ * Optionally sets Content-Disposition so the browser saves with a friendly filename.
  */
 export async function getDownloadUrl(
   key: string,
   expiresInSeconds: number = 3600,
+  responseContentDisposition?: string,
 ): Promise<string> {
-  return getSignedDownloadUrl(key, expiresInSeconds);
+  return getSignedDownloadUrl(key, expiresInSeconds, responseContentDisposition);
 }
 
 /**

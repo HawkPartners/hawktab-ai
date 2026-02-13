@@ -704,6 +704,7 @@ export async function completePipeline(
             format: wizardConfig?.format ?? 'joe',
             displayMode: wizardConfig?.displayMode ?? 'frequency',
             separateWorkbooks: wizardConfig?.separateWorkbooks ?? false,
+            hideExcludedTables: wizardConfig?.hideExcludedTables,
           };
           console.log('[ReviewCompletion] Dual-output fmtOpts:', JSON.stringify(fmtOpts));
           // Weighted workbook
@@ -769,6 +770,7 @@ export async function completePipeline(
             format: wizardConfig?.format ?? 'joe',
             displayMode: wizardConfig?.displayMode ?? 'frequency',
             separateWorkbooks: wizardConfig?.separateWorkbooks ?? false,
+            hideExcludedTables: wizardConfig?.hideExcludedTables,
           };
           console.log('[ReviewCompletion] Single-output fmtOpts:', JSON.stringify(fmtOpts));
           const formatter = new ExcelFormatter(fmtOpts);

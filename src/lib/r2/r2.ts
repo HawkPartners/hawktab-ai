@@ -101,14 +101,17 @@ export async function downloadFile(key: string): Promise<Buffer> {
 /**
  * Generate a presigned download URL.
  * Default expiry: 1 hour (3600 seconds).
+ * Optionally sets ResponseContentDisposition so the browser saves with a friendly filename.
  */
 export async function getSignedDownloadUrl(
   key: string,
-  expiresInSeconds: number = 3600
+  expiresInSeconds: number = 3600,
+  responseContentDisposition?: string,
 ): Promise<string> {
   const command = new GetObjectCommand({
     Bucket: getBucket(),
     Key: key,
+    ...(responseContentDisposition && { ResponseContentDisposition: responseContentDisposition }),
   });
 
   return await getSignedUrl(getClient(), command, {
