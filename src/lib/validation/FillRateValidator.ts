@@ -101,6 +101,29 @@ function classifyPattern(
     };
   }
 
+  // Pattern: fixed_grid
+  // A fixed stimulus grid where every respondent answers every iteration.
+  // Unlike true loops (where iterations represent different entities per respondent),
+  // fixed grids repeat the same question across a fixed set of stimuli (e.g., 30 messages).
+  // Stacking these would inflate bases and collapse distinct per-stimulus tables into one.
+  //
+  // Rule 1: All fill rates >= 95% AND >= 8 iterations (many high-fill iterations = grid, not loop)
+  // Rule 2: Diversity/iteration ratio < 0.5 AND all fill rates >= 95% (few questions spread
+  //         across many iterations = grid pattern, e.g., 3 questions x 30 iterations)
+  const allRatesHigh = rates.every((r) => r >= 0.95);
+  const iterationCount = rates.length;
+  const diversityIterRatio = loopGroup.diversity / iterationCount;
+
+  if (allRatesHigh && (iterationCount >= 8 || diversityIterRatio < 0.5)) {
+    const ruleTriggered = iterationCount >= 8
+      ? `${iterationCount} iterations all >=95% fill`
+      : `diversity/iteration ratio ${diversityIterRatio.toFixed(2)} < 0.5 with all >=95% fill`;
+    return {
+      pattern: 'fixed_grid',
+      explanation: `Fixed grid detected (${ruleTriggered}): ${iterationCount} iterations of ${loopGroup.diversity} questions — not stacking`,
+    };
+  }
+
   // Pattern: valid_wide
   // All iterations have similar fill rates (within 30% of each other)
   const minRate = Math.min(...rates);

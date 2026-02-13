@@ -34,6 +34,7 @@ export default function NewProjectPage() {
 
   const form = useForm<WizardFormValues>({
     resolver: zodResolver(WizardFormSchema),
+    mode: 'onChange',
     defaultValues: {
       projectName: '',
       researchObjectives: '',

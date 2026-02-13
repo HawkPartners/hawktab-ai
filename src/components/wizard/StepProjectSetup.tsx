@@ -70,15 +70,18 @@ export function StepProjectSetup() {
         name="researchObjectives"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Research Objectives</FormLabel>
+            <FormLabel>
+              Research Objectives{' '}
+              <span className="text-muted-foreground font-normal">(optional)</span>
+            </FormLabel>
             <FormControl>
               <Textarea
-                placeholder="Brief description of what this study aims to understand (helps AI generate better banner cuts if auto-generating)"
+                placeholder="Brief description of what this study aims to understand"
                 rows={3}
                 {...field}
               />
             </FormControl>
-            <FormDescription>Optional. Helps guide auto-generated banner plans.</FormDescription>
+            <FormDescription>Helps the AI generate better banner cuts if auto-generating.</FormDescription>
           </FormItem>
         )}
       />
@@ -265,14 +268,15 @@ export function StepProjectSetup() {
         render={({ field }) => (
           <FormItem>
             <FormLabel>
-              {bannerMode === 'upload' ? 'Banner Notes' : 'Banner Hints'}
+              {bannerMode === 'upload' ? 'Banner Notes' : 'Banner Hints'}{' '}
+              <span className="text-muted-foreground font-normal">(optional)</span>
             </FormLabel>
             <FormControl>
               <Textarea
                 placeholder={
                   bannerMode === 'upload'
-                    ? 'Any special instructions about the banner plan (optional)'
-                    : 'e.g. "Include Total, Gender, Age groups, Region. Break HCP specialty into cardiologist vs other."'
+                    ? 'Any special instructions about the banner plan'
+                    : 'e.g. "Include Total, Gender, Age groups, Region"'
                 }
                 rows={3}
                 {...field}
@@ -280,7 +284,7 @@ export function StepProjectSetup() {
             </FormControl>
             <FormDescription>
               {bannerMode === 'upload'
-                ? 'Optional notes about your banner plan.'
+                ? 'Notes or clarifications for the AI when reading your banner plan.'
                 : 'Tell the AI what cuts you want. Be as specific or general as you like.'}
             </FormDescription>
           </FormItem>

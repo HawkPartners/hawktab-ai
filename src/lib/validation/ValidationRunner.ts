@@ -263,6 +263,26 @@ export async function validate(options: ValidationRunnerOptions): Promise<Valida
               details: 'Pipeline expects wide format. You may need to restructure the data.',
             });
             eventBus.emitValidationWarning(3, `Stacked data detected: ${fillResult.explanation}`);
+          } else if (fillResult.pattern === 'fixed_grid') {
+            // Replace the generic "Loop detected" warning with a more specific one
+            const loopWarningIdx = warnings.findIndex(
+              (w) => w.stage === 3 && w.message.includes(loop.skeleton)
+            );
+            const gridMessage = `Fixed grid detected (not stacking): ${loop.iterations.length} iterations of ${loop.diversity} questions (pattern: ${loop.skeleton})`;
+            if (loopWarningIdx >= 0) {
+              warnings[loopWarningIdx] = {
+                stage: 3,
+                stageName: STAGE_NAMES[3],
+                message: gridMessage,
+              };
+            } else {
+              warnings.push({
+                stage: 3,
+                stageName: STAGE_NAMES[3],
+                message: gridMessage,
+              });
+            }
+            eventBus.emitValidationWarning(3, gridMessage);
           }
         }
       } catch (err) {

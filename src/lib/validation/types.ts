@@ -86,7 +86,7 @@ export interface DataFileStats {
 // Fill Rate Validation
 // =============================================================================
 
-export type LoopDataPattern = 'valid_wide' | 'likely_stacked' | 'expected_dropout' | 'uncertain';
+export type LoopDataPattern = 'valid_wide' | 'likely_stacked' | 'expected_dropout' | 'fixed_grid' | 'uncertain';
 
 export interface LoopFillRateResult {
   /** The loop group being validated */

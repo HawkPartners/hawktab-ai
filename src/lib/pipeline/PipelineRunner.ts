@@ -508,9 +508,38 @@ export async function runPipeline(
         log(`    ${skeletons.join(', ')}`, 'dim');
       }
 
+      // Filter out fixed_grid groups — these are false positives (e.g., message rating grids)
+      // that look like loops structurally but should NOT be stacked.
+      const fixedGridResults = validationResult.fillRateResults.filter(fr => fr.pattern === 'fixed_grid');
+      const fixedGridSkeletons = new Set(fixedGridResults.map(fr => fr.loopGroup.skeleton));
+      let loopDetectionForCollapse = validationResult.loopDetection;
+
+      if (fixedGridSkeletons.size > 0) {
+        const originalLoops = validationResult.loopDetection.loops;
+        const filteredLoops = originalLoops.filter(l => !fixedGridSkeletons.has(l.skeleton));
+        const removedLoops = originalLoops.filter(l => fixedGridSkeletons.has(l.skeleton));
+
+        // Move fixed_grid variables back to nonLoopVariables
+        const reclassifiedVars = removedLoops.flatMap(l => l.variables);
+        const updatedNonLoopVars = [
+          ...validationResult.loopDetection.nonLoopVariables,
+          ...reclassifiedVars,
+        ];
+
+        loopDetectionForCollapse = {
+          hasLoops: filteredLoops.length > 0,
+          loops: filteredLoops,
+          nonLoopVariables: updatedNonLoopVars,
+        };
+
+        for (const removed of removedLoops) {
+          log(`  Fixed grid reclassified (not stacking): ${removed.skeleton} — ${removed.iterations.length} iterations of ${removed.diversity} questions, ${removed.variables.length} variables`, 'yellow');
+        }
+      }
+
       const collapseResult = collapseLoopVariables(
         verboseDataMap,
-        validationResult.loopDetection,
+        loopDetectionForCollapse,
       );
       verboseDataMap = collapseResult.collapsedDataMap as VerboseDataMapType[];
       loopMappings = collapseResult.loopMappings;

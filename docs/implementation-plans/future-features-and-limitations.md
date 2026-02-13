@@ -216,6 +216,12 @@ Documented as of February 2026. These are areas where the system has known limit
 | **No clustered standard errors** — Stacked rows from the same respondent are correlated, which overstates significance. Standard tests treat them as independent. This is industry-standard behavior (WinCross, SPSS Tables, Q all do the same). | Low | Accept as industry-standard limitation. Future differentiator if implemented. Would require respondent ID column in stacked frame + cluster-robust R functions. | Known limitation, not planned |
 | **No within-group stat letter suppression for entity-anchored groups** — `generateSignificanceTesting()` didn't consult the loop semantics policy. Within-group pairwise comparisons ran for all groups regardless of overlap. Validation detected overlaps but didn't act on them. | Medium | Implemented — suppress or vs-complement testing for entity-anchored groups. | Complete |
 
+### Loop Detection
+
+| Gap | Severity | Mitigation | Status |
+|-----|----------|------------|--------|
+| **Small fixed grids (3-7 iterations)** — The `fixed_grid` classifier requires >= 8 iterations or diversity/iteration ratio < 0.5. A small grid with e.g. 5 stimuli x 5 questions (ratio 1.0) won't trigger either rule and may be incorrectly stacked. | Low | Rare in practice. Could be addressed with agent-based label inspection or a user hint in the wizard. See `docs/loop-detection-explained.md` for details. | Known limitation |
+
 ### Crosstab Agent
 
 | Gap | Severity | Mitigation | Status |

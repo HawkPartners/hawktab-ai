@@ -6,11 +6,9 @@
 - Make agent debugging easier — every agent's tool calls and scratchpad output should be captured in a single accessible location for post-run inspection (context graphs)
 
 **Configuration & Project Settings**
-- Audit how banner plan hints and research objectives are currently passed into the pipeline — confirm they're working as expected
 - Confirm all configuration options Antares asked about are present and surfaced in the UI
 - Hide configuration options that aren't actionable for users — reduce noise
 - Allow Excel file regeneration without a full pipeline re-run (e.g., changing theme or toggling excluded tables)
-- Professional naming scheme overall — project name as filename *(see above)*, but also project identifiers and labels throughout the UI
 
 **Transparency & Interpretability**
 - Add a page or section explaining the assumptions the pipeline made — in plain, non-technical language
@@ -19,13 +17,8 @@
 - Include a subtle disclaimer (e.g., "validate base sizes as you see fit") — not heavy-handed, just present
 - General principle: always surface what happened and why, written for non-technical readers
 
-**Concurrency & Performance**
-- Test whether multiple pipelines can run simultaneously for different projects
-- Consider a "faster mode" that increases agent concurrency from 3 to 5 where applicable
-- Add broader-level configuration for AI reasoning effort (not just per-agent in `.env`)
-
 **Automated Testing & CI/CD**
-- Build a dev-mode batch testing feature in the UI: a button that loads test datasets from R2 (or a `dev-test` folder) and runs them through the pipeline sequentially, simulating real user uploads
+- Build a dev-mode batch testing feature in the UI: a button that loads test datasets from R2 (or a `dev-test` folder) and runs them through the pipeline in parallel, simulating real user uploads
 - Should skip HITL review and test the system under realistic load (as if 15 different users uploaded at different times)
 - Consider concurrency of 5 for batch testing to stress-test the system and speed up test cycles
 - Cost awareness: batch runs cost ~$28–30 each — also explore cheaper test methods that achieve similar coverage without full AI calls
