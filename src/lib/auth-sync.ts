@@ -2,6 +2,19 @@ import { mutateInternal } from "./convex";
 import { internal } from "../../convex/_generated/api";
 import type { AuthContext } from "./auth";
 import type { Id } from "../../convex/_generated/dataModel";
+import type { Role } from "./permissions";
+
+/**
+ * Map a WorkOS role string to our app's Role type.
+ * Returns undefined for unknown/missing values so we don't overwrite
+ * the existing Convex role. "external_partner" is app-only and never
+ * comes from WorkOS.
+ */
+function mapWorkosRole(workosRole: string | undefined): Role | undefined {
+  if (workosRole === "admin") return "admin";
+  if (workosRole === "member") return "member";
+  return undefined;
+}
 
 export interface ConvexIds {
   orgId: Id<"organizations">;
@@ -44,11 +57,13 @@ export async function syncAuthToConvex(auth: AuthContext): Promise<ConvexIds> {
     name: auth.name,
   });
 
-  // Upsert the membership — no role passed, so existing roles are preserved.
-  // New users default to "member". Roles are managed via admin UI or direct Convex mutation.
+  // Upsert the membership with role from WorkOS (if available).
+  // Unknown/missing roles map to undefined → existing Convex role preserved.
+  const role = mapWorkosRole(auth.role);
   await mutateInternal(internal.orgMemberships.upsert, {
     userId,
     orgId,
+    ...(role ? { role } : {}),
   });
 
   const ids: ConvexIds = { orgId, userId };

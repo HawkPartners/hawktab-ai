@@ -18,6 +18,7 @@ export interface AuthContext {
   name: string;
   orgId: string;
   orgName: string;
+  role?: string;
   isBypass: boolean;
 }
 
@@ -27,6 +28,7 @@ const DEV_USER: AuthContext = {
   name: "Jason (Dev)",
   orgId: "dev_org_001",
   orgName: "Hawk Partners Dev",
+  role: "admin",
   isBypass: true,
 };
 
@@ -85,6 +87,7 @@ export async function getAuth(): Promise<AuthContext | null> {
       name: [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email || "Unknown",
       orgId,
       orgName,
+      role: auth.role ?? undefined,
       isBypass: false,
     };
     setSentryUser(ctx);

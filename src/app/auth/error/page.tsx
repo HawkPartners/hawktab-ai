@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SignOutButton } from "./sign-out-button";
 
 const ERROR_MESSAGES: Record<string, { title: string; description: string }> = {
   "no-org": {
@@ -10,6 +11,11 @@ const ERROR_MESSAGES: Record<string, { title: string; description: string }> = {
     title: "Sign-in failed",
     description:
       "Something went wrong during sign-in. Please try again, or contact support if the problem persists.",
+  },
+  "removed": {
+    title: "Access removed",
+    description:
+      "Your access to this organization has been revoked. Contact your administrator if you believe this is an error.",
   },
 };
 
@@ -52,12 +58,7 @@ export default async function AuthErrorPage({
           >
             Back to Home
           </Link>
-          <Link
-            href="/dashboard"
-            className="text-sm font-medium px-4 py-2 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-          >
-            Try Again
-          </Link>
+          <SignOutButton />
         </div>
       </div>
     </div>
