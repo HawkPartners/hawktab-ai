@@ -57,6 +57,9 @@ export default defineSchema({
     workosUserId: v.string(),
     email: v.string(),
     name: v.string(),
+    notificationPreferences: v.optional(v.object({
+      pipelineEmails: v.boolean(),
+    })),
   })
     .index("by_workos_user_id", ["workosUserId"])
     .index("by_email", ["email"]),
@@ -89,6 +92,7 @@ export default defineSchema({
   runs: defineTable({
     projectId: v.id("projects"),
     orgId: v.id("organizations"),
+    launchedBy: v.optional(v.id("users")),
     status: v.union(
       v.literal("in_progress"),
       v.literal("pending_review"),

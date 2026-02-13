@@ -3,6 +3,7 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertCircle, Clock, Table, ChevronRight, Loader2, AlertTriangle, XCircle } from 'lucide-react';
+import { formatDuration } from '@/lib/utils/formatDuration';
 
 /**
  * Shape for project list items backed by Convex data.
@@ -45,13 +46,6 @@ function formatRelativeTime(timestampMs: number): string {
   return 'Just now';
 }
 
-function formatDurationMs(ms: number): string {
-  const seconds = Math.floor(ms / 1000);
-  if (seconds < 60) return `${seconds}s`;
-  const minutes = Math.floor(seconds / 60);
-  const remainingSecs = seconds % 60;
-  return `${minutes}m ${remainingSecs}s`;
-}
 
 function StatusIcon({ status }: { status: string }) {
   switch (status) {
@@ -124,7 +118,7 @@ export function PipelineListCard({ pipeline, onClick }: PipelineListCardProps) {
             {!isActive && pipeline.durationMs && (
               <>
                 <span className="text-muted-foreground/50">|</span>
-                <span>{formatDurationMs(pipeline.durationMs)}</span>
+                <span>{formatDuration(pipeline.durationMs)}</span>
               </>
             )}
           </div>

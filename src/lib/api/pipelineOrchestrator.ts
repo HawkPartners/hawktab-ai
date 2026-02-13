@@ -58,6 +58,7 @@ import type {
 } from './types';
 import { startHeartbeatInterval } from './heartbeat';
 import { getPostHogClient } from '@/lib/posthog-server';
+import { sendPipelineNotification } from '@/lib/notifications/email';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { execFile } from 'child_process';
@@ -332,6 +333,7 @@ export interface PipelineRunParams {
   sessionId: string;
   convexOrgId?: string;
   convexProjectId?: string;
+  launchedBy?: string;
   fileNames: {
     dataMap: string;
     bannerPlan: string;
@@ -356,6 +358,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     sessionId,
     convexOrgId,
     convexProjectId,
+    launchedBy,
     fileNames,
     savedPaths,
     abortSignal,
@@ -422,7 +425,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     await updateRunStatus(runId, {
       status: 'in_progress',
       stage: 'parsing',
-      progress: 15,
+      progress: 10,
       message: 'Processing data map...',
     });
     console.log('[API] Step 1: Processing data map...');
@@ -458,7 +461,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       await updateRunStatus(runId, {
         status: 'in_progress',
         stage: 'loop_handling',
-        progress: 17,
+        progress: 11,
         message: 'Detecting loop variables...',
       });
       console.log('[API] Step 1b: Loop detection found loops — collapsing...');
@@ -516,7 +519,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       await updateRunStatus(runId, {
         status: 'in_progress',
         stage: 'survey_processing',
-        progress: 18,
+        progress: 12,
         message: 'Processing survey document...',
       });
       console.log('[API] Step 1c: Processing survey document...');
@@ -563,10 +566,10 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       Answer_Options: v.Answer_Options,
     }));
 
-    // Progress tracking for parallel execution (20-50% range)
-    let currentParallelPercent = 20;
+    // Progress tracking for parallel execution (15-60% range)
+    let currentParallelPercent = 15;
     const updateParallelProgress = (pathPercent: number) => {
-      const overallPercent = 20 + Math.floor(pathPercent * 0.3);
+      const overallPercent = 15 + Math.floor(pathPercent * 0.45);
       if (overallPercent > currentParallelPercent) {
         currentParallelPercent = overallPercent;
         updateRunStatus(runId, {
@@ -581,7 +584,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     await updateRunStatus(runId, {
       status: 'in_progress',
       stage: 'parallel_processing',
-      progress: 20,
+      progress: 15,
       message: 'Processing banner, tables, and skip logic...',
     });
 
@@ -1141,7 +1144,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       await updateRunStatus(runId, {
         status: 'in_progress',
         stage: 'filtering',
-        progress: 55,
+        progress: 63,
         message: 'Applying skip logic filters...',
       });
       console.log('[API] Step 6: Applying skip logic filters...');
@@ -1167,7 +1170,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     await updateRunStatus(runId, {
       status: 'in_progress',
       stage: 'splitting',
-      progress: 57,
+      progress: 65,
       message: 'Splitting oversized tables...',
     });
     console.log('[API] Step 6b: GridAutoSplitter...');
@@ -1201,7 +1204,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     await updateRunStatus(runId, {
       status: 'in_progress',
       stage: 'verification',
-      progress: 58,
+      progress: 67,
       message: 'Verifying tables...',
     });
 
@@ -1239,7 +1242,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     await updateRunStatus(runId, {
       status: 'in_progress',
       stage: 'verification',
-      progress: 68,
+      progress: 77,
       message: 'Verification complete',
     });
 
@@ -1257,7 +1260,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     await updateRunStatus(runId, {
       status: 'in_progress',
       stage: 'post_processing',
-      progress: 69,
+      progress: 78,
       message: 'Running post-processor...',
     });
     console.log('[API] Step 7b: TablePostProcessor...');
@@ -1304,7 +1307,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     await updateRunStatus(runId, {
       status: 'in_progress',
       stage: 'validating_cuts',
-      progress: 70,
+      progress: 80,
       message: 'Validating cut expressions...',
     });
     console.log('[API] Step 8: Cut expression validation...');
@@ -1393,7 +1396,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     await updateRunStatus(runId, {
       status: 'in_progress',
       stage: 'validating_r',
-      progress: 75,
+      progress: 85,
       message: 'Validating R code per table...',
     });
     console.log('[API] Step 8b: Validating R code per table...');
@@ -1498,7 +1501,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     await updateRunStatus(runId, {
       status: 'in_progress',
       stage: 'generating_r',
-      progress: 80,
+      progress: 88,
       message: 'Generating R script...',
     });
     console.log('[API] Step 9: Generating R script...');
@@ -1549,7 +1552,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     await updateRunStatus(runId, {
       status: 'in_progress',
       stage: 'executing_r',
-      progress: 85,
+      progress: 92,
       message: 'Executing R script...',
     });
     console.log('[API] Step 10: Executing R script...');
@@ -1602,7 +1605,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         await updateRunStatus(runId, {
           status: 'in_progress',
           stage: 'writing_outputs',
-          progress: 95,
+          progress: 97,
           message: 'Generating weighted & unweighted Excel workbooks...',
         });
         console.log('[API] Step 11: Generating dual Excel workbooks...');
@@ -1662,7 +1665,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         await updateRunStatus(runId, {
           status: 'in_progress',
           stage: 'writing_outputs',
-          progress: 95,
+          progress: 97,
           message: 'Generating Excel workbook...',
         });
         console.log('[API] Step 11: Generating Excel workbook...');
@@ -1917,6 +1920,16 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       },
     });
 
+    // Send email notification (fire-and-forget)
+    sendPipelineNotification({
+      runId,
+      status: terminalStatus as 'success' | 'partial' | 'error',
+      launchedBy,
+      convexProjectId,
+      tableCount: allTablesForR.length,
+      durationFormatted: `${durationSec}s`,
+    }).catch(() => { /* swallowed */ });
+
     // Clean up temp session files (/tmp/hawktab-ai/{sessionId}/)
     try { await cleanupSession(sessionId); } catch { /* best-effort */ }
 
@@ -1969,6 +1982,15 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         error_message: procErrorMsg,
       },
     });
+
+    // Send error email notification (fire-and-forget)
+    sendPipelineNotification({
+      runId,
+      status: 'error',
+      launchedBy,
+      convexProjectId,
+      errorMessage: procErrorMsg,
+    }).catch(() => { /* swallowed */ });
 
     // Clean up temp session files on error too
     try { await cleanupSession(sessionId); } catch { /* best-effort */ }

@@ -22,6 +22,7 @@ import type { PathBResult, CrosstabReviewState } from '@/lib/api/types';
 import { applyRateLimit } from '@/lib/withRateLimit';
 import { getApiErrorDetails } from '@/lib/api/errorDetails';
 import { sendHeartbeat } from '@/lib/api/heartbeat';
+import { sendPipelineNotification } from '@/lib/notifications/email';
 
 export async function POST(
   request: NextRequest,
@@ -319,6 +320,18 @@ export async function POST(
         ...(terminalStatus === 'error' ? { error: terminalMessage } : {}),
       });
 
+      // Send email notification (fire-and-forget)
+      const launchedBy = (run as Record<string, unknown>).launchedBy as string | undefined;
+      sendPipelineNotification({
+        runId,
+        status: terminalStatus as 'success' | 'partial' | 'error',
+        launchedBy,
+        convexProjectId: String(run.projectId),
+        tableCount: result.tableCount,
+        durationFormatted: result.durationMs ? `${(result.durationMs / 1000).toFixed(1)}s` : undefined,
+        errorMessage: terminalStatus === 'error' ? terminalMessage : undefined,
+      }).catch(() => { /* swallowed */ });
+
       return NextResponse.json({
         success: result.success,
         runId,
@@ -401,6 +414,18 @@ export async function POST(
             },
             ...(bgTerminalStatus === 'error' ? { error: bgTerminalMessage } : {}),
           });
+
+          // Send email notification (fire-and-forget)
+          const bgLaunchedBy = (run as Record<string, unknown>).launchedBy as string | undefined;
+          sendPipelineNotification({
+            runId,
+            status: bgTerminalStatus as 'success' | 'partial' | 'error',
+            launchedBy: bgLaunchedBy,
+            convexProjectId: String(run.projectId),
+            tableCount: result.tableCount,
+            durationFormatted: result.durationMs ? `${(result.durationMs / 1000).toFixed(1)}s` : undefined,
+            errorMessage: bgTerminalStatus === 'error' ? bgTerminalMessage : undefined,
+          }).catch(() => { /* swallowed */ });
         })
         .catch(async (err) => {
           console.error('[Review API] Background completion error:', err);

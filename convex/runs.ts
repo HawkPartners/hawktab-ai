@@ -29,6 +29,7 @@ export const create = internalMutation({
     projectId: v.id("projects"),
     orgId: v.id("organizations"),
     config: configArg,
+    launchedBy: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("runs", {
@@ -41,6 +42,7 @@ export const create = internalMutation({
       config: args.config,
       cancelRequested: false,
       lastHeartbeat: Date.now(),
+      ...(args.launchedBy && { launchedBy: args.launchedBy }),
     });
   },
 });

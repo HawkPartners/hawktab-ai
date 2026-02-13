@@ -127,6 +127,7 @@ export async function POST(request: NextRequest) {
       config: {
         loopStatTestingMode: parsed.loopStatTestingMode,
       },
+      launchedBy: auth.convexUserId,
     });
 
     const runIdStr = String(runId);
@@ -148,6 +149,7 @@ export async function POST(request: NextRequest) {
       sessionId,
       convexOrgId: String(auth.convexOrgId),
       convexProjectId: String(projectId),
+      launchedBy: String(auth.convexUserId),
       fileNames: {
         dataMap: parsed.dataMapFile.name,
         bannerPlan: parsed.bannerPlanFile.name,

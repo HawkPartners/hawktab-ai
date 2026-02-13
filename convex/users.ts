@@ -11,6 +11,27 @@ export const getByWorkosId = query({
   },
 });
 
+export const get = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.userId);
+  },
+});
+
+export const updateNotificationPreferences = internalMutation({
+  args: {
+    userId: v.id("users"),
+    notificationPreferences: v.object({
+      pipelineEmails: v.boolean(),
+    }),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.userId, {
+      notificationPreferences: args.notificationPreferences,
+    });
+  },
+});
+
 export const upsert = internalMutation({
   args: {
     workosUserId: v.string(),

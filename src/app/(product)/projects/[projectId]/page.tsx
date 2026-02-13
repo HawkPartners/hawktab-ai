@@ -16,6 +16,7 @@ import { AppBreadcrumbs } from '@/components/app-breadcrumbs';
 import { PipelineTimeline } from '@/components/pipeline-timeline';
 import { useAuthContext } from '@/providers/auth-provider';
 import { canPerform } from '@/lib/permissions';
+import { formatDuration } from '@/lib/utils/formatDuration';
 import {
   Download,
   CheckCircle,
@@ -407,7 +408,7 @@ export default function ProjectDetailPage({
           {summary?.durationMs && (
             <Badge variant="outline">
               <Clock className="h-3 w-3 mr-1" />
-              Duration: {(summary.durationMs / 1000).toFixed(1)}s
+              Duration: {formatDuration(summary.durationMs)}
             </Badge>
           )}
           {latestRun?.progress !== undefined && isActive && (
@@ -527,7 +528,7 @@ export default function ProjectDetailPage({
                 </div>
                 <div className="text-center p-3 bg-muted rounded-lg">
                   <FileText className="h-5 w-5 mx-auto mb-1 text-primary" />
-                  <p className="text-2xl font-bold">{(summary.durationMs ?? 0) > 0 ? `${((summary.durationMs ?? 0) / 1000).toFixed(0)}s` : '-'}</p>
+                  <p className="text-2xl font-bold">{(summary.durationMs ?? 0) > 0 ? formatDuration(summary.durationMs ?? 0) : '-'}</p>
                   <p className="text-xs text-muted-foreground">Duration</p>
                 </div>
               </div>

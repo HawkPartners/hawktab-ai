@@ -198,6 +198,7 @@ export async function POST(request: NextRequest) {
       projectId,
       orgId: auth.convexOrgId,
       config,
+      launchedBy: auth.convexUserId,
     });
 
     const runIdStr = String(runId);
@@ -235,6 +236,7 @@ export async function POST(request: NextRequest) {
       sessionId,
       convexOrgId: String(auth.convexOrgId),
       convexProjectId: String(projectId),
+      launchedBy: String(auth.convexUserId),
       fileNames: {
         dataMap: parsed.dataFile.name, // .sav acts as datamap
         bannerPlan: parsed.bannerPlanFile?.name ?? '',

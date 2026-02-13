@@ -219,17 +219,23 @@ export function PipelineTimeline({
                   ? message
                   : step.description}
               </p>
-              {stepStatus === 'active' && progress !== undefined && progress > 0 && (
+              {stepStatus === 'active' && (
                 <div className="mt-2 flex items-center gap-2">
                   <div className="h-1.5 flex-1 max-w-[200px] rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-ct-blue transition-all duration-500"
-                      style={{ width: `${Math.min(progress, 100)}%` }}
-                    />
+                    {progress !== undefined && progress > 0 ? (
+                      <div
+                        className="h-full rounded-full bg-ct-blue transition-all duration-500"
+                        style={{ width: `${Math.min(progress, 100)}%` }}
+                      />
+                    ) : (
+                      <div className="h-full w-full rounded-full bg-ct-blue/40 animate-pulse" />
+                    )}
                   </div>
-                  <span className="text-xs text-muted-foreground font-mono">
-                    {progress}%
-                  </span>
+                  {progress !== undefined && progress > 0 && (
+                    <span className="text-xs text-muted-foreground font-mono">
+                      {progress}%
+                    </span>
+                  )}
                 </div>
               )}
             </div>

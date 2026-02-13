@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from 'convex/react';
 import posthog from 'posthog-js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Building2, User, Users, Trash2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Loader2, Building2, User, Users, Trash2, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppBreadcrumbs } from '@/components/app-breadcrumbs';
 import { ConfirmDestructiveDialog } from '@/components/confirm-destructive-dialog';
@@ -46,6 +47,38 @@ export default function SettingsPage() {
     email: string;
     name: string;
   } | null>(null);
+  const [pipelineEmails, setPipelineEmails] = useState(true);
+  const [notifLoading, setNotifLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/notifications/preferences')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && typeof data.pipelineEmails === 'boolean') {
+          setPipelineEmails(data.pipelineEmails);
+        }
+      })
+      .catch(() => { /* non-fatal */ })
+      .finally(() => setNotifLoading(false));
+  }, []);
+
+  const handleTogglePipelineEmails = useCallback(async (checked: boolean) => {
+    setPipelineEmails(checked);
+    try {
+      const res = await fetch('/api/notifications/preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pipelineEmails: checked }),
+      });
+      if (!res.ok) {
+        setPipelineEmails(!checked);
+        toast.error('Failed to update notification preferences');
+      }
+    } catch {
+      setPipelineEmails(!checked);
+      toast.error('Failed to update notification preferences');
+    }
+  }, []);
 
   const org = useQuery(
     api.organizations.get,
@@ -144,6 +177,31 @@ export default function SettingsPage() {
                     </dd>
                   </div>
                 </dl>
+              </CardContent>
+            </Card>
+
+            {/* Notifications */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-muted-foreground" />
+                  Notifications
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">Pipeline email notifications</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Get emailed when a pipeline completes or fails
+                    </p>
+                  </div>
+                  <Switch
+                    checked={pipelineEmails}
+                    onCheckedChange={handleTogglePipelineEmails}
+                    disabled={notifLoading}
+                  />
+                </div>
               </CardContent>
             </Card>
 
