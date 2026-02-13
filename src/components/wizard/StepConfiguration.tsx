@@ -20,16 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 import { Card, CardContent } from '@/components/ui/card';
 import { ThemePicker } from './ThemePicker';
-import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
 
 interface StepConfigurationProps {
   validationResult: DataValidationResult;
@@ -38,7 +31,6 @@ interface StepConfigurationProps {
 export function StepConfiguration({ validationResult }: StepConfigurationProps) {
   const form = useFormContext<WizardFormValues>();
   const displayMode = form.watch('displayMode');
-  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
@@ -209,34 +201,6 @@ export function StepConfiguration({ validationResult }: StepConfigurationProps) 
         )}
       />
 
-      {/* Advanced (collapsible) */}
-      <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
-        <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ChevronDown
-            className={cn('h-4 w-4 transition-transform', advancedOpen && 'rotate-180')}
-          />
-          Advanced options
-        </CollapsibleTrigger>
-        <CollapsibleContent className="mt-4 space-y-4">
-          <FormField
-            control={form.control}
-            name="stopAfterVerification"
-            render={({ field }) => (
-              <FormItem className="flex items-center gap-3 rounded-lg border p-4">
-                <FormControl>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-                <div className="space-y-0.5">
-                  <FormLabel className="text-sm">Stop after verification</FormLabel>
-                  <FormDescription>
-                    Skip R execution and Excel generation. Useful for reviewing table definitions before running.
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
-          />
-        </CollapsibleContent>
-      </Collapsible>
     </div>
   );
 }

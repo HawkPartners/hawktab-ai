@@ -94,6 +94,8 @@ export interface DataValidationResult {
   }[];
   isStacked: boolean;
   stackedWarning: string | null;
+  /** Summary of loop detection — shown as informational, not a warning */
+  loopSummary: { hasLoops: boolean; loopCount: number };
   errors: { message: string; severity: 'error' | 'warning' }[];
   canProceed: boolean;
 }
@@ -105,6 +107,7 @@ export const INITIAL_VALIDATION: DataValidationResult = {
   weightCandidates: [],
   isStacked: false,
   stackedWarning: null,
+  loopSummary: { hasLoops: false, loopCount: 0 },
   errors: [],
   canProceed: false,
 };

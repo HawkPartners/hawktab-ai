@@ -86,9 +86,25 @@ export async function POST(request: NextRequest) {
     const stackedResult = report.fillRateResults.find((r) => r.pattern === 'likely_stacked');
     const stackedWarning = stackedResult?.explanation ?? null;
 
+    // Loop summary: count true loops (stage 3 warnings that aren't fixed grids)
+    const loopWarnings = report.warnings.filter(
+      (w) => w.stage === 3 && w.message.startsWith('Loop detected:')
+    );
+    const loopSummary = {
+      hasLoops: loopWarnings.length > 0,
+      loopCount: loopWarnings.length,
+    };
+
+    // Filter out noise warnings the UI handles via dedicated sections:
+    // - Stage 3 loop/fixed-grid warnings → shown via loopSummary
+    // - Stage 4 weight candidate warnings → shown via weightCandidates UI
+    const filteredWarnings = report.warnings.filter(
+      (w) => w.stage !== 3 && w.stage !== 4
+    );
+
     const errors: { message: string; severity: 'error' | 'warning' }[] = [
       ...report.errors.map((e) => ({ message: e.message, severity: 'error' as const })),
-      ...report.warnings.map((w) => ({ message: w.message, severity: 'warning' as const })),
+      ...filteredWarnings.map((w) => ({ message: w.message, severity: 'warning' as const })),
     ];
 
     return NextResponse.json({
@@ -97,6 +113,7 @@ export async function POST(request: NextRequest) {
       weightCandidates,
       isStacked,
       stackedWarning,
+      loopSummary,
       errors,
       canProceed: report.canProceed && !isStacked,
     });

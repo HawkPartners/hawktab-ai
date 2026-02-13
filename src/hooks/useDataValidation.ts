@@ -52,6 +52,7 @@ export function useDataValidation(dataFile: File | null) {
         weightCandidates: data.weightCandidates,
         isStacked: data.isStacked,
         stackedWarning: data.stackedWarning,
+        loopSummary: data.loopSummary ?? { hasLoops: false, loopCount: 0 },
         errors: data.errors,
         canProceed: data.canProceed,
       });

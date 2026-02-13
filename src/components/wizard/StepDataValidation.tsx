@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertTriangle, CheckCircle, XCircle, Database, Scale } from 'lucide-react';
+import { AlertTriangle, CheckCircle, XCircle, Database, Scale, Repeat } from 'lucide-react';
 import { useState } from 'react';
 
 interface StepDataValidationProps {
@@ -172,6 +172,22 @@ export function StepDataValidation({
                   Running unweighted. You can change this in the next step.
                 </p>
               )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Loop detection — informational, not a warning */}
+      {v.loopSummary?.hasLoops && (
+        <Card className="border-ct-blue/30">
+          <CardContent className="flex items-start gap-3 p-4">
+            <Repeat className="h-5 w-5 text-ct-blue mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium">Looped data detected</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Found {v.loopSummary.loopCount} loop{v.loopSummary.loopCount > 1 ? ' groups' : ' group'} in your data.
+                Data will be stacked automatically for accurate crosstab analysis.
+              </p>
             </div>
           </CardContent>
         </Card>
