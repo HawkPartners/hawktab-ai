@@ -5,7 +5,8 @@ import { shouldFlagForReview, getReviewThresholds } from '@/lib/review';
 
 /**
  * Check CrosstabAgent output for columns that need human review.
- * Returns columns with low confidence, explicit flags, or expression types that always need review.
+ * Returns columns with low confidence, explicit flags, expression types that always need review,
+ * or columns with alternatives (indicating agent uncertainty).
  */
 export function getFlaggedCrosstabColumns(
   crosstabResult: ValidationResultType,
@@ -28,7 +29,13 @@ export function getFlaggedCrosstabColumns(
 
   for (const group of crosstabResult.bannerCuts) {
     for (const col of group.columns) {
-      if (shouldFlagForReview(col.confidence, thresholds.crosstab, col.expressionType)) {
+      // Flag for review if:
+      // 1. Low confidence, wrong expression type, or
+      // 2. Column has alternatives (agent provided multiple options)
+      const hasAlternatives = col.alternatives && col.alternatives.length > 0;
+      const needsReview = shouldFlagForReview(col.confidence, thresholds.crosstab, col.expressionType) || hasAlternatives;
+
+      if (needsReview) {
         const lookupKey = `${group.groupName}::${col.name}`;
         flagged.push({
           groupName: group.groupName,

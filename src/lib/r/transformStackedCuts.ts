@@ -238,3 +238,67 @@ function cleanOuterParens(expr: string): string {
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+
+/**
+ * Validate transformed cuts for an entity-anchored group.
+ *
+ * CRITICAL SAFETY CHECK: If multiple cuts in a group produce identical transformed
+ * expressions, this indicates the transformation is not suitable for entity-anchored
+ * classification. This typically happens when:
+ * - Cuts reference different variables (e.g., hLOCATIONr1, hLOCATIONr2)
+ * - But both check the same value (e.g., both == 1)
+ * - After transformation, both become the same expression (e.g., .hawktab_location_flag == 1)
+ *
+ * When duplicates are detected, the group should fall back to respondent-anchored
+ * classification (use original cuts without transformation).
+ *
+ * @param transformedExpressions - Array of transformed R expressions for cuts in a group
+ * @param groupName - Name of the banner group (for logging)
+ * @returns Object with hasDuplicates flag and duplicate expressions if found
+ *
+ * @example
+ * validateTransformedCuts(
+ *   [".hawktab_location_flag == 1", ".hawktab_location_flag == 1", ".hawktab_location_flag == 3"],
+ *   "Location"
+ * )
+ * // => { hasDuplicates: true, duplicates: [".hawktab_location_flag == 1"] }
+ *
+ * @example
+ * validateTransformedCuts(
+ *   [".hawktab_needs_state == 1", ".hawktab_needs_state == 2", ".hawktab_needs_state == 3"],
+ *   "Needs State"
+ * )
+ * // => { hasDuplicates: false, duplicates: [] }
+ */
+export function validateTransformedCuts(
+  transformedExpressions: string[],
+  groupName: string,
+): { hasDuplicates: boolean; duplicates: string[] } {
+  const seen = new Map<string, number>(); // expression → count
+  const duplicates = new Set<string>();
+
+  for (const expr of transformedExpressions) {
+    const normalized = expr.trim();
+    const count = seen.get(normalized) || 0;
+    seen.set(normalized, count + 1);
+
+    if (count > 0) {
+      duplicates.add(normalized);
+    }
+  }
+
+  const hasDuplicates = duplicates.size > 0;
+
+  if (hasDuplicates) {
+    console.warn(
+      `[transformStackedCuts] Group "${groupName}" has ${duplicates.size} duplicate transformed expression(s): ` +
+      `${Array.from(duplicates).join(', ')}. This indicates the cuts are not suitable for entity-anchored ` +
+      `transformation. Group should fall back to respondent-anchored.`
+    );
+  }
+
+  return {
+    hasDuplicates,
+    duplicates: Array.from(duplicates),
+  };
+}

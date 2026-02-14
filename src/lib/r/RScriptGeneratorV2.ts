@@ -21,7 +21,7 @@ import type { StatTestingConfig } from '../env';
 import { sanitizeRExpression } from './sanitizeRExpression';
 import type { LoopGroupMapping } from '../validation/LoopCollapser';
 import type { LoopSemanticsPolicy, BannerGroupPolicy } from '../../schemas/loopSemanticsPolicySchema';
-import { transformCutForAlias } from './transformStackedCuts';
+import { transformCutForAlias, validateTransformedCuts } from './transformStackedCuts';
 import { sortTables } from '../tables/sortTables';
 
 // =============================================================================
@@ -233,6 +233,76 @@ export function validateAllTables<T extends ExtendedTableDefinition>(
   return { validTables, report };
 }
 
+/**
+ * Validate entity-anchored groups for duplicate transformed expressions.
+ * If a group would produce identical cuts after transformation, fall back to respondent-anchored.
+ *
+ * CRITICAL SAFETY CHECK: When different source variables (e.g., hLOCATIONr1, hLOCATIONr2)
+ * check the same value (both == 1), transformation produces identical expressions
+ * (.hawktab_location_flag == 1). This indicates the cuts are respondent-anchored in nature,
+ * not entity-anchored, and should use original cuts without transformation.
+ *
+ * @param policy - Loop semantics policy from LoopSemanticsPolicyAgent
+ * @param cuts - All cut definitions
+ * @returns Modified policy with duplicate groups marked as respondent-anchored
+ */
+function validateAndFixLoopSemanticsPolicy(
+  policy: LoopSemanticsPolicy,
+  cuts: CutDefinition[],
+): LoopSemanticsPolicy {
+  // Clone the policy to avoid mutation
+  const validatedPolicy: LoopSemanticsPolicy = {
+    ...policy,
+    bannerGroups: policy.bannerGroups.map(bg => ({ ...bg })),
+  };
+
+  // For each entity-anchored group, check for duplicate transformed expressions
+  for (let i = 0; i < validatedPolicy.bannerGroups.length; i++) {
+    const group = validatedPolicy.bannerGroups[i];
+
+    if (group.anchorType !== 'entity' || group.implementation.strategy !== 'alias_column') {
+      continue; // Skip respondent-anchored groups
+    }
+
+    // Find all cuts for this group
+    const groupCuts = cuts.filter(c => c.groupName === group.groupName);
+
+    if (groupCuts.length === 0) {
+      continue; // No cuts to validate
+    }
+
+    // Transform all cuts using this group's sourcesByIteration and aliasName
+    const sourceVars = group.implementation.sourcesByIteration.map(s => s.variable);
+    const transformedExpressions = groupCuts.map(cut =>
+      transformCutForAlias(cut.rExpression, sourceVars, group.implementation.aliasName)
+    );
+
+    // Check for duplicates
+    const validation = validateTransformedCuts(transformedExpressions, group.groupName);
+
+    if (validation.hasDuplicates) {
+      // Fall back to respondent-anchored for this group
+      console.warn(
+        `[RScriptGeneratorV2] Group "${group.groupName}" has duplicate transformed expressions. ` +
+        `Falling back to respondent-anchored classification.`
+      );
+
+      validatedPolicy.bannerGroups[i] = {
+        ...group,
+        anchorType: 'respondent',
+        implementation: {
+          strategy: 'none',
+          sourcesByIteration: [],
+          aliasName: '',
+          notes: 'Post-transformation validation: duplicate expressions detected, fell back to respondent-anchored',
+        },
+      };
+    }
+  }
+
+  return validatedPolicy;
+}
+
 // =============================================================================
 // Main Generator
 // =============================================================================
@@ -275,6 +345,12 @@ export function generateRScriptV2WithValidation(
     ?? (significanceLevel ? [significanceLevel] : [0.10]);
   const hasMultipleThresholds = effectiveThresholds.length >= 2
     && effectiveThresholds[0] !== effectiveThresholds[1];  // Same values = treat as single
+
+  // CRITICAL SAFETY CHECK: Validate entity-anchored groups for duplicate transformed expressions
+  // If any group would produce identical cuts after transformation, fall back to respondent-anchored
+  const validatedLoopPolicy = loopSemanticsPolicy
+    ? validateAndFixLoopSemanticsPolicy(loopSemanticsPolicy, cuts)
+    : undefined;
 
   // Validate all tables first, then sort to ensure consistent output order
   const { validTables: unsortedValid, report } = validateAllTables(tables);
@@ -399,7 +475,7 @@ export function generateRScriptV2WithValidation(
   // Loop Stacking Preamble (if any loop groups detected)
   // -------------------------------------------------------------------------
   if (loopMappings.length > 0) {
-    generateStackingPreamble(lines, loopMappings, cuts, loopSemanticsPolicy);
+    generateStackingPreamble(lines, loopMappings, cuts, validatedLoopPolicy);
   }
 
   // -------------------------------------------------------------------------
@@ -517,13 +593,13 @@ export function generateRScriptV2WithValidation(
   // -------------------------------------------------------------------------
   // Significance Testing Pass
   // -------------------------------------------------------------------------
-  generateSignificanceTesting(lines, loopSemanticsPolicy, loopStatTestingMode);
+  generateSignificanceTesting(lines, validatedLoopPolicy, loopStatTestingMode);
 
   // -------------------------------------------------------------------------
   // Loop Semantics Policy Validation (if entity-anchored groups exist)
   // -------------------------------------------------------------------------
-  if (loopSemanticsPolicy) {
-    generateLoopPolicyValidation(lines, loopSemanticsPolicy, cuts, loopMappings, outputDir);
+  if (validatedLoopPolicy) {
+    generateLoopPolicyValidation(lines, validatedLoopPolicy, cuts, loopMappings, outputDir);
   }
 
   // Close weight mode loop and save per-mode tables
