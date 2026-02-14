@@ -13,3 +13,4 @@
 
 - verify the CICD pipeline is working
 - ensure output file name matches the downloadable file name
+- we need to debug easier, way more logs captured so we can actually trace; if cost is an issue we can just capture logs with errorts; but think through context graphs for agent decisions, etc.

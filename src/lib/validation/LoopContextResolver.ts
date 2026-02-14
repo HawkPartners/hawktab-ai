@@ -5,6 +5,11 @@
  * Scans metadata (variable names, labels, descriptions) to identify non-loop columns
  * that are semantically linked to specific loop iterations.
  *
+ * NOTE: This provides HIGH-CONFIDENCE HINTS to the LoopSemanticsPolicyAgent, not
+ * a validation gate. The agent can and should identify additional variables through
+ * semantic reasoning. This resolver catches the obvious cases deterministically;
+ * the agent handles the nuanced cases that require context and reasoning.
+ *
  * Evidence hierarchy:
  * A0: Variable-name iteration suffixes (e.g., Treatment_1, Treatment_2)
  * A1: Label/description tokens (e.g., ${LOCATION1}, ${LOCATION2} in SPSS labels)

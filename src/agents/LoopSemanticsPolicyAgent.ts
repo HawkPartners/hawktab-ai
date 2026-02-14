@@ -135,18 +135,9 @@ export async function runLoopSemanticsPolicyAgent(
     knownColumns.add(f.variableName);
   }
 
-  // Build per-stacked-frame column sets for sourcesByIteration validation.
-  // A sourcesByIteration variable must exist in the SPECIFIC stacked frame it targets,
-  // not just anywhere in the datamap. Valid sources include:
-  // 1. The loop group's own collapsed base names + iteration columns (_1/_2 pattern)
-  // 2. Iteration-linked variables found by the DeterministicResolver (e.g., S10a/S11a)
-  //    that map to the same loop group — these are non-loop columns that are semantically
-  //    tied to specific iterations and are valid alias sources via case_when.
-  const columnsByFrame = buildPerFrameColumnSets(
-    input.loopMappings,
-    knownColumns,
-    input.deterministicFindings,
-  );
+  // NOTE: We no longer validate against per-frame column sets. The agent can identify
+  // iteration-linked variables through semantic reasoning beyond what the deterministic
+  // resolver found. We only validate that variables exist in the datamap (knownColumns).
 
   // Clear scratchpad from any previous runs (only once at the start)
   clearAllContextScratchpads();
@@ -161,7 +152,7 @@ export async function runLoopSemanticsPolicyAgent(
       // Build prompt — first attempt uses base, retries append correction
       let currentPrompt = baseUserPrompt;
       if (semanticAttempt > 0 && result) {
-        const corrections = buildCorrectionPrompt(result, knownColumns, columnsByFrame);
+        const corrections = buildCorrectionPrompt(result, knownColumns);
         currentPrompt = baseUserPrompt + '\n\n' + corrections;
         console.log(
           `[LoopSemanticsPolicyAgent] Semantic retry ${semanticAttempt}/${maxSemanticRetries}: ` +
@@ -233,9 +224,10 @@ export async function runLoopSemanticsPolicyAgent(
 
       result = retryResult.result;
 
-      // Validate sourcesByIteration against per-frame columns (not full datamap).
-      // A variable must exist in the stacked frame it's assigned to, not just anywhere.
-      const hallucinations = findHallucinatedVariables(result, knownColumns, columnsByFrame);
+      // Validate sourcesByIteration variables exist in the datamap.
+      // The agent can identify iteration-linked variables through semantic reasoning,
+      // so we only check that the variables actually exist (not hallucinated).
+      const hallucinations = findHallucinatedVariables(result, knownColumns);
       if (hallucinations.length === 0) {
         // Clean — no retries needed
         break;
@@ -255,18 +247,14 @@ export async function runLoopSemanticsPolicyAgent(
         );
         for (const bg of result.bannerGroups) {
           if (bg.implementation.strategy !== 'alias_column') continue;
-          const frameColumns = bg.stackedFrameName
-            ? columnsByFrame.get(bg.stackedFrameName)
-            : undefined;
-          const validationSet = frameColumns || knownColumns;
           const before = bg.implementation.sourcesByIteration.length;
           bg.implementation.sourcesByIteration = bg.implementation.sourcesByIteration.filter(
-            s => validationSet.has(s.variable),
+            s => knownColumns.has(s.variable),
           );
           const removed = before - bg.implementation.sourcesByIteration.length;
           if (removed > 0) {
             bg.confidence = Math.min(bg.confidence, 0.5);
-            const warning = `${bg.groupName}: Stripped ${removed} variable(s) not found in ${bg.stackedFrameName || 'datamap'} after ${maxSemanticRetries} correction retries`;
+            const warning = `${bg.groupName}: Stripped ${removed} variable(s) not found in datamap after ${maxSemanticRetries} correction retries`;
             bg.evidence.push(warning);
             result.warnings.push(warning);
           }
@@ -375,9 +363,17 @@ function buildUserPrompt(input: LoopSemanticsPolicyInput): string {
   });
   sections.push('<loop_summary>');
   sections.push(sanitizeForAzureContentFilter(JSON.stringify(enrichedLoopSummary, null, 2)));
-  sections.push('IMPORTANT: Each stacked frame\'s "variableBaseNames" lists the ONLY variables that');
-  sections.push('are valid for sourcesByIteration aliases on that frame. Do NOT use variables that');
-  sections.push('are not in this list — they exist in the main data but are not loop-iteration-specific.');
+  sections.push('');
+  sections.push('IMPORTANT: variableBaseNames lists variables we have CONFIRMED deterministically');
+  sections.push('as iteration-linked (high confidence). Use these when applicable.');
+  sections.push('');
+  sections.push('You MAY identify additional iteration-linked variables through semantic reasoning:');
+  sections.push('- Variables appearing in banner cuts with iteration-specific patterns (e.g., S10a OR S11a)');
+  sections.push('- Variables with identical descriptions but different semantic purposes per iteration');
+  sections.push('- Variables whose values logically differ by iteration (not respondent-level constants)');
+  sections.push('');
+  sections.push('Any variable you use in sourcesByIteration MUST exist in datamap_excerpt below.');
+  sections.push('Do not invent variable names that don\'t exist in the dataset.');
   sections.push('</loop_summary>\n');
 
   // Deterministic findings
@@ -439,25 +435,20 @@ interface HallucinatedVariable {
 }
 
 /**
- * Find sourcesByIteration entries that reference variables not available in their
- * target stacked frame. Uses per-frame column sets when available, falling back
- * to full datamap columns.
+ * Find sourcesByIteration entries that reference variables that don't exist in the datamap.
+ * Simple check: does the variable exist anywhere in the dataset?
  */
 function findHallucinatedVariables(
   policy: LoopSemanticsPolicy,
   knownColumns: Set<string>,
-  columnsByFrame?: Map<string, Set<string>>,
 ): HallucinatedVariable[] {
   const hallucinations: HallucinatedVariable[] = [];
   for (const bg of policy.bannerGroups) {
     if (bg.implementation.strategy !== 'alias_column') continue;
-    // Validate against the specific stacked frame's columns if available
-    const frameColumns = bg.stackedFrameName && columnsByFrame
-      ? columnsByFrame.get(bg.stackedFrameName)
-      : undefined;
-    const validationSet = frameColumns || knownColumns;
+
     for (const s of bg.implementation.sourcesByIteration) {
-      if (!validationSet.has(s.variable)) {
+      // Simple check: does the variable exist in the datamap?
+      if (!knownColumns.has(s.variable)) {
         hallucinations.push({
           groupName: bg.groupName,
           variable: s.variable,
@@ -471,112 +462,39 @@ function findHallucinatedVariables(
 
 /**
  * Build a corrective prompt appendix that tells the agent exactly which variables
- * it hallucinated and what columns actually exist, so it can fix its output.
+ * it hallucinated, so it can fix its output.
  */
 function buildCorrectionPrompt(
   previousResult: LoopSemanticsPolicy,
   knownColumns: Set<string>,
-  columnsByFrame?: Map<string, Set<string>>,
 ): string {
   const sections: string[] = [];
   sections.push('<correction>');
-  sections.push('IMPORTANT: Your previous output contained variables in sourcesByIteration that DO NOT EXIST in the target stacked frame.');
-  sections.push('A sourcesByIteration variable must be a column that exists in the SPECIFIC stacked frame, not just anywhere in the dataset.');
+  sections.push('IMPORTANT: Your previous output contained variables in sourcesByIteration that DO NOT EXIST in the datamap.');
+  sections.push('A sourcesByIteration variable must be a real column from the dataset, listed in datamap_excerpt.');
   sections.push('The following variables were invalid:\n');
 
   for (const bg of previousResult.bannerGroups) {
     if (bg.implementation.strategy !== 'alias_column') continue;
-    const frameColumns = bg.stackedFrameName && columnsByFrame
-      ? columnsByFrame.get(bg.stackedFrameName)
-      : undefined;
-    const validationSet = frameColumns || knownColumns;
-    const bad = bg.implementation.sourcesByIteration.filter(s => !validationSet.has(s.variable));
+    const bad = bg.implementation.sourcesByIteration.filter(s => !knownColumns.has(s.variable));
     if (bad.length === 0) continue;
 
-    const good = bg.implementation.sourcesByIteration.filter(s => validationSet.has(s.variable));
-    sections.push(`Group "${bg.groupName}" (target frame: ${bg.stackedFrameName || 'unknown'}):`);
-    sections.push(`  INVALID variables (not in ${bg.stackedFrameName || 'datamap'}): ${bad.map(s => `${s.variable} (iteration ${s.iteration})`).join(', ')}`);
+    const good = bg.implementation.sourcesByIteration.filter(s => knownColumns.has(s.variable));
+    sections.push(`Group "${bg.groupName}":`);
+    sections.push(`  INVALID variables (not in datamap): ${bad.map(s => `${s.variable} (iteration ${s.iteration})`).join(', ')}`);
     if (good.length > 0) {
-      sections.push(`  VALID variables (exist in frame): ${good.map(s => `${s.variable} (iteration ${s.iteration})`).join(', ')}`);
-    }
-
-    // Show which variables ARE available in the target frame
-    if (frameColumns) {
-      const badPrefixes = bad.map(s => s.variable.replace(/\d+$/, ''));
-      const suggestions = [...frameColumns].filter(col => {
-        return badPrefixes.some(prefix => col.startsWith(prefix));
-      });
-      if (suggestions.length > 0) {
-        sections.push(`  Similar columns in ${bg.stackedFrameName}: ${suggestions.join(', ')}`);
-      }
-      sections.push(`  Total columns available in ${bg.stackedFrameName}: ${frameColumns.size}`);
+      sections.push(`  VALID variables (exist in datamap): ${good.map(s => `${s.variable} (iteration ${s.iteration})`).join(', ')}`);
     }
     sections.push('');
   }
 
-  sections.push('Please re-classify all banner groups with ONLY variables that exist in the TARGET stacked frame.');
-  sections.push('If a variable does not exist in the stacked frame for a given iteration, OMIT that iteration from sourcesByIteration.');
-  sections.push('It is acceptable to have fewer entries than loop iterations — missing iterations map to NA.');
-  sections.push('If no valid variables exist for a group, reclassify it as respondent-anchored.');
+  sections.push('Please re-classify all banner groups with ONLY variables that exist in datamap_excerpt.');
+  sections.push('If no valid iteration-linked variables exist for a group, reclassify it as respondent-anchored.');
   sections.push('</correction>');
 
   return sections.join('\n');
 }
 
-// =============================================================================
-// Per-Frame Column Sets
-// =============================================================================
-
-/**
- * Build a map of stacked frame name → set of column names valid for alias sourcesByIteration.
- *
- * Valid alias sources include:
- * 1. The loop group's own base names and iteration columns (_1/_2 pattern from LoopCollapser)
- * 2. Iteration-linked variables from the DeterministicResolver that map to the same loop group.
- *    These are non-loop columns (e.g., S10a/S11a) that are semantically tied to specific
- *    iterations — they exist on the stacked frame (carried through by bind_rows) and are
- *    valid case_when sources because each one holds a DIFFERENT iteration's value.
- *
- * Main data columns NOT identified by either source are excluded — they have the SAME value
- * across all iterations for a given respondent, so using them as alias sources is semantically
- * wrong (the case_when would just pick the same value regardless of .loop_iter).
- */
-function buildPerFrameColumnSets(
-  loopMappings: LoopGroupMapping[],
-  _datamapColumns: Set<string>,
-  deterministicFindings?: DeterministicResolverResult,
-): Map<string, Set<string>> {
-  const result = new Map<string, Set<string>>();
-
-  for (let groupIdx = 0; groupIdx < loopMappings.length; groupIdx++) {
-    const mapping = loopMappings[groupIdx];
-    const frameColumns = new Set<string>();
-
-    // Source 1: Loop group's own variables (LoopCollapser — _1/_2 suffix pattern)
-    for (const v of mapping.variables) {
-      frameColumns.add(v.baseName);
-      for (const origCol of Object.values(v.iterationColumns)) {
-        frameColumns.add(origCol);
-      }
-    }
-
-    // Source 2: Iteration-linked variables from DeterministicResolver
-    // These are non-loop columns (no _1/_2 suffix) that the resolver identified
-    // as belonging to specific iterations of this loop group (e.g., S10a → iter 1,
-    // S11a → iter 2). They exist on the stacked frame and are valid alias sources.
-    if (deterministicFindings) {
-      for (const linked of deterministicFindings.iterationLinkedVariables) {
-        if (linked.linkedLoopGroup === groupIdx) {
-          frameColumns.add(linked.variableName);
-        }
-      }
-    }
-
-    result.set(mapping.stackedFrameName, frameColumns);
-  }
-
-  return result;
-}
 
 // =============================================================================
 // Datamap Excerpt Builder

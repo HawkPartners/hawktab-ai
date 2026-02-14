@@ -201,16 +201,18 @@ PITFALL 2: Assuming all banner groups need transformation.
   - If ALL groups in a dataset are respondent-anchored, that is the expected common case —
     do not search for entity-anchored patterns that don't exist.
 
-PITFALL 3: Getting sourcesByIteration wrong.
-  - sourcesByIteration variables must come from the target stacked frame's own loop variables.
-    Each stacked frame in <loop_summary> includes a "variableBaseNames" list — ONLY variables
-    in that list are valid for sourcesByIteration on that frame.
-  - A variable that exists in the datamap but is NOT in the frame's variableBaseNames is a
-    main-data variable carried through by bind_rows. It has the SAME value for every iteration
-    of a given respondent, so using it as an alias source is semantically wrong — the case_when
-    would pick the same value regardless of .loop_iter.
-  - NEVER invent or extrapolate variable names. If variableBaseNames lists Q5a, Q5b but NOT Q5c,
-    you MUST NOT include Q5c — even if the loop has 3 iterations.
+PITFALL 3: sourcesByIteration variables must exist in the dataset
+  - variableBaseNames shows variables we've confirmed deterministically (high confidence)
+  - You MAY identify additional variables through semantic reasoning:
+    * Variables in banner cuts with iteration-specific patterns (e.g., Q1a OR Q1b)
+    * Variables with same description but different semantic purposes per iteration
+    * Variables whose values logically differ by iteration
+  - Any variable in sourcesByIteration MUST exist in datamap_excerpt
+  - NEVER invent or extrapolate variable names that don't exist
+  - If uncertain whether a variable is iteration-specific, check:
+    1. Is it in banner cuts with an OR pattern matching iteration count?
+    2. Does description suggest it's tied to a specific loop entity?
+    3. Would its value differ between iterations for the same respondent?
   - It is ACCEPTABLE for sourcesByIteration to have FEWER entries than the number of loop
     iterations. Missing iterations will fall through to NA in the alias column, which is correct.
   - The "iteration" field in each entry must be the exact iteration value from the
@@ -242,22 +244,13 @@ PITFALL 5: Mixed signals within a single banner group.
   - If the split is close (e.g., 2 entity + 2 respondent cuts), set low confidence
     and flag for review in the warnings array.
 
-PITFALL 6: Classifying as entity-anchored without verifiable alias sources.
-  - BEFORE deciding a group is entity-anchored, verify that the variables you
-    would put in sourcesByIteration are recognized as iteration-specific.
-    A variable is iteration-specific if it appears in EITHER:
-    (a) the target frame's variableBaseNames list (from <loop_summary>), OR
-    (b) the <deterministic_findings> with a linked iteration for that loop group.
-    The variableBaseNames list already includes both sources — if a variable is
-    not in that list, it is a main-data column with the same value across all
-    iterations and cannot be used as an alias source.
-  - The OR pattern "N variables OR-joined + N iterations" is a NECESSARY but
-    NOT SUFFICIENT condition for entity-anchored. The variables must ALSO be
-    iteration-specific as defined above.
-  - Think of it as a two-step test:
-    Step 1: Does the structural pattern suggest entity? (OR-joined, count match)
-    Step 2: Are the variables iteration-specific (in variableBaseNames)?
-    Both must be YES to classify as entity-anchored.
+PITFALL 6: Verify variables are iteration-specific before entity-anchored
+  - OR pattern is necessary but NOT sufficient
+  - Must also verify variables are iteration-specific:
+    * In variableBaseNames (deterministically confirmed) — high confidence
+    * OR semantic evidence: description, cut patterns, iteration count match
+  - Two-step test: (1) structural pattern match, (2) iteration-specific evidence
+  - If only weak evidence, classify as respondent-anchored (safer fallback)
 </common_pitfalls>
 
 <output_specifications>

@@ -133,15 +133,18 @@ PITFALL 2: Assuming all banner groups need transformation.
     Only groups whose cuts reference iteration-linked variables need alias columns.
   - When in doubt, "respondent" is the safer default — it preserves current behavior.
 
-PITFALL 3: Getting sourcesByIteration wrong.
-  - sourcesByIteration variables must come from the target stacked frame's own loop variables.
-    Each stacked frame in <loop_summary> includes a "variableBaseNames" list — ONLY variables
-    in that list are valid for sourcesByIteration on that frame.
-  - A variable that exists in the datamap but is NOT in the frame's variableBaseNames is a
-    main-data variable carried through by bind_rows. It has the SAME value for every iteration
-    of a given respondent, so using it as an alias source is semantically wrong.
-  - NEVER invent or extrapolate variable names. If variableBaseNames lists Q5a, Q5b but NOT Q5c,
-    you MUST NOT include Q5c — even if the loop has 3 iterations.
+PITFALL 3: sourcesByIteration variables must exist in the dataset
+  - variableBaseNames shows variables we've confirmed deterministically (high confidence)
+  - You MAY identify additional variables through semantic reasoning:
+    * Variables in banner cuts with iteration-specific patterns (e.g., Q1a OR Q1b)
+    * Variables with same description but different semantic purposes per iteration
+    * Variables whose values logically differ by iteration
+  - Any variable in sourcesByIteration MUST exist in datamap_excerpt
+  - NEVER invent or extrapolate variable names that don't exist
+  - If uncertain whether a variable is iteration-specific, check:
+    1. Is it in banner cuts with an OR pattern matching iteration count?
+    2. Does description suggest it's tied to a specific loop entity?
+    3. Would its value differ between iterations for the same respondent?
   - It is ACCEPTABLE for sourcesByIteration to have FEWER entries than the number of loop
     iterations. Missing iterations will fall through to NA in the alias column, which is correct.
   - The "iteration" field in each entry must be the exact iteration value from the
