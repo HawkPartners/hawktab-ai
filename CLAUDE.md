@@ -517,3 +517,44 @@ WHEN REVIEWING PIPELINE OUTPUT:
 TRACKING ISSUES:
 Create `feedback.md` in the pipeline output folder. Reference specific tableIds.
 </review_process>
+
+<ci_cd>
+DEPLOYMENT FLOW:
+```
+dev (push freely) → PR to staging → checks run → merge → Railway auto-deploys
+                                                         → PR to main → merge → Railway deploys prod
+```
+
+Direct pushes to `staging` and `main` are blocked by branch protection rules. Pushes to `dev` remain unrestricted.
+
+GITHUB ACTIONS WORKFLOWS (`.github/workflows/`):
+
+1. **Quality Gate** (`quality-gate.yml`) — runs on every PR to `staging` or `main`
+   - `npm run lint` — ESLint
+   - `npx tsc --noEmit` — TypeScript type checking
+   - `npm test` — Vitest unit tests
+   - **Required check** — blocks merge if any step fails
+   - ~30 seconds, zero API cost
+
+2. **Claude Pattern Review** (`claude-review.yml`) — runs on PRs to `staging` only
+   - Uses `anthropics/claude-code-action@v1` with Max subscription OAuth
+   - Enforces 14 rules from `<security_patterns>` and `<code_patterns>` sections
+   - Posts inline comments on specific lines with rule violations
+   - **Advisory only** — does NOT block merge. Review and decide.
+   - ~1-3 minutes, ~$0.50-2.00 API cost per run
+
+BRANCH PROTECTION RULES (configured in GitHub repo settings):
+- `staging`: Require PR before merging, require "Quality Gate" status check
+- `main`: Require PR before merging, require "Quality Gate" status check
+- No required reviewers on either branch (solo dev workflow)
+</ci_cd>
+
+<env_files>
+ENVIRONMENT FILES:
+- `.env.local` — Local development secrets (API keys, Convex deploy key). Never committed. Each dev creates their own.
+- `.env.dev` — Development defaults (non-secret config). Not committed (covered by `.env*` in .gitignore).
+- `.env.production` — Production reference config. Not committed. Railway dashboard overrides all values in production.
+- `.env.example` — Template showing required variables without values. Committed for onboarding reference.
+
+All `.env*` files are gitignored except `.env.example`. Railway manages production secrets via its dashboard — the `.env.production` file is a local reference only.
+</env_files>
