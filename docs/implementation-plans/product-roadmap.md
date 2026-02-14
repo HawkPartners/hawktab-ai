@@ -17,6 +17,4 @@
 
 **Level of Effort**: Medium. Prioritize post-MVP based on Antares feedback.
 
-- update marketing landpage for data page
-
 - extensive testing & record demo / setup antares schedule email

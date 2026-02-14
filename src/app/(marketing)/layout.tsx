@@ -30,6 +30,12 @@ export default function MarketingLayout({
               Features
             </Link>
             <Link
+              href="/data-privacy"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline"
+            >
+              Data & Privacy
+            </Link>
+            <Link
               href="/dashboard"
               className="text-sm font-medium bg-primary text-primary-foreground px-3.5 py-1.5 rounded-md hover:opacity-90 transition-opacity"
             >

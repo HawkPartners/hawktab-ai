@@ -231,7 +231,10 @@ export default function LandingPage() {
           </div>
           <span className="font-semibold text-sm">Crosstab AI</span>
         </div>
-        <p className="text-xs text-muted-foreground">Intelligent crosstab generation for research teams</p>
+        <p className="text-xs text-muted-foreground mb-3">Intelligent crosstab generation for research teams</p>
+        <Link href="/data-privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+          Data & Privacy
+        </Link>
       </footer>
     </>
   );
