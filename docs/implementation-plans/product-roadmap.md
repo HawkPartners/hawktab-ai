@@ -1,33 +1,108 @@
-**Goal**: Support message testing surveys (and MaxDiff studies with utility scores) by allowing users to upload message lists that get integrated into the datamap.
+# Product Roadmap
 
-**What's needed**:
-- Intake question: "Does this survey include messages?" → upload message list
-- Message file parsing (Excel preferred, Word supported)
-- Datamap enrichment: link message text to question variables
-- Agent awareness: VerificationAgent uses actual message text in table labels
+Last updated: 2026-02-14
 
-**Level of Effort**: Medium. Prioritize post-MVP based on Antares feedback.
+## Pre-Monday (Antares Demo MVP)
 
-- extensive testing & record demo / setup antares schedule email
-- still dont give user a clear sign after the review screen that it saved
+**Critical fixes and polish before showing to Antares:**
 
-- verify the CICD pipeline is working
+1. **Data validation feedback improvements**
+   - Better visual feedback during validation - show what's being analyzed and why
+   - Replace generic "analyzing your data" with specific status: "Detecting loop structures...", "Validating variable formats...", etc.
+   - Clear loading indicators
 
-- we need to debug easier, way more logs captured so we can actually trace; if cost is an issue we can just capture logs with errorts; but think through context graphs for agent decisions, etc.
-better visual showing what we are analyzing for during data validation
-bug where if the title of the project is long enough, it doesnt truncate, ultmately overlappign our time start estimate in the side bar
-- be ready to define what loop groups are and why it may differ from the actual variables in the loop
-rate limits and quotas
-- more visuals to show the process as it goes what cuts were discovered)
-- better dashbparding so i can track per project costs and errors above
-- titos classified location as entity anchored but maybe we prefer respondent anchored? need a good grasp of this and try to make it configurable posts given its just how we want to analyze the data and doesnt require a new run
+2. **Sidebar UI bug fix**
+   - Long project titles overlap timestamps ("just now", "2 minutes ago")
+   - Implement proper text truncation with ellipsis
 
-Start to think about strategy to move from Hawktab ai 
+3. **Cost tracking and logging (admin/owner view)**
+   - Dashboard showing per-project costs
+   - Track API usage, agent costs, storage costs
+   - Owner-level visibility (not just per-user)
 
-- no more saving input files, all processing should be done in the cloud, and purge all input files from the local machine and hawkpartners stuff
+4. **General logging improvements**
+   - Capture more detailed logs for debugging
+   - Link agent decisions together (context graphs)
+   - Make it easier to trace issues through the pipeline
 
-- FLAG importance of HOTL to users; also ensure agents provide human readable reasons for their interpretation of what the banner cuts mean in the context of the data. maybe they even provide a intelligent hint that can be pulled into the loop policy agent to provide a more intelligent suggestion. also maybe this is surfaced to the human reviiewer and ask them how should we handle this?
+---
 
-make HITL much more visible and just important, not a warning or scary but just important
+## Post-Monday, Pre-Antares Meeting (By Wednesday)
 
-flag loops to crosstab agent
+**Important but not blocking the initial demo:**
+
+1. **MaxDiff/Message Testing Support**
+   - Update intake form: "Does this survey include messages?"
+   - Support message CSV upload (enforce format) or text box entry (like environment variables)
+   - Parse messages and integrate into datamap
+   - VerificationAgent uses actual message text in labels
+   - **Priority:** High (needed for broader Antares use cases)
+
+2. **CI/CD Pipeline Verification**
+   - Test branch protection, quality gates, Claude PR review
+   - Ensure staging → main promotion works correctly
+   - **Priority:** Medium (hasn't been tested end-to-end yet)
+
+---
+
+## Pre-Antares Meeting (Later This Month)
+
+**Improvements to make before the formal presentation:**
+
+1. **Loop Semantics Deep Dive Prep**
+   - Document: What is a loop? How are they defined?
+   - Explain: Why loop variables may differ from actual loop structure
+   - Philosophy: How do we prevent double-counting?
+   - Be ready to explain entity-anchored vs respondent-anchored decisions
+   - **Why:** Antares will ask technical questions about our approach
+
+2. **Enhanced HITL Review Experience**
+   - Make HITL more prominent (not a warning, but an important checkpoint)
+   - Show semantic interpretation: "This cut means..." in plain language
+   - For loop datasets: Ask user "Iteration-linked or Respondent-level?"
+   - Display alternatives with explanation of how interpretations differ
+   - Let user override loop policy classifications per group
+   - **Why:** User should guide semantic decisions, not just pick syntax
+
+---
+
+## Post-MVP (Deprioritized)
+
+**Important but not urgent:**
+
+1. **Visual cut discovery feedback**
+   - Show users what cuts were discovered during processing
+   - Display base sizes and how they were calculated
+   - **Priority:** Low (nice-to-have for transparency)
+
+2. **Configurable post-run settings**
+   - Allow users to change entity/respondent classification after run completes
+   - Regenerate crosstabs with different loop policy without re-running full pipeline
+   - **Example:** "Location was classified as entity-anchored, but I want respondent-anchored"
+   - **Priority:** Medium (saves time on iterative analysis)
+
+3. **Remove HawkPartners branding**
+   - Purge all references to "HawkPartners" from codebase
+   - Fully rebrand as standalone "Crosstab AI" product
+   - **Priority:** Low (post-commercialization concern)
+
+4. **Input file cleanup**
+   - Stop saving input files locally
+   - All processing done in cloud (R2 storage only)
+   - Purge local copies after upload
+   - **Priority:** Medium (security and storage efficiency)
+
+5. **CrosstabAgent Loop Awareness**
+   - Pass loop context to CrosstabAgent
+   - Agent notes when variable naming suggests iteration-linkage
+   - Generate alternatives with semantic context (respondent vs entity versions)
+   - **Status:** Under consideration (need to decide on approach)
+
+---
+
+## Notes
+
+- Dates are fluid and will be adjusted based on progress
+- Focus is on organization and prioritization, not strict deadlines
+- Pre-Monday items are critical for demo quality
+- HITL enhancements are key to product differentiation
