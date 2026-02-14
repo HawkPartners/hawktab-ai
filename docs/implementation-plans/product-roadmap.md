@@ -25,6 +25,11 @@ Last updated: 2026-02-14
    - Link agent decisions together (context graphs)
    - Make it easier to trace issues through the pipeline
 
+5. **Add Antares to WorkOS**
+6. **Record demo and upload to YouTube**
+7. **Schedule email to Antares with demo link and instructions on how to use the tool**
+8. **Schedule a live demo with Antares (or discussion with how they've been using it)**
+
 ---
 
 ## Post-Monday, Pre-Antares Meeting (By Wednesday)
