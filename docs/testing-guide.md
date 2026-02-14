@@ -204,6 +204,74 @@ Excel workbook generation from calculated tables.json.
 
 ---
 
+## UI Batch Load Testing
+
+A dev-mode feature for testing the system under realistic concurrent load. It launches N projects simultaneously through the real `/api/projects/launch` endpoint, so it exercises the exact same code path real users hit — including FormData parsing, file validation, rate limiting, pLimit(3) pipeline concurrency, Sentry, PostHog, and R execution.
+
+### Setup (one-time)
+
+Before using the load test UI, you must upload your local test datasets to R2:
+
+```bash
+# Preview what would be uploaded (no changes made)
+npx tsx scripts/upload-test-datasets-to-r2.ts --dry-run
+
+# Upload datasets to R2 under dev-test/ prefix
+npx tsx scripts/upload-test-datasets-to-r2.ts
+```
+
+The script scans every folder in `data/`, identifies ready datasets (`.sav` + survey document), and uploads each bundle to R2 with a manifest. Re-run whenever you add new datasets locally.
+
+**Requirements:** R2 credentials in `.env.local` (`R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`).
+
+### Using the Load Test UI
+
+1. Start the dev server: `npm run dev`
+2. Navigate to `/dev/load-test` (requires admin role)
+3. Select datasets from the manifest (fetched from R2)
+4. Configure concurrency (1, 3, 5, 10, or 15 simultaneous launches)
+5. Set a name prefix (defaults to "Load Test {M}/{D}")
+6. Click Launch
+
+Each dataset gets its own project named `{prefix} — {dataset-name}`. Projects appear on the real dashboard with real-time status. The monitoring panel on the load test page shows running/review/completed/failed counts, an overall progress bar, and elapsed time.
+
+### What it tests
+
+| Aspect | How it's tested |
+|--------|----------------|
+| Pipeline concurrency | `pLimit(3)` queues excess launches — only 3 R processes run at once |
+| Rate limiting | Rapid-fire POSTs to the real launch endpoint (50 req/10min in dev) |
+| R process memory | Multiple concurrent R processes sharing container memory |
+| Convex write throughput | Many concurrent status mutations from parallel pipelines |
+| HITL review under contention | Projects pause at `pending_review` — work through them manually |
+| Dashboard performance | Many active runs visible simultaneously |
+| Abort/cancel | Each pipeline has its own AbortController, isolated from others |
+
+### Cleanup
+
+The "Cleanup" button soft-deletes all projects matching the name prefix (sets `isDeleted: true`). It also removes associated runs and does best-effort R2 file cleanup. Requires typing the prefix to confirm.
+
+### Key details
+
+- **Dev-only.** The page and all API routes return 404 in production (`NODE_ENV === 'production'`).
+- **No auto-approve.** Projects that reach `pending_review` stay there. This tests the real HITL flow.
+- **Real API costs.** Each launched pipeline makes real AI agent calls. A batch of 15 datasets at ~$2-4 each is $30-60.
+- **Wall-clock time.** 15 datasets at pLimit(3) means ~5 batches of 3, roughly 3-4 hours to complete.
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `scripts/upload-test-datasets-to-r2.ts` | One-time setup: uploads local datasets to R2 |
+| `src/lib/loadTest/types.ts` | Shared types and constants |
+| `src/lib/loadTest/helpers.ts` | Content-type mapping for R2 uploads |
+| `src/app/api/dev/load-test/datasets/route.ts` | GET: returns dataset manifest from R2 |
+| `src/app/api/dev/load-test/launch/route.ts` | POST: orchestrates launches via real endpoint |
+| `src/app/api/dev/load-test/cleanup/route.ts` | POST: soft-deletes load test projects |
+| `src/app/(product)/dev/load-test/page.tsx` | UI: dataset selector, config, monitoring |
+
+---
+
 ## Writing New Tests
 
 ### Convention

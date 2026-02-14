@@ -33,6 +33,12 @@ These are useful but not blocking for the Antares pilot. Pulled from the origina
 
 **Level of Effort**: Medium. Prioritize post-MVP based on Antares feedback.
 
+---
+
+- Fully implement resend; currently we have it implemented in code but i dont want to buy a domain so can't use it yet.
+
+---
+
 ### Smart Data Validation by Project Type
 
 The wizard currently asks users to self-report project-type details (segment assignments, anchored scores, message list). Post-MVP, the validate-data step should **auto-detect** these from the .sav itself, reducing user burden and catching mismatches before the pipeline runs.
