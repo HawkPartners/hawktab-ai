@@ -19,20 +19,6 @@ These are useful but not blocking for the Antares pilot. Pulled from the origina
 
 ---
 
-## Post-MVP: Message Testing & MaxDiff
-
-**Goal**: Support message testing surveys (and MaxDiff studies with utility scores) by allowing users to upload message lists that get integrated into the datamap.
-
-**Why deferred**: Requires intake form updates, file parsing logic, and datamap enrichment infrastructure. Important feature but not blocking the Antares pilot.
-
-**What's needed**:
-- Intake question: "Does this survey include messages?" → upload message list
-- Message file parsing (Excel preferred, Word supported)
-- Datamap enrichment: link message text to question variables
-- Agent awareness: VerificationAgent uses actual message text in table labels
-
-**Level of Effort**: Medium. Prioritize post-MVP based on Antares feedback.
-
 ---
 
 - Fully implement resend; currently we have it implemented in code but i dont want to buy a domain so can't use it yet.
