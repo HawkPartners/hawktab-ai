@@ -22,12 +22,12 @@ rate limits and quotas
 - better dashbparding so i can track per project costs and errors above
 - titos classified location as entity anchored but maybe we prefer respondent anchored? need a good grasp of this and try to make it configurable posts given its just how we want to analyze the data and doesnt require a new run
 
---
-
-Purge all HawkPartners surveys from MacBook 
-Ensure demo works on pc
 Start to think about strategy to move from Hawktab ai 
 
 - no more saving input files, all processing should be done in the cloud, and purge all input files from the local machine and hawkpartners stuff
 
 - FLAG importance of HOTL to users; also ensure agents provide human readable reasons for their interpretation of what the banner cuts mean in the context of the data. maybe they even provide a intelligent hint that can be pulled into the loop policy agent to provide a more intelligent suggestion. also maybe this is surfaced to the human reviiewer and ask them how should we handle this?
+
+make HITL much more visible and just important, not a warning or scary but just important
+
+flag loops to crosstab agent

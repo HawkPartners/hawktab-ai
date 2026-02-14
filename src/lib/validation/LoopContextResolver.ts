@@ -1,6 +1,16 @@
 /**
  * LoopContextResolver.ts
  *
+ * @deprecated This module is deprecated as of 2026-02-14. The deterministic resolver
+ * approach created anchor bias in LoopSemanticsPolicyAgent, causing it to trust
+ * variable naming patterns over cut structure evidence. The agent now reasons purely
+ * from cut structure + datamap descriptions, which is more reliable.
+ *
+ * Code is kept for now but not used. Can be fully removed in a future cleanup.
+ * To revert to the old approach, check out the commit before this deprecation.
+ *
+ * ---
+ *
  * Deterministic resolver for iteration-linked variables in looped survey data.
  * Scans metadata (variable names, labels, descriptions) to identify non-loop columns
  * that are semantically linked to specific loop iterations.

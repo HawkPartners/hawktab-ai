@@ -129,15 +129,9 @@ export async function runLoopSemanticsPolicyAgent(
   // Build user prompt with runtime data
   const baseUserPrompt = buildUserPrompt(input);
 
-  // Build set of known columns for validation (datamap + deterministic findings)
+  // Build set of known columns for validation (from datamap excerpt only)
+  // Agent will identify iteration-linked variables through cut structure + datamap reasoning
   const knownColumns = new Set(input.datamapExcerpt.map(e => e.column));
-  for (const f of input.deterministicFindings.iterationLinkedVariables) {
-    knownColumns.add(f.variableName);
-  }
-
-  // NOTE: We no longer validate against per-frame column sets. The agent can identify
-  // iteration-linked variables through semantic reasoning beyond what the deterministic
-  // resolver found. We only validate that variables exist in the datamap (knownColumns).
 
   // Clear scratchpad from any previous runs (only once at the start)
   clearAllContextScratchpads();
@@ -337,24 +331,13 @@ function buildUserPrompt(input: LoopSemanticsPolicyInput): string {
 
   sections.push('Classify each banner group as respondent-anchored or entity-anchored.\n');
 
-  // Loop summary (enriched with per-frame variable base names + deterministic resolver variables)
+  // Loop summary (enriched with per-frame variable base names)
   const enrichedLoopSummary = input.loopSummary.map((ls, _idx) => {
     const mapping = input.loopMappings.find(m => m.stackedFrameName === ls.stackedFrameName);
-    const groupIdx = mapping ? input.loopMappings.indexOf(mapping) : -1;
 
     // Start with LoopCollapser's base names (_1/_2 suffix variables)
+    // Note: No longer adding DeterministicResolver variables (deprecated as of 2026-02-14)
     const baseNames = mapping ? mapping.variables.map(v => v.baseName) : [];
-
-    // Add DeterministicResolver variables linked to this loop group.
-    // These are non-loop columns (e.g., S10a/S11a) that the resolver identified
-    // as belonging to specific iterations — valid alias sources the agent should know about.
-    if (groupIdx >= 0) {
-      for (const linked of input.deterministicFindings.iterationLinkedVariables) {
-        if (linked.linkedLoopGroup === groupIdx && !baseNames.includes(linked.variableName)) {
-          baseNames.push(linked.variableName);
-        }
-      }
-    }
 
     return {
       ...ls,
@@ -364,32 +347,9 @@ function buildUserPrompt(input: LoopSemanticsPolicyInput): string {
   sections.push('<loop_summary>');
   sections.push(sanitizeForAzureContentFilter(JSON.stringify(enrichedLoopSummary, null, 2)));
   sections.push('');
-  sections.push('IMPORTANT: variableBaseNames lists variables we have CONFIRMED deterministically');
-  sections.push('as iteration-linked (high confidence). Use these when applicable.');
-  sections.push('');
-  sections.push('You MAY identify additional iteration-linked variables through semantic reasoning:');
-  sections.push('- Variables appearing in banner cuts with iteration-specific patterns (e.g., S10a OR S11a)');
-  sections.push('- Variables with identical descriptions but different semantic purposes per iteration');
-  sections.push('- Variables whose values logically differ by iteration (not respondent-level constants)');
-  sections.push('');
-  sections.push('Any variable you use in sourcesByIteration MUST exist in datamap_excerpt below.');
-  sections.push('Do not invent variable names that don\'t exist in the dataset.');
+  sections.push('NOTE: variableBaseNames lists recognized loop variables (_1/_2 suffixes) from the data structure.');
+  sections.push('You may identify additional iteration-linked variables by analyzing cut structure and datamap descriptions.');
   sections.push('</loop_summary>\n');
-
-  // Deterministic findings
-  sections.push('<deterministic_findings>');
-  if (input.deterministicFindings.iterationLinkedVariables.length > 0) {
-    sections.push(sanitizeForAzureContentFilter(input.deterministicFindings.evidenceSummary));
-    sections.push('\nDetailed mappings:');
-    sections.push(sanitizeForAzureContentFilter(JSON.stringify(input.deterministicFindings.iterationLinkedVariables, null, 2)));
-  } else {
-    sections.push('No iteration-linked variables found via deterministic evidence.');
-    sections.push('You must infer from banner expressions, datamap descriptions, and structural patterns.');
-  }
-  sections.push('NOTE: These mappings were found deterministically from .sav metadata (variable suffixes,');
-  sections.push('label tokens, sibling patterns). Treat them as strong evidence. If a variable appears here');
-  sections.push('with a linked iteration, it is almost certainly entity-anchored.');
-  sections.push('</deterministic_findings>\n');
 
   // Banner groups and cuts
   sections.push('<banner_groups_and_cuts>');
@@ -502,12 +462,15 @@ function buildCorrectionPrompt(
 
 /**
  * Build a focused datamap excerpt containing only variables referenced by cuts
- * and nearby context (h-prefix/d-prefix variants, deterministic findings).
+ * and nearby context (h-prefix/d-prefix variants).
+ *
+ * Note: No longer includes deterministicFindings variables (deprecated as of 2026-02-14).
+ * The agent will discover iteration-linked variables from cut structure + datamap descriptions.
  */
 export function buildDatamapExcerpt(
   verboseDataMap: VerboseDataMap[],
   cuts: CutDefinition[],
-  deterministicFindings?: DeterministicResolverResult,
+  _deterministicFindings?: DeterministicResolverResult, // kept for backward compat but not used
 ): { column: string; description: string; normalizedType: string; answerOptions: string }[] {
   // Build set of variable names we need
   const neededVars = new Set<string>();
@@ -528,13 +491,6 @@ export function buildDatamapExcerpt(
   }
   for (const pv of prefixedVars) {
     neededVars.add(pv);
-  }
-
-  // 3. Add variables from deterministic findings
-  if (deterministicFindings) {
-    for (const f of deterministicFindings.iterationLinkedVariables) {
-      neededVars.add(f.variableName);
-    }
   }
 
   // Build lookup and filter
