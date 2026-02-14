@@ -11,6 +11,5 @@
 - extensive testing & record demo / setup antares schedule email
 - still dont give user a clear sign after the review screen that it saved
 
-verify cicd pipeline is workingß
-
+- verify the CICD pipeline is working
 - ensure output file name matches the downloadable file name

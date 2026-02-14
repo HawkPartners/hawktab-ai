@@ -670,13 +670,25 @@ function generateStackingPreamble(
       bp => bp.stackedFrameName === frameName || bp.stackedFrameName === ''
     );
     if (aliasesForFrame.length > 0) {
-      // Build set of all real column names available in the stacked frame
-      // (original column names from all iterations across all variable families)
+      // Build set of all real column names available in the stacked frame.
+      // Includes:
+      // 1. Loop-mapped variables (base names + iteration columns)
+      // 2. Variables referenced in sourcesByIteration (iteration-linked hidden vars, etc.)
+      // Note: bind_rows includes ALL columns from the original data, not just loop-mapped ones,
+      // so we must include any variable the LoopSemanticsPolicyAgent identified as an alias source.
       const realColumns = new Set<string>();
       for (const v of mapping.variables) {
         realColumns.add(v.baseName);
         for (const origCol of Object.values(v.iterationColumns)) {
           realColumns.add(origCol);
+        }
+      }
+      // Add any variables referenced in sourcesByIteration for this frame's aliases
+      for (const bp of aliasesForFrame) {
+        if (bp.implementation.strategy === 'alias_column') {
+          for (const source of bp.implementation.sourcesByIteration) {
+            realColumns.add(source.variable);
+          }
         }
       }
 

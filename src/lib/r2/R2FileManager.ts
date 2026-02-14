@@ -20,11 +20,30 @@ const OUTPUT_FILES_TO_UPLOAD = [
   'results/tables-unweighted.json',
   'r/master.R',
   'pipeline-summary.json',
+  'logs/pipeline.log',  // Full console output with context prefixes
 ];
 
 export interface R2FileManifest {
   inputs: Record<string, string>;   // originalFilename → R2 key
   outputs: Record<string, string>;  // relativePath → R2 key
+}
+
+export interface PipelineR2Metadata {
+  projectName?: string;
+  runTimestamp?: string;  // ISO string
+}
+
+/**
+ * Sanitize a project name for use in R2 folder paths
+ * Converts to lowercase, replaces non-alphanumeric with hyphens, limits length
+ */
+function sanitizeFolderName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')  // trim leading/trailing hyphens
+    .slice(0, 50);
 }
 
 /**
@@ -45,22 +64,61 @@ export async function uploadInputFile(
 
 /**
  * Upload selected pipeline output files to R2.
- * Key pattern: {orgId}/{projectId}/runs/{runId}/outputs/{relativePath}
+ *
+ * Key pattern (with metadata):
+ *   {orgId}/{date}_{project-name}/{timestamp}/{relativePath}
+ *   Example: org123/2026-02-14_titos-growth/2026-02-14T02-00-07/results/crosstabs.xlsx
+ *
+ * Key pattern (fallback, no metadata):
+ *   {orgId}/{projectId}/runs/{runId}/outputs/{relativePath}
+ *
  * Only uploads files from OUTPUT_FILES_TO_UPLOAD that exist.
+ * Also uploads a manifest.json with run metadata.
  */
 export async function uploadPipelineOutputs(
   orgId: string,
   projectId: string,
   runId: string,
   localOutputDir: string,
+  metadata?: PipelineR2Metadata,
 ): Promise<R2FileManifest> {
   const manifest: R2FileManifest = { inputs: {}, outputs: {} };
 
+  // Build human-readable folder path if metadata provided
+  let baseKeyPath: string;
+  if (metadata?.projectName && metadata?.runTimestamp) {
+    const runDate = metadata.runTimestamp.slice(0, 10); // "2026-02-14"
+    const runTime = metadata.runTimestamp.slice(0, 19).replace(/:/g, '-'); // "2026-02-14T02-00-07"
+    const projectFolder = `${runDate}_${sanitizeFolderName(metadata.projectName)}`;
+    baseKeyPath = `${orgId}/${projectFolder}/${runTime}`;
+  } else {
+    // Fallback to opaque ID-based path
+    baseKeyPath = `${orgId}/${projectId}/runs/${runId}`;
+  }
+
+  // Upload run manifest with metadata
+  if (metadata) {
+    const manifestData = {
+      runId,
+      projectId,
+      projectName: metadata.projectName || 'Unknown',
+      orgId,
+      created: metadata.runTimestamp || new Date().toISOString(),
+      baseKeyPath,
+    };
+    const manifestBuffer = Buffer.from(JSON.stringify(manifestData, null, 2));
+    const manifestKey = `${baseKeyPath}/manifest.json`;
+    await uploadFile(manifestKey, manifestBuffer, 'application/json');
+    console.log(`[R2] Uploaded manifest.json → ${manifestKey}`);
+  }
+
+  // Upload output files
   const uploadPromises = OUTPUT_FILES_TO_UPLOAD.map(async (relativePath) => {
     const localPath = path.join(localOutputDir, relativePath);
     try {
       const buffer = await fs.readFile(localPath);
-      const key = buildKey(orgId, projectId, `runs/${runId}/outputs`, relativePath.replace(/\//g, '_'));
+      // Preserve folder structure: results/crosstabs.xlsx stays as-is
+      const key = `${baseKeyPath}/${relativePath}`;
       const contentType = getContentType(relativePath);
       await uploadFile(key, buffer, contentType);
       manifest.outputs[relativePath] = key;
