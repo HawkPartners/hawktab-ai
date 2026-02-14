@@ -22,6 +22,7 @@ import { translateSkipRules } from '../../agents/FilterTranslatorAgent';
 import { applyFilters } from '../filters/FilterApplicator';
 import { processSurvey } from '../processors/SurveyProcessor';
 import { generateRScriptV2WithValidation } from '../r/RScriptGeneratorV2';
+import { runWithScratchpadIsolation } from '../../agents/tools/scratchpad';
 import { validateAndFixTables } from '../r/ValidationOrchestrator';
 import { validateCutExpressions } from '../r/CutExpressionValidator';
 import { buildCutsSpec } from '../tables/CutsSpec';
@@ -210,6 +211,11 @@ export async function runPipeline(
   const outputFolder = `pipeline-${timestamp}`;
   const pipelineId = outputFolder;
 
+  // Scope scratchpad entries to this pipeline run (prevents cross-contamination
+  // when multiple pipelines execute concurrently on the same server process).
+  return runWithScratchpadIsolation(pipelineId, () => runPipelineInner()) as Promise<PipelineResult>;
+
+  async function runPipelineInner(): Promise<PipelineResult> {
   const datasetNameGuess = path.basename(
     path.isAbsolute(datasetFolder) ? datasetFolder : path.join(process.cwd(), datasetFolder)
   );
@@ -2023,4 +2029,5 @@ export async function runPipeline(
       error: errorMsg,
     };
   }
+  } // end runPipelineInner
 }

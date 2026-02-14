@@ -2,23 +2,55 @@
  * Scratchpad tool for reasoning transparency
  * Provides enhanced thinking space for complex variable validation tasks
  * Accumulates entries for inclusion in processing logs
+ *
+ * Pipeline isolation: Uses AsyncLocalStorage to scope entries per pipeline run.
+ * Call `runWithScratchpadIsolation(pipelineId, fn)` from the pipeline runner
+ * to prevent cross-contamination between concurrent pipeline runs.
  */
 
 import { tool } from 'ai';
 import { z } from 'zod';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { getPipelineEventBus } from '../../lib/events';
 
-// Accumulated scratchpad entries for the current session
-let scratchpadEntries: Array<{
+type ScratchpadEntry = {
   timestamp: string;
   agentName: string;
   action: string;
   content: string;
-}> = [];
+};
+
+// Pipeline-scoped storage: maps pipelineId → entries
+const pipelineStorage = new AsyncLocalStorage<string>();
+const pipelineScratchpads = new Map<string, ScratchpadEntry[]>();
+const DEFAULT_KEY = '__global__';
+
+/** Get the current pipeline's scratchpad key (falls back to global for backward compat) */
+function currentKey(): string {
+  return pipelineStorage.getStore() ?? DEFAULT_KEY;
+}
+
+/** Get or create the entries array for the current pipeline */
+function getEntries(): ScratchpadEntry[] {
+  const key = currentKey();
+  if (!pipelineScratchpads.has(key)) {
+    pipelineScratchpads.set(key, []);
+  }
+  return pipelineScratchpads.get(key)!;
+}
+
+/**
+ * Run a function with scratchpad entries scoped to a pipeline ID.
+ * Concurrent calls with different pipelineIds get independent scratchpad storage.
+ */
+export function runWithScratchpadIsolation<T>(pipelineId: string, fn: () => T | Promise<T>): T | Promise<T> {
+  return pipelineStorage.run(pipelineId, fn);
+}
 
 /**
  * Create a scratchpad tool for a specific agent
- * This factory function allows each agent to have its own attributed scratchpad
+ * This factory function allows each agent to have its own attributed scratchpad.
+ * Entries are automatically scoped per pipeline via AsyncLocalStorage.
  */
 export function createScratchpadTool(agentName: string) {
   return tool({
@@ -29,21 +61,22 @@ export function createScratchpadTool(agentName: string) {
     }),
     execute: async ({ action, content }) => {
       const timestamp = new Date().toISOString();
+      const entries = getEntries();
 
       // For "read" action, return all accumulated entries without adding a new one
       if (action === 'read') {
-        const entries = scratchpadEntries.filter(e => e.agentName === agentName);
-        if (entries.length === 0) {
+        const agentEntries = entries.filter(e => e.agentName === agentName);
+        if (agentEntries.length === 0) {
           return '[Read] No entries recorded yet.';
         }
-        const formatted = entries.map((e, i) =>
+        const formatted = agentEntries.map((e, i) =>
           `[${i + 1}] (${e.action}) ${e.content}`
         ).join('\n\n');
-        return `[Read] ${entries.length} entries:\n\n${formatted}`;
+        return `[Read] ${agentEntries.length} entries:\n\n${formatted}`;
       }
 
-      // Accumulate entry with agent attribution
-      scratchpadEntries.push({ timestamp, agentName, action, content });
+      // Accumulate entry with agent attribution (auto-scoped to current pipeline)
+      entries.push({ timestamp, agentName, action, content });
 
       // Log for real-time debugging (avoid UI mode to prevent spill)
       if (!getPipelineEventBus().isEnabled()) {
@@ -75,26 +108,24 @@ export const scratchpadTool = crosstabScratchpadTool;
 
 /**
  * Get accumulated scratchpad entries and clear them
- * Call this after processing to include in output logs
- * 
+ * Call this after processing to include in output logs.
+ * Automatically scoped to the current pipeline via AsyncLocalStorage.
+ *
  * @param agentName - Optional agent name filter. If provided, only returns and clears entries for that agent.
  *                    If not provided, returns and clears all entries (backward compatibility).
  */
-export function getAndClearScratchpadEntries(agentName?: string): Array<{
-  timestamp: string;
-  agentName: string;
-  action: string;
-  content: string;
-}> {
+export function getAndClearScratchpadEntries(agentName?: string): ScratchpadEntry[] {
+  const key = currentKey();
+  const entries = pipelineScratchpads.get(key) || [];
+
   if (agentName) {
     // Agent-specific: return and clear only entries for this agent
-    const entries = scratchpadEntries.filter(e => e.agentName === agentName);
-    scratchpadEntries = scratchpadEntries.filter(e => e.agentName !== agentName);
-    return entries;
+    const agentEntries = entries.filter(e => e.agentName === agentName);
+    pipelineScratchpads.set(key, entries.filter(e => e.agentName !== agentName));
+    return agentEntries;
   } else {
-    // Backward compatibility: return and clear all entries
-    const entries = [...scratchpadEntries];
-    scratchpadEntries = [];
+    // Return and clear all entries for this pipeline
+    pipelineScratchpads.delete(key);
     return entries;
   }
 }
@@ -102,20 +133,15 @@ export function getAndClearScratchpadEntries(agentName?: string): Array<{
 /**
  * Get accumulated entries without clearing (for inspection)
  */
-export function getScratchpadEntries(): Array<{
-  timestamp: string;
-  agentName: string;
-  action: string;
-  content: string;
-}> {
-  return [...scratchpadEntries];
+export function getScratchpadEntries(): ScratchpadEntry[] {
+  return [...(pipelineScratchpads.get(currentKey()) || [])];
 }
 
 /**
  * Clear scratchpad entries (call at start of new processing session)
  */
 export function clearScratchpadEntries(): void {
-  scratchpadEntries = [];
+  pipelineScratchpads.delete(currentKey());
 }
 
 // Type export for use in agent definitions

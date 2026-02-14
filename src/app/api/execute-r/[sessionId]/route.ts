@@ -3,6 +3,10 @@
  * Purpose: Execute the generated R script to produce CSV results
  * Reads: r/master.R
  * Writes: results/*.csv files
+ *
+ * @deprecated Legacy endpoint — no org ownership verification on session data.
+ * The main pipeline uses Convex-backed runs with proper org scoping.
+ * Remove once all clients migrate to the Convex pipeline flow.
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
@@ -27,6 +31,7 @@ export async function GET(
     if (rateLimited) return rateLimited;
 
     const { sessionId } = await params;
+    console.warn(`[execute-r] DEPRECATED: Legacy session endpoint called for ${sessionId}. No org ownership verification.`);
 
     // Validate sessionId — strict allowlist to prevent path traversal and shell injection
     if (!/^output-[a-zA-Z0-9_-]+$/.test(sessionId)) {

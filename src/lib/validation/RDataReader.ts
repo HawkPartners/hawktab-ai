@@ -117,7 +117,7 @@ export async function getDataFileStats(
   dataPath: string,
   outputDir: string
 ): Promise<DataFileStats> {
-  const escapedPath = dataPath.replace(/\\/g, '/');
+  const escapedPath = dataPath.replace(/\\/g, '/').replace(/"/g, '\\"');
   const scriptPath = path.join(outputDir, '_validation_stats.R');
 
   const script = `
@@ -219,7 +219,7 @@ export async function getColumnFillRates(
 ): Promise<Record<string, number>> {
   if (columns.length === 0) return {};
 
-  const escapedPath = dataPath.replace(/\\/g, '/');
+  const escapedPath = dataPath.replace(/\\/g, '/').replace(/"/g, '\\"');
   const colsArray = columns.map((c) => `"${c.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`).join(', ');
   const scriptPath = path.join(outputDir, '_validation_fillrates.R');
 

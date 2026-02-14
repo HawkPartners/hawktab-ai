@@ -3,6 +3,10 @@
  * Purpose: Generate Excel workbook from tables.json (Antares-style formatting)
  * Reads: results/tables.json
  * Returns: Excel workbook download
+ *
+ * @deprecated Legacy endpoint — no org ownership verification on session data.
+ * The main pipeline uses Convex-backed runs with proper org scoping.
+ * Remove once all clients migrate to the Convex pipeline flow.
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
@@ -23,6 +27,7 @@ export async function GET(
     if (rateLimited) return rateLimited;
 
     const { sessionId } = await params;
+    console.warn(`[export-workbook] DEPRECATED: Legacy session endpoint called for ${sessionId}. No org ownership verification.`);
 
     // Strict allowlist — alphanumeric, underscore, hyphen after known prefixes
     if (!/^(output|test-pipeline)-[a-zA-Z0-9_-]+$/.test(sessionId)) {

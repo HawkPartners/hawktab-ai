@@ -3,6 +3,10 @@
  * Purpose: Convert crosstab validation output into cut tables (JSON + CSV)
  * Reads: temp-outputs/<sessionId>/crosstab-output-*.json
  * Writes: temp-outputs/<sessionId>/{cut-tables.json, cut-tables.csv}
+ *
+ * @deprecated Legacy endpoint — no org ownership verification on session data.
+ * The main pipeline uses Convex-backed runs with proper org scoping.
+ * Remove once all clients migrate to the Convex pipeline flow.
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
@@ -21,6 +25,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ ses
     if (rateLimited) return rateLimited;
 
     const { sessionId } = await params;
+    console.warn(`[generate-tables] DEPRECATED: Legacy session endpoint called for ${sessionId}. No org ownership verification.`);
     if (!/^output-[a-zA-Z0-9_-]+$/.test(sessionId)) {
       return NextResponse.json({ error: 'Invalid sessionId' }, { status: 400 });
     }

@@ -3,6 +3,10 @@
  * Purpose: Remove a session directory and all artifacts
  * Reads: temp-outputs/<sessionId>
  * Side-effects: Recursively deletes folder
+ *
+ * @deprecated Legacy endpoint — no org ownership verification on session data.
+ * The main pipeline uses Convex-backed runs with proper org scoping.
+ * Remove once all clients migrate to the Convex pipeline flow.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -21,6 +25,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     if (rateLimited) return rateLimited;
 
     const { sessionId } = await params;
+    console.warn(`[delete-session] DEPRECATED: Legacy session endpoint called for ${sessionId}. No org ownership verification.`);
 
     // Security check: strict allowlist — only alphanumeric, underscore, hyphen after "output-"
     if (!/^output-[a-zA-Z0-9_-]+$/.test(sessionId)) {

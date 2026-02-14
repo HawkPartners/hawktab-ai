@@ -337,13 +337,14 @@ export function generateRScriptV2WithValidation(
   // -------------------------------------------------------------------------
   // Load Data
   // -------------------------------------------------------------------------
+  const safeDataFilePath = escapeRString(dataFilePath);
   lines.push('# Load SPSS data file (with encoding fallback)');
   lines.push(`data <- tryCatch(`);
-  lines.push(`  read_sav("${dataFilePath}"),`);
+  lines.push(`  read_sav("${safeDataFilePath}"),`);
   lines.push('  error = function(e) {');
   lines.push('    if (grepl("iconv|encoding|translat", e$message, ignore.case = TRUE)) {');
   lines.push('      cat("WARNING: Encoding error, retrying with encoding=\'latin1\'\\n")');
-  lines.push(`      read_sav("${dataFilePath}", encoding = "latin1")`);
+  lines.push(`      read_sav("${safeDataFilePath}", encoding = "latin1")`);
   lines.push('    } else {');
   lines.push('      stop(e)');
   lines.push('    }');

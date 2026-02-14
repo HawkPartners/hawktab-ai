@@ -3,6 +3,9 @@
  * Purpose: List sessions with validation status for UI
  * Reads: temp-outputs/output-* folders
  * Returns: { sessions: SessionSummary[], counts }
+ *
+ * @deprecated Legacy endpoint — returns ALL sessions without org filtering.
+ * Filesystem-based sessions have no org metadata. Restricted to development mode.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -29,6 +32,11 @@ interface SessionSummary {
 
 export async function GET(_request: NextRequest) {
   try {
+    // Restrict to development — this endpoint has no org-scoping
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'Not available in production' }, { status: 403 });
+    }
+
     const auth = await requireConvexAuth();
 
     const rateLimited = applyRateLimit(String(auth.convexOrgId), 'low', 'validation-queue');
@@ -156,6 +164,10 @@ export async function GET(_request: NextRequest) {
 // Filter sessions by status
 export async function POST(request: NextRequest) {
   try {
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'Not available in production' }, { status: 403 });
+    }
+
     const authPost = await requireConvexAuth();
 
     const rateLimitedPost = applyRateLimit(String(authPost.convexOrgId), 'low', 'validation-queue');

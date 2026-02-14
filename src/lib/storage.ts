@@ -7,8 +7,16 @@
  */
 
 import { promises as fs } from 'fs';
-import { join } from 'path';
+import { join, basename } from 'path';
 import { tmpdir } from 'os';
+
+// Defense-in-depth: validate sessionId at the storage layer (callers may also validate)
+const SESSION_ID_PATTERN = /^[a-zA-Z0-9_.-]+$/;
+function validateSessionId(sessionId: string): void {
+  if (!SESSION_ID_PATTERN.test(sessionId)) {
+    throw new Error(`Invalid session ID: contains disallowed characters`);
+  }
+}
 
 // Storage configuration
 export interface StorageConfig {
@@ -35,6 +43,7 @@ export interface DualOutputPaths {
 // Create temporary directory for session
 export const createSessionDir = async (sessionId: string): Promise<StorageResult> => {
   try {
+    validateSessionId(sessionId);
     const sessionDir = join(tmpdir(), 'hawktab-ai', sessionId);
     await fs.mkdir(sessionDir, { recursive: true });
     
@@ -64,10 +73,16 @@ export const saveUploadedFile = async (
   fileName: string
 ): Promise<StorageResult> => {
   try {
+    validateSessionId(sessionId);
+    // Prevent path traversal via fileName (e.g. "../../etc/passwd")
+    const safeName = basename(fileName);
+    if (safeName !== fileName || safeName.includes('\0')) {
+      return { success: false, error: 'Invalid file name' };
+    }
     const sessionDir = join(tmpdir(), 'hawktab-ai', sessionId);
     await fs.mkdir(sessionDir, { recursive: true });
-    
-    const filePath = join(sessionDir, fileName);
+
+    const filePath = join(sessionDir, safeName);
     const buffer = Buffer.from(await file.arrayBuffer());
     await fs.writeFile(filePath, buffer);
     
@@ -85,6 +100,7 @@ export const saveUploadedFile = async (
 
 // Create dual output file paths
 export const createDualOutputPaths = (sessionId: string): DualOutputPaths => {
+  validateSessionId(sessionId);
   const sessionDir = join(tmpdir(), 'hawktab-ai', sessionId);
   
   return {
@@ -106,8 +122,9 @@ export const saveDualOutputs = async (
   }
 ): Promise<{ success: boolean; paths?: DualOutputPaths; error?: string }> => {
   try {
+    validateSessionId(sessionId);
     const paths = createDualOutputPaths(sessionId);
-    
+
     // Ensure directory exists
     await fs.mkdir(join(tmpdir(), 'hawktab-ai', sessionId), { recursive: true });
     
@@ -138,8 +155,9 @@ export const loadAgentFiles = async (sessionId: string): Promise<{
   error?: string;
 }> => {
   try {
+    validateSessionId(sessionId);
     const paths = createDualOutputPaths(sessionId);
-    
+
     const [bannerContent, dataMapContent] = await Promise.all([
       fs.readFile(paths.agentBanner, 'utf8'),
       fs.readFile(paths.agentDataMap, 'utf8')
@@ -163,6 +181,7 @@ export const loadAgentFiles = async (sessionId: string): Promise<{
 // Clean up session files
 export const cleanupSession = async (sessionId: string): Promise<StorageResult> => {
   try {
+    validateSessionId(sessionId);
     const sessionDir = join(tmpdir(), 'hawktab-ai', sessionId);
     await fs.rm(sessionDir, { recursive: true, force: true });
     
@@ -182,6 +201,7 @@ export const listSessionFiles = async (sessionId: string): Promise<{
   error?: string;
 }> => {
   try {
+    validateSessionId(sessionId);
     const sessionDir = join(tmpdir(), 'hawktab-ai', sessionId);
     const files = await fs.readdir(sessionDir);
     
