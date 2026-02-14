@@ -6,6 +6,29 @@ Items deferred from the product roadmap. These are not blocking for the Antares 
 
 ---
 
+## Convex Auth Integration (Security — Pre-Commercial)
+
+**Priority: HIGH for commercial release. Not blocking for Antares pilot.**
+
+Currently, Convex public queries (`runs.get`, `projects.get`, `runs.getByProject`, `orgMemberships.listByOrg`, etc.) have no authentication at the Convex layer. Security relies on two mechanisms:
+
+1. **API routes** verify org ownership after fetching (solid, but only protects server-side paths)
+2. **Org-scoped query parameters** (added Feb 2026) — client-side `useQuery` calls pass `orgId` from the auth context, and Convex queries filter by it. This prevents casual cross-tenant leakage but is not cryptographic proof of membership.
+
+**The gap:** Anyone who discovers the `NEXT_PUBLIC_CONVEX_URL` and guesses a valid Convex document ID could bypass org-scoping by calling queries directly with fabricated `orgId` values. The org-scoping is a parameter the caller provides — Convex doesn't verify the caller actually belongs to that org.
+
+**The proper fix:** Convex auth integration with WorkOS. This would:
+- Issue per-user Convex auth tokens from the WorkOS session
+- Allow Convex query handlers to call `ctx.auth.getUserIdentity()` and verify org membership server-side
+- Make `orgId` come from the verified token, not from caller-provided parameters
+- Enable converting sensitive queries from `query()` to authenticated queries that reject unauthenticated callers entirely
+
+**Why deferred:** This requires WorkOS-Convex auth plumbing (token exchange, session management at the Convex layer). It's the right architecture for a multi-tenant commercial product, but the current org-scoped parameter approach is sufficient for the Antares pilot where all users are from known organizations. Build this before opening the product to self-serve signups or untrusted tenants.
+
+**Reference:** Security audit finding H1 (Feb 13, 2026). See `.security-audit/findings/audit-2026-02-13.md`.
+
+---
+
 ## Deferred from Phase 3.4 (Post-Launch)
 
 These are useful but not blocking for the Antares pilot. Pulled from the original 3.4 scope.

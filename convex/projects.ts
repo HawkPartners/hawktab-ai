@@ -67,10 +67,15 @@ export const create = internalMutation({
 });
 
 export const get = query({
-  args: { projectId: v.id("projects") },
+  args: {
+    projectId: v.id("projects"),
+    orgId: v.optional(v.id("organizations")),
+  },
   handler: async (ctx, args) => {
     const project = await ctx.db.get(args.projectId);
     if (project?.isDeleted) return null;
+    // Org-scoping: if orgId is provided, reject cross-org access
+    if (args.orgId && project?.orgId !== args.orgId) return null;
     return project;
   },
 });

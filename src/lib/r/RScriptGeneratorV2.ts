@@ -1323,14 +1323,19 @@ function generateFrequencyTable(lines: string[], table: TableWithLoopFrame, isWe
   // Apply additional table-level filter if specified (skip logic from FilterApplicator)
   const hasAdditionalFilter = table.additionalFilter && table.additionalFilter.trim().length > 0;
   if (hasAdditionalFilter) {
-    const filterExpr = escapeRString(table.additionalFilter);
-    lines.push('');
-    lines.push('  # Apply table-specific filter (skip logic)');
-    lines.push(`  additional_mask <- with(cut_data, eval(parse(text = "${filterExpr}")))`);
-    lines.push('  additional_mask[is.na(additional_mask)] <- FALSE');
-    lines.push('  cut_data <- cut_data[additional_mask, ]');
-    if (isWeighted) {
-      lines.push('  w_cut <- w_cut[additional_mask]');
+    const sanitizeFilterResult = sanitizeRExpression(table.additionalFilter);
+    if (!sanitizeFilterResult.safe) {
+      console.warn(`[RScriptGen] Blocked unsafe additionalFilter for table "${table.tableId}": ${sanitizeFilterResult.error}`);
+    } else {
+      const filterExpr = escapeRString(table.additionalFilter);
+      lines.push('');
+      lines.push('  # Apply table-specific filter (skip logic)');
+      lines.push(`  additional_mask <- with(cut_data, eval(parse(text = "${filterExpr}")))`);
+      lines.push('  additional_mask[is.na(additional_mask)] <- FALSE');
+      lines.push('  cut_data <- cut_data[additional_mask, ]');
+      if (isWeighted) {
+        lines.push('  w_cut <- w_cut[additional_mask]');
+      }
     }
   }
 
@@ -1556,14 +1561,19 @@ function generateMeanRowsTable(lines: string[], table: TableWithLoopFrame, isWei
   // Apply additional table-level filter if specified (skip logic from FilterApplicator)
   const hasAdditionalFilterMean = table.additionalFilter && table.additionalFilter.trim().length > 0;
   if (hasAdditionalFilterMean) {
-    const filterExprMean = escapeRString(table.additionalFilter);
-    lines.push('');
-    lines.push('  # Apply table-specific filter (skip logic)');
-    lines.push(`  additional_mask <- with(cut_data, eval(parse(text = "${filterExprMean}")))`);
-    lines.push('  additional_mask[is.na(additional_mask)] <- FALSE');
-    lines.push('  cut_data <- cut_data[additional_mask, ]');
-    if (isWeighted) {
-      lines.push('  w_cut <- w_cut[additional_mask]');
+    const sanitizeFilterResultMean = sanitizeRExpression(table.additionalFilter);
+    if (!sanitizeFilterResultMean.safe) {
+      console.warn(`[RScriptGen] Blocked unsafe additionalFilter for table "${table.tableId}": ${sanitizeFilterResultMean.error}`);
+    } else {
+      const filterExprMean = escapeRString(table.additionalFilter);
+      lines.push('');
+      lines.push('  # Apply table-specific filter (skip logic)');
+      lines.push(`  additional_mask <- with(cut_data, eval(parse(text = "${filterExprMean}")))`);
+      lines.push('  additional_mask[is.na(additional_mask)] <- FALSE');
+      lines.push('  cut_data <- cut_data[additional_mask, ]');
+      if (isWeighted) {
+        lines.push('  w_cut <- w_cut[additional_mask]');
+      }
     }
   }
 

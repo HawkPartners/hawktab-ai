@@ -49,9 +49,16 @@ export const create = internalMutation({
 });
 
 export const get = query({
-  args: { runId: v.id("runs") },
+  args: {
+    runId: v.id("runs"),
+    orgId: v.optional(v.id("organizations")),
+  },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.runId);
+    const run = await ctx.db.get(args.runId);
+    if (!run) return null;
+    // Org-scoping: if orgId is provided, reject cross-org access
+    if (args.orgId && run.orgId !== args.orgId) return null;
+    return run;
   },
 });
 
@@ -78,13 +85,19 @@ export const listByOrg = query({
 });
 
 export const getByProject = query({
-  args: { projectId: v.id("projects") },
+  args: {
+    projectId: v.id("projects"),
+    orgId: v.optional(v.id("organizations")),
+  },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const runs = await ctx.db
       .query("runs")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .order("desc")
       .collect();
+    // Org-scoping: if orgId is provided, filter out cross-org runs
+    if (args.orgId) return runs.filter((r) => r.orgId === args.orgId);
+    return runs;
   },
 });
 

@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { api } from '../../../../../../convex/_generated/api';
 import type { Id } from '../../../../../../convex/_generated/dataModel';
+import { useAuthContext } from '@/providers/auth-provider';
 
 function stripEmojis(text: string): string {
   return text
@@ -273,15 +274,20 @@ export default function ReviewPage({
 }) {
   const { projectId } = use(params);
   const router = useRouter();
+  const { convexOrgId } = useAuthContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [decisions, setDecisions] = useState<Map<string, CrosstabDecision>>(new Map());
   const [decisionsInitialized, setDecisionsInitialized] = useState(false);
 
-  // Convex subscriptions — real-time, no polling
-  const project = useQuery(api.projects.get, { projectId: projectId as Id<"projects"> });
-  const runs = useQuery(api.runs.getByProject, { projectId: projectId as Id<"projects"> });
+  // Convex subscriptions — real-time, no polling (org-scoped to prevent cross-tenant leakage)
+  const project = useQuery(api.projects.get, convexOrgId
+    ? { projectId: projectId as Id<"projects">, orgId: convexOrgId as Id<"organizations"> }
+    : 'skip');
+  const runs = useQuery(api.runs.getByProject, convexOrgId
+    ? { projectId: projectId as Id<"projects">, orgId: convexOrgId as Id<"organizations"> }
+    : 'skip');
 
   // Latest run
   const latestRun = runs?.[0];

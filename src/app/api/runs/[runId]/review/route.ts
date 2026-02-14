@@ -15,8 +15,8 @@ import {
   applyDecisions,
   completePipeline,
   waitAndCompletePipeline,
-  type CrosstabDecision,
 } from '@/lib/api/reviewCompletion';
+import { CrosstabDecisionsArraySchema } from '@/schemas/crosstabDecisionSchema';
 import type { Id } from '../../../../../../convex/_generated/dataModel';
 import type { PathBResult, CrosstabReviewState } from '@/lib/api/types';
 import { applyRateLimit } from '@/lib/withRateLimit';
@@ -57,18 +57,24 @@ export async function POST(
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
-    // Parse request body
-    let body: { decisions: CrosstabDecision[] };
+    // Parse and validate request body
+    let rawBody: unknown;
     try {
-      body = await request.json();
+      rawBody = await request.json();
     } catch {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
-    const { decisions } = body;
-    if (!decisions || !Array.isArray(decisions)) {
-      return NextResponse.json({ error: 'Decisions array is required' }, { status: 400 });
+    const parsed = CrosstabDecisionsArraySchema.safeParse(
+      (rawBody as Record<string, unknown>)?.decisions
+    );
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid decisions payload', details: getApiErrorDetails(parsed.error) },
+        { status: 400 }
+      );
     }
+    const decisions = parsed.data;
 
     // Get pipelineId from run result
     const runResult = run.result as Record<string, unknown> | undefined;

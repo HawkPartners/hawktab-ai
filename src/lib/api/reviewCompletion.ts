@@ -45,14 +45,8 @@ const execFileAsync = promisify(execFile);
 // Types
 // -------------------------------------------------------------------------
 
-export interface CrosstabDecision {
-  groupName: string;
-  columnName: string;
-  action: 'approve' | 'select_alternative' | 'provide_hint' | 'edit' | 'skip';
-  selectedAlternative?: number;
-  hint?: string;
-  editedExpression?: string;
-}
+import type { CrosstabDecision } from '@/schemas/crosstabDecisionSchema';
+export type { CrosstabDecision };
 
 
 // -------------------------------------------------------------------------

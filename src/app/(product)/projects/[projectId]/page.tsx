@@ -188,7 +188,7 @@ export default function ProjectDetailPage({
 }) {
   const { projectId } = use(params);
   const router = useRouter();
-  const { role } = useAuthContext();
+  const { role, convexOrgId } = useAuthContext();
   const canCancel = canPerform(role, 'cancel_run');
   const canDelete = canPerform(role, 'delete_project');
   const [isCancelling, setIsCancelling] = useState(false);
@@ -200,9 +200,13 @@ export default function ProjectDetailPage({
   const [tableIds, setTableIds] = useState<string[]>([]);
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
 
-  // Convex subscriptions — real-time, no polling
-  const project = useQuery(api.projects.get, { projectId: projectId as Id<"projects"> });
-  const runs = useQuery(api.runs.getByProject, { projectId: projectId as Id<"projects"> });
+  // Convex subscriptions — real-time, no polling (org-scoped to prevent cross-tenant leakage)
+  const project = useQuery(api.projects.get, convexOrgId
+    ? { projectId: projectId as Id<"projects">, orgId: convexOrgId as Id<"organizations"> }
+    : 'skip');
+  const runs = useQuery(api.runs.getByProject, convexOrgId
+    ? { projectId: projectId as Id<"projects">, orgId: convexOrgId as Id<"organizations"> }
+    : 'skip');
 
   // Latest run (runs are sorted desc)
   const latestRun = runs?.[0];
