@@ -44,7 +44,7 @@ export default function LandingPage() {
 
           {/* Crosstab Preview Table */}
           <div className="mt-16 max-w-2xl mx-auto">
-            <div className="bg-card border border-border rounded-lg overflow-hidden text-left">
+            <div className="bg-card border border-border rounded-lg overflow-x-auto text-left">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-secondary">
