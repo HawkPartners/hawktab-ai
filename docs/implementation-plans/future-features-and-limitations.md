@@ -214,6 +214,9 @@ The Loop Semantics Policy Agent uses a single prompt regardless of how much dete
 - Tailor error messages accordingly — if the failure is transient, offer a "Rerun pipeline" button in the UI
 - If the failure is a real bug, show a clear error state without the rerun option
 
+9. **Be more strict on what constitutes an error, or success; if the system default gets triggered that should be a kNOCK on the system not seen as a success. we should have a success estimate that is a ccumulation of all decisions made and ends in a score ofrom 0-100
+
+
 ## Known Gaps & Limitations
 
 Documented as of February 2026. These are areas where the system has known limitations — some with mitigation paths already identified, others that may define the boundary of what CrossTab can handle. Even where solutions exist, it's important to be aware of these when communicating capabilities externally or testing against new datasets.

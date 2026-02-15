@@ -7,9 +7,10 @@ import { uploadFile, downloadFile, deleteFile, getSignedDownloadUrl, buildKey } 
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
-// Which output files to upload to R2 (primary deliverables + metadata)
-// Includes weighted/unweighted variants and separate-workbook counts files
+// Which output files to upload to R2 (primary deliverables + metadata + debugging artifacts)
+// Supports glob patterns (e.g., 'banner/*.md') for flexible matching
 const OUTPUT_FILES_TO_UPLOAD = [
+  // Primary deliverables
   'results/crosstabs.xlsx',
   'results/crosstabs-weighted.xlsx',
   'results/crosstabs-unweighted.xlsx',
@@ -19,8 +20,43 @@ const OUTPUT_FILES_TO_UPLOAD = [
   'results/tables-weighted.json',
   'results/tables-unweighted.json',
   'r/master.R',
+  'r/static-validation-report.json',
   'pipeline-summary.json',
-  'logs/pipeline.log',  // Full console output with context prefixes
+  'logs/pipeline.log',
+
+  // Agent scratchpads (AI reasoning traces)
+  'banner/*.md',
+  'crosstab/*.md',
+  'skiplogic/*.md',
+  'filtertranslator/*.md',
+  'verification/*.md',
+  'loop-policy/*.md',
+
+  // Agent outputs (detailed JSON)
+  'banner/*.json',
+  'crosstab/*.json',
+  'skiplogic/*.json',
+  'filtertranslator/*.json',
+  'verification/*.json',
+  'tablegenerator/*.json',
+
+  // Loop handling
+  'loop-policy/deterministic-resolver.json',
+  'loop-policy/loop-semantics-policy.json',
+
+  // Post-processing
+  'postpass/postpass-report.json',
+
+  // Validation logs
+  'validation/validation-execution.log',
+  'validation-execution.log',
+
+  // Error tracking
+  'errors/errors.ndjson',
+
+  // DataMap outputs (verbose)
+  '*-verbose-*.json',
+  '*-crosstab-agent-*.json',
 ];
 
 export interface R2FileManifest {
@@ -63,6 +99,111 @@ export async function uploadInputFile(
 }
 
 /**
+ * Check if a path pattern contains glob characters
+ */
+function isGlobPattern(pattern: string): boolean {
+  return pattern.includes('*') || pattern.includes('?') || pattern.includes('[');
+}
+
+/**
+ * Expand a glob pattern to matching file paths
+ * Supports: *, ?, [...] patterns
+ * Returns relative paths from baseDir
+ */
+async function expandGlobPattern(baseDir: string, pattern: string): Promise<string[]> {
+  const results: string[] = [];
+  const parts = pattern.split('/');
+
+  // Find the first part with glob pattern
+  const firstGlobIndex = parts.findIndex(p => isGlobPattern(p));
+
+  if (firstGlobIndex === -1) {
+    // No glob pattern - return as-is if file exists
+    const fullPath = path.join(baseDir, pattern);
+    try {
+      await fs.access(fullPath);
+      return [pattern];
+    } catch {
+      return [];
+    }
+  }
+
+  // Build the search path up to the glob
+  const staticPrefix = parts.slice(0, firstGlobIndex).join('/');
+  const searchDir = staticPrefix ? path.join(baseDir, staticPrefix) : baseDir;
+
+  // Recursively search from the glob point
+  const remainingPattern = parts.slice(firstGlobIndex).join('/');
+
+  async function searchRecursive(dir: string, currentPattern: string, prefix: string): Promise<void> {
+    try {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
+      const patternParts = currentPattern.split('/');
+      const currentPart = patternParts[0];
+      const hasMore = patternParts.length > 1;
+
+      for (const entry of entries) {
+        const matches = matchGlobPart(entry.name, currentPart);
+
+        if (!matches) continue;
+
+        const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
+        const fullPath = path.join(dir, entry.name);
+
+        if (hasMore && entry.isDirectory()) {
+          // Continue searching deeper
+          await searchRecursive(fullPath, patternParts.slice(1).join('/'), relativePath);
+        } else if (!hasMore && entry.isFile()) {
+          // Found a match
+          const fullRelative = staticPrefix ? `${staticPrefix}/${relativePath}` : relativePath;
+          results.push(fullRelative);
+        }
+      }
+    } catch {
+      // Directory doesn't exist or not accessible
+    }
+  }
+
+  await searchRecursive(searchDir, remainingPattern, '');
+  return results;
+}
+
+/**
+ * Match a filename against a glob pattern part (single segment)
+ * Supports: * (any chars), ? (one char), [...] (char class)
+ */
+function matchGlobPart(name: string, pattern: string): boolean {
+  if (pattern === '*') return true;
+  if (!pattern.includes('*') && !pattern.includes('?') && !pattern.includes('[')) {
+    return name === pattern;
+  }
+
+  // Convert glob pattern to regex
+  let regex = '^';
+  for (let i = 0; i < pattern.length; i++) {
+    const c = pattern[i];
+    if (c === '*') {
+      regex += '.*';
+    } else if (c === '?') {
+      regex += '.';
+    } else if (c === '[') {
+      const end = pattern.indexOf(']', i);
+      if (end > i) {
+        regex += pattern.slice(i, end + 1);
+        i = end;
+      } else {
+        regex += '\\[';
+      }
+    } else {
+      regex += c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+  }
+  regex += '$';
+
+  return new RegExp(regex).test(name);
+}
+
+/**
  * Upload selected pipeline output files to R2.
  *
  * Key pattern (with metadata):
@@ -73,6 +214,7 @@ export async function uploadInputFile(
  *   {orgId}/{projectId}/runs/{runId}/outputs/{relativePath}
  *
  * Only uploads files from OUTPUT_FILES_TO_UPLOAD that exist.
+ * Supports glob patterns (e.g., 'banner/*.md') for flexible file matching.
  * Also uploads a manifest.json with run metadata.
  */
 export async function uploadPipelineOutputs(
@@ -112,8 +254,22 @@ export async function uploadPipelineOutputs(
     console.log(`[R2] Uploaded manifest.json → ${manifestKey}`);
   }
 
+  // Expand patterns to actual file paths
+  const filesToUpload: string[] = [];
+  for (const pattern of OUTPUT_FILES_TO_UPLOAD) {
+    if (isGlobPattern(pattern)) {
+      const matches = await expandGlobPattern(localOutputDir, pattern);
+      filesToUpload.push(...matches);
+      if (matches.length > 0) {
+        console.log(`[R2] Pattern '${pattern}' matched ${matches.length} file(s)`);
+      }
+    } else {
+      filesToUpload.push(pattern);
+    }
+  }
+
   // Upload output files
-  const uploadPromises = OUTPUT_FILES_TO_UPLOAD.map(async (relativePath) => {
+  const uploadPromises = filesToUpload.map(async (relativePath) => {
     const localPath = path.join(localOutputDir, relativePath);
     try {
       const buffer = await fs.readFile(localPath);
@@ -271,6 +427,9 @@ function getContentType(filename: string): string {
     case '.xlsx': return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
     case '.json': return 'application/json';
     case '.r': return 'text/plain';
+    case '.md': return 'text/markdown';
+    case '.log': return 'text/plain';
+    case '.ndjson': return 'application/x-ndjson';
     default: return 'application/octet-stream';
   }
 }

@@ -6,16 +6,6 @@ Last updated: 2026-02-14
 
 **Critical fixes and polish before showing to Antares:**
 
-3. **Cost tracking and logging (admin/owner view)**
-   - Dashboard showing per-project costs
-   - Track API usage, agent costs, storage costs
-   - Owner-level visibility (not just per-user)
-
-4. **General logging improvements**
-   - Capture more detailed logs for debugging
-   - Link agent decisions together (context graphs)
-   - Make it easier to trace issues through the pipeline
-
 5. **Add Antares to WorkOS**
 6. **Record demo and upload to YouTube**
 7. **Schedule email to Antares with demo link and instructions on how to use the tool**

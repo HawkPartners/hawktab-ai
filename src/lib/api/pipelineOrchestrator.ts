@@ -1517,6 +1517,22 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
           fallbackReason,
         );
       }
+
+      // Write loop semantics policy to disk for debugging
+      if (loopSemanticsPolicy) {
+        try {
+          const loopPolicyDir = path.join(outputDir, 'loop-policy');
+          await fs.mkdir(loopPolicyDir, { recursive: true });
+          await fs.writeFile(
+            path.join(loopPolicyDir, 'loop-semantics-policy.json'),
+            JSON.stringify(loopSemanticsPolicy, null, 2),
+            'utf-8'
+          );
+          console.log('Wrote loop-semantics-policy.json');
+        } catch (writeError) {
+          console.warn('Failed to write loop-semantics-policy.json:', writeError);
+        }
+      }
     }
 
     // -------------------------------------------------------------------------
