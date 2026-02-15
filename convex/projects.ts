@@ -48,7 +48,7 @@ export const create = internalMutation({
       .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
       .collect();
     const nameTaken = existing.some(
-      (p) => !p.isDeleted && p.name.toLowerCase() === args.name.toLowerCase(),
+      (p) => p.name.toLowerCase() === args.name.toLowerCase(),
     );
     if (nameTaken) {
       throw new Error(`A project named "${args.name}" already exists in this organization`);
@@ -73,7 +73,6 @@ export const get = query({
   },
   handler: async (ctx, args) => {
     const project = await ctx.db.get(args.projectId);
-    if (project?.isDeleted) return null;
     // Org-scoping: if orgId is provided, reject cross-org access
     if (args.orgId && project?.orgId !== args.orgId) return null;
     return project;
@@ -103,11 +102,15 @@ export const listByOrg = query({
       .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
       .order("desc")
       .collect();
-    return projects.filter((p) => !p.isDeleted);
+    return projects;
   },
 });
 
-export const softDelete = internalMutation({
+/**
+ * Hard delete a project
+ * Called after all runs and R2 files have been deleted
+ */
+export const hardDelete = internalMutation({
   args: {
     projectId: v.id("projects"),
     orgId: v.id("organizations"),
@@ -117,12 +120,24 @@ export const softDelete = internalMutation({
     if (!project || project.orgId !== args.orgId) {
       throw new Error("Project not found in organization");
     }
-    if (project.isDeleted) {
-      throw new Error("Project has already been deleted");
+    await ctx.db.delete(args.projectId);
+  },
+});
+
+/**
+ * @deprecated Use hardDelete instead. Kept for backward compatibility.
+ */
+export const softDelete = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    orgId: v.id("organizations"),
+  },
+  handler: async (ctx, args) => {
+    // Redirect to hard delete
+    const project = await ctx.db.get(args.projectId);
+    if (!project || project.orgId !== args.orgId) {
+      throw new Error("Project not found in organization");
     }
-    await ctx.db.patch(args.projectId, {
-      isDeleted: true,
-      deletedAt: Date.now(),
-    });
+    await ctx.db.delete(args.projectId);
   },
 });

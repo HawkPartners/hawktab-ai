@@ -1,6 +1,6 @@
 /**
  * DELETE /api/projects/[projectId]
- * Soft-delete a project, hard-delete its runs, and clean up R2 files.
+ * Hard-delete a project, its runs, and clean up R2 files.
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getConvexClient, mutateInternal } from '@/lib/convex';
@@ -73,8 +73,8 @@ export async function DELETE(
       orgId: auth.convexOrgId as Id<"organizations">,
     });
 
-    // 8. Soft-delete the project (after runs are gone)
-    await mutateInternal(internal.projects.softDelete, {
+    // 8. Hard-delete the project (after runs are gone)
+    await mutateInternal(internal.projects.hardDelete, {
       projectId: projectId as Id<"projects">,
       orgId: auth.convexOrgId as Id<"organizations">,
     });
