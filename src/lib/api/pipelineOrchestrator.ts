@@ -1959,6 +1959,24 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
     // Track pipeline completion (server-side)
     const posthog = getPostHogClient();
+
+    // Build per-agent cost/duration breakdowns for analytics
+    const agentCosts: Record<string, number> = {};
+    const agentDurations: Record<string, number> = {};
+    const agentCalls: Record<string, number> = {};
+    const agentTokens: Record<string, { input: number; output: number }> = {};
+
+    for (const agent of costMetrics.byAgent) {
+      const key = agent.agentName;
+      agentCosts[key] = (agentCosts[key] || 0) + agent.estimatedCostUsd;
+      agentDurations[key] = (agentDurations[key] || 0) + agent.totalDurationMs / 1000; // Convert to seconds
+      agentCalls[key] = (agentCalls[key] || 0) + agent.calls;
+      agentTokens[key] = {
+        input: (agentTokens[key]?.input || 0) + agent.totalInputTokens,
+        output: (agentTokens[key]?.output || 0) + agent.totalOutputTokens,
+      };
+    }
+
     posthog.capture({
       distinctId: convexOrgId || 'anonymous',
       event: 'pipeline_completed',
@@ -1971,8 +1989,27 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         duration_sec: durationSec,
         excel_generated: excelGenerated,
         r2_upload_failed: r2UploadFailed,
+
+        // Totals
         total_cost_usd: costMetrics.totals.estimatedCostUsd,
         total_tokens: costMetrics.totals.totalTokens,
+        total_input_tokens: costMetrics.totals.inputTokens,
+        total_output_tokens: costMetrics.totals.outputTokens,
+        total_agent_calls: costMetrics.totals.calls,
+
+        // Per-agent breakdowns (for "which agent costs most?" analytics)
+        agent_costs: agentCosts,
+        agent_durations_sec: agentDurations,
+        agent_call_counts: agentCalls,
+        agent_tokens: agentTokens,
+
+        // Additional context
+        has_loops: loopMappings.length > 0,
+        loop_count: loopMappings.length,
+        variable_count: verboseDataMap.length,
+        project_type: wizardConfig?.projectSubType || 'standard',
+        banner_mode: wizardConfig?.bannerMode || 'upload',
+        weighted: !!wizardConfig?.weightVariable,
       },
     });
 
@@ -2029,6 +2066,11 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
     // Track pipeline failure (server-side)
     const posthog = getPostHogClient();
+
+    // Get partial cost metrics (costs incurred before failure)
+    const partialCostMetrics = await metricsCollector.getSummary();
+    const failureDurationMs = Date.now() - processingStartTime;
+
     posthog.capture({
       distinctId: convexOrgId || 'anonymous',
       event: 'pipeline_failed',
@@ -2036,6 +2078,17 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         run_id: runId,
         pipeline_id: pipelineId || '',
         error_message: procErrorMsg,
+        error_type: processingError instanceof Error ? processingError.constructor.name : 'Unknown',
+
+        // Partial metrics (costs incurred before failure)
+        partial_cost_usd: partialCostMetrics.totals.estimatedCostUsd,
+        partial_tokens: partialCostMetrics.totals.totalTokens,
+        partial_agent_calls: partialCostMetrics.totals.calls,
+        duration_before_failure_sec: (failureDurationMs / 1000).toFixed(1),
+
+        // Context
+        project_type: wizardConfig?.projectSubType || 'standard',
+        banner_mode: wizardConfig?.bannerMode || 'upload',
       },
     });
 
