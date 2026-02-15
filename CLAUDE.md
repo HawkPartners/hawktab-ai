@@ -1,5 +1,3 @@
-# CLAUDE.md
-
 <naming>
 This product is **Crosstab AI** (lowercase 't'). Use "Crosstab AI" in all new UI text, user-facing copy, and documentation. Internal code identifiers (agent names, R scripts, prompts) still use "CrossTab" — that's expected and not something to "fix" unless explicitly asked. The GitHub repo and npm package name still use "hawktab" — also expected. The `.hawktab_` prefix in generated R variables is an internal naming convention, not branding — leave it as-is.
 
@@ -24,25 +22,22 @@ Jason is a market research consultant, not a developer. He understands the domai
 WHAT YOU'RE BUILDING:
 An AI pipeline that turns survey data files into publication-ready Excel crosstabs. The goal is replacing Joe (an outsourced analyst) with an internal tool that 80 people at Hawk Partners will use.
 
-WHY IT MATTERS:
-Antares (fielding partner) is interested in this commercially. Deadline: February 16th. This could be a real product, not just an internal tool.
-
 YOUR DEFAULT POSTURE:
-- Take initiative on implementation, but pause when things get complex
-- When a "simple" fix snowballs into touching many files, stop and discuss
-- The user has domain knowledge you don't—collaboration beats solo heroics
+- Take initiative on implementation, but **PAUSE** when things get complex
+- When a "simple" fix snowballs into touching many files, **STOP** and **DISCUSS**
+- The user has domain knowledge you don't—**COLLABORATION** beats solo heroics
 </mission>
 
 <engineering_philosophy>
 THIS IS A PRODUCTION APPLICATION, NOT A PROTOTYPE.
 
 THINK BEFORE YOU BUILD:
-Before implementing anything, ask yourself:
-1. What is the BEST approach, not just the quickest?
-2. What are the downstream implications of this change?
+Before implementing anything, **ASK YOURSELF**:
+1. What is the **BEST** approach, not just the quickest?
+2. What are the **DOWNSTREAM IMPLICATIONS** of this change?
 3. Am I fully leveraging what we already have? (e.g., the .sav file has the actual data — use it)
 4. Will this hold up when we go from 1 dataset to 25? From 25 to 100?
-5. Is there a more robust solution that's worth the extra time?
+5. Is there a **MORE ROBUST** solution that's worth the extra time?
 
 COMMUNICATE TRADE-OFFS:
 - If the quick fix is fragile, say so and propose the robust alternative
@@ -97,26 +92,6 @@ TONE (user-facing copy):
 - Don't oversell. "Hours" not "days". Don't claim specific accuracy percentages.
 - Don't reveal agent names externally. Talk about the hybrid AI + deterministic approach at a high level.
 </design_system>
-
-<current_focus>
-ACTIVE WORK: `docs/implementation-plans/product-roadmap.md` — Phase 3 (Productization)
-
-**Reliability (Phase 1)**: COMPLETE. Pipeline reliably produces usable crosstabs across 15 datasets. Cut expression validator with R-based pre-validation and CrosstabAgent retry loop. Remaining edge cases addressable via UI HITL review.
-
-**Feature Completeness (Phase 2)**: COMPLETE. Output formats, stat testing, loop-aware stat testing, input flexibility, AI-generated banner, weight detection, HITL review overhaul, table ID visibility, output feedback, Excel themes — all implemented.
-
-**Current Phase**: Phase 3 — Productization. All sub-phases through 3.5e complete. Product is deployed, observable, secure, and instrumented with analytics.
-
-**Phase 3.5c (Security Audit)**: COMPLETE. Full audit with 19 findings across 4 severity tiers, all remediated. Patterns documented in `<security_patterns>` section below. Audit artifacts in `.security-audit/findings/`.
-
-**Phase 3.5d (Deploy & Launch)**: COMPLETE. Railway deployment, Docker hardening, production Convex/R2/WorkOS, end-to-end smoke test passed.
-
-**Phase 3.5e (Analytics)**: COMPLETE. PostHog integration with 14 events across the full user journey. Server-side pipeline tracking, client-side UI tracking, reverse proxy for ad-blocker bypass.
-
-**Next**: Phase 3.5f (Testing & Iteration) — polish, UX fixes, and user feedback from Antares.
-
-FEEDBACK: `docs/latest-runs-feedback.md` — Tracks all issues from pipeline runs with problem/fix summaries.
-</current_focus>
 
 <pipeline_architecture>
 ```
@@ -252,14 +227,6 @@ const results = await Promise.all(
 
 // Aggregate all scratchpad entries after
 const allEntries = getAllContextScratchpadEntries();
-```
-
-ENVIRONMENT VARIABLES (per-agent config):
-```bash
-VERIFICATION_MODEL=gpt-5-mini
-VERIFICATION_MODEL_TOKENS=128000
-VERIFICATION_REASONING_EFFORT=high    # none|minimal|low|medium|high|xhigh
-VERIFICATION_PROMPT_VERSION=production
 ```
 
 Getters: `getVerificationModel()`, `getVerificationModelName()`, `getVerificationReasoningEffort()`
@@ -476,7 +443,7 @@ PROMPT FILE LOCATIONS (each agent has production.ts + alternative.ts, selected v
 <prompt_hygiene>
 NEVER GIVE AGENTS A CHEAT CODE.
 
-When writing or modifying agent prompts, all examples MUST be abstract and generic.
+When writing or modifying agent prompts, all examples **MUST be abstract and generic**.
 As we test against real datasets, it's tempting to use actual variable names, value labels,
 and survey structures from test data in the prompts. This creates overfitting — the agent
 succeeds on test data by pattern-matching against hints we gave it, not by genuinely reasoning.
