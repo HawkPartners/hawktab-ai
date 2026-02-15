@@ -276,7 +276,6 @@ export default function ReviewPage({
   const router = useRouter();
   const { convexOrgId } = useAuthContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [decisions, setDecisions] = useState<Map<string, CrosstabDecision>>(new Map());
   const [decisionsInitialized, setDecisionsInitialized] = useState(false);
@@ -382,12 +381,13 @@ export default function ReviewPage({
         skip_count: skipCount,
       });
 
-      // Show success state immediately to prevent Convex re-render race
-      setSubmitted(true);
+      // Show success toast and redirect immediately
       toast.success('Review saved', {
         description: 'Pipeline is continuing with your decisions.',
       });
-      router.replace(`/projects/${encodeURIComponent(projectId)}`);
+
+      // Use router.push for more reliable navigation
+      router.push(`/projects/${encodeURIComponent(projectId)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
       setIsSubmitting(false);
@@ -413,20 +413,6 @@ export default function ReviewPage({
       setIsSubmitting(false);
     }
   };
-
-  // Submitted — show transitional UI while router.replace navigates
-  if (submitted) {
-    return (
-      <div className="py-12">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-ct-blue" />
-            <p className="text-muted-foreground">Review saved. Returning to project...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Loading state
   if (runs === undefined || project === undefined) {
