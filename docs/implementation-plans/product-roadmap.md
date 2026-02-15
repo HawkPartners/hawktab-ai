@@ -13,25 +13,11 @@ Last updated: 2026-02-14
 
 ---
 
-## Post-Monday, Pre-Antares Meeting (By Wednesday)
-
-**Important but not blocking the initial demo:**
-
-1. **MaxDiff/Message Testing Support**
-   - Update intake form: "Does this survey include messages?"
-   - Support message CSV upload (enforce format) or text box entry (like environment variables)
-   - Parse messages and integrate into datamap
-   - VerificationAgent uses actual message text in labels
-   - **Priority:** High (needed for broader Antares use cases)
-
 2. **CI/CD Pipeline Verification**
    - Test branch protection, quality gates, Claude PR review
    - Ensure staging → main promotion works correctly
    - **Priority:** Medium (hasn't been tested end-to-end yet)
 
----
-
-## Pre-Antares Meeting (Later This Month)
 
 **Improvements to make before the formal presentation:**
 

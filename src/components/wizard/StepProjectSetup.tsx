@@ -24,18 +24,22 @@ const PROJECT_TYPES = [
     label: 'Standard',
     description: 'Standard crosstab with banner cuts',
     icon: BarChart3,
+    disabled: false,
   },
   {
     value: 'segmentation' as const,
     label: 'Segmentation',
     description: 'Segment-based analysis with assignments',
     icon: Layers,
+    disabled: false,
   },
   {
     value: 'maxdiff' as const,
     label: 'MaxDiff',
     description: 'MaxDiff / best-worst scaling analysis',
     icon: Shuffle,
+    disabled: true,
+    comingSoon: true,
   },
 ] as const;
 
@@ -102,17 +106,37 @@ export function StepProjectSetup() {
                 {PROJECT_TYPES.map((type) => {
                   const Icon = type.icon;
                   const isSelected = field.value === type.value;
+                  const isDisabled = type.disabled ?? false;
                   return (
-                    <label key={type.value} className="cursor-pointer">
-                      <RadioGroupItem value={type.value} className="sr-only" />
+                    <label
+                      key={type.value}
+                      className={cn(
+                        isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'
+                      )}
+                    >
+                      <RadioGroupItem
+                        value={type.value}
+                        className="sr-only"
+                        disabled={isDisabled}
+                      />
                       <Card
                         className={cn(
-                          'transition-all hover:border-foreground/20',
-                          isSelected && 'ring-2 ring-ct-blue border-ct-blue'
+                          'transition-all relative',
+                          !isDisabled && 'hover:border-foreground/20',
+                          isSelected && !isDisabled && 'ring-2 ring-ct-blue border-ct-blue',
+                          isDisabled && 'opacity-60 bg-muted/30'
                         )}
                       >
                         <CardContent className="flex flex-col items-center gap-2 p-4 text-center">
-                          <Icon className={cn('h-6 w-6', isSelected ? 'text-ct-blue' : 'text-muted-foreground')} />
+                          {'comingSoon' in type && type.comingSoon && (
+                            <span className="absolute -top-2 -right-2 bg-ct-violet text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+                              Coming Soon
+                            </span>
+                          )}
+                          <Icon className={cn(
+                            'h-6 w-6',
+                            isSelected && !isDisabled ? 'text-ct-blue' : 'text-muted-foreground'
+                          )} />
                           <span className="text-sm font-medium">{type.label}</span>
                           <span className="text-xs text-muted-foreground">{type.description}</span>
                         </CardContent>
