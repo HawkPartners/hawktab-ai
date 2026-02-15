@@ -47,9 +47,11 @@ const OUTPUT_FILES_TO_UPLOAD = [
   // Post-processing
   'postpass/postpass-report.json',
 
-  // Validation logs
+  // Validation logs and scripts
   'validation/validation-execution.log',
   'validation-execution.log',
+  'validation/validation-*.R',  // Individual table validation scripts
+  'validation/result-*.json',   // Individual table validation results
 
   // Error tracking
   'errors/errors.ndjson',

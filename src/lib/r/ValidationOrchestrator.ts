@@ -5,12 +5,14 @@
  * When a table fails R validation, retry with VerificationAgent using error context.
  *
  * Flow:
- * 1. Generate validation.R with all tables wrapped in tryCatch()
- * 2. Execute R, parse validation-results.json
+ * 1. Generate separate validation-{tableId}.R scripts (one per table for resilience)
+ * 2. Execute each R script, collect individual results
  * 3. For failed tables (up to maxRetries), re-run VerificationAgent with error context
  * 4. Re-validate just the fixed table
  * 5. Mark remaining failures as exclude: true
  * 6. Return validated tables + validation report
+ *
+ * Why separate scripts? Prevents one table's syntax error from orphaning all other tables.
  */
 
 import { execFile } from 'child_process';
@@ -22,7 +24,7 @@ import type { TableWithLoopFrame } from '../../schemas/verificationAgentSchema';
 import type { CutDefinition } from '../tables/CutsSpec';
 import type { VerboseDataMapType } from '../../schemas/processingSchemas';
 import type { LoopGroupMapping } from '../validation/LoopCollapser';
-import { generateValidationScript, generateSingleTableValidationScript } from './RValidationGenerator';
+import { generateSingleTableValidationScript } from './RValidationGenerator';
 import { verifyTable, type VerificationInput } from '../../agents/VerificationAgent';
 import { persistAgentErrorAuto, persistSystemErrorAuto } from '../errors/ErrorPersistence';
 
@@ -65,6 +67,8 @@ export interface ValidationOptions {
   verbose?: boolean;
   /** Loop group mappings for stacked data frame creation */
   loopMappings?: LoopGroupMapping[];
+  /** AbortSignal for cancellation support */
+  abortSignal?: AbortSignal;
 }
 
 export interface TableValidationResult {
@@ -120,6 +124,7 @@ export async function validateAndFixTables(
     dataFilePath = 'dataFile.sav',
     verbose = false,
     loopMappings = [],
+    abortSignal,
   } = options;
 
   const log = (msg: string) => {
@@ -159,70 +164,66 @@ export async function validateAndFixTables(
   }
 
   // -------------------------------------------------------------------------
-  // Step 1: Initial Validation
+  // Step 1: Initial Validation (Separate R Script Per Table)
   // -------------------------------------------------------------------------
-  log('Running initial validation...');
+  log('Running initial validation (separate R scripts per table for resilience)...');
 
-  // Generate script - results path relative to outputDir (where R runs from)
-  const { script: validationScript } = generateValidationScript(
-    tablesToValidate,
-    cuts,
-    dataFilePath,
-    'validation/validation-results.json',  // Relative to outputDir
-    loopMappings
-  );
+  // Validate each table with its own R script to prevent cascade failures
+  const initialResults: Record<string, TableValidationResult> = {};
 
-  const validationScriptPath = path.join(validationDir, 'validation.R');
-  await fs.writeFile(validationScriptPath, validationScript, 'utf-8');
-
-  // Run R from outputDir (where dataFile.sav is)
-  const initialResults = await executeValidationScript(
-    validationScriptPath,
-    rWorkingDir,  // Run from outputDir, not validationDir
-    'validation/validation-results.json',  // Relative to outputDir
-    log
-  );
-
-  // Parse initial results
-  const failedTables: Array<{ tableId: string; error: string }> = [];
-
-  // Detect orphaned tables — tables that were submitted for validation but
-  // got no result back (R crashed before reaching them)
-  const returnedTableIds = new Set(Object.keys(initialResults));
-  const expectedTableIds = tablesToValidate.map(t => t.tableId);
-  const missingTableIds = expectedTableIds.filter(id => !returnedTableIds.has(id));
-
-  if (missingTableIds.length > 0) {
-    const isTotalCrash = returnedTableIds.size === 0;
-    const crashType = isTotalCrash ? 'full R crash (no results returned)' : 'partial R crash';
-    log(`WARNING: ${missingTableIds.length}/${expectedTableIds.length} tables orphaned by ${crashType}`);
-
-    for (const missingId of missingTableIds) {
-      failedTables.push({
-        tableId: missingId,
-        error: `Table orphaned by R validation crash — no result returned (${crashType})`,
-      });
+  for (const table of tablesToValidate) {
+    // Check for cancellation before each table
+    if (abortSignal?.aborted) {
+      log('Validation cancelled before completing all tables');
+      break;
     }
 
     try {
-      await persistSystemErrorAuto({
-        outputDir,
-        stageNumber: 8,
-        stageName: 'RValidation',
-        severity: 'warning',
-        actionTaken: 'continued',
-        error: new Error(`${missingTableIds.length} tables orphaned by ${crashType}`),
-        meta: {
-          missingTableIds,
-          returnedCount: returnedTableIds.size,
-          expectedCount: expectedTableIds.length,
-          crashType,
-        },
-      });
-    } catch {
-      // ignore
+      // Generate individual R script for this table
+      const { script, tableId } = generateSingleTableValidationScript(
+        table,
+        cuts,
+        dataFilePath,
+        `validation/result-${table.tableId}.json`,
+        loopMappings
+      );
+
+      const scriptPath = path.join(validationDir, `validation-${table.tableId}.R`);
+      await fs.writeFile(scriptPath, script, 'utf-8');
+
+      // Execute this table's validation script
+      const result = await executeValidationScript(
+        scriptPath,
+        rWorkingDir,
+        `validation/result-${tableId}.json`,
+        log
+      );
+
+      // Store result (should have one key: the tableId)
+      if (result[tableId]) {
+        initialResults[tableId] = result[tableId];
+      } else {
+        // Fallback if result structure is unexpected
+        initialResults[tableId] = {
+          tableId,
+          success: false,
+          error: 'Unexpected validation result structure',
+        };
+      }
+    } catch (error) {
+      // Individual table R script failed (syntax error or runtime error)
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      log(`  Table ${table.tableId} validation failed: ${errorMsg}`);
+      initialResults[table.tableId] = {
+        tableId: table.tableId,
+        success: false,
+        error: errorMsg,
+      };
     }
   }
+
+  // Parse initial results - no orphans possible with separate scripts
+  const failedTables: Array<{ tableId: string; error: string }> = [];
 
   for (const [tableId, result] of Object.entries(initialResults)) {
     const validationResult = result as TableValidationResult;
@@ -247,6 +248,12 @@ export async function validateAndFixTables(
   // Step 2: Retry Failed Tables
   // -------------------------------------------------------------------------
   for (const { tableId, error } of failedTables) {
+    // Check for cancellation before each table retry
+    if (abortSignal?.aborted) {
+      log('Validation cancelled - stopping retry loop');
+      break;
+    }
+
     const originalTable = tableMap.get(tableId);
     if (!originalTable) {
       log(`Table ${tableId} not found in map, skipping`);
@@ -297,7 +304,7 @@ export async function validateAndFixTables(
           },
         };
 
-        const result = await verifyTable(input);
+        const result = await verifyTable(input, abortSignal);
 
         // Get the first table from the result (assuming no splits for retry)
         if (result.tables.length > 0) {

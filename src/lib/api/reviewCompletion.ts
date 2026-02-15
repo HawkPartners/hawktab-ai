@@ -577,6 +577,7 @@ export async function completePipeline(
         dataFilePath: 'dataFile.sav',
         verbose: true,
         loopMappings: loopMappings.length > 0 ? loopMappings : undefined,
+        abortSignal,
       }
     );
     console.log(`[ReviewCompletion] R Validation: ${rValidationReport.passedFirstTime} passed, ${rValidationReport.fixedAfterRetry} fixed, ${rValidationReport.excluded} excluded`);

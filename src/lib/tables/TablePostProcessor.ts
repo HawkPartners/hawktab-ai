@@ -190,7 +190,7 @@ function checkTrivialNets(table: ExtendedTableDefinition, actions: PostPassActio
       if (other === row) continue;
       if (other.variable !== variable) continue;
       if (other.isNet) continue;
-      if (other.filterValue === '_HEADER_') continue;
+      if (other.variable === '_CAT_') continue;
       // For single values or comma-separated
       for (const v of other.filterValue.split(',')) {
         const trimmed = v.trim();
@@ -273,7 +273,7 @@ function detectDuplicateRows(table: ExtendedTableDefinition, actions: PostPassAc
 
   for (let i = 0; i < table.rows.length; i++) {
     const row = table.rows[i];
-    if (row.filterValue === '_HEADER_') continue;
+    if (row.variable === '_CAT_') continue;
     const key = `${row.variable}::${row.filterValue}`;
     if (seen.has(key)) {
       actions.push({

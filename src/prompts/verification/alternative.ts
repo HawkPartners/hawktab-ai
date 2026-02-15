@@ -344,9 +344,14 @@ AFTER (scannable - common prefix becomes the header):
     "Someone in your industry"
 
 HOW IT WORKS:
-1. Create a row with filterValue: "_HEADER_"
+1. Create a row with EXACT values: variable: "_CAT_", filterValue: "_HEADER_"
 2. The row renders with just the label—data columns are empty
 3. Rows below can be indented (indent: 1) for visual grouping
+
+CRITICAL: Category headers MUST use these exact sentinel values:
+- variable: "_CAT_" (exactly this - no variations)
+- filterValue: "_HEADER_" (exactly this - no suffixes like _HEADER_CONNECTION)
+- These are special markers the system recognizes - any deviation will cause validation errors
 
 EXAMPLE (grouping by time period):
 { "variable": "_CAT_", "label": "Over 5 years ago", "filterValue": "_HEADER_", "isNet": false, "indent": 0 },
@@ -359,7 +364,7 @@ EXAMPLE (factoring out common prefix):
 { "variable": "Q12", "label": "A professional colleague", "filterValue": "2", "isNet": false, "indent": 1 },
 { "variable": "Q12", "label": "Someone in your industry", "filterValue": "3", "isNet": false, "indent": 1 },
 
-KEY DISTINCTION: Category headers use "_HEADER_" → no data computed. NETs use actual filterValues → data aggregated.
+KEY DISTINCTION: Category headers use "_CAT_" + "_HEADER_" → no data computed. NETs use real variables + filterValues → data aggregated.
 
 ROW ORDERING: Maintain the datamap's row order unless you're actively restructuring (adding rollups, grouping by dimension). Consistent ordering across related tables lets analysts compare without hunting for matching rows.
 

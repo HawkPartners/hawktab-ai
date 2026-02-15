@@ -1524,6 +1524,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
         dataFilePath: 'dataFile.sav',
         verbose: true,
         loopMappings: loopMappings.length > 0 ? loopMappings : undefined,
+        abortSignal,
       }
     );
 

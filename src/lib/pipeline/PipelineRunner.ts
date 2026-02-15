@@ -1447,6 +1447,7 @@ export async function runPipeline(
         dataFilePath: 'dataFile.sav',
         verbose: !quiet,
         loopMappings: loopMappings.length > 0 ? loopMappings : undefined,
+        abortSignal: pipelineSignal,
       }
     );
 

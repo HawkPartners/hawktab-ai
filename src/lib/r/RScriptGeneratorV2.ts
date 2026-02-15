@@ -130,7 +130,7 @@ export function validateTable(table: ExtendedTableDefinition): TableValidationRe
 
       // For frequency tables, filterValue must not be empty (unless it's a NET with netComponents or a category header)
       const isNetWithComponents = row.isNet && row.netComponents && row.netComponents.length > 0;
-      const isCategoryHeader = row.filterValue === '_HEADER_';
+      const isCategoryHeader = row.variable === '_CAT_';
       if (!row.filterValue && !isNetWithComponents && !isCategoryHeader) {
         errors.push(`Row ${i + 1} (${row.variable}): Empty filterValue on frequency table. This will generate invalid R code.`);
       }
@@ -163,7 +163,7 @@ export function validateTable(table: ExtendedTableDefinition): TableValidationRe
     for (let i = 0; i < table.rows.length; i++) {
       const row = table.rows[i];
       // Skip category headers - they're visual grouping rows and multiple headers are expected
-      const isCategoryHeader = row.filterValue === '_HEADER_';
+      const isCategoryHeader = row.variable === '_CAT_';
       if (isCategoryHeader) {
         continue;
       }
@@ -1444,7 +1444,7 @@ function generateFrequencyTable(lines: string[], table: TableWithLoopFrame, isWe
     const indent = row.indent || 0;
 
     // Check for category header (visual grouping row with no data)
-    const isCategoryHeader = filterValue === '_HEADER_';
+    const isCategoryHeader = row.variable === '_CAT_';
 
     if (isCategoryHeader) {
       // Category header: output row with null values, no computation

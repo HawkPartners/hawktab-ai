@@ -281,7 +281,8 @@ function generateFrequencyTableValidation(
     const filterValue = row.filterValue;
 
     // Skip category headers - they have no data to validate (visual grouping only)
-    if (filterValue === '_HEADER_') {
+    // Check for _CAT_ sentinel variable (filterValue doesn't matter - could be _HEADER_, _HEADER_CONNECTION, etc.)
+    if (row.variable === '_CAT_') {
       lines.push(`  # Row ${i + 1}: Category header - ${row.label} (skip validation)`);
       continue;
     }
