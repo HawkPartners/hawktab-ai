@@ -5,8 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertTriangle, CheckCircle, XCircle, Database, Scale, Repeat } from 'lucide-react';
-import { useState } from 'react';
+import { AlertTriangle, CheckCircle, XCircle, Database, Scale, Repeat, FileSearch } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+// Validation stages that match the actual backend ValidationRunner
+const VALIDATION_STAGES = [
+  { icon: FileSearch, message: 'Reading data file structure...' },
+  { icon: Database, message: 'Validating variable formats...' },
+  { icon: Repeat, message: 'Detecting loop structures...' },
+  { icon: Scale, message: 'Analyzing weight candidates...' },
+];
 
 interface StepDataValidationProps {
   validationResult: DataValidationResult;
@@ -24,16 +32,36 @@ export function StepDataValidation({
   // Track whether the user has made a decision about weight
   const [weightDecision, setWeightDecision] = useState<'confirmed' | 'denied' | null>(null);
 
+  // Track current validation stage for simulated progress
+  const [currentStageIndex, setCurrentStageIndex] = useState(0);
+
+  // Cycle through validation stages while validating
+  useEffect(() => {
+    if (v.status !== 'validating') {
+      setCurrentStageIndex(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setCurrentStageIndex((prev) => (prev + 1) % VALIDATION_STAGES.length);
+    }, 2500); // Change stage every 2.5 seconds
+
+    return () => clearInterval(interval);
+  }, [v.status]);
+
   if (v.status === 'idle') return null;
 
   if (v.status === 'validating') {
+    const currentStage = VALIDATION_STAGES[currentStageIndex];
+    const StageIcon = currentStage.icon;
+
     return (
       <div aria-live="polite" aria-busy="true">
         <Card className="border-ct-blue/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Database className="h-4 w-4 animate-pulse text-ct-blue" />
-              Analyzing your data file...
+              <StageIcon className="h-4 w-4 animate-pulse text-ct-blue" />
+              {currentStage.message}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">

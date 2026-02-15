@@ -199,7 +199,7 @@ export function AppSidebar() {
                   <SidebarMenuItem key={project.projectId}>
                     <SidebarMenuButton
                       onClick={() => handleProjectClick(project)}
-                      className="cursor-pointer"
+                      className="cursor-pointer pr-16"
                       isActive={pathname?.includes(project.projectId)}
                     >
                       <StatusIcon status={project.status} />

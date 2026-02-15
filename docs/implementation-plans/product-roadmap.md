@@ -6,15 +6,6 @@ Last updated: 2026-02-14
 
 **Critical fixes and polish before showing to Antares:**
 
-1. **Data validation feedback improvements**
-   - Better visual feedback during validation - show what's being analyzed and why
-   - Replace generic "analyzing your data" with specific status: "Detecting loop structures...", "Validating variable formats...", etc.
-   - Clear loading indicators
-
-2. **Sidebar UI bug fix**
-   - Long project titles overlap timestamps ("just now", "2 minutes ago")
-   - Implement proper text truncation with ellipsis
-
 3. **Cost tracking and logging (admin/owner view)**
    - Dashboard showing per-project costs
    - Track API usage, agent costs, storage costs
@@ -75,11 +66,6 @@ Last updated: 2026-02-14
 
 **Important but not urgent:**
 
-1. **Visual cut discovery feedback**
-   - Show users what cuts were discovered during processing
-   - Display base sizes and how they were calculated
-   - **Priority:** Low (nice-to-have for transparency)
-
 2. **Configurable post-run settings**
    - Allow users to change entity/respondent classification after run completes
    - Regenerate crosstabs with different loop policy without re-running full pipeline
@@ -102,12 +88,3 @@ Last updated: 2026-02-14
    - Agent notes when variable naming suggests iteration-linkage
    - Generate alternatives with semantic context (respondent vs entity versions)
    - **Status:** Under consideration (need to decide on approach)
-
----
-
-## Notes
-
-- Dates are fluid and will be adjusted based on progress
-- Focus is on organization and prioritization, not strict deadlines
-- Pre-Monday items are critical for demo quality
-- HITL enhancements are key to product differentiation
