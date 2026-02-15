@@ -429,6 +429,8 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
   });
   await consoleCapture.start();
 
+  // Run pipeline with console context isolation (AsyncLocalStorage)
+  return consoleCapture.run(async () => {
   try {
 
     console.log(`[API] Starting full pipeline processing for session: ${sessionId}`);
@@ -2191,5 +2193,6 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     // Stop console capture and close log file
     await consoleCapture.stop();
   }
+  }); // end consoleCapture.run
   }); // end runWithMetricsCollector
 }

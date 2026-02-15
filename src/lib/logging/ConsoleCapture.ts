@@ -8,12 +8,19 @@
  * Benefits:
  * - Searchable Railway logs by project name and run ID
  * - Full sequential log file persisted in R2
- * - No need to update 142+ console call sites
+ * - Isolated per-pipeline using AsyncLocalStorage (no cross-contamination)
+ *
+ * ARCHITECTURE:
+ * - Console methods are hooked ONCE globally (singleton pattern)
+ * - Each pipeline run sets its context in AsyncLocalStorage
+ * - Console hooks read context from AsyncLocalStorage dynamically
+ * - Multiple concurrent pipelines get independent logging contexts
  */
 
 import { createWriteStream, type WriteStream } from 'fs';
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import { AsyncLocalStorage } from 'node:async_hooks';
 
 interface CaptureContext {
   projectName: string;
@@ -27,11 +34,131 @@ interface OriginalConsoleMethods {
   error: typeof console.error;
 }
 
+// =============================================================================
+// Global Console Hook State (installed once per process)
+// =============================================================================
+
+/** AsyncLocalStorage for per-pipeline console context */
+const consoleContextStorage = new AsyncLocalStorage<CaptureContext>();
+
+/** Map of runId -> log stream (each pipeline writes to its own log file) */
+const logStreams = new Map<string, { stream: WriteStream; writeQueue: Promise<void> }>();
+
+/** Original console methods (saved once) */
+let originalConsoleMethods: OriginalConsoleMethods | null = null;
+
+/** Whether global console hooks have been installed */
+let hooksInstalled = false;
+
+/**
+ * Install global console hooks (idempotent - only runs once per process)
+ * These hooks read context from AsyncLocalStorage at call time
+ */
+function installGlobalConsoleHooks(): void {
+  if (hooksInstalled) return;
+
+  // Save original methods
+  originalConsoleMethods = {
+    log: console.log,
+    warn: console.warn,
+    error: console.error,
+  };
+
+  // Hook console.log
+  console.log = (...args: unknown[]) => {
+    const ctx = consoleContextStorage.getStore();
+    const message = formatMessage(args);
+
+    if (ctx) {
+      const shortRunId = ctx.runId.slice(-8);
+      const prefix = `[${ctx.projectName} | ${shortRunId}]`;
+      writeToLogFile(ctx.runId, 'INFO', message);
+      originalConsoleMethods!.log(`${prefix} ${message}`);
+    } else {
+      // No context - pass through to original
+      originalConsoleMethods!.log(...args);
+    }
+  };
+
+  // Hook console.warn
+  console.warn = (...args: unknown[]) => {
+    const ctx = consoleContextStorage.getStore();
+    const message = formatMessage(args);
+
+    if (ctx) {
+      const shortRunId = ctx.runId.slice(-8);
+      const prefix = `[${ctx.projectName} | ${shortRunId}]`;
+      writeToLogFile(ctx.runId, 'WARN', message);
+      originalConsoleMethods!.warn(`${prefix} ${message}`);
+    } else {
+      originalConsoleMethods!.warn(...args);
+    }
+  };
+
+  // Hook console.error
+  console.error = (...args: unknown[]) => {
+    const ctx = consoleContextStorage.getStore();
+    const message = formatMessage(args);
+
+    if (ctx) {
+      const shortRunId = ctx.runId.slice(-8);
+      const prefix = `[${ctx.projectName} | ${shortRunId}]`;
+      writeToLogFile(ctx.runId, 'ERROR', message);
+      originalConsoleMethods!.error(`${prefix} ${message}`);
+    } else {
+      originalConsoleMethods!.error(...args);
+    }
+  };
+
+  hooksInstalled = true;
+}
+
+/**
+ * Format console arguments into a single message string
+ */
+function formatMessage(args: unknown[]): string {
+  return args
+    .map((arg) => {
+      if (typeof arg === 'string') return arg;
+      if (arg instanceof Error) return `${arg.message}\n${arg.stack}`;
+      try {
+        return JSON.stringify(arg);
+      } catch {
+        return String(arg);
+      }
+    })
+    .join(' ');
+}
+
+/**
+ * Write log entry to file with timestamp and level
+ * Uses write queue to prevent interleaving within same pipeline
+ */
+function writeToLogFile(runId: string, level: string, message: string): void {
+  const streamData = logStreams.get(runId);
+  if (!streamData) return;
+
+  const timestamp = new Date().toISOString();
+  const line = `[${timestamp}] [${level}] ${message}\n`;
+
+  // Queue writes to prevent interleaving
+  streamData.writeQueue = streamData.writeQueue.then(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        streamData.stream.write(line, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      })
+  );
+}
+
+// =============================================================================
+// ConsoleCapture Class (per-pipeline instance)
+// =============================================================================
+
 export class ConsoleCapture {
   private logPath: string;
-  private logStream: WriteStream | null = null;
-  private writeQueue = Promise.resolve();
-  private originalMethods: OriginalConsoleMethods | null = null;
   private context: CaptureContext;
 
   constructor(outputDir: string, context: CaptureContext) {
@@ -40,111 +167,61 @@ export class ConsoleCapture {
   }
 
   /**
-   * Start capturing console output
-   * Hooks console methods and begins writing to log file
+   * Start capturing console output for this pipeline
+   * Opens log file stream and registers context
    */
   async start(): Promise<void> {
+    // Install global hooks (idempotent)
+    installGlobalConsoleHooks();
+
     // Create logs directory
     await fs.mkdir(path.dirname(this.logPath), { recursive: true });
 
-    // Open log file stream
-    this.logStream = createWriteStream(this.logPath, { flags: 'a' });
-
-    // Save original console methods
-    this.originalMethods = {
-      log: console.log,
-      warn: console.warn,
-      error: console.error,
-    };
-
-    // Build context prefix: [Project | runId]
-    const shortRunId = this.context.runId.slice(-8);
-    const basePrefix = `[${this.context.projectName} | ${shortRunId}]`;
-
-    // Hook console.log
-    console.log = (...args: unknown[]) => {
-      const message = this.formatMessage(args);
-      const prefixed = `${basePrefix} ${message}`;
-      this.write('INFO', message);
-      this.originalMethods!.log(prefixed);
-    };
-
-    // Hook console.warn
-    console.warn = (...args: unknown[]) => {
-      const message = this.formatMessage(args);
-      const prefixed = `${basePrefix} ${message}`;
-      this.write('WARN', message);
-      this.originalMethods!.warn(prefixed);
-    };
-
-    // Hook console.error
-    console.error = (...args: unknown[]) => {
-      const message = this.formatMessage(args);
-      const prefixed = `${basePrefix} ${message}`;
-      this.write('ERROR', message);
-      this.originalMethods!.error(prefixed);
-    };
+    // Open log file stream for this pipeline
+    const stream = createWriteStream(this.logPath, { flags: 'a' });
+    logStreams.set(this.context.runId, {
+      stream,
+      writeQueue: Promise.resolve(),
+    });
   }
 
   /**
-   * Stop capturing and restore original console methods
+   * Stop capturing and close log file stream
+   * Does NOT restore console methods (they remain hooked globally)
    */
   async stop(): Promise<void> {
-    if (this.originalMethods) {
-      console.log = this.originalMethods.log;
-      console.warn = this.originalMethods.warn;
-      console.error = this.originalMethods.error;
-      this.originalMethods = null;
-    }
+    const streamData = logStreams.get(this.context.runId);
+    if (!streamData) return;
 
     // Wait for pending writes
-    await this.writeQueue;
+    await streamData.writeQueue;
 
     // Close log stream
-    if (this.logStream) {
-      await new Promise<void>((resolve) => {
-        this.logStream!.end(() => resolve());
-      });
-      this.logStream = null;
-    }
+    await new Promise<void>((resolve) => {
+      streamData.stream.end(() => resolve());
+    });
+
+    // Remove from map
+    logStreams.delete(this.context.runId);
   }
 
   /**
-   * Format console arguments into a single message string
+   * Run a function with console context set for this pipeline
+   * All console.log/warn/error calls within fn will use this context
    */
-  private formatMessage(args: unknown[]): string {
-    return args
-      .map((arg) => {
-        if (typeof arg === 'string') return arg;
-        if (arg instanceof Error) return `${arg.message}\n${arg.stack}`;
-        try {
-          return JSON.stringify(arg);
-        } catch {
-          return String(arg);
-        }
-      })
-      .join(' ');
+  run<T>(fn: () => T | Promise<T>): T | Promise<T> {
+    return consoleContextStorage.run(this.context, fn);
   }
+}
 
-  /**
-   * Write log entry to file with timestamp and level
-   * Uses write queue to prevent interleaving (same pattern as ErrorPersistence)
-   */
-  private write(level: string, message: string): void {
-    if (!this.logStream) return;
-
-    const timestamp = new Date().toISOString();
-    const line = `[${timestamp}] [${level}] ${message}\n`;
-
-    // Queue writes to prevent interleaving from concurrent operations
-    this.writeQueue = this.writeQueue.then(
-      () =>
-        new Promise<void>((resolve, reject) => {
-          this.logStream!.write(line, (err) => {
-            if (err) reject(err);
-            else resolve();
-          });
-        })
-    );
-  }
+/**
+ * Run a function with console isolation for a specific pipeline
+ * Convenience function that combines context setting with execution
+ */
+export function runWithConsoleContext<T>(
+  context: CaptureContext,
+  fn: () => T | Promise<T>
+): T | Promise<T> {
+  installGlobalConsoleHooks();
+  return consoleContextStorage.run(context, fn);
 }

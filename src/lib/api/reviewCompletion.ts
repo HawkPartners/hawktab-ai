@@ -1005,15 +1005,16 @@ export async function waitAndCompletePipeline(
     try {
       const statusData = JSON.parse(await fs.readFile(pathBStatusPath, 'utf-8'));
       if (statusData.status === 'error') {
-        console.error('[ReviewCompletion] Path B failed:', statusData.error);
+        const errorMessage = statusData.error ?? 'Unknown error';
+        console.error('[ReviewCompletion] Path B failed:', errorMessage);
         await updatePipelineSummary(outputDir, {
           status: 'error',
-          error: `Table processing failed: ${statusData.error}`
+          error: `Table processing failed: ${errorMessage}`
         });
         return {
           success: false,
           status: 'error',
-          message: `Table processing failed: ${statusData.error}`,
+          message: `Table processing failed: ${errorMessage}`,
           outputDir,
         };
       }
