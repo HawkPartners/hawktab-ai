@@ -16,6 +16,16 @@ export function createAbortController(runId: string): AbortSignal {
 }
 
 /**
+ * Ensure a run has an AbortController and return its signal.
+ * Reuses an existing controller when present.
+ */
+export function ensureAbortController(runId: string): AbortSignal {
+  const existing = controllers.get(runId);
+  if (existing) return existing.signal;
+  return createAbortController(runId);
+}
+
+/**
  * Get the AbortSignal for a run, if one exists.
  */
 export function getAbortSignal(runId: string): AbortSignal | undefined {

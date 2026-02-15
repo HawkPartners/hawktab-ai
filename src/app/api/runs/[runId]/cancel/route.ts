@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getConvexClient, mutateInternal } from '@/lib/convex';
 import { api } from '../../../../../../convex/_generated/api';
 import { internal } from '../../../../../../convex/_generated/api';
-import { abortRun } from '@/lib/abortStore';
+import { abortRun, cleanupAbort } from '@/lib/abortStore';
 import { requireConvexAuth, AuthenticationError } from '@/lib/requireConvexAuth';
 import { canPerform } from '@/lib/permissions';
 import type { Id } from '../../../../../../convex/_generated/dataModel';
@@ -50,6 +50,8 @@ export async function POST(
 
     // Abort local process if running on this server
     const aborted = abortRun(runId);
+    // Always cleanup stale controllers after cancel request.
+    cleanupAbort(runId);
 
     return NextResponse.json({
       success: true,

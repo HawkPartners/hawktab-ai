@@ -16,6 +16,7 @@ import {
   completePipeline,
   waitAndCompletePipeline,
 } from '@/lib/api/reviewCompletion';
+import { ensureAbortController } from '@/lib/abortStore';
 import { CrosstabDecisionsArraySchema } from '@/schemas/crosstabDecisionSchema';
 import type { Id } from '../../../../../../convex/_generated/dataModel';
 import type { PathBResult, CrosstabReviewState } from '@/lib/api/types';
@@ -75,6 +76,7 @@ export async function POST(
       );
     }
     const decisions = parsed.data;
+    const abortSignal = ensureAbortController(runId);
 
     // Get pipelineId from run result
     const runResult = run.result as Record<string, unknown> | undefined;
@@ -180,7 +182,9 @@ export async function POST(
       reviewState.flaggedColumns,
       decisions,
       reviewState.agentDataMap,
-      activeOutputDir
+      activeOutputDir,
+      abortSignal,
+      runId
     );
 
     const totalColumns = modifiedCrosstabResult.bannerCuts.reduce((sum, g) => sum + g.columns.length, 0);
@@ -255,8 +259,26 @@ export async function POST(
 
       let result;
       try {
-        result = await completePipeline(activeOutputDir, pipelineId, modifiedCrosstabResult, pathBResult, reviewState, decisions, runId);
+        result = await completePipeline(activeOutputDir, pipelineId, modifiedCrosstabResult, pathBResult, reviewState, decisions, runId, abortSignal);
       } catch (pipeErr) {
+        const isCancelled =
+          (pipeErr instanceof DOMException && pipeErr.name === 'AbortError') ||
+          (pipeErr instanceof Error && (pipeErr.message.includes('AbortError') || pipeErr.message.includes('cancelled')));
+        if (isCancelled) {
+          await mutateInternal(internal.runs.updateStatus, {
+            runId: runId as Id<"runs">,
+            status: 'cancelled',
+            stage: 'cancelled',
+            progress: 100,
+            message: 'Pipeline cancelled by user',
+          });
+          return NextResponse.json({
+            success: false,
+            runId,
+            status: 'cancelled',
+            message: 'Pipeline cancelled by user',
+          });
+        }
         // Clean up R2 review files even on pipeline failure (prevent orphans)
         if (reviewR2Keys) {
           try { await deleteReviewFiles(reviewR2Keys); } catch { /* non-fatal */ }
@@ -363,7 +385,7 @@ export async function POST(
       });
 
       // Background completion
-      waitAndCompletePipeline(activeOutputDir, pipelineId, modifiedCrosstabResult, reviewState, decisions, runId)
+      waitAndCompletePipeline(activeOutputDir, pipelineId, modifiedCrosstabResult, reviewState, decisions, runId, abortSignal)
         .then(async (result) => {
           // Upload to R2
           const convexOrgId = String(auth.convexOrgId);
@@ -436,13 +458,16 @@ export async function POST(
         .catch(async (err) => {
           console.error('[Review API] Background completion error:', err);
           try {
+            const isCancelled =
+              (err instanceof DOMException && err.name === 'AbortError') ||
+              (err instanceof Error && (err.message.includes('AbortError') || err.message.includes('cancelled')));
             await mutateInternal(internal.runs.updateStatus, {
               runId: runId as Id<"runs">,
-              status: 'error',
-              stage: 'complete',
+              status: isCancelled ? 'cancelled' : 'error',
+              stage: isCancelled ? 'cancelled' : 'complete',
               progress: 100,
-              message: 'Pipeline failed during background completion',
-              error: err instanceof Error ? err.message : String(err),
+              message: isCancelled ? 'Pipeline cancelled by user' : 'Pipeline failed during background completion',
+              ...(isCancelled ? {} : { error: err instanceof Error ? err.message : String(err) }),
             });
           } catch { /* last resort — Convex may be unreachable */ }
         });

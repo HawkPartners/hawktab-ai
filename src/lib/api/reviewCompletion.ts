@@ -30,6 +30,9 @@ import { AgentMetricsCollector, runWithMetricsCollector, WideEvent } from '@/lib
 import { extractStreamlinedData } from '@/lib/data/extractStreamlinedData';
 import { formatDuration } from '@/lib/utils/formatDuration';
 import { sendHeartbeat, startHeartbeatInterval } from './heartbeat';
+import { getConvexClient } from '@/lib/convex';
+import { api } from '../../../convex/_generated/api';
+import type { Id } from '../../../convex/_generated/dataModel';
 import { toExtendedTable, type ExtendedTableDefinition, type TableWithLoopFrame } from '@/schemas/verificationAgentSchema';
 import { createRespondentAnchoredFallbackPolicy, type LoopSemanticsPolicy } from '@/schemas/loopSemanticsPolicySchema';
 import type { TableAgentOutput } from '@/schemas/tableAgentSchema';
@@ -47,6 +50,29 @@ const execFileAsync = promisify(execFile);
 
 import type { CrosstabDecision } from '@/schemas/crosstabDecisionSchema';
 export type { CrosstabDecision };
+
+function isAbortError(error: unknown): boolean {
+  if (error instanceof DOMException && error.name === 'AbortError') return true;
+  if (error instanceof Error) return error.message.includes('AbortError') || error.message.includes('aborted');
+  return false;
+}
+
+async function assertRunNotCancelled(runId?: string, abortSignal?: AbortSignal): Promise<void> {
+  if (abortSignal?.aborted) {
+    throw new DOMException('Pipeline cancelled', 'AbortError');
+  }
+  if (!runId) return;
+
+  try {
+    const run = await getConvexClient().query(api.runs.get, { runId: runId as Id<'runs'> });
+    if (run?.cancelRequested || run?.status === 'cancelled') {
+      throw new DOMException('Pipeline cancelled', 'AbortError');
+    }
+  } catch (err) {
+    if (isAbortError(err)) throw err;
+    // Non-fatal probe failure: continue.
+  }
+}
 
 
 // -------------------------------------------------------------------------
@@ -139,7 +165,9 @@ export async function applyDecisions(
   flaggedColumns: FlaggedCrosstabColumn[],
   decisions: CrosstabDecision[],
   agentDataMap: AgentDataMapItem[],
-  outputDir: string
+  outputDir: string,
+  abortSignal?: AbortSignal,
+  runId?: string,
 ): Promise<ValidationResultType> {
   const decisionMap = new Map<string, CrosstabDecision>();
   for (const d of decisions) {
@@ -154,9 +182,11 @@ export async function applyDecisions(
   const modifiedGroups: ValidatedGroupType[] = [];
 
   for (const group of crosstabResult.bannerCuts) {
+    await assertRunNotCancelled(runId, abortSignal);
     const modifiedColumns = [];
 
     for (const col of group.columns) {
+      await assertRunNotCancelled(runId, abortSignal);
       const key = `${group.groupName}::${col.name}`;
       const decision = decisionMap.get(key);
       const flagged = flaggedMap.get(key);
@@ -209,7 +239,7 @@ export async function applyDecisions(
               groupName: group.groupName,
               columns: [{ name: col.name, original: flagged.original }]
             },
-            { hint: decision.hint, outputDir }
+            { hint: decision.hint, outputDir, abortSignal }
           );
 
           if (rerunResult.columns.length > 0) {
@@ -286,6 +316,7 @@ export async function completePipeline(
   reviewState: CrosstabReviewState,
   _decisions: CrosstabDecision[],
   runId?: string,
+  abortSignal?: AbortSignal,
 ): Promise<CompletePipelineResult> {
   // For recovered dirs (outputs/_recovered/{runId}), fall back to pipelineId for observability
   const rawDatasetName = path.basename(path.dirname(outputDir));
@@ -301,6 +332,7 @@ export async function completePipeline(
   return runWithMetricsCollector(metricsCollector, async () => {
   const stopHeartbeat = runId ? startHeartbeatInterval(runId) : () => {};
   try {
+    await assertRunNotCancelled(runId, abortSignal);
     const { tableAgentResults } = pathBResult;
     const verboseDataMap = reviewState.verboseDataMap as VerboseDataMapType[];
     const surveyMarkdown = reviewState.surveyMarkdown;
@@ -337,6 +369,7 @@ export async function completePipeline(
     // FilterApplicator (apply Path C filters)
     // -------------------------------------------------------------------------
     if (pathCResult?.filterResult && pathCResult.filterResult.translation.filters.length > 0) {
+      await assertRunNotCancelled(runId, abortSignal);
       await updateReviewRunStatus(runId, { status: 'resuming', stage: 'filtering', progress: 55, message: 'Applying filters...' });
       console.log('[ReviewCompletion] Applying skip logic filters...');
       const validVariables = new Set<string>(verboseDataMap.map(v => v.column));
@@ -350,6 +383,7 @@ export async function completePipeline(
     // GridAutoSplitter
     // -------------------------------------------------------------------------
     await updateReviewRunStatus(runId, { status: 'resuming', stage: 'splitting', progress: 57, message: 'Splitting oversized grids...' });
+    await assertRunNotCancelled(runId, abortSignal);
     console.log('[ReviewCompletion] Running GridAutoSplitter...');
     const { splitOversizedGrids } = await import('@/lib/tables/GridAutoSplitter');
     const gridSplitResult = splitOversizedGrids(extendedTables, { verboseDataMap });
@@ -366,6 +400,7 @@ export async function completePipeline(
     // VerificationAgent
     // -------------------------------------------------------------------------
     await updateReviewRunStatus(runId, { status: 'resuming', stage: 'verification', progress: 58, message: 'Verifying tables...' });
+    await assertRunNotCancelled(runId, abortSignal);
     if (surveyMarkdown) {
       console.log('[ReviewCompletion] Running VerificationAgent (parallel, concurrency: 3)...');
       try {
@@ -373,7 +408,7 @@ export async function completePipeline(
           extendedTables,
           surveyMarkdown,
           verboseDataMap,
-          { outputDir, concurrency: 3 }
+          { outputDir, concurrency: 3, abortSignal }
         );
         extendedTables = verificationResult.tables;
         console.log(`[ReviewCompletion] VerificationAgent: ${verificationResult.tables.length} verified tables`);
@@ -399,6 +434,7 @@ export async function completePipeline(
     // TablePostProcessor
     // -------------------------------------------------------------------------
     await updateReviewRunStatus(runId, { status: 'resuming', stage: 'post_processing', progress: 69, message: 'Running post-processor...' });
+    await assertRunNotCancelled(runId, abortSignal);
     console.log('[ReviewCompletion] Running TablePostProcessor...');
     const postPassResult = normalizePostPass(extendedTables);
     extendedTables = postPassResult.tables;
@@ -420,6 +456,7 @@ export async function completePipeline(
     // Cut Expression Validation + Retry
     // -------------------------------------------------------------------------
     await updateReviewRunStatus(runId, { status: 'resuming', stage: 'validating_cuts', progress: 70, message: 'Validating cut expressions...' });
+    await assertRunNotCancelled(runId, abortSignal);
     console.log('[ReviewCompletion] Validating cut expressions...');
     let validatedCrosstabResult = modifiedCrosstabResult;
 
@@ -471,7 +508,7 @@ export async function completePipeline(
             const retryResult = await processGroup(
               reviewState.agentDataMap,
               { groupName: group.groupName, columns: group.columns.map(c => ({ name: c.name, original: c.name })) },
-              { outputDir, rValidationErrors }
+              { outputDir, rValidationErrors, abortSignal }
             );
             updatedBannerCuts[groupIdx] = retryResult;
           } catch (retryErr) {
@@ -506,6 +543,7 @@ export async function completePipeline(
     // R Validation (per-table)
     // -------------------------------------------------------------------------
     await updateReviewRunStatus(runId, { status: 'resuming', stage: 'validating_r', progress: 75, message: 'Validating R code per table...' });
+    await assertRunNotCancelled(runId, abortSignal);
     console.log('[ReviewCompletion] Validating R code per table...');
 
     // Tag tables with loopDataFrame
@@ -552,6 +590,7 @@ export async function completePipeline(
 
     if (loopMappings.length > 0) {
       await updateReviewRunStatus(runId, { status: 'resuming', stage: 'loop_semantics', progress: 78, message: 'Classifying loop semantics...' });
+      await assertRunNotCancelled(runId, abortSignal);
       console.log('[ReviewCompletion] Running LoopSemanticsPolicyAgent...');
       try {
         loopSemanticsPolicy = await runLoopSemanticsPolicyAgent({
@@ -574,6 +613,7 @@ export async function completePipeline(
           datamapExcerpt: buildDatamapExcerpt(verboseDataMap, cutsSpec.cuts, deterministicFindings),
           loopMappings,
           outputDir,
+          abortSignal,
         });
         console.log(`[ReviewCompletion] LoopSemantics: ${loopSemanticsPolicy.bannerGroups.length} groups classified`);
       } catch (lspError) {
@@ -603,6 +643,7 @@ export async function completePipeline(
     // R Script Generation
     // -------------------------------------------------------------------------
     await updateReviewRunStatus(runId, { status: 'resuming', stage: 'generating_r', progress: 80, message: 'Generating R script...' });
+    await assertRunNotCancelled(runId, abortSignal);
     const rDir = path.join(outputDir, 'r');
     await fs.mkdir(rDir, { recursive: true });
 
@@ -645,6 +686,7 @@ export async function completePipeline(
     // R Execution
     // -------------------------------------------------------------------------
     await updateReviewRunStatus(runId, { status: 'resuming', stage: 'executing_r', progress: 85, message: 'Executing R script...' });
+    await assertRunNotCancelled(runId, abortSignal);
     const resultsDir = path.join(outputDir, 'results');
     await fs.mkdir(resultsDir, { recursive: true });
 
@@ -689,6 +731,7 @@ export async function completePipeline(
         // Dual Excel Export (weighted + unweighted)
         // ---------------------------------------------------------------
         await updateReviewRunStatus(runId, { status: 'resuming', stage: 'writing_outputs', progress: 95, message: 'Generating weighted & unweighted Excel workbooks...' });
+        await assertRunNotCancelled(runId, abortSignal);
         try {
           if (wizardConfig?.theme) {
             const { setActiveTheme } = await import('@/lib/excel/styles');
@@ -754,6 +797,7 @@ export async function completePipeline(
         // Excel Export
         // ---------------------------------------------------------------
         await updateReviewRunStatus(runId, { status: 'resuming', stage: 'writing_outputs', progress: 95, message: 'Generating Excel workbook...' });
+        await assertRunNotCancelled(runId, abortSignal);
         const excelPath = path.join(resultsDir, 'crosstabs.xlsx');
         try {
           if (wizardConfig?.theme) {
@@ -883,6 +927,11 @@ export async function completePipeline(
       durationMs: totalDurationMs,
     };
   } catch (error) {
+    if (isAbortError(error)) {
+      metricsCollector.unbindWideEvent();
+      wideEvent.finish('cancelled', 'Pipeline cancelled');
+      throw error;
+    }
     console.error('[ReviewCompletion] Background completion failed:', error);
     metricsCollector.unbindWideEvent();
     wideEvent.finish('error', error instanceof Error ? error.message : 'Background completion failed');
@@ -926,6 +975,7 @@ export async function waitAndCompletePipeline(
   reviewState: CrosstabReviewState,
   decisions: CrosstabDecision[],
   runId?: string,
+  abortSignal?: AbortSignal,
 ): Promise<CompletePipelineResult> {
   const pathBResultPath = path.join(outputDir, 'path-b-result.json');
   const pathBStatusPath = path.join(outputDir, 'path-b-status.json');
@@ -939,6 +989,7 @@ export async function waitAndCompletePipeline(
   console.log(`[ReviewCompletion] Waiting for Path B to complete (up to 30 min)...`);
 
   while (Date.now() - startTime < maxWaitMs) {
+    await assertRunNotCancelled(runId, abortSignal);
     // Emit heartbeat every ~30s during polling (non-fatal)
     if (runId && Date.now() - lastHeartbeatTime >= heartbeatIntervalMs) {
       sendHeartbeat(runId);
@@ -948,7 +999,7 @@ export async function waitAndCompletePipeline(
     try {
       const pathBResult = JSON.parse(await fs.readFile(pathBResultPath, 'utf-8'));
       console.log('[ReviewCompletion] Path B completed - starting pipeline completion');
-      return await completePipeline(outputDir, pipelineId, modifiedCrosstabResult, pathBResult, reviewState, decisions, runId);
+      return await completePipeline(outputDir, pipelineId, modifiedCrosstabResult, pathBResult, reviewState, decisions, runId, abortSignal);
     } catch { /* not ready yet */ }
 
     try {

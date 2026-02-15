@@ -1,3 +1,36 @@
+/**
+ * Build loop-aware prompt by conditionally appending loop guidance.
+ * Only adds loop context when loops are detected in the survey.
+ */
+export function buildLoopAwarePrompt(basePrompt: string, loopCount: number): string {
+  if (loopCount === 0) {
+    return basePrompt;
+  }
+
+  const loopGuidance = `
+
+<loop_survey_context>
+This survey contains ${loopCount} loop iteration(s). Loop variables in the data map follow numbered patterns (e.g., Q7_ITER1/Q7_ITER2, RATING_A/RATING_B).
+
+When generating banner cuts for a survey with loopsß, consider the user's intent:
+- Does the banner cut aim to filter by a single loop iteration, or across all iterations?
+- In most cases, the intent is to span all loop iterations (e.g., "those who selected Option A" means "in ANY iteration")
+
+After constructing your expression, verify:
+- Does this cut capture the intended scope across all relevant loop iterations?
+- If your expression only addresses one iteration but the intent is broader, revise to span all iterations using OR logic
+
+Example verification:
+Banner cut: "Premium Tier" for a variable with iterations (TIER_1, TIER_2)
+Intent check: Should this capture respondents who selected Premium in ANY iteration?
+If yes: TIER_1 == 2 | TIER_2 == 2 (spans both) ✓
+If no (intent is first iteration only): TIER_1 == 2
+</loop_survey_context>
+`;
+
+  return basePrompt + loopGuidance;
+}
+
 // Alternative prompt for CrossTab Agent - XML-structured validation and mapping
 export const CROSSTAB_VALIDATION_INSTRUCTIONS_ALTERNATIVE = `
 <task_context>
@@ -150,15 +183,38 @@ This prevents missing better contextual matches deeper in the data map.
 
 HIDDEN / COMPUTED VARIABLE HINTS:
 When banner expressions include words like "Assigned", "Given", "Shown", or similar assignment language, this often indicates a computed variable that encodes the assignment. Common patterns include:
-- "h" prefix (e.g., hLOCATION, hASSIGNMENT) — hidden assignment variables
-- "d" prefix (e.g., dLOCATION, dSEGMENT) — derived/computed variables
-- "segment", "group", "cell", "condition", "wave" in the variable name — study design groupings
+- "h" prefix (e.g., hBRAND, hSEGMENT, hCONCEPT) — hidden assignment/derived variables
+- "d" prefix (e.g., dGROUP, dCATEGORY) — derived/computed variables
+- "segment", "group", "cell", "condition", "wave" in variable name — study design groupings
+
+<assignment_vs_selection>
+CRITICAL DISTINCTION — ASSIGNMENT vs SELECTION:
+In quota-based or experimental designs, distinguish between:
+- SELECTION variables: Respondent's original preference (e.g., "Which products do you own?")
+- ASSIGNMENT variables: What the survey assigned them to evaluate (e.g., "Which product were you assigned to rate?")
+
+When banner cuts reference "assigned to [X]", "shown [X]", or "given [X]", identify the assignment variable by examining:
+
+PRIMARY SIGNALS (in order of importance):
+1. Description contains "ASSIGN", "RANDOMLY ASSIGN", "SHOWN", or similar language
+2. Type is categorical_select (single value with multiple labeled options, e.g., 1-12)
+3. Variable consolidates multiple categories into a single assignment (not spread across r1/r2/r3 suffixes)
+4. Variable structure suggests consolidation (e.g., hCONCEPT vs hCONCEPTSr1/r2/r3)
+
+WARNING — Prefix alone is insufficient:
+Not all h/d-prefixed variables are assignments. Compare:
+- hBRAND (Type: categorical_select, Description: "RANDOMLY ASSIGN respondent to brand") → Assignment variable ✓
+- hBRANDSr1 (Type: binary_flag, Description: "BRAND A - HIDDEN") → Binary flag, not assignment ✗
+
+When multiple h/d variables exist, prefer the single categorical variable with assignment language in its description over binary flags with r-suffixes.
+</assignment_vs_selection>
 
 If you encounter such language:
-- Search broadly for computed/hidden variables that might encode the assignment
-- Consider both the explicit variable mentioned AND any related assignment variables
-- This is a hint, not a rule—still evaluate all candidates and choose the best match based on your full search
-- Document in your reasoning if you considered computed variables but selected a different candidate
+- Search the full data map for variables with assignment-related descriptions
+- Check variable Type field: categorical_select often indicates consolidated assignment
+- Examine structure: single variable vs r1/r2/r3 pattern suggests binary flags
+- This is a hint, not a rule—evaluate all candidates based on description, type, and structure
+- Document which assignment-related variables you considered and why you selected your primary
 </variable_search_protocol>
 
 <confidence_scoring_framework>

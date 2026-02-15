@@ -468,6 +468,7 @@ export async function runPipeline(
     let baseNameToLoopIndex: Map<string, number> = new Map();
     let collapsedVariableNames: Set<string> = new Set();
     let deterministicFindings: DeterministicResolverResult | undefined;
+    log(`[DEBUG] Loop detection: hasLoops=${validationResult.loopDetection?.hasLoops}, loops=${validationResult.loopDetection?.loops?.length ?? 0}`);
     if (validationResult.loopDetection?.hasLoops) {
       // Block ONLY on strong evidence of already-stacked (long) input.
       // Fill-rate heuristics alone are not sufficient: wide data can legitimately
@@ -802,12 +803,22 @@ export async function runPipeline(
       const crosstabStart = Date.now();
       eventBus.emitStageStart(3, STAGE_NAMES[3]);
 
+      // Calculate loop iteration count for loop-aware prompting.
+      // Use max iterations across all loop groups to avoid under-counting.
+      const loopIterationCount = loopMappings.reduce(
+        (max, mapping) => Math.max(max, mapping.iterations.length),
+        0
+      );
+      log(`[DEBUG] loopMappings.length=${loopMappings.length}, loopIterationCount=${loopIterationCount}`);
+      log(`  [Path A] CrosstabAgent loop context: ${loopMappings.length} loop groups, ${loopIterationCount} iterations`);
+
       const crosstabResult = await processCrosstabGroups(
         agentDataMap,
         { bannerCuts: agentBanner.map(g => ({ groupName: g.groupName, columns: g.columns })) },
         outputDir,
         undefined, // onProgress
-        pipelineSignal
+        pipelineSignal,
+        loopIterationCount // Pass iteration count for loop-aware prompting
       );
 
       log(`  [Path A] CrosstabAgent: ${crosstabResult.result.bannerCuts.length} groups validated`, 'green');
@@ -1326,10 +1337,14 @@ export async function runPipeline(
 
             try {
               log(`    Retrying group "${groupName}" (${failedCuts.length} failed expressions)...`, 'cyan');
+              const retryLoopIterationCount = loopMappings.reduce(
+                (max, mapping) => Math.max(max, mapping.iterations.length),
+                0
+              );
               const retryResult = await processCrosstabGroup(
                 agentDataMap,
                 { groupName: bannerGroup.groupName, columns: bannerGroup.columns },
-                { abortSignal: pipelineSignal, outputDir, rValidationErrors }
+                { abortSignal: pipelineSignal, outputDir, rValidationErrors, loopCount: retryLoopIterationCount }
               );
 
               // Replace the group in our result

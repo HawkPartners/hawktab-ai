@@ -105,6 +105,7 @@ export async function updatePipelineSummary(
 // -------------------------------------------------------------------------
 
 type RunStatus = "in_progress" | "pending_review" | "resuming" | "success" | "partial" | "error" | "cancelled";
+type CancelCheck = () => Promise<void>;
 
 async function updateRunStatus(runId: string, updates: {
   status: RunStatus;
@@ -186,8 +187,11 @@ async function executePathA(
   agentDataMap: AgentDataMapItem[],
   outputDir: string,
   onProgress: (percent: number) => void,
+  loopIterationCount: number,
+  assertNotCancelled?: CancelCheck,
   abortSignal?: AbortSignal
 ): Promise<PathAResult> {
+  if (assertNotCancelled) await assertNotCancelled();
   if (abortSignal?.aborted) {
     console.log('[PathA] Aborted before starting');
     throw new DOMException('Path A aborted', 'AbortError');
@@ -208,6 +212,7 @@ async function executePathA(
 
   onProgress(40);
   console.log(`[PathA] BannerAgent complete: ${groupCount} groups extracted`);
+  if (assertNotCancelled) await assertNotCancelled();
 
   const agentBanner = bannerResult.agent || [];
 
@@ -218,6 +223,7 @@ async function executePathA(
 
   // 2. CrosstabAgent (40-100% of path progress)
   console.log('[PathA] Starting CrosstabAgent...');
+  console.log(`[PathA] CrosstabAgent loop context: ${loopIterationCount} iteration(s)`);
 
   const crosstabResult = await processCrosstabGroups(
     agentDataMap,
@@ -227,7 +233,8 @@ async function executePathA(
       const percent = 40 + Math.floor((completed / total) * 60);
       onProgress(percent);
     },
-    abortSignal
+    abortSignal,
+    loopIterationCount
   );
 
   onProgress(100);
@@ -247,8 +254,10 @@ async function executePathB(
   spssPath: string,
   outputDir: string,
   onProgress: (percent: number) => void,
+  assertNotCancelled?: CancelCheck,
   abortSignal?: AbortSignal
 ): Promise<PathBResult> {
+  if (assertNotCancelled) await assertNotCancelled();
   if (abortSignal?.aborted) {
     console.log('[PathB] Aborted before starting');
     throw new DOMException('Path B aborted', 'AbortError');
@@ -262,6 +271,7 @@ async function executePathB(
   const tableCount = tableAgentResults.flatMap(r => r.tables).length;
   console.log(`[PathB] TableGenerator: ${tableCount} tables generated`);
   onProgress(50);
+  if (assertNotCancelled) await assertNotCancelled();
 
   if (abortSignal?.aborted) {
     console.log('[PathB] Aborted after table generation');
@@ -293,8 +303,10 @@ async function executePathC(
   surveyMarkdown: string,
   verboseDataMap: VerboseDataMapType[],
   outputDir: string,
+  assertNotCancelled?: CancelCheck,
   abortSignal?: AbortSignal
 ): Promise<PathCResult> {
+  if (assertNotCancelled) await assertNotCancelled();
   if (abortSignal?.aborted) {
     throw new DOMException('Path C aborted', 'AbortError');
   }
@@ -312,6 +324,7 @@ async function executePathC(
   if (abortSignal?.aborted) {
     throw new DOMException('Path C aborted', 'AbortError');
   }
+  if (assertNotCancelled) await assertNotCancelled();
 
   console.log('[PathC] Starting FilterTranslatorAgent...');
   const filterResult = await translateSkipRules(
@@ -422,6 +435,20 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     console.log(`[API] Output directory: ${outputDir}`);
 
     const { dataMapPath, bannerPlanPath, spssPath, surveyPath } = savedPaths;
+    const assertNotCancelled: CancelCheck = async () => {
+      if (abortSignal?.aborted) {
+        throw new DOMException('Pipeline cancelled', 'AbortError');
+      }
+      try {
+        const liveRun = await getConvexClient().query(api.runs.get, { runId: runId as Id<"runs"> });
+        if (liveRun?.cancelRequested || liveRun?.status === 'cancelled') {
+          throw new DOMException('Pipeline cancelled', 'AbortError');
+        }
+      } catch (err) {
+        if (isAbortError(err)) throw err;
+        // If cancellation probe fails, do not fail the pipeline.
+      }
+    };
 
     // Copy input files to inputs/ folder with original names
     const inputsDir = path.join(outputDir, 'inputs');
@@ -535,6 +562,14 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       }
     }
 
+    // Pass explicit loop context into CrosstabAgent for loop-aware prompting.
+    // Use max iterations across groups to avoid under-counting mixed loop sets.
+    const loopIterationCount = loopMappings.reduce(
+      (max, mapping) => Math.max(max, mapping.iterations.length),
+      0
+    );
+    console.log(`[API] Crosstab loop context prepared: ${loopMappings.length} loop groups, ${loopIterationCount} iterations`);
+
     // -------------------------------------------------------------------------
     // Step 1c: Survey Processing (shared by Path B verification + Path C skip logic)
     // -------------------------------------------------------------------------
@@ -616,6 +651,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     const parallelStartTime = Date.now();
 
     // Check for cancellation before starting parallel paths
+    await assertNotCancelled();
     if (abortSignal?.aborted) {
       console.log('Pipeline cancelled before parallel paths');
       metricsCollector.unbindWideEvent();
@@ -664,7 +700,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     }
 
     // Start Path B as fire-and-forget (writes result to disk when complete)
-    const pathBPromise = executePathB(verboseDataMap, spssPath, outputDir, updateParallelProgress, abortSignal)
+    const pathBPromise = executePathB(verboseDataMap, spssPath, outputDir, updateParallelProgress, assertNotCancelled, abortSignal)
       .then(async (result) => {
         await fs.writeFile(pathBResultPath, JSON.stringify(result, null, 2));
         const completedStatus: PathBStatus = {
@@ -744,7 +780,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
     // Start Path C as fire-and-forget (skip logic + filter translation)
     let pathCResult: PathCResult | null = null;
     const pathCPromise: Promise<PathCResult | null> = surveyMarkdown
-      ? executePathC(surveyMarkdown, verboseDataMap, outputDir, abortSignal)
+      ? executePathC(surveyMarkdown, verboseDataMap, outputDir, assertNotCancelled, abortSignal)
           .then(async (result) => {
             pathCResult = result;
             await fs.writeFile(pathCResultPath, JSON.stringify(result, null, 2));
@@ -839,7 +875,8 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
             const percent = 40 + Math.floor((completed / total) * 60);
             updateParallelProgress(percent);
           },
-          abortSignal
+          abortSignal,
+          loopIterationCount
         );
         updateParallelProgress(100);
 
@@ -909,7 +946,16 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       }
       console.log('Awaiting Path A (Banner → Crosstab)...');
       try {
-        pathAResult = await executePathA(bannerAgent, bannerPlanPath, agentDataMap, outputDir, updateParallelProgress, abortSignal);
+        pathAResult = await executePathA(
+          bannerAgent,
+          bannerPlanPath,
+          agentDataMap,
+          outputDir,
+          updateParallelProgress,
+          loopIterationCount,
+          assertNotCancelled,
+          abortSignal
+        );
       } catch (pathAError) {
         if (isAbortError(pathAError)) {
           console.log('Pipeline was cancelled during Path A');
@@ -1073,6 +1119,22 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
       console.log('Pipeline paused for human review. Path B continues in background.');
       console.log(`Resume via POST /api/runs/${runId}/review`);
+      // Prevent unhandled rejections after we return early for review.
+      // Path B/C continue in background and update their own status files.
+      void pathBPromise.catch((err) => {
+        if (isAbortError(err)) {
+          console.log('[PathB] Background promise settled with cancellation');
+          return;
+        }
+        console.warn('[PathB] Background promise rejected after review handoff:', err);
+      });
+      void pathCPromise.catch((err) => {
+        if (isAbortError(err)) {
+          console.log('[PathC] Background promise settled with cancellation');
+          return;
+        }
+        console.warn('[PathC] Background promise rejected after review handoff:', err);
+      });
       // Finish WideEvent with 'partial' — the post-review phase won't be captured,
       // but this prevents the WideEvent and metrics collector from leaking.
       metricsCollector.unbindWideEvent();
@@ -1180,6 +1242,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       console.log(`FilterApplicator: ${beforeCount} → ${extendedTables.length} tables`);
     }
 
+    await assertNotCancelled();
     if (abortSignal?.aborted) {
       console.log('Pipeline cancelled after filtering');
       metricsCollector.unbindWideEvent();
@@ -1214,6 +1277,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       console.log('GridAutoSplitter: no splits needed');
     }
 
+    await assertNotCancelled();
     if (abortSignal?.aborted) {
       console.log('Pipeline cancelled after grid splitting');
       metricsCollector.unbindWideEvent();
@@ -1270,6 +1334,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
       message: 'Verification complete',
     });
 
+    await assertNotCancelled();
     if (abortSignal?.aborted) {
       console.log('Pipeline cancelled after verification');
       metricsCollector.unbindWideEvent();
@@ -1380,7 +1445,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
             const retryResult = await processCrosstabGroup(
               agentDataMap,
               { groupName: bannerGroup.groupName, columns: bannerGroup.columns },
-              { abortSignal, outputDir, rValidationErrors }
+              { abortSignal, outputDir, rValidationErrors, loopCount: loopIterationCount }
             );
             const groupIdx = updatedBannerCuts.findIndex(g => g.groupName === failedGroupName);
             if (groupIdx >= 0) {
@@ -1406,6 +1471,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
     const cutsSpec = buildCutsSpec(validatedCrosstabResult);
 
+    await assertNotCancelled();
     if (abortSignal?.aborted) {
       console.log('Pipeline cancelled after cut validation');
       metricsCollector.unbindWideEvent();
@@ -1463,6 +1529,7 @@ export async function runPipelineFromUpload(params: PipelineRunParams): Promise<
 
     const allTablesForR = [...validTables, ...newlyExcluded];
 
+    await assertNotCancelled();
     if (abortSignal?.aborted) {
       console.log('Pipeline cancelled before loop semantics');
       metricsCollector.unbindWideEvent();
