@@ -1658,7 +1658,7 @@ export async function runPipeline(
       const { stdout, stderr } = await execFileAsync(
         rCommand,
         [masterPath],
-        { cwd: outputDir, maxBuffer: 10 * 1024 * 1024, timeout: 120000 }
+        { cwd: outputDir, maxBuffer: 10 * 1024 * 1024, timeout: 600000 }  // 10 minutes (was 2 min)
       );
 
       const logPath = await saveRLog(stdout, stderr, true);

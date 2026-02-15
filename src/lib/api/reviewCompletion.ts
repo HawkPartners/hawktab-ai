@@ -709,7 +709,7 @@ export async function completePipeline(
       await execFileAsync(
         rCommand,
         [masterPath],
-        { cwd: outputDir, maxBuffer: 50 * 1024 * 1024, timeout: 120000 }
+        { cwd: outputDir, maxBuffer: 50 * 1024 * 1024, timeout: 600000 }  // 10 minutes (was 2 min)
       );
 
       const resultFiles = await fs.readdir(resultsDir);
