@@ -176,22 +176,11 @@ export async function POST(request: NextRequest) {
       createdBy: auth.convexUserId,
     });
 
-    // Save files to temporary storage + upload to R2 in parallel
+    // Save files to temporary storage (no longer uploading inputs to R2)
     const savedPaths = await saveWizardFilesToStorage(parsed, sessionId, {
       orgId: String(auth.convexOrgId),
       projectId: String(projectId),
     });
-
-    // Update project with R2 file keys if available
-    if (savedPaths.r2Keys) {
-      const keys = Object.values(savedPaths.r2Keys).filter((k): k is string => k !== null);
-      if (keys.length > 0) {
-        await mutateInternal(internal.projects.updateFileKeys, {
-          projectId,
-          fileKeys: keys,
-        });
-      }
-    }
 
     // Create Convex run with full config
     const runId = await mutateInternal(internal.runs.create, {

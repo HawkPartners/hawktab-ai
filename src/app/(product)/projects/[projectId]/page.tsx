@@ -24,7 +24,6 @@ import {
   Clock,
   FileSpreadsheet,
   FileText,
-  File,
   Loader2,
   Table,
   BarChart3,
@@ -51,23 +50,6 @@ function formatDate(timestampMs: number): string {
   });
 }
 
-function FileIcon({ filename }: { filename: string }) {
-  const ext = filename.split('.').pop()?.toLowerCase();
-  switch (ext) {
-    case 'xlsx':
-    case 'xls':
-    case 'csv':
-      return <FileSpreadsheet className="h-5 w-5 text-green-600" />;
-    case 'pdf':
-    case 'docx':
-    case 'doc':
-      return <FileText className="h-5 w-5 text-blue-600" />;
-    case 'sav':
-      return <File className="h-5 w-5 text-violet-600" />;
-    default:
-      return <File className="h-5 w-5 text-gray-500" />;
-  }
-}
 
 function StatusBadge({ status }: { status: string }) {
   switch (status) {
@@ -138,14 +120,6 @@ function outputPathToFilename(outputPath: string): string {
   return outputPath.replace('results/', '');
 }
 
-/** Human-readable labels for input file fields */
-const INPUT_FIELD_LABELS: Record<string, string> = {
-  dataFile: 'Data File',
-  dataMap: 'Data Map',
-  bannerPlan: 'Banner Plan',
-  survey: 'Survey Document',
-  messageList: 'Message List',
-};
 
 // Config field display labels
 const CONFIG_LABELS: Record<string, string> = {
@@ -746,62 +720,6 @@ export default function ProjectDetailPage({
           </CardContent>
         </Card>
 
-        {/* Input Files — downloadable */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-lg">Input Files</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {project.intake ? (
-              <div className="space-y-3">
-                {(() => {
-                  const intake = project.intake as Record<string, string | null>;
-                  // Build list of input files with their field labels
-                  const inputFiles = Object.entries(INPUT_FIELD_LABELS)
-                    .map(([field, label]) => ({ field, label, filename: intake[field] }))
-                    .filter((f): f is { field: string; label: string; filename: string } =>
-                      typeof f.filename === 'string' && f.filename.length > 0,
-                    );
-
-                  if (inputFiles.length === 0) {
-                    return <p className="text-sm text-muted-foreground">No input file information available.</p>;
-                  }
-
-                  return inputFiles.map(({ field, label, filename }) => (
-                    <div key={field} className="flex items-center justify-between py-2 border-b last:border-b-0">
-                      <div className="flex items-center gap-3">
-                        <FileIcon filename={filename} />
-                        <div>
-                          <p className="text-sm font-medium">{label}</p>
-                          <p className="text-xs text-muted-foreground">{filename}</p>
-                        </div>
-                      </div>
-                      <a
-                        href={`/api/projects/${encodeURIComponent(projectId)}/download/${encodeURIComponent(filename)}`}
-                        download={filename}
-                        onClick={() => {
-                          posthog.capture('file_downloaded', {
-                            project_id: projectId,
-                            filename,
-                            file_type: 'input',
-                            input_field: field,
-                          });
-                        }}
-                      >
-                        <Button variant="outline" size="sm">
-                          <Download className="h-4 w-4 mr-1" />
-                          Download
-                        </Button>
-                      </a>
-                    </div>
-                  ));
-                })()}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No input file information available.</p>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Config Summary */}
         {configEntries.length > 0 && (

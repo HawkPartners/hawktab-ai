@@ -98,7 +98,7 @@ export async function validateUploadedFiles(files: {
 export async function saveFilesToStorage(
   data: ParsedUploadData,
   sessionId: string,
-  r2Scope?: { orgId: string; projectId: string },
+  _r2Scope?: { orgId: string; projectId: string },
 ): Promise<SavedFilePaths> {
   const { dataMapFile, bannerPlanFile, dataFile, surveyFile } = data;
 
@@ -128,34 +128,15 @@ export async function saveFilesToStorage(
     surveyPath: surveyFile ? fileResults[3]?.filePath ?? null : null,
   };
 
-  // Upload to R2 in parallel (non-blocking — don't fail pipeline on R2 errors)
-  if (r2Scope) {
-    try {
-      const r2Promises: Promise<string>[] = [
-        uploadInputToR2(dataMapFile, r2Scope.orgId, r2Scope.projectId),
-        uploadInputToR2(bannerPlanFile, r2Scope.orgId, r2Scope.projectId),
-        uploadInputToR2(dataFile, r2Scope.orgId, r2Scope.projectId),
-      ];
-      if (surveyFile) {
-        r2Promises.push(uploadInputToR2(surveyFile, r2Scope.orgId, r2Scope.projectId));
-      }
-
-      const r2Keys = await Promise.all(r2Promises);
-      result.r2Keys = {
-        dataMap: r2Keys[0],
-        bannerPlan: r2Keys[1],
-        spss: r2Keys[2],
-        survey: surveyFile ? r2Keys[3] ?? null : null,
-      };
-      console.log('[R2] Input files uploaded successfully');
-    } catch (err) {
-      console.warn('[R2] Input upload failed (non-fatal):', err);
-    }
-  }
+  // Input files are no longer uploaded to R2 (cost optimization).
+  // Users already have these files locally, and pipeline only needs temp storage during execution.
+  // If needed for re-runs, users can re-upload (same UX as creating a new project).
 
   return result;
 }
 
+/** @deprecated Input files are no longer uploaded to R2. Function kept for backward compatibility. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function uploadInputToR2(file: File, orgId: string, projectId: string): Promise<string> {
   const buffer = Buffer.from(await file.arrayBuffer());
   return uploadInputFile(orgId, projectId, buffer, file.name);
@@ -201,7 +182,7 @@ export function parseWizardFormData(formData: FormData): ParsedWizardFiles | nul
 export async function saveWizardFilesToStorage(
   data: ParsedWizardFiles,
   sessionId: string,
-  r2Scope?: { orgId: string; projectId: string },
+  _r2Scope?: { orgId: string; projectId: string },
 ): Promise<SavedWizardPaths> {
   const { dataFile, surveyFile, bannerPlanFile, messageListFile } = data;
 
@@ -236,33 +217,9 @@ export async function saveWizardFilesToStorage(
     messageListPath: messageListFile ? fileResults[nextIdx++]?.filePath ?? null : null,
   };
 
-  // Upload to R2 in parallel (non-blocking)
-  if (r2Scope) {
-    try {
-      const r2Promises: Promise<string>[] = [
-        uploadInputToR2(dataFile, r2Scope.orgId, r2Scope.projectId),
-        uploadInputToR2(surveyFile, r2Scope.orgId, r2Scope.projectId),
-      ];
-      if (bannerPlanFile) {
-        r2Promises.push(uploadInputToR2(bannerPlanFile, r2Scope.orgId, r2Scope.projectId));
-      }
-      if (messageListFile) {
-        r2Promises.push(uploadInputToR2(messageListFile, r2Scope.orgId, r2Scope.projectId));
-      }
-
-      const r2Keys = await Promise.all(r2Promises);
-      let r2Idx = 2;
-      result.r2Keys = {
-        spss: r2Keys[0],
-        survey: r2Keys[1],
-        bannerPlan: bannerPlanFile ? r2Keys[r2Idx++] ?? null : null,
-        messageList: messageListFile ? r2Keys[r2Idx++] ?? null : null,
-      };
-      console.log('[R2] Wizard input files uploaded successfully');
-    } catch (err) {
-      console.warn('[R2] Wizard input upload failed (non-fatal):', err);
-    }
-  }
+  // Input files are no longer uploaded to R2 (cost optimization).
+  // Users already have these files locally, and pipeline only needs temp storage during execution.
+  // If needed for re-runs, users can re-upload (same UX as creating a new project).
 
   return result;
 }

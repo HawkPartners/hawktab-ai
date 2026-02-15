@@ -216,6 +216,30 @@ The Loop Semantics Policy Agent uses a single prompt regardless of how much dete
 
 9. **Be more strict on what constitutes an error, or success; if the system default gets triggered that should be a kNOCK on the system not seen as a success. we should have a success estimate that is a ccumulation of all decisions made and ends in a score ofrom 0-100
 
+---
+
+2. **CI/CD Pipeline Verification**
+   - Test branch protection, quality gates, Claude PR review
+   - Ensure staging → main promotion works correctly
+   - **Priority:** Medium (hasn't been tested end-to-end yet)
+
+
+2. **Enhanced HITL Review Experience**
+   - Make HITL more prominent (not a warning, but an important checkpoint)
+   - Show semantic interpretation: "This cut means..." in plain language
+   - For loop datasets: Ask user "Iteration-linked or Respondent-level?"
+   - Display alternatives with explanation of how interpretations differ
+   - Let user override loop policy classifications per group
+   - **Why:** User should guide semantic decisions, not just pick syntax
+
+
+2. **Configurable post-run settings**
+   - Allow users to change entity/respondent classification after run completes
+   - Regenerate crosstabs with different loop policy without re-running full pipeline
+   - **Example:** "Location was classified as entity-anchored, but I want respondent-anchored"
+   - **Priority:** Medium (saves time on iterative analysis)
+
+---
 
 ## Known Gaps & Limitations
 

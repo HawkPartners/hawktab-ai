@@ -85,6 +85,11 @@ function sanitizeFolderName(name: string): string {
 /**
  * Upload an input file to R2.
  * Key pattern: {orgId}/{projectId}/inputs/{filename}
+ *
+ * @deprecated Input files are no longer uploaded to R2 (cost optimization).
+ * This function is kept for backward compatibility only and should not be used in new code.
+ * As of Phase 1 cleanup, input files (survey, banner, .sav) are stored only in temp storage
+ * during pipeline execution. Users already have these files locally.
  */
 export async function uploadInputFile(
   orgId: string,

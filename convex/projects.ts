@@ -80,6 +80,11 @@ export const get = query({
   },
 });
 
+/**
+ * @deprecated Input files are no longer uploaded to R2.
+ * This mutation is kept for backward compatibility only.
+ * As of Phase 1 cleanup, fileKeys will remain empty for new projects.
+ */
 export const updateFileKeys = internalMutation({
   args: {
     projectId: v.id("projects"),

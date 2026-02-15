@@ -195,6 +195,7 @@ export interface SavedFilePaths {
   bannerPlanPath: string;
   spssPath: string;
   surveyPath: string | null;
+  /** @deprecated Input files are no longer uploaded to R2. This field is kept for backward compatibility. */
   r2Keys?: {
     dataMap: string;
     bannerPlan: string;
@@ -217,6 +218,7 @@ export interface SavedWizardPaths {
   surveyPath: string;
   bannerPlanPath: string | null;
   messageListPath: string | null;
+  /** @deprecated Input files are no longer uploaded to R2. This field is kept for backward compatibility. */
   r2Keys?: {
     spss: string;
     survey: string;
